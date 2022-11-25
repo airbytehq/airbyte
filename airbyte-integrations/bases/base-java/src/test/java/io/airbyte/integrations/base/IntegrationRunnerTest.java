@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,6 +21,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -219,6 +222,67 @@ class IntegrationRunnerTest {
     verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
     verify(stdoutConsumer).accept(message1);
     verify(stdoutConsumer).accept(message2);
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
+  void testReadException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
+        statePath);
+    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenThrow(configErrorException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS));
+
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
+  }
+
+  @Test
+  void testCheckNestedException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Invalid configuration");
+    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+    final RuntimeException runtimeException = new RuntimeException(new RuntimeException(configErrorException));
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenThrow(runtimeException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    verify(source).check(CONFIG);
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
+  void testCheckRuntimeException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Runtime Error");
+    final RuntimeException runtimeException = new RuntimeException("Runtime Error");
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenThrow(runtimeException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    verify(source).check(CONFIG);
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
     verify(jsonSchemaValidator).validate(any(), any());
   }
 

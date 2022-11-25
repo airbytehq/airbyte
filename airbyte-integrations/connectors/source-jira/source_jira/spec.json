@@ -26,7 +26,7 @@
         "description": "The user email for your Jira account."
       },
       "max_results": {
-        "type": "number",
+        "type": "integer",
         "title": "Max Results",
         "description": "Pagination max results (only for users stream)",
         "default": 50

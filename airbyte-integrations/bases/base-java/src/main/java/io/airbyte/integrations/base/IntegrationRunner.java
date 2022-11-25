@@ -153,14 +153,18 @@ public class IntegrationRunner {
         default -> throw new IllegalStateException("Unexpected value: " + parsed.getCommand());
       }
     } catch (final Exception e) {
-      final String displayMessage = getDisplayMessage(e);
+      // Many of the exceptions thrown are nested inside layers of RuntimeExceptions. An attempt is made to
+      // find the root exception that corresponds to a configuration error. If that does not exist, we
+      // just return the original exception.
+      final Throwable rootThrowable = getRootConfigError(e);
+      final String displayMessage = getDisplayMessage(rootThrowable);
       // If the source connector throws a config error, a trace message with the relevant message should
       // be surfaced.
-      if (isConfigError(e)) {
+      if (isConfigError(rootThrowable)) {
         AirbyteTraceMessageUtility.emitConfigErrorTrace(e, displayMessage);
       }
       if (parsed.getCommand().equals(Command.CHECK)) {
-        // Currently, special handling is required for the SPEC case since the user display information in
+        // Currently, special handling is required for the CHECK case since the user display information in
         // the trace message is
         // not properly surfaced to the FE. In the future, we can remove this and just throw an exception.
         outputRecordCollector
@@ -179,18 +183,34 @@ public class IntegrationRunner {
     LOGGER.info("Completed integration: {}", integration.getClass().getName());
   }
 
-  private boolean isConfigError(final Exception e) {
+  /**
+   * Returns the first instance of an exception associated with a configuration error (if it exists).
+   * Otherwise, the original exception is returned.
+   */
+  private Throwable getRootConfigError(final Exception e) {
+    Throwable current = e;
+    while (current != null) {
+      if (isConfigError(current)) {
+        return current;
+      } else {
+        current = current.getCause();
+      }
+    }
+    return e;
+  }
+
+  private boolean isConfigError(final Throwable e) {
     return e instanceof ConfigErrorException || e instanceof ConnectionErrorException;
   }
 
-  private String getDisplayMessage(final Exception e) {
+  private String getDisplayMessage(final Throwable e) {
     if (e instanceof ConfigErrorException) {
       return ((ConfigErrorException) e).getDisplayMessage();
     } else if (e instanceof ConnectionErrorException) {
       final ConnectionErrorException connEx = (ConnectionErrorException) e;
-      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), e);
+      return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
     } else {
-      return "Could not connect with provided configuration. Error: " + e.getMessage();
+      return "Could not connect with provided configuration. Error: " + e.getMessage() != null ? e.getMessage() : "";
     }
   }
 

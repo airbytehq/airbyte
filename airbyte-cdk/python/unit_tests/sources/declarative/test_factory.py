@@ -40,6 +40,7 @@ from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer impor
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
+from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
@@ -261,7 +262,7 @@ def test_datetime_stream_slicer():
     assert stream_slicer.start_datetime.datetime.string == "{{ config['start_time'] }}"
     assert stream_slicer.start_datetime.min_datetime.string == "{{ config['start_time'] + day_delta(2) }}"
     assert stream_slicer.end_datetime.datetime.string == "{{ config['end_time'] }}"
-    assert stream_slicer._step == datetime.timedelta(days=10)
+    assert stream_slicer._step == relativedelta(days=10)
     assert stream_slicer.cursor_field.string == "created"
     assert stream_slicer.lookback_window.string == "5d"
     assert stream_slicer.start_time_option.inject_into == RequestOptionType.request_parameter
@@ -344,6 +345,22 @@ list_stream:
 check:
   class_name: airbyte_cdk.sources.declarative.checks.check_stream.CheckStream
   stream_names: ["list_stream"]
+spec:
+  class_name: airbyte_cdk.sources.declarative.spec.Spec
+  documentation_url: https://airbyte.com/#yaml-from-manifest
+  connection_specification:
+    title: Test Spec
+    type: object
+    required:
+      - api_key
+    additionalProperties: false
+    properties:
+      api_key:
+        type: string
+        airbyte_secret: true
+        title: API Key
+        description: Test API Key
+        order: 0
     """
     config = parser.parse(content)
 
@@ -375,6 +392,20 @@ check:
     streams_to_check = checker.stream_names
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
+
+    spec = factory.create_component(config["spec"], input_config)()
+    documentation_url = spec.documentation_url
+    connection_specification = spec.connection_specification
+    assert documentation_url == "https://airbyte.com/#yaml-from-manifest"
+    assert connection_specification["title"] == "Test Spec"
+    assert connection_specification["required"] == ["api_key"]
+    assert connection_specification["properties"]["api_key"] == {
+        "type": "string",
+        "airbyte_secret": True,
+        "title": "API Key",
+        "description": "Test API Key",
+        "order": 0,
+    }
 
     assert stream.retriever.requester.path.default == "marketing/lists"
 
