@@ -4,8 +4,6 @@
 
 package io.airbyte.commons.temporal;
 
-import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.NON_RUNNING_JOB_ID;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -23,11 +21,9 @@ import io.airbyte.config.JobDiscoverCatalogConfig;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardCheckConnectionInput;
-import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
@@ -43,6 +39,12 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
+
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -56,11 +58,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
+
+import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.NON_RUNNING_JOB_ID;
 
 @Slf4j
 @Singleton
@@ -380,32 +379,11 @@ public class TemporalClient {
         .withDockerImage(config.getSourceDockerImage())
         .withProtocolVersion(config.getSourceProtocolVersion());
 
-    IntegrationLauncherConfig destinationLauncherConfig;
-    try {
-      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      List<StandardDestinationDefinition> destinationDefinitionList = provider.getDestinationDefinitions();
-      Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
-          .filter(destinationDefinition -> config.getDestinationDockerImage()
-              .equalsIgnoreCase(destinationDefinition.getDockerRepository() + ":" + destinationDefinition.getDockerImageTag()))
-          .findFirst();
-      final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
-          standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
-      final boolean supportDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
-      destinationLauncherConfig = new IntegrationLauncherConfig()
-          .withJobId(String.valueOf(jobId))
-          .withAttemptId((long) attempt)
-          .withDockerImage(config.getDestinationDockerImage())
-          .withProtocolVersion(config.getDestinationProtocolVersion())
-          .withNormalizationDockerImage(destinationNormalizationDockerImage)
-          .withSupportDbt(supportDbt);
-    } catch (IOException ignored) {
-      destinationLauncherConfig = new IntegrationLauncherConfig()
-          .withJobId(String.valueOf(jobId))
-          .withAttemptId((long) attempt)
-          .withDockerImage(config.getDestinationDockerImage())
-          .withProtocolVersion(config.getDestinationProtocolVersion());
-    }
-    final IntegrationLauncherConfig finalDestinationLauncherConfig = destinationLauncherConfig;
+    final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
+        .withJobId(String.valueOf(jobId))
+        .withAttemptId((long) attempt)
+        .withDockerImage(config.getDestinationDockerImage())
+        .withProtocolVersion(config.getDestinationProtocolVersion());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -424,7 +402,7 @@ public class TemporalClient {
         () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
             jobRunConfig,
             sourceLauncherConfig,
-            finalDestinationLauncherConfig,
+            destinationLauncherConfig,
             input,
             connectionId));
   }

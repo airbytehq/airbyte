@@ -176,7 +176,7 @@ public class DbConverter {
             : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
         .withNormalizationRepository(record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY) == null ? null
             : record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY))
-        .withNormalizationRepository(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG) == null ? null
+        .withNormalizationTag(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG) == null ? null
             : record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
         .withSupportsDbt(record.get(ACTOR_DEFINITION.SUPPORTS_DBT) == null ? null
             : record.get(ACTOR_DEFINITION.SUPPORTS_DBT))

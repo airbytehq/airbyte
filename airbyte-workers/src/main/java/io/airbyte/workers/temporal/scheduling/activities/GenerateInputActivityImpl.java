@@ -4,6 +4,10 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
@@ -15,7 +19,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.config.init.LocalDefinitionsProvider;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -24,23 +28,21 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConstants;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-
-import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   private final JobPersistence jobPersistence;
+  private final ConfigRepository configRepository;
 
-  public GenerateInputActivityImpl(final JobPersistence jobPersistence) {
+  public GenerateInputActivityImpl(final JobPersistence jobPersistence,
+                                   final ConfigRepository configRepository) {
     this.jobPersistence = jobPersistence;
+    this.configRepository = configRepository;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -84,15 +86,14 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
-      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      List<StandardDestinationDefinition> destinationDefinitionList = provider.getDestinationDefinitions();
+      List<StandardDestinationDefinition> destinationDefinitionList = configRepository.listStandardDestinationDefinitions(true);
       Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
           .filter(destinationDefinition -> config.getDestinationDockerImage()
               .equalsIgnoreCase(destinationDefinition.getDockerRepository() + ":" + destinationDefinition.getDockerImageTag()))
           .findFirst();
       final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
           standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
-      final boolean supportDBT = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
+      final boolean supportDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -106,7 +107,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getDestinationDockerImage())
           .withProtocolVersion(config.getDestinationProtocolVersion())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
-          .withSupportDbt(supportDBT);
+          .withSupportDbt(supportDbt);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
