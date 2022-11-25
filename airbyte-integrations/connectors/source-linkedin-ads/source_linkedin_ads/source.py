@@ -235,6 +235,36 @@ class Creatives(LinkedInAdsStreamSlicing):
     search_param_value = "urn:li:sponsoredCampaign:"
 
 
+class AdCreativeName(LinkedinAdsStream, ABC):
+    """
+    Get Creative name.
+    To retrieve a name for a creative for a Sponsored Content ad.
+    """
+
+    # parent_stream = Creatives
+    # parent_values_map = {"creative_id": "id"}
+    search_param = "projection"
+    search_param_value = "variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title)))))))"
+    pivot_by = "CREATIVE"
+
+    endpoint = "adCreativesV2/76053253"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {}
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        # params = {"projection=(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"}
+        params = {}
+        params[self.search_param] = f"{self.search_param_value}"
+        return params
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.json():
+            print("response:", response.json())
+            yield response.json().get("variables")
+
 class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     """
     Get AdDirectSponsoredContents data using `account_id` slicing.
@@ -426,4 +456,5 @@ class SourceLinkedinAds(AbstractSource):
             CampaignGroups(config),
             Campaigns(config),
             Creatives(config),
+            AdCreativeName(config)
         ]
