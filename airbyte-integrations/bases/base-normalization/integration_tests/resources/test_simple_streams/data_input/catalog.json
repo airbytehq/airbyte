@@ -16,7 +16,7 @@
               "$ref": "WellKnownTypes.json#/definitions/Date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
             },
             "HKD@spéçiäl & characters": {
               "$ref": "WellKnownTypes.json#/definitions/Number"
@@ -71,7 +71,7 @@
               "$ref": "WellKnownTypes.json#/definitions/Date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
             },
             "HKD@spéçiäl & characters": {
               "$ref": "WellKnownTypes.json#/definitions/Number"

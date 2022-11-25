@@ -13,7 +13,7 @@
               "$ref": "WellKnownTypes.json#/definitions/Date"
             },
             "timestamp_col": {
-              "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+              "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
             },
             "datetime_to_string": {
               "$ref": "WellKnownTypes.json#definitions/TimestampWithTimezone"
