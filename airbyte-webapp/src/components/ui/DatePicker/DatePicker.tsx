@@ -21,7 +21,7 @@ import styles from "./DatePicker.module.scss";
  * 2022-01-01T10:00:00+01:00  - what react-datepicker might convert this date into and display (e.g. 10:00am - bad!)
  * 2022-01-01T09:00:00+01:00  - what we give react-datepicker instead, to trick it (User sees 9:00am - good!)
  */
-export const toEquivalentLocalTimeInBrowserTimezone = (date: dayjs.Dayjs): Date => {
+export const toEquivalentLocalTime = (date: dayjs.Dayjs): Date => {
   // First, get the user's UTC offset based on the local time
   const browserUtcOffset = dayjs().utcOffset();
 
@@ -113,7 +113,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           showTimeSelect={withTime}
           disabled={disabled}
           locale={locale}
-          selected={dateValue?.isValid() ? toEquivalentLocalTimeInBrowserTimezone(dateValue) : undefined}
+          selected={dateValue?.isValid() ? toEquivalentLocalTime(dateValue) : undefined}
           onChange={onDateChanged}
           onBlur={onBlur}
           value={value}
