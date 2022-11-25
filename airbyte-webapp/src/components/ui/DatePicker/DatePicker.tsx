@@ -1,4 +1,4 @@
-import { faCalendarAlt } from "@fortawesome/free-solid-svg-icons";
+import { faCalendarAlt } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import en from "date-fns/locale/en-US";
 import dayjs from "dayjs";
