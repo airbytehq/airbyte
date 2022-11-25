@@ -198,6 +198,21 @@ class AdsInsights(FBMarketingIncrementalStream):
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
 
+    def check_breakdowns(self):
+        """
+        Making asynchronous call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns
+        paragraph: "Combining Breakdowns"
+        """
+        params = self.request_params()
+        params.update({
+            "time_range": {
+                "since": str(self._get_start_date()),
+                "until": str(self._get_start_date()),
+            }
+        })
+        self._api.account.get_insights(params=params, is_async=True)
+
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
