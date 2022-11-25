@@ -78,6 +78,7 @@
       "date_ranges_start_date": {
         "type": "string",
         "title": "Date Range Start Date",
+        "examples": ["2022-11-25"],
         "order": 2
       },
       "custom_reports": {
