@@ -90,8 +90,8 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     Authenticator that should be used for API implementing single use refresh tokens:
     when refreshing access token some API returns a new refresh token that needs to used in the next refresh flow.
     This authenticator updates the configuration with new refresh token by emitting Airbyte control message from an observed mutation.
-    This authenticator expects a connector config with a"credentials" field with the following nested fields: client_id, client_secret, refresh_token.
-    This behavior can be changed by overriding getters or changing the default "credentials_configuration_field_name" value.
+    By default this authenticator expects a connector config with a"credentials" field with the following nested fields: client_id, client_secret, refresh_token.
+    This behavior can be changed by defining custom config path (using dpath paths) in client_id_config_path, client_secret_config_path, refresh_token_config_path constructor arguments.
     """
 
     def __init__(
@@ -109,6 +109,22 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         client_secret_config_path="/credentials/client_secret",
         refresh_token_config_path="/credentials/refresh_token",
     ):
+        """_summary_
+
+        Args:
+            connector_config (Mapping[str, Any]): The full connector configuration
+            token_refresh_endpoint (str): Full URL to the token refresh endpoint
+            scopes (List[str], optional): List of OAuth scopes to pass in the refresh token request body. Defaults to None.
+            token_expiry_date (pendulum.DateTime, optional): Datetime at which the current token will expire. Defaults to None.
+            access_token_name (str, optional): Name of the access token field, used to parse the refresh token response. Defaults to "access_token".
+            expires_in_name (str, optional): Name of the name of the field that characterizes when the current access token will expire, used to parse the refresh token response. Defaults to "expires_in".
+            refresh_token_name (str, optional): Name of the name of the refresh token field, used to parse the refresh token response. Defaults to "refresh_token".
+            refresh_request_body (Mapping[str, Any], optional): Custom key value pair that will be added to the refresh token request body. Defaults to None.
+            grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
+            client_id_config_path (str, optional): Dpath to the client_id field in the connector configuration. Defaults to "/credentials/client_id".
+            client_secret_config_path (str, optional): Dpath to the client_secret field in the connector configuration. Defaults to "/credentials/client_secret".
+            refresh_token_config_path (str, optional): Dpath to the refresh_token field in the connector configuration. Defaults to "/credentials/refresh_token".
+        """
         self._client_id_config_path = client_id_config_path
         self._client_secret_config_path = client_secret_config_path
         self._refresh_token_config_path = refresh_token_config_path
@@ -134,16 +150,16 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         Raises:
             ValueError: Raised if the defined getters are not returning a value.
         """
-        for field_path, getter in [
-            (self._client_id_config_path, self.get_client_id),
-            (self._client_secret_config_path, self.get_client_secret),
-            (self._refresh_token_config_path, self.get_refresh_token),
+        for field_path, getter, parameter_name in [
+            (self._client_id_config_path, self.get_client_id, "client_id_config_path"),
+            (self._client_secret_config_path, self.get_client_secret, "client_secret_config_path"),
+            (self._refresh_token_config_path, self.get_refresh_token, "refresh_token_config_path"),
         ]:
             try:
                 assert getter()
             except KeyError:
                 raise ValueError(
-                    f"This authenticator expects a value field under the {field_path} field path. Please override this class getters or change your configuration structure."
+                    f"This authenticator expects a value under the {field_path} field path. Please check your configuration structure or change the {parameter_name} value at initialization of this authenticator."
                 )
 
     def get_refresh_token_name(self) -> str:
