@@ -30,9 +30,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AirbyteMessageTrackerTest {
 
-  private static final String STREAM_1 = "stream1";
-  private static final String STREAM_2 = "stream2";
-  private static final String STREAM_3 = "stream3";
+  private static final String NAMESPACE_1 = "avengers";
+  private static final String STREAM_1 = "iron man";
+  private static final String STREAM_2 = "black widow";
+  private static final String STREAM_3 = "hulk";
   private static final String INDUCED_EXCEPTION = "induced exception";
 
   private AirbyteMessageTracker messageTracker;
@@ -333,10 +334,41 @@ class AirbyteMessageTrackerTest {
   class Estimates {
 
     // receiving an estimate for two streams should save
-    // @Test
-    // void shouldSaveAndReturnCorrectly() {
-    // final AirbyteMessage estimate = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
-    // }
+    @Test
+    void shouldSaveAndReturnIndividualStreamCountsCorrectly() {
+      final var est1 = AirbyteMessageUtils.createEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      messageTracker.acceptFromSource(est2);
+
+      final var streamToEstBytes = messageTracker.getStreamToEstimatedBytes();
+      final var expStreamToEstBytes = Map.of(
+          new AirbyteStreamNameNamespacePair(STREAM_1, NAMESPACE_1), 100L,
+          new AirbyteStreamNameNamespacePair(STREAM_2, NAMESPACE_1), 200L);
+      assertEquals(expStreamToEstBytes, streamToEstBytes);
+
+      final var streamToEstRecs = messageTracker.getStreamToEstimatedRecords();
+      final var expStreamToEstRecs = Map.of(
+          new AirbyteStreamNameNamespacePair(STREAM_1, NAMESPACE_1), 10L,
+          new AirbyteStreamNameNamespacePair(STREAM_2, NAMESPACE_1), 10L);
+      assertEquals(expStreamToEstRecs, streamToEstRecs);
+    }
+
+    @Test
+    void shouldSaveAndReturnTotalCountsCorrectly() {
+      final var est1 = AirbyteMessageUtils.createEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      messageTracker.acceptFromSource(est2);
+
+      final var totalEstBytes = messageTracker.getTotalBytesEstimated();
+      assertEquals(300L, totalEstBytes);
+
+      final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
+      assertEquals(20L, totalEstRecs);
+    }
 
   }
 

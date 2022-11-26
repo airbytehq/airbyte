@@ -103,7 +103,7 @@ public class AirbyteMessageUtils {
     return new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName));
   }
 
-  public static AirbyteMessage createEstimateMessage(final String namespace, final String name, final long byteEst, final long rowEst) {
+  public static AirbyteMessage createEstimateMessage(final String name, final String namespace, final long byteEst, final long rowEst) {
     final var est = new AirbyteEstimateTraceMessage()
         .withType(AirbyteEstimateTraceMessage.Type.STREAM)
         .withNamespace(namespace)
