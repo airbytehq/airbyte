@@ -1,0 +1,16 @@
+{
+    "id": "b4d19a38-aab9-4420-a607-948d48b6640b",
+    "voucherType": "purchaseinvoice",
+    "voucherStatus": "overdue",
+    "voucherNumber": "lx2022090067793",
+    "voucherDate": "2022-09-11T00:00:00.000+02:00",
+    "createdDate": "2022-09-11T04:21:36.000+02:00",
+    "updatedDate": "2022-09-11T04:21:36.000+02:00",
+    "dueDate": "2022-09-16T00:00:00.000+02:00",
+    "contactId": "dd19ef5b-f78b-4333-8f34-279de896a3cf",
+    "contactName": "Haufe Service Center GmbH",
+    "totalAmount": 22.49,
+    "openAmount": 22.49,
+    "currency": "EUR",
+    "archived": false
+}

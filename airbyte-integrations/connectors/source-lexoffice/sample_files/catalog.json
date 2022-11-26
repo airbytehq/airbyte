@@ -1,0 +1,47 @@
+{
+  "type": "CATALOG",
+  "catalog": {
+    "streams": [
+      {
+        "name": "voucher_list",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "voucherType": { "type": "string" },
+            "voucherStatus": { "type": "string" },
+            "voucherNumber": { "type": "string" },
+            "voucherDate": { "type": "string" },
+            "createdDate": { "type": "string" },
+            "updatedDate": { "type": "string" },
+            "dueDate": { "type": "string" },
+            "contactId": { "type": "string" },
+            "contactName": { "type": "string" },
+            "totalAmount": { "type": "number" },
+            "openAmount": { "type": "number" },
+            "currency": { "type": "string" },
+            "archived": { "type": "boolean" }
+          },
+          "required": [
+            "id", "voucherType", "voucherStatus", "voucherNumber",
+            "voucherDate", "createdDate", "updatedDate", "archived"
+          ]
+        },
+        "supported_sync_modes": [
+          "full_refresh",
+          "incremental"
+        ],
+        "source_defined_cursor": true,
+        "default_cursor_field": [
+          "updatedDate"
+        ],
+        "source_defined_primary_key": [
+          [
+            "id"
+          ]
+        ]
+      }
+    ]
+  }
+}

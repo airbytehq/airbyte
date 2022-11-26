@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="135px" height="90px" viewBox="0 0 135 90" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>lexoffice-logo</title>
+    <defs></defs>
+    <g id="lexoffice-logo" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Group" transform="translate(0.000000, -5.000000)">
+            <polygon id="Fill-7" fill="#F58222" points="0.47925 5.74509375 45.147375 50.2444687 0.47925 94.7354062 45.147375 94.7354062 67.473 72.6207187 89.5455 50.2444687 45.147375 5.74509375"></polygon>
+            <path d="M89.0755312,50.2410937 L66.8933437,28.1264062 L89.0755312,5.74171875 L133.971469,5.74171875 L89.0755312,50.2410937 Z M66.8933437,72.6257812 L89.0755312,50.2410937 L133.971469,94.7404687 L89.0755312,94.7404687 L66.8933437,72.6257812 Z" id="Fill-5" fill="#565455"></path>
+        </g>
+    </g>
+</svg>
