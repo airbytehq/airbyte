@@ -9,7 +9,10 @@ const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source'
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const cursorFieldDropdown = "button[class^='PathPopoutButton_button']";
-const primaryKeyText = 'div[class^="PathPopout_text"]';
+const cursorFieldText = "[class^='PathPopoutButton_button__']";
+const primaryKeyText = "[class^='PathPopoutButton_button__']";
+const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
+const primaryKeyDropdown = "button[class^='PathPopoutButton_button']";
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
@@ -74,15 +77,25 @@ export const selectCursorField = (value: string) => {
 };
 
 export const checkCursorField = (expectedValue: string) => {
-  cy.get(cursorFieldDropdown).contains(expectedValue);
-};
-
-export const checkPrimaryKeyField = (expectedValue: string) => {
-  cy.get(cursorFieldDropdown).contains(expectedValue);
+  cy.get(cursorFieldText).first().contains(expectedValue);
 };
 
 export const checkPrimaryKey = (expectedValue: string) => {
-  cy.get(primaryKeyText).contains(expectedValue);
+  cy.get(primaryKeyText).last().contains(expectedValue);
+};
+
+export const checkPreFilledPrimaryKeyField = (expectedValue: string) => {
+  cy.get(preFilledPrimaryKeyText).contains(expectedValue);
+};
+
+export const isPrimaryKeyNonExist = () => {
+  cy.get(preFilledPrimaryKeyText).should("not.exist");
+};
+
+export const selectPrimaryKeyField = (value: string) => {
+  cy.get(primaryKeyDropdown).last().click({ force: true });
+
+  cy.get(`.react-select__option`).contains(value).click();
 };
 
 export const searchStream = (value: string) => {

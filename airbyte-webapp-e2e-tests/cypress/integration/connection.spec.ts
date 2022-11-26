@@ -18,7 +18,10 @@ import {
   checkCursorField,
   selectSyncMode,
   setupDestinationNamespaceDefaultFormat,
-  checkPrimaryKey
+  checkPrimaryKey,
+  isPrimaryKeyNonExist,
+  selectPrimaryKeyField,
+  checkPreFilledPrimaryKeyField
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -142,7 +145,7 @@ describe("Connection main actions", () => {
     searchStream("users");
     selectSyncMode("Incremental", "Deduped + history");
     selectCursorField("col1");
-    checkPrimaryKey("id");
+    checkPreFilledPrimaryKeyField("id");
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -162,7 +165,53 @@ describe("Connection main actions", () => {
     searchStream("users");
 
     checkCursorField("col1");
-    checkPrimaryKey("id");
+    checkPreFilledPrimaryKeyField("id");
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
+  });
+
+  it("Connection sync mode Incremental Deduped History without existing PK", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("cities");
+    selectSyncMode("Incremental", "Deduped + history");
+    selectCursorField("city");
+    isPrimaryKeyNonExist();
+    selectPrimaryKeyField("city_code");
+
+    submitButtonClick();
+    confirmStreamConfigurationChangedPopup();
+
+    cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("cities");
+
+    checkCursorField("city");
+    checkPrimaryKey("city_code");
 
     deleteSource(sourceName);
     deleteDestination(destName);
