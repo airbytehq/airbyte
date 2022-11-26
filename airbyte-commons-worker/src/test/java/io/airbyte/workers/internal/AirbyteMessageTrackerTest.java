@@ -5,6 +5,7 @@
 package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +20,7 @@ import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -293,8 +295,8 @@ class AirbyteMessageTrackerTest {
 
   @Test
   void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
-    assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), null);
-    assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), null);
+    assertNull(messageTracker.getFirstDestinationErrorTraceMessage());
+    assertNull(messageTracker.getFirstSourceErrorTraceMessage());
   }
 
   @Test
@@ -309,7 +311,7 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromDestination(destMessage2);
 
     final FailureReason failureReason = FailureHelper.sourceFailure(sourceMessage1.getTrace(), Long.valueOf(123), 1);
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1),
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1),
         failureReason);
   }
 
@@ -319,12 +321,22 @@ class AirbyteMessageTrackerTest {
     messageTracker.acceptFromDestination(destMessage);
 
     final FailureReason failureReason = FailureHelper.destinationFailure(destMessage.getTrace(), Long.valueOf(123), 1);
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), failureReason);
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1), failureReason);
   }
 
   @Test
   void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1), null);
+  }
+
+  @Nested
+  class Estimates {
+    // receiving an estimate for two streams should save
+    @Test
+    void shouldSaveAndReturnCorrectly() {
+      final AirbyteMessage estimate = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
+    }
+
   }
 
 }
