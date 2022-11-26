@@ -88,7 +88,8 @@ public class DefaultAirbyteSource implements AirbyteSource {
 
     messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
         .peek(message -> heartbeatMonitor.beat())
-        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
+        .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE
+            || message.getType() == Type.CONTROL)
         .iterator();
   }
 
