@@ -1434,6 +1434,7 @@
   dockerRepository: airbyte/source-senseforce
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
 - name: Sendinblue
