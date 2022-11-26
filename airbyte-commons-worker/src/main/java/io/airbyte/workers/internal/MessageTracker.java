@@ -66,6 +66,8 @@ public interface MessageTracker {
    */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords();
 
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords();
+
   /**
    * Get the per-stream emitted byte count. This includes messages that were emitted by the source,
    * but never committed by the destination.
@@ -73,6 +75,8 @@ public interface MessageTracker {
    * @return returns a map of emitted record count by stream name.
    */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes();
+
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes();
 
   /**
    * Get the overall emitted record count. This includes messages that were emitted by the source, but
@@ -82,6 +86,8 @@ public interface MessageTracker {
    */
   long getTotalRecordsEmitted();
 
+  long getTotalRecordsEstimated();
+
   /**
    * Get the overall emitted bytes. This includes messages that were emitted by the source, but never
    * committed by the destination.
@@ -89,6 +95,8 @@ public interface MessageTracker {
    * @return returns the total emitted bytes across all streams.
    */
   long getTotalBytesEmitted();
+
+  long getTotalBytesEstimated();
 
   /**
    * Get the overall committed record count.

@@ -53,6 +53,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final BiMap<AirbyteStreamNameNamespacePair, Short> nameNamespacePairToIndex;
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
+  private final Map<Short, Long> streamToTotalBytesEstimated;
+  private final Map<Short, Long> streamToTotalRecordsEstimated;
   private final StateDeltaTracker stateDeltaTracker;
   private final StateMetricsTracker stateMetricsTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
@@ -95,6 +97,8 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.streamToTotalBytesEmitted = new HashMap<>();
     this.streamToTotalRecordsEmitted = new HashMap<>();
+    this.streamToTotalBytesEstimated = new HashMap<>();
+    this.streamToTotalRecordsEstimated = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
     this.stateMetricsTracker = stateMetricsTracker;
     this.nextStreamIndex = 0;
@@ -252,7 +256,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
-      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage, connectorType);
+      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage);
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
@@ -266,9 +270,16 @@ public class AirbyteMessageTracker implements MessageTracker {
     }
   }
 
-  @SuppressWarnings("PMD") // until method is implemented
-  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
+  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage) {
+    // Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
+    // estimate.
 
+    final var estimate = estimateTraceMessage.getEstimate();
+    log.info("Saving records estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
+    final var index = getStreamIndex(new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()));
+
+    streamToTotalRecordsEstimated.put(index, estimate.getRowEstimate());
+    streamToTotalBytesEstimated.put(index, estimate.getByteEstimate());
   }
 
   private short getStreamIndex(final AirbyteStreamNameNamespacePair pair) {
@@ -368,12 +379,24 @@ public class AirbyteMessageTracker implements MessageTracker {
         entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
+  @Override
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords() {
+    return streamToTotalRecordsEstimated.entrySet().stream().collect(Collectors.toMap(
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
+  }
+
   /**
    * Swap out stream indices for stream names and return total bytes emitted by stream.
    */
   @Override
   public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes() {
     return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
+  }
+
+  @Override
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes() {
+    return streamToTotalBytesEstimated.entrySet().stream().collect(Collectors.toMap(
         entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
@@ -385,12 +408,22 @@ public class AirbyteMessageTracker implements MessageTracker {
     return streamToTotalRecordsEmitted.values().stream().reduce(0L, Long::sum);
   }
 
+  @Override
+  public long getTotalRecordsEstimated() {
+    return streamToTotalRecordsEstimated.values().stream().reduce(0L, Long::sum);
+  }
+
   /**
    * Compute sum of emitted bytes across all streams.
    */
   @Override
   public long getTotalBytesEmitted() {
     return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
+  }
+
+  @Override
+  public long getTotalBytesEstimated() {
+    return streamToTotalBytesEstimated.values().stream().reduce(0L, Long::sum);
   }
 
   /**
