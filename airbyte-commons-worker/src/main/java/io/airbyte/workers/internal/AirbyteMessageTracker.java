@@ -379,6 +379,9 @@ public class AirbyteMessageTracker implements MessageTracker {
         entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
+  /**
+   * Swap out stream indices for stream names and return total records estimated by stream.
+   */
   @Override
   public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords() {
     return streamToTotalRecordsEstimated.entrySet().stream().collect(Collectors.toMap(
@@ -394,6 +397,9 @@ public class AirbyteMessageTracker implements MessageTracker {
         entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
+  /**
+   * Swap out stream indices for stream names and return total bytes estimated by stream.
+   */
   @Override
   public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes() {
     return streamToTotalBytesEstimated.entrySet().stream().collect(Collectors.toMap(
@@ -408,6 +414,9 @@ public class AirbyteMessageTracker implements MessageTracker {
     return streamToTotalRecordsEmitted.values().stream().reduce(0L, Long::sum);
   }
 
+  /**
+   * Compute sum of estimated record counts across all streams.
+   */
   @Override
   public long getTotalRecordsEstimated() {
     return streamToTotalRecordsEstimated.values().stream().reduce(0L, Long::sum);
@@ -421,6 +430,9 @@ public class AirbyteMessageTracker implements MessageTracker {
     return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
   }
 
+  /**
+   * Compute sum of estimated bytes across all streams.
+   */
   @Override
   public long getTotalBytesEstimated() {
     return streamToTotalBytesEstimated.values().stream().reduce(0L, Long::sum);

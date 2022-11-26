@@ -66,6 +66,12 @@ public interface MessageTracker {
    */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords();
 
+  /**
+   * Get the per-stream estimated record count provided by
+   * {@link io.airbyte.protocol.models.AirbyteEstimateTraceMessage}.
+   *
+   * @return returns a map of estimated record count by stream name.
+   */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords();
 
   /**
@@ -76,6 +82,12 @@ public interface MessageTracker {
    */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes();
 
+  /**
+   * Get the per-stream estimated byte count provided by
+   * {@link io.airbyte.protocol.models.AirbyteEstimateTraceMessage}.
+   *
+   * @return returns a map of estimated bytes by stream name.
+   */
   Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes();
 
   /**
@@ -86,6 +98,11 @@ public interface MessageTracker {
    */
   long getTotalRecordsEmitted();
 
+  /**
+   * Get the overall estimated record count.
+   *
+   * @return returns the total count of estimated records across all streams.
+   */
   long getTotalRecordsEstimated();
 
   /**
@@ -96,6 +113,11 @@ public interface MessageTracker {
    */
   long getTotalBytesEmitted();
 
+  /**
+   * Get the overall estimated bytes.
+   *
+   * @return returns the total count of estimated bytes across all streams.
+   */
   long getTotalBytesEstimated();
 
   /**
