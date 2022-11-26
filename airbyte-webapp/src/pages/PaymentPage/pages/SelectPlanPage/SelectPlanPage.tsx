@@ -46,12 +46,12 @@ const SelectPlanPage: React.FC = () => {
   const [selectedDataRow, setDataRow] = useState<PlanDataRowItem | undefined>();
 
   const dataRows: PlanDataRowItem[] = [
-    { id: "1", numberOfRows: NumberNaming.M },
-    { id: "2", numberOfRows: 5 * NumberNaming.M },
-    { id: "3", numberOfRows: 10 * NumberNaming.M },
-    { id: "4", numberOfRows: 20 * NumberNaming.M },
-    { id: "5", numberOfRows: 30 * NumberNaming.M },
-    { id: "6", numberOfRows: 40 * NumberNaming.M },
+    { id: "1", numberOfRows: 1 * NumberNaming.M },
+    { id: "2", numberOfRows: 2 * NumberNaming.M },
+    { id: "3", numberOfRows: 3 * NumberNaming.M },
+    { id: "4", numberOfRows: 5 * NumberNaming.M },
+    { id: "5", numberOfRows: 10 * NumberNaming.M },
+    { id: "6", numberOfRows: 20 * NumberNaming.M },
     { id: "7", numberOfRows: 50 * NumberNaming.M },
     { id: "8", numberOfRows: 100 * NumberNaming.M },
   ];
@@ -66,7 +66,7 @@ const SelectPlanPage: React.FC = () => {
           <SliderContainer>
             <Slider
               min={0}
-              // max={}
+              max={100 * NumberNaming.M}
               marks={dataRows}
               selectedMark={selectedDataRow}
               onSelect={setDataRow}

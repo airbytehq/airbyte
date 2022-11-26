@@ -117,7 +117,8 @@ export const useCalculateSidebarStyles = () => {
   const { location } = useRouter();
 
   const menuItemStyle = (isActive: boolean) => {
-    const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
+    // const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
+    const isChild = location.pathname.split("/").length > 2 && location.pathname.split("/")[1] !== "settings";
     return classnames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
   };
 
@@ -128,7 +129,8 @@ export const useCalculateSidebarItemStyles = (route: string) => {
   const { location } = useRouter();
 
   const menuItemStyle = () => {
-    const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
+    // const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
+    const isActive = location.pathname.split("/").length >= 2 && location.pathname.split("/")[1] === route;
     return classnames(styles.menuItem, { [styles.active]: isActive }, { [styles.inActive]: !isActive });
   };
 
