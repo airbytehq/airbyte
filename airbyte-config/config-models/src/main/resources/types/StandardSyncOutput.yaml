@@ -18,6 +18,10 @@ properties:
     "$ref": WebhookOperationSummary.yaml
   state:
     "$ref": State.yaml
+  sourceConfig:
+    existingJavaType: io.airbyte.protocol.models.Config
+  destinationConfig:
+    existingJavaType: io.airbyte.protocol.models.Config
   output_catalog:
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
   failures:

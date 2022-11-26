@@ -28,6 +28,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
@@ -81,6 +82,27 @@ import org.slf4j.MDC;
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
+
+  // private static final Configs CONFIGS = new EnvConfigs();
+  // private static final AirbyteApiClient CLIENT = getAirbyteApiClient();
+
+  // Passing env vars to the container orchestrator isn't working properly. Hack around this for now.
+  // TODO(Davin): This doesn't work for Kube. Need to figure it out.
+  // private static AirbyteApiClient getAirbyteApiClient() {
+  // if (CONFIGS.getWorkerEnvironment() == WorkerEnvironment.DOCKER) {
+  // return new AirbyteApiClient(
+  // new ApiClient().setScheme("http")
+  // .setHost(CONFIGS.getAirbyteApiHost())
+  // .setPort(CONFIGS.getAirbyteApiPort())
+  // .setBasePath("/api"));
+  // }
+  //
+  // return new AirbyteApiClient(
+  // new ApiClient().setScheme("http")
+  // .setHost("airbyte-server-svc")
+  // .setPort(8001)
+  // .setBasePath("/api"));
+  // }
 
   private final String jobId;
   private final int attempt;
@@ -276,6 +298,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
+  // private static void saveConfig(final AirbyteSource source, final Config config) throws
+  // ApiException {
+  // var jobsApi = CLIENT.getJobsApi();
+  // final JobIdRequestBody body = new JobIdRequestBody().id(1L);
+  // final JobInfoRead jobInfo = jobsApi.getJobInfo(body);
+  // jobsApi.getJobDebugInfo(body).
+  //// CLIENT.getSourceApi().updateSource();
+  // }
+
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
@@ -403,6 +434,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         output);
 
     prepStateForLaterSaving(syncInput, output);
+
+    // pass along new configs we may have received
+    if (messageTracker.getDestinationOutputConfig().isPresent()) {
+      LOGGER.info("Captured updated source config");
+      final Config config = messageTracker.getDestinationOutputConfig().get();
+      output.withDestinationConfig(config);
+    }
+
+    if (messageTracker.getSourceOutputConfig().isPresent()) {
+      LOGGER.info("Captured updated source config");
+      final Config config = messageTracker.getSourceOutputConfig().get();
+      output.withSourceConfig(config);
+    }
 
     final ObjectMapper mapper = new ObjectMapper();
     LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
