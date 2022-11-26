@@ -1,0 +1,199 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "captchaResult": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "loadingExperience": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            },
+            "EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            },
+            "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            },
+            "FIRST_CONTENTFUL_PAINT_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            },
+            "FIRST_INPUT_DELAY_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            },
+            "LARGEST_CONTENTFUL_PAINT_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "overall_category": {
+          "type": "string"
+        },
+        "initial_url": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

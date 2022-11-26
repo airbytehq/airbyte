@@ -1,0 +1,63 @@
+version: "0.1.0"
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://www.googleapis.com/pagespeedonline/v5/"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        key: "{{ config['api_key'] }}"
+        url: "{{ config['url'] }}"
+        category: seo
+        cateogry: accessibility
+        cateogry: best-practices
+        cateogry: performance
+        cateogry: pwa
+        strategy: desktop
+        strategy: mobile
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  pagespeed_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "pagespeed"
+      path: "/runPagespeed"
+  origin_pagespeed_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "origin_pagespeed"
+      path: "/runPagespeed"
+    retriever:
+      $ref: "*ref(definitions.base_stream.retriever)"
+      requester:
+        url_base: "https://www.googleapis.com/pagespeedonline/v5/"
+        http_method: "GET"
+        request_options_provider:
+          request_parameters:
+            key: "{{ config['api_key'] }}"
+            url: "origin:{{ config['url'] }}"
+            category: seo
+            cateogry: accessibility
+            cateogry: best-practices
+            cateogry: performance
+            cateogry: pwa
+            strategy: desktop
+            strategy: mobile
+
+streams:
+  - "*ref(definitions.pagespeed_stream)"
+  - "*ref(definitions.origin_pagespeed_stream)"
+
+check:
+  stream_names:
+    - "origin_pagespeed"

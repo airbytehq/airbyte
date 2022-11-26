@@ -1,0 +1,26 @@
+documentationUrl: https://docs.airbyte.io/integrations/sources/google-pagespeed-insights
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Google PageSpeed Insights Spec
+  type: object
+  required:
+    - api_key
+    - url
+  additionalProperties: true
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: >-
+        Google PageSpeed API Key. See <a
+        href="https://developers.google.com/speed/docs/insights/v5/get-started#APIKey">here</a>.
+        The toke is case sensitive.
+      airbyte_secret: true
+    url:
+      type: string
+      title: URL to analyse
+      pattern: ^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$
+      description: >-
+        The URL to retrieve pagespeed information from.
+        Format: https://(www.)url.domain
+      example: https://example.com

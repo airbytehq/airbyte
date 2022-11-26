@@ -1,0 +1,226 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "captchaResult": {
+      "type": "string"
+    },
+    "kind": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "loadingExperience": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "metrics": {
+          "type": "object",
+          "properties": {
+            "CUMULATIVE_LAYOUT_SHIFT_SCORE": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            },
+            "EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            },
+            "EXPERIMENTAL_TIME_TO_FIRST_BYTE": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            },
+            "FIRST_CONTENTFUL_PAINT_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            },
+            "FIRST_INPUT_DELAY_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            },
+            "LARGEST_CONTENTFUL_PAINT_MS": {
+              "type": "object",
+              "properties": {
+                "percentile": {
+                  "type": "number"
+                },
+                "distributions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "min": {
+                        "type": "number"
+                      },
+                      "max": {
+                        "type": "number"
+                      },
+                      "proportion": {
+                        "type": "number"
+                      }
+                    },
+                    "required": ["min", "proportion"]
+                  }
+                },
+                "category": {
+                  "type": "string"
+                }
+              },
+              "required": ["percentile", "distributions", "category"]
+            }
+          },
+          "required": [
+            "CUMULATIVE_LAYOUT_SHIFT_SCORE",
+            "EXPERIMENTAL_INTERACTION_TO_NEXT_PAINT",
+            "EXPERIMENTAL_TIME_TO_FIRST_BYTE",
+            "FIRST_CONTENTFUL_PAINT_MS",
+            "FIRST_INPUT_DELAY_MS",
+            "LARGEST_CONTENTFUL_PAINT_MS"
+          ]
+        },
+        "overall_category": {
+          "type": "string"
+        },
+        "initial_url": {
+          "type": "string"
+        }
+      },
+      "required": ["id", "metrics", "overall_category", "initial_url"]
+    },
+    "analysisUTCTimestamp": {
+      "type": "string"
+    }
+  }
+}
