@@ -45,4 +45,4 @@ Google utilizes an undocumented rate limit which - under normal use - should not
 
 | Version | Date       | Pull Request                                              | Subject                                    |
 | :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
-| 0.1.0   | 2022-11-29 | [#18875](https://github.com/airbytehq/airbyte/pull/18875) | 🎉 New Source: Google PageSpeed Insights [low-code CDK] |
+| 0.1.0   | 2022-11-26 | [#19813](https://github.com/airbytehq/airbyte/pull/19813) | 🎉 New Source: Google PageSpeed Insights [low-code CDK] |
