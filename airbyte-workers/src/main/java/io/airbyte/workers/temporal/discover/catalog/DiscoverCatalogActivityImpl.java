@@ -56,7 +56,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
   private final Path workspaceRoot;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final AirbyteApiClient airbyteApiClient;;
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
 
   private final ConfigRepository configRepository;
