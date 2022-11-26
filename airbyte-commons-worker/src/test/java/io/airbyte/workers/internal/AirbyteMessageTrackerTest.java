@@ -279,11 +279,11 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testGetFirstDestinationAndSourceMessages() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
+  void testGetFirstDestinationAndSourceMessages() {
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createErrorMessage("source trace 1", 123.0);
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createErrorMessage("source trace 2", 124.0);
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createErrorMessage("dest trace 2", 126.0);
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
@@ -294,17 +294,17 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
+  void testGetFirstDestinationAndSourceMessagesWithNulls() {
     assertNull(messageTracker.getFirstDestinationErrorTraceMessage());
     assertNull(messageTracker.getFirstSourceErrorTraceMessage());
   }
 
   @Test
-  void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
+  void testErrorTraceMessageFailureWithMultipleTraceErrors() {
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createErrorMessage("source trace 1", 123.0);
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createErrorMessage("source trace 2", 124.0);
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createErrorMessage("dest trace 2", 126.0);
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
@@ -316,8 +316,8 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
-    final AirbyteMessage destMessage = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
+  void testErrorTraceMessageFailureWithOneTraceError() {
+    final AirbyteMessage destMessage = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
     messageTracker.acceptFromDestination(destMessage);
 
     final FailureReason failureReason = FailureHelper.destinationFailure(destMessage.getTrace(), Long.valueOf(123), 1);
@@ -325,17 +325,18 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
+  void testErrorTraceMessageFailureWithNoTraceErrors() {
     assertEquals(messageTracker.errorTraceMessageFailure(123L, 1), null);
   }
 
   @Nested
   class Estimates {
+
     // receiving an estimate for two streams should save
-    @Test
-    void shouldSaveAndReturnCorrectly() {
-      final AirbyteMessage estimate = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
-    }
+    // @Test
+    // void shouldSaveAndReturnCorrectly() {
+    // final AirbyteMessage estimate = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
+    // }
 
   }
 

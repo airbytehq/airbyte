@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteLogMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -102,29 +103,43 @@ public class AirbyteMessageUtils {
     return new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName));
   }
 
+  public static AirbyteMessage createEstimateMessage(final String namespace, final String name, final long byteEst, final long rowEst) {
+    final var est = new AirbyteEstimateTraceMessage()
+        .withType(AirbyteEstimateTraceMessage.Type.STREAM)
+        .withNamespace(namespace)
+        .withName(name)
+        .withByteEstimate(byteEst)
+        .withRowEstimate(rowEst);
+
+    return new AirbyteMessage()
+        .withType(Type.TRACE)
+        .withTrace(new AirbyteTraceMessage().withType(AirbyteTraceMessage.Type.ESTIMATE)
+            .withEstimate(est));
+  }
+
+  public static AirbyteMessage createErrorMessage(final String message, final Double emittedAt) {
+    return new AirbyteMessage()
+        .withType(AirbyteMessage.Type.TRACE)
+        .withTrace(createErrorTraceMessage(message, emittedAt));
+  }
+
   public static AirbyteTraceMessage createErrorTraceMessage(final String message, final Double emittedAt) {
-    return new AirbyteTraceMessage()
-        .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
-        .withEmittedAt(emittedAt)
-        .withError(new AirbyteErrorTraceMessage().withMessage(message));
+    return createErrorTraceMessage(message, emittedAt, null);
   }
 
   public static AirbyteTraceMessage createErrorTraceMessage(final String message,
                                                             final Double emittedAt,
                                                             final AirbyteErrorTraceMessage.FailureType failureType) {
-    return new AirbyteTraceMessage()
+    final var msg = new AirbyteTraceMessage()
         .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
-        .withEmittedAt(emittedAt)
-        .withError(new AirbyteErrorTraceMessage().withMessage(message).withFailureType(failureType));
-  }
+        .withError(new AirbyteErrorTraceMessage().withMessage(message))
+        .withEmittedAt(emittedAt);
 
-  public static AirbyteMessage createTraceMessage(final String message, final Double emittedAt) {
-    return new AirbyteMessage()
-        .withType(AirbyteMessage.Type.TRACE)
-        .withTrace(new AirbyteTraceMessage()
-            .withType(AirbyteTraceMessage.Type.ERROR)
-            .withEmittedAt(emittedAt)
-            .withError(new AirbyteErrorTraceMessage().withMessage(message)));
+    if (failureType != null) {
+      msg.getError().withFailureType(failureType);
+    }
+
+    return msg;
   }
 
 }
