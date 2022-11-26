@@ -197,20 +197,15 @@ class AdsInsights(FBMarketingIncrementalStream):
 
     def check_breakdowns(self):
         """
-        Making asynchronous call to check "action_breakdowns" and "breakdowns" combinations
-        https://developers.facebook.com/docs/marketing-api/insights/breakdowns
-        paragraph: "Combining Breakdowns"
+        Making call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
         """
-        params = self.request_params()
-        params.update(
-            {
-                "time_range": {
-                    "since": str(self._get_start_date()),
-                    "until": str(self._get_start_date()),
-                }
-            }
-        )
-        self._api.account.get_insights(params=params, is_async=True)
+        params = {
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": ["account_id"],
+        }
+        self._api.account.get_insights(params=params, is_async=False)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
