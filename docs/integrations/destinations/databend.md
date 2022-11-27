@@ -1,6 +1,6 @@
 # Databend
 
-This page guides you through the process of setting up the Databend destination connector.
+This page guides you through the process of setting up the [Databend](https://databend.rs/) destination connector.
 
 ## Features
 
