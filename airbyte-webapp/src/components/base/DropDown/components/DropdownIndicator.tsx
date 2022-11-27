@@ -8,8 +8,10 @@ const Arrow = styled(FontAwesomeIcon)`
   margin-top: -6px;
 `;
 
-export const DropdownIndicator: React.FC<DropdownIndicatorProps> = (props) => (
-  <components.DropdownIndicator {...props}>
-    <Arrow icon={faSortDown} />
-  </components.DropdownIndicator>
-);
+export const DropdownIndicator: React.FC<DropdownIndicatorProps> = (props) => {
+  return (
+    <components.DropdownIndicator {...props}>
+      <Arrow icon={faSortDown} />
+    </components.DropdownIndicator>
+  );
+};

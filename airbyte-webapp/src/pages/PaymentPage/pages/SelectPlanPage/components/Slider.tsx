@@ -22,7 +22,7 @@ interface IProps extends IRange {
 }
 
 const SliderContainer = styled.div<IRange>`
-  width: 100%;
+  width: ${({ min, max }) => (((max as number) - (min as number)) / ((max as number) - (min as number))) * 100}%;
   height: 10px;
   border-radius: 15px;
   background: #e4e8ef;

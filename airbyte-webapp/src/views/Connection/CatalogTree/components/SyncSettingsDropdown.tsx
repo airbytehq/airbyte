@@ -98,17 +98,19 @@ const Option: React.FC<any> = (props) => {
   );
 };
 
-const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => (
-  <DropDown
-    {...props}
-    components={{
-      SingleValue,
-      Option,
-      Control: DropdownControl,
-    }}
-    data-testid="syncSettingsDropdown"
-    $withBorder
-  />
-);
+const SyncSettingsDropdown: React.FC<DropdownProps> = (props) => {
+  return (
+    <DropDown
+      {...props}
+      components={{
+        SingleValue,
+        Option,
+        Control: DropdownControl,
+      }}
+      data-testid="syncSettingsDropdown"
+      $withBorder
+    />
+  );
+};
 
 export { SyncSettingsDropdown };
