@@ -25,7 +25,7 @@ def test_cursor_field(patch_incremental_base_class):
 
 def test_get_updated_state(patch_incremental_base_class):
     stream = VoucherList()
-    expected_state = {'updatedDate': '1990-01-01'}
+    expected_state = {}
     assert stream.state == expected_state
 
 

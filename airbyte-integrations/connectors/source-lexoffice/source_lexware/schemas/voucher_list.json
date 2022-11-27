@@ -15,16 +15,20 @@
             "type": "string"
         },
         "voucherDate": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
         },
         "createdDate": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
         },
         "updatedDate": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
         },
         "dueDate": {
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
         },
         "contactId": {
             "type": "string"

@@ -4,9 +4,10 @@
 
 
 from abc import ABC
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -105,7 +106,7 @@ class VoucherList(LexwareStream, IncrementalMixin):
         authenticator=None,
         voucherType: str = "any",
         voucherStatus: str = "any",
-        start_date: datetime = datetime(1990, 1, 1),
+        start_date: datetime = None,
         **kwargs,
     ):
         super().__init__(authenticator=authenticator)
@@ -123,9 +124,18 @@ class VoucherList(LexwareStream, IncrementalMixin):
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params.update(
-            {"voucherType": self.voucherType, "voucherStatus": self.voucherStatus, "updatedDateFrom": stream_slice[self.cursor_field]}
-        )
+
+        # get start_date from cursor_field/state or from settings
+        updated_date_from = self.start_date if self.start_date is not None else None
+        if stream_state.get(self.cursor_field):
+            updated_date_from = pendulum.parse(stream_state[self.cursor_field])
+
+        if updated_date_from is not None:
+            # Add one second to avoid duplicate records and ensure greater than
+            params.update({"updatedDateFrom": (updated_date_from + timedelta(seconds=1)).strftime("%Y-%m-%d")})
+
+        # Add voucher type and status filters (they always have a value)
+        params.update({"voucherType": self.voucherType, "voucherStatus": self.voucherStatus})
         return params
 
     #
@@ -138,7 +148,7 @@ class VoucherList(LexwareStream, IncrementalMixin):
         if self._cursor_value:
             return {self.cursor_field: self._cursor_value.strftime(self.date_format)}
         else:
-            return {self.cursor_field: self.start_date.strftime(self.date_format)}
+            return {}
 
     @state.setter
     def state(self, value: Mapping[str, Any]):
@@ -150,6 +160,10 @@ class VoucherList(LexwareStream, IncrementalMixin):
 
     def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
         for record in super().read_records(*args, **kwargs):
+
+            # If record is empty, do not return
+            if not record:
+                continue
 
             date_format = "%Y-%m-%dT%H:%M:%S.%f%z"  # 2022-09-11T04:21:36.000+02:00
             updatedDate = datetime.strptime(record[self.cursor_field], date_format).replace(tzinfo=None)
@@ -171,6 +185,7 @@ class VoucherList(LexwareStream, IncrementalMixin):
         The read_records method will write the new state containing the newest voucher record
         """
         return [{self.cursor_field: start_date.strftime(self.date_format)}]
+
 
     def stream_slices(
         self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
@@ -223,8 +238,8 @@ class SourceLexware(AbstractSource):
 
         # Parse the date from a string into a datetime object
         date_format = "%Y-%m-%d"  # %Y-%m-%dT%H%M%S.%f%z = 2022-09-11T04: 21: 36.000+02: 00
-        date = config.get("start_date", "1990-01-01")
-        start_date = datetime.strptime(date, date_format)
+        date = config.get("start_date", None)
+        start_date = datetime.strptime(date, date_format) if date is not None and date != "" else None
 
         voucherType = config.get("voucher_type", "any").replace(" ", "")
         voucherStatus = config.get("voucher_status", "any").replace(" ", "")
