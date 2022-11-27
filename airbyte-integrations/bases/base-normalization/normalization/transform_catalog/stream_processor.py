@@ -513,7 +513,7 @@ where 1 = 1
 
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
-        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition:
+        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition and data_type.ONE_OF_VAR_NAME not in definition :
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
@@ -521,14 +521,17 @@ where 1 = 1
         elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition))\
+                or (data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition, definition)):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_big_integer(definition):
             sql_type = jinja_call("type_very_large_integer()")
-        elif is_long(definition[data_type.REF_TYPE_VAR_NAME], definition):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition[data_type.REF_TYPE_VAR_NAME], definition))\
+                or (data_type.ONE_OF_VAR_NAME in definition and is_long(definition, definition)):
             sql_type = jinja_call("dbt_utils.type_bigint()")
-        elif is_number(definition[data_type.REF_TYPE_VAR_NAME]):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition[data_type.REF_TYPE_VAR_NAME]))\
+                or (data_type.ONE_OF_VAR_NAME in definition and is_number(definition)):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
@@ -583,7 +586,8 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
-        elif is_string(definition[data_type.REF_TYPE_VAR_NAME]):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition[data_type.REF_TYPE_VAR_NAME]))\
+                or (data_type.ONE_OF_VAR_NAME in definition and is_string(definition)):
             sql_type = jinja_call("dbt_utils.type_string()")
             if self.destination_type == DestinationType.CLICKHOUSE:
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
@@ -593,6 +597,7 @@ where 1 = 1
                 # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
                 sql_type = f"{sql_type}(1024)"
         else:
+            # TODO add different definition prints depends on type, ref or oneOF
             print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
             return column_name
 
