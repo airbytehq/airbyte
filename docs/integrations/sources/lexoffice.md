@@ -42,4 +42,4 @@ The LexOffice source connector supports the following streams:
 ## Changelog
 
 | Version | Date | Pull Request | Subject |
-| 0.1.0   | 2022-11-26 | [193??](https://github.com/airbytehq/airbyte/pull/193??)   | LexOffice Source Connector |
+| 0.1.0   | 2022-11-27 | [19817](https://github.com/airbytehq/airbyte/pull/19817)   | LexOffice Source Connector |
