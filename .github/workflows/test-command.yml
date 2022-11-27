@@ -124,7 +124,7 @@ jobs:
 
       - name: Test ${{ github.event.inputs.connector }}
         run: |
-          ./tools/bin/ci_integration_test.sh ${{ github.event.inputs.connector }}
+          ./tools/bin/pty_spawn.py ./tools/bin/output_buffer_github_test.py ${{ github.event.inputs.connector }}
         id: test
         env:
           ACTION_RUN_ID: ${{github.run_id}}
