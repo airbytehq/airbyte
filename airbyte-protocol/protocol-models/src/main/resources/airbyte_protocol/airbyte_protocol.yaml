@@ -449,15 +449,18 @@ definitions:
         existingJavaType: com.fasterxml.jackson.databind.JsonNode
       # Connector Type Properties (Common to all connectors from same type)
       # Source Connectors Properties
+      # todo (cgardens) - remove this field from the protocol and move to actor definition.
       supportsIncremental:
         description: (deprecated) If the connector supports incremental mode or not.
         type: boolean
       # Destination Connectors Properties
       # Normalization is currently implemented using dbt, so it requires `supportsDBT` to be true for this to be true.
+      # todo (cgardens) - remove this field from the protocol and move to actor definition.
       supportsNormalization:
         description: If the connector supports normalization or not.
         type: boolean
         default: false
+      # todo (cgardens) - remove this field from the protocol and move to actor definition.
       supportsDBT:
         description: If the connector supports DBT or not.
         type: boolean
