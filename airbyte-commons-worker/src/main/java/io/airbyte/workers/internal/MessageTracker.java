@@ -9,7 +9,6 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.protocol.models.Config;
 import java.util.Map;
 import java.util.Optional;
 
@@ -50,22 +49,6 @@ public interface MessageTracker {
    *         was accepted, empty.
    */
   Optional<State> getDestinationOutputState();
-
-  /**
-   * Get the current source config.
-   *
-   * @return returns the last Config that was accepted from the source via a control message. If no
-   *         Config was accepted, empty.
-   */
-  Optional<Config> getSourceOutputConfig();
-
-  /**
-   * Get the current destination config.
-   *
-   * @return returns the last Config that was accepted from the destination via a control message. If
-   *         no StateMessage was accepted, empty.
-   */
-  Optional<Config> getDestinationOutputConfig();
 
   /**
    * Get the per-stream committed record count.

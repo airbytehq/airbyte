@@ -25,7 +25,6 @@ import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
 import io.airbyte.workers.internal.state_aggregator.DefaultStateAggregator;
@@ -49,8 +48,6 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   private final AtomicReference<State> sourceOutputState;
   private final AtomicReference<State> destinationOutputState;
-  private final AtomicReference<Config> sourceOutputConfig;
-  private final AtomicReference<Config> destinationOutputConfig;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
   private final BiMap<AirbyteStreamNameNamespacePair, Short> nameNamespacePairToIndex;
@@ -93,8 +90,6 @@ public class AirbyteMessageTracker implements MessageTracker {
                                   final StateMetricsTracker stateMetricsTracker) {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
-    this.sourceOutputConfig = new AtomicReference<>();
-    this.destinationOutputConfig = new AtomicReference<>();
     this.streamToRunningCount = new HashMap<>();
     this.nameNamespacePairToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
@@ -243,10 +238,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   @SuppressWarnings("PMD") // until method is implemented
   private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
                                                         final ConnectorType connectorType) {
-    switch (connectorType) {
-      case SOURCE -> sourceOutputConfig.set(configMessage.getConfig());
-      case DESTINATION -> destinationOutputConfig.set(configMessage.getConfig());
-    }
+    // Currently being persisted as part of the DefaultReplicationWorker
+    // TODO decide if it should be persisted from here instead
   }
 
   /**
@@ -344,16 +337,6 @@ public class AirbyteMessageTracker implements MessageTracker {
   @Override
   public Optional<State> getDestinationOutputState() {
     return Optional.ofNullable(destinationOutputState.get());
-  }
-
-  @Override
-  public Optional<Config> getSourceOutputConfig() {
-    return Optional.ofNullable(sourceOutputConfig.get());
-  }
-
-  @Override
-  public Optional<Config> getDestinationOutputConfig() {
-    return Optional.ofNullable(destinationOutputConfig.get());
   }
 
   /**

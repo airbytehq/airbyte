@@ -14,14 +14,9 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
-import io.airbyte.api.client.model.generated.SourceIdRequestBody;
-import io.airbyte.api.client.model.generated.SourceRead;
-import io.airbyte.api.client.model.generated.SourceUpdate;
 import io.airbyte.commons.features.FeatureFlags;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
@@ -29,7 +24,6 @@ import io.airbyte.config.StateWrapper;
 import io.airbyte.config.helpers.StateMessageHelper;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.Config;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.workers.helper.StateConverter;
@@ -50,35 +44,10 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     this.featureFlags = featureFlags;
   }
 
-  public void persistConfig(final UUID connectionId, final StandardSyncOutput syncOutput) throws ApiException {
-    // TODO move this elsewhere, just doing this here for quick iteration
-    final Config sourceConfig = syncOutput.getSourceConfig();
-    if (sourceConfig == null)
-      return;
-
-    final ConnectionRead connection = airbyteApiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
-    final UUID sourceId = connection.getSourceId();
-
-    final SourceRead source = airbyteApiClient.getSourceApi().getSource(new SourceIdRequestBody().sourceId(sourceId));
-
-    airbyteApiClient.getSourceApi()
-        .updateSource(new SourceUpdate()
-            .sourceId(sourceId)
-            .name(source.getName())
-            .connectionConfiguration(Jsons.jsonNode(sourceConfig.getAdditionalProperties())));
-
-  }
-
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public boolean persist(final UUID connectionId, final StandardSyncOutput syncOutput, final ConfiguredAirbyteCatalog configuredCatalog) {
     ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionId.toString()));
-
-    try {
-      persistConfig(connectionId, syncOutput);
-    } catch (final ApiException e) {
-      throw new RuntimeException(e);
-    }
 
     final State state = syncOutput.getState();
     if (state != null) {
