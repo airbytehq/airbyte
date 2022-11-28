@@ -8,6 +8,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
@@ -19,6 +20,7 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteControlMessage;
+import io.airbyte.protocol.models.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -61,6 +63,11 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+
+  // These variables support SYNC level estimates and are meant for sources where stream level
+  // estimates are not possible e.g. CDC sources.
+  private Long totalRecordsEstimatedSync;
+  private Long totalBytesEstimatedSync;
 
   private short nextStreamIndex;
 
@@ -256,7 +263,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
-      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage);
+      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage.getEstimate());
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
@@ -270,16 +277,36 @@ public class AirbyteMessageTracker implements MessageTracker {
     }
   }
 
-  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage) {
-    // Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
-    // estimate.
+  /**
+   * There are several assumptions here:
+   * <p>
+   * - Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
+   * estimate.
+   * <p>
+   * - Sources cannot emit both STREAM and SYNC estimates in a same sync. Error out if this happens.
+   */
+  @SuppressWarnings("PMD.AvoidDuplicateLiterals")
+  private void handleEmittedEstimateTrace(final AirbyteEstimateTraceMessage estimate) {
+    switch (estimate.getType()) {
+      case STREAM -> {
+        Preconditions.checkArgument(totalBytesEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
+        Preconditions.checkArgument(totalRecordsEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
 
-    final var estimate = estimateTraceMessage.getEstimate();
-    log.info("Saving records estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
-    final var index = getStreamIndex(new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()));
+        log.info("Saving records estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
+        final var index = getStreamIndex(new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()));
 
-    streamToTotalRecordsEstimated.put(index, estimate.getRowEstimate());
-    streamToTotalBytesEstimated.put(index, estimate.getByteEstimate());
+        streamToTotalRecordsEstimated.put(index, estimate.getRowEstimate());
+        streamToTotalBytesEstimated.put(index, estimate.getByteEstimate());
+      }
+      case SYNC -> {
+        Preconditions.checkArgument(streamToTotalBytesEstimated.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
+        Preconditions.checkArgument(streamToTotalRecordsEstimated.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
+
+        totalBytesEstimatedSync = estimate.getByteEstimate();
+        totalRecordsEstimatedSync = estimate.getRowEstimate();
+      }
+    }
+
   }
 
   private short getStreamIndex(final AirbyteStreamNameNamespacePair pair) {
