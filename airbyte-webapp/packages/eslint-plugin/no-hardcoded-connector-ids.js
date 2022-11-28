@@ -17,7 +17,7 @@ module.exports = {
   meta: {
     type: "suggestion",
     messages: {
-      sourceId: "Found hard-coded connector id, use `ConectorIds.Sources.{{ name }}` from `utils/connectors` instead.",
+      sourceId: "Found hard-coded connector id, use `ConnectorIds.Sources.{{ name }}` from `utils/connectors` instead.",
       destinationId:
         "Found hard-coded connector id, use `ConnectorIds.Destinations.{{ name }}` from `utils/connectors` instead.",
     },
