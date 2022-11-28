@@ -10,11 +10,11 @@ import { SchemaChange } from "core/request/AirbyteClient";
 
 import styles from "./ChangesStatusIcon.module.scss";
 
-interface IProps {
+interface ChangesStatusIconProps {
   schemaChange: SchemaChange;
 }
 
-export const ChangesStatusIcon: React.FC<IProps> = ({ schemaChange }) => {
+export const ChangesStatusIcon: React.FC<ChangesStatusIconProps> = ({ schemaChange }) => {
   if (schemaChange === "no_change") {
     return null;
   }

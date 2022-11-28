@@ -24,10 +24,13 @@ const ProgressMessage = styled.div`
 export const StatusCellControl: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync, allowSync }) => {
   const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
 
-  const [{ loading }, OnLaunch] = useAsyncFn(async (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    onSync(id);
-  }, []);
+  const [{ loading }, OnLaunch] = useAsyncFn(
+    async (event: React.SyntheticEvent) => {
+      event.stopPropagation();
+      onSync(id);
+    },
+    [id]
+  );
 
   if (!isManual) {
     const onSwitchChange = async (event: React.SyntheticEvent) => {
