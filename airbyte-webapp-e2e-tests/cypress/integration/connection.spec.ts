@@ -11,10 +11,22 @@ import {
   setupDestinationNamespaceCustomFormat,
   selectFullAppendSyncMode,
   checkSuccessResult,
+  refreshSourceSchemaBtnClick,
+  resetModalSaveBtnClick,
+  toggleStreamEnabledState,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
-import { update } from "cypress/types/lodash";
+import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "../commands/db";
+import {
+  catalogDiffModal,
+  newFieldsTable,
+  newStreamsTable,
+  removedFieldsTable,
+  removedStreamsTable,
+  toggleStreamWithChangesAccordion,
+} from "../pages/modals/catalogDiffModal";
+import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 
 describe("Connection main actions", () => {
   beforeEach(() => {
@@ -127,7 +139,7 @@ describe("Connection main actions", () => {
     deleteDestination(destName);
   });
 
-  it("creates a connection, then edits the schedule type", () => {
+  it("Creates a connection, then edits the schedule type", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
     const destName = appendRandomString("Test connection destination cypress");
 
@@ -171,7 +183,11 @@ describe("Connection main actions", () => {
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
-      const { scheduleType: readScheduleType, scheduleData: readScheduleData, ...connectionRead } = interception.response?.body;
+      const {
+        scheduleType: readScheduleType,
+        scheduleData: readScheduleData,
+        ...connectionRead
+      } = interception.response?.body;
       loadedConnection = connectionRead;
 
       expect(loadedConnection).not.to.eq(null);
@@ -199,6 +215,54 @@ describe("Connection main actions", () => {
 
     deleteSource(sourceName);
     deleteDestination(destName);
+  });
+
+  it("Create a connection, update data in source, show diff modal, reset streams", () => {
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
+
+    populateDBSource();
+    const sourceName = appendRandomString(
+      "Test refresh source schema with changed data - connection Postgres source cypress"
+    );
+    const destName = appendRandomString(
+      "Test refresh source schema with changed data - connection Local JSON destination cypress"
+    );
+
+    createTestConnection(sourceName, destName);
+    cy.get("div").contains(sourceName).should("exist");
+    cy.get("div").contains(destName).should("exist");
+
+    makeChangesInDBSource();
+    openSourceDestinationFromGrid(sourceName);
+    goToReplicationTab();
+    refreshSourceSchemaBtnClick();
+
+    cy.get(catalogDiffModal).should("exist");
+
+    cy.get(removedStreamsTable).should("contain", "users");
+
+    cy.get(newStreamsTable).should("contain", "cars");
+
+    toggleStreamWithChangesAccordion("cities");
+    cy.get(removedFieldsTable).should("contain", "city_code");
+    cy.get(newFieldsTable).children().should("contain", "country").and("contain", "state");
+
+    updateSchemaModalConfirmBtnClick();
+
+    toggleStreamEnabledState("cars");
+
+    submitButtonClick();
+    resetModalSaveBtnClick();
+
+    cy.wait("@updateConnection").then((interception) => {
+      assert.isNotNull(interception.response?.statusCode, "200");
+    });
+
+    checkSuccessResult();
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+    cleanDBSource();
   });
 
   it("Delete connection", () => {
