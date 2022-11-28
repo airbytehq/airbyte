@@ -34,12 +34,14 @@ class GoogleSheetsWriter(WriteBufferMixin):
         """
         Mimics `batch_write` operation using records_buffer.
 
-        1) gets data from the records_buffer
+        1) gets data from the records_buffer, with respect to the size of the records_buffer (records count or size in Kb)
         2) writes it to the target worksheet
         3) cleans-up the records_buffer belonging to input stream
         """
-
-        if len(self.records_buffer[stream_name]) == self.flush_interval:
+        # get the size of records_buffer for target stream in Kb
+        # TODO unit test flush triggers
+        records_buffer_size_in_kb = self.records_buffer[stream_name].__sizeof__() / 1024
+        if len(self.records_buffer[stream_name]) == self.flush_interval or records_buffer_size_in_kb > self.flush_interval_size_in_kb:
             self.write_from_queue(stream_name)
             self.clear_buffer(stream_name)
 

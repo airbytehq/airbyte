@@ -1,0 +1,20 @@
+{
+  "type": "LOG",
+  "log": {
+    "level": {
+      "$resolver": "level",
+      "field": "name"
+    },
+    "message": {
+      "$resolver": "message",
+      "stringified": true
+    },
+    "stack_trace": {
+      "$resolver": "exception",
+      "field": "stackTrace",
+      "stackTrace": {
+        "stringified": true
+      }
+    }
+  }
+}

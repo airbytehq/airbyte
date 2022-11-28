@@ -23824,7 +23824,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount of the charge that you will create when authentication completes.",
@@ -23924,7 +23923,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -23965,7 +23963,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -24026,7 +24023,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -24106,7 +24102,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_token": {
                     "description": "An [account token](https://stripe.com/docs/api#create_account_token), used to securely provide details to the account.",
@@ -25166,7 +25161,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "anyOf": [
@@ -25289,7 +25283,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -25354,7 +25347,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -25413,7 +25405,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -25555,7 +25546,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -25648,7 +25638,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -25703,7 +25692,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -25804,7 +25792,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -25891,7 +25878,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "anyOf": [
@@ -26014,7 +26000,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -26079,7 +26064,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -26138,7 +26122,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -26268,7 +26251,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -26332,7 +26314,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -26462,7 +26443,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -26559,7 +26539,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -26906,7 +26885,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -26972,7 +26950,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -27056,7 +27033,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -27466,7 +27442,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -27563,7 +27538,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -27910,7 +27884,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -27976,7 +27949,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -28060,7 +28032,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "maxLength": 5000,
@@ -28400,7 +28371,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "description": "The identifier of the account to create an account link for.",
@@ -28554,7 +28524,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -28660,7 +28629,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_token": {
                     "description": "An [account token](https://stripe.com/docs/api#create_account_token), used to securely provide details to the account.",
@@ -29729,7 +29697,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -29795,7 +29762,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -29887,7 +29853,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_token": {
                     "description": "An [account token](https://stripe.com/docs/api#create_account_token), used to securely provide details to the account.",
@@ -30959,7 +30924,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "anyOf": [
@@ -31092,7 +31056,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31167,7 +31130,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31236,7 +31198,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -31388,7 +31349,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31491,7 +31451,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31556,7 +31515,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -31667,7 +31625,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31766,7 +31723,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "anyOf": [
@@ -31899,7 +31855,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -31974,7 +31929,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -32043,7 +31997,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -32185,7 +32138,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -32256,7 +32208,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -32391,7 +32342,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -32500,7 +32450,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The person's address.",
@@ -32853,7 +32802,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -32929,7 +32877,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -33023,7 +32970,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The person's address.",
@@ -33439,7 +33385,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -33548,7 +33493,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The person's address.",
@@ -33901,7 +33845,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -33977,7 +33920,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -34071,7 +34013,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The person's address.",
@@ -34419,7 +34360,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -34534,7 +34474,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -34605,7 +34544,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "domain_name": {
                     "type": "string"
@@ -34671,7 +34609,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -34737,7 +34674,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -34870,7 +34806,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -34974,7 +34909,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35044,7 +34978,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -35136,7 +35069,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35194,7 +35126,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "type": "integer"
@@ -35310,7 +35241,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35397,7 +35327,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "A positive integer, in _%s_, representing how much of this fee to refund. Can refund only up to the remaining unrefunded amount of the fee.",
@@ -35475,7 +35404,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35672,7 +35600,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35767,7 +35694,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -35964,7 +35890,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -36059,7 +35984,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -36169,7 +36093,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -36251,7 +36174,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "business_profile": {
                     "description": "The business information shown to customers in the portal.",
@@ -36509,7 +36431,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -36577,7 +36498,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the configuration is active and can be used to create portal sessions.",
@@ -36808,7 +36728,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "configuration": {
                     "description": "The [configuration](https://stripe.com/docs/api/customer_portal/configuration) to use for this session, describing its functionality and features. If not specified, the session uses the default configuration.",
@@ -36957,7 +36876,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37052,7 +36970,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37164,7 +37081,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37303,7 +37219,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37483,7 +37398,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37573,7 +37487,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount intended to be collected by this payment. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).",
@@ -37884,7 +37797,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -37952,7 +37864,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "customer": {
                     "description": "The ID of an existing customer that will be associated with this request. This field may only be updated if there is no existing associated customer with this charge.",
@@ -38125,7 +38036,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "The amount to capture, which must be less than or equal to the original amount. Any additional amount will be automatically refunded.",
@@ -38242,7 +38152,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -38306,7 +38215,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "evidence": {
                     "description": "Evidence to upload, to respond to a dispute. Updating any field in the hash will submit all fields in the hash for review. The combined character count of all fields is limited to 150,000.",
@@ -38498,7 +38406,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -38569,7 +38476,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "type": "integer"
@@ -38712,7 +38618,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -38799,7 +38704,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "type": "integer"
@@ -38921,7 +38825,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -38989,7 +38892,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -39124,7 +39026,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -39226,7 +39127,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "allow_promotion_codes": {
                     "description": "Enables user redeemable promotion codes.",
@@ -40012,7 +39912,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40112,7 +40011,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40229,7 +40127,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40323,7 +40220,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40446,7 +40342,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40524,7 +40419,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount_off": {
                     "description": "A positive integer representing the amount to subtract from an invoice total (required if `percent_off` is not passed).",
@@ -40657,7 +40551,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40723,7 +40616,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -40783,7 +40675,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -40924,7 +40815,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -41002,7 +40892,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "The integer amount in %s representing the total amount of the credit note.",
@@ -41328,7 +41217,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -41578,7 +41466,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -41705,7 +41592,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -41800,7 +41686,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -41860,7 +41745,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -41939,7 +41823,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -42081,7 +41964,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -42175,7 +42057,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "anyOf": [
@@ -42505,7 +42386,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -42571,7 +42451,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -42666,7 +42545,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "anyOf": [
@@ -43134,7 +43012,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -43221,7 +43098,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "The integer amount in **%s** to apply to the customer's credit balance.",
@@ -43336,7 +43212,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -43406,7 +43281,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "description": {
                     "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
@@ -43534,7 +43408,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -43629,7 +43502,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "alipay_account": {
                     "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
@@ -43838,7 +43710,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -43931,7 +43802,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -44005,7 +43875,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -44214,7 +44083,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amounts": {
                     "description": "Two positive integers, in *cents*, equal to the values of the microdeposits sent to the bank account.",
@@ -44329,7 +44197,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -44423,7 +44290,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "alipay_account": {
                     "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
@@ -44632,7 +44498,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -44725,7 +44590,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -44799,7 +44663,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -44989,7 +44852,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -45055,7 +44917,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -45164,7 +45025,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -45276,7 +45136,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "alipay_account": {
                     "description": "A token returned by [Stripe.js](https://stripe.com/docs/stripe.js) representing the user’s Alipay account details.",
@@ -45485,7 +45344,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -45577,7 +45435,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -45651,7 +45508,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_holder_name": {
                     "description": "The name of the person or business that owns the bank account.",
@@ -45860,7 +45716,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amounts": {
                     "description": "Two positive integers, in *cents*, equal to the values of the microdeposits sent to the bank account.",
@@ -45976,7 +45831,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -46091,7 +45945,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "add_invoice_items": {
                     "description": "A list of prices and quantities that will generate invoice items appended to the first invoice for this subscription. You may pass up to 10 items.",
@@ -46495,7 +46348,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -46588,7 +46440,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -46694,7 +46545,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "add_invoice_items": {
                     "description": "A list of prices and quantities that will generate invoice items appended to the first invoice for this subscription. You may pass up to 10 items.",
@@ -47152,7 +47002,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47228,7 +47077,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47328,7 +47176,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47411,7 +47258,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -47528,7 +47374,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47603,7 +47448,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47747,7 +47591,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47841,7 +47684,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -47905,7 +47747,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "evidence": {
                     "description": "Evidence to upload, to respond to a dispute. Updating any field in the hash will submit all fields in the hash for review. The combined character count of all fields is limited to 150,000.",
@@ -48097,7 +47938,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -48152,7 +47992,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "customer": {
                     "description": "The ID of the Customer you'd like to modify using the resulting ephemeral key.",
@@ -48229,7 +48068,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -48396,7 +48234,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -48491,7 +48328,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -48581,7 +48417,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -48675,7 +48510,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -48816,7 +48650,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -48890,7 +48723,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -48992,7 +48824,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -49055,7 +48886,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -49245,7 +49075,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -49319,7 +49148,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -49451,7 +49279,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -49605,7 +49432,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -49695,7 +49521,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "The integer amount in %s of the charge to be applied to the upcoming invoice. Passing in a negative `amount` will reduce the `amount_due` on the invoice.",
@@ -49895,7 +49720,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -49961,7 +49785,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -50037,7 +49860,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "The integer amount in %s of the charge to be applied to the upcoming invoice. If you want to apply a credit to the customer's account, pass a negative amount.",
@@ -50371,7 +50193,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -50470,7 +50291,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_tax_ids": {
                     "anyOf": [
@@ -51261,7 +51081,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -51830,7 +51649,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -51910,7 +51728,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -51976,7 +51793,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -52064,7 +51880,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account_tax_ids": {
                     "anyOf": [
@@ -52389,7 +52204,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "auto_advance": {
                     "description": "Controls whether Stripe will perform [automatic collection](https://stripe.com/docs/billing/invoices/overview#auto-advance) of the invoice. When `false`, the invoice's state will not automatically advance without an explicit action.",
@@ -52502,7 +52316,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -52587,7 +52400,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -52654,7 +52466,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -52743,7 +52554,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -52810,7 +52620,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -52920,7 +52729,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -53016,7 +52824,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -53172,7 +52979,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -53266,7 +53072,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -53326,7 +53131,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -53412,7 +53216,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "If the authorization's `pending_request.is_amount_controllable` property is `true`, you may provide this value to control how much to hold for the authorization. Must be positive (use [`decline`](https://stripe.com/docs/api/issuing/authorizations/decline) to decline an authorization request).",
@@ -53502,7 +53305,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -53692,7 +53494,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -53782,7 +53583,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "billing": {
                     "description": "The cardholder's billing address.",
@@ -54917,7 +54717,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -54993,7 +54792,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "billing": {
                     "description": "The cardholder's billing address.",
@@ -56237,7 +56035,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -56319,7 +56116,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "cardholder": {
                     "description": "The [Cardholder](https://stripe.com/docs/api#issuing_cardholder_object) object with which the card will be associated.",
@@ -57408,7 +57204,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -57472,7 +57267,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "cancellation_reason": {
                     "description": "Reason why the `status` of this card is `canceled`.",
@@ -58574,7 +58368,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -58653,7 +58446,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "evidence": {
                     "description": "Evidence provided for the dispute.",
@@ -59154,7 +58946,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -59218,7 +59009,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "evidence": {
                     "description": "Evidence provided for the dispute.",
@@ -59715,7 +59505,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -59862,7 +59651,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -59956,7 +59744,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60016,7 +59803,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -60188,7 +59974,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60282,7 +60067,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60342,7 +60126,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -60433,7 +60216,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60567,7 +60349,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60661,7 +60442,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -60950,7 +60730,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -61032,7 +60811,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "coupon": {
                     "description": "A coupon code that represents a discount to be applied to this order. Must be one-time duration and in same currency as the order. An order can have multiple coupons.",
@@ -61215,7 +60993,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -61279,7 +61056,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "coupon": {
                     "description": "A coupon code that represents a discount to be applied to this order. Must be one-time duration and in same currency as the order. An order can have multiple coupons.",
@@ -61403,7 +61179,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "application_fee": {
                     "description": "A fee in %s that will be applied to the order and transferred to the application owner's Stripe account. The request must be made with an OAuth key or the `Stripe-Account` header in order to take an application fee. For more information, see the application fees [documentation](https://stripe.com/docs/connect/direct-charges#collecting-fees).",
@@ -61501,7 +61276,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -61681,7 +61455,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -61784,7 +61557,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount intended to be collected by this PaymentIntent. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).",
@@ -62604,7 +62376,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -62692,7 +62463,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount intended to be collected by this PaymentIntent. A positive integer representing how much to charge in the [smallest currency unit](https://stripe.com/docs/currencies#zero-decimal) (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The minimum amount is $0.50 US or [equivalent in charge currency](https://stripe.com/docs/currencies#minimum-and-maximum-charge-amounts). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).",
@@ -63428,7 +63198,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "cancellation_reason": {
                     "description": "Reason for canceling this PaymentIntent. Possible values are `duplicate`, `fraudulent`, `requested_by_customer`, or `abandoned`",
@@ -63511,7 +63280,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount_to_capture": {
                     "description": "The amount to capture from the PaymentIntent, which must be less than or equal to the original amount. Any additional amount will be automatically refunded. Defaults to the full `amount_capturable` if not provided.",
@@ -63634,7 +63402,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "client_secret": {
                     "description": "The client secret of the PaymentIntent.",
@@ -64484,7 +64251,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -64627,7 +64393,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "afterpay_clearpay": {
                     "description": "If this is an `AfterpayClearpay` PaymentMethod, this hash contains details about the AfterpayClearpay payment method.",
@@ -65073,7 +64838,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -65141,7 +64905,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "billing_details": {
                     "description": "Billing information associated with the PaymentMethod that may be used or required by particular types of payment methods.",
@@ -65292,7 +65055,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "customer": {
                     "description": "The ID of the customer to which to attach the PaymentMethod.",
@@ -65365,7 +65127,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -65549,7 +65310,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -65624,7 +65384,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "A positive integer in cents representing how much to payout.",
@@ -65746,7 +65505,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -65806,7 +65564,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -65888,7 +65645,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -65959,7 +65715,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -66119,7 +65874,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -66207,7 +65961,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the plan is currently available for new subscriptions. Defaults to `true`.",
@@ -66439,7 +66192,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -66505,7 +66257,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -66565,7 +66316,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the plan is currently available for new subscriptions.",
@@ -66809,7 +66559,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -66901,7 +66650,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the price can be used for new purchases. Defaults to `true`.",
@@ -67145,7 +66893,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -67205,7 +66952,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the price can be used for new purchases. Defaults to `true`.",
@@ -67416,7 +67162,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -67498,7 +67243,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the product is currently available for purchase. Defaults to `true`.",
@@ -67633,7 +67377,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -67699,7 +67442,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -67767,7 +67509,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the product is available for purchase.",
@@ -68032,7 +67773,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68110,7 +67850,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the promotion code is currently active.",
@@ -68239,7 +67978,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68299,7 +68037,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the promotion code is currently active. A promotion code can only be reactivated when the coupon is still valid and the promotion code is otherwise redeemable.",
@@ -68427,7 +68164,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68522,7 +68258,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68666,7 +68401,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68736,7 +68470,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -68809,7 +68542,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -68875,7 +68607,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69019,7 +68750,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69093,7 +68823,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "alias": {
                     "description": "The name of the value list for use in rules.",
@@ -69187,7 +68916,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69253,7 +68981,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69313,7 +69040,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "alias": {
                     "description": "The name of the value list for use in rules.",
@@ -69483,7 +69209,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69558,7 +69283,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below.",
@@ -69674,7 +69398,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69741,7 +69464,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -69809,7 +69531,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "bank_account": {
                     "description": "A bank account to attach to the recipient. You can provide either a token, like the ones returned by [Stripe.js](https://stripe.com/docs/stripe-js), or a dictionary containing a user's bank account details, with the options described below.",
@@ -70011,7 +69732,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -70085,7 +69805,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "type": "integer"
@@ -70202,7 +69921,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -70261,7 +69979,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -70407,7 +70124,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -70481,7 +70197,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -71235,7 +70950,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71293,7 +71007,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71386,7 +71099,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71508,7 +71220,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71602,7 +71313,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71660,7 +71370,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -71803,7 +71512,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -71975,7 +71683,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -72066,7 +71773,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "confirm": {
                     "description": "Set to `true` to attempt to confirm this SetupIntent immediately. This parameter defaults to `false`. If the payment method attached is a card, a return_url may be provided in case additional authentication is required.",
@@ -72288,7 +71994,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -72356,7 +72061,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "customer": {
                     "description": "ID of the Customer this SetupIntent belongs to, if one exists.\n\nIf present, the SetupIntent's payment method will be attached to the Customer on successful setup. Payment methods attached to other Customers cannot be used with this SetupIntent.",
@@ -72491,7 +72195,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "cancellation_reason": {
                     "description": "Reason for canceling this SetupIntent. Possible values are `abandoned`, `requested_by_customer`, or `duplicate`",
@@ -72572,7 +72275,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "client_secret": {
                     "description": "The client secret of the SetupIntent.",
@@ -72794,7 +72496,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -72888,7 +72589,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -73039,7 +72739,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -73125,7 +72824,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether the SKU is available for purchase. Default to `true`.",
@@ -73268,7 +72966,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -73334,7 +73031,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -73413,7 +73109,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Whether this SKU is available for purchase.",
@@ -73583,7 +73278,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount associated with the source. This is the amount for which the source will be chargeable once ready. Required for `single_use` sources. Not supported for `receiver` type sources, where charge amount may not be specified until funds land.",
@@ -73986,7 +73680,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -74058,7 +73751,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "Amount associated with the source.",
@@ -74401,7 +74093,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -74501,7 +74192,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -74605,7 +74295,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -74667,7 +74356,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -74784,7 +74472,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -74870,7 +74557,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "billing_thresholds": {
                     "anyOf": [
@@ -75045,7 +74731,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "clear_usage": {
                     "description": "Delete all usage for the given subscription item. Allowed only when the current plan's `usage_type` is `metered`.",
@@ -75126,7 +74811,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -75198,7 +74882,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "billing_thresholds": {
                     "anyOf": [
@@ -75425,7 +75108,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -75507,7 +75189,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "action": {
                     "description": "Valid values are `increment` (default) or `set`. When using `increment` the specified `quantity` will be added to the usage at the specified timestamp. The `set` action will overwrite the usage quantity at that timestamp. If the subscription has [billing thresholds](https://stripe.com/docs/api/subscriptions/object#subscription_object-billing_thresholds), `increment` is the only allowed value.",
@@ -75773,7 +75454,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -75859,7 +75539,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "customer": {
                     "description": "The identifier of the customer to create the subscription schedule for.",
@@ -76305,7 +75984,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -76373,7 +76051,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "default_settings": {
                     "description": "Object representing the subscription schedule's default settings.",
@@ -76819,7 +76496,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -76894,7 +76570,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -77147,7 +76822,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -77249,7 +76923,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "add_invoice_items": {
                     "description": "A list of prices and quantities that will generate invoice items appended to the first invoice for this subscription. You may pass up to 10 items.",
@@ -77649,7 +77322,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -77732,7 +77404,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -77828,7 +77499,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "add_invoice_items": {
                     "description": "A list of prices and quantities that will generate invoice items appended to the first invoice for this subscription. You may pass up to 10 items.",
@@ -78276,7 +77946,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -78419,7 +78088,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -78493,7 +78161,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Flag determining whether the tax rate is active or inactive (archived). Inactive tax rates cannot be used with new applications or Checkout Sessions, but will still work for subscriptions and invoices that already have it set.",
@@ -78615,7 +78282,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -78675,7 +78341,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "active": {
                     "description": "Flag determining whether the tax rate is active or inactive (archived). Inactive tax rates cannot be used with new applications or Checkout Sessions, but will still work for subscriptions and invoices that already have it set.",
@@ -78774,7 +78439,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -78878,7 +78542,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -78957,7 +78620,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The full address of the location.",
@@ -79072,7 +78734,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -79138,7 +78799,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -79202,7 +78862,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "address": {
                     "description": "The full address of the location.",
@@ -79386,7 +79045,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -79461,7 +79119,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -79554,7 +79211,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -79620,7 +79276,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -79680,7 +79335,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -79779,7 +79433,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "account": {
                     "description": "Information for the account this token will represent.",
@@ -80675,7 +80328,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -80843,7 +80495,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -80918,7 +80569,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "A positive integer representing how much to transfer.",
@@ -81038,7 +80688,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -81098,7 +80747,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "description": {
                     "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
@@ -81185,7 +80833,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -81338,7 +80985,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -81414,7 +81060,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "A positive integer in %s representing how much to transfer.",
@@ -81563,7 +81208,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -81650,7 +81294,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "amount": {
                     "description": "A positive integer in %s representing how much of this transfer to reverse. Can only reverse up to the unreversed amount remaining of the transfer. Partial transfer reversals are only allowed for transfers to Stripe Accounts. Defaults to the entire transfer amount.",
@@ -81755,7 +81398,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -81815,7 +81457,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "description": {
                     "description": "An arbitrary string attached to the object. Often useful for displaying to users.",
@@ -81922,7 +81563,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -81992,7 +81632,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "expand": {
                     "description": "Specifies which fields in the response should be expanded.",
@@ -82106,7 +81745,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -82184,7 +81822,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "api_version": {
                     "description": "Events sent to this endpoint will be generated with this Stripe Version instead of your account's default Stripe Version.",
@@ -82556,7 +82193,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -82622,7 +82258,6 @@
             "application/x-www-form-urlencoded": {
               "encoding": {},
               "schema": {
-                "additionalProperties": false,
                 "properties": {},
                 "type": "object"
               }
@@ -82686,7 +82321,6 @@
                 }
               },
               "schema": {
-                "additionalProperties": false,
                 "properties": {
                   "description": {
                     "description": "An optional description of what the webhook is used for.",

@@ -22,6 +22,8 @@ CAMEL_CASE_PATTERN = re.compile(r"(?<!^)(?=[A-Z])")
 
 
 class BaseStream(Stream):
+    state_checkpoint_interval = 1000
+
     def __init__(self, client: Client, begin_time: str = None, end_time: str = None, **kwargs):
         super(Stream, self).__init__(**kwargs)
 

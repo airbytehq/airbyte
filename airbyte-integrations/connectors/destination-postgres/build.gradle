@@ -17,12 +17,12 @@ dependencies {
 
     testImplementation project(':airbyte-test-utils')
 
-    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.connectors.testcontainers.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-postgres')
 
-    integrationTestJavaImplementation libs.testcontainers.postgresql
+    integrationTestJavaImplementation libs.connectors.testcontainers.postgresql
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)

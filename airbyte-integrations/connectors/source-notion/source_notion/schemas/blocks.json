@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "additionalProperties": true,
   "properties": {
@@ -55,7 +55,6 @@
     "heading_3": { "$ref": "heading.json" },
     "callout": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "color": { "type": "string" },
         "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
@@ -65,7 +64,6 @@
     },
     "to_do": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
         "checked": { "type": ["null", "boolean"] },
@@ -74,7 +72,6 @@
     },
     "code": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "color": { "type": "string" },
         "text": { "type": "array", "items": { "$ref": "rich_text.json" } },
@@ -160,7 +157,6 @@
     "child_database": { "$ref": "child.json" },
     "embed": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "url": { "type": "string" }
       }
@@ -171,7 +167,6 @@
     "pdf": { "$ref": "file.json" },
     "bookmark": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "url": { "type": "string" },
         "caption": { "type": "array", "items": { "$ref": "rich_text.json" } }
@@ -179,7 +174,6 @@
     },
     "equation": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
         "expression": { "type": "string" }
       }

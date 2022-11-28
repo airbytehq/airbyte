@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 25.035978 28.002226"
+   version="1.1"
+   id="svg41"
+   sodipodi:docname="sqlite.svg"
+   width="25.035978"
+   height="28.002226"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview43"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="32.09375"
+     inkscape:cx="12.494645"
+     inkscape:cy="13.990263"
+     inkscape:window-width="3840"
+     inkscape:window-height="2083"
+     inkscape:window-x="0"
+     inkscape:window-y="40"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg41" />
+  <defs
+     id="defs31">
+    <linearGradient
+       id="a"
+       x1="-118.318"
+       y1="45.638"
+       x2="-116.751"
+       y2="45.638"
+       gradientTransform="matrix(0,11.486,11.486,0,-514.371,1361.3072)"
+       gradientUnits="userSpaceOnUse">
+      <stop
+         offset="0"
+         stop-color="#97d9f6"
+         id="stop24" />
+      <stop
+         offset="0.92"
+         stop-color="#0f80cc"
+         id="stop26" />
+      <stop
+         offset="1"
+         stop-color="#0f80cc"
+         id="stop28" />
+    </linearGradient>
+  </defs>
+  <title
+     id="title33">file_type_sqlite</title>
+  <path
+     d="M 19.71,1.242226 H 2.141 A 2.147,2.147 0 0 0 0,3.383226 v 19.376 a 2.147,2.147 0 0 0 2.141,2.141 h 11.572 c -0.132,-5.758 1.835,-16.932 5.997,-23.658 z"
+     style="fill:#0f80cc"
+     id="path35" />
+  <path
+     d="M 19.072,1.867226 H 2.141 a 1.518,1.518 0 0 0 -1.516,1.516 v 17.962 a 42.01,42.01 0 0 1 13.569,-2.684 123.555,123.555 0 0 1 4.878,-16.794 z"
+     style="fill:url(#a)"
+     id="path37" />
+  <path
+     d="m 23.808,0.60822603 c -1.2,-1.073 -2.66,-0.642 -4.1,0.63399997 -0.213,0.19 -0.426,0.4 -0.638,0.625 a 25.4,25.4 0 0 0 -5.452,11.133 10.178,10.178 0 0 1 0.634,1.822 c 0.036,0.14 0.069,0.272 0.1,0.384 0.062,0.265 0.1,0.437 0.1,0.437 0,0 -0.022,-0.083 -0.113,-0.346 l -0.059,-0.17 c -0.01,-0.027 -0.023,-0.059 -0.038,-0.094 -0.16,-0.373 -0.6,-1.16 -0.8,-1.5 -0.167,0.493 -0.315,0.954 -0.438,1.371 a 12.131,12.131 0 0 1 0.908,2.8 c 0,0 -0.03,-0.115 -0.171,-0.515 a 19.037,19.037 0 0 0 -0.9,-1.708 4.037,4.037 0 0 0 -0.264,1.724 6.009,6.009 0 0 1 0.493,1.383 c 0.334,1.283 0.566,2.846 0.566,2.846 0,0 0.008,0.1 0.02,0.263 a 26.145,26.145 0 0 0 0.065,3.205 11.362,11.362 0 0 0 0.584,3.1 l 0.18,-0.1 a 13.859,13.859 0 0 1 -0.478,-4.628 35.269,35.269 0 0 1 1.938,-9.688 c 2.01,-5.308 4.8,-9.568 7.35,-11.6 -2.326,2.1 -5.474,8.9 -6.417,11.418 a 45.656,45.656 0 0 0 -2.254,8 6.211,6.211 0 0 1 3.284,-3.404 c 0,0 1.233,-1.521 2.674,-3.693 a 26.206,26.206 0 0 0 -2.755,0.733 c -0.7,0.294 -0.889,0.394 -0.889,0.394 a 23.939,23.939 0 0 1 4.215,-2.007 c 2.676,-4.215 5.592,-10.2 2.656,-12.82399997"
+     style="fill:#003b57"
+     id="path39" />
+  <metadata
+     id="metadata45">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:title>file_type_sqlite</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+</svg>

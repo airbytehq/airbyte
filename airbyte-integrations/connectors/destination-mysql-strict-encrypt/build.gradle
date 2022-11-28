@@ -20,7 +20,7 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-mysql')
-    integrationTestJavaImplementation libs.testcontainers.mysql
+    integrationTestJavaImplementation libs.connectors.testcontainers.mysql
 
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     integrationTestJavaImplementation files(project(':airbyte-integrations:bases:base-normalization').airbyteDocker.outputs)

@@ -1,6 +1,6 @@
-# Source Tidb
+# Source TiDB
 
-This is the repository for the Tidb source connector in Java.
+This is the repository for the TiDB source connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/tidb).
 
 ## Local development

@@ -28,7 +28,7 @@ def test_check_connection(mocker, response_status):
         assert source.check_connection(logger_mock, config_mock) == (False, requests_get_mock.return_value.json.return_value.get("message"))
     validate_mock.assert_called_with(config_mock)
     requests_get_mock.assert_called_with(
-        "https://api.openweathermap.org/data/2.5/onecall", params={"appid": "test_appid", "lat": 1.0, "lon": 1.0}
+        "https://api.openweathermap.org/data/3.0/onecall", params={"appid": "test_appid", "lat": 1.0, "lon": 1.0}
     )
 
 

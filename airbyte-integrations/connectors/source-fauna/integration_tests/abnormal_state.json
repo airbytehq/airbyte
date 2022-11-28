@@ -1,0 +1,9 @@
+{
+  "_comment": "Generated with ToMicros(ToTime(Date('9999-01-01')))",
+  "sample-data": {
+    "updates_cursor": {
+      "ts": 253370764800000000,
+      "ref": "10"
+    }
+  }
+}

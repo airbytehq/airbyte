@@ -4,8 +4,13 @@
 
 package io.airbyte.config.persistence;
 
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR;
+import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
+
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.db.instance.configs.jooq.generated.Tables;
@@ -15,8 +20,15 @@ import io.airbyte.db.instance.configs.jooq.generated.enums.SourceType;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.jooq.DSLContext;
 import org.jooq.JSONB;
+import org.jooq.Record4;
 import org.jooq.impl.DSL;
 
 /**
@@ -28,6 +40,37 @@ import org.jooq.impl.DSL;
  */
 @SuppressWarnings("PMD.CognitiveComplexity")
 public class ConfigWriter {
+
+  /**
+   * @return A set of connectors (both source and destination) that are already used in standard
+   *         syncs. We identify connectors by its repository name instead of definition id because
+   *         connectors can be added manually by users, and their config ids are not always the same
+   *         as those in the seed.
+   */
+  static Set<String> getConnectorRepositoriesInUse(final DSLContext ctx) {
+    return getActorDefinitionsInUse(ctx)
+        .map(r -> r.get(ACTOR_DEFINITION.DOCKER_REPOSITORY))
+        .collect(Collectors.toSet());
+  }
+
+  /**
+   * Get a map of connector to protocol version for all the connectors that are used in a standard
+   * syncs.
+   */
+  static Map<UUID, Entry<io.airbyte.config.ActorType, Version>> getActorDefinitionsInUseToProtocolVersion(final DSLContext ctx) {
+    return getActorDefinitionsInUse(ctx)
+        .collect(Collectors.toMap(r -> r.get(ACTOR_DEFINITION.ID),
+            r -> Map.entry(
+                r.get(ACTOR_DEFINITION.ACTOR_TYPE) == ActorType.source ? io.airbyte.config.ActorType.SOURCE : io.airbyte.config.ActorType.DESTINATION,
+                AirbyteProtocolVersion.getWithDefault(r.get(ACTOR_DEFINITION.PROTOCOL_VERSION)))));
+  }
+
+  private static Stream<Record4<UUID, String, ActorType, String>> getActorDefinitionsInUse(final DSLContext ctx) {
+    return ctx.select(ACTOR_DEFINITION.ID, ACTOR_DEFINITION.DOCKER_REPOSITORY, ACTOR_DEFINITION.ACTOR_TYPE, ACTOR_DEFINITION.PROTOCOL_VERSION)
+        .from(ACTOR_DEFINITION)
+        .join(ACTOR).on(ACTOR.ACTOR_DEFINITION_ID.equal(ACTOR_DEFINITION.ID))
+        .fetchStream();
+  }
 
   static void writeStandardSourceDefinition(final List<StandardSourceDefinition> configs, final DSLContext ctx) {
     final OffsetDateTime timestamp = OffsetDateTime.now();
@@ -50,6 +93,7 @@ public class ConfigWriter {
                     : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
                         SourceType.class).orElseThrow())
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardSourceDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
@@ -79,6 +123,7 @@ public class ConfigWriter {
                     : Enums.toEnum(standardSourceDefinition.getSourceType().value(),
                         SourceType.class).orElseThrow())
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardSourceDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardSourceDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardSourceDefinition.getTombstone() != null && standardSourceDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardSourceDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardSourceDefinition.getCustom())
@@ -115,6 +160,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
             .set(Tables.ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardDestinationDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE, standardDestinationDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
             .set(Tables.ACTOR_DEFINITION.CUSTOM, standardDestinationDefinition.getCustom())
@@ -127,6 +173,9 @@ public class ConfigWriter {
                 standardDestinationDefinition.getResourceRequirements() == null ? null
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -140,6 +189,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.ICON, standardDestinationDefinition.getIcon())
             .set(Tables.ACTOR_DEFINITION.ACTOR_TYPE, ActorType.destination)
             .set(Tables.ACTOR_DEFINITION.SPEC, JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getSpec())))
+            .set(Tables.ACTOR_DEFINITION.PROTOCOL_VERSION, standardDestinationDefinition.getProtocolVersion())
             .set(Tables.ACTOR_DEFINITION.TOMBSTONE,
                 standardDestinationDefinition.getTombstone() != null && standardDestinationDefinition.getTombstone())
             .set(Tables.ACTOR_DEFINITION.PUBLIC, standardDestinationDefinition.getPublic())
@@ -155,6 +205,9 @@ public class ConfigWriter {
                     : JSONB.valueOf(Jsons.serialize(standardDestinationDefinition.getResourceRequirements())))
             .set(Tables.ACTOR_DEFINITION.CREATED_AT, timestamp)
             .set(Tables.ACTOR_DEFINITION.UPDATED_AT, timestamp)
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
+            .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
             .execute();
       }
     });

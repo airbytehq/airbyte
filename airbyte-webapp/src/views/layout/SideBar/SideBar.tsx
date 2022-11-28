@@ -1,186 +1,141 @@
+import { faSlack } from "@fortawesome/free-brands-svg-icons";
 import { faRocket } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import React from "react";
-import { FormattedMessage } from "react-intl";
-import { NavLink } from "react-router-dom";
-import styled from "styled-components";
+import { FormattedMessage, useIntl } from "react-intl";
+import { NavLink, useLocation } from "react-router-dom";
 
 import { Link } from "components";
-import Version from "components/Version";
+import { Version } from "components/common/Version";
+import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { links } from "utils/links";
 
+import { DocsIcon } from "../../../components/icons/DocsIcon";
+import { DropdownMenu } from "../../../components/ui/DropdownMenu";
 import { RoutePaths } from "../../../pages/routePaths";
+import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
-import DocsIcon from "./components/DocsIcon";
-import OnboardingIcon from "./components/OnboardingIcon";
+import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
-import SidebarPopout from "./components/SidebarPopout";
 import SourceIcon from "./components/SourceIcon";
 import { NotificationIndicator } from "./NotificationIndicator";
+import styles from "./SideBar.module.scss";
 
-const Bar = styled.nav`
-  width: 100px;
-  min-width: 65px;
-  height: 100%;
-  background: ${({ theme }) => theme.darkPrimaryColor};
-  padding: 23px 3px 15px 4px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  z-index: 9999;
-`;
+export const useCalculateSidebarStyles = () => {
+  const location = useLocation();
 
-const Menu = styled.ul`
-  padding: 0;
-  margin: 20px 0 0;
-  width: 100%;
-`;
+  const menuItemStyle = (isActive: boolean) => {
+    const isChild = location.pathname.split("/").length > 4 && location.pathname.split("/")[3] !== "settings";
+    return classNames(styles.menuItem, { [styles.active]: isActive, [styles.activeChild]: isChild && isActive });
+  };
 
-const MenuItem = styled(NavLink)`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  border-radius: 4px;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-  position: relative;
-
-  &.active {
-    color: ${({ theme }) => theme.whiteColor};
-    background: ${({ theme }) => theme.primaryColor};
-  }
-`;
-
-const MenuLinkItem = styled.a`
-  color: ${({ theme }) => theme.greyColor30};
-  width: 100%;
-  cursor: pointer;
-  height: 70px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  font-weight: normal;
-  font-size: 12px;
-  line-height: 15px;
-  margin-top: 7px;
-  text-decoration: none;
-`;
-
-const Text = styled.div`
-  margin-top: 7px;
-`;
-
-const HelpIcon = styled(FontAwesomeIcon)`
-  font-size: 21px;
-  line-height: 21px;
-`;
+  return ({ isActive }: { isActive: boolean }) => menuItemStyle(isActive);
+};
 
 const SideBar: React.FC = () => {
   const config = useConfig();
-  const workspace = useCurrentWorkspace();
+  const navLinkClassName = useCalculateSidebarStyles();
+  const { formatMessage } = useIntl();
 
   return (
-    <Bar>
+    <nav className={styles.nav}>
       <div>
-        <Link to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}>
-          <img src="/simpleLogo.svg" alt="logo" height={33} width={33} />
+        <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
+          <AirbyteLogo height={33} width={33} />
         </Link>
-        <Menu>
-          {workspace.displaySetupWizard ? (
-            <li>
-              <MenuItem to={RoutePaths.Onboarding}>
-                <OnboardingIcon />
-                <Text>
-                  <FormattedMessage id="sidebar.onboarding" />
-                </Text>
-              </MenuItem>
-            </li>
-          ) : null}
+        <ul className={styles.menu}>
           <li>
-            <MenuItem to={RoutePaths.Connections}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.connections" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Source}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Source}>
               <SourceIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.sources" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
           <li>
-            <MenuItem to={RoutePaths.Destination}>
+            <NavLink className={navLinkClassName} to={RoutePaths.Destination}>
               <DestinationIcon />
-              <Text>
+              <Text className={styles.text} size="sm">
                 <FormattedMessage id="sidebar.destinations" />
               </Text>
-            </MenuItem>
+            </NavLink>
           </li>
-        </Menu>
+        </ul>
       </div>
-      <Menu>
+      <ul className={styles.menu}>
         <li>
-          <MenuLinkItem href={config.links.updateLink} target="_blank">
-            <HelpIcon icon={faRocket} />
-            <Text>
+          <a href={links.updateLink} target="_blank" rel="noreferrer" className={styles.menuItem}>
+            <FontAwesomeIcon className={styles.helpIcon} icon={faRocket} />
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.update" />
             </Text>
-          </MenuLinkItem>
+          </a>
         </li>
         <li>
-          <SidebarPopout options={[{ value: "docs" }, { value: "slack" }, { value: "recipes" }]}>
-            {({ onOpen }) => (
-              <MenuItem onClick={onOpen} as="div">
+          <DropdownMenu
+            placement="right"
+            displacement={10}
+            options={[
+              {
+                as: "a",
+                href: links.docsLink,
+                icon: <DocsIcon />,
+                displayName: formatMessage({ id: "sidebar.documentation" }),
+              },
+              {
+                as: "a",
+                href: links.slackLink,
+                icon: <FontAwesomeIcon icon={faSlack} />,
+                displayName: formatMessage({ id: "sidebar.joinSlack" }),
+              },
+              {
+                as: "a",
+                href: links.tutorialLink,
+                icon: <RecipesIcon />,
+                displayName: formatMessage({ id: "sidebar.recipes" }),
+              },
+            ]}
+          >
+            {({ open }) => (
+              <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
                 <DocsIcon />
-                <Text>
+                <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.resources" />
                 </Text>
-              </MenuItem>
+              </button>
             )}
-          </SidebarPopout>
+          </DropdownMenu>
         </li>
-
         <li>
-          <MenuItem
-            to={RoutePaths.Settings}
-            // isActive={(_, location) =>
-            //   location.pathname.startsWith(RoutePaths.Settings)
-            // }
-          >
+          <NavLink className={navLinkClassName} to={RoutePaths.Settings}>
             <React.Suspense fallback={null}>
               <NotificationIndicator />
             </React.Suspense>
             <SettingsIcon />
-            <Text>
+            <Text className={styles.text} size="sm">
               <FormattedMessage id="sidebar.settings" />
             </Text>
-          </MenuItem>
+          </NavLink>
         </li>
         {config.version ? (
           <li>
             <Version primary />
           </li>
         ) : null}
-      </Menu>
-    </Bar>
+      </ul>
+    </nav>
   );
 };
 

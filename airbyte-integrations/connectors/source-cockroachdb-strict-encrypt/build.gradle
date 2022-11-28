@@ -17,9 +17,9 @@ dependencies {
     implementation project(':airbyte-integrations:connectors:source-relational-db')
     implementation project(':airbyte-integrations:connectors:source-cockroachdb')
 
-    implementation libs.testcontainers
-    implementation libs.testcontainers.jdbc
-    implementation libs.testcontainers.cockroachdb
+    implementation libs.connectors.testcontainers
+    implementation libs.connectors.testcontainers.jdbc
+    implementation libs.connectors.testcontainers.cockroachdb
     implementation libs.postgresql
 
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-cockroachdb')

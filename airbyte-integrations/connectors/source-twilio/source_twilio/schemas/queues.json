@@ -31,7 +31,7 @@
     },
     "subresource_uris": {
       "type": ["null", "object"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
         "members": {
           "type": ["null", "string"]
@@ -40,5 +40,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": false
+  "additionalProperties": true
 }

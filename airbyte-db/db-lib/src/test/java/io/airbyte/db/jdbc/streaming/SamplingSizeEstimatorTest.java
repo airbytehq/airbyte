@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 class SamplingSizeEstimatorTest {
 
   @Test
-  public void testIt() {
+  void testIt() {
     final long bufferByteSize = 120;
     final int sampleFrequency = 3;
     final long initialByteSize = 10;

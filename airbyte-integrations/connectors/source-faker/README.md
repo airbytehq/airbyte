@@ -97,7 +97,7 @@ Make sure to familiarize yourself with [pytest test discovery](https://docs.pyte
 First install test dependencies into your virtual environment:
 
 ```
-pip install .[tests]
+pip install ".[tests]"
 ```
 
 ### Unit Tests

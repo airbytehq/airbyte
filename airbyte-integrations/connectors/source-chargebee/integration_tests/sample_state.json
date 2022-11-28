@@ -1,26 +1,58 @@
-{
-  "subscription": {
-    "updated_at": 1624345058
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1624345058 },
+      "stream_descriptor": { "name": "subscription" }
+    }
   },
-  "customer": {
-    "updated_at": 1624345056
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1624345056 },
+      "stream_descriptor": { "name": "customer" }
+    }
   },
-  "invoice": {
-    "updated_at": 1624345059
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1624345059 },
+      "stream_descriptor": { "name": "invoice" }
+    }
   },
-  "order": {
-    "updated_at": 1625596058
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "order" }
+    }
   },
-  "addon": {
-    "updated_at": 1625596058
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "addon" }
+    }
   },
-  "plan": {
-    "updated_at": 1625596058
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 1625596058 },
+      "stream_descriptor": { "name": "plan" }
+    }
   },
-  "item": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item" }
+    }
   },
-  "item_price": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item_price" }
+    }
   }
-}
+]

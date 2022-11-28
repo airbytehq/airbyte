@@ -1,11 +1,10 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mssql",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mssql",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "MSSQL Source Spec",
     "type": "object",
     "required": ["host", "port", "database", "username"],
-    "additionalProperties": true,
     "properties": {
       "host": {
         "description": "The hostname of the database.",
@@ -29,70 +28,73 @@
         "examples": ["master"],
         "order": 2
       },
+      "schemas": {
+        "title": "Schemas",
+        "description": "The list of schemas to sync from. Defaults to user. Case sensitive.",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "minItems": 0,
+        "uniqueItems": true,
+        "default": ["dbo"],
+        "order": 3
+      },
       "username": {
         "description": "The username which is used to access the database.",
         "title": "Username",
         "type": "string",
-        "order": 3
+        "order": 4
       },
       "password": {
         "description": "The password associated with the username.",
         "title": "Password",
         "type": "string",
         "airbyte_secret": true,
-        "order": 4
+        "order": 5
       },
       "jdbc_url_params": {
         "title": "JDBC URL Params",
         "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
         "type": "string",
-        "order": 5
+        "order": 6
       },
       "ssl_method": {
         "title": "SSL Method",
         "type": "object",
         "description": "The encryption method which is used when communicating with the database.",
-        "order": 6,
+        "order": 7,
         "oneOf": [
           {
             "title": "Unencrypted",
-            "additionalProperties": false,
             "description": "Data transfer will not be encrypted.",
             "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "unencrypted",
-                "enum": ["unencrypted"],
-                "default": "unencrypted"
+                "const": "unencrypted"
               }
             }
           },
           {
             "title": "Encrypted (trust server certificate)",
-            "additionalProperties": false,
             "description": "Use the certificate provided by the server without verification. (For testing purposes only!)",
             "required": ["ssl_method"],
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "encrypted_trust_server_certificate",
-                "enum": ["encrypted_trust_server_certificate"],
-                "default": "encrypted_trust_server_certificate"
+                "const": "encrypted_trust_server_certificate"
               }
             }
           },
           {
             "title": "Encrypted (verify certificate)",
-            "additionalProperties": false,
             "description": "Verify and use the certificate provided by the server.",
             "required": ["ssl_method", "trustStoreName", "trustStorePassword"],
             "properties": {
               "ssl_method": {
                 "type": "string",
-                "const": "encrypted_verify_certificate",
-                "enum": ["encrypted_verify_certificate"],
-                "default": "encrypted_verify_certificate"
+                "const": "encrypted_verify_certificate"
               },
               "hostNameInCertificate": {
                 "title": "Host Name In Certificate",
@@ -104,40 +106,33 @@
           }
         ]
       },
-      "replication": {
+      "replication_method": {
         "type": "object",
         "title": "Replication Method",
         "description": "The replication method used for extracting data from the database. STANDARD replication requires no setup on the DB side but will not be able to represent deletions incrementally. CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
         "default": "STANDARD",
-        "additionalProperties": true,
         "order": 8,
         "oneOf": [
           {
             "title": "Standard",
-            "additionalProperties": false,
             "description": "Standard replication requires no setup on the DB side but will not be able to represent deletions incrementally.",
-            "required": ["replication_type"],
+            "required": ["method"],
             "properties": {
-              "replication_type": {
+              "method": {
                 "type": "string",
                 "const": "STANDARD",
-                "enum": ["STANDARD"],
-                "default": "STANDARD",
                 "order": 0
               }
             }
           },
           {
             "title": "Logical Replication (CDC)",
-            "additionalProperties": false,
             "description": "CDC uses {TBC} to detect inserts, updates, and deletes. This needs to be configured on the source database itself.",
-            "required": ["replication_type"],
+            "required": ["method"],
             "properties": {
-              "replication_type": {
+              "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
                 "order": 0
               },
               "data_to_sync": {

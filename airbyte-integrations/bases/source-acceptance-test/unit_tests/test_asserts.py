@@ -31,7 +31,7 @@ def record_schema_fixture():
 def catalog_fixture(request, record_schema) -> ConfiguredAirbyteCatalog:
     record_schema = request.param if hasattr(request, "param") else record_schema
     stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="my_stream", json_schema=record_schema),
+        stream=AirbyteStream(name="my_stream", json_schema=record_schema, supported_sync_modes=[SyncMode.full_refresh]),
         sync_mode=SyncMode.full_refresh,
         destination_sync_mode=DestinationSyncMode.append,
     )

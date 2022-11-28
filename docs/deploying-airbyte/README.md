@@ -9,6 +9,8 @@
 - [On Digital Ocean Droplet](on-digitalocean-droplet.md)
 - [On GCP.md](on-gcp-compute-engine.md)
 - [On Kubernetes](on-kubernetes.md)
+    - [Using Helm](on-kubernetes-via-helm.md)
 - [On OCI VM](on-oci-vm.md)
+- [On Restack](on-restack.md)
 - [On Plural](on-plural.md)
 - [On AWS ECS (spoiler alert: it doesn't work)](on-aws-ecs.md)

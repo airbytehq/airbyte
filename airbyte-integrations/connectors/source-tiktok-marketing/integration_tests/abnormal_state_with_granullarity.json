@@ -1,0 +1,60 @@
+{
+  "ads": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "ad_groups": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+  "campaigns": {
+    "modify_time": "2030-08-30 09:16:10"
+  },
+
+  "ads_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "advertisers_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "ad_groups_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "campaigns_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "ads_audience_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "advertisers_audience_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "ad_group_audience_reports": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  },
+  "campaigns_audience_reports_by_country": {
+    "stat_time_day": "2030-01-01",
+    "dimensions": {
+      "stat_time_day": "2030-01-01"
+    }
+  }
+}

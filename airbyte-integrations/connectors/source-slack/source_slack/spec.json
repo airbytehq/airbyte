@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/slack",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/slack",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Slack Spec",
@@ -58,27 +58,28 @@
               },
               "client_id": {
                 "title": "Client ID",
-                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this id.",
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id.",
                 "type": "string",
-                "examples": ["slack-client-id-example"]
+                "examples": ["slack-client-id-example"],
+                "airbyte_secret": true
               },
               "client_secret": {
                 "title": "Client Secret",
-                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help finding this secret.",
+                "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
                 "type": "string",
                 "examples": ["slack-client-secret-example"],
                 "airbyte_secret": true
               },
               "access_token": {
                 "title": "Access token",
-                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "description": "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
                 "type": "string",
                 "examples": ["slack-access-token-example"],
                 "airbyte_secret": true
               },
               "refresh_token": {
                 "title": "Refresh token",
-                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> if you need help generating the token.",
+                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
                 "type": "string",
                 "examples": ["slack-refresh-token-example"],
                 "airbyte_secret": true
@@ -98,7 +99,7 @@
               "api_token": {
                 "type": "string",
                 "title": "API Token",
-                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.io/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
+                "description": "A Slack bot token. See the <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> for instructions on how to generate it.",
                 "airbyte_secret": true
               }
             },

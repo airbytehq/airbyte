@@ -5,7 +5,7 @@ import { AirbyteJSONSchema } from "./types";
 
 // Note: We have to check yup schema with JSON.stringify
 // as exactly same objects throw now equality due to `Received: serializes to the same string` error
-test("should build schema for simple case", () => {
+it("should build schema for simple case", () => {
   const schema: AirbyteJSONSchema = {
     type: "object",
     title: "Postgres Source Spec",
@@ -46,20 +46,25 @@ test("should build schema for simple case", () => {
   const yupSchema = buildYupFormForJsonSchema(schema);
 
   const expectedSchema = yup.object().shape({
-    host: yup.string().trim().required("form.empty.error"),
-    port: yup.number().min(0).max(65536).required("form.empty.error"),
-    user: yup.string().trim().required("form.empty.error"),
+    host: yup.string().trim().required("form.empty.error").transform(String),
+    port: yup
+      .number()
+      .min(0)
+      .max(65536)
+      .required("form.empty.error")
+      .transform((val) => (isNaN(val) ? undefined : val)),
+    user: yup.string().trim().required("form.empty.error").transform(String),
     is_sandbox: yup.boolean().default(false),
     is_field_no_default: yup.boolean().required("form.empty.error"),
-    dbname: yup.string().trim().required("form.empty.error"),
-    password: yup.string().trim(),
-    reports: yup.array().of(yup.string().trim()),
+    dbname: yup.string().trim().required("form.empty.error").transform(String),
+    password: yup.string().trim().transform(String),
+    reports: yup.array().of(yup.string().trim().transform(String)),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
 
-test("should build schema for conditional case", () => {
+it("should build schema for conditional case", () => {
   const yupSchema = buildYupFormForJsonSchema(
     {
       type: "object",
@@ -98,16 +103,16 @@ test("should build schema for conditional case", () => {
   );
 
   const expectedSchema = yup.object().shape({
-    start_date: yup.string().trim().required("form.empty.error"),
+    start_date: yup.string().trim().required("form.empty.error").transform(String),
     credentials: yup.object().shape({
-      api_key: yup.string().trim().required("form.empty.error"),
+      api_key: yup.string().trim().required("form.empty.error").transform(String),
     }),
   });
 
   expect(JSON.stringify(yupSchema)).toEqual(JSON.stringify(expectedSchema));
 });
 
-test("should build schema for conditional case with inner schema and selected uiwidget", () => {
+it("should build schema for conditional case with inner schema and selected uiwidget", () => {
   const yupSchema = buildYupFormForJsonSchema(
     {
       type: "object",
@@ -146,7 +151,7 @@ test("should build schema for conditional case with inner schema and selected ui
 
   const expectedSchema = yup.object().shape({
     credentials: yup.object().shape({
-      redirect_uri: yup.string().trim().required("form.empty.error"),
+      redirect_uri: yup.string().trim().required("form.empty.error").transform(String),
     }),
   });
 

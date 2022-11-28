@@ -5,12 +5,10 @@
 package io.airbyte.integrations.destination.jdbc.copy;
 
 import static io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES;
-import static java.util.stream.Collectors.toSet;
 
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.BufferedStreamConsumer;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
@@ -21,6 +19,7 @@ import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.record_buffer.InMemoryRecordBufferingStrategy;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,7 +77,7 @@ public class CopyConsumerFactory {
     final String stagingFolder = UUID.randomUUID().toString();
     for (final var configuredStream : catalog.getStreams()) {
       final var stream = configuredStream.getStream();
-      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final var pair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       final var copier = streamCopierFactory.create(defaultSchema, config, stagingFolder, configuredStream, namingResolver, database, sqlOperations);
 
       pairToCopier.put(pair, copier);
@@ -162,8 +161,6 @@ public class CopyConsumerFactory {
         }
       }
       if (!hasFailed) {
-        sqlOperations.onDestinationCloseOperations(db,
-            pairToCopier.keySet().stream().map(AirbyteStreamNameNamespacePair::getNamespace).collect(toSet()));
         sqlOperations.executeTransaction(db, queries);
       }
     } finally {

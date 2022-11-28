@@ -5,7 +5,7 @@
 import json
 
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v9 import GoogleAdsFailure
+from google.ads.googleads.v11 import GoogleAdsFailure
 
 
 class MockSearchRequest:

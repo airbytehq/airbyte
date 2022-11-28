@@ -7,9 +7,13 @@ dependencies {
 
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-json-validation')
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
 }
 
 task copyScripts(type: Copy) {
@@ -19,8 +23,8 @@ task copyScripts(type: Copy) {
     into 'build/docker/bin/scripts'
 }
 
-Task dockerBuildTask = getDockerBuildTask("init", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyScripts)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyScripts
+}
 
 Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

@@ -29,6 +29,7 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
 
   private static final String ACCESS_TOKEN_URL = "https://graph.facebook.com/v12.0/oauth/access_token";
   private static final String AUTH_CODE_TOKEN_URL = "https://www.facebook.com/v12.0/dialog/oauth";
+  private static final String ACCESS_TOKEN = "access_token";
 
   public FacebookOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -67,8 +68,8 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) {
     // Facebook does not have refresh token but calls it "long lived access token" instead:
     // see https://developers.facebook.com/docs/facebook-login/access-tokens/refreshing
-    Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
-    return Map.of("access_token", data.get("access_token").asText());
+    Preconditions.checkArgument(data.has(ACCESS_TOKEN), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
+    return Map.of(ACCESS_TOKEN, data.get(ACCESS_TOKEN).asText());
   }
 
   @Override
@@ -87,10 +88,10 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
 
     final Map<String, Object> data =
         super.completeOAuthFlow(clientId, clientSecret, authCode, redirectUrl, inputOAuthConfiguration, oAuthParamConfig);
-    Preconditions.checkArgument(data.containsKey("access_token"));
-    final String shortLivedAccessToken = (String) data.get("access_token");
+    Preconditions.checkArgument(data.containsKey(ACCESS_TOKEN));
+    final String shortLivedAccessToken = (String) data.get(ACCESS_TOKEN);
     final String longLivedAccessToken = getLongLivedAccessToken(clientId, clientSecret, shortLivedAccessToken);
-    return Map.of("access_token", longLivedAccessToken);
+    return Map.of(ACCESS_TOKEN, longLivedAccessToken);
   }
 
   protected URI createLongLivedTokenURI(final String clientId, final String clientSecret, final String shortLivedAccessToken)
@@ -118,8 +119,8 @@ public abstract class FacebookOAuthFlow extends BaseOAuth2Flow {
           .build();
       final HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
       final JsonNode responseJson = Jsons.deserialize(response.body());
-      Preconditions.checkArgument(responseJson.hasNonNull("access_token"), "%s response should have access_token", responseJson);
-      return responseJson.get("access_token").asText();
+      Preconditions.checkArgument(responseJson.hasNonNull(ACCESS_TOKEN), "%s response should have access_token", responseJson);
+      return responseJson.get(ACCESS_TOKEN).asText();
     } catch (final InterruptedException | URISyntaxException e) {
       throw new IOException("Failed to complete OAuth flow", e);
     }

@@ -7,6 +7,7 @@ package io.airbyte.config.persistence;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
@@ -24,44 +25,26 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
+import java.util.Map;
+import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.JUnitTestsShouldIncludeAssert", "PMD.DetachedTestCase"})
-class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
+class DatabaseConfigPersistenceE2EReadWriteTest extends BaseConfigDatabaseTest {
+
+  private ConfigPersistence configPersistence;
+  private StandardSyncPersistence standardSyncPersistence;
 
   @BeforeEach
   void setup() throws Exception {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceLoadDataTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    configPersistence = spy(new DatabaseConfigPersistence(database, jsonSecretsProcessor));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, flyway);
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    truncateAllTables();
-  }
+    configPersistence = spy(new DatabaseConfigPersistence(database));
+    standardSyncPersistence = new StandardSyncPersistence(database);
 
-  @AfterEach
-  void tearDown() throws Exception {
-    dslContext.close();
-    DataSourceFactory.close(dataSource);
+    truncateAllTables();
   }
 
   @Test
@@ -79,6 +62,25 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
     standardActorCatalog();
     workspaceServiceAccounts();
     deletion();
+
+    checkSafeguards();
+  }
+
+  private void checkSafeguards() {
+    final String anyString = "00000000-0000-0000-0000-000000000000";
+
+    // Making sure that the objects that have been migrated out of config persistence are protected with
+    // an explicit error.
+    assertThrows(NotImplementedException.class, () -> configPersistence.getConfig(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
+    assertThrows(NotImplementedException.class,
+        () -> configPersistence.getConfigWithMetadata(ConfigSchema.STANDARD_SYNC, anyString, StandardSync.class));
+    assertThrows(NotImplementedException.class, () -> configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class));
+    assertThrows(NotImplementedException.class, () -> configPersistence.listConfigsWithMetadata(ConfigSchema.STANDARD_SYNC, StandardSync.class));
+    assertThrows(NotImplementedException.class,
+        () -> configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC, anyString, MockData.standardSyncs().get(0)));
+    assertThrows(NotImplementedException.class,
+        () -> configPersistence.writeConfigs(ConfigSchema.STANDARD_SYNC, Map.of(anyString, MockData.standardSyncs().get(0))));
+    assertThrows(NotImplementedException.class, () -> configPersistence.deleteConfig(ConfigSchema.STANDARD_SYNC, anyString));
   }
 
   private void deletion() throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -87,7 +89,7 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
       configPersistence.deleteConfig(ConfigSchema.STANDARD_WORKSPACE, standardWorkspace.getWorkspaceId().toString());
     }
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_STATE, StandardSyncState.class).isEmpty());
-    assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class).isEmpty());
+    assertTrue(standardSyncPersistence.listStandardSync().isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_SYNC_OPERATION, StandardSyncOperation.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.DESTINATION_CONNECTION, SourceConnection.class).isEmpty());
     assertTrue(configPersistence.listConfigs(ConfigSchema.STANDARD_WORKSPACE, StandardWorkspace.class).isEmpty());
@@ -146,16 +148,11 @@ class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersis
 
   private void standardSync() throws JsonValidationException, IOException, ConfigNotFoundException {
     for (final StandardSync standardSync : MockData.standardSyncs()) {
-      configPersistence.writeConfig(ConfigSchema.STANDARD_SYNC,
-          standardSync.getConnectionId().toString(),
-          standardSync);
-      final StandardSync standardSyncFromDB = configPersistence.getConfig(ConfigSchema.STANDARD_SYNC,
-          standardSync.getConnectionId().toString(),
-          StandardSync.class);
+      standardSyncPersistence.writeStandardSync(standardSync);
+      final StandardSync standardSyncFromDB = standardSyncPersistence.getStandardSync(standardSync.getConnectionId());
       assertEquals(standardSync, standardSyncFromDB);
     }
-    final List<StandardSync> standardSyncs = configPersistence
-        .listConfigs(ConfigSchema.STANDARD_SYNC, StandardSync.class);
+    final List<StandardSync> standardSyncs = standardSyncPersistence.listStandardSync();
     assertEquals(MockData.standardSyncs().size(), standardSyncs.size());
     assertThat(MockData.standardSyncs()).hasSameElementsAs(standardSyncs);
   }

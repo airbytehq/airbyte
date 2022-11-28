@@ -1,4 +1,4 @@
-documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+documentationUrl: https://docs.airbyte.com/integrations/sources/exchangeratesapi
 connectionSpecification:
   $schema: http://json-schema.org/draft-07/schema#
   title: exchangeratesapi.io Source Spec
@@ -6,7 +6,7 @@ connectionSpecification:
   required:
     - start_date
     - access_key
-  additionalProperties: false
+  additionalProperties: true
   properties:
     start_date:
       type: string
@@ -17,8 +17,8 @@ connectionSpecification:
     access_key:
       type: string
       description: >-
-        Your API Access Key. See <a
-        href="https://exchangeratesapi.io/documentation/">here</a>. The key is
+        Your API Key. See <a
+        href="https://apilayer.com/marketplace/exchangerates_data-api">here</a>. The key is
         case sensitive.
       airbyte_secret: true
     base:

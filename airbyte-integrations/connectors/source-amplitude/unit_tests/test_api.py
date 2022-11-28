@@ -75,6 +75,17 @@ class TestIncrementalStreams:
                 [{"date": "2021-01-01", "statistics": {0: 1}}, {"date": "2021-01-02", "statistics": {0: 5}}],
             ),
             (
+                ActiveUsers,
+                {
+                    "xValues": ["2021-01-01", "2021-01-02"],
+                    "series": [],
+                    "seriesCollapsed": [[0]],
+                    "seriesLabels": [0],
+                    "seriesMeta": [{"segmentIndex": 0}],
+                },
+                [],
+            ),
+            (
                 AverageSessionLength,
                 {
                     "xValues": ["2019-05-23", "2019-05-24"],
@@ -85,8 +96,19 @@ class TestIncrementalStreams:
                 },
                 [{"date": "2019-05-23", "length": 2}, {"date": "2019-05-24", "length": 6}],
             ),
+            (
+                AverageSessionLength,
+                {
+                    "xValues": ["2019-05-23", "2019-05-24"],
+                    "series": [],
+                    "seriesCollapsed": [[0]],
+                    "seriesLabels": [0],
+                    "seriesMeta": [{"segmentIndex": 0}],
+                },
+                [],
+            ),
         ],
-        ids=["ActiveUsers", "AverageSessionLength"],
+        ids=["ActiveUsers", "EmptyActiveUsers", "AverageSessionLength", "EmptyAverageSessionLength"],
     )
     def test_parse_response(self, requests_mock, stream_cls, data, expected):
         stream = stream_cls("2021-01-01T00:00:00Z")
@@ -130,9 +152,8 @@ class TestIncrementalStreams:
         [
             (ActiveUsers, {}),
             (AverageSessionLength, {}),
-            (Events, {}),
         ],
-        ids=["ActiveUsers", "AverageSessionLength", "Events"],
+        ids=["ActiveUsers", "AverageSessionLength"],
     )
     def test_next_page_token(self, requests_mock, stream_cls, expected):
         days_ago = pendulum.now().subtract(days=2)
@@ -176,7 +197,12 @@ class TestEventsStream:
     def test_stream_slices(self):
         stream = Events(pendulum.now().isoformat())
         now = pendulum.now()
-        expected = [{"start": now.strftime(stream.date_template), "end": stream._get_end_date(now).strftime(stream.date_template)}]
+        expected = [
+            {
+                "start": now.strftime(stream.date_template),
+                "end": stream._get_end_date(now).add(**stream.time_interval).subtract(hours=1).strftime(stream.date_template),
+            }
+        ]
         assert expected == stream.stream_slices()
 
     def test_request_params(self):

@@ -19,6 +19,8 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import javax.sql.DataSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This database allows a developer to specify a {@link JdbcStreamingQueryConfig}. This allows the
@@ -26,6 +28,8 @@ import javax.sql.DataSource;
  * execute as in a streaming / chunked manner.
  */
 public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(StreamingJdbcDatabase.class);
 
   private final Supplier<JdbcStreamingQueryConfig> streamingQueryConfigProvider;
 
@@ -97,6 +101,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           action.accept(dataRow);
           return true;
         } catch (final SQLException e) {
+          LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
           throw new RuntimeException(e);
         }
       }

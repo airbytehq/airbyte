@@ -29,7 +29,7 @@ Expand the relevant checklist and delete the others.
     - [ ] `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
     - [ ] `docs/integrations/README.md`
     - [ ] `airbyte-integrations/builds.md`
-- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
 
 ### Airbyter
 
@@ -57,7 +57,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
     - [ ] Connector's `README.md`
     - [ ] Connector's `bootstrap.md`. See [description and examples](https://docs.google.com/document/d/1ypdgmwmEHWv-TrO4_YOQ7pAJGVrMp5BOkEVh831N260/edit?usp=sharing)
     - [ ] Changelog updated in `docs/integrations/<source or destination>/<name>.md` including changelog. See changelog [example](https://docs.airbyte.io/integrations/sources/stripe#changelog)
-- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
 
 ### Airbyter
 
@@ -74,7 +74,7 @@ If this is a community PR, the Airbyte engineer reviewing this PR is responsible
 <details><summary><strong>Connector Generator</strong></summary>
 
 - [ ] Issue acceptance criteria met
-- [ ] PR name follows [PR naming conventions](https://docs.airbyte.io/contributing-to-airbyte/updating-documentation#issues-and-pull-requests)
+- [ ] PR name follows [PR naming conventions](https://docs.airbyte.com/contributing-to-airbyte/issues-and-pull-requests)
 - [ ] If adding a new generator, add it to the [list of scaffold modules being tested](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connector-templates/generator/build.gradle#L41)
 - [ ] The generator test modules (all connectors with `-scaffold` in their name) have been updated with the latest scaffold by running `./gradlew :airbyte-integrations:connector-templates:generator:testScaffoldTemplates` then checking in your changes
 - [ ] Documentation which references the generator is updated as needed

@@ -1,0 +1,11 @@
+@use "scss/variables";
+
+.controlGroup {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: variables.$spacing-xl;
+
+  .button {
+    margin-left: variables.$spacing-md;
+  }
+}

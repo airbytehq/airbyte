@@ -1,50 +1,35 @@
+import classNames from "classnames";
 import React from "react";
-import styled from "styled-components";
 
-import { CheckBox, Switch } from "components/base";
+import { CheckBox } from "components/ui/CheckBox";
+import { Switch } from "components/ui/Switch";
+
+import styles from "./LabeledSwitch.module.scss";
 
 interface LabeledSwitchProps extends React.InputHTMLAttributes<HTMLInputElement> {
   message?: React.ReactNode;
   label?: React.ReactNode;
   checkbox?: boolean;
   loading?: boolean;
+  id?: string;
 }
 
-const ToggleContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => {
+  const switchId = props.id ?? `toggle-${props.name}`;
 
-const Label = styled.label<{ disabled?: boolean }>`
-  padding-left: 7px;
-  font-size: 13px;
-  line-height: 16px;
-  color: ${({ theme, disabled }) => (disabled ? theme.greyColor40 : theme.textColor)};
-  cursor: ${({ disabled }) => (disabled ? "auto" : "pointer")};
-`;
+  return (
+    <div className={classNames(styles.labeledSwitch, props.className)}>
+      <span>{props.checkbox ? <CheckBox {...props} id={switchId} /> : <Switch {...props} id={switchId} />}</span>
 
-const AdditionMessage = styled.span`
-  padding-left: 5px;
-  color: ${({ theme }) => theme.greyColor40};
-
-  & a {
-    text-decoration: underline;
-    color: ${({ theme }) => theme.primaryColor};
-  }
-`;
-
-export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => (
-  <ToggleContainer>
-    {props.checkbox ? (
-      <CheckBox {...props} id={`toggle-${props.name}`} />
-    ) : (
-      <Switch {...props} id={`toggle-${props.name}`} />
-    )}
-
-    <Label disabled={props.disabled} htmlFor={`toggle-${props.name}`}>
-      {props.label}
-      <AdditionMessage>{props.message}</AdditionMessage>
-    </Label>
-  </ToggleContainer>
-);
+      <label
+        className={classNames(styles.label, {
+          [styles.disabled]: props.disabled,
+        })}
+        htmlFor={switchId}
+      >
+        {props.label}
+        <span className={styles.additionalMessage}>{props.message}</span>
+      </label>
+    </div>
+  );
+};

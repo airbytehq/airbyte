@@ -47,7 +47,7 @@
           "description": "This field is not shown in schema / swagger, but exists in records and we use it as cursor fiekd."
         }
       },
-      "additionalProperties": {}
+      "additionalProperties": true
     },
     "projectId": {
       "type": "string",
@@ -58,7 +58,19 @@
       "type": "string",
       "description": "The key of the project containing the epic.",
       "readOnly": true
+    },
+    "created": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
+      "readOnly": true
+    },
+    "updated": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "This field transformed from fields attr",
+      "readOnly": true
     }
   },
-  "additionalProperties": false
+  "additionalProperties": true
 }

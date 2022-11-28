@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.snowflake.SnowflakeSource;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
@@ -46,15 +47,15 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     config = Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
 
     dslContext = DSLContextFactory.create(
-        config.get("credentials").get("username").asText(),
-        config.get("credentials").get("password").asText(),
+        config.get("credentials").get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get("credentials").get(JdbcUtils.PASSWORD_KEY).asText(),
         SnowflakeSource.DRIVER_CLASS,
-        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get("host").asText()),
+        String.format(DatabaseDriver.SNOWFLAKE.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText()),
         SQLDialect.DEFAULT,
         Map.of(
             "role", config.get("role").asText(),
             "warehouse", config.get("warehouse").asText(),
-            "database", config.get("database").asText()));
+            JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText()));
 
     database = getDatabase();
 
@@ -251,50 +252,50 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATE")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_DATE)
             .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01T00:00:00Z", "9999-12-31T00:00:00Z")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("DATETIME")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'0001-01-01 00:00:00'", "'9999-12-31 23:59:59'", "'9999-12-31 23:59:59.123456'")
-            .addExpectedValues(null, "0001-01-01T00:00:00.000000Z", "9999-12-31T23:59:59.000000Z", "9999-12-31T23:59:59.123456Z")
+            .addExpectedValues(null, "0001-01-01T00:00:00.000000", "9999-12-31T23:59:59.000000", "9999-12-31T23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIME")
-            .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'00:00:00'", "'1:59 PM'", "'23:59:59'")
-            .addExpectedValues(null, "1970-01-01T00:00:00Z", "1970-01-01T13:59:00Z",
-                "1970-01-01T23:59:59Z")
+            .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+            .addInsertValues("null", "'00:00:00'", "'1:59 PM'", "'23:59:59.123456'")
+            .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000",
+                "23:59:59.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123'", "'2018-03-22 12:00:00.123456'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000Z", "2018-03-22T12:00:00.123456Z")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_LTZ")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_NTZ")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
-            .addExpectedValues(null, "2018-03-22T12:00:00.123000Z", "2018-03-22T12:00:00.123456Z")
+            .addExpectedValues(null, "2018-03-22T12:00:00.123000", "2018-03-22T12:00:00.123456")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("TIMESTAMP_TZ")
-            .airbyteType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
             .addInsertValues("null", "'2018-03-22 12:00:00.123 +05:00'", "'2018-03-22 12:00:00.123456 +05:00'")
             .addExpectedValues(null, "2018-03-22T07:00:00.123000Z", "2018-03-22T07:00:00.123456Z")
             .build());

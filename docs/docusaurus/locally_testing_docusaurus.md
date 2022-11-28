@@ -4,12 +4,12 @@
 
 You can test any change you make to see how it will look in production
 
-The processes are almost identical from local testing to production so 
+The processes are almost identical from local testing to production so
 you can have a high degree of confidence in the results
 
 ```bash
 # navigate to docusaurus
-cd airbyte-cloud/docusaurus
+cd docusaurus
 # install the packages to run docusaurus
 yarn install
 # compile the current state of airbyte-cloud/docs
@@ -20,13 +20,9 @@ yarn build && yarn serve
 # to exit the running server use control-c
 ```
 
-- If you encounter a build error there may be multiple causes 
-but usually this is due to a broken link:
-    - fix your broken links and the build should work
-- look at the changes you made locally, 
-if they look great commit and add a funny picture to the PR for karma (technically optional)
+- If you encounter a build error there may be multiple causes but usually this is due to a broken link:
+  - fix your broken links and the build should work
+- look at the changes you made locally, if they look great commit and add a funny picture to the PR for karma (technically optional)
 
 **important note**
-if you run `yarn build && yarn serve` and make changes after that you will need
-to exit the server using `control-c` from the command line and then running the 
-command `yarn build && yarn serve` again to see your new changes
+if you run `yarn build && yarn serve` and make changes after that you will need to exit the server using `control-c` from the command line and then running the command `yarn build && yarn serve` again to see your new changes

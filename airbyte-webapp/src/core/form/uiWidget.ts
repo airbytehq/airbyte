@@ -7,9 +7,9 @@ import { FormBlock, WidgetConfigMap } from "./types";
 
 export const buildPathInitialState = (
   formBlock: FormBlock[],
-  formValues: { [key: string]: unknown },
+  formValues: Record<string, unknown>,
   widgetState: WidgetConfigMap = {}
-): { [key: string]: WidgetConfigMap } =>
+): Record<string, WidgetConfigMap> =>
   formBlock.reduce((widgetStateBuilder, formItem) => {
     switch (formItem._type) {
       case "formGroup":

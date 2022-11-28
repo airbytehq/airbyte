@@ -126,7 +126,10 @@
       "type": ["null", "string"]
     },
     "ad_group_criterion.topic.path": {
-      "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
     },
     "metrics.cross_device_conversions": {
       "type": ["null", "number"]

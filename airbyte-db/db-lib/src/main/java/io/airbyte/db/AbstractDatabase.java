@@ -13,7 +13,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * not the responsibility of this class to close the provided {@link javax.sql.DataSource}. This is
  * to avoid accidentally closing a shared resource.
  */
-public abstract class AbstractDatabase {
+public class AbstractDatabase {
 
   private JsonNode sourceConfig;
   private JsonNode databaseConfig;

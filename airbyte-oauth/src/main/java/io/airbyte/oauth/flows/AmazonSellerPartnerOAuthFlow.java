@@ -22,10 +22,12 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
   private static final String AUTHORIZE_URL = "https://sellercentral.amazon.com/apps/authorize/consent";
   private static final String ACCESS_TOKEN_URL = "https://api.amazon.com/auth/o2/token";
 
+  @Override
   protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "lwa_app_id");
   }
 
+  @Override
   protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     return getConfigValueUnsafe(oauthConfig, "lwa_client_secret");
   }
@@ -70,7 +72,7 @@ public class AmazonSellerPartnerOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     if (queryParams.containsKey("spapi_oauth_code")) {
       return (String) queryParams.get("spapi_oauth_code");
     } else {

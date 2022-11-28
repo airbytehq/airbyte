@@ -9,16 +9,19 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.workers.general.DocumentStoreClient;
 import io.airbyte.workers.process.AsyncKubePodStatus;
+import io.airbyte.workers.process.KubeContainerInfo;
 import io.airbyte.workers.process.KubePodInfo;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class DefaultAsyncStateManagerTest {
 
-  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1");
+  public static final String FAKE_IMAGE = "fake_image";
+  private static final KubePodInfo KUBE_POD_INFO = new KubePodInfo("default", "pod1", new KubeContainerInfo(FAKE_IMAGE, "IfNotPresent"));
+  private static final String OUTPUT = "some output value";
 
   private DocumentStoreClient documentStore;
   private AsyncStateManager stateManager;
@@ -42,17 +45,17 @@ class DefaultAsyncStateManagerTest {
 
   @Test
   void testContentfulWrite() {
-    stateManager.write(KUBE_POD_INFO, AsyncKubePodStatus.SUCCEEDED, "some output value");
+    stateManager.write(KUBE_POD_INFO, AsyncKubePodStatus.SUCCEEDED, OUTPUT);
 
     final var key = getKey(AsyncKubePodStatus.SUCCEEDED);
-    verify(documentStore, times(1)).write(key, "some output value");
+    verify(documentStore, times(1)).write(key, OUTPUT);
   }
 
   @Test
   void testReadingOutputWhenItExists() {
     final var key = getKey(AsyncKubePodStatus.SUCCEEDED);
-    when(documentStore.read(key)).thenReturn(Optional.of("some output value"));
-    assertEquals("some output value", stateManager.getOutput(KUBE_POD_INFO));
+    when(documentStore.read(key)).thenReturn(Optional.of(OUTPUT));
+    assertEquals(OUTPUT, stateManager.getOutput(KUBE_POD_INFO));
   }
 
   @Test

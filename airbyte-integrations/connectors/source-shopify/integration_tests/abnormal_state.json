@@ -1,5 +1,20 @@
 {
+  "articles": {
+    "id": 99999999999999
+  },
+  "metafield_articles": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "blogs": {
+    "id": 99999999999999
+  },
+  "metafield_blogs": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
   "customers": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_customers": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
   "orders": {
@@ -14,13 +29,46 @@
   "abandoned_checkouts": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
-  "metafields": {
+  "metafield_draft_orders": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_orders": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "product_images": {
+    "id": 99999999999999
+  },
+  "metafield_product_images": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "product_variants": {
+    "id": 99999999999999
+  },
+  "metafield_product_variants": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_products": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
   "collects": {
     "id": 29427031703741
   },
+  "collections": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_collections": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "smart_collections": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_smart_collections": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
   "custom_collections": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
+  "metafield_custom_collections": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
   "order_refunds": {
@@ -35,6 +83,9 @@
       "updated_at": "2025-02-22T00:37:28-08:00"
     }
   },
+  "metafield_locations": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
+  },
   "transactions": {
     "created_at": "2025-03-03T03:47:45-08:00",
     "orders": {
@@ -46,6 +97,9 @@
   },
   "pages": {
     "updated_at": "2025-07-08T05:24:10-07:00"
+  },
+  "metafield_pages": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
   },
   "price_rules": {
     "updated_at": "2025-09-10T06:48:10-07:00"
@@ -80,5 +134,8 @@
   },
   "balance_transactions": {
     "id": 9999999999999
+  },
+  "metafield_shops": {
+    "updated_at": "2025-07-08T05:40:38-07:00"
   }
 }

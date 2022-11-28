@@ -36,11 +36,11 @@ class URLFileSecure(ParentURLFile):
     This connector shouldn't work with local files.
     """
 
-    def __init__(self, url: str, provider: dict):
+    def __init__(self, url: str, provider: dict, binary=None, encoding=None):
         storage_name = provider["storage"].lower()
         if url.startswith("file://") or storage_name == LOCAL_STORAGE_NAME:
             raise RuntimeError("the local file storage is not supported by this connector.")
-        super().__init__(url, provider)
+        super().__init__(url, provider, binary, encoding)
 
 
 class SourceFileSecure(ParentSourceFile):

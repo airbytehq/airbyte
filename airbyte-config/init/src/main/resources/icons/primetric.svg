@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   viewBox="0 0 41.599999 62.4"
+   version="1.1"
+   id="svg1109"
+   sodipodi:docname="primetric.svg"
+   width="41.599998"
+   height="62.400002"
+   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14, custom)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1111"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="5.9306849"
+     inkscape:cx="114.32069"
+     inkscape:cy="31.193699"
+     inkscape:window-width="3840"
+     inkscape:window-height="2083"
+     inkscape:window-x="0"
+     inkscape:window-y="40"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg1109" />
+  <defs
+     id="defs1083">
+    <style
+       id="style1081">.cls-1{fill:#16b7cb;}</style>
+  </defs>
+  <polygon
+     class="cls-1"
+     points="20.8,41.6 0,31.21 0,52 20.8,62.4 "
+     id="polygon1103" />
+  <polygon
+     class="cls-1"
+     points="41.6,10.4 41.6,31.2 20.8,41.6 20.8,20.81 0,10.4 20.8,0 "
+     id="polygon1105" />
+</svg>

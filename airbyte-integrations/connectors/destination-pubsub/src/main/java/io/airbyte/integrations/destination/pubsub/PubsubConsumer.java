@@ -16,12 +16,12 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
@@ -39,7 +39,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   private final Consumer<AirbyteMessage> outputRecordCollector;
   private final Map<AirbyteStreamNameNamespacePair, Map<String, String>> attributes;
   private Publisher publisher;
-  private AirbyteMessage lastStateMessage;
 
   public PubsubConsumer(final JsonNode config,
                         final ConfiguredAirbyteCatalog catalog,
@@ -47,7 +46,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     this.outputRecordCollector = outputRecordCollector;
     this.config = config;
     this.catalog = catalog;
-    this.lastStateMessage = null;
     this.attributes = Maps.newHashMap();
     this.publisher = null;
     LOGGER.info("initializing consumer.");
@@ -70,7 +68,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
         .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final Map<String, String> attrs = Maps.newHashMap();
-      final var key = AirbyteStreamNameNamespacePair.fromAirbyteSteam(configStream.getStream());
+      final var key = AirbyteStreamNameNamespacePair.fromAirbyteStream(configStream.getStream());
       attrs.put(PubsubDestination.STREAM, key.getName());
       if (!Strings.isNullOrEmpty(key.getNamespace())) {
         attrs.put(PubsubDestination.NAMESPACE, key.getNamespace());
@@ -82,8 +80,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
   @Override
   protected void acceptTracked(final AirbyteMessage msg) throws Exception {
     if (msg.getType() == Type.STATE) {
-      lastStateMessage = msg;
-      outputRecordCollector.accept(lastStateMessage);
+      outputRecordCollector.accept(msg);
       return;
     } else if (msg.getType() != Type.RECORD) {
       return;
@@ -114,7 +111,6 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     if (!hasFailed) {
       publisher.shutdown();
       LOGGER.info("shutting down consumer.");
-      outputRecordCollector.accept(lastStateMessage);
     }
   }
 

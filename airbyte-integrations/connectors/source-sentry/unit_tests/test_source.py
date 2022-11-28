@@ -4,8 +4,15 @@
 
 from unittest.mock import MagicMock
 
+from airbyte_cdk.logger import AirbyteLogger
 from source_sentry.source import SourceSentry
 from source_sentry.streams import Projects
+
+
+def test_source_wrong_credentials():
+    source = SourceSentry()
+    status, error = source.check_connection(logger=AirbyteLogger(), config={"auth_token": "test_auth_token"})
+    assert not status
 
 
 def test_check_connection(mocker):

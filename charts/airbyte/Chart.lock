@@ -1,12 +1,33 @@
 dependencies:
 - name: common
   repository: https://charts.bitnami.com/bitnami
-  version: 1.15.1
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 10.16.2
-- name: minio
-  repository: https://charts.bitnami.com/bitnami
-  version: 11.6.3
-digest: sha256:616b7b5af8ca1ac0bb11374a5589f7c00cad416faf5ac59a3484585be768fee3
-generated: "2022-06-02T18:25:41.835008+02:00"
+  version: 1.17.1
+- name: airbyte-bootloader
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: temporal
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: webapp
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: server
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: worker
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: pod-sweeper
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: metrics
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: cron
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+- name: connector-builder-server
+  repository: https://airbytehq.github.io/helm-charts/
+  version: 0.42.0
+digest: sha256:5158ff8ac210e556737a2b07b7093ecfb3e1b65dbccb55696b69d2713bebf386
+generated: "2022-11-22T11:01:14.830991517Z"

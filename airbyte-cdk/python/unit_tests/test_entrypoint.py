@@ -10,6 +10,7 @@ from unittest.mock import MagicMock
 
 import pytest
 from airbyte_cdk import AirbyteEntrypoint
+from airbyte_cdk import entrypoint as entrypoint_module
 from airbyte_cdk.models import (
     AirbyteCatalog,
     AirbyteConnectionStatus,
@@ -18,6 +19,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     ConnectorSpecification,
     Status,
+    SyncMode,
     Type,
 )
 from airbyte_cdk.sources import Source
@@ -38,7 +40,8 @@ def _as_arglist(cmd: str, named_args: Mapping[str, Any]) -> List[str]:
     out = [cmd]
     for k, v in named_args.items():
         out.append(f"--{k}")
-        out.append(v)
+        if v:
+            out.append(v)
     return out
 
 
@@ -55,20 +58,34 @@ def entrypoint() -> AirbyteEntrypoint:
     return AirbyteEntrypoint(MockSource())
 
 
+def test_airbyte_entrypoint_init(mocker):
+    mocker.patch.object(entrypoint_module, "init_uncaught_exception_handler")
+    AirbyteEntrypoint(MockSource())
+    entrypoint_module.init_uncaught_exception_handler.assert_called_once_with(entrypoint_module.logger)
+
+
 @pytest.mark.parametrize(
-    ["cmd", "args"],
+    ["cmd", "args", "expected_args"],
     [
-        ("spec", dict()),
-        ("check", {"config": "config_path"}),
-        ("discover", {"config": "config_path"}),
-        ("read", {"config": "config_path", "catalog": "catalog_path", "state": "None"}),
-        ("read", {"config": "config_path", "catalog": "catalog_path", "state": "state_path"}),
+        ("spec", {"debug": ""}, {"command": "spec", "debug": True}),
+        ("check", {"config": "config_path"}, {"command": "check", "config": "config_path", "debug": False}),
+        ("discover", {"config": "config_path", "debug": ""}, {"command": "discover", "config": "config_path", "debug": True}),
+        (
+            "read",
+            {"config": "config_path", "catalog": "catalog_path", "state": "None"},
+            {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "None", "debug": False},
+        ),
+        (
+            "read",
+            {"config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": ""},
+            {"command": "read", "config": "config_path", "catalog": "catalog_path", "state": "state_path", "debug": True},
+        ),
     ],
 )
-def test_parse_valid_args(cmd: str, args: Mapping[str, Any], entrypoint: AirbyteEntrypoint):
+def test_parse_valid_args(cmd: str, args: Mapping[str, Any], expected_args, entrypoint: AirbyteEntrypoint):
     arglist = _as_arglist(cmd, args)
     parsed_args = entrypoint.parse_args(arglist)
-    assert {"command": cmd, **args} == vars(parsed_args)
+    assert vars(parsed_args) == expected_args
 
 
 @pytest.mark.parametrize(
@@ -138,12 +155,16 @@ def test_config_validate(entrypoint: AirbyteEntrypoint, mocker, config_mock, sch
     check_value = AirbyteConnectionStatus(status=Status.SUCCEEDED)
     mocker.patch.object(MockSource, "check", return_value=check_value)
     mocker.patch.object(MockSource, "spec", return_value=ConnectorSpecification(connectionSpecification=schema))
+
+    messages = list(entrypoint.run(parsed_args))
     if config_valid:
-        messages = list(entrypoint.run(parsed_args))
         assert [_wrap_message(check_value)] == messages
     else:
-        with pytest.raises(Exception, match=r"(?i)Config Validation Error:.*"):
-            list(entrypoint.run(parsed_args))
+        assert len(messages) == 1
+        airbyte_message = AirbyteMessage.parse_raw(messages[0])
+        assert airbyte_message.type == Type.CONNECTION_STATUS
+        assert airbyte_message.connectionStatus.status == Status.FAILED
+        assert airbyte_message.connectionStatus.message.startswith("Config validation error:")
 
 
 def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
@@ -156,7 +177,7 @@ def test_run_check(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock
 
 def test_run_discover(entrypoint: AirbyteEntrypoint, mocker, spec_mock, config_mock):
     parsed_args = Namespace(command="discover", config="config_path")
-    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"})])
+    expected = AirbyteCatalog(streams=[AirbyteStream(name="stream", json_schema={"k": "v"}, supported_sync_modes=[SyncMode.full_refresh])])
     mocker.patch.object(MockSource, "discover", return_value=expected)
     assert [_wrap_message(expected)] == list(entrypoint.run(parsed_args))
     assert spec_mock.called

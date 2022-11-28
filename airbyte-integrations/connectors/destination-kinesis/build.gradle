@@ -24,6 +24,7 @@ dependencies {
 
     testImplementation "org.assertj:assertj-core:${assertVersion}"
     testImplementation "org.testcontainers:localstack:${testContainersVersion}"
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
 
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

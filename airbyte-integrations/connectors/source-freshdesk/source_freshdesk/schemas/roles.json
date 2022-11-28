@@ -3,22 +3,22 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "integer"
+      "type": ["null", "integer"]
     },
     "name": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "description": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "default": {
-      "type": "boolean"
+      "type": ["null", "boolean"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["null", "string"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["null", "string"]
     }
   }
 }

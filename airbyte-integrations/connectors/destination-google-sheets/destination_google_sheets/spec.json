@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/google-sheets",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/google-sheets",
   "supported_destination_sync_modes": ["overwrite", "append", "append_dedup"],
   "supportsIncremental": true,
   "supportsDBT": false,
@@ -21,7 +21,7 @@
       },
       "credentials": {
         "type": "object",
-        "title": "* Authentication via Google (OAuth)",
+        "title": "Authentication via Google (OAuth)",
         "description": "Google API Credentials for connecting to Google Sheets and Google Drive APIs",
         "required": ["client_id", "client_secret", "refresh_token"],
         "properties": {

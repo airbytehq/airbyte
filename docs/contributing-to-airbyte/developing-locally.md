@@ -28,7 +28,6 @@ To start contributing:
 
 ## Build with `gradle`
 
-
 To compile and build just the platform \(not all the connectors\):
 
 ```bash
@@ -81,6 +80,37 @@ The build will take a few minutes. Once it completes, Airbyte compiled at curren
 
 In `dev` mode, all data will be persisted in `/tmp/dev_root`.
 
+## Add a connector under development to Airbyte
+
+These instructions explain how to run a version of an Airbyte connector that you are developing on (e.g. has not been released yet).
+
+- First, build the platform images and run Airbyte:
+
+```bash
+SUB_BUILD=PLATFORM ./gradlew build
+VERSION=dev docker-compose up
+```
+
+- Then, build the connector image:
+```
+docker build ./airbyte-integrations/connectors/<connector-name> -t airbyte/<connector-name>:dev
+```
+
+:::info
+
+The above connector image is tagged with `dev`. You can change this to use another tag if you'd like.
+
+:::
+
+- In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in with the default user `airbyte` and default password `password`
+- Go to `Settings` (gear icon in lower left corner) 
+- Go to `Sources` or `Destinations` (depending on which connector you are testing)
+- Update the version number to use your docker image tag (default is `dev`)
+- Click `Change` to save the changes
+
+Now when you run a sync with that connector, it will use your local docker image
+
 ## Run acceptance tests
 
 To run acceptance \(end-to-end\) tests:
@@ -108,7 +138,19 @@ If you are working in the platform run `SUB_BUILD=PLATFORM ./gradlew format` fro
 
 ### Connector
 
-If you are working on an individual connectors run: `./gradlew :airbyte-integrations:<directory the connector is in e.g. source-postgres>:format`.
+To format an individual connector in python, run:
+
+```
+ ./gradlew :airbyte-integrations:connectors:<connector_name>:airbytePythonFormat
+```
+
+For instance:
+
+```
+./gradlew :airbyte-integrations:connectors:source-s3:airbytePythonFormat
+```
+
+To format connectors in java, run `./gradlew format`
 
 ### Connector Infrastructure
 
@@ -125,11 +167,12 @@ Note: If you are contributing a Python file without imports or function definiti
 ### Develop on `airbyte-webapp`
 
 - Spin up Airbyte locally so the UI can make requests against the local API.
-- Stop the `webapp`.
 
 ```bash
-docker-compose stop webapp
+BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose up
 ```
+
+Note: [basic auth](https://docs.airbyte.com/operator-guides/security#network-security) must be disabled by setting `BASIC_AUTH_USERNAME` and `BASIC_AUTH_PASSWORD` to empty values, otherwise requests from the development server will fail against the local API.
 
 - Start up the react app.
 
@@ -211,3 +254,7 @@ For example:
 ```text
 env JAVA_HOME=/usr/lib/jvm/java-14-openjdk ./gradlew  :airbyte-integrations:connectors:your-connector-dir:build
 ```
+
+### Inspecting the messages passed between connectors
+
+You can enable `LOG_CONNECTOR_MESSAGES=true` to log the messages the Airbyte platform receives from the source and destination when debugging locally. e.g. `LOG_CONNECTOR_MESSAGES=true VERSION=dev docker-compose up`

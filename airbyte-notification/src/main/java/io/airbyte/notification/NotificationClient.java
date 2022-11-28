@@ -23,14 +23,16 @@ public abstract class NotificationClient {
                                            String sourceConnector,
                                            String destinationConnector,
                                            String jobDescription,
-                                           String logUrl)
+                                           String logUrl,
+                                           Long jobId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyJobSuccess(
                                            String sourceConnector,
                                            String destinationConnector,
                                            String jobDescription,
-                                           String logUrl)
+                                           String logUrl,
+                                           Long jobId)
       throws IOException, InterruptedException;
 
   public abstract boolean notifyConnectionDisabled(String receiverEmail,
@@ -52,6 +54,8 @@ public abstract class NotificationClient {
   public abstract boolean notifySuccess(String message) throws IOException, InterruptedException;
 
   public abstract boolean notifyFailure(String message) throws IOException, InterruptedException;
+
+  public abstract boolean notifySchemaChange(UUID connectionId, boolean isBreaking) throws IOException, InterruptedException;
 
   public static NotificationClient createNotificationClient(final Notification notification) {
     return switch (notification.getNotificationType()) {

@@ -11,7 +11,9 @@ import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -48,13 +50,18 @@ public class SnowflakeDatabase {
       .version(HttpClient.Version.HTTP_2)
       .connectTimeout(Duration.ofSeconds(10))
       .build();
+  public static final String PRIVATE_KEY_FILE_NAME = "rsa_key.p8";
+  public static final String PRIVATE_KEY_FIELD_NAME = "private_key";
+  public static final String PRIVATE_KEY_PASSWORD = "private_key_password";
+  private static final String CONNECTION_STRING_IDENTIFIER_KEY = "application";
+  private static final String CONNECTION_STRING_IDENTIFIER_VAL = "Airbyte_Connector";
 
-  public static HikariDataSource createDataSource(final JsonNode config) {
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
     final HikariDataSource dataSource = new HikariDataSource();
 
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
-    final String username = config.get("username").asText();
+        config.get(JdbcUtils.HOST_KEY).asText()));
+    final String username = config.get(JdbcUtils.USERNAME_KEY).asText();
 
     final Properties properties = new Properties();
 
@@ -67,43 +74,53 @@ public class SnowflakeDatabase {
       try {
         // accessToken is only valid for 10 minutes. So we need to get a new one before processing new
         // stream
-        accessToken = getAccessTokenUsingRefreshToken(config.get("host").asText(),
+        accessToken = getAccessTokenUsingRefreshToken(config.get(JdbcUtils.HOST_KEY).asText(),
             credentials.get("client_id").asText(),
             credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
       } catch (final IOException e) {
         throw new RuntimeException(e);
       }
+      properties.put(CONNECTION_STRING_IDENTIFIER_KEY, CONNECTION_STRING_IDENTIFIER_VAL);
       properties.put("client_id", credentials.get("client_id").asText());
       properties.put("client_secret", credentials.get("client_secret").asText());
       properties.put("refresh_token", credentials.get("refresh_token").asText());
-      properties.put("host", config.get("host").asText());
+      properties.put(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       properties.put("authenticator", "oauth");
       properties.put("token", accessToken);
       // the username is required for DBT normalization in OAuth connection
-      properties.put("username", username);
+      properties.put(JdbcUtils.USERNAME_KEY, username);
 
       // thread to keep the refresh token up to date
       SnowflakeDestination.SCHEDULED_EXECUTOR_SERVICE.scheduleAtFixedRate(getRefreshTokenTask(dataSource),
           PAUSE_BETWEEN_TOKEN_REFRESH_MIN, PAUSE_BETWEEN_TOKEN_REFRESH_MIN, TimeUnit.MINUTES);
 
-    } else if (credentials != null && credentials.has("password")) {
+    } else if (credentials != null && credentials.has(JdbcUtils.PASSWORD_KEY)) {
       LOGGER.debug("User/password login mode is used");
       // Username and pass login option is selected on UI
       dataSource.setUsername(username);
-      dataSource.setPassword(credentials.get("password").asText());
+      dataSource.setPassword(credentials.get(JdbcUtils.PASSWORD_KEY).asText());
 
+    } else if (credentials != null && credentials.has(PRIVATE_KEY_FIELD_NAME)) {
+      LOGGER.debug("Login mode with key pair is used");
+      dataSource.setUsername(username);
+      final String privateKeyValue = credentials.get(PRIVATE_KEY_FIELD_NAME).asText();
+      createPrivateKeyFile(PRIVATE_KEY_FILE_NAME, privateKeyValue);
+      properties.put("private_key_file", PRIVATE_KEY_FILE_NAME);
+      if (credentials.has(PRIVATE_KEY_PASSWORD)) {
+        properties.put("private_key_file_pwd", credentials.get(PRIVATE_KEY_PASSWORD).asText());
+      }
     } else {
       LOGGER.warn(
           "Obsolete User/password login mode is used. Please re-create a connection to use the latest connector's version");
       // case to keep the backward compatibility
       dataSource.setUsername(username);
-      dataSource.setPassword(config.get("password").asText());
+      dataSource.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     properties.put("warehouse", config.get("warehouse").asText());
-    properties.put("database", config.get("database").asText());
+    properties.put(JdbcUtils.DATABASE_KEY, config.get(JdbcUtils.DATABASE_KEY).asText());
     properties.put("role", config.get("role").asText());
-    properties.put("schema", nameTransformer.getIdentifier(config.get("schema").asText()));
+    properties.put(JdbcUtils.SCHEMA_KEY, nameTransformer.getIdentifier(config.get(JdbcUtils.SCHEMA_KEY).asText()));
 
     properties.put("networkTimeout", Math.toIntExact(NETWORK_TIMEOUT.toSeconds()));
     properties.put("queryTimeout", Math.toIntExact(QUERY_TIMEOUT.toSeconds()));
@@ -112,20 +129,28 @@ public class SnowflakeDatabase {
 
     // https://docs.snowflake.com/en/user-guide/jdbc-parameters.html#application
     // identify airbyte traffic to snowflake to enable partnership & optimization opportunities
-    properties.put("application", "airbyte");
+    properties.put("application", airbyteEnvironment); // see envs in OssCloudEnvVarConsts class
     // Needed for JDK17 - see
     // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
     properties.put("JDBC_QUERY_RESULT_FORMAT", "JSON");
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append(config.get("jdbc_url_params").asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      jdbcUrl.append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
 
     dataSource.setDriverClassName(DRIVER_CLASS_NAME);
     dataSource.setJdbcUrl(jdbcUrl.toString());
     dataSource.setDataSourceProperties(properties);
     return dataSource;
+  }
+
+  private static void createPrivateKeyFile(final String fileName, final String fileValue) {
+    try (final PrintWriter out = new PrintWriter(fileName, StandardCharsets.UTF_8)) {
+      out.print(fileValue);
+    } catch (IOException e) {
+      throw new RuntimeException("Failed to create file for private key");
+    }
   }
 
   private static String getAccessTokenUsingRefreshToken(final String hostName,
@@ -178,7 +203,7 @@ public class SnowflakeDatabase {
       LOGGER.info("Refresh token process started");
       final var props = dataSource.getDataSourceProperties();
       try {
-        final var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);

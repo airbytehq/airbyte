@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.LocalDate;
@@ -50,6 +52,19 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
   }
 
   @Override
+  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
+    if (destinationValue != null) {
+      if (destinationValue.matches(".+Z")) {
+        return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
+      } else {
+        return ZonedDateTime.parse(destinationValue, getAirbyteDateTimeWithTzFormatter()).withZoneSameInstant(ZoneOffset.UTC);
+      }
+    } else {
+      return null;
+    }
+  }
+
+  @Override
   protected boolean compareDateTimeValues(String expectedValue, String actualValue) {
     var destinationDate = parseDateTime(actualValue);
     var expectedDate = LocalDateTime.parse(expectedValue, DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT));
@@ -71,11 +86,6 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
   }
 
   @Override
-  protected ZonedDateTime parseDestinationDateWithTz(String destinationValue) {
-    return ZonedDateTime.of(LocalDateTime.parse(destinationValue, DateTimeFormatter.ofPattern(BIGQUERY_DATETIME_FORMAT)), ZoneOffset.UTC);
-  }
-
-  @Override
   protected boolean compareDateTimeWithTzValues(String airbyteMessageValue, String destinationValue) {
     // #13123 Normalization issue
     if (parseDestinationDateWithTz(destinationValue).isBefore(getBrokenDate())) {
@@ -90,6 +100,12 @@ public class BigQueryTestDataComparator extends AdvancedTestDataComparator {
   // #13123 Normalization issue
   private ZonedDateTime getBrokenDate() {
     return ZonedDateTime.of(1583, 1, 1, 0, 0, 0, 0, ZoneOffset.UTC);
+  }
+
+  @Override
+  protected void compareObjects(JsonNode expectedObject, JsonNode actualObject) {
+    JsonNode actualJsonNode = (actualObject.isTextual() ? Jsons.deserialize(actualObject.textValue()) : actualObject);
+    super.compareObjects(expectedObject, actualJsonNode);
   }
 
 }

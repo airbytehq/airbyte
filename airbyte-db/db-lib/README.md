@@ -21,15 +21,15 @@ Check `io.airbyte.db.instance.configs` for example.
 
 # How to Write a Migration
 - Run the `newMigration` command to create a new migration file in `io.airbyte.db.instance.<db-name>.migrations`.
-  - Configs database: `./gradlew :airbyte-db:lib:newConfigsMigration`.
-  - Jobs database: `./gradlew :airbyte-db:lib:newJobsMigration`.
+  - Configs database: `./gradlew :airbyte-db:db-lib:newConfigsMigration`.
+  - Jobs database: `./gradlew :airbyte-db:db-lib:newJobsMigration`.
 - Write the migration using [`jOOQ`](https://www.jooq.org/).
 - Use the `runMigration` command to apply your newly written migration if you want to test it.
-  - Configs database: `./gradlew :airbyte-db:lib:runConfigsMigration`.
-  - Jobs database: `./gradlew :airbyte-db:lib:runJobsMigration`.
+  - Configs database: `./gradlew :airbyte-db:db-lib:runConfigsMigration`.
+  - Jobs database: `./gradlew :airbyte-db:db-lib:runJobsMigration`.
 - Run the `dumpSchema` command to update the database schema.
-  - Configs database: `./gradlew :airbyte-db:lib:dumpConfigsSchema`
-  - Jobs database: `./gradlew :airbyte-db:lib:dumpJobsSchema`
+  - Configs database: `./gradlew :airbyte-db:db-lib:dumpConfigsSchema`
+  - Jobs database: `./gradlew :airbyte-db:db-lib:dumpJobsSchema`
 
 ## Migration Filename
 - The name of the file should follow this pattern: `V(version)__(migration_description_in_snake_case).java`.

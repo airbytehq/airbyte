@@ -28,6 +28,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
@@ -57,6 +58,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   private MSSQLServerContainer<?> container;
 
   private String dbName;
+  private String dbNamewithDot;
   private Database database;
   private JdbcDatabase testJdbcDatabase;
   private MssqlSource source;
@@ -80,20 +82,23 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     container.start();
 
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    dbNamewithDot = Strings.addRandomSuffix("db", ".", 10).toLowerCase();
     source = new MssqlSource();
 
     final JsonNode replicationConfig = Jsons.jsonNode(Map.of(
-        "replication_type", "CDC",
+        "method", "CDC",
         "data_to_sync", "Existing and New",
+        "initial_waiting_seconds", INITIAL_WAITING_SECONDS,
         "snapshot_isolation", "Snapshot"));
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
-        .put("username", TEST_USER_NAME)
-        .put("password", TEST_USER_PASSWORD)
-        .put("replication", replicationConfig)
+        .put(JdbcUtils.HOST_KEY, container.getHost())
+        .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(MODELS_SCHEMA, MODELS_SCHEMA + "_random"))
+        .put(JdbcUtils.USERNAME_KEY, TEST_USER_NAME)
+        .put(JdbcUtils.PASSWORD_KEY, TEST_USER_PASSWORD)
+        .put("replication_method", replicationConfig)
+        .put("is_test", true)
         .build());
 
     dataSource = DataSourceFactory.create(
@@ -119,6 +124,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     testJdbcDatabase = new DefaultJdbcDatabase(testDataSource);
 
     executeQuery("CREATE DATABASE " + dbName + ";");
+    executeQuery("CREATE DATABASE [" + dbNamewithDot + "];");
     switchSnapshotIsolation(true, dbName);
   }
 
@@ -155,9 +161,20 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     return "CREATE SCHEMA " + schemaName;
   }
 
+  // TODO : Delete this Override when MSSQL supports individual table snapshot
+  @Override
+  public void newTableSnapshotTest() throws Exception {
+    // Do nothing
+  }
+
+  @Override
+  protected String randomTableSchema() {
+    return MODELS_SCHEMA + "_random";
+  }
+
   private void switchCdcOnDatabase(final Boolean enable, final String db) {
     final String storedProc = enable ? "sys.sp_cdc_enable_db" : "sys.sp_cdc_disable_db";
-    executeQuery("USE " + db + "\n" + "EXEC " + storedProc);
+    executeQuery("USE [" + db + "]\n" + "EXEC " + storedProc);
   }
 
   @Override
@@ -275,7 +292,7 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
   @Test
   void testAssertSnapshotIsolationDisabled() {
     final JsonNode replicationConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_type", "CDC")
+        .put("method", "CDC")
         .put("data_to_sync", "New Changes Only")
         // set snapshot_isolation level to "Read Committed" to disable snapshot
         .put("snapshot_isolation", "Read Committed")
@@ -312,6 +329,14 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
     assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.FAILED);
   }
 
+  @Test
+  void testCdcCheckOperationsWithDot() throws Exception {
+    // assertCdcEnabledInDb and validate escape with special character
+    switchCdcOnDatabase(true, dbNamewithDot);
+    AirbyteConnectionStatus status = getSource().check(getConfig());
+    assertEquals(status.getStatus(), AirbyteConnectionStatus.Status.SUCCEEDED);
+  }
+
   // todo: check LSN returned is actually the max LSN
   // todo: check we fail as expected under certain conditions
   @Test
@@ -342,12 +367,12 @@ public class CdcMssqlSourceTest extends CdcSourceTest {
       throw new RuntimeException(e);
     }
     final JdbcDatabase jdbcDatabase = new StreamingJdbcDatabase(
-        DataSourceFactory.create(config.get("username").asText(),
-            config.get("password").asText(),
+        DataSourceFactory.create(config.get(JdbcUtils.USERNAME_KEY).asText(),
+            config.get(JdbcUtils.PASSWORD_KEY).asText(),
             DRIVER_CLASS,
             String.format("jdbc:sqlserver://%s:%s;databaseName=%s;",
-                config.get("host").asText(),
-                config.get("port").asInt(),
+                config.get(JdbcUtils.HOST_KEY).asText(),
+                config.get(JdbcUtils.PORT_KEY).asInt(),
                 dbName)),
         new MssqlSourceOperations(),
         AdaptiveStreamingQueryConfig::new);

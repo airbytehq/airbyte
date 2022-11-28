@@ -34,7 +34,7 @@ quoting:
   database: true
   # Temporarily disabling the behavior of the ExtendedNameTransformer on table/schema names, see (issue #1785)
   # all schemas should be unquoted
-  schema: false
+  schema: true
   identifier: true
 
 # You can define configurations for models in the `model-paths` directory here.
@@ -46,7 +46,8 @@ models:
     generated:
       airbyte_ctes:
         +tags: airbyte_internal_cte
-        +materialized: ephemeral
+        # ephemeral materialization isn't supported in ClickHouse yet
+        +materialized: view
       airbyte_incremental:
         +tags: incremental_tables
         +materialized: incremental

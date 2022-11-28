@@ -4,7 +4,7 @@ import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { InfoBox } from "components/InfoBox";
+import { InfoBox } from "components/ui/InfoBox";
 
 import { useNotificationService } from "hooks/services/Notification";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";

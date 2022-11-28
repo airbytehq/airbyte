@@ -1,5 +1,8 @@
 {
-  "access_token": "1234567890absc",
-  "start_date": "2021-01-01T00:00:00Z",
-  "store_name": "www.my_pretyy_store.com"
+  "start_date": "2022-01-01T00:00:00Z",
+  "credentials": {
+    "auth_type": "SINGLE_STORE_ACCESS_TOKEN",
+    "store_name": "www.my_pretyy_store.com",
+    "access_token": "1234567890absc"
+  }
 }

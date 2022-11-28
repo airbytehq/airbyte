@@ -151,12 +151,10 @@
       "type": ["null", "string"]
     },
     "started_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "ended_time": {
-      "type": ["null", "string"],
-      "format": "date-time"
+      "type": ["null", "string"]
     },
     "is_running": {
       "type": ["null", "boolean"]

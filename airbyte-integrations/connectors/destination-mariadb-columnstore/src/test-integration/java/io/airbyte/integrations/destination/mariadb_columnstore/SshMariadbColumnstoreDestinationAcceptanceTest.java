@@ -25,6 +25,7 @@ import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -34,6 +35,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
@@ -69,10 +71,10 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
@@ -91,8 +93,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MariadbColumnstoreDestination.HOST_KEY,
-        MariadbColumnstoreDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -105,13 +107,13 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
     final DSLContext dslContext = DSLContextFactory.create(
-        config.get("username").asText(),
-        config.get("password").asText(),
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MARIADB.getDriverClassName(),
         String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
-            config.get("host").asText(),
-            config.get("port").asInt(),
-            config.get("database").asText()),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MARIADB);
     return new Database(dslContext);
   }
@@ -128,14 +130,14 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
-    bastion.initAndStartBastion();
+    bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
 
   private void startAndInitJdbcContainer() throws Exception {
     final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer<>(mcsImage)
-        .withNetwork(bastion.getNetWork());
+        .withNetwork(network);
     db.start();
 
     final String createUser = String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());

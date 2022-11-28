@@ -17,7 +17,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.jdbc.copy.gcs.GcsConfig;
@@ -41,13 +40,15 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeGcsStagingDestination.class);
+  private String airbyteEnvironment;
 
-  public SnowflakeGcsStagingDestination() {
-    this(new SnowflakeSQLNameTransformer());
+  public SnowflakeGcsStagingDestination(final String airbyteEnvironment) {
+    this(new SnowflakeSQLNameTransformer(), airbyteEnvironment);
   }
 
-  public SnowflakeGcsStagingDestination(final SnowflakeSQLNameTransformer nameTransformer) {
+  public SnowflakeGcsStagingDestination(final SnowflakeSQLNameTransformer nameTransformer, final String airbyteEnvironment) {
     super("", nameTransformer, new SnowflakeSqlOperations());
+    this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
@@ -61,10 +62,10 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
-      AirbyteSentry.executeWithTracing("CreateAndDropTable",
-          () -> attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations));
-      AirbyteSentry.executeWithTracing("CreateAndDropStage",
-          () -> attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema));
+
+      attemptTableOperations(outputSchema, database, nameTransformer, snowflakeGcsStagingSqlOperations,
+          true);
+      attemptWriteAndDeleteGcsObject(gcsConfig, outputSchema);
 
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
@@ -102,7 +103,7 @@ public class SnowflakeGcsStagingDestination extends AbstractJdbcDestination impl
 
   @Override
   protected DataSource getDataSource(final JsonNode config) {
-    return SnowflakeDatabase.createDataSource(config);
+    return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override

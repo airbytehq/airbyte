@@ -18,12 +18,12 @@ If there are more endpoints you'd like Airbyte to support, please [create an iss
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental Sync | No |
-| SSL connection | No |
-| Namespaces | No |
+| Feature           | Supported? |
+|:------------------|:-----------|
+| Full Refresh Sync | Yes        |
+| Incremental Sync  | No         |
+| SSL connection    | No         |
+| Namespaces        | No         |
 
 ### Performance considerations
 
@@ -55,9 +55,10 @@ You can get the API token for Monday by going to Profile picture (bottom left co
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.3 | 2021-12-23 | [8172](https://github.com/airbytehq/airbyte/pull/8172) | Add oauth2.0 support |
-| 0.1.2 | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429) | Update titles and descriptions |
-| 0.1.1 | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016) | 🐛 Source Monday: fix pagination and schema bug |
-| 0.1.0 | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168) | 🎉 New Source: Monday |
+| Version | Date       | Pull Request                                             | Subject                                         |
+|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------|
+| 0.1.4   | 2022-06-06 | [14443](https://github.com/airbytehq/airbyte/pull/14443) | Increase retry_factor for Items stream          |
+| 0.1.3   | 2021-12-23 | [8172](https://github.com/airbytehq/airbyte/pull/8172)   | Add oauth2.0 support                            |
+| 0.1.2   | 2021-12-07 | [8429](https://github.com/airbytehq/airbyte/pull/8429)   | Update titles and descriptions                  |
+| 0.1.1   | 2021-11-18 | [8016](https://github.com/airbytehq/airbyte/pull/8016)   | 🐛 Source Monday: fix pagination and schema bug |
+| 0.1.0   | 2021-11-07 | [7168](https://github.com/airbytehq/airbyte/pull/7168)   | 🎉 New Source: Monday                           |

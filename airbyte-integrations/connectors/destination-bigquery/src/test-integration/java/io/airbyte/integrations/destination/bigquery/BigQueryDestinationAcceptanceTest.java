@@ -112,8 +112,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected boolean supportArrayDataTypeTest() {
-    // #13154 Normalization issue
-    return false;
+    return true;
   }
 
   @Override
@@ -142,7 +141,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    return config.get(CONFIG_DATASET_ID).asText();
+    return BigQueryUtils.getDatasetId(config);
   }
 
   @Override
@@ -222,7 +221,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .getService();
 
     final DatasetInfo datasetInfo =
-        DatasetInfo.newBuilder(config.get(CONFIG_DATASET_ID).asText()).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
+        DatasetInfo.newBuilder(getDefaultSchema(config)).setLocation(config.get(CONFIG_DATASET_LOCATION).asText()).build();
     dataset = bigquery.create(datasetInfo);
 
     tornDown = false;

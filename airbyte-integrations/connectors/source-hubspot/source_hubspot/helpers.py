@@ -3,7 +3,8 @@
 #
 
 import abc
-from typing import MutableMapping
+import urllib.parse
+from typing import Iterator, List, MutableMapping
 
 
 class IRecordPostProcessor(abc.ABC):
@@ -51,3 +52,62 @@ class StoreAsIs(IRecordPostProcessor):
     @property
     def flat(self):
         return self._storage
+
+
+class IURLPropertyRepresentation(abc.ABC):
+    # The value is obtained experimentally, HubSpot allows the URL length up to ~16300 symbols,
+    # so it was decided to limit the length of the `properties` parameter to 15000 characters.
+    PROPERTIES_PARAM_MAX_LENGTH = 15000
+
+    def __init__(self, properties: List[str]):
+        self.properties = properties
+
+    def __bool__(self):
+        return bool(self.properties)
+
+    @property
+    @abc.abstractmethod
+    def as_url_param(self):
+        """"""
+
+    @property
+    @abc.abstractmethod
+    def _term_representation(self):
+        """"""
+
+    def split(self) -> Iterator["IURLPropertyRepresentation"]:
+        summary_length = 0
+        local_properties = []
+        for property_ in self.properties:
+            current_property_length = len(urllib.parse.quote(self._term_representation.format(property=property_)))
+            if current_property_length + summary_length >= self.PROPERTIES_PARAM_MAX_LENGTH:
+                yield type(self)(local_properties)
+                local_properties = []
+                summary_length = 0
+
+            local_properties.append(property_)
+            summary_length += current_property_length
+
+        if local_properties:
+            yield type(self)(local_properties)
+
+    @property
+    def too_many_properties(self) -> bool:
+        # Do not iterate over the generator until the end. Here we need to know if it produces more than one record
+        generator = self.split()
+        _ = next(generator)
+        return next(generator, None) is not None
+
+
+class APIv1Property(IURLPropertyRepresentation):
+    _term_representation = "property={property}&"
+
+    def as_url_param(self):
+        return {"property": self.properties}
+
+
+class APIv3Property(IURLPropertyRepresentation):
+    _term_representation = "{property},"
+
+    def as_url_param(self):
+        return {"properties": ",".join(self.properties)}

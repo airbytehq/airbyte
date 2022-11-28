@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.db.jdbc.JdbcUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -33,6 +34,10 @@ public class SnowflakeDataSourceUtils {
   public static final String OAUTH_METHOD = "OAuth";
   public static final String USERNAME_PASSWORD_METHOD = "username/password";
   public static final String UNRECOGNIZED = "Unrecognized";
+  public static final String AIRBYTE_OSS = "airbyte_oss";
+  public static final String AIRBYTE_CLOUD = "airbyte_cloud";
+  private static final String JDBC_CONNECTION_STRING =
+      "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s&application=%s";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeDataSourceUtils.class);
   private static final int PAUSE_BETWEEN_TOKEN_REFRESH_MIN = 7; // snowflake access token's TTL is 10min and can't be modified
@@ -50,12 +55,12 @@ public class SnowflakeDataSourceUtils {
    * @param config source config JSON
    * @return datasource
    */
-  public static HikariDataSource createDataSource(final JsonNode config) {
-    HikariDataSource dataSource = new HikariDataSource();
-    dataSource.setJdbcUrl(buildJDBCUrl(config));
+  public static HikariDataSource createDataSource(final JsonNode config, final String airbyteEnvironment) {
+    final HikariDataSource dataSource = new HikariDataSource();
+    dataSource.setJdbcUrl(buildJDBCUrl(config, airbyteEnvironment));
 
     if (config.has("credentials")) {
-      JsonNode credentials = config.get("credentials");
+      final JsonNode credentials = config.get("credentials");
       final String authType = credentials.has("auth_type") ? credentials.get("auth_type").asText() : UNRECOGNIZED;
       switch (authType) {
         case OAUTH_METHOD -> {
@@ -120,32 +125,32 @@ public class SnowflakeDataSourceUtils {
       } else {
         LOGGER.error("Failed to obtain accessToken using refresh token. " + jsonResponse);
         throw new RuntimeException(
-            "Failed to obtain accessToken using refresh token.");
+            "Failed to obtain accessToken using refresh token. " + jsonResponse);
       }
     } catch (final InterruptedException e) {
       throw new IOException("Failed to refreshToken", e);
     }
   }
 
-  public static String buildJDBCUrl(JsonNode config) {
+  public static String buildJDBCUrl(final JsonNode config, final String airbyteEnvironment) {
     final StringBuilder jdbcUrl = new StringBuilder(String.format("jdbc:snowflake://%s/?",
-        config.get("host").asText()));
+        config.get(JdbcUtils.HOST_KEY).asText()));
 
     // Add required properties
-    jdbcUrl.append(String.format(
-        "role=%s&warehouse=%s&database=%s&schema=%s&JDBC_QUERY_RESULT_FORMAT=%s&CLIENT_SESSION_KEEP_ALIVE=%s",
+    jdbcUrl.append(String.format(JDBC_CONNECTION_STRING,
         config.get("role").asText(),
         config.get("warehouse").asText(),
-        config.get("database").asText(),
+        config.get(JdbcUtils.DATABASE_KEY).asText(),
         config.get("schema").asText(),
         // Needed for JDK17 - see
         // https://stackoverflow.com/questions/67409650/snowflake-jdbc-driver-internal-error-fail-to-retrieve-row-count-for-first-arrow
         "JSON",
-        true));
+        true,
+        airbyteEnvironment));
 
     // https://docs.snowflake.com/en/user-guide/jdbc-configure.html#jdbc-driver-connection-string
-    if (config.has("jdbc_url_params")) {
-      jdbcUrl.append("&").append(config.get("jdbc_url_params").asText());
+    if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
+      jdbcUrl.append("&").append(config.get(JdbcUtils.JDBC_URL_PARAMS_KEY).asText());
     }
     return jdbcUrl.toString();
   }
@@ -153,45 +158,45 @@ public class SnowflakeDataSourceUtils {
   private static Runnable getAccessTokenTask(final HikariDataSource dataSource) {
     return () -> {
       LOGGER.info("Refresh token process started");
-      var props = dataSource.getDataSourceProperties();
+      final var props = dataSource.getDataSourceProperties();
       try {
-        var token = getAccessTokenUsingRefreshToken(props.getProperty("host"),
+        final var token = getAccessTokenUsingRefreshToken(props.getProperty(JdbcUtils.HOST_KEY),
             props.getProperty("client_id"), props.getProperty("client_secret"),
             props.getProperty("refresh_token"));
         props.setProperty("token", token);
         dataSource.setDataSourceProperties(props);
         LOGGER.info("New access token has been obtained");
-      } catch (IOException e) {
+      } catch (final IOException e) {
         LOGGER.error("Failed to obtain a fresh accessToken:" + e);
       }
     };
   }
 
-  public static Properties buildAuthProperties(JsonNode config) {
-    Properties properties = new Properties();
+  public static Properties buildAuthProperties(final JsonNode config) {
+    final Properties properties = new Properties();
     try {
-      var credentials = config.get("credentials");
+      final var credentials = config.get("credentials");
       properties.setProperty("client_id", credentials.get("client_id").asText());
       properties.setProperty("client_secret", credentials.get("client_secret").asText());
       properties.setProperty("refresh_token", credentials.get("refresh_token").asText());
-      properties.setProperty("host", config.get("host").asText());
+      properties.setProperty(JdbcUtils.HOST_KEY, config.get(JdbcUtils.HOST_KEY).asText());
       properties.put("authenticator", "oauth");
-      properties.put("account", config.get("host").asText());
+      properties.put("account", config.get(JdbcUtils.HOST_KEY).asText());
 
-      String accessToken = getAccessTokenUsingRefreshToken(
-          config.get("host").asText(), credentials.get("client_id").asText(),
+      final String accessToken = getAccessTokenUsingRefreshToken(
+          config.get(JdbcUtils.HOST_KEY).asText(), credentials.get("client_id").asText(),
           credentials.get("client_secret").asText(), credentials.get("refresh_token").asText());
 
       properties.put("token", accessToken);
-    } catch (IOException e) {
+    } catch (final IOException e) {
       LOGGER.error("Request access token was failed with error" + e.getMessage());
     }
     return properties;
   }
 
-  private static void populateUsernamePasswordConfig(HikariConfig hikariConfig, JsonNode config) {
-    hikariConfig.setUsername(config.get("username").asText());
-    hikariConfig.setPassword(config.get("password").asText());
+  private static void populateUsernamePasswordConfig(final HikariConfig hikariConfig, final JsonNode config) {
+    hikariConfig.setUsername(config.get(JdbcUtils.USERNAME_KEY).asText());
+    hikariConfig.setPassword(config.get(JdbcUtils.PASSWORD_KEY).asText());
   }
 
 }

@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
@@ -17,7 +18,6 @@ import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mariadb_columnstore.MariadbColumnstoreSqlOperations.VersionCompatibility;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -27,14 +27,11 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestination.class);
   public static final String DRIVER_CLASS = DatabaseDriver.MARIADB.getDriverClassName();
-  public static final List<String> HOST_KEY = List.of("host");
-  public static final List<String> PORT_KEY = List.of("port");
-
   static final Map<String, String> DEFAULT_JDBC_PARAMETERS = ImmutableMap.of(
       "allowLoadLocalInfile", "true");
 
   public static Destination sshWrappedDestination() {
-    return new SshWrappedDestination(new MariadbColumnstoreDestination(), HOST_KEY, PORT_KEY);
+    return new SshWrappedDestination(new MariadbColumnstoreDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
   }
 
   public MariadbColumnstoreDestination() {
@@ -47,7 +44,7 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
     try {
       final JdbcDatabase database = getDatabase(dataSource);
       final MariadbColumnstoreSqlOperations mariadbColumnstoreSqlOperations = (MariadbColumnstoreSqlOperations) getSqlOperations();
-      final String outputSchema = getNamingResolver().getIdentifier(config.get("database").asText());
+      final String outputSchema = getNamingResolver().getIdentifier(config.get(JdbcUtils.DATABASE_KEY).asText());
 
       final VersionCompatibility compatibility = mariadbColumnstoreSqlOperations.isCompatibleVersion(database);
       if (!compatibility.isCompatible()) {
@@ -87,16 +84,16 @@ public class MariadbColumnstoreDestination extends AbstractJdbcDestination imple
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
     final String jdbcUrl = String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
-        config.get("host").asText(),
-        config.get("port").asInt(),
-        config.get("database").asText());
+        config.get(JdbcUtils.HOST_KEY).asText(),
+        config.get(JdbcUtils.PORT_KEY).asInt(),
+        config.get(JdbcUtils.DATABASE_KEY).asText());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
-        .put("username", config.get("username").asText())
-        .put("jdbc_url", jdbcUrl);
+        .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
+        .put(JdbcUtils.JDBC_URL_KEY, jdbcUrl);
 
-    if (config.has("password")) {
-      configBuilder.put("password", config.get("password").asText());
+    if (config.has(JdbcUtils.PASSWORD_KEY)) {
+      configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
     }
 
     return Jsons.jsonNode(configBuilder.build());

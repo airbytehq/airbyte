@@ -1,0 +1,27 @@
+name: "Add labels to github issues based on context"
+on:
+  issues:
+    types: [opened, labeled, unlabeled]
+
+jobs:
+  shared-issues:
+    name: "Add Labels to Issues.  Safe to Merge on fail"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte Repo for PAT command
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        # Cannot share PAT outside of JOB context
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
+      - name: Run Issue Command from workflow-actions
+        uses: nick-fields/private-action-loader@v3
+        with:
+          pal-repo-token: "${{ env.PAT }}"
+          pal-repo-name: airbytehq/workflow-actions@production
+          # the following input gets passed to the private
+          token: "${{ env.PAT }}"
+          # ref: https://github.com/airbytehq/workflow-actions/blob/main/src/bin_issue.ts
+          command: "issue"

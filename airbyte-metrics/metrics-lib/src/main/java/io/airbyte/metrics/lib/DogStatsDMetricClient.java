@@ -8,6 +8,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.timgroup.statsd.NonBlockingStatsDClientBuilder;
 import com.timgroup.statsd.StatsDClient;
 import io.airbyte.config.Configs;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -18,10 +20,16 @@ import lombok.extern.slf4j.Slf4j;
  * <p>
  * Open source users are free to turn this on and consume the same metrics.
  * <p>
- * This class is intended to be used in conjection with {@link Configs#getPublishMetrics()}.
+ * This class is intended to be used in conjunction with {@link Configs#getPublishMetrics()}.
+ * <p>
+ * Any {@link MetricAttribute}s provided with the metric data are sent as tags created by joining
+ * the {@code key} and {@code value} property of each {@link MetricAttribute} with a
+ * {@link #TAG_DELIMITER} delimiter.
  */
 @Slf4j
 public class DogStatsDMetricClient implements MetricClient {
+
+  private static final String TAG_DELIMITER = ":";
 
   private boolean instancePublish = false;
   private StatsDClient statsDClient;
@@ -47,6 +55,7 @@ public class DogStatsDMetricClient implements MetricClient {
         .prefix(app.getApplicationName())
         .hostname(config.ddAgentHost)
         .port(Integer.parseInt(config.ddPort))
+        .constantTags(config.constantTags.toArray(new String[0]))
         .build();
   }
 
@@ -62,10 +71,10 @@ public class DogStatsDMetricClient implements MetricClient {
    *
    * @param metric
    * @param amt to adjust.
-   * @param tags
+   * @param attributes
    */
   @Override
-  public void count(final MetricsRegistry metric, final long amt, final String... tags) {
+  public void count(final MetricsRegistry metric, final long amt, final MetricAttribute... attributes) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -73,8 +82,8 @@ public class DogStatsDMetricClient implements MetricClient {
         return;
       }
 
-      log.info("publishing count, name: {}, value: {}, tags: {}", metric, amt, tags);
-      statsDClient.count(metric.getMetricName(), amt, tags);
+      log.info("publishing count, name: {}, value: {}, attributes: {}", metric, amt, attributes);
+      statsDClient.count(metric.getMetricName(), amt, toTags(attributes));
     }
   }
 
@@ -83,10 +92,10 @@ public class DogStatsDMetricClient implements MetricClient {
    *
    * @param metric
    * @param val to record.
-   * @param tags
+   * @param attributes
    */
   @Override
-  public void gauge(final MetricsRegistry metric, final double val, final String... tags) {
+  public void gauge(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -94,13 +103,13 @@ public class DogStatsDMetricClient implements MetricClient {
         return;
       }
 
-      log.info("publishing gauge, name: {}, value: {}, tags: {}", metric, val, tags);
-      statsDClient.gauge(metric.getMetricName(), val, tags);
+      log.debug("publishing gauge, name: {}, value: {}, attributes: {}", metric, val, attributes);
+      statsDClient.gauge(metric.getMetricName(), val, toTags(attributes));
     }
   }
 
   @Override
-  public void distribution(MetricsRegistry metric, double val, final String... tags) {
+  public void distribution(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
     if (instancePublish) {
       if (statsDClient == null) {
         // do not loudly fail to prevent application disruption
@@ -108,9 +117,19 @@ public class DogStatsDMetricClient implements MetricClient {
         return;
       }
 
-      log.info("recording distribution, name: {}, value: {}, tags: {}", metric, val, tags);
-      statsDClient.distribution(metric.getMetricName(), val, tags);
+      log.debug("recording distribution, name: {}, value: {}, attributes: {}", metric, val, attributes);
+      statsDClient.distribution(metric.getMetricName(), val, toTags(attributes));
     }
+  }
+
+  /**
+   * Converts each {@link MetricAttribute} tuple to a list of tags consumable by StatsD.
+   *
+   * @param attributes An array of {@link MetricAttribute} tuples.
+   * @return An array of tag values.
+   */
+  private String[] toTags(final MetricAttribute... attributes) {
+    return Stream.of(attributes).map(a -> String.join(TAG_DELIMITER, a.key(), a.value())).collect(Collectors.toList()).toArray(new String[] {});
   }
 
 }

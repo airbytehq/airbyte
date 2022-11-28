@@ -1,0 +1,71 @@
+### This Chart.yaml file is used for local testing purposes
+### If you want to test the chart before creating PR, rename this file into Chart.yaml and test the deployment
+
+apiVersion: v2
+name: airbyte
+description: Helm chart to deploy airbyte
+
+
+# A chart can be either an 'application' or a 'library' chart.
+#
+# Application charts are a collection of templates that can be packaged into versioned archives
+# to be deployed.
+#
+# Library charts provide useful utilities or functions for the chart developer. They're included as
+# a dependency of application charts to inject those utilities and functions into the rendering
+# pipeline. Library charts do not define any templates and therefore cannot be deployed.
+type: application
+
+# This is the chart version. This version number should be incremented each time you make changes
+# to the chart and its templates, including the app version.
+# Versions are expected to follow Semantic Versioning (https://semver.org/)
+version: 0.45.2
+
+# This is the version number of the application being deployed. This version number should be
+# incremented each time you make changes to the application. Versions are not expected to
+# follow Semantic Versioning. They should reflect the version the application is using.
+# It is recommended to use it with quotes.
+appVersion: "0.40.0-alpha"
+
+dependencies:
+  - name: common
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami-common
+    version: 1.x.x
+  - condition: airbyte-bootloader.enabled
+    name: airbyte-bootloader
+    repository: "file://../airbyte-bootloader"
+    version: "*"
+  - condition: temporal.enabled
+    name: temporal
+    repository: "file://../airbyte-temporal"
+    version: "*"
+  - condition: webapp.enabled
+    name: webapp
+    repository: "file://../airbyte-webapp"
+    version: "*"
+  - condition: server.enabled
+    name: server
+    repository: "file://../airbyte-server"
+    version: "*"
+  - condition: worker.enabled
+    name: worker
+    repository: "file://../airbyte-worker"
+    version: "*"
+  - condition: pod-sweeper.enabled
+    name: pod-sweeper
+    repository: "file://../airbyte-pod-sweeper"
+    version: "*"
+  - condition: metrics.enabled
+    name: metrics
+    repository: "file://../airbyte-metrics"
+    version: "*"
+  - condition: cron.enabled
+    name: cron
+    repository: "file://../airbyte-cron"
+    version: "*"
+  - condition: connector-builder-server.enabled
+    name: connector-builder-server
+    repository: "file://../airbyte-connector-builder-server"
+    version: "*"

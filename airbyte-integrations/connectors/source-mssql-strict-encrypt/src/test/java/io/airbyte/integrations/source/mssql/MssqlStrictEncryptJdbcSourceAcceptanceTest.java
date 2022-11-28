@@ -15,6 +15,7 @@ import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
@@ -37,6 +38,10 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
 
   @BeforeAll
   static void init() {
+    // In mssql, timestamp is generated automatically, so we need to use
+    // the datetime type instead so that we can set the value manually.
+    COL_TIMESTAMP_TYPE = "DATETIME";
+
     dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
   }
@@ -44,19 +49,19 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
   @BeforeEach
   public void setup() throws Exception {
     final JsonNode configWithoutDbName = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", dbContainer.getHost())
-        .put("port", dbContainer.getFirstMappedPort())
-        .put("username", dbContainer.getUsername())
-        .put("password", dbContainer.getPassword())
+        .put(JdbcUtils.HOST_KEY, dbContainer.getHost())
+        .put(JdbcUtils.PORT_KEY, dbContainer.getFirstMappedPort())
+        .put(JdbcUtils.USERNAME_KEY, dbContainer.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, dbContainer.getPassword())
         .build());
 
     dataSource = DataSourceFactory.create(
-        configWithoutDbName.get("username").asText(),
-        configWithoutDbName.get("password").asText(),
+        configWithoutDbName.get(JdbcUtils.USERNAME_KEY).asText(),
+        configWithoutDbName.get(JdbcUtils.PASSWORD_KEY).asText(),
         DatabaseDriver.MSSQLSERVER.getDriverClassName(),
         String.format("jdbc:sqlserver://%s:%d",
-            configWithoutDbName.get("host").asText(),
-            configWithoutDbName.get("port").asInt()));
+            configWithoutDbName.get(JdbcUtils.HOST_KEY).asText(),
+            configWithoutDbName.get(JdbcUtils.PORT_KEY).asInt()));
 
     try {
       database = new DefaultJdbcDatabase(dataSource);
@@ -66,7 +71,7 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
       database.execute(ctx -> ctx.createStatement().execute(String.format("CREATE DATABASE %s;", dbName)));
 
       config = Jsons.clone(configWithoutDbName);
-      ((ObjectNode) config).put("database", dbName);
+      ((ObjectNode) config).put(JdbcUtils.DATABASE_KEY, dbName);
 
       super.setup();
     } finally {

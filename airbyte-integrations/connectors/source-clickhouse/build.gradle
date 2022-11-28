@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-source-acceptance-test'
 }
 
 application {
@@ -17,10 +18,10 @@ dependencies {
     implementation project(':airbyte-protocol:protocol-models')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
-    implementation 'ru.yandex.clickhouse:clickhouse-jdbc:0.3.1'
+    implementation 'com.clickhouse:clickhouse-jdbc:0.3.2-patch10:all'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:source-clickhouse')
     integrationTestJavaImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
-    integrationTestJavaImplementation libs.testcontainers.clickhouse
+    integrationTestJavaImplementation libs.connectors.source.testcontainers.clickhouse
 }

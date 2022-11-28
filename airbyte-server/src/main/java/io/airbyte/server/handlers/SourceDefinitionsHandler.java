@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.SourceDefinitionCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceDefinitionRead.SourceTypeEnum;
 import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.SourceRead;
@@ -23,17 +24,24 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.util.MoreLists;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.client.SynchronousSchedulerClient;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.SpecFetcher;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.server.errors.InternalServerKnownException;
+import io.airbyte.server.errors.UnsupportedProtocolVersionException;
+import io.airbyte.server.scheduler.SynchronousResponse;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -46,6 +54,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+@SuppressWarnings("PMD.AvoidCatchingNPE")
 public class SourceDefinitionsHandler {
 
   private final ConfigRepository configRepository;
@@ -53,6 +62,7 @@ public class SourceDefinitionsHandler {
   private final AirbyteGithubStore githubStore;
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final SourceHandler sourceHandler;
+  private final AirbyteProtocolVersionRange protocolVersionRange;
 
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
@@ -70,6 +80,10 @@ public class SourceDefinitionsHandler {
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.sourceHandler = sourceHandler;
+
+    // TODO inject protocol min and max once this handler is being converted to micronaut
+    final Configs configs = new EnvConfigs();
+    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
   }
 
   @VisibleForTesting
@@ -78,10 +92,12 @@ public class SourceDefinitionsHandler {
       return new SourceDefinitionRead()
           .sourceDefinitionId(standardSourceDefinition.getSourceDefinitionId())
           .name(standardSourceDefinition.getName())
+          .sourceType(getSourceType(standardSourceDefinition))
           .dockerRepository(standardSourceDefinition.getDockerRepository())
           .dockerImageTag(standardSourceDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardSourceDefinition.getDocumentationUrl()))
           .icon(loadIcon(standardSourceDefinition.getIcon()))
+          .protocolVersion(standardSourceDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardSourceDefinition))
           .releaseDate(getReleaseDate(standardSourceDefinition))
           .resourceRequirements(ApiPojoConverters.actorDefResourceReqsToApi(standardSourceDefinition.getResourceRequirements()));
@@ -89,6 +105,13 @@ public class SourceDefinitionsHandler {
     } catch (final URISyntaxException | NullPointerException e) {
       throw new InternalServerKnownException("Unable to process retrieved latest source definitions list", e);
     }
+  }
+
+  private static SourceTypeEnum getSourceType(final StandardSourceDefinition standardSourceDefinition) {
+    if (standardSourceDefinition.getSourceType() == null) {
+      return null;
+    }
+    return SourceTypeEnum.fromValue(standardSourceDefinition.getSourceType().value());
   }
 
   private static ReleaseStage getReleaseStage(final StandardSourceDefinition standardSourceDefinition) {
@@ -172,6 +195,9 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
         .withPublic(false)
         .withCustom(false);
+    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
+    }
     configRepository.writeStandardSourceDefinition(sourceDefinition);
 
     return buildSourceDefinitionRead(sourceDefinition);
@@ -182,6 +208,9 @@ public class SourceDefinitionsHandler {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
         .withPublic(false)
         .withCustom(true);
+    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
+      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
+    }
     configRepository.writeCustomSourceDefinition(sourceDefinition, customSourceDefinitionCreate.getWorkspaceId());
 
     return buildSourceDefinitionRead(sourceDefinition);
@@ -190,6 +219,8 @@ public class SourceDefinitionsHandler {
   private StandardSourceDefinition sourceDefinitionFromCreate(final SourceDefinitionCreate sourceDefinitionCreate)
       throws IOException {
     final ConnectorSpecification spec = getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag());
+
+    final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
     final UUID id = uuidSupplier.get();
     return new StandardSourceDefinition()
@@ -200,6 +231,7 @@ public class SourceDefinitionsHandler {
         .withName(sourceDefinitionCreate.getName())
         .withIcon(sourceDefinitionCreate.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(false)
         .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
@@ -221,6 +253,11 @@ public class SourceDefinitionsHandler {
         ? ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionUpdate.getResourceRequirements())
         : currentSourceDefinition.getResourceRequirements();
 
+    final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
+    if (!protocolVersionRange.isSupported(airbyteProtocolVersion)) {
+      throw new UnsupportedProtocolVersionException(airbyteProtocolVersion, protocolVersionRange.min(), protocolVersionRange.max());
+    }
+
     final StandardSourceDefinition newSource = new StandardSourceDefinition()
         .withSourceDefinitionId(currentSourceDefinition.getSourceDefinitionId())
         .withDockerImageTag(sourceDefinitionUpdate.getDockerImageTag())
@@ -229,6 +266,7 @@ public class SourceDefinitionsHandler {
         .withName(currentSourceDefinition.getName())
         .withIcon(currentSourceDefinition.getIcon())
         .withSpec(spec)
+        .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(currentSourceDefinition.getTombstone())
         .withPublic(currentSourceDefinition.getPublic())
         .withCustom(currentSourceDefinition.getCustom())
@@ -237,6 +275,8 @@ public class SourceDefinitionsHandler {
         .withResourceRequirements(updatedResourceReqs);
 
     configRepository.writeStandardSourceDefinition(newSource);
+    configRepository.clearUnsupportedProtocolVersionFlag(newSource.getSourceDefinitionId(), ActorType.SOURCE, protocolVersionRange);
+
     return buildSourceDefinitionRead(newSource);
   }
 

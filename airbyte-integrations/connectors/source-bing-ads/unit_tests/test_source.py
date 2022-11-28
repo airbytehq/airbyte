@@ -3,7 +3,7 @@
 #
 
 import json
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 import source_bing_ads
@@ -28,12 +28,6 @@ def logger_mock_fixture():
 @patch.object(source_bing_ads.source, "Client")
 def test_streams_config_based(mocked_client, config):
     streams = SourceBingAds().streams(config)
-    assert len(streams) == 15
-
-
-@patch.object(source_bing_ads.source, "Client")
-def test_streams_all(mocked_client):
-    streams = SourceBingAds().streams(MagicMock())
     assert len(streams) == 25
 
 
@@ -57,6 +51,7 @@ def test_campaigns_request_params(mocked_client, config):
     request_params = campaigns.request_params(stream_slice={"account_id": "account_id"})
     assert request_params == {
         "AccountId": "account_id",
+        "CampaignType": "Audience DynamicSearchAds Search Shopping",
         "ReturnAdditionalFields": "AdScheduleUseSearcherTimeZone BidStrategyId CpvCpmBiddingScheme DynamicDescriptionSetting DynamicFeedSetting MaxConversionValueBiddingScheme MultimediaAdsBidAdjustment TargetImpressionShareBiddingScheme TargetSetting VerifiedTrackingSetting",
     }
 

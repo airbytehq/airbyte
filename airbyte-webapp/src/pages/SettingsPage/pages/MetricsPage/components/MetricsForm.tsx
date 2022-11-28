@@ -5,7 +5,7 @@ import styled from "styled-components";
 import Label from "components/Label";
 import { LabeledSwitch } from "components/LabeledSwitch";
 
-import { useConfig } from "config";
+import { links } from "utils/links";
 
 import FeedbackBlock from "../../../components/FeedbackBlock";
 
@@ -50,7 +50,6 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
   errorMessage,
   isLoading,
 }) => {
-  const config = useConfig();
   return (
     <>
       <Subtitle>
@@ -58,10 +57,10 @@ const MetricsForm: React.FC<MetricsFormProps> = ({
       </Subtitle>
       <Text>
         <FormattedMessage
-          id={"preferences.collectData"}
+          id="preferences.collectData"
           values={{
             docs: (docs: React.ReactNode) => (
-              <DocsLink target="_blank" href={config.links.docsLink}>
+              <DocsLink target="_blank" href={links.docsLink}>
                 {docs}
               </DocsLink>
             ),

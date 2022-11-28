@@ -16,5 +16,5 @@ from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_SCD') 
 -- PARTITION at nested_stream_with_complex_columns_resulting_into_long_names/partition
 where 1 = 1
 and PARTITION is not null
-{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+{{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 

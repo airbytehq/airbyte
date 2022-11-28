@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { ConnectorIcon } from "components/ConnectorIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
 
 interface IProps {
   value: string;
@@ -23,7 +23,7 @@ const Image = styled(ConnectorIcon)`
 const ConnectorCell: React.FC<IProps> = ({ value, enabled, img }) => {
   return (
     <Content enabled={enabled}>
-      <Image small icon={img} />
+      <Image icon={img} />
       {value}
     </Content>
   );

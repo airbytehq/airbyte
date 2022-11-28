@@ -4,6 +4,8 @@
 
 package io.airbyte.integrations.base;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,12 +14,14 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterators;
@@ -222,6 +226,67 @@ class IntegrationRunnerTest {
   }
 
   @Test
+  void testReadException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.read(configPath, configuredCatalogPath,
+        statePath);
+    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.read(CONFIG, CONFIGURED_CATALOG, STATE)).thenThrow(configErrorException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    final Throwable throwable = catchThrowable(() -> new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS));
+
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    verify(source).read(CONFIG, CONFIGURED_CATALOG, STATE);
+  }
+
+  @Test
+  void testCheckNestedException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Invalid configuration");
+    final ConfigErrorException configErrorException = new ConfigErrorException("Invalid configuration");
+    final RuntimeException runtimeException = new RuntimeException(new RuntimeException(configErrorException));
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenThrow(runtimeException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    verify(source).check(CONFIG);
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
+  void testCheckRuntimeException() throws Exception {
+    final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
+    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Runtime Error");
+    final RuntimeException runtimeException = new RuntimeException("Runtime Error");
+
+    when(cliParser.parse(ARGS)).thenReturn(intConfig);
+    when(source.check(CONFIG)).thenThrow(runtimeException);
+
+    final ConnectorSpecification expectedConnSpec = mock(ConnectorSpecification.class);
+    when(source.spec()).thenReturn(expectedConnSpec);
+    when(expectedConnSpec.getConnectionSpecification()).thenReturn(CONFIG);
+    final JsonSchemaValidator jsonSchemaValidator = mock(JsonSchemaValidator.class);
+    new IntegrationRunner(cliParser, stdoutConsumer, null, source, jsonSchemaValidator).run(ARGS);
+
+    verify(source).check(CONFIG);
+    verify(stdoutConsumer).accept(new AirbyteMessage().withType(Type.CONNECTION_STATUS).withConnectionStatus(output));
+    verify(jsonSchemaValidator).validate(any(), any());
+  }
+
+  @Test
   void testWrite() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.write(configPath, configuredCatalogPath);
     final AirbyteMessageConsumer airbyteMessageConsumerMock = mock(AirbyteMessageConsumer.class);
@@ -375,6 +440,50 @@ class IntegrationRunnerTest {
     assertEquals("dev", IntegrationRunner.parseConnectorVersion("airbyte/destination-test:dev"));
     assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion("destination-test:1.0.1-alpha"));
     assertEquals("1.0.1-alpha", IntegrationRunner.parseConnectorVersion(":1.0.1-alpha"));
+  }
+
+  @Test
+  void testConsumptionOfInvalidStateMessage() {
+    final String invalidStateMessage = """
+                                       {
+                                         "type" : "STATE",
+                                         "state" : {
+                                           "type": "NOT_RECOGNIZED",
+                                           "global": {
+                                             "streamStates": {
+                                               "foo" : "bar"
+                                             }
+                                           }
+                                         }
+                                       }
+                                       """;
+
+    Assertions.assertThrows(IllegalStateException.class, () -> {
+      try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
+        IntegrationRunner.consumeMessage(consumer, invalidStateMessage);
+      }
+    });
+  }
+
+  @Test
+  void testConsumptionOfInvalidNonStateMessage() {
+    final String invalidNonStateMessage = """
+                                          {
+                                            "type" : "NOT_RECOGNIZED",
+                                            "record" : {
+                                              "namespace": "namespace",
+                                              "stream": "stream",
+                                              "emittedAt": 123456789
+                                            }
+                                          }
+                                          """;
+
+    Assertions.assertDoesNotThrow(() -> {
+      try (final AirbyteMessageConsumer consumer = mock(AirbyteMessageConsumer.class)) {
+        IntegrationRunner.consumeMessage(consumer, invalidNonStateMessage);
+        verify(consumer, times(0)).accept(any(AirbyteMessage.class));
+      }
+    });
   }
 
 }

@@ -59,7 +59,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
       return await response.json();
     }
 
-    // @ts-ignore TODO: needs refactoring of services
+    // @ts-expect-error TODO: needs refactoring of services
     return response;
   }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

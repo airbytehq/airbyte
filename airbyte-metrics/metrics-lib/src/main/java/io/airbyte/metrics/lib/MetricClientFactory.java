@@ -6,6 +6,10 @@ package io.airbyte.metrics.lib;
 
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
+import io.micrometer.core.instrument.Clock;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.statsd.StatsdConfig;
+import io.micrometer.statsd.StatsdMeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +20,7 @@ public class MetricClientFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MetricClientFactory.class);
 
-  private static final String DATADOG_METRIC_CLIENT = "datadog";
+  static final String DATADOG_METRIC_CLIENT = "datadog";
   private static final String OTEL_METRIC_CLIENT = "otel";
 
   private static final Configs configs = new EnvConfigs();
@@ -51,14 +55,19 @@ public class MetricClientFactory {
    *
    * @param metricEmittingApp the name of the app which the metric will be running under.
    */
-  public static synchronized void initialize(MetricEmittingApp metricEmittingApp) {
+  public static synchronized void initialize(final MetricEmittingApp metricEmittingApp) {
     if (metricClient != null) {
-      throw new RuntimeException("You cannot initialize configuration more than once.");
+      LOGGER.warn("Metric client is already initialized to " + configs.getMetricClient());
+      return;
     }
 
-    if (configs.getMetricClient().equals(DATADOG_METRIC_CLIENT)) {
-      initializeDatadogMetricClient(metricEmittingApp);
-    } else if (configs.getMetricClient().equals(OTEL_METRIC_CLIENT)) {
+    if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
+      if (configs.getDDAgentHost() == null || configs.getDDDogStatsDPort() == null) {
+        throw new RuntimeException("DD_AGENT_HOST is null or DD_DOGSTATSD_PORT is null. Both are required to use the DataDog Metric Client");
+      } else {
+        initializeDatadogMetricClient(metricEmittingApp);
+      }
+    } else if (OTEL_METRIC_CLIENT.equals(configs.getMetricClient())) {
       initializeOpenTelemetryMetricClient(metricEmittingApp);
     } else {
       metricClient = new NotImplementedMetricClient();
@@ -67,9 +76,53 @@ public class MetricClientFactory {
     }
   }
 
+  /**
+   * A statsd config for micrometer. We override host to be the datadog agent address, while keeping
+   * other settings default.
+   */
+  private static StatsdConfig getDatadogStatsDConfig() {
+    return new StatsdConfig() {
+
+      /**
+       * @return
+       */
+      @Override
+      public String host() {
+        return configs.getDDAgentHost();
+      }
+
+      /**
+       * Returning null for default get function because the host has been overridden above.
+       */
+      @Override
+      public String get(final String key) {
+        return null;
+      }
+
+    };
+  }
+
+  /**
+   *
+   * Returns a meter registry to be consumed by temporal configs.
+   *
+   */
+  public static MeterRegistry getMeterRegistry() {
+
+    if (DATADOG_METRIC_CLIENT.equals(configs.getMetricClient())) {
+      final StatsdConfig config = getDatadogStatsDConfig();
+      return new StatsdMeterRegistry(config, Clock.SYSTEM);
+    }
+
+    // To support open telemetry, we need to use a different type of Config. For now we simply return
+    // null - in this case, we do not register any metric emitting mechanism in temporal and thus
+    // users will not receive temporal related metrics.
+    return null;
+  }
+
   private static DogStatsDMetricClient initializeDatadogMetricClient(
-                                                                     MetricEmittingApp metricEmittingApp) {
-    DogStatsDMetricClient client = new DogStatsDMetricClient();
+                                                                     final MetricEmittingApp metricEmittingApp) {
+    final DogStatsDMetricClient client = new DogStatsDMetricClient();
 
     client.initialize(metricEmittingApp, new DatadogClientConfiguration(configs));
     metricClient = client;
@@ -77,8 +130,8 @@ public class MetricClientFactory {
   }
 
   private static OpenTelemetryMetricClient initializeOpenTelemetryMetricClient(
-                                                                               MetricEmittingApp metricEmittingApp) {
-    OpenTelemetryMetricClient client = new OpenTelemetryMetricClient();
+                                                                               final MetricEmittingApp metricEmittingApp) {
+    final OpenTelemetryMetricClient client = new OpenTelemetryMetricClient();
     client.initialize(metricEmittingApp, configs.getOtelCollectorEndpoint());
     metricClient = client;
     return client;

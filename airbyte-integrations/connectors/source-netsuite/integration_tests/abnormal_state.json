@@ -1,0 +1,100 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-19T14:01:00Z" },
+      "stream_descriptor": { "name": "customer" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-19T14:01:00Z" },
+      "stream_descriptor": { "name": "customersubsidiaryrelationship" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "vendorsubsidiaryrelationship" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "charge" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "vendorbill" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-19T14:13:00Z" },
+      "stream_descriptor": { "name": "contact" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "message" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T08:21:00Z" },
+      "stream_descriptor": { "name": "subsidiary" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-18T08:11:00Z" },
+      "stream_descriptor": { "name": "task" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "salesorder" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-18T12:05:00Z" },
+      "stream_descriptor": { "name": "employee" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T09:21:00Z" },
+      "stream_descriptor": { "name": "billingaccount" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T10:57:00Z" },
+      "stream_descriptor": { "name": "journalentry" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "lastModifiedDate": "2030-08-22T08:21:00Z" },
+      "stream_descriptor": { "name": "vendor" }
+    }
+  }
+]

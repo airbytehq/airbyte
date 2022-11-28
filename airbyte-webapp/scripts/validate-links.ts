@@ -2,22 +2,27 @@
 
 import fetch from "node-fetch";
 
-import { links } from "../src/config/links";
+import { links } from "../src/utils/links";
 
 async function run() {
   // Query all domains and wait for results
   const results = await Promise.allSettled(
     Object.entries(links).map(([key, url]) => {
-      return fetch(url, { headers: { "user-agent": "ValidateLinksCheck" } }).then((resp) => {
-        if (resp.status >= 200 && resp.status < 300) {
-          // Only URLs returning a 200 status code are considered okay
-          console.log(`✓ [${key}] ${url} returned HTTP ${resp.status}`);
-        } else {
-          // Everything else should fail this test
-          console.error(`X [${key}] ${url} returned HTTP ${resp.status}`);
+      return fetch(url, { headers: { "user-agent": "ValidateLinksCheck" } })
+        .then((resp) => {
+          if (resp.status >= 200 && resp.status < 300) {
+            // Only URLs returning a 200 status code are considered okay
+            console.log(`✓ [${key}] ${url} returned HTTP ${resp.status}`);
+          } else {
+            // Everything else should fail this test
+            console.error(`X [${key}] ${url} returned HTTP ${resp.status}`);
+            return Promise.reject({ key, url });
+          }
+        })
+        .catch((reason) => {
+          console.error(`X [${key}] ${url} error fetching: ${String(reason)}`);
           return Promise.reject({ key, url });
-        }
-      });
+        });
     })
   );
 

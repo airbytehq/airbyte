@@ -4,7 +4,7 @@
     test_normalization.`nested_stream_with_co__ion_double_array_data__dbt_tmp`
   as (
     
-with __dbt__CTE__nested_stream_with_co_3double_array_data_ab1 as (
+with __dbt__cte__nested_stream_with_co_3double_array_data_ab1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
 -- depends_on: test_normalization.`nested_stream_with_co___long_names_partition`
@@ -20,7 +20,7 @@ with numbers as (
     select
 
     
-    p0.generated_number * pow(2, 0)
+    p0.generated_number * power(2, 0)
     
     
     + 1
@@ -56,7 +56,7 @@ with numbers as (
 select
     _airbyte_partition_hashid,
     json_value(_airbyte_nested_data, 
-    '$."id"') as id,
+    '$."id"' RETURNING CHAR) as id,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     
@@ -68,10 +68,10 @@ left join joined on _airbyte_partition_hashid = joined._airbyte_hashid
 where 1 = 1
 and double_array_data is not null
 
-),  __dbt__CTE__nested_stream_with_co_3double_array_data_ab2 as (
+),  __dbt__cte__nested_stream_with_co_3double_array_data_ab2 as (
 
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
--- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab1
+-- depends_on: __dbt__cte__nested_stream_with_co_3double_array_data_ab1
 select
     _airbyte_partition_hashid,
     cast(id as char(1024)) as id,
@@ -80,23 +80,23 @@ select
     
     CURRENT_TIMESTAMP
  as _airbyte_normalized_at
-from __dbt__CTE__nested_stream_with_co_3double_array_data_ab1
+from __dbt__cte__nested_stream_with_co_3double_array_data_ab1
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 where 1 = 1
 
-),  __dbt__CTE__nested_stream_with_co_3double_array_data_ab3 as (
+),  __dbt__cte__nested_stream_with_co_3double_array_data_ab3 as (
 
 -- SQL model to build a hash column based on the values of this record
--- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab2
+-- depends_on: __dbt__cte__nested_stream_with_co_3double_array_data_ab2
 select
     md5(cast(concat(coalesce(cast(_airbyte_partition_hashid as char), ''), '-', coalesce(cast(id as char), '')) as char)) as _airbyte_double_array_data_hashid,
     tmp.*
-from __dbt__CTE__nested_stream_with_co_3double_array_data_ab2 tmp
+from __dbt__cte__nested_stream_with_co_3double_array_data_ab2 tmp
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data
 where 1 = 1
 
 )-- Final base SQL model
--- depends_on: __dbt__CTE__nested_stream_with_co_3double_array_data_ab3
+-- depends_on: __dbt__cte__nested_stream_with_co_3double_array_data_ab3
 select
     _airbyte_partition_hashid,
     id,
@@ -106,7 +106,7 @@ select
     CURRENT_TIMESTAMP
  as _airbyte_normalized_at,
     _airbyte_double_array_data_hashid
-from __dbt__CTE__nested_stream_with_co_3double_array_data_ab3
+from __dbt__cte__nested_stream_with_co_3double_array_data_ab3
 -- double_array_data at nested_stream_with_complex_columns_resulting_into_long_names/partition/double_array_data from test_normalization.`nested_stream_with_co___long_names_partition`
 where 1 = 1
 

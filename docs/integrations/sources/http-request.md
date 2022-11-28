@@ -8,7 +8,7 @@ This connector is graveyarded and will not be receiving any updates from the Air
 
 ## Overview
 
-This connector allows you to generally connect to any HTTP API. In order to use this connector, you must manually bring it in as a custom connector. The steps to do this can be found [here](../../connector-development/tutorials/cdk-tutorial-python-http/7-use-connector-in-airbyte.md). 
+This connector allows you to generally connect to any HTTP API. In order to use this connector, you must manually bring it in as a custom connector. The steps to do this can be found [here](../../connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte.md). 
 
 ## Where do I find the Docker image?
 
