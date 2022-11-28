@@ -90,18 +90,16 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final var syncInput = readInput();
 
     final var sourceLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR,
-            ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     final var destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR,
-            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     ApmTraceUtils.addTagsToTrace(
-        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
-            destinationLauncherConfig.getDockerImage(),
+        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(),
+            DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
             SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
     log.info("Setting up source launcher...");
