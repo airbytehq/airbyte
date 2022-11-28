@@ -86,9 +86,14 @@ task acceptanceTests(type: Test) {
     useJUnitPlatform()
     failFast = true
     testLogging() {
-        events "passed", "failed"
+        events "passed", "failed", "started", "standardOut"
         exceptionFormat "full"
+        debug {
+            events "failed"
+            exceptionFormat "full"
+        }
     }
+    
     mustRunAfter test
 }
 
