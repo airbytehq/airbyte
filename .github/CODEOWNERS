@@ -28,8 +28,7 @@ airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/sp
 airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryReader.java @airbytehq/airbyte-maintainers
 airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryWriter.java @airbytehq/airbyte-maintainers
 airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/ConfigRepository.java @airbytehq/airbyte-maintainers
-*build.gradle @airbytehq/airbyte-maintainers
-!airbyte-integrations/connectors/destination-local-json/build.gradle @airbytehq/airbyte-maintainers
+*build.gradle !airbyte-integrations/**/build.gradle @airbytehq/airbyte-maintainers
 
 # Normalization
 /airbyte-integrations/bases/base-normalization/ @airbytehq/normalization
