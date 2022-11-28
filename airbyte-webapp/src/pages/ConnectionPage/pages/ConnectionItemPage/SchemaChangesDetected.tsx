@@ -8,11 +8,11 @@ import { Text } from "components/ui/Text";
 
 import { SchemaChange } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import styles from "./SchemaChangesDetected.module.scss";
-import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
   const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
