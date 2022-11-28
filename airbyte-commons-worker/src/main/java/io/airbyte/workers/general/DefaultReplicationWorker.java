@@ -12,6 +12,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -24,17 +25,18 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.protocol.models.AirbyteControlMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.PersistConfigHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
@@ -82,27 +84,6 @@ import org.slf4j.MDC;
 public class DefaultReplicationWorker implements ReplicationWorker {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultReplicationWorker.class);
-
-  // private static final Configs CONFIGS = new EnvConfigs();
-  // private static final AirbyteApiClient CLIENT = getAirbyteApiClient();
-
-  // Passing env vars to the container orchestrator isn't working properly. Hack around this for now.
-  // TODO(Davin): This doesn't work for Kube. Need to figure it out.
-  // private static AirbyteApiClient getAirbyteApiClient() {
-  // if (CONFIGS.getWorkerEnvironment() == WorkerEnvironment.DOCKER) {
-  // return new AirbyteApiClient(
-  // new ApiClient().setScheme("http")
-  // .setHost(CONFIGS.getAirbyteApiHost())
-  // .setPort(CONFIGS.getAirbyteApiPort())
-  // .setBasePath("/api"));
-  // }
-  //
-  // return new AirbyteApiClient(
-  // new ApiClient().setScheme("http")
-  // .setHost("airbyte-server-svc")
-  // .setPort(8001)
-  // .setBasePath("/api"));
-  // }
 
   private final String jobId;
   private final int attempt;
@@ -206,7 +187,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
+          readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker, Long.valueOf(jobId)),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -221,7 +202,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
           readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter,
-              timeTracker),
+              timeTracker, Long.valueOf(jobId)),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -259,7 +240,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                               final AtomicBoolean cancelled,
                                               final MessageTracker messageTracker,
                                               final Map<String, String> mdc,
-                                              final ThreadedTimeTracker timeHolder) {
+                                              final ThreadedTimeTracker timeHolder,
+                                              final Long jobId) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -272,8 +254,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             throw new DestinationException("Destination process read attempt failed", e);
           }
           if (messageOptional.isPresent()) {
-            LOGGER.info("State in DefaultReplicationWorker from destination: {}", messageOptional.get());
-            messageTracker.acceptFromDestination(messageOptional.get());
+            final AirbyteMessage message = messageOptional.get();
+            LOGGER.info("State in DefaultReplicationWorker from destination: {}", message);
+            messageTracker.acceptFromDestination(message);
+
+            try {
+              if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+                PersistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+              }
+            } catch (final ApiException e) {
+              // TODO this should probably throw rather than just log and continue
+              LOGGER.error("Error trying to save updated destination config", e);
+            }
+
           }
         }
         timeHolder.trackDestinationWriteEndTime();
@@ -298,15 +291,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  // private static void saveConfig(final AirbyteSource source, final Config config) throws
-  // ApiException {
-  // var jobsApi = CLIENT.getJobsApi();
-  // final JobIdRequestBody body = new JobIdRequestBody().id(1L);
-  // final JobInfoRead jobInfo = jobsApi.getJobInfo(body);
-  // jobsApi.getJobDebugInfo(body).
-  //// CLIENT.getSourceApi().updateSource();
-  // }
-
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
@@ -316,7 +300,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
-                                                           final ThreadedTimeTracker timeHolder) {
+                                                           final ThreadedTimeTracker timeHolder,
+                                                           final Long jobId) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -337,6 +322,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
+
+            if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+              try {
+                PersistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+              } catch (final ApiException e) {
+                // TODO this should probably throw rather than just log and continue
+                LOGGER.error("Error trying to save updated source config", e);
+              }
+            }
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -434,19 +428,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         output);
 
     prepStateForLaterSaving(syncInput, output);
-
-    // pass along new configs we may have received
-    if (messageTracker.getDestinationOutputConfig().isPresent()) {
-      LOGGER.info("Captured updated source config");
-      final Config config = messageTracker.getDestinationOutputConfig().get();
-      output.withDestinationConfig(config);
-    }
-
-    if (messageTracker.getSourceOutputConfig().isPresent()) {
-      LOGGER.info("Captured updated source config");
-      final Config config = messageTracker.getSourceOutputConfig().get();
-      output.withSourceConfig(config);
-    }
 
     final ObjectMapper mapper = new ObjectMapper();
     LOGGER.info("sync summary: {}", mapper.writerWithDefaultPrettyPrinter().writeValueAsString(summary));
