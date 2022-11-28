@@ -79,8 +79,7 @@ public class IncrementalUtils {
     }
 
     switch (type) {
-      case STRING, STRING_V1, DATE_V1, TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1, TIMESTAMP_WITH_TIMEZONE_V1,
-          TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
+      case STRING, STRING_V1, DATE_V1, TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1, TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
         return original.compareTo(candidate);
       }
       case NUMBER, NUMBER_V1, INTEGER_V1 -> {
