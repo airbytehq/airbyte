@@ -1,4 +1,4 @@
-/* eslint-disable no-template-curly-in-string */
+/* eslint-disable no-template-curly-in-string, @airbyte/no-hardcoded-connector-ids */
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 
 export const mockConnection: WebBackendConnectionRead = {

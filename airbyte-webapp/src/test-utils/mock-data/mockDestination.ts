@@ -1,3 +1,4 @@
+/* eslint-disable @airbyte/no-hardcoded-connector-ids */
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 
 export const mockDestination: DestinationDefinitionSpecificationRead = {
