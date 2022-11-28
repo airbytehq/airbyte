@@ -11,11 +11,12 @@ import io.airbyte.workers.temporal.check.connection.CheckConnectionActivity;
 import io.airbyte.workers.temporal.discover.catalog.DiscoverCatalogActivity;
 import io.airbyte.workers.temporal.scheduling.activities.AutoDisableConnectionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
-import io.airbyte.workers.temporal.scheduling.activities.ConnectionDeletionActivity;
 import io.airbyte.workers.temporal.scheduling.activities.GenerateInputActivity;
 import io.airbyte.workers.temporal.scheduling.activities.JobCreationAndStatusUpdateActivity;
+import io.airbyte.workers.temporal.scheduling.activities.NotifySchemaChangeActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RecordMetricActivity;
 import io.airbyte.workers.temporal.scheduling.activities.RouteToSyncTaskQueueActivity;
+import io.airbyte.workers.temporal.scheduling.activities.SlackConfigActivity;
 import io.airbyte.workers.temporal.scheduling.activities.StreamResetActivity;
 import io.airbyte.workers.temporal.scheduling.activities.WorkflowConfigActivity;
 import io.airbyte.workers.temporal.spec.SpecActivity;
@@ -54,12 +55,20 @@ public class ActivityBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Named("notifyActivities")
+  public List<Object> notifyActivities(final NotifySchemaChangeActivity notifySchemaChangeActivity,
+                                       SlackConfigActivity slackConfigActivity,
+                                       ConfigFetchActivity configFetchActivity) {
+    return List.of(notifySchemaChangeActivity, slackConfigActivity, configFetchActivity);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("connectionManagerActivities")
   public List<Object> connectionManagerActivities(
                                                   final GenerateInputActivity generateInputActivity,
                                                   final JobCreationAndStatusUpdateActivity jobCreationAndStatusUpdateActivity,
                                                   final ConfigFetchActivity configFetchActivity,
-                                                  final ConnectionDeletionActivity connectionDeletionActivity,
                                                   final CheckConnectionActivity checkConnectionActivity,
                                                   final AutoDisableConnectionActivity autoDisableConnectionActivity,
                                                   final StreamResetActivity streamResetActivity,
@@ -69,7 +78,6 @@ public class ActivityBeanFactory {
     return List.of(generateInputActivity,
         jobCreationAndStatusUpdateActivity,
         configFetchActivity,
-        connectionDeletionActivity,
         checkConnectionActivity,
         autoDisableConnectionActivity,
         streamResetActivity,

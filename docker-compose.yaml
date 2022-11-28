@@ -34,9 +34,6 @@ services:
       - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
     networks:
       - airbyte_internal
-    depends_on:
-      init:
-        condition: service_completed_successfully
   db:
     image: airbyte/db:${VERSION}
     logging: *default-logging
@@ -86,6 +83,8 @@ services:
       - MAX_DISCOVER_WORKERS=${MAX_DISCOVER_WORKERS}
       - MAX_SPEC_WORKERS=${MAX_SPEC_WORKERS}
       - MAX_SYNC_WORKERS=${MAX_SYNC_WORKERS}
+      - MAX_NOTIFY_WORKERS=${MAX_NOTIFY_WORKERS}
+      - SHOULD_RUN_NOTIFY_WORKFLOW=${SHOULD_RUN_NOTIFY_WORKFLOW}
       - NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT=${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_LIMIT}
       - NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST=${NORMALIZATION_JOB_MAIN_CONTAINER_MEMORY_REQUEST}
       - NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT=${NORMALIZATION_JOB_MAIN_CONTAINER_CPU_LIMIT}
@@ -116,9 +115,6 @@ services:
       - 9000
     networks:
       - airbyte_internal
-    depends_on:
-      bootloader:
-        condition: service_completed_successfully
   server:
     image: airbyte/server:${VERSION}
     logging: *default-logging
@@ -159,9 +155,6 @@ services:
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
     networks:
       - airbyte_internal
-    depends_on:
-      bootloader:
-        condition: service_completed_successfully
   webapp:
     image: airbyte/webapp:${VERSION}
     logging: *default-logging
@@ -173,16 +166,14 @@ services:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
       - AIRBYTE_VERSION=${VERSION}
       - API_URL=${API_URL:-}
+      - CONNECTOR_BUILDER_API_URL=${CONNECTOR_BUILDER_API_URL:-}
       - INTERNAL_API_HOST=${INTERNAL_API_HOST}
-      #- CONNECTOR_BUILDER_API_HOST=${CONNECTOR_BUILDER_API_HOST} #FIXME: Uncomment this block when enabling airbyte-connector-builder
+      - CONNECTOR_BUILDER_API_HOST=${CONNECTOR_BUILDER_API_HOST}
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
     networks:
       - airbyte_internal
-    depends_on:
-      bootloader:
-        condition: service_completed_successfully
   airbyte-temporal:
     image: airbyte/temporal:${VERSION}
     logging: *default-logging
@@ -222,27 +213,24 @@ services:
       - workspace:${WORKSPACE_ROOT}
     networks:
       - airbyte_internal
-    depends_on:
-      bootloader:
-        condition: service_completed_successfully
-  #airbyte-connector-builder-server: #FIXME: Uncomment this block when enabling airbyte-connector-builder
-  #  image: airbyte/connector-builder-server:${VERSION}
-  #  logging: *default-logging
-  #  container_name: airbyte-connector-builder-server
-  #  restart: unless-stopped
-  #  ports:
-  #    - 8003
-  #  environment:
-  #    - AIRBYTE_VERSION=${VERSION}
-  #  networks:
-  #    - airbyte_internal
+  airbyte-connector-builder-server:
+    image: airbyte/connector-builder-server:${VERSION}
+    logging: *default-logging
+    container_name: airbyte-connector-builder-server
+    restart: unless-stopped
+    ports:
+      - 80
+    environment:
+      - AIRBYTE_VERSION=${VERSION}
+    networks:
+      - airbyte_internal
   airbyte-proxy:
     image: airbyte/proxy:${VERSION}
     container_name: airbyte-proxy
     ports:
       - 8000:8000
       - 8001:8001
-      #- 8003:8003 FIXME: Uncomment this when enabling airbyte-connector-builder
+      - 8003:8003
     environment:
       - BASIC_AUTH_USERNAME=${BASIC_AUTH_USERNAME}
       - BASIC_AUTH_PASSWORD=${BASIC_AUTH_PASSWORD}

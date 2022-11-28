@@ -31,13 +31,13 @@ export const DiffSection: React.FC<DiffSectionProps> = ({ streams, catalog, diff
       <div className={styles.sectionHeader}>
         <DiffHeader diffCount={streams.length} diffVerb={diffVerb} diffType="stream" />
       </div>
-      <table aria-label={`${diffVerb} streams table`}>
+      <table aria-label={`${diffVerb} streams table`} className={styles.table}>
         <thead className={styles.sectionSubHeader}>
           <tr>
             <th>
               <FormattedMessage id="connection.updateSchema.namespace" />
             </th>
-            <th className={styles.padLeft}>
+            <th>
               <FormattedMessage id="connection.updateSchema.streamName" />
             </th>
             <th />

@@ -20,6 +20,7 @@ config = {
     "token_expiry_date": pendulum.now().subtract(days=2).to_rfc3339_string(),
     "custom_field": "in_outbound_request",
     "another_field": "exists_in_body",
+    "grant_type": "some_grant_type",
 }
 options = {"refresh_token": "some_refresh_token"}
 
@@ -48,10 +49,11 @@ class TestOauth2Authenticator:
                 "scopes": ["no_override"],
             },
             options=options,
+            grant_type="{{ config['grant_type'] }}"
         )
         body = oauth.build_refresh_request_body()
         expected = {
-            "grant_type": "refresh_token",
+            "grant_type": "some_grant_type",
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": "some_refresh_token",
