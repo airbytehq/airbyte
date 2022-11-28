@@ -1003,7 +1003,7 @@ jobs:
           version: 'v1.21.2' # default is latest stable
 
       - name: Install tmate and it's dependencies
-        if: inputs.debug_mode == 'true'
+        # if: inputs.debug_mode == 'true'
         shell: bash
         run: |
           sudo rm /var/lib/dpkg/lock
@@ -1013,7 +1013,7 @@ jobs:
           sudo rm -f /var/lib/dpkg/lock-frontend
       
       - name: Start tmate session in background
-        if: inputs.debug_mode == 'true'
+        # if: inputs.debug_mode == 'true'
         shell: bash
         run: |  
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
