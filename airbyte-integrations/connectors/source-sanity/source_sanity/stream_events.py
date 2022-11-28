@@ -21,8 +21,8 @@ class EventsStream(HttpStream):
     }
 
   def parse_response(self, response: requests.Response, **_) -> Iterable[Mapping]:
-    response_json = response.json()
-    yield from response.json()["result"]
+    response_json = response.json()["result"]
+    yield from json.loads(json.dumps(response_json).lower())
 
   def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
     return None
