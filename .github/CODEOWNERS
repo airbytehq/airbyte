@@ -9,9 +9,9 @@
 /airbyte-config/init/src/main/resources/icons/*.svg @airbytehq/design
 
 # CDK and SAT
-/airbyte-cdk/ @airbytehq/api-connectors-dx
-/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/api-connectors-dx
-/airbyte-integrations/connector-templates/ @airbytehq/api-connectors-dx
+/airbyte-cdk/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/connector-extensibility
+/airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 
 # Protocol related items
 /airbyte-protocol/ @airbytehq/protocol-reviewers
