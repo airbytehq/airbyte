@@ -6,7 +6,7 @@ export const createPostgresSource = (
   name: string,
   host: string = "localhost",
   port: string = "5433",
-  database: string = "airbyte_ci",
+  database: string = "airbyte_ci_source",
   username: string = "postgres",
   password: string = "secret_password",
   schema: string = ""

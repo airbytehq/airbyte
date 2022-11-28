@@ -18,8 +18,8 @@ export const createLocalJsonDestination = (name: string, destinationPath: string
 export const createPostgresDestination = (
   name: string,
   host: string = "localhost",
-  port: string = "5433",
-  database: string = "airbyte_ci",
+  port: string = "5434",
+  database: string = "airbyte_ci_destination",
   username: string = "postgres",
   password: string = "secret_password",
   schema: string = ""

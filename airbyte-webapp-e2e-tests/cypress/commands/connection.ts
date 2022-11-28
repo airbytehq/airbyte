@@ -22,7 +22,7 @@ export const createTestConnection = (sourceName: string, destinationName: string
 
   switch (true) {
     case destinationName.includes("Postgres"):
-      createPostgresDestination(destinationName, "localhost", "5434", "airbyte_ci_destination");
+      createPostgresDestination(destinationName);
       break;
     case destinationName.includes("JSON"):
       createLocalJsonDestination(destinationName);
