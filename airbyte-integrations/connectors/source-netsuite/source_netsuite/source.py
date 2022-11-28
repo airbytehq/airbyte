@@ -16,9 +16,9 @@ from source_netsuite.streams import CustomIncrementalNetsuiteStream, Incremental
 
 
 class SourceNetsuite(AbstractSource):
-    
+
     logger: logging.Logger = logging.getLogger("airbyte")
-    
+
     def auth(self, config: Mapping[str, Any]) -> OAuth1:
         return OAuth1(
             client_key=config["consumer_key"],
@@ -72,7 +72,9 @@ class SourceNetsuite(AbstractSource):
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
         # fetch schemas
         if isinstance(object_names, list):
-            return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names}
+            return {
+                object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names
+            }
         elif isinstance(object_names, str):
             return {object_names.lower(): session.get(metadata_url + object_names, headers=SCHEMA_HEADERS).json()}
 
@@ -86,6 +88,7 @@ class SourceNetsuite(AbstractSource):
         base_url: str,
         start_datetime: str,
         window_in_days: int,
+        max_retry: int = 3,
     ) -> Union[NetsuiteStream, IncrementalNetsuiteStream, CustomIncrementalNetsuiteStream]:
 
         input_args = {
@@ -95,25 +98,30 @@ class SourceNetsuite(AbstractSource):
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
         }
-        
-        try:
-            schema = schemas[object_name]
-            schema_props = schema["properties"]
-            if schema_props:
-                if INCREMENTAL_CURSOR in schema_props.keys():
-                    return IncrementalNetsuiteStream(**input_args)
-                elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys():
-                    return CustomIncrementalNetsuiteStream(**input_args)
-                else:
-                    # all other streams are full_refresh
-                    return NetsuiteStream(**input_args)
-        except KeyError:
-            self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry...")
-            # somethimes object metadata returns data with missing `properties` key,
-            # we should try to fetch metadata again to that object
-            schemas = self.get_schemas(object_name, session, metadata_url)
-            input_args.update(**{"session": session, "metadata_url": metadata_url, "schemas": schemas})
-            return self.generate_stream(**input_args)
+
+        schema = schemas[object_name]
+        schema_props = schema.get("properties")
+        if schema_props:
+            if INCREMENTAL_CURSOR in schema_props.keys():
+                return IncrementalNetsuiteStream(**input_args)
+            elif CUSTOM_INCREMENTAL_CURSOR in schema_props.keys():
+                return CustomIncrementalNetsuiteStream(**input_args)
+            else:
+                # all other streams are full_refresh
+                return NetsuiteStream(**input_args)
+        else:
+            retry_attempt = 1
+            while retry_attempt <= max_retry:
+                self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}")
+                # somethimes object metadata returns data with missing `properties` key,
+                # we should try to fetch metadata again to that object
+                schemas = self.get_schemas(object_name, session, metadata_url)
+                if schemas[object_name].get("properties"):
+                    input_args.update(**{"session": session, "metadata_url": metadata_url, "schemas": schemas})
+                    return self.generate_stream(**input_args)
+                retry_attempt += 1
+            self.logger.warn(f"Object `{object_name}` schema is not available. Skipping this stream.")
+            return None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.auth(config)
@@ -141,6 +149,7 @@ class SourceNetsuite(AbstractSource):
         # build streams
         streams: list = []
         for name in object_names:
-            streams.append(self.generate_stream(object_name=name.lower(), **input_args))
-
+            stream = self.generate_stream(object_name=name.lower(), **input_args)
+            if stream:
+                streams.append(stream)
         return streams

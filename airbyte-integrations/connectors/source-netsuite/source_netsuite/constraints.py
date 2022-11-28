@@ -45,4 +45,7 @@ NETSUITE_ERRORS_MAPPING: dict = {
         "NONEXISTENT_FIELD": "cursor_field declared in schema but doesn't exist in object",
         "INVALID_PARAMETER": "cannot read or find the object. Skipping",
     },
+    403: {
+        "INSUFFICIENT_PERMISSION": "not enough permissions to access the object",
+    },
 }
