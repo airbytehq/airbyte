@@ -76,7 +76,8 @@ export const CreationFormPage: React.FC = () => {
   const { clearAllFormChanges } = useFormChangeTrackerService();
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
-  const locationType = location.pathname.split("/")[3];
+  // const locationType = location.pathname.split("/")[3];
+  const locationType = location.pathname.split("/")[1];
 
   const type: EntityStepsTypes =
     locationType === "connections"

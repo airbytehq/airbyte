@@ -10,7 +10,7 @@ import Table from "components/Table";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import useRouter from "hooks/useRouter";
 
-import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
+// import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 // import ConnectorCell from "./components/ConnectorCell";
 // import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
@@ -206,12 +206,12 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       //     />
       //   ),
       // },
-      {
-        Header: "",
-        accessor: "connectionId",
-        customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
-      },
+      // {
+      //   Header: "",
+      //   accessor: "connectionId",
+      //   customWidth: 1,
+      //   Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
+      // },
     ],
     [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );

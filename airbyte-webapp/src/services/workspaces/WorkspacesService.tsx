@@ -6,6 +6,8 @@ import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 // import { useConfig } from "../../config";
+import { getAuthenticatedUser } from "services/auth/AuthService";
+
 import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
@@ -79,9 +81,13 @@ function useWorkspaceApiService() {
 }
 
 export const useCurrentWorkspaceId = () => {
-  const { params } = useRouter<unknown, { workspaceId: string }>();
+  const user = getAuthenticatedUser();
 
-  return params.workspaceId;
+  return user?.workspaceId;
+  // TODO: Xuan Ma told me to remove workspaceId from URLs
+  // const { params } = useRouter<unknown, { workspaceId: string }>();
+
+  // return params.workspaceId;
 };
 
 export const useCurrentWorkspace = () => {
