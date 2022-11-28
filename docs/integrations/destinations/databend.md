@@ -14,9 +14,9 @@ This page guides you through the process of setting up the [Databend](https://da
 
 Each stream will be output into its own table in Databend. Each table will contain 3 columns:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Databend is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Databend is `Timestamp`.
-* `_airbyte_data`: a json blob representing with the event data. The column type in Databend is `String`.
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Databend is `VARCHAR`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Databend is `TIMESTAMP`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in Databend is `VARVHAR`.
 
 ## Getting Started
 You can follow the [Connecting to a Warehouse docs](https://docs.databend.com/using-databend-cloud/warehouses/connecting-a-warehouse) to get the user, password, host etc.
