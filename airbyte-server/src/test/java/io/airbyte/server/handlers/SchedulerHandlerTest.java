@@ -109,9 +109,11 @@ class SchedulerHandlerTest {
   private static final String DESTINATION_PROTOCOL_VERSION = "0.7.9";
   private static final String NAME = "name";
   private static final String DOGS = "dogs";
+  private static final String SHOES = "shoes";
+  private static final String SKU = "sku";
 
-  private static final AirbyteCatalog airbyteCatalog = CatalogHelpers.createAirbyteCatalog("shoes",
-      Field.of("sku", JsonSchemaType.STRING));
+  private static final AirbyteCatalog airbyteCatalog = CatalogHelpers.createAirbyteCatalog(SHOES,
+      Field.of(SKU, JsonSchemaType.STRING));
 
   private static final SourceConnection SOURCE = new SourceConnection()
       .withName("my postgres db")
@@ -561,7 +563,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
@@ -610,7 +612,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead =
@@ -662,7 +664,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead =
@@ -713,7 +715,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
@@ -766,7 +768,7 @@ class SchedulerHandlerTest {
     when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
 
     final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
-        CatalogHelpers.createAirbyteStream("shoes", Field.of("sku", JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));

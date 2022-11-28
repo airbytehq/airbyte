@@ -377,7 +377,7 @@ public class SchedulerHandler {
     ConnectionUpdate updateObject =
         new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
     ConnectionStatus connectionStatus;
-    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference())) {
+    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
       connectionStatus = ConnectionStatus.INACTIVE;
     } else {
       connectionStatus = ConnectionStatus.ACTIVE;
@@ -388,12 +388,12 @@ public class SchedulerHandler {
 
   }
 
-  private boolean shouldDisableConnection(boolean containsBreakingChange, NonBreakingChangesPreference preference) {
+  private boolean shouldDisableConnection(boolean containsBreakingChange, NonBreakingChangesPreference preference, CatalogDiff diff) {
     if (!envVariableFeatureFlags.autoDetectSchema()) {
       return false;
     }
 
-    return containsBreakingChange || preference == NonBreakingChangesPreference.DISABLE;
+    return containsBreakingChange || (preference == NonBreakingChangesPreference.DISABLE && !diff.getTransforms().isEmpty());
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
