@@ -14,7 +14,7 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 4. Enter the name for the Freshdesk connector.
 5. For **Domain**, enter your [Freshdesk domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url).
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
-7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
 9. Click **Set up source**.
 
