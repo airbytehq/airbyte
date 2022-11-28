@@ -446,7 +446,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public long getTotalRecordsEstimated() {
-    return streamToTotalRecordsEstimated.values().stream().reduce(0L, Long::sum);
+    if (!streamToTotalRecordsEstimated.isEmpty()) {
+      return streamToTotalRecordsEstimated.values().stream().reduce(0L, Long::sum);
+    }
+
+    return totalRecordsEstimatedSync;
   }
 
   /**
@@ -462,7 +466,11 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public long getTotalBytesEstimated() {
-    return streamToTotalBytesEstimated.values().stream().reduce(0L, Long::sum);
+    if (!streamToTotalBytesEstimated.isEmpty()) {
+      return streamToTotalBytesEstimated.values().stream().reduce(0L, Long::sum);
+    }
+
+    return totalBytesEstimatedSync;
   }
 
   /**

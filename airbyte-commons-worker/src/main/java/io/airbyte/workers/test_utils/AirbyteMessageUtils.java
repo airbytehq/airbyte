@@ -103,13 +103,26 @@ public class AirbyteMessageUtils {
     return new AirbyteStreamState().withStreamDescriptor(new StreamDescriptor().withName(streamName));
   }
 
-  public static AirbyteMessage createEstimateMessage(final String name, final String namespace, final long byteEst, final long rowEst) {
+  public static AirbyteMessage createStreamEstimateMessage(final String name, final String namespace, final long byteEst, final long rowEst) {
+    return createEstimateMessage(AirbyteEstimateTraceMessage.Type.STREAM, name, namespace, byteEst, rowEst);
+  }
+
+  public static AirbyteMessage createSyncEstimateMessage(final long byteEst, final long rowEst) {
+    return createEstimateMessage(AirbyteEstimateTraceMessage.Type.SYNC, null, null, byteEst, rowEst);
+  }
+
+  public static AirbyteMessage createEstimateMessage(AirbyteEstimateTraceMessage.Type type, final String name, final String namespace, final long byteEst, final long rowEst) {
     final var est = new AirbyteEstimateTraceMessage()
-        .withType(AirbyteEstimateTraceMessage.Type.STREAM)
-        .withNamespace(namespace)
-        .withName(name)
+        .withType(type)
         .withByteEstimate(byteEst)
         .withRowEstimate(rowEst);
+
+    if (name != null) {
+      est.withName(name);
+    }
+    if (namespace != null) {
+      est.withNamespace(namespace);
+    }
 
     return new AirbyteMessage()
         .withType(Type.TRACE)

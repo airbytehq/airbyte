@@ -336,8 +336,8 @@ class AirbyteMessageTrackerTest {
     // receiving an estimate for two streams should save
     @Test
     void shouldSaveAndReturnIndividualStreamCountsCorrectly() {
-      final var est1 = AirbyteMessageUtils.createEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
-      final var est2 = AirbyteMessageUtils.createEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
 
       messageTracker.acceptFromSource(est1);
       messageTracker.acceptFromSource(est2);
@@ -357,8 +357,8 @@ class AirbyteMessageTrackerTest {
 
     @Test
     void shouldSaveAndReturnTotalCountsCorrectly() {
-      final var est1 = AirbyteMessageUtils.createEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
-      final var est2 = AirbyteMessageUtils.createEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
 
       messageTracker.acceptFromSource(est1);
       messageTracker.acceptFromSource(est2);
@@ -369,6 +369,22 @@ class AirbyteMessageTrackerTest {
       final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
       assertEquals(20L, totalEstRecs);
     }
+
+    @Test
+    void shouldErrorOnBothStreamAndSyncEstimates() {
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      messageTracker.acceptFromSource(est2);
+
+      final var totalEstBytes = messageTracker.getTotalBytesEstimated();
+      assertEquals(300L, totalEstBytes);
+
+      final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
+      assertEquals(20L, totalEstRecs);
+    }
+
 
   }
 
