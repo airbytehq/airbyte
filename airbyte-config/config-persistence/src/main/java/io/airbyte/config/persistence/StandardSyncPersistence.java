@@ -242,7 +242,6 @@ public class StandardSyncPersistence {
           .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
           .set(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE,
               standardSync.getNonBreakingChangesPreference().value())
-          .set(CONNECTION.NOTIFY_SCHEMA_CHANGES, standardSync.getNotifySchemaChanges())
           .set(CONNECTION.CREATED_AT, timestamp)
           .set(CONNECTION.UPDATED_AT, timestamp)
           .execute();
