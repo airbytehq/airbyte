@@ -79,15 +79,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   public DefaultNormalizationRunner(final ProcessFactory processFactory,
                                     final String normalizationImage) {
     this.processFactory = processFactory;
-    this.destinationType = getDestinationTypeByNormalizationImageNamePart(normalizationImage);
     this.normalizationImageName = normalizationImage;
-  }
-
-  private static DestinationType getDestinationTypeByNormalizationImageNamePart(final String normalizationImageName) {
-    return EnumSet.allOf(DestinationType.class).stream()
-        .filter(destinationType -> normalizationImageName.contains(destinationType.name().toLowerCase()))
-        .findFirst()
-        .orElseGet(null);
+    this.destinationType = null;
   }
 
   @Override
