@@ -28,7 +28,7 @@ The Airbyte Protocol is versioned independently of the Airbyte Platform, and the
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
 |:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|
-| `v1.0.0` | 2022-11-28     | [17486](https://github.com/airbytehq/airbyte/pull/17486) & [17486](https://github.com/airbytehq/airbyte/pull/17486) | Well known data types added                                                      |
+| `v1.0.0` | 2022-11-28     | [17486](https://github.com/airbytehq/airbyte/pull/17486) & [19846](https://github.com/airbytehq/airbyte/pull/19846) | Well known data types added                                                      |
 | `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                            | `AirbyteEstimateTraceMessage` added                                              |
 | `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
