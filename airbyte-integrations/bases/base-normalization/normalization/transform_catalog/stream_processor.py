@@ -597,12 +597,21 @@ where 1 = 1
                 # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
                 sql_type = f"{sql_type}(1024)"
         else:
-            # TODO add different definition prints depends on type, ref or oneOF
-            print(f"WARN: Unknown type {definition['type']} for column {property_name} at {self.current_json_path()}")
+            if data_type.REF_TYPE_VAR_NAME in definition:
+                print(f"WARN: Unknown ref type {definition[data_type.REF_TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
+            elif data_type.ONE_OF_VAR_NAME in definition:
+                print(f"WARN: Unknown onOf simple type {definition[data_type.ONE_OF_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
+            else:
+                print(f"WARN: Unknown type {definition[data_type.TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
             return column_name
 
         if self.destination_type == DestinationType.CLICKHOUSE:
-            return f"accurateCastOrNull({column_name}, '{sql_type}') as {column_name}"
+            if data_type.REF_TYPE_VAR_NAME in definition and (data_type.NUMBER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
+                                                              or data_type.INTEGER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]):
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                return f"accurateCastOrNull({trimmed_column_name}, '{sql_type}') as {column_name}"
+            else:
+                return f"accurateCastOrNull({column_name}, '{sql_type}') as {column_name}"
         else:
             return f"cast({column_name} as {sql_type}) as {column_name}"
 
