@@ -21,6 +21,7 @@ import io.airbyte.config.ActorType;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -241,7 +242,8 @@ public class StandardSyncPersistence {
               io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
           .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
           .set(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE,
-              standardSync.getNonBreakingChangesPreference().value())
+              standardSync.getNonBreakingChangesPreference() == null ? NonBreakingChangesPreference.IGNORE.value()
+                  : standardSync.getNonBreakingChangesPreference().value())
           .set(CONNECTION.CREATED_AT, timestamp)
           .set(CONNECTION.UPDATED_AT, timestamp)
           .execute();
