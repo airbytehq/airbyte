@@ -12,7 +12,6 @@ import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_SCHEMA_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_TABLE_NAME;
 import static io.airbyte.integrations.source.postgres.PostgresType.safeGetJdbcType;
-import static io.airbyte.protocol.models.JsonSchemaType.INTEGER;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,7 +27,7 @@ import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
 import io.airbyte.db.jdbc.DateTimeConverter;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
@@ -548,7 +547,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
                                                 final String columnName,
                                                 final ResultSet resultSet,
                                                 final int index,
-                                                Class<T> clazz)
+                                                final Class<T> clazz)
       throws SQLException {
     final T object = getObject(resultSet, index, clazz);
     node.put(columnName, object.getValue());
@@ -599,7 +598,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public boolean isCursorType(PostgresType type) {
+  public boolean isCursorType(final PostgresType type) {
     return PostgresUtils.ALLOWED_CURSOR_TYPES.contains(type);
   }
 
