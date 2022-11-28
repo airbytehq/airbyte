@@ -172,7 +172,7 @@ describe("Connection main actions", () => {
     cleanDBSource();
   });
 
-  it("Connection sync mode Incremental Deduped History without existing PK", () => {
+  it("Connection sync mode Incremental Deduped History - PK is not defined", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
 
