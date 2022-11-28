@@ -64,6 +64,9 @@ class GongStream(HttpStream, ABC):
 
     # TODO: Fill in the url base. Required.
     url_base = "https://api.gong.io/v2/"
+    @property
+    def raise_on_http_errors(self) -> bool:
+        return False
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """Slack uses a cursor-based pagination strategy.
@@ -138,11 +141,11 @@ class IncrementalGongStream(GongStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any] =None) -> Mapping[str, Any]:
         current_stream_state = current_stream_state or {}
         logger = AirbyteLogger()
-        # if latest_record is not None and self.cursor_field in latest_record: 
-        #     current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
+        if latest_record is not None and self.cursor_field in latest_record: 
+            current_stream_state[self.cursor_field] = latest_record[self.cursor_field]
 
-        # else :
-        current_stream_state[self.cursor_field] = int(time.time())
+        else :
+            current_stream_state[self.cursor_field] = int(time.time())
 
         return current_stream_state
 
@@ -175,22 +178,22 @@ class Calls(IncrementalGongStream):
     data_field = "calls"
     primary_key = "id"
     cursor_field ="_airbyte_emitted_at"
-    # def path(
-    #     self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    # ) -> str:
-        # if self.cursor_field not in  stream_state:
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        if self.cursor_field not in  stream_state:
 
-        #     date = self._start_ts
-        #     print("******First sync detected *******")
-        #     print("Start date is: ")
-        #     print(date)
-        #     date = datetime.datetime.fromtimestamp(date)
-        #     return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
-        # else:
-        #     print("Start date is: ")
-        #     print(stream_state)
-        #     date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
-        #     return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
+            date = self._start_ts
+            print("******First sync detected *******")
+            print("Start date is: ")
+            print(date)
+            date = datetime.datetime.fromtimestamp(date)
+            return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
+        else:
+            print("Start date is: ")
+            print(stream_state)
+            date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
+            return "calls/?fromDateTime={}".format((date).strftime("%Y-%m-%dT%H:%M:%SZ"))
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -227,6 +230,7 @@ class Calls(IncrementalGongStream):
                 }
             },
             "filter": {
+                "fromDateTime": date
                    
             }
 }
@@ -258,7 +262,7 @@ class Calls(IncrementalGongStream):
                     }
                 },
                 "filter": {
-       
+       "fromDateTime": (date).strftime("%Y-%m-%dT%H:%M:%SZ")
 
                 }
                 }
