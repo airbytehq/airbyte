@@ -2,6 +2,10 @@
 
 This page contains the setup guide and reference information for the Postgres source connector for CDC and non-CDC workflows.
 
+:::note 
+The Postgres source performs best on small databases (under 100GB).
+:::
+
 ## When to use Postgres with CDC
 
 Configure Postgres with CDC if:
@@ -400,7 +404,9 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                                                                                       | Subject                                                                                                                                                                    |
 |:--------|:-----------|:-------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 1.0.25  | 2022-11-16 | [19004](https://github.com/airbytehq/airbyte/pull/19004)                                                           | Use Debezium heartbeats to improve CDC replication of large databases                                                                                                      |
+| 1.0.27  | 2022-11-28 | [16990](https://github.com/airbytehq/airbyte/pull/16990)                                                           | Handle arrays data types                                                                                                     |
+| 1.0.26  | 2022-11-18 | [19551](https://github.com/airbytehq/airbyte/pull/19551)                                                           | Fixes bug with ssl modes                                                                                                     |
+| 1.0.25  | 2022-11-16 | [19004](https://github.com/airbytehq/airbyte/pull/19004)                                                           | Use Debezium heartbeats to improve CDC replication of large databases.                                                                                                     |
 | 1.0.24  | 2022-11-07 | [19291](https://github.com/airbytehq/airbyte/pull/19291)                                                           | Default timeout is reduced from 1 min to 10sec                                                                                                                             |
 | 1.0.23  | 2022-11-07 | [19025](https://github.com/airbytehq/airbyte/pull/19025)                                                           | Stop enforce SSL if ssl mode is disabled                                                                                                                                   |
 | 1.0.22  | 2022-10-31 | [18538](https://github.com/airbytehq/airbyte/pull/18538)                                                           | Encode database name                                                                                                                                                       |

@@ -1,64 +1,56 @@
-import { useState } from "react";
-import { useIntl } from "react-intl";
+import React from "react";
+import { FormattedMessage } from "react-intl";
 
-import { ResizablePanels } from "components/ui/ResizablePanels";
+import { Spinner } from "components/ui/Spinner";
+import { Text } from "components/ui/Text";
 
-import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { links } from "utils/links";
 
-import { LogsDisplay } from "./LogsDisplay";
-import { ResultDisplay } from "./ResultDisplay";
+import { ConfigMenu } from "./ConfigMenu";
 import { StreamSelector } from "./StreamSelector";
+import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
-import { TestControls } from "./TestControls";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { formatMessage } = useIntl();
-  const { jsonManifest, selectedStream, configJson } = useConnectorBuilderState();
-  const { data: streamReadData, refetch: readStream } = useReadStream({
-    manifest: jsonManifest,
-    stream: selectedStream.name,
-    config: configJson,
-  });
-  const [logsFlex, setLogsFlex] = useState(0);
+  const { selectedStream, streams, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
 
-  const handleLogsTitleClick = () => {
-    // expand to 50% if it is currently minimized, otherwise minimize it
-    setLogsFlex((prevFlex) => (prevFlex < 0.06 ? 0.5 : 0));
-  };
+  if (!yamlEditorIsMounted) {
+    return (
+      <div className={styles.loadingSpinner}>
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className={styles.container}>
-      <StreamSelector className={styles.streamSelector} />
-      <TestControls
-        className={styles.testControls}
-        onClickTest={() => {
-          readStream();
-        }}
-      />
-      {streamReadData && streamReadData.slices.length !== 0 ? (
-        <ResizablePanels
-          className={styles.resizablePanelsContainer}
-          orientation="horizontal"
-          firstPanel={{
-            children: <ResultDisplay slices={streamReadData.slices} />,
-            minWidth: 120,
-          }}
-          secondPanel={{
-            className: styles.logsContainer,
-            children: <LogsDisplay logs={streamReadData.logs} onTitleClick={handleLogsTitleClick} />,
-            minWidth: 30,
-            flex: logsFlex,
-            onStopResize: (newFlex) => {
-              if (newFlex) {
-                setLogsFlex(newFlex);
-              }
-            },
-          }}
-          hideSecondPanel={streamReadData.logs.length === 0}
-        />
-      ) : (
-        <div className={styles.placeholder}>{formatMessage({ id: "connectorBuilder.resultsPlaceholder" })}</div>
+      <ConfigMenu className={styles.configButton} />
+      {streamListErrorMessage !== undefined && (
+        <div className={styles.listErrorDisplay}>
+          <Text>
+            <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
+          </Text>
+          <Text bold>{streamListErrorMessage}</Text>
+          <Text>
+            <FormattedMessage
+              id="connectorBuilder.ensureProperYaml"
+              values={{
+                a: (node: React.ReactNode) => (
+                  <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
+                    {node}
+                  </a>
+                ),
+              }}
+            />
+          </Text>
+        </div>
+      )}
+      {streamListErrorMessage === undefined && selectedStream !== undefined && (
+        <div className={styles.selectAndTestContainer}>
+          <StreamSelector className={styles.streamSelector} streams={streams} selectedStream={selectedStream} />
+          <StreamTester selectedStream={selectedStream} />
+        </div>
       )}
     </div>
   );
