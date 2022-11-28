@@ -35,7 +35,8 @@
       },
       "password": {
         "type": "string",
-        "description": "Password"
+        "description": "Password",
+        "airbyte_secret": true
       },
       "use_ssl": {
         "type": "string",
