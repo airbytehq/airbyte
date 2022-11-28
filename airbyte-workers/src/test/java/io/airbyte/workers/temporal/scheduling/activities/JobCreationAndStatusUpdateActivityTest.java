@@ -449,6 +449,16 @@ class JobCreationAndStatusUpdateActivityTest {
     }
 
     @Test
+    void setAttemptFailureManuallyTerminated() throws IOException {
+      jobCreationAndStatusUpdateActivity
+          .attemptFailure(new AttemptFailureInput(JOB_ID, ATTEMPT_ID, CONNECTION_ID, standardSyncOutput, null));
+
+      verify(mJobPersistence).failAttempt(JOB_ID, ATTEMPT_ID);
+      verify(mJobPersistence).writeOutput(JOB_ID, ATTEMPT_ID, jobOutput);
+      verify(mJobPersistence).writeAttemptFailureSummary(JOB_ID, ATTEMPT_ID, null);
+    }
+
+    @Test
     void setAttemptFailureWrapException() throws IOException {
       final Exception exception = new IOException(TEST_EXCEPTION_MESSAGE);
       Mockito.doThrow(exception)
