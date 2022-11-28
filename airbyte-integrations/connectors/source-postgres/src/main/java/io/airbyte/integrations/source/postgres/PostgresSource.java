@@ -91,9 +91,6 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
-      "sslmode", "require");
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -109,11 +106,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (JdbcUtils.useSsl(config)) {
-      return SSL_JDBC_PARAMETERS;
-    } else {
-      return Collections.emptyMap();
-    }
+    return Collections.emptyMap();
   }
 
   @Override
@@ -174,7 +167,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
+                  case AbstractJdbcSource.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
                       + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
                   case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
                   case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));

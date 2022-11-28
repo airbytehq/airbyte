@@ -16,7 +16,7 @@ export const DEV_IMAGE_TAG = "dev";
  * @param {string} workspaceId The workspace Id
  * @returns {array} List of connectorIds that should be filtered out
  */
-export const getExcludedConnectorIds = (workspaceId: string): string[] =>
+export const getExcludedConnectorIds = (workspaceId?: string): string[] =>
   isCloudApp()
     ? [
         ConnectorIds.Destinations.Cassandra, // hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
