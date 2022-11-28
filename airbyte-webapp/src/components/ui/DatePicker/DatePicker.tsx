@@ -12,7 +12,7 @@ import { Input } from "../Input";
 import styles from "./DatePicker.module.scss";
 
 /**
- * Converts a UTC dayjs object into a JS Date object with the same local time
+ * Converts a UTC string into a JS Date object with the same local time
  *
  * Necessary because react-datepicker does not allow us to set the timezone to UTC, only the current browser time.
  * In order to display the UTC timezone in the datepicker, we need to convert it into the local time:
@@ -23,11 +23,18 @@ import styles from "./DatePicker.module.scss";
  */
 
 // TODO: accept a string instead here
-export const toEquivalentLocalTime = (date: dayjs.Dayjs | undefined): Date | undefined => {
+export const toEquivalentLocalTime = (input: string): Date | undefined => {
+  if (!input) {
+    return undefined;
+  }
+
+  const date = dayjs.utc(input);
+
   if (!date?.isValid()) {
     return undefined;
   }
-  // First, get the user's UTC offset based on the local time
+
+  // Get the user's UTC offset based on the local time
   const browserUtcOffset = dayjs().utcOffset();
 
   // Convert the selected date into a string which we can use to initialize a new date object.
@@ -36,7 +43,8 @@ export const toEquivalentLocalTime = (date: dayjs.Dayjs | undefined): Date | und
 
   const equivalentDate = dayjs(dateInUtcAsString);
 
-  // dayjs does not 0-pad years, so it's possible to have an invalid date here
+  // dayjs does not 0-pad years when formatting, so it's possible to have an invalid date here
+  // https://github.com/iamkun/dayjs/issues/1745
   if (!equivalentDate.isValid()) {
     return undefined;
   }
@@ -116,7 +124,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     [onChange]
   );
 
-  const dateValue = useMemo(() => (value ? dayjs.utc(value) : undefined), [value]);
+  const localDate = useMemo(() => toEquivalentLocalTime(value), [value]);
 
   return (
     <div className={styles.wrapper}>
@@ -135,7 +143,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           showTimeSelect={withTime}
           disabled={disabled}
           locale={locale}
-          selected={toEquivalentLocalTime(dateValue)}
+          selected={localDate}
           onChange={handleDatepickerChange}
           onBlur={onBlur}
           value={undefined}

@@ -9,20 +9,16 @@ import { DatePicker, toEquivalentLocalTime } from "./DatePicker";
 describe(`${toEquivalentLocalTime.name}`, () => {
   it("handles a date in the year 1", () => {
     const TEST_UTC_TIMESTAMP = "0001-12-01T09:00:00Z";
-    const jsDate = new Date(TEST_UTC_TIMESTAMP);
 
-    const result = toEquivalentLocalTime(dayjs(jsDate));
-    console.log(dayjs(jsDate).format("YYYY-MM-DDTHH:mm:ssZ"));
-    // dayjs does not 0-pad years!
+    const result = toEquivalentLocalTime(TEST_UTC_TIMESTAMP);
 
     expect(result).toEqual(undefined);
   });
 
   it("handles an invalid dayjs date", () => {
     const TEST_UTC_TIMESTAMP = "199";
-    const jsDate = new Date(TEST_UTC_TIMESTAMP);
 
-    const result = toEquivalentLocalTime(dayjs(jsDate));
+    const result = toEquivalentLocalTime(TEST_UTC_TIMESTAMP);
 
     expect(result).toEqual(undefined);
   });
@@ -30,7 +26,7 @@ describe(`${toEquivalentLocalTime.name}`, () => {
   it("outputs the same YYYY-MM-DDTHH:mm:ss", () => {
     const TEST_UTC_TIMESTAMP = "2000-01-01T12:00:00Z";
 
-    const result = toEquivalentLocalTime(dayjs(TEST_UTC_TIMESTAMP));
+    const result = toEquivalentLocalTime(TEST_UTC_TIMESTAMP);
 
     // Regardless of the timezone, the local time should be the same
     expect(result?.toISOString().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
@@ -41,13 +37,12 @@ describe(`${toEquivalentLocalTime.name}`, () => {
     const TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES = 480; // corresponds to the registered mock timezone
     const TEST_UTC_TIMESTAMP = "2022-01-01T00:00:00Z";
 
-    const dayjsObject = dayjs.utc(TEST_UTC_TIMESTAMP);
     const expectedDateObject = dayjs
       .utc(TEST_UTC_TIMESTAMP)
       .add(TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES, "minutes")
       .toDate();
 
-    expect(toEquivalentLocalTime(dayjsObject)).toEqual(expectedDateObject);
+    expect(toEquivalentLocalTime(TEST_UTC_TIMESTAMP)).toEqual(expectedDateObject);
   });
 
   it("converts utc time to equivalent local time in EST", () => {
@@ -55,23 +50,21 @@ describe(`${toEquivalentLocalTime.name}`, () => {
     const TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES = 300; // corresponds to the registered mock timezone
     const TEST_UTC_TIMESTAMP = "2022-01-01T00:00:00Z";
 
-    const dayjsObject = dayjs.utc(TEST_UTC_TIMESTAMP);
     const expectedDateObject = dayjs
       .utc(TEST_UTC_TIMESTAMP)
       .add(TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES, "minutes")
       .toDate();
 
-    expect(toEquivalentLocalTime(dayjsObject)).toEqual(expectedDateObject);
+    expect(toEquivalentLocalTime(TEST_UTC_TIMESTAMP)).toEqual(expectedDateObject);
   });
 
   it("keeps a utc timestamp exactly the same", () => {
     timezoneMock.register("UTC");
     const TEST_UTC_TIMESTAMP = "2022-01-01T00:00:00Z";
 
-    const dayjsObject = dayjs.utc(TEST_UTC_TIMESTAMP);
     const expectedDateObject = dayjs.utc(TEST_UTC_TIMESTAMP).toDate();
 
-    expect(toEquivalentLocalTime(dayjsObject)).toEqual(expectedDateObject);
+    expect(toEquivalentLocalTime(TEST_UTC_TIMESTAMP)).toEqual(expectedDateObject);
   });
 
   afterEach(() => {
