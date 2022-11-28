@@ -1084,6 +1084,16 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+      
+      - name: Install tmate and it's dependencies
+        if: inputs.debug_mode == 'true'
+        shell: bash
+        run: |
+          sudo rm -f /var/lib/dpkg/lock
+          sudo rm -f /var/lib/dpkg/lock-frontend
+
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
     
 
   # # In case of self-hosted EC2 errors, remove this block.
