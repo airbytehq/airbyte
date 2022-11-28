@@ -12,11 +12,11 @@ This page guides you through the process of setting up the [Databend](https://da
 
 #### Output Schema
 
-Each stream will be output into its own table in ClickHouse. Each table will contain 3 columns:
+Each stream will be output into its own table in Databend. Each table will contain 3 columns:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in ClickHouse is `String`.
-* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in ClickHouse is `DateTime64`.
-* `_airbyte_data`: a json blob representing with the event data. The column type in ClickHouse is `String`.
+* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed. The column type in Databend is `String`.
+* `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source. The column type in Databend is `Timestamp`.
+* `_airbyte_data`: a json blob representing with the event data. The column type in Databend is `String`.
 
 ## Getting Started
 You can follow the [Connecting to a Warehouse docs](https://docs.databend.com/using-databend-cloud/warehouses/connecting-a-warehouse) to get the user, password, host etc.
@@ -39,7 +39,7 @@ You can also use a pre-existing user but we highly recommend creating a dedicate
 
 You will need to choose an existing database or create a new database that will be used to store synced data from Airbyte.
 
-### Setup the ClickHouse Destination in Airbyte
+### Setup the Databend Destination in Airbyte
 
 You should now have all the requirements needed to configure Databend as a destination in the UI. You'll need the following information to configure the Databend destination:
 
