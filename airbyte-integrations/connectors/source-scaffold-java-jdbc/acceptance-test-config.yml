@@ -1,21 +1,23 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
-connector_image: airbyte/source-scaffold-java-jdbc:dev
+connector_image: airbyte/source-{{dashCase name}}:dev
 tests:
   spec:
     - spec_path: "src/test-integration/resources/expected_spec.json"
       config_path: "src/test-integration/resources/dummy_config.json"
-  connection:
-    - config_path: "secrets/sat-config.json"
-      status: "succeed"
-  discovery:
-    - config_path: "secrets/sat-config.json"
-  basic_read:
-    - config_path: "secrets/sat-config.json"
-      expect_records:
-        path: "integration_tests/expected_records.json"
-  full_refresh:
-    - config_path: "secrets/sat-config.json"
-  incremental:
-    - config_path: "secrets/sat-config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_inc.json"
+## In order to enable other SAT, please populate listed files below.
+## For more details see [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+#  connection:
+#   - config_path: "secrets/sat-config.json"
+#     status: "succeed"
+# discovery:
+#   - config_path: "secrets/sat-config.json"
+# basic_read:
+#   - config_path: "secrets/sat-config.json"
+#     expect_records:
+#       path: "integration_tests/expected_records.json"
+# full_refresh:
+#   - config_path: "secrets/sat-config.json"
+# incremental:
+#   - config_path: "secrets/sat-config.json"
+#     configured_catalog_path: "integration_tests/configured_catalog_inc.json"
