@@ -378,15 +378,16 @@ class AirbyteMessageTrackerTest {
     @DisplayName("should error when given both Stream and Sync estimates")
     void shouldErrorOnBothStreamAndSyncEstimates() {
       final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
-      final var est2 = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
+      final var est2 = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
 
       messageTracker.acceptFromSource(est1);
       assertThrows(IllegalArgumentException.class, () -> messageTracker.acceptFromSource(est2));
     }
+
     @Test
     @DisplayName("when given sync estimates, should return correct total estimates")
     void syncShouldSaveAndReturnTotalCountsCorrectly() {
-      final var est = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
       messageTracker.acceptFromSource(est);
 
       final var totalEstBytes = messageTracker.getTotalBytesEstimated();
@@ -399,7 +400,7 @@ class AirbyteMessageTrackerTest {
     @Test
     @DisplayName("when given sync estimates, should not return any per-stream estimates")
     void syncShouldNotHaveStreamEstimates() {
-      final var est = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
       messageTracker.acceptFromSource(est);
 
       final var streamToEstBytes = messageTracker.getStreamToEstimatedBytes();
@@ -407,7 +408,6 @@ class AirbyteMessageTrackerTest {
       final var streamToEstRecs = messageTracker.getStreamToEstimatedRecords();
       assertTrue(streamToEstRecs.isEmpty());
     }
-
 
   }
 

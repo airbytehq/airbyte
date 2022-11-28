@@ -111,7 +111,11 @@ public class AirbyteMessageUtils {
     return createEstimateMessage(AirbyteEstimateTraceMessage.Type.SYNC, null, null, byteEst, rowEst);
   }
 
-  public static AirbyteMessage createEstimateMessage(AirbyteEstimateTraceMessage.Type type, final String name, final String namespace, final long byteEst, final long rowEst) {
+  public static AirbyteMessage createEstimateMessage(AirbyteEstimateTraceMessage.Type type,
+                                                     final String name,
+                                                     final String namespace,
+                                                     final long byteEst,
+                                                     final long rowEst) {
     final var est = new AirbyteEstimateTraceMessage()
         .withType(type)
         .withByteEstimate(byteEst)
