@@ -16,7 +16,7 @@ public class HandlerFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public HealthCheckHandler configRepository(final ConfigRepository configRepository) {
+  public HealthCheckHandler healthCheckHandler(final ConfigRepository configRepository) {
     return new HealthCheckHandler(configRepository);
   }
 
