@@ -48,7 +48,7 @@
       "loading_method": {
         "type": "object",
         "title": "Loading Method",
-        "description": "Loading method used to select the way data will be uploaded to Firebolt",
+        "description": "Loading method used to select the way data will be uploaded to Hive",
         "oneOf": [
           {
             "title": "SQL Inserts",

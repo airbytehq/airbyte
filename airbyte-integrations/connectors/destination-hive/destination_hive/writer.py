@@ -24,7 +24,7 @@ class HiveWriter:
 
     def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
-        :param connection: Firebolt SDK connection class with established connection
+        :param connection: Impyla hive connection class with established connection
             to the databse.
         """
         self.connection = connection
@@ -97,7 +97,7 @@ class HiveS3Writer(HiveWriter):
     """
     Data writer using the S3 strategy. Data is buffered in memory
     before being flushed to S3 in .parquet format. At the end of
-    the operation data is written to Firebolt databse from S3, allowing
+    the operation data is written to Hive databse from S3, allowing
     greater ingestion speed.
     """
 
@@ -105,13 +105,13 @@ class HiveS3Writer(HiveWriter):
 
     def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
-        :param connection: Firebolt SDK connection class with established connection
+        :param connection: Impyla hive connection class with established connection
             to the databse.
-        :param s3_bucket: Intermediate bucket to store the data files before writing them to Firebolt.
+        :param s3_bucket: Intermediate bucket to store the data files before writing them to Hive.
             Has to be created and accessible.
         :param access_key: AWS Access Key ID that has read/write/delete permissions on the files in the bucket.
         :param secret_key: Corresponding AWS Secret Key.
-        :param s3_region: S3 region. Best to keep this the same as Firebolt database region. Default us-east-1.
+        :param s3_region: S3 region. Best to keep this the same as Hive database region. Default us-east-1.
         """
         super().__init__(connection, config, logger)
         self.s3_bucket = config["s3_bucket"]
@@ -166,7 +166,7 @@ class HiveS3Writer(HiveWriter):
     def ingest_data(self, name: str) -> None:
         """
         Write data from External Table to the airbyte_raw table effectively
-        persisting data in Firebolt.
+        persisting data in Hive.
 
         :param name: Stream name from which the table name is derived.
         """
@@ -224,7 +224,7 @@ class HiveS3Writer(HiveWriter):
 
     def flush(self) -> None:
         """
-        Flush any leftover data after ingestion and write from S3 to Firebolt.
+        Flush any leftover data after ingestion and write from S3 to Hive.
         Intermediate data on S3 and External Table will be deleted after write is complete.
         """
         self._flush()
@@ -245,7 +245,7 @@ class HiveSQLWriter(HiveWriter):
 
     def __init__(self, connection: hs2.HiveServer2Connection, config: Mapping[str, Any], logger: AirbyteLogger) -> None:
         """
-        :param connection: Firebolt SDK connection class with established connection
+        :param connection: Impyla hive connection class with established connection
             to the databse.
         """
         super().__init__(connection, config, logger)
