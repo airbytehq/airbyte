@@ -701,13 +701,13 @@ public abstract class JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_4,
+                .of(COL_ID, String.valueOf(ID_VALUE_4),
                     COL_NAME, "riker",
                     COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
     expectedMessages.add(new AirbyteMessage().withType(Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(Map
-                .of(COL_ID, ID_VALUE_5,
+                .of(COL_ID, String.valueOf(ID_VALUE_5),
                     COL_NAME, "data",
                     COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
     final DbStreamState state = new DbStreamState()
@@ -1032,20 +1032,20 @@ public abstract class JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_1,
+                    .of(COL_ID, String.valueOf(ID_VALUE_3),
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_2,
+                    .of(COL_ID, String.valueOf(ID_VALUE_3),
                         COL_NAME, "crusher",
                         COL_UPDATED_AT,
                         "2005-10-19T00:00:00Z")))),
         new AirbyteMessage().withType(Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(Map
-                    .of(COL_ID, ID_VALUE_3,
+                    .of(COL_ID, String.valueOf(ID_VALUE_3),
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19T00:00:00Z")))));
   }

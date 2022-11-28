@@ -301,7 +301,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_1,
+                    .of(COL_ID, String.valueOf(ID_VALUE_1),
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19",
                         COL_WAKEUP_AT, "10:10:10.123456-05:00",
@@ -310,7 +310,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_2,
+                    .of(COL_ID, String.valueOf(ID_VALUE_2),
                         COL_NAME, "crusher",
                         COL_UPDATED_AT, "2005-10-19",
                         COL_WAKEUP_AT, "11:11:11.123456-05:00",
@@ -319,7 +319,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_3,
+                    .of(COL_ID, String.valueOf(ID_VALUE_3),
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19",
                         COL_WAKEUP_AT, "12:12:12.123456-05:00",
