@@ -112,7 +112,7 @@ class SourceNetsuite(AbstractSource):
         else:
             retry_attempt = 1
             while retry_attempt <= max_retry:
-                self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}")
+                self.logger.warn(f"Object `{object_name}` schema has missing `properties` key. Retry attempt: {retry_attempt}/{max_retry}")
                 # somethimes object metadata returns data with missing `properties` key,
                 # we should try to fetch metadata again to that object
                 schemas = self.get_schemas(object_name, session, metadata_url)
