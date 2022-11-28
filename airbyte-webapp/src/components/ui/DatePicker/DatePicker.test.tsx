@@ -7,6 +7,8 @@ import timezoneMock from "timezone-mock";
 import { DatePicker, toEquivalentLocalTime } from "./DatePicker";
 
 describe(`${toEquivalentLocalTime.name}`, () => {
+  // Seems silly, but dayjs has a bug when formatting years, so this is a useful test:
+  // https://github.com/iamkun/dayjs/issues/1745
   it("handles a date in the year 1", () => {
     const TEST_UTC_TIMESTAMP = "0001-12-01T09:00:00Z";
 
@@ -15,8 +17,8 @@ describe(`${toEquivalentLocalTime.name}`, () => {
     expect(result).toEqual(undefined);
   });
 
-  it("handles an invalid dayjs date", () => {
-    const TEST_UTC_TIMESTAMP = "199";
+  it("handles an invalid date", () => {
+    const TEST_UTC_TIMESTAMP = "not a date";
 
     const result = toEquivalentLocalTime(TEST_UTC_TIMESTAMP);
 
