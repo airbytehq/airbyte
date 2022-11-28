@@ -5,7 +5,7 @@
     "title": "Delighted Spec",
     "type": "object",
     "required": ["since", "api_key"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "since": {
         "title": "Since",

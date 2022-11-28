@@ -372,7 +372,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/delighted
   icon: delighted.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Dixa
   sourceDefinitionId: 0b5c867e-1b12-4d02-ab74-97b2184ff6d7
   dockerRepository: airbyte/source-dixa
