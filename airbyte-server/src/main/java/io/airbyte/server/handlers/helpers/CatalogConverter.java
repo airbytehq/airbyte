@@ -4,11 +4,17 @@
 
 package io.airbyte.server.handlers.helpers;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
+import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
+import io.airbyte.validation.json.JsonValidationException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -30,10 +36,21 @@ public class CatalogConverter {
         .namespace(stream.getNamespace());
   }
 
-  private static io.airbyte.protocol.models.AirbyteStream toProtocol(final io.airbyte.api.model.generated.AirbyteStream stream) {
+  private static io.airbyte.protocol.models.AirbyteStream toProtocol(final AirbyteStream stream, final AirbyteStreamConfiguration config)
+      throws JsonValidationException {
+    JsonNode streamSchema = stream.getJsonSchema();
+    if (config.getSelectedFields() != null && !config.getSelectedFields().isEmpty()) {
+      // Only include the selected fields.
+      final JsonNode properties = streamSchema.findValue("properties");
+      if (properties.isObject()) {
+        ((ObjectNode) properties).retain(config.getSelectedFields());
+      } else {
+        throw new JsonValidationException("Requested field selection but no properties node found");
+      }
+    }
     return new io.airbyte.protocol.models.AirbyteStream()
         .withName(stream.getName())
-        .withJsonSchema(stream.getJsonSchema())
+        .withJsonSchema(streamSchema)
         .withSupportedSyncModes(Enums.convertListTo(stream.getSupportedSyncModes(), io.airbyte.protocol.models.SyncMode.class))
         .withSourceDefinedCursor(stream.getSourceDefinedCursor())
         .withDefaultCursorField(stream.getDefaultCursorField())
@@ -90,12 +107,15 @@ public class CatalogConverter {
 
   /**
    * Converts the API catalog model into a protocol catalog. Note: returns all streams, regardless of
-   * selected status. See {@link CatalogConverter#toProtocol(AirbyteStream)} for context.
+   * selected status. See
+   * {@link CatalogConverter#toProtocol(AirbyteStream, AirbyteStreamConfiguration)} for context.
    *
    * @param catalog api catalog
    * @return protocol catalog
    */
-  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocolKeepAllStreams(final io.airbyte.api.model.generated.AirbyteCatalog catalog) {
+  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocolKeepAllStreams(
+                                                                                             final io.airbyte.api.model.generated.AirbyteCatalog catalog)
+      throws JsonValidationException {
     final AirbyteCatalog clone = Jsons.clone(catalog);
     clone.getStreams().forEach(stream -> stream.getConfig().setSelected(true));
     return toProtocol(clone);
@@ -111,20 +131,36 @@ public class CatalogConverter {
    * @param catalog api catalog
    * @return protocol catalog
    */
-  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocol(final io.airbyte.api.model.generated.AirbyteCatalog catalog) {
+  public static io.airbyte.protocol.models.ConfiguredAirbyteCatalog toProtocol(final io.airbyte.api.model.generated.AirbyteCatalog catalog)
+      throws JsonValidationException {
+    final ArrayList<JsonValidationException> errors = new ArrayList<>();
     final List<io.airbyte.protocol.models.ConfiguredAirbyteStream> streams = catalog.getStreams()
         .stream()
-        .filter(s -> s.getConfig().getSelected())
-        .map(s -> new io.airbyte.protocol.models.ConfiguredAirbyteStream()
-            .withStream(toProtocol(s.getStream()))
-            .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
-            .withCursorField(s.getConfig().getCursorField())
-            .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
-                io.airbyte.protocol.models.DestinationSyncMode.class))
-            .withPrimaryKey(Optional.ofNullable(s.getConfig().getPrimaryKey()).orElse(Collections.emptyList())))
+        .filter(CatalogConverter::streamIsIncluded)
+        .map(s -> {
+          try {
+            return new io.airbyte.protocol.models.ConfiguredAirbyteStream()
+                .withStream(toProtocol(s.getStream(), s.getConfig()))
+                .withSyncMode(Enums.convertTo(s.getConfig().getSyncMode(), io.airbyte.protocol.models.SyncMode.class))
+                .withCursorField(s.getConfig().getCursorField())
+                .withDestinationSyncMode(Enums.convertTo(s.getConfig().getDestinationSyncMode(),
+                    io.airbyte.protocol.models.DestinationSyncMode.class))
+                .withPrimaryKey(Optional.ofNullable(s.getConfig().getPrimaryKey()).orElse(Collections.emptyList()));
+          } catch (JsonValidationException e) {
+            errors.add(e);
+          }
+          return new io.airbyte.protocol.models.ConfiguredAirbyteStream();
+        })
         .collect(Collectors.toList());
+    if (!errors.isEmpty()) {
+      throw errors.get(0);
+    }
     return new io.airbyte.protocol.models.ConfiguredAirbyteCatalog()
         .withStreams(streams);
+  }
+
+  private static boolean streamIsIncluded(final AirbyteStreamAndConfiguration s) {
+    return s.getConfig().getSelected() || (s.getConfig().getSelectedFields() != null && !s.getConfig().getSelectedFields().isEmpty());
   }
 
 }

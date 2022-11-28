@@ -3921,7 +3921,13 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
+          description: If this is true, the stream is selected with all of its properties.
           type: boolean
+        selectedFields:
+          description: List of properties to include. This cannot be set at the same time as `selected`.
+          type: array
+          items:
+            type: string
     DataType:
       type: string
       enum:

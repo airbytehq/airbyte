@@ -431,7 +431,17 @@ public class WebBackendConnectionsHandler {
         }
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
+
+        // Diff the fields that are present in the original stream versus the discovered stream.
+        final List<String> selectedFields = new ArrayList<>();
+        final List<String> allFields = new ArrayList<>();
+        originalStream.getStream().getJsonSchema().findValue("properties").fields().forEachRemaining(entry -> selectedFields.add(entry.getKey()));
+        stream.getJsonSchema().findValue("properties").fields().forEachRemaining(entry -> allFields.add(entry.getKey()));
+        final boolean allFieldsAreSelected = new HashSet<>(selectedFields).equals(new HashSet<>(allFields));
         outputStreamConfig.setSelected(originalStream.getConfig().getSelected());
+        if (allFieldsAreSelected) {
+          outputStreamConfig.setSelectedFields(selectedFields);
+        }
       } else {
         outputStreamConfig = discoveredStream.getConfig();
         outputStreamConfig.setSelected(false);

@@ -11,12 +11,13 @@ import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.validation.json.JsonValidationException;
 import org.junit.jupiter.api.Test;
 
 class CatalogConverterTest {
 
   @Test
-  void testConvertToProtocol() {
+  void testConvertToProtocol() throws JsonValidationException {
     assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), CatalogConverter.toProtocol(ConnectionHelpers.generateBasicApiCatalog()));
   }
 

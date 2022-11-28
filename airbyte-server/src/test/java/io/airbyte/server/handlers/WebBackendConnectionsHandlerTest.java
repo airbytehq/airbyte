@@ -415,6 +415,7 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    expectedWithNewSchema.getSyncCatalog().getStreams().get(0).getConfig().setSelectedFields(List.of("id"));
     SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(false);
@@ -437,6 +438,7 @@ class WebBackendConnectionsHandlerTest {
             .breakingChange(true);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
+    expectedWithNewSchemaAndBreakingChange.getSyncCatalog().getStreams().get(0).getConfig().setSelectedFields(List.of("id"));
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
     assertEquals(expectedWithNewSchemaAndBreakingChange, result);
