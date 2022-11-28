@@ -59,7 +59,7 @@ export const resetModalSaveBtnClick = () => {
   cy.get("[data-testid='resetModal-save']").click();
 };
 
-  export const setupDestinationNamespaceDefaultFormat = () => {
+export const setupDestinationNamespaceDefaultFormat = () => {
   cy.get(destinationNamespace).click();
   cy.get(destinationNamespaceDefault).click();
 };
