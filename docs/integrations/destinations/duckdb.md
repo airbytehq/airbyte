@@ -46,9 +46,9 @@ The local mount is mounted by Docker onto `LOCAL_ROOT`. This means the `/local` 
 
 ### Example:
 
-* If `destination_path` is set to `/local/destination.ducdb`
+* If `destination_path` is set to `/local/destination.duckdb`
 * the local mount is using the `/tmp/airbyte_local` default
-* then all data will be written to `/tmp/airbyte_local/destination.ducdb`.
+* then all data will be written to `/tmp/airbyte_local/destination.duckdb`.
 
 ## Access Replicated Data Files
 
@@ -57,7 +57,7 @@ If your Airbyte instance is running on the same computer that you are navigating
 1. Access the scheduler container using `docker exec -it airbyte-server bash`
 2. Navigate to the default local mount using `cd /tmp/airbyte_local`
 3. Navigate to the replicated file directory you specified when you created the destination, using `cd /{destination_path}`
-4. Execute `sqlite3 {filename}` to access the data in a particular database file.
+4. Execute `duckdb {filename}` to access the data in a particular database file.
 
 You can also copy the output file to your host machine, the following command will copy the file to the current working directory you are using:
 
