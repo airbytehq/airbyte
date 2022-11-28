@@ -6,6 +6,7 @@ package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
@@ -20,6 +21,7 @@ import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -335,7 +337,8 @@ class AirbyteMessageTrackerTest {
 
     // receiving an estimate for two streams should save
     @Test
-    void shouldSaveAndReturnIndividualStreamCountsCorrectly() {
+    @DisplayName("when given stream estimates, should return correct per-stream estimates")
+    void streamShouldSaveAndReturnIndividualStreamCountsCorrectly() {
       final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
       final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
 
@@ -356,7 +359,8 @@ class AirbyteMessageTrackerTest {
     }
 
     @Test
-    void shouldSaveAndReturnTotalCountsCorrectly() {
+    @DisplayName("when given stream estimates, should return correct total estimates")
+    void streamShouldSaveAndReturnTotalCountsCorrectly() {
       final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
       final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
 
@@ -371,18 +375,37 @@ class AirbyteMessageTrackerTest {
     }
 
     @Test
+    @DisplayName("should error when given both Stream and Sync estimates")
     void shouldErrorOnBothStreamAndSyncEstimates() {
       final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
-      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+      final var est2 = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
 
       messageTracker.acceptFromSource(est1);
-      messageTracker.acceptFromSource(est2);
+      assertThrows(IllegalArgumentException.class, () -> messageTracker.acceptFromSource(est2));
+    }
+    @Test
+    @DisplayName("when given sync estimates, should return correct total estimates")
+    void syncShouldSaveAndReturnTotalCountsCorrectly() {
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
+      messageTracker.acceptFromSource(est);
 
       final var totalEstBytes = messageTracker.getTotalBytesEstimated();
-      assertEquals(300L, totalEstBytes);
+      assertEquals(200L, totalEstBytes);
 
       final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
-      assertEquals(20L, totalEstRecs);
+      assertEquals(10L, totalEstRecs);
+    }
+
+    @Test
+    @DisplayName("when given sync estimates, should not return any per-stream estimates")
+    void syncShouldNotHaveStreamEstimates() {
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage( 200L, 10L);
+      messageTracker.acceptFromSource(est);
+
+      final var streamToEstBytes = messageTracker.getStreamToEstimatedBytes();
+      assertTrue(streamToEstBytes.isEmpty());
+      final var streamToEstRecs = messageTracker.getStreamToEstimatedRecords();
+      assertTrue(streamToEstRecs.isEmpty());
     }
 
 
