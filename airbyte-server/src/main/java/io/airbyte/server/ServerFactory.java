@@ -34,7 +34,6 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
@@ -247,7 +246,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
-          new AttemptApiBinder(),
           new ConnectionApiBinder(),
           new DbMigrationBinder(),
           new DestinationApiBinder(),
