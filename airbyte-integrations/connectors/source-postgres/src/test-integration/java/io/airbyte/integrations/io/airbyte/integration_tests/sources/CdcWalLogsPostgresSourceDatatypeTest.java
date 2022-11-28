@@ -157,7 +157,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
           TestDataHolder.builder()
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
@@ -175,7 +175,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues(
                   "'infinity'",
                   "'-infinity'")

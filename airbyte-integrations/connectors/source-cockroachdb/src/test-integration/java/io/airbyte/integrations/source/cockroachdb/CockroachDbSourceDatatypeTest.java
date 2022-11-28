@@ -94,7 +94,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("array")
             .fullSourceDataType("STRING[]")
-            .jsonSchemaType(JsonSchemaType.ARRAY)
+            .airbyteType(JsonSchemaType.ARRAY)
             .addInsertValues("ARRAY['sky', 'road', 'car']", "null")
             .addExpectedValues("[\"sky\",\"road\",\"car\"]", null)
             .build());
@@ -103,7 +103,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("BIT(3)")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("B'101'")
             .addExpectedValues("101")
             .build());
@@ -111,7 +111,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -119,7 +119,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
@@ -127,7 +127,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("serial")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "2147483647", "0", "-2147483647")
             .addExpectedValues("1", "2147483647", "0", "-2147483647")
             .build());
@@ -135,7 +135,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallserial")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("1", "32767", "0", "-32767")
             .addExpectedValues("1", "32767", "0", "-32767")
             .build());
@@ -144,7 +144,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("bit_varying")
             .fullSourceDataType("BIT VARYING(5)")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("B'101'", "null")
             .addExpectedValues("101", null)
             .build());
@@ -152,7 +152,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("boolean")
-            .jsonSchemaType(JsonSchemaType.BOOLEAN)
+            .airbyteType(JsonSchemaType.BOOLEAN)
             .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
             .addExpectedValues("true", "true", "true", "false", "false", "false", null)
             .build());
@@ -161,7 +161,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("bytea")
             .fullSourceDataType("bytea[]")
-            .jsonSchemaType(JsonSchemaType.OBJECT)
+            .airbyteType(JsonSchemaType.OBJECT)
             .addInsertValues("ARRAY['☃'::bytes, 'ї'::bytes]")
             .addExpectedValues("[\"\\\\xe29883\",\"\\\\xd197\"]")
             .build());
@@ -169,7 +169,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("blob")
-            .jsonSchemaType(JsonSchemaType.OBJECT)
+            .airbyteType(JsonSchemaType.OBJECT)
             .addInsertValues("decode('1234', 'hex')")
             .addExpectedValues("EjQ=")
             .build());
@@ -177,7 +177,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("character")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'*'", "null")
             .addExpectedValues("a", "*", null)
             .build());
@@ -186,7 +186,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("character")
             .fullSourceDataType("character(8)")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12} ")
             .build());
@@ -194,7 +194,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("varchar")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
                 "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -205,7 +205,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("varchar")
             .fullSourceDataType("character(12)")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
                 "''", "null")
             .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
@@ -215,7 +215,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'1999-01-08'", "null")
             .addExpectedValues("1999-01-08T00:00:00Z", null)
             .build());
@@ -223,7 +223,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float8")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "null", "'infinity'",
                 "'+infinity'", "'+inf'", "'inf'", "'-inf'", "'-infinity'", "'nan'")
             .addExpectedValues("123.0", "1.2345678901234567E9", null,
@@ -233,7 +233,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("float")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'123'", "'1234567890.1234567'", "null", "'infinity'",
                 "'+infinity'", "'+inf'", "'inf'", "'-inf'", "'-infinity'", "'nan'")
             .addExpectedValues("123.0", "1.2345678901234567E9", null, "Infinity",
@@ -243,7 +243,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inet")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'198.24.10.0/24'", "'198.24.10.0'", "'198.10/8'", "null")
             .addExpectedValues("198.24.10.0/24", "198.24.10.0", "198.10.0.0/8", null)
             .build());
@@ -251,7 +251,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .build());
@@ -259,7 +259,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("interval")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'P1Y2M3DT4H5M6S'", "'-178000000'", "'178000000'")
             .addExpectedValues(null, "1 year 2 mons 3 days 04:05:06", "-49444:26:40", "49444:26:40")
             .build());
@@ -267,7 +267,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
             .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
@@ -275,7 +275,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'[1, 2, 3]'::jsonb")
             .addExpectedValues(null, "[1, 2, 3]")
             .build());
@@ -283,7 +283,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("numeric")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'99999'", "null")
             .addExpectedValues("99999", null)
             .build());
@@ -291,7 +291,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("decimal")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("'+inf'", "999", "'-inf'", "'+infinity'", "'-infinity'", "'nan'")
             .addExpectedValues("Infinity", "999", "-Infinity", "Infinity", "-Infinity", "NaN")
             .build());
@@ -299,7 +299,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .build());
@@ -307,7 +307,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("text")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a'", "'abc'", "'Миші йдуть;'", "'櫻花分店'",
                 "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
             .addExpectedValues("a", "abc", "Миші йдуть;", "櫻花分店", "", null, "\\xF0\\x9F\\x9A\\x80")
@@ -318,7 +318,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("time")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06'", null)
             .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
@@ -328,7 +328,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timetz")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'04:05:06Z'", null)
             .addExpectedValues("1970-01-01T04:05:06Z")
             .addNullExpectedValue()
@@ -337,7 +337,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("TIMESTAMP '2004-10-19 10:23:54'", "TIMESTAMP '2004-10-19 10:23:54.123456'", "null")
             .addExpectedValues("2004-10-19T10:23:54.000000Z", "2004-10-19T10:23:54.123456Z", null)
             .build());
@@ -345,7 +345,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("uuid")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'", "null")
             .addExpectedValues("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", null)
             .build());
@@ -354,7 +354,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mood")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'happy'", "null")
             .addExpectedValues("happy", null)
             .build());
@@ -363,7 +363,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("text")
             .fullSourceDataType("text[]")
-            .jsonSchemaType(JsonSchemaType.ARRAY)
+            .airbyteType(JsonSchemaType.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());
@@ -372,7 +372,7 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("int")
             .fullSourceDataType("int[]")
-            .jsonSchemaType(JsonSchemaType.ARRAY)
+            .airbyteType(JsonSchemaType.ARRAY)
             .addInsertValues("'{10000, 10000, 10000, 10000}'", "null")
             .addExpectedValues("[\"10000\",\"10000\",\"10000\",\"10000\"]", null)
             .build());

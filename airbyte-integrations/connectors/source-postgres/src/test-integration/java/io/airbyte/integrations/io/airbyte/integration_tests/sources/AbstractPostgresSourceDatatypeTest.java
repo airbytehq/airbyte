@@ -53,7 +53,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .jsonSchemaType(JsonSchemaType.INTEGER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .build());
@@ -61,7 +61,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigserial")
-            .jsonSchemaType(JsonSchemaType.INTEGER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .addExpectedValues("1", "9223372036854775807", "0", "-9223372036854775808")
             .build());
@@ -70,7 +70,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("BIT(1)")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("B'0'")
             .addExpectedValues("0")
             .build());
@@ -79,7 +79,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bit")
             .fullSourceDataType("BIT(3)")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("B'101'")
             .addExpectedValues("101")
             .build());
@@ -89,7 +89,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("bit_varying")
               .fullSourceDataType("BIT VARYING(5)")
-              .jsonSchemaType(JsonSchemaType.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("B'101'", "null")
               .addExpectedValues("101", null)
               .build());
@@ -99,7 +99,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.BOOLEAN)
+              .airbyteType(JsonSchemaType.BOOLEAN)
               .addInsertValues("true", "'yes'", "'1'", "false", "'no'", "'0'", "null")
               .addExpectedValues("true", "true", "true", "false", "false", "false", null)
               .build());
@@ -108,7 +108,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("box")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("(15.0,18.0),(3.0,7.0)", "(0.0,0.0),(0.0,0.0)", null)
             .build());
@@ -118,7 +118,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bytea")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "decode('1234', 'hex')", "'1234'", "'abcd'", "'\\xabcd'")
             .addExpectedValues(null, "\\x1234", "\\x31323334", "\\x61626364", "\\xabcd")
             .build());
@@ -127,7 +127,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("'a'", "'*'", "null")
               .addExpectedValues("a", "*", null)
               .build());
@@ -136,7 +136,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType(type)
               .fullSourceDataType(type + "(8)")
-              .jsonSchemaType(JsonSchemaType.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("'{asb123}'", "'{asb12}'")
               .addExpectedValues("{asb123}", "{asb12} ")
               .build());
@@ -146,7 +146,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.STRING)
+              .airbyteType(JsonSchemaType.STRING)
               .addInsertValues("'a'", "'abc'", "'Миші йдуть на південь, не питай чому;'", "'櫻花分店'",
                   "''", "null", "'\\xF0\\x9F\\x9A\\x80'")
               .addExpectedValues("a", "abc", "Миші йдуть на південь, не питай чому;", "櫻花分店", "",
@@ -158,7 +158,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("varchar")
             .fullSourceDataType("character varying(10)")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'{asb123}'", "'{asb12}'")
             .addExpectedValues("{asb123}", "{asb12}")
             .build());
@@ -166,7 +166,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("cidr")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'192.168.100.128/25'", "'192.168/24'", "'192.168.1'",
                 "'128.1'", "'2001:4f8:3:ba::/64'")
             .addExpectedValues(null, "192.168.100.128/25", "192.168.0.0/24", "192.168.1.0/24",
@@ -176,7 +176,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("circle")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'(5,7),10'", "'(0,0),0'", "'(-10,-4),10'", "null")
             .addExpectedValues("<(5.0,7.0),10.0>", "<(0.0,0.0),0.0>", "<(-10.0,-4.0),10.0>", null)
             .build());
@@ -188,7 +188,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("date")
               .fullSourceDataType(type)
-              .jsonSchemaType(JsonSchemaType.STRING_DATE)
+              .airbyteType(JsonSchemaType.STRING_DATE)
               .addInsertValues("'1999-01-08'", "'1991-02-10 BC'")
               .addExpectedValues("1999-01-08", "1991-02-10 BC")
               .build());
@@ -197,7 +197,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
-            .jsonSchemaType(JsonSchemaType.STRING_DATE)
+            .airbyteType(JsonSchemaType.STRING_DATE)
             .addInsertValues("null")
             .addExpectedValues((String) null)
             .build());
@@ -206,7 +206,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.NUMBER)
               .addInsertValues("'123'", "'1234567890.1234567'", "null")
               // Postgres source does not support these special values yet
               // https://github.com/airbytehq/airbyte/issues/8902
@@ -219,7 +219,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inet")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'198.24.10.0/24'", "'198.24.10.0'", "'198.10/8'", "null")
             .addExpectedValues("198.24.10.0/24", "198.24.10.0", "198.10.0.0/8", null)
             .build());
@@ -228,7 +228,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.INTEGER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "1001", "-2147483648", "2147483647")
               .addExpectedValues(null, "1001", "-2147483648", "2147483647")
               .build());
@@ -237,7 +237,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("interval")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'P1Y2M3DT4H5M6S'", "'-178000000'", "'178000000'")
             .addExpectedValues(null, "1 year 2 mons 3 days 04:05:06", "-49444:26:40", "49444:26:40")
             .build());
@@ -245,7 +245,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("json")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'{\"a\": 10, \"b\": 15}'")
             .addExpectedValues(null, "{\"a\": 10, \"b\": 15}")
             .build());
@@ -253,7 +253,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("jsonb")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'[1, 2, 3]'::jsonb")
             .addExpectedValues(null, "[1, 2, 3]")
             .build());
@@ -261,7 +261,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("line")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'{4,5,6}'", "'{0,1,0}'", "null")
             .addExpectedValues("{4.0,5.0,6.0}", "{0.0,1.0,0.0}", null)
             .build());
@@ -269,7 +269,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("lseg")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("[(3.0,7.0),(15.0,18.0)]", "[(0.0,0.0),(0.0,0.0)]", null)
             .build());
@@ -277,7 +277,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("macaddr")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'08:00:2b:01:02:03'", "'08-00-2b-01-02-04'",
                 "'08002b:010205'")
             .addExpectedValues(null, "08:00:2b:01:02:03", "08:00:2b:01:02:04", "08:00:2b:01:02:05")
@@ -286,7 +286,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("macaddr8")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'08:00:2b:01:02:03:04:05'", "'08-00-2b-01-02-03-04-06'",
                 "'08002b:0102030407'")
             .addExpectedValues(null, "08:00:2b:01:02:03:04:05", "08:00:2b:01:02:03:04:06",
@@ -296,7 +296,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("money")
-            .jsonSchemaType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues(
                 "null",
                 "'999.99'", "'1,001.01'", "'-1,000'",
@@ -319,7 +319,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.NUMBER)
               .addInsertValues(
                   "'123'", "null", "'1234567890.1234567'")
               // Postgres source does not support these special values yet
@@ -332,7 +332,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("path")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", null)
             .build());
@@ -340,7 +340,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("pg_lsn")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'7/A25801C8'::pg_lsn", "'0/0'::pg_lsn", "null")
             .addExpectedValues("7/A25801C8", "0/0", null)
             .build());
@@ -348,7 +348,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("point")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'(3,7)'", "'(0,0)'", "'(999999999999999999999999,0)'", "null")
             .addExpectedValues("(3.0,7.0)", "(0.0,0.0)", "(1.0E24,0.0)", null)
             .build());
@@ -356,7 +356,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("polygon")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'((3,7),(15,18))'", "'((0,0),(0,0))'",
                 "'((0,0),(999999999999999999999999,0))'", "null")
             .addExpectedValues("((3.0,7.0),(15.0,18.0))", "((0.0,0.0),(0.0,0.0))", "((0.0,0.0),(1.0E24,0.0))", null)
@@ -366,7 +366,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.NUMBER)
+              .airbyteType(JsonSchemaType.NUMBER)
               .addInsertValues("null", "3.4145")
               .addExpectedValues(null, "3.4145")
               .build());
@@ -376,7 +376,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.INTEGER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("null", "-32768", "32767")
               .addExpectedValues(null, "-32768", "32767")
               .build());
@@ -386,7 +386,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.INTEGER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "32767", "0", "-32767")
               .addExpectedValues("1", "32767", "0", "-32767")
               .build());
@@ -396,7 +396,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
       addDataTypeTestData(
           TestDataHolder.builder()
               .sourceType(type)
-              .jsonSchemaType(JsonSchemaType.INTEGER)
+              .airbyteType(JsonSchemaType.INTEGER)
               .addInsertValues("1", "2147483647", "0", "-2147483647")
               .addExpectedValues("1", "2147483647", "0", "-2147483647")
               .build());
@@ -408,7 +408,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("time")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
               .addInsertValues("'13:00:01'", "'13:00:02+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.01234Z+8'", "'13:00:00Z-8'", "'24:00:00'")
               .addExpectedValues("13:00:01.000000", "13:00:02.000000", "13:00:03.000000", "13:00:04.000000", "13:00:05.012340",
@@ -422,7 +422,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("time")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // time column will ignore time zone
               .addInsertValues("null")
               .addExpectedValues((String) null)
@@ -435,7 +435,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues(
                   "TIMESTAMP '2004-10-19 10:23:00'",
                   "TIMESTAMP '2004-10-19 10:23:54.123456'",
@@ -463,7 +463,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues("null")
               .addExpectedValues((String) null)
               .build());
@@ -477,7 +477,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("timestamptz")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
               .addInsertValues(
                   // 10:23-08 == 18:23Z
                   "TIMESTAMP WITH TIME ZONE '2004-10-19 10:23:00-08'",
@@ -503,7 +503,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsquery")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'fat & (rat | cat)'::tsquery", "'fat:ab & cat'::tsquery")
             .addExpectedValues(null, "'fat' & ( 'rat' | 'cat' )", "'fat':AB & 'cat'")
             .build());
@@ -511,7 +511,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsvector")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("to_tsvector('The quick brown fox jumped over the lazy dog.')")
             .addExpectedValues("'brown':3 'dog':9 'fox':4 'jumped':5 'lazy':8 'over':6 'quick':2 'the':1,7")
             .build());
@@ -519,7 +519,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("uuid")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'", "null")
             .addExpectedValues("a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11", null)
             .build());
@@ -527,7 +527,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("xml")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues(
                 "XMLPARSE (DOCUMENT '<?xml version=\"1.0\"?><book><title>Manual</title><chapter>...</chapter></book>')",
                 "null", "''")
@@ -538,7 +538,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("mood")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'happy'", "null")
             .addExpectedValues("happy", null)
             .build());
@@ -547,7 +547,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tsrange")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("'(2010-01-01 14:30, 2010-01-01 15:30)'", "null")
             .addExpectedValues("(\"2010-01-01 14:30:00\",\"2010-01-01 15:30:00\")", null)
             .build());
@@ -556,7 +556,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("inventory_item")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("ROW('fuzzy dice', 42, 1.99)", "null")
             .addExpectedValues("(\"fuzzy dice\",42,1.99)", null)
             .build());
@@ -564,7 +564,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("hstore")
-            .jsonSchemaType(JsonSchemaType.STRING)
+            .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("""
                              '"paperback" => "243","publisher" => "postgresqltutorial.com",
                              "language"  => "English","ISBN-13" => "978-1449370000",
@@ -587,7 +587,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("timetz")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
               .addInsertValues("null", "'13:00:01'", "'13:00:00+8'", "'13:00:03-8'", "'13:00:04Z'", "'13:00:05.012345Z+8'", "'13:00:06.00000Z-8'")
               // A time value without time zone will use the time zone set on the database, which is Z-7,
               // so 13:00:01 is returned as 13:00:01-07.
@@ -604,7 +604,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
           TestDataHolder.builder()
               .sourceType("timestamp")
               .fullSourceDataType(fullSourceType)
-              .jsonSchemaType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
               .addInsertValues(
                   "'infinity'",
                   "'-infinity'")
@@ -620,7 +620,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("int2_array")
             .fullSourceDataType("INT2[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.INTEGER)
                 .build())
             .addInsertValues("'{1,2,3}'", "'{4,5,6}'")
@@ -631,7 +631,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("int4_array")
             .fullSourceDataType("INT4[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.INTEGER)
                 .build())
             .addInsertValues("'{-2147483648,2147483646}'")
@@ -642,7 +642,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("int8_array")
             .fullSourceDataType("INT8[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.INTEGER)
                 .build())
             .addInsertValues("'{-9223372036854775808,9223372036854775801}'")
@@ -653,7 +653,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("oid_array")
             .fullSourceDataType("OID[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -665,7 +665,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("varchar_array")
             .fullSourceDataType("VARCHAR[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -677,7 +677,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("char_array")
             .fullSourceDataType("CHAR(1)[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -689,7 +689,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bpchar_array")
             .fullSourceDataType("BPCHAR(2)[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -701,7 +701,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("text_array")
             .fullSourceDataType("TEXT[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -713,7 +713,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("name_array")
             .fullSourceDataType("NAME[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -725,7 +725,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("numeric_array")
             .fullSourceDataType("NUMERIC[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -737,7 +737,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("decimal_array")
             .fullSourceDataType("DECIMAL[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -749,7 +749,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("float4_array")
             .fullSourceDataType("FLOAT4[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -761,7 +761,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("float8_array")
             .fullSourceDataType("FLOAT8[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -773,7 +773,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("money_array")
             .fullSourceDataType("MONEY[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
                     .build())
                 .build())
@@ -785,7 +785,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bool_array")
             .fullSourceDataType("BOOL[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
                     .build())
                 .build())
@@ -797,7 +797,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bit_array")
             .fullSourceDataType("BIT[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
                     .build())
                 .build())
@@ -809,7 +809,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("bytea_array")
             .fullSourceDataType("BYTEA[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
                     .build())
                 .build())
@@ -823,7 +823,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("date_array")
             .fullSourceDataType("DATE[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(STRING_DATE)
                 .build())
             .addInsertValues("'{1999-01-08,1991-02-10 BC}'")
@@ -834,7 +834,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("time_array")
             .fullSourceDataType("TIME(6)[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(STRING_TIME_WITHOUT_TIMEZONE)
                 .build())
             .addInsertValues("'{13:00:01,13:00:02+8,13:00:03-8,13:00:04Z,13:00:05.000000+8,13:00:00Z-8}'")
@@ -846,7 +846,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("timetz_array")
             .fullSourceDataType("TIMETZ[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(STRING_TIME_WITH_TIMEZONE)
                 .build())
             .addInsertValues("'{null,13:00:01,13:00:00+8,13:00:03-8,13:00:04Z,13:00:05.012345Z+8,13:00:06.00000Z-8,13:00}'")
@@ -858,7 +858,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("timestamptz_array")
             .fullSourceDataType("TIMESTAMPTZ[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(STRING_TIMESTAMP_WITH_TIMEZONE)
                 .build())
             .addInsertValues("'{null,2004-10-19 10:23:00-08,2004-10-19 10:23:54.123456-08}'")
@@ -869,7 +869,7 @@ public abstract class AbstractPostgresSourceDatatypeTest extends AbstractSourceD
         TestDataHolder.builder()
             .sourceType("timestamp_array")
             .fullSourceDataType("TIMESTAMP[]")
-            .jsonSchemaType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+            .airbyteType(JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
                 .withItems(STRING_TIMESTAMP_WITHOUT_TIMEZONE)
                 .build())
             .addInsertValues("'{null,2004-10-19 10:23:00,2004-10-19 10:23:54.123456,3004-10-19 10:23:54.123456 BC}'")
