@@ -97,6 +97,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
+  private final PersistConfigHelper persistConfigHelper;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -105,7 +106,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final AirbyteDestination destination,
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
-                                  final WorkerMetricReporter metricReporter) {
+                                  final WorkerMetricReporter metricReporter,
+                                  final PersistConfigHelper persistConfigHelper) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -115,6 +117,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
+    this.persistConfigHelper = persistConfigHelper;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -187,7 +190,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker, Long.valueOf(jobId)),
+          readFromDstRunnable(destination, cancelled, messageTracker, persistConfigHelper, mdc, timeTracker, Long.valueOf(jobId)),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -201,7 +204,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, mdc, recordSchemaValidator, metricReporter,
+          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, persistConfigHelper, mdc, recordSchemaValidator,
+              metricReporter,
               timeTracker, Long.valueOf(jobId)),
           executors)
           .whenComplete((msg, ex) -> {
@@ -239,6 +243,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static Runnable readFromDstRunnable(final AirbyteDestination destination,
                                               final AtomicBoolean cancelled,
                                               final MessageTracker messageTracker,
+                                              final PersistConfigHelper persistConfigHelper,
                                               final Map<String, String> mdc,
                                               final ThreadedTimeTracker timeHolder,
                                               final Long jobId) {
@@ -260,7 +265,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             try {
               if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-                PersistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+                persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
               }
             } catch (final ApiException e) {
               // TODO this should probably throw rather than just log and continue
@@ -297,6 +302,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final AtomicBoolean cancelled,
                                                            final AirbyteMapper mapper,
                                                            final MessageTracker messageTracker,
+                                                           final PersistConfigHelper persistConfigHelper,
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
@@ -325,7 +331,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
               try {
-                PersistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+                persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
               } catch (final ApiException e) {
                 // TODO this should probably throw rather than just log and continue
                 LOGGER.error("Error trying to save updated source config", e);

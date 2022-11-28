@@ -10,6 +10,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
@@ -32,6 +34,7 @@ import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
 import io.airbyte.workers.general.ReplicationWorker;
+import io.airbyte.workers.helper.PersistConfigHelper;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -139,7 +142,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        metricReporter);
+        metricReporter,
+        new PersistConfigHelper(getAirbyteApiClient()));
 
     log.info("Running replication worker...");
     final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
@@ -147,6 +151,15 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     log.info("Returning output...");
     return Optional.of(Jsons.serialize(replicationOutput));
+  }
+
+  private AirbyteApiClient getAirbyteApiClient() {
+    // TODO make this actually functional
+    return new AirbyteApiClient(
+        new ApiClient().setScheme("http")
+            .setHost("airbyte-server-svc")
+            .setPort(8001)
+            .setBasePath("/api"));
   }
 
   private AirbyteStreamFactory getStreamFactory(final Version protocolVersion, final MdcScope.Builder mdcScope) {

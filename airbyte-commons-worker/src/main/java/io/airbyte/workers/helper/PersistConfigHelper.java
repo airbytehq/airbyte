@@ -9,7 +9,6 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
@@ -22,9 +21,6 @@ import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.SourceUpdate;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.Configs;
-import io.airbyte.config.Configs.WorkerEnvironment;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.protocol.models.Config;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
@@ -39,40 +35,26 @@ public class PersistConfigHelper {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PersistConfigHelper.class);
 
-  private static final Configs CONFIGS = new EnvConfigs();
-  private static final AirbyteApiClient CLIENT = getAirbyteApiClient();
+  private final AirbyteApiClient apiClient;
 
-  // TODO inject this with micronaut, possibly making this class a Singleton
-  private static AirbyteApiClient getAirbyteApiClient() {
-    if (CONFIGS.getWorkerEnvironment() == WorkerEnvironment.DOCKER) {
-      return new AirbyteApiClient(
-          new ApiClient().setScheme("http")
-              .setHost(CONFIGS.getAirbyteApiHost())
-              .setPort(CONFIGS.getAirbyteApiPort())
-              .setBasePath("/api"));
-    }
-
-    return new AirbyteApiClient(
-        new ApiClient().setScheme("http")
-            .setHost("airbyte-server-svc")
-            .setPort(8001)
-            .setBasePath("/api"));
+  public PersistConfigHelper(final AirbyteApiClient apiClient) {
+    this.apiClient = apiClient;
   }
 
-  private static UUID getConnectionIdFromJobId(final Long jobId) throws ApiException {
-    final JobsApi jobsApi = CLIENT.getJobsApi();
+  private UUID getConnectionIdFromJobId(final Long jobId) throws ApiException {
+    final JobsApi jobsApi = apiClient.getJobsApi();
     final JobIdRequestBody body = new JobIdRequestBody().id(jobId);
     final JobInfoLightRead jobInfo = jobsApi.getJobInfoLight(body);
     return UUID.fromString(jobInfo.getJob().getConfigId());
   }
 
-  public static void persistSourceConfig(final Long jobId, final Config config) throws ApiException {
+  public void persistSourceConfig(final Long jobId, final Config config) throws ApiException {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
-    final ConnectionRead connection = CLIENT.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final UUID sourceId = connection.getSourceId();
 
-    final SourceApi sourceApi = CLIENT.getSourceApi();
+    final SourceApi sourceApi = apiClient.getSourceApi();
     final SourceRead source = sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId));
 
     // TODO might need to strip out OAuth params
@@ -88,13 +70,13 @@ public class PersistConfigHelper {
 
   }
 
-  public static void persistDestinationConfig(final Long jobId, final Config config) throws ApiException {
+  public void persistDestinationConfig(final Long jobId, final Config config) throws ApiException {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
-    final ConnectionRead connection = CLIENT.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     final UUID destinationId = connection.getDestinationId();
 
-    final DestinationApi destinationApi = CLIENT.getDestinationApi();
+    final DestinationApi destinationApi = apiClient.getDestinationApi();
     final DestinationRead destination = destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId));
 
     // TODO might need to strip out OAuth params
