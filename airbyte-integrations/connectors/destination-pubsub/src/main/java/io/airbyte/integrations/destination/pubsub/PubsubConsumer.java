@@ -16,12 +16,12 @@ import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
 import com.google.pubsub.v1.TopicName;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
@@ -68,7 +68,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
         .setCredentialsProvider(FixedCredentialsProvider.create(credentials)).build();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final Map<String, String> attrs = Maps.newHashMap();
-      final var key = AirbyteStreamNameNamespacePair.fromAirbyteSteam(configStream.getStream());
+      final var key = AirbyteStreamNameNamespacePair.fromAirbyteStream(configStream.getStream());
       attrs.put(PubsubDestination.STREAM, key.getName());
       if (!Strings.isNullOrEmpty(key.getNamespace())) {
         attrs.put(PubsubDestination.NAMESPACE, key.getNamespace());

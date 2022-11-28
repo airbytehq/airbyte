@@ -14,6 +14,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       empty_streams: ["videos"]
+      timeout_seconds: 2400
   incremental:
     - config_path: "secrets/config.json"
       timeout_seconds: 2400

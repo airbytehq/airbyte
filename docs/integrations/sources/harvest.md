@@ -4,38 +4,44 @@ This page contains the setup guide and reference information for the Harvest sou
 
 ## Prerequisites
 
-See [Harvest documentation](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/) for more details.
+To set up the Harvest source connector, you'll need the [Harvest Account ID and API key](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
 
 ## Setup guide
-### Step 1: Set up Harvest
 
-This connector supports only authentication with API Key. To obtain API key follow the instructions below:
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
-1. Go to Account Settings page;
-2. Under Integrations section press Authorized OAuth2 API Clients button;
-3. New page will be opened on which you need to click on Create New Personal Access Token button and follow instructions.
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces).
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Harvest** from the Source type dropdown.
+4. Enter the name for the Harvest connector.
+5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
+8. Click **Set up source**.
+<!-- /env:cloud -->
 
-## Step 2: Set up the Harvest connector in Airbyte
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
-1. Navigate to the Airbyte Open Source dashboard
-2. Set the name for your source 
-3. Enter your `api_token`
-4. Enter your `account_id` 
-5. Enter the `replication_start_date` you want your sync to start from
-6. Click **Set up source**
+1. Navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Harvest** from the Source type dropdown.
+4. Enter the name for the Harvest connector.
+5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
+6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
+8. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
 The Harvest source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature                       | Supported? |
-| :---------------------------- | :--------- |
-| Full Refresh Sync             | Yes        |
-| Incremental Sync              | Yes        |
-| Replicate Incremental Deletes | No         |
-| SSL connection                | Yes        |
-| Namespaces                    | No         |
-
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -67,7 +73,7 @@ The Harvest source connector supports the following [sync modes](https://docs.ai
 
 ## Performance considerations
 
-The Harvest connector will gracefully handle rate limits. For more information, see [the Harvest docs for rate limitations](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
+The connector is restricted by the [Harvest rate limits](https://help.getharvest.com/api-v2/introduction/overview/general/#rate-limiting).
 
 ## Changelog
 

@@ -16,8 +16,9 @@ export const useAnalyticsTrackFunctions = (connectorType: "source" | "destinatio
       }
       analytics.track(namespaceType, actionType, {
         actionDescription,
-        connector: connector?.name,
+        connector: connector.name,
         connector_definition_id: Connector.id(connector),
+        connector_documentation_url: connector.documentationUrl,
       });
     },
     [analytics, namespaceType]

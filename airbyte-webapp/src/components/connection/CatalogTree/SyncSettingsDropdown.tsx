@@ -53,7 +53,8 @@ const Title = styled.span`
 
 const OptionContent = styled(OptionView)`
   justify-content: left;
-  font-size: 12px;
+  font-size: 11px;
+  padding: 10px;
 `;
 
 const DropdownControl = styled(components.Control)<ControlProps<DropDownOptionDataItem, false>>`
@@ -74,7 +75,7 @@ const Mode: React.FC<{
 }> = (props) => {
   return (
     <>
-      <Title> {props.title}:</Title>
+      <Title>{props.title}:</Title>
       <div>{props.label}</div>
       {props.separator ? <Separator>{props.separator}</Separator> : null}
     </>

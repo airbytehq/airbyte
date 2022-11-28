@@ -8,8 +8,8 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.Geography;
@@ -17,11 +17,12 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.init.LocalDefinitionsProvider;
-import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
+import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
@@ -68,8 +69,8 @@ public class BootloaderApp {
   private final Runnable postLoadExecution;
   private final FeatureFlags featureFlags;
   private final SecretMigrator secretMigrator;
-  private ConfigPersistence configPersistence;
-  private DefinitionsProvider localDefinitionsProvider;
+  private ConfigRepository configRepository;
+  private Optional<DefinitionsProvider> definitionsProvider;
   private Database configDatabase;
   private Database jobDatabase;
   private JobPersistence jobPersistence;
@@ -77,6 +78,13 @@ public class BootloaderApp {
   private final Flyway jobsFlyway;
   private final DSLContext configsDslContext;
   private final DSLContext jobsDslContext;
+
+  // This controls how we check the protocol version compatibility
+  // True means that the connectors will be forcefully upgraded regardless of whether they are used in
+  // an active sync or not.
+  // This should be moved to a Configs, however, this behavior is currently forced through hooks that
+  // are passed as the postLoadExecution.
+  private final boolean autoUpgradeConnectors;
 
   /**
    * This method is exposed for Airbyte Cloud consumption. This lets us override the seed loading
@@ -96,6 +104,32 @@ public class BootloaderApp {
                        final DSLContext configsDslContext,
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
+                       final Flyway jobsFlyway,
+                       final Optional<DefinitionsProvider> definitionsProvider,
+                       final boolean autoUpgradeConnectors) {
+    this.configs = configs;
+    this.postLoadExecution = postLoadExecution;
+    this.featureFlags = featureFlags;
+    this.secretMigrator = secretMigrator;
+    this.configsDslContext = configsDslContext;
+    this.configsFlyway = configsFlyway;
+    this.jobsDslContext = jobsDslContext;
+    this.jobsFlyway = jobsFlyway;
+    this.definitionsProvider = definitionsProvider;
+    this.autoUpgradeConnectors = autoUpgradeConnectors;
+
+    initPersistences(configsDslContext, jobsDslContext);
+  }
+
+  // Temporary duplication of constructor, to remove once Cloud has been migrated to the one above.
+  @Deprecated(forRemoval = true)
+  public BootloaderApp(final Configs configs,
+                       final Runnable postLoadExecution,
+                       final FeatureFlags featureFlags,
+                       final SecretMigrator secretMigrator,
+                       final DSLContext configsDslContext,
+                       final DSLContext jobsDslContext,
+                       final Flyway configsFlyway,
                        final Flyway jobsFlyway) {
     this.configs = configs;
     this.postLoadExecution = postLoadExecution;
@@ -105,6 +139,13 @@ public class BootloaderApp {
     this.configsFlyway = configsFlyway;
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
+    this.autoUpgradeConnectors = false;
+
+    try {
+      this.definitionsProvider = Optional.of(getLocalDefinitionsProvider());
+    } catch (final IOException e) {
+      LOGGER.error("Unable to initialize persistence.", e);
+    }
 
     initPersistences(configsDslContext, jobsDslContext);
   }
@@ -115,7 +156,9 @@ public class BootloaderApp {
                        final DSLContext configsDslContext,
                        final DSLContext jobsDslContext,
                        final Flyway configsFlyway,
-                       final Flyway jobsFlyway) {
+                       final Flyway jobsFlyway,
+                       final DefinitionsProvider definitionsProvider,
+                       final boolean autoUpgradeConnectors) {
     this.configs = configs;
     this.featureFlags = featureFlags;
     this.secretMigrator = secretMigrator;
@@ -123,15 +166,15 @@ public class BootloaderApp {
     this.configsFlyway = configsFlyway;
     this.jobsDslContext = jobsDslContext;
     this.jobsFlyway = jobsFlyway;
+    this.definitionsProvider = Optional.of(definitionsProvider);
+    this.autoUpgradeConnectors = autoUpgradeConnectors;
 
     initPersistences(configsDslContext, jobsDslContext);
 
     postLoadExecution = () -> {
       try {
-        final ConfigRepository configRepository =
-            new ConfigRepository(configPersistence, configDatabase);
-
-        final ApplyDefinitionsHelper applyDefinitionsHelper = new ApplyDefinitionsHelper(configRepository, localDefinitionsProvider);
+        final ApplyDefinitionsHelper applyDefinitionsHelper =
+            new ApplyDefinitionsHelper(configRepository, this.definitionsProvider.get(), jobPersistence);
         applyDefinitionsHelper.apply();
 
         if (featureFlags.forceSecretMigration() || !jobPersistence.isSecretMigrated()) {
@@ -141,7 +184,7 @@ public class BootloaderApp {
           }
         }
         LOGGER.info("Loaded seed data..");
-      } catch (final IOException | JsonValidationException e) {
+      } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
         throw new RuntimeException(e);
       }
     };
@@ -150,10 +193,10 @@ public class BootloaderApp {
   public void load() throws Exception {
     LOGGER.info("Initializing databases...");
     DatabaseCheckFactory.createConfigsDatabaseInitializer(configsDslContext,
-        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH)).initialize();
+        configs.getConfigsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH)).initialize();
 
     DatabaseCheckFactory.createJobsDatabaseInitializer(jobsDslContext,
-        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_SCHEMA_PATH)).initialize();
+        configs.getJobsDatabaseInitializationTimeoutMs(), MoreResources.readResource(DatabaseConstants.JOBS_INITIAL_SCHEMA_PATH)).initialize();
     LOGGER.info("Databases initialized.");
 
     LOGGER.info("Setting up config database and default workspace...");
@@ -161,10 +204,9 @@ public class BootloaderApp {
     final AirbyteVersion currAirbyteVersion = configs.getAirbyteVersion();
     assertNonBreakingMigration(jobPersistence, currAirbyteVersion);
 
-    final Version airbyteProtocolVersionMax = configs.getAirbyteProtocolVersionMax();
-    final Version airbyteProtocolVersionMin = configs.getAirbyteProtocolVersionMin();
-    // TODO ProtocolVersion validation should happen here
-    trackProtocolVersion(airbyteProtocolVersionMin, airbyteProtocolVersionMax);
+    final ProtocolVersionChecker protocolVersionChecker =
+        new ProtocolVersionChecker(jobPersistence, configs, configRepository, definitionsProvider);
+    assertNonBreakingProtocolVersionConstraints(protocolVersionChecker, jobPersistence, autoUpgradeConnectors);
 
     // TODO Will be converted to an injected singleton during DI migration
     final DatabaseMigrator configDbMigrator = new ConfigsDatabaseMigrator(configDatabase, configsFlyway);
@@ -172,9 +214,6 @@ public class BootloaderApp {
 
     runFlywayMigration(configs, configDbMigrator, jobDbMigrator);
     LOGGER.info("Ran Flyway migrations.");
-
-    final ConfigRepository configRepository =
-        new ConfigRepository(configPersistence, configDatabase);
 
     createWorkspaceIfNoneExists(configRepository);
     LOGGER.info("Default workspace created.");
@@ -196,15 +235,7 @@ public class BootloaderApp {
     return new Database(dslContext);
   }
 
-  private static ConfigPersistence getConfigPersistence(final Database configDatabase) throws IOException {
-    final JsonSecretsProcessor jsonSecretsProcessor = JsonSecretsProcessor.builder()
-        .copySecrets(true)
-        .build();
-
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-  }
-
-  private static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
+  static DefinitionsProvider getLocalDefinitionsProvider() throws IOException {
     return new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
   }
 
@@ -219,8 +250,7 @@ public class BootloaderApp {
   private void initPersistences(final DSLContext configsDslContext, final DSLContext jobsDslContext) {
     try {
       configDatabase = getConfigDatabase(configsDslContext);
-      configPersistence = getConfigPersistence(configDatabase);
-      localDefinitionsProvider = getLocalDefinitionsProvider();
+      configRepository = new ConfigRepository(configDatabase);
       jobDatabase = getJobDatabase(jobsDslContext);
       jobPersistence = getJobPersistence(jobDatabase);
     } catch (final IOException e) {
@@ -243,11 +273,17 @@ public class BootloaderApp {
 
       // TODO Will be converted to an injected singleton during DI migration
       final Database configDatabase = getConfigDatabase(configsDslContext);
-      final ConfigPersistence configPersistence = getConfigPersistence(configDatabase);
+      final ConfigRepository configRepository = new ConfigRepository(configDatabase);
       final Database jobDatabase = getJobDatabase(jobsDslContext);
       final JobPersistence jobPersistence = getJobPersistence(jobDatabase);
+
+      final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
+      final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
+      final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
+      final SecretsRepositoryWriter secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, secretPersistence, Optional.empty());
+
       final SecretMigrator secretMigrator =
-          new SecretMigrator(configPersistence, jobPersistence, SecretPersistence.getLongLived(configsDslContext, configs));
+          new SecretMigrator(secretsRepositoryReader, secretsRepositoryWriter, configRepository, jobPersistence, secretPersistence);
       final Flyway configsFlyway = FlywayFactory.create(configsDataSource, BootloaderApp.class.getSimpleName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
           ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
       final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, BootloaderApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
@@ -256,7 +292,11 @@ public class BootloaderApp {
       // Ensure that the database resources are closed on application shutdown
       CloseableShutdownHook.registerRuntimeShutdownHook(configsDataSource, jobsDataSource, configsDslContext, jobsDslContext);
 
-      final var bootloader = new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway);
+      final DefinitionsProvider definitionsProvider = getLocalDefinitionsProvider();
+
+      final var bootloader =
+          new BootloaderApp(configs, featureFlags, secretMigrator, configsDslContext, jobsDslContext, configsFlyway, jobsFlyway, definitionsProvider,
+              false);
       bootloader.load();
     }
   }
@@ -314,10 +354,24 @@ public class BootloaderApp {
     }
   }
 
-  private void trackProtocolVersion(final Version airbyteProtocolVersionMin, final Version airbyteProtocolVersionMax) throws IOException {
-    jobPersistence.setAirbyteProtocolVersionMin(airbyteProtocolVersionMin);
-    jobPersistence.setAirbyteProtocolVersionMax(airbyteProtocolVersionMax);
-    LOGGER.info("AirbyteProtocol version support range [{}:{}]", airbyteProtocolVersionMin.serialize(), airbyteProtocolVersionMax.serialize());
+  private static void assertNonBreakingProtocolVersionConstraints(final ProtocolVersionChecker protocolVersionChecker,
+                                                                  final JobPersistence jobPersistence,
+                                                                  final boolean autoUpgradeConnectors)
+      throws Exception {
+    final Optional<AirbyteProtocolVersionRange> newProtocolRange = protocolVersionChecker.validate(autoUpgradeConnectors);
+    if (newProtocolRange.isEmpty()) {
+      throw new RuntimeException(
+          "Aborting bootloader to avoid breaking existing connection after an upgrade. " +
+              "Please address airbyte protocol version support issues in the connectors before retrying.");
+    }
+    trackProtocolVersion(jobPersistence, newProtocolRange.get());
+  }
+
+  private static void trackProtocolVersion(final JobPersistence jobPersistence, final AirbyteProtocolVersionRange protocolVersionRange)
+      throws IOException {
+    jobPersistence.setAirbyteProtocolVersionMin(protocolVersionRange.min());
+    jobPersistence.setAirbyteProtocolVersionMax(protocolVersionRange.max());
+    LOGGER.info("AirbyteProtocol version support range [{}:{}]", protocolVersionRange.min().serialize(), protocolVersionRange.max().serialize());
   }
 
   static boolean isLegalUpgrade(final AirbyteVersion airbyteDatabaseVersion, final AirbyteVersion airbyteVersion) {

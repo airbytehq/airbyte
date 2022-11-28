@@ -1,0 +1,42 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "total": {
+      "type": "integer"
+    },
+    "open_rate": {
+      "type": "object",
+      "properties": {
+        "float": {
+          "type": "number"
+        },
+        "string": {
+          "type": "string"
+        }
+      },
+      "required": ["float", "string"]
+    },
+    "click_rate": {
+      "type": "object",
+      "properties": {
+        "float": {
+          "type": "number"
+        },
+        "string": {
+          "type": "string"
+        }
+      },
+      "required": ["float", "string"]
+    },
+    "created_at": {
+      "type": "string"
+    }
+  },
+  "required": ["id", "name", "total", "open_rate", "click_rate", "created_at"]
+}

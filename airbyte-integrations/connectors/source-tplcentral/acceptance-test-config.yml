@@ -9,6 +9,8 @@ tests:
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
+    - config_path: "integration_tests/config_http_url.json"
+      status: "failed"
   discovery:
     - config_path: "secrets/config.json"
   basic_read:

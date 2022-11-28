@@ -3,7 +3,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Cell, Row } from "components";
 import { CheckBox } from "components/ui/CheckBox";
@@ -19,10 +18,6 @@ import { IndexerType, PathPopout } from "./PathPopout";
 import styles from "./StreamHeader.module.scss";
 import { ArrowCell, HeaderCell } from "./styles";
 import { SyncSettingsDropdown } from "./SyncSettingsDropdown";
-
-const EmptyField = styled.span`
-  color: ${({ theme }) => theme.greyColor40};
-`;
 
 interface SyncSchema {
   syncMode: SyncMode;
@@ -126,9 +121,9 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (
-            <EmptyField>
+            <span className={styles.noHeader}>
               <FormattedMessage id="form.noNamespace" />
-            </EmptyField>
+            </span>
           )}
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.name || ""}>
