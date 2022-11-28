@@ -33,7 +33,7 @@ You can also build the connector in Gradle. This is typically used in CI and not
 
 To build using Gradle, from the Airbyte repository root, run:
 ```
-./gradlew :airbyte-integrations:connectors:arquivei:build
+./gradlew :airbyte-integrations:connectors:source-arquivei:build
 ```
 
 #### Create credentials
@@ -61,12 +61,12 @@ python -m pytest unit_tests
 #### Build
 First, make sure you build the latest Docker image:
 ```
-docker build . -t airbyte/arquivei:dev
+docker build . -t airbyte/source-arquivei:dev
 ```
 
 You can also build the connector image via Gradle:
 ```
-./gradlew :airbyte-integrations:connectors:arquivei:airbyteDocker
+./gradlew :airbyte-integrations:connectors:source-arquivei:airbyteDocker
 ```
 When building via Gradle, the docker image name and tag, respectively, are the values of the `io.airbyte.name` and `io.airbyte.version` `LABEL`s in
 the Dockerfile.
@@ -74,14 +74,14 @@ the Dockerfile.
 #### Run
 Then run any of the connector commands as follows:
 ```
-docker run --rm airbyte/arquivei:dev spec
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev check --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev discover --config /sample_files/config.json
-docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/arquivei:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
+docker run --rm airbyte/source-arquivei:dev spec
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-arquivei:dev check --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files airbyte/source-arquivei:dev discover --config /sample_files/config.json
+docker run --rm -v $(pwd)/sample_files:/sample_files -v $(pwd)/sample_files:/sample_files airbyte/source-arquivei:dev read --config /sample_files/config.json --catalog /sample_files/configured_catalog.json
 ```
 
 ### Integration Tests
-1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:arquivei:integrationTest` to run the standard integration test suite.
+1. From the airbyte project root, run `./gradlew :airbyte-integrations:connectors:source-arquivei:integrationTest` to run the standard integration test suite.
 1. To run additional integration tests, place your integration tests in a new directory `integration_tests` and run them with `python -m pytest -s integration_tests`.
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
 

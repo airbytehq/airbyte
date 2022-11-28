@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docsurl.com",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/arquivei",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Arquivei Spec",
@@ -10,12 +10,14 @@
       "api_key": {
         "title": "API key",
         "type": "string",
-        "description": "API key used to retrieve data from the Arquivei API."
+        "description": "API key used to retrieve data from the Arquivei API.",
+	"airbyte_secret": true
       },
       "api_id": {
         "title": "API id",
         "type": "string",
-        "description": "API id used to retrieve data from the Arquivei API."
+        "description": "API id used to retrieve data from the Arquivei API.",
+	"airbyte_secret": true
       },
       "merchant": {
         "title": "Merchant Code",
