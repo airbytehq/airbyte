@@ -53,7 +53,6 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
@@ -175,8 +174,6 @@ public interface ServerFactory {
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-      AttemptApiFactory.setValues(attemptHandler, mdc);
 
       ConnectionApiFactory.setValues(
           connectionsHandler,
