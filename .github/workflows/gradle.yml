@@ -960,6 +960,9 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Remove unattended-upgrades
+        uses: ./.github/actions/remove-unattended-upgrade
+
       - name: Delete default old docker and replace it with a new one
         shell: bash
         run: |

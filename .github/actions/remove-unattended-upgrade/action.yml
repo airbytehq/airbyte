@@ -1,0 +1,11 @@
+name: "Remove Unattended upgrade"
+description: "Removes unattended upgrade package so no updates will be performed in backrground"
+
+runs:
+  using: "composite"
+  steps:
+    - name: "Remove unattended upgrade package"
+      shell: bash
+      run: |
+        sudo apt -y remove --purge unattended-upgrades
+        sudo apt -y install ubuntu-release-updater-core
