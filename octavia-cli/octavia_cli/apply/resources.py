@@ -571,7 +571,7 @@ class Connection(BaseResource):
 
     local_root_level_keys_to_remove_during_create = [
         "skip_reset"
-    ]  # Remove this keys when sending a creat request
+    ]  # Remove these keys when sending a create request
 
     local_root_level_keys_to_filter_out_for_comparison = [
         "skip_reset"

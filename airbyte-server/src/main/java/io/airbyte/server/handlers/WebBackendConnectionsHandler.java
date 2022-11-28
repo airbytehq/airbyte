@@ -492,7 +492,7 @@ public class WebBackendConnectionsHandler {
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
-    final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : true;
+    final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : false;
     if (!skipReset) {
       final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
