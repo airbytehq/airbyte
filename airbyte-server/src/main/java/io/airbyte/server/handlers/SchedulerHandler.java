@@ -109,7 +109,8 @@ public class SchedulerHandler {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
-                          final ConnectionsHandler connectionsHandler) {
+                          final ConnectionsHandler connectionsHandler,
+                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -120,7 +121,7 @@ public class SchedulerHandler {
         eventRunner,
         new JobConverter(workerEnvironment, logConfigs),
         connectionsHandler,
-        new EnvVariableFeatureFlags());
+        envVariableFeatureFlags);
   }
 
   @VisibleForTesting

@@ -844,7 +844,6 @@ class SchedulerHandlerTest {
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.ACTIVE);
   }
 
-
   @Test
   void testDiscoverSchemaForSourceFromSourceCreate() throws JsonValidationException, IOException, ConfigNotFoundException {
     final SourceConnection source = new SourceConnection()
