@@ -7,13 +7,33 @@ import timezoneMock from "timezone-mock";
 import { DatePicker, toEquivalentLocalTime } from "./DatePicker";
 
 describe(`${toEquivalentLocalTime.name}`, () => {
+  it("handles a date in the year 1", () => {
+    const TEST_UTC_TIMESTAMP = "0001-12-01T09:00:00Z";
+    const jsDate = new Date(TEST_UTC_TIMESTAMP);
+
+    const result = toEquivalentLocalTime(dayjs(jsDate));
+    console.log(dayjs(jsDate).format("YYYY-MM-DDTHH:mm:ssZ"));
+    // dayjs does not 0-pad years!
+
+    expect(result).toEqual(undefined);
+  });
+
+  it("handles an invalid dayjs date", () => {
+    const TEST_UTC_TIMESTAMP = "199";
+    const jsDate = new Date(TEST_UTC_TIMESTAMP);
+
+    const result = toEquivalentLocalTime(dayjs(jsDate));
+
+    expect(result).toEqual(undefined);
+  });
+
   it("outputs the same YYYY-MM-DDTHH:mm:ss", () => {
     const TEST_UTC_TIMESTAMP = "2000-01-01T12:00:00Z";
 
     const result = toEquivalentLocalTime(dayjs(TEST_UTC_TIMESTAMP));
 
     // Regardless of the timezone, the local time should be the same
-    expect(result.toISOString().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
+    expect(result?.toISOString().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
   });
 
   it("converts utc time to equivalent local time in PST", () => {

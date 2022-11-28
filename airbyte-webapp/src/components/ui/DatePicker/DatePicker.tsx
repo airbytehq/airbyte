@@ -21,7 +21,12 @@ import styles from "./DatePicker.module.scss";
  * 2022-01-01T10:00:00+01:00  - what react-datepicker might convert this date into and display (e.g. 10:00am - bad!)
  * 2022-01-01T09:00:00+01:00  - what we give react-datepicker instead, to trick it (User sees 9:00am - good!)
  */
-export const toEquivalentLocalTime = (date: dayjs.Dayjs): Date => {
+
+// TODO: accept a string instead here
+export const toEquivalentLocalTime = (date: dayjs.Dayjs | undefined): Date | undefined => {
+  if (!date?.isValid()) {
+    return undefined;
+  }
   // First, get the user's UTC offset based on the local time
   const browserUtcOffset = dayjs().utcOffset();
 
@@ -29,8 +34,14 @@ export const toEquivalentLocalTime = (date: dayjs.Dayjs): Date => {
   // The second parameter to utcOffset() keeps the same local time, only changing the timezone.
   const dateInUtcAsString = date.utcOffset(browserUtcOffset, true).format();
 
-  // Now we can return a JS date object in the user's timezone with the same local time as the UTC date
-  return dayjs(dateInUtcAsString).toDate();
+  const equivalentDate = dayjs(dateInUtcAsString);
+
+  // dayjs does not 0-pad years, so it's possible to have an invalid date here
+  if (!equivalentDate.isValid()) {
+    return undefined;
+  }
+
+  return equivalentDate.toDate();
 };
 
 export interface DatePickerProps {
@@ -84,7 +95,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
   }, [locale]);
 
-  const onDateChanged = useCallback(
+  const handleDatepickerChange = useCallback(
     (val: Date | null) => {
       const date = dayjs(val);
       if (!date.isValid()) {
@@ -98,7 +109,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     [onChange, withTime]
   );
 
-  const onInputChanged = useCallback(
+  const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange(e.target.value);
     },
@@ -113,7 +124,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         placeholder={placeholder}
         error={error}
         value={value}
-        onChange={onInputChanged}
+        onChange={handleInputChange}
         onBlur={onBlur}
         onFocus={() => datepickerRef.current?.setOpen(true)}
       />
@@ -124,10 +135,10 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           showTimeSelect={withTime}
           disabled={disabled}
           locale={locale}
-          selected={dateValue?.isValid() ? toEquivalentLocalTime(dateValue) : undefined}
-          onChange={onDateChanged}
+          selected={toEquivalentLocalTime(dateValue)}
+          onChange={handleDatepickerChange}
           onBlur={onBlur}
-          value={value}
+          value={undefined}
           customInput={<DatepickerButton />}
           popperClassName={styles.popup}
         />
