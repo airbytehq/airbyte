@@ -8,6 +8,7 @@ import static io.airbyte.config.JobConfig.ConfigType.SYNC;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_ORIGINS_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
@@ -23,6 +24,7 @@ import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.FailureReason;
+import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.JobSyncConfig;
@@ -58,6 +60,7 @@ import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
 import io.airbyte.workers.run.WorkerRun;
 import io.micronaut.context.annotation.Requires;
+import io.micronaut.core.util.CollectionUtils;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -69,6 +72,7 @@ import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -190,9 +194,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public AttemptCreationOutput createNewAttempt(final AttemptCreationInput input) throws RetryableException {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
+      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
       final Job createdJob = jobPersistence.getJob(jobId);
 
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
@@ -211,9 +214,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public AttemptNumberCreationOutput createNewAttemptNumber(final AttemptCreationInput input) throws RetryableException {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
+      ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId));
       final Job createdJob = jobPersistence.getJob(jobId);
 
       final WorkerRun workerRun = temporalWorkerRunFactory.create(createdJob);
@@ -232,10 +234,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobSuccess(final JobSuccessInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
       final int attemptId = input.getAttemptId();
+      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptId, JOB_ID_KEY, jobId));
 
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
@@ -298,11 +299,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void attemptFailure(final AttemptFailureInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
-
       final int attemptId = input.getAttemptId();
       final long jobId = input.getJobId();
       final AttemptFailureSummary failureSummary = input.getAttemptFailureSummary();
+
+      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptId, JOB_ID_KEY, jobId));
+      traceFailures(failureSummary);
 
       jobPersistence.failAttempt(jobId, attemptId);
       jobPersistence.writeAttemptFailureSummary(jobId, attemptId, failureSummary);
@@ -313,11 +315,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       }
 
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_FAILED_BY_RELEASE_STAGE, jobId);
-      for (final FailureReason reason : failureSummary.getFailures()) {
-        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
-      }
-
+      trackFailures(failureSummary);
     } catch (final IOException e) {
       throw new RetryableException(e);
     }
@@ -340,10 +338,9 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   @Override
   public void jobCancelled(final JobCancelledInput input) {
     try {
-      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, input.getAttemptId(), JOB_ID_KEY, input.getJobId()));
-
       final long jobId = input.getJobId();
       final int attemptId = input.getAttemptId();
+      ApmTraceUtils.addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, attemptId, JOB_ID_KEY, jobId));
       jobPersistence.failAttempt(jobId, attemptId);
       jobPersistence.writeAttemptFailureSummary(jobId, attemptId, input.getAttemptFailureSummary());
       jobPersistence.cancelJob(jobId);
@@ -496,6 +493,39 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
                                                  final io.airbyte.workers.JobStatus status,
                                                  final Exception e) {
     jobTracker.trackSyncForInternalFailure(jobId, connectionId, attemptId, Enums.convertTo(status, JobState.class), e);
+  }
+
+  /**
+   * Adds the failure origins to the APM trace.
+   *
+   * @param failureSummary The {@link AttemptFailureSummary} containing the failure reason(s).
+   */
+  private void traceFailures(final AttemptFailureSummary failureSummary) {
+    if (failureSummary != null) {
+      if (CollectionUtils.isNotEmpty(failureSummary.getFailures())) {
+        ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, failureSummary.getFailures().stream().map(FailureReason::getFailureOrigin).map(
+            FailureOrigin::name).collect(Collectors.joining(","))));
+      }
+    } else {
+      ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
+    }
+  }
+
+  /**
+   * Records a metric for each failure reason.
+   *
+   * @param failureSummary The {@link AttemptFailureSummary} containing the failure reason(s).
+   */
+  private void trackFailures(final AttemptFailureSummary failureSummary) {
+    if (failureSummary != null) {
+      for (final FailureReason reason : failureSummary.getFailures()) {
+        MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
+      }
+    } else {
+      MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
+          new MetricAttribute(MetricTags.FAILURE_ORIGIN, FailureOrigin.UNKNOWN.value()));
+    }
   }
 
 }
