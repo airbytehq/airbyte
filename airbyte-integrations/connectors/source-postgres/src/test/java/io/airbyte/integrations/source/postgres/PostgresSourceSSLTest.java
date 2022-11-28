@@ -34,7 +34,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -79,10 +78,11 @@ class PostgresSourceSSLTest {
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
+
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "1.0000000000", "name", "goku", "power", "Infinity")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "2.0000000000", "name", "vegeta", "power", "9000.1")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "NaN", "name", "piccolo", "power", "-Infinity")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 

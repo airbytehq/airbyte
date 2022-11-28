@@ -462,12 +462,12 @@ public abstract class CdcSourceTest {
     final ConfiguredAirbyteCatalog configuredCatalog = Jsons.clone(CONFIGURED_CATALOG);
 
     final List<JsonNode> MODEL_RECORDS_2 = ImmutableList.of(
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 110, COL_MAKE_ID, 1, COL_MODEL, "Fiesta-2")),
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 120, COL_MAKE_ID, 1, COL_MODEL, "Focus-2")),
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 130, COL_MAKE_ID, 1, COL_MODEL, "Ranger-2")),
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 140, COL_MAKE_ID, 2, COL_MODEL, "GLA-2")),
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 150, COL_MAKE_ID, 2, COL_MODEL, "A 220-2")),
-        Jsons.jsonNode(ImmutableMap.of(COL_ID, 160, COL_MAKE_ID, 2, COL_MODEL, "E 350-2")));
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "110", COL_MAKE_ID, "1", COL_MODEL, "Fiesta-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "120", COL_MAKE_ID, "1", COL_MODEL, "Focus-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "130", COL_MAKE_ID, "1", COL_MODEL, "Ranger-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "140", COL_MAKE_ID, "2", COL_MODEL, "GLA-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "150", COL_MAKE_ID, "2", COL_MODEL, "A 220-2")),
+        Jsons.jsonNode(ImmutableMap.of(COL_ID, "160", COL_MAKE_ID, "2", COL_MODEL, "E 350-2")));
 
     createTable(MODELS_SCHEMA, MODELS_STREAM_NAME + "_2",
         columnClause(ImmutableMap.of(COL_ID, "INTEGER", COL_MAKE_ID, "INTEGER", COL_MODEL, "VARCHAR(200)"), Optional.of(COL_ID)));

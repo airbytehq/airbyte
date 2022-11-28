@@ -38,7 +38,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -101,21 +100,21 @@ class PostgresSourceTest {
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "1.0000000000", "name", "goku", "power", "Infinity")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "2.0000000000", "name", "vegeta", "power", "9000.1")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "NaN", "name", "piccolo", "power", "-Infinity")));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "\u2013 someutfstring")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "\u2215")));
 
   private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")));
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "3", "name", "Antuan")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "3", "name", "Antuan")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 

@@ -197,7 +197,8 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
             case BIGINT -> putString(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
             case REAL -> putString(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putString(json, columnName, resultSet, colIndex);
+            // Need to change
+            case NUMERIC, DECIMAL -> putString(json, columnName, resultSet, colIndex); //putBigDecimal(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -289,7 +290,7 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
   protected void putBigDecimal(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) {
     final BigDecimal bigDecimal = DataTypeUtils.returnNullIfInvalid(() -> resultSet.getBigDecimal(index));
     if (bigDecimal != null) {
-      node.put(columnName, bigDecimal);
+      node.put(columnName, String.valueOf(bigDecimal));
     } else {
       // Special values (Infinity, -Infinity, and NaN) is default to null for now.
       // https://github.com/airbytehq/airbyte/issues/8902
@@ -302,14 +303,19 @@ public class PostgresSourceOperations extends JdbcSourceOperations {
     if (resultSet.getMetaData().getColumnTypeName(index).equals("money")) {
       putMoney(node, columnName, resultSet, index);
     } else {
-      super.putString(node, columnName, resultSet, index);
-      //super.putDouble(node, columnName, resultSet, index);
+      // Here, we parse the double and cast back to inaccuracy of REAL, DOUBLE, FLOAT.
+      node.put(columnName, String.valueOf(resultSet.getDouble(index)));
     }
+  }
+
+  @Override
+  protected void putFloat(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+    node.put(columnName, String.valueOf(resultSet.getFloat(index)));
   }
 
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+    node.put(columnName, moneyValue);
   }
 
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
