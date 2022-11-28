@@ -11,7 +11,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
@@ -153,11 +152,13 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
                                                                                                        final WorkerConfigs workerConfigs,
                                                                                                        final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                        final JobRunConfig jobRunConfig,
-                                                                                                       final Supplier<ActivityExecutionContext> activityContext)
-      throws ApiException {
+                                                                                                       final Supplier<ActivityExecutionContext> activityContext) {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
-    final var jobScope = airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId();
+
+    final var jobScope = AirbyteApiClient.retryWithJitter(
+        () -> airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId(),
+        "get job scope");
     final var connectionId = UUID.fromString(jobScope);
 
     return () -> new DbtLauncherWorker(
