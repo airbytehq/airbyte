@@ -44,7 +44,6 @@ export const Card: React.FC<React.PropsWithChildren<CardProps>> = ({
           <H5 className={classNames(styles.title)}>{title}</H5>
           {description && (
             <InfoTooltip>
-              {" "}
               <Text className={styles.infoTooltip} size="sm">
                 {description}
               </Text>
