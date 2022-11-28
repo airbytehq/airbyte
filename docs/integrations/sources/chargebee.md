@@ -13,7 +13,7 @@ To set up the Chargebee source connector, you'll need the [Chargebee API key](ht
 3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
 4. Enter the name for the Chargebee connector.
 5. For **Site**, enter the site prefix for your Chargebee instance.
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
 8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
 9. Click **Set up source**.

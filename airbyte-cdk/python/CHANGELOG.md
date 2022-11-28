@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.10.0
+Low-code: Add `start_from_page` option to a PageIncrement class
+
 ## 0.9.5
 Low-code: Add jinja macro `format_datetime`
 
