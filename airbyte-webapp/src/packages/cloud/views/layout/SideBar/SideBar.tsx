@@ -1,6 +1,6 @@
 import { faSlack } from "@fortawesome/free-brands-svg-icons";
-import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
-import { faDesktop, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
+import { faCircleQuestion, faEnvelope } from "@fortawesome/free-regular-svg-icons";
+import { faDesktop } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
@@ -13,7 +13,6 @@ import { DocsIcon } from "components/icons/DocsIcon";
 import { DropdownMenu } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
-import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { CloudRoutes } from "packages/cloud/cloudRoutes";
@@ -25,7 +24,6 @@ import { ReactComponent as AirbyteLogo } from "views/layout/SideBar/airbyteLogo.
 import ChatIcon from "views/layout/SideBar/components/ChatIcon";
 import ConnectionsIcon from "views/layout/SideBar/components/ConnectionsIcon";
 import DestinationIcon from "views/layout/SideBar/components/DestinationIcon";
-import OnboardingIcon from "views/layout/SideBar/components/OnboardingIcon";
 import SettingsIcon from "views/layout/SideBar/components/SettingsIcon";
 import SourceIcon from "views/layout/SideBar/components/SourceIcon";
 import StatusIcon from "views/layout/SideBar/components/StatusIcon";
@@ -41,18 +39,12 @@ const SideBar: React.FC = () => {
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const { formatMessage } = useIntl();
-  const hideOnboardingExperiment = useExperiment("onboarding.hideOnboarding", false);
   const handleChatUs = () => show();
 
   return (
     <nav className={styles.nav}>
       <div>
-        <Link
-          to={
-            workspace.displaySetupWizard && !hideOnboardingExperiment ? RoutePaths.Onboarding : RoutePaths.Connections
-          }
-          aria-label={formatMessage({ id: "sidebar.homepage" })}
-        >
+        <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
           <AirbyteLogo height={33} width={33} />
         </Link>
         <WorkspacePopout>
@@ -63,16 +55,6 @@ const SideBar: React.FC = () => {
           )}
         </WorkspacePopout>
         <ul className={styles.menu}>
-          {workspace.displaySetupWizard && !hideOnboardingExperiment ? (
-            <li>
-              <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
-                <OnboardingIcon />
-                <Text className={styles.text} size="sm">
-                  <FormattedMessage id="sidebar.onboarding" />
-                </Text>
-              </NavLink>
-            </li>
-          ) : null}
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />
@@ -171,7 +153,7 @@ const SideBar: React.FC = () => {
           >
             {({ open }) => (
               <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>
-                <FontAwesomeIcon icon={faQuestionCircle} size="2x" />
+                <FontAwesomeIcon icon={faCircleQuestion} size="2x" />
                 <Text className={styles.text} size="sm">
                   <FormattedMessage id="sidebar.support" />
                 </Text>

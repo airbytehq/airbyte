@@ -34,7 +34,7 @@ module.exports = {
       items: [
           {
             type: 'doc',
-            label: 'Search and Stages',
+            label: 'Overview',
             id: 'integrations/README',
           },
           {
@@ -71,7 +71,7 @@ module.exports = {
         },
         'cloud/core-concepts',
         'cloud/managing-airbyte-cloud',
-
+        'cloud/dbt-cloud-integration',
       ],
     },
     {
@@ -94,28 +94,57 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
-        'deploying-airbyte/local-deployment',
         {
           type: 'doc',
-          label: 'Deploy Airbyte on AWS EC2',
+          label: 'On your local machine',
+          id: 'deploying-airbyte/local-deployment',
+        },
+        {
+          type: 'doc',
+          label: 'On AWS EC2',
           id: 'deploying-airbyte/on-aws-ec2',
         },
         
         {
           type: 'doc',
-          label: 'Deploy Airbyte on Azure',
+          label: 'On Azure',
           id:'deploying-airbyte/on-azure-vm-cloud-shell',
         },
         {
           type: 'doc',
-          label: 'Deploy Airbyte on Google (GCP)',
+          label: 'On Google (GCP)',
           id:'deploying-airbyte/on-gcp-compute-engine',
         },
-        'deploying-airbyte/on-kubernetes',
-        'deploying-airbyte/on-kubernetes-via-helm',
-        'deploying-airbyte/on-plural',
-        'deploying-airbyte/on-oci-vm',
-        'deploying-airbyte/on-digitalocean-droplet',
+        {
+          type: 'doc',
+          label: 'On Kubernetes',
+          id:'deploying-airbyte/on-kubernetes',
+        },
+        {
+          type: 'doc',
+          label: 'On Kubernetes using Helm',
+          id:'deploying-airbyte/on-kubernetes-via-helm',
+        },
+        {
+          type: 'doc',
+          label: 'On Restack',
+          id:'deploying-airbyte/on-restack',
+        },
+        {
+          type: 'doc',
+          label: 'On Plural',
+          id:'deploying-airbyte/on-plural',
+        },
+        {
+          type: 'doc',
+          label: 'On Oracle Cloud',
+          id:'deploying-airbyte/on-oci-vm',
+        },
+        {
+          type: 'doc',
+          label: 'On DigitalOcean',
+          id:'deploying-airbyte/on-digitalocean-droplet',
+        },
       ],
     },
     {
@@ -181,6 +210,7 @@ module.exports = {
           type: 'category',
           label: 'Low-code connector development',
           items: [
+            'connector-development/config-based/connector-builder-ui',
             {
               label: 'Low-code CDK Intro',
               type: 'doc',
@@ -388,11 +418,14 @@ module.exports = {
     {
       type: 'category',
       label: 'Release Notes',
+      link: {
+        type: 'generated-index',
+      },
       items: [
-         'release_notes/july_2022',
-         'release_notes/august_2022',
-         'release_notes/september_2022',
-         'release_notes/october_2022',
+        'release_notes/october_2022',
+        'release_notes/september_2022',
+        'release_notes/august_2022',
+        'release_notes/july_2022',
       ],
     },
   ],

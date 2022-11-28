@@ -276,7 +276,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage())
               ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
               : new DefaultAirbyteSource(sourceLauncher,
-                  new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion()));
+                  new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
+                      DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -287,7 +288,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           airbyteSource,
           new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
           new DefaultAirbyteDestination(destinationLauncher,
-              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion()),
+              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
+                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
@@ -305,7 +307,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       throws ApiException {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
-    final var jobInfo = airbyteApiClient.getJobsApi().getJobInfoLight(id);
+    final var jobInfo = AirbyteApiClient.retryWithJitter(
+        () -> airbyteApiClient.getJobsApi().getJobInfoLight(id),
+        "get job info light");
     LOGGER.info("received response from from jobsApi.getJobInfoLight: {}", jobInfo);
     final var jobScope = jobInfo.getJob().getConfigId();
     final var connectionId = UUID.fromString(jobScope);

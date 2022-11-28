@@ -25,47 +25,26 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncState;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.WorkspaceServiceAccount;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.apache.commons.lang3.NotImplementedException;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 @SuppressWarnings({"PMD.SignatureDeclareThrowsException", "PMD.JUnitTestsShouldIncludeAssert", "PMD.DetachedTestCase"})
-class DatabaseConfigPersistenceE2EReadWriteTest extends BaseDatabaseConfigPersistenceTest {
+class DatabaseConfigPersistenceE2EReadWriteTest extends BaseConfigDatabaseTest {
+
+  private ConfigPersistence configPersistence;
+  private StandardSyncPersistence standardSyncPersistence;
 
   @BeforeEach
   void setup() throws Exception {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, DatabaseConfigPersistenceE2EReadWriteTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database));
     standardSyncPersistence = new StandardSyncPersistence(database);
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, flyway);
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
-    truncateAllTables();
-  }
 
-  @AfterEach
-  void tearDown() throws Exception {
-    dslContext.close();
-    DataSourceFactory.close(dataSource);
+    truncateAllTables();
   }
 
   @Test

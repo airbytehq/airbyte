@@ -13,7 +13,7 @@ To set up the Iterable source connector, you'll need the Iterable [`Server-side`
 3. On the Set up the source page, select **Iterable** from the Source type dropdown.
 4. Enter the name for the Iterable connector.
 5. For **API Key**, enter the [Iterable API key](https://support.iterable.com/hc/en-us/articles/360043464871-API-Keys-).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 7. Click **Set up source**.
 
 ## Supported sync modes
