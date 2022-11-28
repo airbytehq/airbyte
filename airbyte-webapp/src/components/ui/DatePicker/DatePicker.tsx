@@ -21,8 +21,6 @@ import styles from "./DatePicker.module.scss";
  * 2022-01-01T10:00:00+01:00  - what react-datepicker might convert this date into and display (e.g. 10:00am - bad!)
  * 2022-01-01T09:00:00+01:00  - what we give react-datepicker instead, to trick it (User sees 9:00am - good!)
  */
-
-// TODO: accept a string instead here
 export const toEquivalentLocalTime = (input: string): Date | undefined => {
   if (!input) {
     return undefined;
@@ -135,6 +133,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
         onChange={handleInputChange}
         onBlur={onBlur}
         onFocus={() => datepickerRef.current?.setOpen(true)}
+        className={styles.input}
       />
       <div className={styles.datepickerButtonContainer}>
         <ReactDatePicker

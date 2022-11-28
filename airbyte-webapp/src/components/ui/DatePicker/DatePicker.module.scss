@@ -29,6 +29,10 @@
   z-index: z-indices.$datepicker;
 }
 
+.input {
+  padding-right: 25px;
+}
+
 :global(.react-datepicker) {
   display: flex;
   color: colors.$dark-blue-900;
