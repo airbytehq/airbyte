@@ -15,6 +15,7 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
@@ -28,6 +29,7 @@ import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.LogRead;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
@@ -366,15 +368,16 @@ public class SchedulerHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
+    final ConnectionRead connectionRead = connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId());
     final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-        connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId()).getSyncCatalog();
+        connectionRead.getSyncCatalog();
     CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
         CatalogConverter.toProtocol(currentAirbyteCatalog));
     boolean containsBreakingChange = containsBreakingChange(diff);
     ConnectionUpdate updateObject =
         new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
     ConnectionStatus connectionStatus;
-    if (envVariableFeatureFlags.autoDetectSchema() && containsBreakingChange) {
+    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference())) {
       connectionStatus = ConnectionStatus.INACTIVE;
     } else {
       connectionStatus = ConnectionStatus.ACTIVE;
@@ -383,6 +386,14 @@ public class SchedulerHandler {
     connectionsHandler.updateConnection(updateObject);
     discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
 
+  }
+
+  private boolean shouldDisableConnection(boolean containsBreakingChange, NonBreakingChangesPreference preference) {
+    if (!envVariableFeatureFlags.autoDetectSchema()) {
+      return false;
+    }
+
+    return containsBreakingChange || preference == NonBreakingChangesPreference.DISABLE;
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
