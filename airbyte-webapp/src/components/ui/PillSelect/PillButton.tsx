@@ -1,6 +1,7 @@
 import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
+import { Children } from "react";
 
 import { Text } from "../Text";
 import styles from "./PillButton.module.scss";
@@ -19,10 +20,9 @@ const STYLES_BY_VARIANT: Readonly<Record<PillButtonVariant, string>> = {
 interface PillButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   active?: boolean;
   variant?: PillButtonVariant;
-  labels?: React.ReactNode[];
 }
 
-export const PillButton: React.FC<PillButtonProps> = ({ active, variant = "grey", labels = [], ...buttonProps }) => {
+export const PillButton: React.FC<PillButtonProps> = ({ children, active, variant = "grey", ...buttonProps }) => {
   const buttonClassName = classNames(
     styles.button,
     {
@@ -32,16 +32,17 @@ export const PillButton: React.FC<PillButtonProps> = ({ active, variant = "grey"
     STYLES_BY_VARIANT[variant],
     buttonProps.className
   );
+  const arrayChildren = Children.toArray(children);
   return (
     <button type="button" {...buttonProps} className={buttonClassName}>
-      {labels.map((label, index) => (
+      {Children.map(arrayChildren, (child, index) => (
         <>
-          <div className={styles.labelContainer}>
+          <div key={index} className={styles.labelContainer}>
             <Text as="span" size="xs" className={styles.text}>
-              {label}
+              {child}
             </Text>
           </div>
-          {index !== labels?.length - 1 && <div className={styles.divider} />}
+          {index !== arrayChildren?.length - 1 && <div className={styles.divider} />}
         </>
       ))}
       <FontAwesomeIcon className={styles.icon} icon={faCaretDown} />

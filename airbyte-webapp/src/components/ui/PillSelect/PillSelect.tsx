@@ -25,7 +25,6 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
           <Tooltip
             control={
               <PillButton
-                labels={Array.isArray(value?.label) ? value?.label : [value?.label]}
                 variant={variant}
                 disabled={disabled}
                 onClick={(event) => {
@@ -34,7 +33,9 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 }}
                 active={isOpen}
                 className={className}
-              />
+              >
+                {value?.pillLabel}
+              </PillButton>
             }
             placement="bottom-start"
             disabled={isOpen || !isMulti || value?.length <= 1}
