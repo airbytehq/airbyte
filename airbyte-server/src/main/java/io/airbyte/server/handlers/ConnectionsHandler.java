@@ -352,6 +352,14 @@ public class ConnectionsHandler {
     if (patch.getBreakingChange() != null) {
       sync.setBreakingChange(patch.getBreakingChange());
     }
+
+    if (patch.getNotifySchemaChanges() != null) {
+      sync.setNotifySchemaChanges(patch.getNotifySchemaChanges());
+    }
+
+    if (patch.getNonBreakingChangesPreference() != null) {
+      sync.setNonBreakingChangesPreference(ApiPojoConverters.toPersistenceNonBreakingChangesPreference(patch.getNonBreakingChangesPreference()));
+    }
   }
 
   private void validateConnectionPatch(final WorkspaceHelper workspaceHelper, final StandardSync persistedSync, final ConnectionUpdate patch) {

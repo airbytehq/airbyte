@@ -7,6 +7,7 @@ export interface ModalOptions<T> {
   size?: ModalProps["size"];
   preventCancel?: boolean;
   content: React.ComponentType<ModalContentProps<T>>;
+  testId?: string;
 }
 
 export type ModalResult<T> = { type: "canceled" } | { type: "closed"; reason: T };

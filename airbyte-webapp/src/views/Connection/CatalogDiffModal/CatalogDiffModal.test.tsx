@@ -256,7 +256,7 @@ describe("catalog diff modal", () => {
       </IntlProvider>
     );
 
-    const accordionHeader = screen.getByRole("button", { name: /toggle accordion/ });
+    const accordionHeader = screen.getByTestId(`toggle-accordion-harissa_paste-stream`);
 
     expect(accordionHeader).toBeInTheDocument();
 
