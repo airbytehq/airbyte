@@ -2,6 +2,7 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import React from "react";
 
+import { Spinner } from "../Spinner";
 import styles from "./CodeEditor.module.scss";
 
 interface CodeEditorProps {
@@ -86,6 +87,7 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
     <Editor
       beforeMount={setAirbyteTheme}
       onMount={onMount}
+      loading={<Spinner />}
       value={value}
       onChange={onChange}
       language={language}

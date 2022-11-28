@@ -1,4 +1,4 @@
-# Deploy on DigitalOcean
+# Deploy Airbyte on DigitalOcean
 
 This page guides you through deploying Airbyte Open Source on a DigitalOcean droplet by setting up the deployment environment, and installing and starting Airbyte.  
 

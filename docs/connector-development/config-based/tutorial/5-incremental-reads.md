@@ -7,41 +7,42 @@ According to the API documentation, we can read the exchange rate for a specific
 
 We'll now add a `start_date` property to the connector.
 
-First we'll update the spec `source_exchange_rates_tutorial/spec.yaml`
+First we'll update the spec block in `source_exchange_rates_tutorial/exchange_rates_tutorial.yaml`
 
 ```yaml
-documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
-connectionSpecification:
-  $schema: http://json-schema.org/draft-07/schema#
-  title: exchangeratesapi.io Source Spec
-  type: object
-  required:
-    - start_date
-    - access_key
-    - base
-  additionalProperties: true
-  properties:
-    start_date:
-      type: string
-      description: Start getting data from that date.
-      pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
-      examples:
-        - YYYY-MM-DD
-    access_key:
-      type: string
-      description: >-
-        Your API Access Key. See <a
-        href="https://exchangeratesapi.io/documentation/">here</a>. The key is
-        case sensitive.
-      airbyte_secret: true
-    base:
-      type: string
-      description: >-
-        ISO reference currency. See <a
-        href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">here</a>.
-      examples:
-        - EUR
-        - USD
+spec: 
+  documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  connectionSpecification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: exchangeratesapi.io Source Spec
+    type: object
+    required:
+      - start_date
+      - access_key
+      - base
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+      access_key:
+        type: string
+        description: >-
+          Your API Access Key. See <a
+          href="https://exchangeratesapi.io/documentation/">here</a>. The key is
+          case sensitive.
+        airbyte_secret: true
+      base:
+        type: string
+        description: >-
+          ISO reference currency. See <a
+          href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">here</a>.
+        examples:
+          - EUR
+          - USD
 ```
 
 Then we'll set the `start_date` to last week in our connection config in `secrets/config.json`.
@@ -208,7 +209,39 @@ streams:
 check:
   stream_names:
     - "rates"
-
+spec: 
+  documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  connectionSpecification:
+    $schema: http://json-schema.org/draft-07/schema#
+    title: exchangeratesapi.io Source Spec
+    type: object
+    required:
+      - start_date
+      - access_key
+      - base
+    additionalProperties: true
+    properties:
+      start_date:
+        type: string
+        description: Start getting data from that date.
+        pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
+        examples:
+          - YYYY-MM-DD
+      access_key:
+        type: string
+        description: >-
+          Your API Access Key. See <a
+          href="https://exchangeratesapi.io/documentation/">here</a>. The key is
+          case sensitive.
+        airbyte_secret: true
+      base:
+        type: string
+        description: >-
+          ISO reference currency. See <a
+          href="https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/index.en.html">here</a>.
+        examples:
+          - EUR
+          - USD
 ```
 
 Running the `read` operation will now read all data for all days between start_date and now:

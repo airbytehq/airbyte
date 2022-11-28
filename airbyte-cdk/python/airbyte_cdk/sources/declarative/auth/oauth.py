@@ -84,7 +84,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
 
     def get_expires_in_name(self) -> InterpolatedString:
         return self.expires_in_name.eval(self.config)
-    
+
     def get_grant_type(self) -> InterpolatedString:
         return self.grant_type.eval(self.config)
 

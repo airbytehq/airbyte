@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "custom_field_id": {
+      "type": "string"
+    },
+    "custom_field_name": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["custom_field_id"]
+}
