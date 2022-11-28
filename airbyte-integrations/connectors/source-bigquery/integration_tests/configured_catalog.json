@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "common_test_table_1",
+        "name": "sat_basic_dataset",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,

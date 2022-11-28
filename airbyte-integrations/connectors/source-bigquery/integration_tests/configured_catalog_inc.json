@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "inc_table_1",
+        "name": "sat_basic_dataset",
         "json_schema": {},
         "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
