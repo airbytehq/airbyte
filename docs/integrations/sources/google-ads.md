@@ -5,7 +5,9 @@ This page contains the setup guide and reference information for the Google Ads 
 ## Prerequisites
 
 - A [Google Ads Account](https://support.google.com/google-ads/answer/6366720) [linked](https://support.google.com/google-ads/answer/7459601) to a [Google Ads Manager account](https://ads.google.com/home/tools/manager-accounts/)
+<!-- env:oss -->
 - (For Airbyte Open Source) [A developer token](#step-1-for-airbyte-oss-apply-for-a-developer-token)
+<!-- /env:oss -->
 
 ## Setup guide
 
@@ -28,7 +30,8 @@ When you apply for a token, make sure to mention:
 
 ### Step 2: Set up the Google Ads connector in Airbyte
 
-#### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Google Ads as a source in Airbyte Cloud:
 
@@ -44,8 +47,10 @@ To set up Google Ads as a source in Airbyte Cloud:
 10. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 11. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 12. Click **Set up source**.
+<!-- /env:cloud -->
 
-#### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Google Ads as a source in Airbyte Open Source:
 
@@ -62,6 +67,7 @@ To set up Google Ads as a source in Airbyte Open Source:
 11. (Optional) Enter a [**Conversion Window**](https://support.google.com/google-ads/answer/3123169?hl=en).
 12. (Optional) Enter the **End Date** in YYYY-MM-DD format. The data added after this date will not be replicated.
 13. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -124,6 +130,8 @@ Due to a limitation in the Google Ads API which does not allow getting performan
 
 | Version  | Date       | Pull Request                                             | Subject                                                                                                                              |
 |:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------------------------------------------|
+| `0.2.5`  | 2022-11-22 | [19700](https://github.com/airbytehq/airbyte/pull/19700) | Fix schema for `campaigns` stream                                                                                                    |
+| `0.2.4`  | 2022-11-09 | [19208](https://github.com/airbytehq/airbyte/pull/19208) | Add TypeTransofrmer to Campaings stream to force proper type casting                                                                 |
 | `0.2.3`  | 2022-10-17 | [18069](https://github.com/airbytehq/airbyte/pull/18069) | Add `segments.hour`, `metrics.ctr`, `metrics.conversions` and `metrics.conversions_values` fields to `campaigns` report stream       |
 | `0.2.2`  | 2022-10-21 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Release with CDK >= 0.2.2                                                                                                            |
 | `0.2.1`  | 2022-09-29 | [17412](https://github.com/airbytehq/airbyte/pull/17412) | Always use latest CDK version                                                                                                        |

@@ -32,7 +32,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                 open={open}
               />
             </Disclosure.Button>
-            <Disclosure.Panel>
+            <Disclosure.Panel className={styles.accordionPanel}>
               {removedItems.length > 0 && <DiffFieldTable fieldTransforms={removedItems} diffVerb="removed" />}
               {newItems.length > 0 && <DiffFieldTable fieldTransforms={newItems} diffVerb="new" />}
               {changedItems.length > 0 && <DiffFieldTable fieldTransforms={changedItems} diffVerb="changed" />}
