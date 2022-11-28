@@ -12,6 +12,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_ORIGINS_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.docker.DockerUtils;
@@ -46,6 +47,7 @@ import io.airbyte.persistence.job.JobNotifier;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.errorreporter.SyncJobReportingContext;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.Job;
@@ -89,6 +91,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private final JobCreator jobCreator;
   private final StreamResetPersistence streamResetPersistence;
   private final JobErrorReporter jobErrorReporter;
+  private final OAuthConfigSupplier oAuthConfigSupplier;
 
   public JobCreationAndStatusUpdateActivityImpl(final SyncJobFactory jobFactory,
                                                 final JobPersistence jobPersistence,
@@ -100,7 +103,8 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
                                                 final ConfigRepository configRepository,
                                                 final JobCreator jobCreator,
                                                 final StreamResetPersistence streamResetPersistence,
-                                                final JobErrorReporter jobErrorReporter) {
+                                                final JobErrorReporter jobErrorReporter,
+                                                final OAuthConfigSupplier oAuthConfigSupplier) {
     this.jobFactory = jobFactory;
     this.jobPersistence = jobPersistence;
     this.temporalWorkerRunFactory = temporalWorkerRunFactory;
@@ -112,6 +116,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     this.jobCreator = jobCreator;
     this.streamResetPersistence = streamResetPersistence;
     this.jobErrorReporter = jobErrorReporter;
+    this.oAuthConfigSupplier = oAuthConfigSupplier;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -132,6 +137,12 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
       if (!streamsToReset.isEmpty()) {
         final DestinationConnection destination = configRepository.getDestinationConnection(standardSync.getDestinationId());
+
+        final JsonNode destinationConfiguration = oAuthConfigSupplier.injectDestinationOAuthParameters(
+            destination.getDestinationDefinitionId(),
+            destination.getWorkspaceId(),
+            destination.getConfiguration());
+        destination.setConfiguration(destinationConfiguration);
 
         final StandardDestinationDefinition destinationDef =
             configRepository.getStandardDestinationDefinition(destination.getDestinationDefinitionId());
