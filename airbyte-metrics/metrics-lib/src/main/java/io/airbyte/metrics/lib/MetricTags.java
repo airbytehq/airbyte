@@ -29,7 +29,7 @@ public class MetricTags {
   }
 
   public static String getFailureOrigin(final FailureOrigin origin) {
-    return origin != null ? origin.value() : UNKNOWN;
+    return origin != null ? origin.value() : FailureOrigin.UNKNOWN.value();
   }
 
   public static String getJobStatus(final JobStatus status) {
