@@ -292,7 +292,7 @@ public class AirbyteMessageTracker implements MessageTracker {
         Preconditions.checkArgument(totalBytesEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
         Preconditions.checkArgument(totalRecordsEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
 
-        log.info("Saving records estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
+        log.debug("Saving stream estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
         final var index = getStreamIndex(new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()));
 
         streamToTotalRecordsEstimated.put(index, estimate.getRowEstimate());
@@ -302,6 +302,7 @@ public class AirbyteMessageTracker implements MessageTracker {
         Preconditions.checkArgument(streamToTotalBytesEstimated.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
         Preconditions.checkArgument(streamToTotalRecordsEstimated.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
 
+        log.debug("Saving sync estimates");
         totalBytesEstimatedSync = estimate.getByteEstimate();
         totalRecordsEstimatedSync = estimate.getRowEstimate();
       }
