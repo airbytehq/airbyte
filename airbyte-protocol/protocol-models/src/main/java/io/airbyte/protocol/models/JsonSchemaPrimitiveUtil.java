@@ -23,7 +23,7 @@ import java.util.Set;
 public class JsonSchemaPrimitiveUtil {
 
   public enum JsonSchemaPrimitive {
-
+    // V0 schema primitives
     STRING,
     NUMBER,
     OBJECT,
