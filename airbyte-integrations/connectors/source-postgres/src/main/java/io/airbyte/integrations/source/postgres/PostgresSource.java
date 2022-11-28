@@ -58,7 +58,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -74,7 +73,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
+public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
@@ -207,8 +206,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> rawTables = discoverRawTables(database);
+  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<PostgresType>>> rawTables = discoverRawTables(database);
     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
 
     if (publicizedTablesInCdc.isEmpty()) {
@@ -220,15 +219,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         .collect(toList());
   }
 
-  public List<TableInfo<CommonField<JDBCType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<PostgresType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
         LOGGER.info("Checking schema: {}", schema);
-        final List<TableInfo<CommonField<JDBCType>>> tables = super.discoverInternal(database, schema);
+        final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
         internals.addAll(tables);
-        for (final TableInfo<CommonField<JDBCType>> table : tables) {
+        for (final TableInfo<CommonField<PostgresType>> table : tables) {
           LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
         }
       }
@@ -318,7 +317,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();

@@ -27,6 +27,7 @@ public class JsonSchemaType {
   public static final String CONTENT_ENCODING = "contentEncoding";
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
+  public static final String ITEMS = "items";
 
   public static final JsonSchemaType STRING_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1).build();
   public static final JsonSchemaType BINARY_DATA_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.BINARY_DATA_V1).build();
@@ -64,13 +65,18 @@ public class JsonSchemaType {
       JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
           .withFormat(DATE_TIME)
           .withAirbyteType(TIMESTAMP_WITHOUT_TIMEZONE).build();
-  public static final JsonSchemaType STRING_DATE = JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-      .withFormat(DATE).build();
-  public static final JsonSchemaType NUMBER_BIGINT = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).withAirbyteType("big_integer").build();
+  public static final JsonSchemaType STRING_DATE =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withFormat(DATE)
+          .build();
+  public static final JsonSchemaType NUMBER_BIGINT =
+      JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
+          .withAirbyteType("big_integer")
+          .build();
 
-  private final Map<String, String> jsonSchemaTypeMap;
+  private final Map<String, Object> jsonSchemaTypeMap;
 
-  private JsonSchemaType(final Map<String, String> jsonSchemaTypeMap) {
+  private JsonSchemaType(final Map<String, Object> jsonSchemaTypeMap) {
     this.jsonSchemaTypeMap = jsonSchemaTypeMap;
   }
 
@@ -78,13 +84,13 @@ public class JsonSchemaType {
     return new Builder(type);
   }
 
-  public Map<String, String> getJsonSchemaTypeMap() {
+  public Map<String, Object> getJsonSchemaTypeMap() {
     return jsonSchemaTypeMap;
   }
 
   public static class Builder {
 
-    private final ImmutableMap.Builder<String, String> typeMapBuilder;
+    private final ImmutableMap.Builder<String, Object> typeMapBuilder;
 
     private Builder(final JsonSchemaPrimitive type) {
       typeMapBuilder = ImmutableMap.builder();
@@ -112,6 +118,11 @@ public class JsonSchemaType {
 
     public JsonSchemaType build() {
       return new JsonSchemaType(typeMapBuilder.build());
+    }
+
+    public Builder withItems(final JsonSchemaType items) {
+      typeMapBuilder.put(ITEMS, items.getJsonSchemaTypeMap());
+      return this;
     }
 
   }
