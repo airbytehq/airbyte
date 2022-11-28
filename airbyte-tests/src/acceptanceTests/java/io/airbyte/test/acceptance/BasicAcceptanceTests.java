@@ -66,6 +66,8 @@ import io.airbyte.api.client.model.generated.OperationRead;
 import io.airbyte.api.client.model.generated.OperatorConfiguration;
 import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.OperatorWebhook;
+import io.airbyte.api.client.model.generated.OperatorWebhook.WebhookTypeEnum;
+import io.airbyte.api.client.model.generated.OperatorWebhookDbtCloud;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
@@ -465,10 +467,9 @@ class BasicAcceptanceTests {
             .operatorType(OperatorType.WEBHOOK)
             .webhook(new OperatorWebhook()
                 .webhookConfigId(workspaceRead.getWebhookConfigs().get(0).getId())
-                // NOTE: reqres.in is free service that hosts a REST API intended for testing frontend/client code.
-                // We use it here as an endpoint that will accept an HTTP POST.
-                .executionUrl("https://reqres.in/api/users")
-                .executionBody("{\"name\": \"morpheus\", \"job\": \"leader\"}"))));
+                // NOTE: this dbt Cloud config won't actually work, but the sync should still succeed.
+                .webhookType(WebhookTypeEnum.DBTCLOUD)
+                .dbtCloud(new OperatorWebhookDbtCloud().accountId(123).jobId(456)))));
     // create a connection with the new operation.
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();

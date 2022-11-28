@@ -23,6 +23,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
@@ -33,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -48,7 +50,7 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicReference<State> destinationOutputState;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
-  private final BiMap<String, Short> streamNameToIndex;
+  private final BiMap<AirbyteStreamNameNamespacePair, Short> nameNamespacePairToIndex;
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
   private final StateDeltaTracker stateDeltaTracker;
@@ -89,7 +91,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.streamToRunningCount = new HashMap<>();
-    this.streamNameToIndex = HashBiMap.create();
+    this.nameNamespacePairToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.streamToTotalBytesEmitted = new HashMap<>();
     this.streamToTotalRecordsEmitted = new HashMap<>();
@@ -139,7 +141,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       stateMetricsTracker.setFirstRecordReceivedAt(LocalDateTime.now());
     }
 
-    final short streamIndex = getStreamIndex(recordMessage.getStream());
+    final short streamIndex = getStreamIndex(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
 
     final long currentRunningCount = streamToRunningCount.getOrDefault(streamIndex, 0L);
     streamToRunningCount.put(streamIndex, currentRunningCount + 1);
@@ -269,12 +271,12 @@ public class AirbyteMessageTracker implements MessageTracker {
 
   }
 
-  private short getStreamIndex(final String streamName) {
-    if (!streamNameToIndex.containsKey(streamName)) {
-      streamNameToIndex.put(streamName, nextStreamIndex);
+  private short getStreamIndex(final AirbyteStreamNameNamespacePair pair) {
+    if (!nameNamespacePairToIndex.containsKey(pair)) {
+      nameNamespacePairToIndex.put(pair, nextStreamIndex);
       nextStreamIndex++;
     }
-    return streamNameToIndex.get(streamName);
+    return nameNamespacePairToIndex.get(pair);
   }
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
@@ -347,36 +349,32 @@ public class AirbyteMessageTracker implements MessageTracker {
    * because committed record counts cannot be reliably computed.
    */
   @Override
-  public Optional<Map<String, Long>> getStreamToCommittedRecords() {
+  public Optional<Map<AirbyteStreamNameNamespacePair, Long>> getStreamToCommittedRecords() {
     if (unreliableCommittedCounts) {
       return Optional.empty();
     }
     final Map<Short, Long> streamIndexToCommittedRecordCount = stateDeltaTracker.getStreamToCommittedRecords();
     return Optional.of(
         streamIndexToCommittedRecordCount.entrySet().stream().collect(
-            Collectors.toMap(
-                entry -> streamNameToIndex.inverse().get(entry.getKey()),
-                Map.Entry::getValue)));
+            Collectors.toMap(entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue)));
   }
 
   /**
    * Swap out stream indices for stream names and return total records emitted by stream.
    */
   @Override
-  public Map<String, Long> getStreamToEmittedRecords() {
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords() {
     return streamToTotalRecordsEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamNameToIndex.inverse().get(entry.getKey()),
-        Map.Entry::getValue));
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
   /**
    * Swap out stream indices for stream names and return total bytes emitted by stream.
    */
   @Override
-  public Map<String, Long> getStreamToEmittedBytes() {
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes() {
     return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamNameToIndex.inverse().get(entry.getKey()),
-        Map.Entry::getValue));
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
   }
 
   /**
