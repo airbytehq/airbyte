@@ -1,6 +1,7 @@
 # Hive Destination
 
 This is the repository for the Hive destination connector, written in Python.
+This connector can be used to connect to Apache Hive or Cloudera Data Platform.
 For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/destinations/hive).
 
 ## Local development
@@ -121,3 +122,7 @@ You've checked out the repo, implemented a million dollar feature, and you're re
 1. Create a Pull Request.
 1. Pat yourself on the back for being an awesome contributor.
 1. Someone from Airbyte will take a look at your PR and iterate with you to merge it into master.
+
+## Contribution
+This connector is contributed and maintained by Innovation Accelerator team at Cloudera.
+
