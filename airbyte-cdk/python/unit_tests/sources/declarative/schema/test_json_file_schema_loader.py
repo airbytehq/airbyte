@@ -24,3 +24,17 @@ def test_extract_resource_and_schema_path(test_name, input_path, expected_resour
 
     assert actual_resource == expected_resource
     assert actual_path == expected_path
+
+
+def test_recursive_schema():
+    json_schema = JsonFileSchemaLoader(options={'name': 'sample_stream'},
+                                       config={},
+                                       file_path="source_test/schemas/{{options['name']}}.json")
+    schema = json_schema.get_json_schema()
+    joined_schema = {'$schema': 'http://json-schema.org/draft-07/schema#',
+                     'type': ['null', 'object'],
+                     'properties': {'type': {'type': ['null', 'object'],
+                                             'properties': {'id_internal': {'type': ['null', 'integer']},
+                                                            'name': {'type': ['null', 'string']}}},
+                                    'id': {'type': ['null', 'string']}}}
+    assert schema == joined_schema

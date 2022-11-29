@@ -69,7 +69,7 @@ class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
         except ValueError as err:
             raise RuntimeError(f"Invalid JSON file format for file {json_schema_path}") from err
         self.__resource = resource
-        return self.__resolve_schema_references(raw_schema)
+        return self._resolve_schema_references(raw_schema)
 
     def _get_json_filepath(self):
         return self.file_path.eval(self.config)
@@ -96,7 +96,7 @@ class JsonFileSchemaLoader(SchemaLoader, JsonSchemaMixin):
 
         return split_path[0], "/".join(split_path[1:])
 
-    def __resolve_schema_references(self, raw_schema: dict) -> dict:
+    def _resolve_schema_references(self, raw_schema: dict) -> dict:
         """
         Resolve links to external references and move it to local "definitions" map.
 
