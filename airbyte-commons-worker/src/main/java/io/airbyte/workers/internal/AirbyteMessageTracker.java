@@ -298,8 +298,7 @@ public class AirbyteMessageTracker implements MessageTracker {
         log.debug("Saving stream estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
         nameNamespacePairToStreamStats.put(
             new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()),
-            new StreamStats(estimate.getByteEstimate(), 0L, estimate.getRowEstimate(), 0L)
-        );
+            new StreamStats(estimate.getByteEstimate(), 0L, estimate.getRowEstimate(), 0L));
       }
       case SYNC -> {
         Preconditions.checkArgument(nameNamespacePairToStreamStats.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
@@ -456,7 +455,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     if (!nameNamespacePairToStreamStats.isEmpty()) {
       return nameNamespacePairToStreamStats.values().stream()
           .map(e -> e.estimatedRecords)
-          .reduce(0L,Long::sum);
+          .reduce(0L, Long::sum);
     }
 
     return totalRecordsEstimatedSync;
@@ -478,7 +477,7 @@ public class AirbyteMessageTracker implements MessageTracker {
     if (!nameNamespacePairToStreamStats.isEmpty()) {
       return nameNamespacePairToStreamStats.values().stream()
           .map(e -> e.estimatedBytes)
-          .reduce(0L,Long::sum);
+          .reduce(0L, Long::sum);
     }
 
     return totalBytesEstimatedSync;
