@@ -1,8 +1,8 @@
 import { useMutation } from "react-query";
 
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { NotificationService } from "core/domain/notification/NotificationService";
-import { useUser } from "core/localStorage";
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useInitService } from "services/useInitService";

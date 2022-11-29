@@ -3,11 +3,11 @@ import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
-import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 

@@ -7,7 +7,7 @@ import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
 import HeadTitle from "components/HeadTitle";
 
-import { useUser } from "core/localStorage";
+import { useUser } from "core/AuthContext";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 // import useRouter from "hooks/useRouter";
 // import { CloudRoutes } from "packages/cloud/cloudRoutes";

@@ -1,8 +1,8 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
+import { useUser } from "core/AuthContext";
 import { Workspace, WorkspaceService } from "core/domain/workspace";
-import { useUser } from "core/localStorage";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 

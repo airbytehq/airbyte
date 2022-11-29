@@ -1,8 +1,8 @@
 import { useQuery } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { DestinationDefinitionSpecificationService } from "core/domain/connector/DestinationDefinitionSpecificationService";
-import { useUser } from "core/localStorage";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";

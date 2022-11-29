@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
-import { useUser } from "core/localStorage";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";

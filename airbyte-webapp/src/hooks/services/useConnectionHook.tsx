@@ -3,10 +3,10 @@ import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
-import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";

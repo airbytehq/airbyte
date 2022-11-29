@@ -1,8 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { JobsService } from "core/domain/job/JobsService";
-import { useUser } from "core/localStorage";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 

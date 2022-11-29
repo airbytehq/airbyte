@@ -1,6 +1,6 @@
 import { merge } from "lodash";
 
-import { getUser } from "core/localStorage";
+import { getUser } from "core/AuthContext";
 
 import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";

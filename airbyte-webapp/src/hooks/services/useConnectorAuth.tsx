@@ -2,11 +2,11 @@ import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
 import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
-import { useUser } from "core/localStorage";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";

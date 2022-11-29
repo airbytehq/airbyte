@@ -1,9 +1,9 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
-import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 

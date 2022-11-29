@@ -2,11 +2,11 @@ import { useMemo } from "react";
 import { useMutation } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { SourceService } from "core/domain/connector/SourceService";
-import { useUser } from "core/localStorage";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,

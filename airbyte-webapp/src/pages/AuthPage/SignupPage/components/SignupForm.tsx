@@ -8,7 +8,7 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
 
-import { useUser } from "core/localStorage";
+import { useUser } from "core/AuthContext";
 
 // import { useConfig } from "config";
 // import { useExperiment } from "hooks/services/Experiment";

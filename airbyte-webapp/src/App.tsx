@@ -3,8 +3,8 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
 
 import { ApiServices } from "core/ApiServices";
+import { AuthContextProvider } from "core/AuthContext";
 import { I18nProvider } from "core/i18n";
-import { AuthContextProvider } from "core/localStorage";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";

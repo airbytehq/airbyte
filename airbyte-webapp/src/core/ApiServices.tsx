@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
 // import { useConfig } from "config";
-import { useUser } from "core/localStorage";
+import { useUser } from "core/AuthContext";
 
 import { OperationService } from "./domain/connection";
 import { DestinationDefinitionService } from "./domain/connector/DestinationDefinitionService";

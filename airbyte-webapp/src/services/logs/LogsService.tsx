@@ -1,7 +1,7 @@
 import { useMutation } from "react-query";
 
+import { useUser } from "core/AuthContext";
 import { LogsService } from "core/domain/logs/LogsService";
-import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";

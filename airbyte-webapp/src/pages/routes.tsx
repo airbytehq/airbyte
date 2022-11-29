@@ -5,7 +5,7 @@ import { useEffectOnce } from "react-use";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
-import { useUser } from "core/localStorage";
+import { useUser } from "core/AuthContext";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
