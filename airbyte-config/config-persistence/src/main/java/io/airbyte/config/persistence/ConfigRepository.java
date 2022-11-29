@@ -1402,22 +1402,15 @@ public class ConfigRepository {
   }
 
   public WorkspaceServiceAccount getWorkspaceServiceAccountNoSecrets(final UUID workspaceId) throws IOException, ConfigNotFoundException {
-    return listWorkspaceServiceAccountQuery(Optional.of(workspaceId))
+    // breaking the pattern of doing a list query, because we never want to list this resource without
+    // scoping by workspace id.
+    return database.query(ctx -> ctx.select(asterisk()).from(WORKSPACE_SERVICE_ACCOUNT)
+        .where(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID.eq(workspaceId))
+        .fetch())
+        .map(DbConverter::buildWorkspaceServiceAccount)
+        .stream()
         .findFirst()
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.WORKSPACE_SERVICE_ACCOUNT, workspaceId));
-  }
-
-  private Stream<WorkspaceServiceAccount> listWorkspaceServiceAccountQuery(final Optional<UUID> workspaceId)
-      throws IOException {
-    final Result<Record> result = database.query(ctx -> {
-      final SelectJoinStep<Record> query = ctx.select(asterisk()).from(WORKSPACE_SERVICE_ACCOUNT);
-      if (workspaceId.isPresent()) {
-        return query.where(WORKSPACE_SERVICE_ACCOUNT.WORKSPACE_ID.eq(workspaceId.get())).fetch();
-      }
-      return query.fetch();
-    });
-
-    return result.map(DbConverter::buildWorkspaceServiceAccount).stream();
   }
 
   public void writeWorkspaceServiceAccountNoSecrets(final WorkspaceServiceAccount workspaceServiceAccount) throws IOException {

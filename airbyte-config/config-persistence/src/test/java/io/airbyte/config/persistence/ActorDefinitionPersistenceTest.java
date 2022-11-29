@@ -128,7 +128,6 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     final List<StandardDestinationDefinition> allDestDefs = List.of(
         createBaseDestDef().withProtocolVersion(null),
         createBaseDestDef().withProtocolVersion(null).withSpec(new ConnectorSpecification().withProtocolVersion("0.3.1")),
-        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
         createBaseDestDef().withProtocolVersion("0.4.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.4.1")),
         createBaseDestDef().withProtocolVersion("0.5.0").withSpec(new ConnectorSpecification()));
 
@@ -141,9 +140,9 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertEquals(
         List.of(
             AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(),
-            "0.3.1",
-            "0.4.1",
-            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize()),
+            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(),
+            "0.4.0",
+            "0.5.0"),
         protocolVersions);
   }
 
@@ -152,7 +151,6 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     final List<StandardSourceDefinition> allSrcDefs = List.of(
         createBaseSourceDef().withProtocolVersion(null),
         createBaseSourceDef().withProtocolVersion(null).withSpec(new ConnectorSpecification().withProtocolVersion("0.6.0")),
-        // We expect the protocol version to be in the ConnectorSpec, so we'll override regardless.
         createBaseSourceDef().withProtocolVersion("0.7.0").withSpec(new ConnectorSpecification().withProtocolVersion("0.7.1")),
         createBaseSourceDef().withProtocolVersion("0.8.0").withSpec(new ConnectorSpecification()));
 
@@ -165,9 +163,9 @@ class ActorDefinitionPersistenceTest extends BaseConfigDatabaseTest {
     assertEquals(
         List.of(
             AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(),
-            "0.6.0",
-            "0.7.1",
-            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize()),
+            AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION.serialize(),
+            "0.7.0",
+            "0.8.0"),
         protocolVersions);
   }
 
