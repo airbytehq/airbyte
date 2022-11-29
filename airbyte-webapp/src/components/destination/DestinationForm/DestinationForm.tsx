@@ -87,6 +87,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       <ConnectorCard
         formType="destination"
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        description={<FormattedMessage id="destinations.description" />}
         isLoading={isLoading}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
