@@ -49,7 +49,7 @@ and place them into `secrets/config.json`.
 python main.py spec
 python main.py check --config secrets/config.json
 python main.py discover --config secrets/config.json
-python main.py read --config secrets/config.json --catalog integration_tests/configured_catalog.json
+python main.py read --config secrets/config.json --catalog integration_tests/streams_basic.json
 ```
 
 ### Locally running the connector docker image
@@ -73,7 +73,7 @@ Then run any of the connector commands as follows:
 docker run --rm airbyte/source-tiktok-marketing:dev spec
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-tiktok-marketing:dev check --config /secrets/config.json
 docker run --rm -v $(pwd)/secrets:/secrets airbyte/source-tiktok-marketing:dev discover --config /secrets/config.json
-docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-tiktok-marketing:dev read --config /secrets/config.json --catalog /integration_tests/configured_catalog.json
+docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/integration_tests:/integration_tests airbyte/source-tiktok-marketing:dev read --config /secrets/config.json --catalog /integration_tests/streams_basic.json
 ```
 ## Testing
    Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named.
