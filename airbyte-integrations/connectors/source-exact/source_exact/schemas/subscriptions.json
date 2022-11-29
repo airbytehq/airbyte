@@ -4,6 +4,9 @@
   "properties": {
     "EntryID": {
       "type": ["string"]
+    },
+    "Timestamp": {
+      "type": ["string"]
     }
   }
 }
