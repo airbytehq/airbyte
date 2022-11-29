@@ -504,7 +504,24 @@ class TestTransformConfig:
         assert expected == actual
         assert extract_schema(actual) == "ti_db"
 
-    def test_transform_duckdb(self):
+    def test_transform_duckdb_schema(self):
+        input = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        actual = TransformConfig().transform_duckdb(input)
+        expected = {
+            "type": "duckdb",
+            "destination_path": "/local/testing.duckdb",
+            "schema": "quackqauck",
+        }
+
+        assert expected == actual
+        assert extract_destination_path(actual) == "/local/testing.duckdb"
+
+    def test_transform_duckdb_no_schema(self):
         input = {
             "type": "duckdb",
             "destination_path": "/local/testing.duckdb",
@@ -514,6 +531,7 @@ class TestTransformConfig:
         expected = {
             "type": "duckdb",
             "destination_path": "/local/testing.duckdb",
+            "schema": "main",
         }
 
         assert expected == actual

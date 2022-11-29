@@ -248,7 +248,7 @@
     )
 {%- endmacro %}
 
-{% macro tidb__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
+{% macro duckdb__json_extract_scalar(json_column, json_path_list, normalized_json_path) -%}
     IF(
         JSON_UNQUOTE(JSON_EXTRACT({{ json_column }}, {{ format_json_path(normalized_json_path) }})) = 'null',
         NULL,
