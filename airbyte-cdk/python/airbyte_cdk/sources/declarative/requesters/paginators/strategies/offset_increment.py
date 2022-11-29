@@ -42,7 +42,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._offset = 0
-        # InterpolatedString page_size may contain one int/str types,
+        # InterpolatedString page_size may contain one of int/str types,
         # so we need to ensure that its `.string` attribute is of *string* type
         self.page_size.string = str(self.page_size.string)
         self.page_size = self.page_size.eval(self.config)
