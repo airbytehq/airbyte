@@ -118,7 +118,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section className={isNewStreamsTableEnabled ? styles.flush : undefined}>
+        <Section className={isNewStreamsTableEnabled ? styles.flush : styles.flushLeft}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}
