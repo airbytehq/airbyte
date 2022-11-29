@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { act, render, RenderResult } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import ReactDOM from "react-dom";
 import { IntlProvider } from "react-intl";
 
@@ -178,17 +177,12 @@ jest.mock("hooks/services/ConnectionForm/ConnectionFormService", () => ({
   useConnectionFormService: () => ({ destDefinition: ["overwrite", "append", "append_dedup"] }),
 }));
 
-const renderBulkEditPanel = async (): Promise<RenderResult> => {
-  let renderResult: RenderResult;
-  await act(async () => {
-    renderResult = render(
-      <IntlProvider locale="en" messages={en}>
-        <BulkEditPanel />
-      </IntlProvider>
-    );
-  });
-  return renderResult!;
-};
+const renderBulkEditPanel = () =>
+  render(
+    <IntlProvider locale="en" messages={en}>
+      <BulkEditPanel />
+    </IntlProvider>
+  );
 
 describe("<BulkEditPanel />", () => {
   beforeAll(() => {
@@ -198,8 +192,8 @@ describe("<BulkEditPanel />", () => {
     };
   });
 
-  it("should render", async () => {
-    const component = await renderBulkEditPanel();
+  it("should render", () => {
+    const component = renderBulkEditPanel();
     expect(component).toMatchSnapshot();
   });
 
