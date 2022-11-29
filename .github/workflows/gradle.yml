@@ -1087,13 +1087,14 @@ jobs:
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
       
       - name: Install tmate and it's dependencies
-        if: inputs.debug_mode == 'true'
+        if: failure()
         shell: bash
         run: |
           sudo rm -f /var/lib/dpkg/lock
           sudo rm -f /var/lib/dpkg/lock-frontend
 
       - name: Setup tmate session
+        if: failure()
         uses: mxschmitt/action-tmate@v3
     
 
