@@ -228,7 +228,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: ClickUp
