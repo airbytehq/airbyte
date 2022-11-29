@@ -5,6 +5,7 @@
 
 import logging
 from collections import Counter
+from json import JSONDecodeError
 from typing import Any, List, Mapping, Tuple, Union
 
 import requests
@@ -70,13 +71,27 @@ class SourceNetsuite(AbstractSource):
                 return False, e
 
     def get_schemas(self, object_names: Union[List[str], str], session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
-        # fetch schemas
-        if isinstance(object_names, list):
-            return {
-                object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json() for object_name in object_names
-            }
-        elif isinstance(object_names, str):
-            return {object_names.lower(): session.get(metadata_url + object_names, headers=SCHEMA_HEADERS).json()}
+        """
+        Handles multivariance of object_names type input and fetches the schema for each object type provided.
+        """
+        try:
+            if isinstance(object_names, list):
+                for object_name in object_names:
+                    return self.fetch_schema(object_name, session, metadata_url)
+            elif isinstance(object_names, str):
+                return self.fetch_schema(object_names, session, metadata_url)
+            else:
+                raise NotImplementedError(
+                    f"Object Types has unknown structure, should be either `dict` or `str`, actual input: {object_names}"
+                )
+        except JSONDecodeError as e:
+            self.logger.error(f"Unexpected output while fetching the object schema. Full error: {e.__repr__()}")
+
+    def fetch_schema(self, object_name: str, session: requests.Session, metadata_url: str) -> Mapping[str, Any]:
+        """
+        Calls the API for specific object type and returns schema as a dict.
+        """
+        return {object_name.lower(): session.get(metadata_url + object_name, headers=SCHEMA_HEADERS).json()}
 
     def generate_stream(
         self,
