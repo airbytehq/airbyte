@@ -191,6 +191,9 @@ jobs:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
 
+      - name: Remove unattended-upgrades
+        uses: ./.github/actions/remove-unattended-upgrade
+
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
         with:
@@ -358,6 +361,9 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+
+      - name: Remove unattended-upgrades
+        uses: ./.github/actions/remove-unattended-upgrade
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -530,6 +536,9 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
+      - name: Remove unattended-upgrades
+        uses: ./.github/actions/remove-unattended-upgrade
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
@@ -733,6 +742,9 @@ jobs:
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
+
+      - name: Remove unattended-upgrades
+        uses: ./.github/actions/remove-unattended-upgrade
 
       - name: Cache Build Artifacts
         uses: ./.github/actions/cache-build-artifacts
