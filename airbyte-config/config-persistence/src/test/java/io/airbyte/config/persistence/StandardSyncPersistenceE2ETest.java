@@ -25,13 +25,7 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardWorkspace;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -43,16 +37,15 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class StandardSyncPersistenceE2ETest extends BaseDatabaseConfigPersistenceTest {
+class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
 
   record StandardSyncProtocolVersionFlag(UUID standardSyncId, boolean unsupportedProtocolVersion) {}
 
   private ConfigRepository configRepository;
+  private StandardSyncPersistence standardSyncPersistence;
 
   UUID workspaceId;
   StandardWorkspace workspace;
@@ -71,21 +64,10 @@ class StandardSyncPersistenceE2ETest extends BaseDatabaseConfigPersistenceTest {
 
   @BeforeEach
   void beforeEach() throws Exception {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, StandardSyncPersistenceE2ETest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(true);
     truncateAllTables();
 
     standardSyncPersistence = new StandardSyncPersistence(database);
     configRepository = new ConfigRepository(database);
-  }
-
-  @AfterEach
-  void afterEach() throws Exception {
-    dslContext.close();
-    DataSourceFactory.close(dataSource);
   }
 
   @Test
