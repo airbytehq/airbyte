@@ -23,8 +23,9 @@ definitions:
     paginator:
       type: DefaultPaginator
       pagination_strategy:
-        class_name: source_zenloop.components.ZenloopPageIncrement
+        type: PageIncrement
         page_size: 50
+        start_from_page: 1
       page_size_option:
         field_name: "per_page"
         inject_into: "request_parameter"
