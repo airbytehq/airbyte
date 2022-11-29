@@ -5,6 +5,7 @@ import { mockConnection, TestWrapper } from "test-utils/testutils";
 import { SchemaChange } from "core/request/AirbyteClient";
 import en from "locales/en.json";
 
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./SchemaChangesDetected.module.scss";
 
 const mockUseConnectionEditService = jest.fn();

@@ -3,9 +3,9 @@ import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationD
 import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition";
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
-import { ConnectionStatus } from "core/request/AirbyteClient";
-import type { useSchemaChanges } from "hooks/connection/useSchemaChanges";
+import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
 
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./StatusMainInfo.module.scss";
 
 const mockUseConnectionEditService = jest.fn();
@@ -22,12 +22,6 @@ jest.doMock("services/connector/DestinationDefinitionService", () => ({
   useDestinationDefinition: () => mockDestinationDefinition,
 }));
 
-const mockUseSchemaChanges = jest.fn<ReturnType<typeof useSchemaChanges>, Parameters<typeof useSchemaChanges>>();
-
-jest.doMock("hooks/connection/useSchemaChanges", () => ({
-  useSchemaChanges: mockUseSchemaChanges,
-}));
-
 jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty", () => ({
   useRefreshSourceSchemaWithConfirmationOnDirty: jest.fn(),
 }));
@@ -36,17 +30,18 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 const { StatusMainInfo } = require("./StatusMainInfo");
 
 describe("<StatusMainInfo />", () => {
+  beforeAll(() => {
+    process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES = "true";
+  });
+
+  afterAll(() => {
+    delete process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES;
+  });
+
   beforeEach(() => {
     mockUseConnectionEditService.mockReturnValue({
       connection: mockConnection,
       schemaHasBeenRefreshed: false,
-    });
-
-    mockUseSchemaChanges.mockReturnValue({
-      schemaChange: "no_change",
-      hasSchemaChanges: false,
-      hasBreakingSchemaChange: false,
-      hasNonBreakingSchemaChange: false,
     });
   });
 
@@ -65,15 +60,8 @@ describe("<StatusMainInfo />", () => {
   });
 
   it("renders controls features when readonly", () => {
-    mockUseSchemaChanges.mockReturnValueOnce({
-      schemaChange: "no_change",
-      hasSchemaChanges: true,
-      hasBreakingSchemaChange: true,
-      hasNonBreakingSchemaChange: false,
-    });
-
     mockUseConnectionEditService.mockReturnValueOnce({
-      connection: { ...mockConnection, status: ConnectionStatus.deprecated },
+      connection: { ...mockConnection, status: ConnectionStatus.deprecated, schemaChange: SchemaChange.breaking },
       schemaHasBeenRefreshed: false,
     });
 
@@ -87,11 +75,9 @@ describe("<StatusMainInfo />", () => {
   });
 
   it("renders with breaking schema changes", () => {
-    mockUseSchemaChanges.mockReturnValueOnce({
-      schemaChange: "no_change",
-      hasSchemaChanges: true,
-      hasBreakingSchemaChange: true,
-      hasNonBreakingSchemaChange: false,
+    mockUseConnectionEditService.mockReturnValueOnce({
+      connection: { ...mockConnection, schemaChange: SchemaChange.breaking },
+      schemaHasBeenRefreshed: false,
     });
 
     const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
@@ -104,11 +90,9 @@ describe("<StatusMainInfo />", () => {
   });
 
   it("renders with non-breaking schema changes", () => {
-    mockUseSchemaChanges.mockReturnValueOnce({
-      schemaChange: "no_change",
-      hasSchemaChanges: true,
-      hasBreakingSchemaChange: false,
-      hasNonBreakingSchemaChange: true,
+    mockUseConnectionEditService.mockReturnValueOnce({
+      connection: { ...mockConnection, schemaChange: SchemaChange.non_breaking },
+      schemaHasBeenRefreshed: false,
     });
 
     const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
