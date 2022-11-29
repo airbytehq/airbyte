@@ -97,13 +97,10 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("cursorDefined", {
         id: "sourceCursorDefined",
         header: () => <FormattedMessage id="form.field.cursorField" />,
-        cell: ({ getValue, row }) => {
-          return (
-            getValue() && (
-              <RadioButton checked={isCursor(row.original.path)} onChange={() => onCursorSelect(row.original.path)} />
-            )
-          );
-        },
+        cell: ({ getValue, row }) =>
+          getValue() && (
+            <RadioButton checked={isCursor(row.original.path)} onChange={() => onCursorSelect(row.original.path)} />
+          ),
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.checkboxCell,
@@ -112,17 +109,14 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("primaryKeyDefined", {
         id: "sourcePrimaryKeyDefined",
         header: () => <FormattedMessage id="form.field.primaryKey" />,
-        cell: ({ getValue, row }) => {
-          return (
-            getValue() && (
-              <CheckBox
-                checked={isPrimaryKey(row.original.path)}
-                onChange={() => onPkSelect(row.original.path)}
-                className={styles.checkbox}
-              />
-            )
-          );
-        },
+        cell: ({ getValue, row }) =>
+          getValue() && (
+            <CheckBox
+              checked={isPrimaryKey(row.original.path)}
+              onChange={() => onPkSelect(row.original.path)}
+              className={styles.checkbox}
+            />
+          ),
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
