@@ -1642,6 +1642,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/the-guardian-api
   sourceType: api
   releaseStage: alpha
+- name: TPLcentral
+  sourceDefinitionId: f9b6c538-ee12-42fe-8d4b-0c10f5955417
+  dockerRepository: airbyte/source-tplcentral
+  dockerImageTag: 0.1.1
+  documentationUrl: https://docs.airbyte.com/integrations/sources/tplcentral
+  sourceType: api
+  releaseStage: alpha
 - name: Trello
   sourceDefinitionId: 8da67652-004c-11ec-9a03-0242ac130003
   dockerRepository: airbyte/source-trello
