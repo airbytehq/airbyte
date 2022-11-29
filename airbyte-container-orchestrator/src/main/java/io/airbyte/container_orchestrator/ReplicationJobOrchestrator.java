@@ -96,6 +96,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
+    log.info("sourceLauncherConfig is: " + sourceLauncherConfig.toString());
 
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
         SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
