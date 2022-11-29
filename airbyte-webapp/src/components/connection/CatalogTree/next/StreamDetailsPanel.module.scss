@@ -8,13 +8,18 @@
 
 .container {
   position: fixed;
+  top: 100px;
   bottom: 0;
   left: variables.$width-size-menu;
   z-index: 1000;
   width: calc(100% - variables.$width-size-menu);
-  height: calc(100vh - 100px);
+  height: calc(100vh - 160px);
   background: colors.$white;
   border-radius: 15px 15px 0 0;
   box-shadow: 0 0 22px rgba(colors.$dark-blue-900, 12%);
-  overflow: auto;
+}
+
+.tableContainer {
+  height: 100%;
+  overflow: scroll;
 }

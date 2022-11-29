@@ -39,14 +39,16 @@ export const StreamDetailsPanel: React.FC<StreamDetailsPanelProps> = ({
           onClose={onClose}
           onSelectedChange={onSelectedChange}
         />
-        <StreamFieldsTable
-          config={config}
-          syncSchemaFields={syncSchemaFields}
-          onCursorSelect={onCursorSelect}
-          onPkSelect={onPkSelect}
-          shouldDefinePk={shouldDefinePk}
-          shouldDefineCursor={shouldDefineCursor}
-        />
+        <div className={styles.tableContainer}>
+          <StreamFieldsTable
+            config={config}
+            syncSchemaFields={syncSchemaFields}
+            onCursorSelect={onCursorSelect}
+            onPkSelect={onPkSelect}
+            shouldDefinePk={shouldDefinePk}
+            shouldDefineCursor={shouldDefineCursor}
+          />
+        </div>
       </Dialog.Panel>
     </Dialog>
   );
