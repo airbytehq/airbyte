@@ -120,9 +120,8 @@ export const ConnectionReplicationTab: React.FC = () => {
           });
           if (result.type !== "canceled") {
             // Save the connection taking into account the correct skipReset value from the dialog choice.
-            // We also want to skip the reset sync if the connection is not in an "active" status
             await saveConnection(formValues, {
-              skipReset: !result.reason || connection.status !== "active",
+              skipReset: !result.reason,
               catalogHasChanged,
             });
           } else {
@@ -143,7 +142,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       connection.connectionId,
       connection.catalogDiff,
       connection.operations,
-      connection.status,
       connection.syncCatalog.streams,
       connectionService,
       formatMessage,
