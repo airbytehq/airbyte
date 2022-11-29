@@ -3396,7 +3396,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.73"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.74"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3651,7 +3651,10 @@
               action_breakdowns:
                 title: "Action Breakdowns"
                 description: "A list of chosen action_breakdowns for action_breakdowns"
-                default: []
+                default:
+                - "action_type"
+                - "action_target_id"
+                - "action_destination"
                 type: "array"
                 items:
                   title: "ValidActionBreakdowns"
@@ -8706,7 +8709,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.13"
+- dockerImage: "airbyte/source-mysql:1.0.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10611,6 +10614,72 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-pexels-api:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/pexels-api"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Pexel API Spec"
+      type: "object"
+      required:
+      - "api_key"
+      - "query"
+      additionalProperties: true
+      properties:
+        api_key:
+          title: "API Key from the pexels website"
+          type: "string"
+          description: "API key is required to access pexels api, For getting your's\
+            \ goto https://www.pexels.com/api/documentation and create account for\
+            \ free."
+          airbyte_secret: true
+        query:
+          title: "Specific query for the search"
+          type: "string"
+          description: "Optional, the search query, Example Ocean, Tigers, Pears,\
+            \ etc."
+          examples:
+          - "people"
+          - "oceans"
+        orientation:
+          title: "Specific orientation for the search"
+          type: "string"
+          description: "Optional, Desired photo orientation. The current supported\
+            \ orientations are landscape, portrait or square"
+          examples:
+          - "square"
+          - "landscape"
+        size:
+          title: "Specific size for the search"
+          type: "string"
+          description: "Optional, Minimum photo size. The current supported sizes\
+            \ are large(24MP), medium(12MP) or small(4MP)."
+          examples:
+          - "large"
+          - "small"
+        color:
+          title: "Specific color for the search"
+          type: "string"
+          description: "Optional, Desired photo color. Supported colors red, orange,\
+            \ yellow, green, turquoise, blue, violet, pink, brown, black, gray, white\
+            \ or any hexidecimal color code."
+          examples:
+          - "red"
+          - "orange"
+        locale:
+          title: "Specific locale for the search"
+          type: "string"
+          description: "Optional, The locale of the search you are performing. The\
+            \ current supported locales are 'en-US' 'pt-BR' 'es-ES' 'ca-ES' 'de-DE'\
+            \ 'it-IT' 'fr-FR' 'sv-SE' 'id-ID' 'pl-PL' 'ja-JP' 'zh-TW' 'zh-CN' 'ko-KR'\
+            \ 'th-TH' 'nl-NL' 'hu-HU' 'vi-VN' 'cs-CZ' 'da-DK' 'fi-FI' 'uk-UA' 'el-GR'\
+            \ 'ro-RO' 'nb-NO' 'sk-SK' 'tr-TR' 'ru-RU'."
+          examples:
+          - "en-US"
+          - "pt-BR"
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-pinterest:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
@@ -11150,7 +11219,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.25"
+- dockerImage: "airbyte/source-postgres:1.0.28"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11387,7 +11456,7 @@
               method:
                 type: "string"
                 const: "CDC"
-                order: 0
+                order: 1
               plugin:
                 type: "string"
                 title: "Plugin"
@@ -11400,21 +11469,21 @@
                 - "pgoutput"
                 - "wal2json"
                 const: "pgoutput"
-                order: 1
+                order: 2
               replication_slot:
                 type: "string"
                 title: "Replication Slot"
                 description: "A plugin logical replication slot. Read about <a href=\"\
                   https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\"\
                   >replication slots</a>."
-                order: 2
+                order: 3
               publication:
                 type: "string"
                 title: "Publication"
                 description: "A Postgres publication used for consuming changes. Read\
                   \ about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\"\
                   >publications and replication identities</a>."
-                order: 3
+                order: 4
               initial_waiting_seconds:
                 type: "integer"
                 title: "Initial Waiting Time in Seconds (Advanced)"
@@ -11424,7 +11493,7 @@
                   \ <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\"\
                   >initial waiting time</a>."
                 default: 300
-                order: 4
+                order: 5
                 min: 120
                 max: 1200
         tunnel_method:
@@ -12638,7 +12707,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-salesforce:1.0.26"
+- dockerImage: "airbyte/source-salesforce:1.0.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/salesforce"
     connectionSpecification:
@@ -14042,7 +14111,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-surveymonkey:0.1.12"
+- dockerImage: "airbyte/source-surveymonkey:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/surveymonkey"
     connectionSpecification:
@@ -14855,7 +14924,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-twilio:0.1.13"
+- dockerImage: "airbyte/source-twilio:0.1.14"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/twilio"
     connectionSpecification:
@@ -15863,7 +15932,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.16"
+- dockerImage: "airbyte/source-zendesk-support:0.2.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
