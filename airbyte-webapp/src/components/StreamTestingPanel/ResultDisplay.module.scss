@@ -19,6 +19,7 @@
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-sm;
+  position: relative;
 }
 
 .paginator {
@@ -29,6 +30,7 @@
   margin-top: auto;
   margin-bottom: 0;
   flex: 0 0 auto;
+  background-color: colors.$white;
 }
 
 .pageLabel {

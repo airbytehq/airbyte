@@ -133,6 +133,10 @@ public class ApiPojoConverters {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
   }
 
+  public static StandardSync.NonBreakingChangesPreference toPersistenceNonBreakingChangesPreference(final NonBreakingChangesPreference preference) {
+    return Enums.convertTo(preference, StandardSync.NonBreakingChangesPreference.class);
+  }
+
   public static Geography toApiGeography(final io.airbyte.config.Geography geography) {
     return Enums.convertTo(geography, Geography.class);
   }

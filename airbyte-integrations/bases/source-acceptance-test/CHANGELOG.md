@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.20
+Stricter integer field schema validation. [#19820](https://github.com/airbytehq/airbyte/pull/19820).
+
+## 0.2.19
+Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).
+
+## 0.2.18
+Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
+
 ## 0.2.17
 Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
 

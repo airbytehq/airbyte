@@ -5,16 +5,37 @@ $icon-size: 15px;
 .container {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  padding: variables.$spacing-lg calc(variables.$spacing-lg * 2);
+  padding: variables.$spacing-xl variables.$spacing-lg * 2 0;
+  height: 43px;
+  align-items: center;
+  overflow: hidden;
+  scrollbar-gutter: stable;
 }
 
 .connector {
   display: flex;
   flex-direction: row;
+  flex: none;
+  align-self: stretch;
+  align-items: center;
+  gap: variables.$spacing-sm;
+}
+
+.source {
+  flex: 7.3 0 0;
+  min-width: 0;
+}
+
+.destination {
+  flex: 2 0 0;
+  min-width: 0;
 }
 
 .icon {
-  height: $icon-size;
   width: $icon-size;
+  height: $icon-size;
+}
+
+.arrowContainer {
+  width: 20px;
 }

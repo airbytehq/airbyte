@@ -15,7 +15,7 @@ export const DEV_IMAGE_TAG = "dev";
  * @param {string} workspaceId The workspace Id
  * @returns {array} List of connectorIds that should be filtered out
  */
-export const getExcludedConnectorIds = (workspaceId: string) =>
+export const getExcludedConnectorIds = (workspaceId?: string) =>
   isCloudApp()
     ? [
         "707456df-6f4f-4ced-b5c6-03f73bcad1c5", // hide Cassandra Destination https://github.com/airbytehq/airbyte-cloud/issues/2606
@@ -32,5 +32,10 @@ export const getExcludedConnectorIds = (workspaceId: string) =>
         ...(workspaceId !== "54135667-ce73-4820-a93c-29fe1510d348" // Shopify workspace for review
           ? ["9da77001-af33-4bcd-be46-6252bf9342b9"] // Shopify
           : []),
+        // revert me
+        ...(workspaceId !== "d705a766-e9e3-4689-85cb-52143422317d" // `oauth-testing` workspace for review
+          ? ["78752073-6d96-447d-8a93-2b6953f3c787"] // Youtube Analytics Business
+          : []),
+        //
       ]
     : [];
