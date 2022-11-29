@@ -96,7 +96,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       }),
       columnHelper.accessor("cursorDefined", {
         id: "sourceCursorDefined",
-        header: () => <>{shouldDefineCursor && <FormattedMessage id="form.field.cursorField" />}</>,
+        header: () => <FormattedMessage id="form.field.cursorField" />,
         cell: ({ getValue, row }) => {
           return (
             getValue() && (
@@ -111,7 +111,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       }),
       columnHelper.accessor("primaryKeyDefined", {
         id: "sourcePrimaryKeyDefined",
-        header: () => shouldDefinePk && <FormattedMessage id="form.field.primaryKey" />,
+        header: () => <FormattedMessage id="form.field.primaryKey" />,
         cell: ({ getValue, row }) => {
           return (
             getValue() && (
