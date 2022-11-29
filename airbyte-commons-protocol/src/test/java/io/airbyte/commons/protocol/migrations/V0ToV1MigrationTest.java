@@ -10,7 +10,10 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -22,7 +25,6 @@ public class V0ToV1MigrationTest {
 
   @BeforeEach
   public void setup() {
-    // TODO write catalog
     migration = new AirbyteMessageMigrationV1(null);
   }
 
@@ -653,6 +655,11 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedData, upgradedMessage.getRecord().getData());
     }
 
+    private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(JsonNode data) {
+      return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
+          .withRecord(new io.airbyte.protocol.models.v0.AirbyteRecordMessage().withData(data));
+    }
+
   }
 
   @Nested
@@ -1148,9 +1155,52 @@ public class V0ToV1MigrationTest {
 
   }
 
-  private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(JsonNode data) {
-    return new io.airbyte.protocol.models.v0.AirbyteMessage().withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD)
-        .withRecord(new io.airbyte.protocol.models.v0.AirbyteRecordMessage().withData(data));
+  @Nested
+  public class RecordDowngradeTest {
+
+    private static final String STREAM_NAME = "foo_stream";
+    private static final String NAMESPACE_NAME = "foo_namespace";
+
+    @Test
+    public void testBasicDowngrade() {
+      ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
+          .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
+              .withName(STREAM_NAME)
+              .withNamespace(NAMESPACE_NAME)
+              .withJsonSchema(
+                  Jsons.deserialize(
+                      """
+                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                          """
+                  )))));
+      JsonNode oldData = Jsons.deserialize(
+          """
+          "42"
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": 42
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    private AirbyteMessage createRecordMessage(JsonNode data) {
+      return new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+          .withRecord(new AirbyteRecordMessage().withStream(STREAM_NAME).withNamespace(NAMESPACE_NAME).withData(data));
+    }
+
   }
 
 }

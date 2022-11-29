@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
+import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -49,8 +51,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     } else if (oldMessage.getType() == Type.RECORD) {
       AirbyteRecordMessage record = newMessage.getRecord();
       Optional<ConfiguredAirbyteStream> maybeStream = catalog.getStreams().stream()
-          .filter(stream -> stream.getStream().getName().equals(record.getStream())
-              && stream.getStream().getNamespace().equals(record.getNamespace()))
+          .filter(stream -> Objects.equals(stream.getStream().getName(), record.getStream())
+              && Objects.equals(stream.getStream().getNamespace(), record.getNamespace()))
           .findFirst();
       // If this record doesn't belong to any configured stream, then there's no point downgrading it
       // So only do the downgrade if we can find its stream
@@ -495,8 +497,11 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     // TODO implement this
     if (data.isTextual()) {
       String refType = schema.get(JsonSchemaReferenceTypes.REF_KEY).asText();
-      if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType) || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
-        return Jsons.convertValue(data.asText(), NumericNode.class);
+      if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
+          || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
+        // Attempt to parse the text as a numeric JSON node
+        // TODO handle case where source produces bad data
+        return Jsons.deserialize(data.asText());
       } else {
         return data;
       }
