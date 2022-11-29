@@ -39,6 +39,7 @@ export const Card: React.FC<React.PropsWithChildren<CardProps>> = ({
           className={classNames(styles.header, {
             [styles.lightPadding]: lightPadding || !children,
             [styles.roundedBottom]: roundedBottom,
+            [styles.withDescription]: description,
           })}
         >
           <H5 className={classNames(styles.title)}>{title}</H5>
