@@ -17246,7 +17246,7 @@ interactions:
           v 424.34 H 712.836 Z\\\"\\n         style=\\\"fill:#34bde9;fill-opacity:1;fill-rule:nonzero;stroke:none\\\"\\n
           \        id=\\\"path32\\\" /><path\\n         d=\\\"m 1561.5,1080.49 h -424.33
           v 424.33 h 424.33 v -424.33\\\"\\n         style=\\\"fill:#457dc8;fill-opacity:1;fill-rule:nonzero;stroke:none\\\"\\n
-          \        id=\\\"path34\\\" /></g></g></svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"beta\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"29b409d9-30a5-4cc8-ad50-886eb846fea3\",\"name\":\"QuickBooks\",\"dockerRepository\":\"airbyte/source-quickbooks-singer\",\"dockerImageTag\":\"0.1.5\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/quickbooks\",\"icon\":\"<?xml
+          \        id=\\\"path34\\\" /></g></g></svg>\\n\",\"protocolVersion\":\"0.2.0\",\"releaseStage\":\"beta\",\"sourceType\":\"api\"},{\"sourceDefinitionId\":\"29b409d9-30a5-4cc8-ad50-886eb846fea3\",\"name\":\"QuickBooks\",\"dockerRepository\":\"airbyte/source-quickbooks-singer\",\"dockerImageTag\":\"0.1.5\",\"documentationUrl\":\"https://docs.airbyte.io/integrations/sources/quickbooks-singer\",\"icon\":\"<?xml
           version=\\\"1.0\\\" encoding=\\\"UTF-8\\\" standalone=\\\"no\\\"?> <svg xmlns=\\\"http://www.w3.org/2000/svg\\\"
           xmlns:xlink=\\\"http://www.w3.org/1999/xlink\\\" width=\\\"620px\\\" height=\\\"120px\\\"
           viewBox=\\\"0 0 620 120\\\"><!-- Generator: Sketch 40.3 (33839) - http://www.bohemiancoding.com/sketch

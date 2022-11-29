@@ -589,7 +589,7 @@ Progress on connectors:
 
 - [**Zendesk Talk**](https://docs.airbyte.io/integrations/sources/zendesk-talk)
 - [**Iterable**](https://docs.airbyte.io/integrations/sources/iterable)
-- [**QuickBooks**](https://docs.airbyte.io/integrations/sources/quickbooks)
+- [**QuickBooks**](https://docs.airbyte.io/integrations/sources/quickbooks-singer)
 
 Other progress on connectors:
 

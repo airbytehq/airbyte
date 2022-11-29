@@ -1305,7 +1305,7 @@
   sourceDefinitionId: 29b409d9-30a5-4cc8-ad50-886eb846fea3
   dockerRepository: airbyte/source-quickbooks-singer
   dockerImageTag: 0.1.5
-  documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks
+  documentationUrl: https://docs.airbyte.com/integrations/sources/quickbooks-singer
   icon: qb.svg
   sourceType: api
   releaseStage: alpha
