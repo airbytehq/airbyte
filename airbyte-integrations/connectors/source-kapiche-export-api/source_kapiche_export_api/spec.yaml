@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_token
     - export_api_url
+    - site_name
   properties:
     api_token:
       title: API TOKEN
@@ -16,4 +17,9 @@ connectionSpecification:
       title: Export URL (botanic)
       type: string
       description: Export url that is consumed to get all the export metadata.
+      airbyte_secret: false
+    site_name:
+      title: Site Name
+      type: string
+      description: Site Name as identified in Botanic.
       airbyte_secret: false
