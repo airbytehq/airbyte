@@ -1,6 +1,6 @@
 # Introduction
 
-Building locally:
+Building a connector locally:
 
 This command will build the image ghcr.io/estuary/source-intercom:local
 ```
