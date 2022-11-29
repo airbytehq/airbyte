@@ -16,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
@@ -202,7 +203,7 @@ class SyncWorkflowTest {
   }
 
   // bundle up all the temporal worker setup / execution into one method.
-  private StandardSyncOutput execute() {
+  private StandardSyncOutput execute() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
         persistStateActivity, normalizationSummaryCheckActivity, webhookOperationActivity, refreshSchemaActivity, configFetchActivity);
     testEnv.start();
