@@ -9,7 +9,9 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
 import pendulum
+import re
 
+from datetime import datetime, timezone
 from airbyte_cdk.models import AirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -46,8 +48,9 @@ class ExactStream(HttpStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
         response_json = response.json()
-        return response_json.get("d", {}).get("results")
+        results = response_json.get("d", {}).get("results")
 
+        return [self._parse_timestamps(x) for x in results]
     
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
         """
@@ -62,6 +65,35 @@ class ExactStream(HttpStream, ABC):
             return next_page_token["next_url"]
 
         return self.endpoint
+
+    def _parse_timestamps(self, obj: dict):
+        """
+        Exact returns timestamps in following format: /Date(1672531200000)/
+        The value is in seconds since Epoch (UNIX time). Note, the time is in CET and not in GMT/UTC.
+        https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
+        """
+
+        regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
+
+        def parse_value(value):
+            if isinstance(value, dict):
+                return {k: parse_value(v) for k, v in value.items()}
+
+            if isinstance(value, list):
+                return [parse_value(v) for v in value]
+
+            if isinstance(value, str):
+                match = regex_timestamp.match(value)
+                if match:
+                    unix_seconds = int(match.group(1)) / 1000
+                    timestamp = pendulum.from_timestamp(unix_seconds, "CET").set(tz="UTC")
+
+                    return timestamp.isoformat()
+
+            return value
+
+        return {k: parse_value(v) for k, v in obj.items()}
+
 
 
 class Subscriptions(ExactStream):
