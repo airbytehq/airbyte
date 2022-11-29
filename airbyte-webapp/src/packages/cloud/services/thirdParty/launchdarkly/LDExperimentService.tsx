@@ -102,11 +102,14 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
         };
       }, {} as FeatureSet);
 
+    // by convention, feature flags return one of three payloads, each with its own meaning:
+    // 1) `{ "overwrite": true }` :: enable the feature
+    // 2) `{ "overwrite": false }` :: disable the feature
+    // 3) `{}` :: `overwrite` is `undefined`, i.e. continue to use the application's default feature state
     const independentFeaturesSet = Object.fromEntries(
-      Object.entries(independentFeatureOverwritesRaw).map(([flag, value]) => [
-        flag.replace(`${FEATURE_FLAG_PREFIX}.`, ""),
-        value,
-      ])
+      Object.entries(independentFeatureOverwritesRaw)
+        .map(([flag, { overwrite }]) => [flag.replace(`${FEATURE_FLAG_PREFIX}.`, ""), overwrite])
+        .filter(([_, value]) => (typeof value === "undefined" ? false : true))
     );
 
     const featureSet: FeatureSet = { ...sharedFeaturesSet, ...independentFeaturesSet };
