@@ -137,7 +137,7 @@ def test_read_big_random_data():
                 "destination_sync_mode": "overwrite",
             },
             {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
             },
@@ -157,8 +157,8 @@ def test_read_big_random_data():
             latest_state = row
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {'seed': None, 'id': 100}}
-    assert state_rows_count == 10 + 1 + 2
+    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {}}
+    assert state_rows_count == 10 + 1 + 1
 
 
 def test_with_purchases():
@@ -172,7 +172,7 @@ def test_with_purchases():
                 "destination_sync_mode": "overwrite",
             },
             {
-                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["incremental"]},
+                "stream": {"name": "products", "json_schema": {}, "supported_sync_modes": ["full_refresh"]},
                 "sync_mode": "incremental",
                 "destination_sync_mode": "overwrite",
             },
@@ -199,7 +199,7 @@ def test_with_purchases():
     assert record_rows_count > 1000 + 100  # should be greater than 1000 users, and 100 products
     assert state_rows_count > 10 + 1  # should be greater than 1000/100, and one state for the products
     assert latest_state.state.data["users"] == {"id": 1000, "seed": None}
-    assert latest_state.state.data["products"] == {"id": 100, "seed": None}
+    assert latest_state.state.data["products"] == {}
     assert latest_state.state.data["purchases"]["id"] > 0
 
 

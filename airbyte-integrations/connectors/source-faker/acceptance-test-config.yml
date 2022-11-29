@@ -1,15 +1,6 @@
 connector_image: airbyte/source-faker:dev
 test_strictness_level: high
 acceptance_tests:
-  basic_read:
-    tests:
-      - config_path: secrets/config.json
-        empty_streams: []
-        expect_records:
-          exact_order: true
-          extra_fields: false
-          extra_records: false
-          path: integration_tests/expected_records.txt
   connection:
     tests:
       - config_path: secrets/config.json
@@ -26,6 +17,15 @@ acceptance_tests:
       - config_path: secrets/config.json
     backward_compatibility_tests_config:
       disable_for_version: 0.3.0
+  basic_read:
+    tests:
+      - config_path: secrets/config.json
+        empty_streams: []
+        expect_records:
+          path: integration_tests/expected_records.jsonl
+          exact_order: true
+          extra_fields: false
+          extra_records: false
   full_refresh:
     tests:
       - config_path: secrets/config.json
@@ -38,3 +38,5 @@ acceptance_tests:
     tests:
       - config_path: secrets/config.json
         configured_catalog_path: integration_tests/configured_catalog.json
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json

@@ -14,7 +14,7 @@ from mimesis.locales import Locale
 from .utils import format_airbyte_time, read_json
 
 
-class Products(Stream, IncrementalMixin):
+class Products(Stream):
     primary_key = None
     cursor_field = "id"
 
@@ -24,21 +24,6 @@ class Products(Stream, IncrementalMixin):
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
-
-    @property
-    def state_checkpoint_interval(self) -> Optional[int]:
-        return self.records_per_slice
-
-    @property
-    def state(self) -> Mapping[str, Any]:
-        if hasattr(self, "_state"):
-            return self._state
-        else:
-            return {self.cursor_field: 0}
-
-    @state.setter
-    def state(self, value: Mapping[str, Any]):
-        self._state = value
 
     def generate_products(self) -> list[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
@@ -58,8 +43,6 @@ class Products(Stream, IncrementalMixin):
 
         for product in products:
             yield product
-
-        self.state = {self.cursor_field: len(products), "seed": self.seed}
 
 
 class Purchases(Stream, IncrementalMixin):

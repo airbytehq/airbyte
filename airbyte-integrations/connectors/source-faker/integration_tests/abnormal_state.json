@@ -1,5 +1,4 @@
 {
-  "Users": {
-    "cursor": -1
-  }
+  "users": { "cursor": 99999999999999999 },
+  "purchases": { "cursor": 99999999999999999 }
 }
