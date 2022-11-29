@@ -142,7 +142,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       connection.connectionId,
       connection.catalogDiff,
       connection.operations,
-      connection.status,
       connection.syncCatalog.streams,
       connectionService,
       formatMessage,
