@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Tuple
+from typing import Any, List, Mapping, Sequence, Tuple
 
 import dpath
 import pendulum
@@ -105,11 +105,11 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         refresh_token_name: str = "refresh_token",
         refresh_request_body: Mapping[str, Any] = None,
         grant_type: str = "refresh_token",
-        client_id_config_path="/credentials/client_id",
-        client_secret_config_path="/credentials/client_secret",
-        refresh_token_config_path="/credentials/refresh_token",
+        client_id_config_path: Sequence[str] = ("credentials", "client_id"),
+        client_secret_config_path: Sequence[str] = ("credentials", "client_secret"),
+        refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
     ):
-        """_summary_
+        """
 
         Args:
             connector_config (Mapping[str, Any]): The full connector configuration
@@ -121,9 +121,9 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             refresh_token_name (str, optional): Name of the name of the refresh token field, used to parse the refresh token response. Defaults to "refresh_token".
             refresh_request_body (Mapping[str, Any], optional): Custom key value pair that will be added to the refresh token request body. Defaults to None.
             grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
-            client_id_config_path (str, optional): Dpath to the client_id field in the connector configuration. Defaults to "/credentials/client_id".
-            client_secret_config_path (str, optional): Dpath to the client_secret field in the connector configuration. Defaults to "/credentials/client_secret".
-            refresh_token_config_path (str, optional): Dpath to the refresh_token field in the connector configuration. Defaults to "/credentials/refresh_token".
+            client_id_config_path (Sequence[str]): Dpath to the client_id field in the connector configuration. Defaults to ("credentials", "client_id").
+            client_secret_config_path (Sequence[str]): Dpath to the client_secret field in the connector configuration. Defaults to ("credentials", "client_secret").
+            refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
         """
         self._client_id_config_path = client_id_config_path
         self._client_secret_config_path = client_secret_config_path
@@ -164,9 +164,6 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     def get_refresh_token_name(self) -> str:
         return self._refresh_token_name
-
-    def _get_config_credentials_field(self, field_name):
-        return self._connector_config[self.credentials_configuration_field_name][field_name]
 
     def get_client_id(self) -> str:
         return dpath.util.get(self._connector_config, self._client_id_config_path)
