@@ -84,7 +84,11 @@ import org.slf4j.LoggerFactory;
  * relational DB source which can be accessed via JDBC driver. If you are implementing a connector
  * for a relational DB which has a JDBC driver, make an effort to use this class.
  */
+<<<<<<< HEAD
 public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Datatype, JdbcDatabase> implements Source {
+=======
+public abstract class AbstractJdbcSource<Datatype> extends AbstractRelationalDbSource<Datatype, JdbcDatabase> implements Source {
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
 
   public static final String SSL_MODE = "sslMode";
 
@@ -344,8 +348,14 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                                                final List<String> columnNames,
                                                                final String schemaName,
                                                                final String tableName,
+<<<<<<< HEAD
                                                                final CursorInfo cursorInfo,
                                                                final Datatype cursorFieldType) {
+=======
+                                                               final String cursorField,
+                                                               final Datatype cursorFieldType,
+                                                               final String cursorValue) {
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
     LOGGER.info("Queueing query for table: {}", tableName);
     return AutoCloseableIterators.lazyIterator(() -> {
       try {
@@ -605,6 +615,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     return sslMode.name();
   }
 
+<<<<<<< HEAD
   protected List<ConfiguredAirbyteStream> identifyStreamsToSnapshot(final ConfiguredAirbyteCatalog catalog, final StateManager stateManager) {
     final Set<AirbyteStreamNameNamespacePair> alreadySyncedStreams = stateManager.getCdcStateManager().getInitialStreamsSynced();
     if (alreadySyncedStreams.isEmpty() && (stateManager.getCdcStateManager().getCdcState() == null
@@ -622,4 +633,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .collect(Collectors.toList());
   }
 
+=======
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
 }

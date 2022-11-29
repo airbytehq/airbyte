@@ -16,7 +16,11 @@ import static java.util.stream.Collectors.toSet;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
+<<<<<<< HEAD
 import com.google.common.collect.ImmutableSet;
+=======
+import com.google.common.collect.Sets;
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -317,7 +321,11 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
+<<<<<<< HEAD
                                                                              final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
+=======
+                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();

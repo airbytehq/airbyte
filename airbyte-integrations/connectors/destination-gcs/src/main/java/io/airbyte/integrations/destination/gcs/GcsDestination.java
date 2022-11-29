@@ -64,7 +64,12 @@ public class GcsDestination extends BaseConnector implements Destination {
           .withStatus(Status.FAILED)
           .withMessage(message);
     } catch (final Exception e) {
+<<<<<<< HEAD
       LOGGER.error("Exception attempting to access the Gcs bucket: {}. Please make sure you account has all of these roles: " + EXPECTED_ROLES, e);
+=======
+      LOGGER.error("Exception attempting to access the AWS bucket: {}. Please make sure you account has all of these roles: {}", e.getMessage(),
+          EXPECTED_ROLES);
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
       AirbyteTraceMessageUtility.emitConfigErrorTrace(e, e.getMessage());
       return new AirbyteConnectionStatus()
           .withStatus(AirbyteConnectionStatus.Status.FAILED)

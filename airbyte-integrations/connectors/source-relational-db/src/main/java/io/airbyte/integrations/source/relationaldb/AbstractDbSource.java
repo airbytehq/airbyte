@@ -180,8 +180,12 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
         });
   }
 
+<<<<<<< HEAD
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+=======
+  private void validateCursorFieldForIncrementalTables(final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
                                                        final ConfiguredAirbyteCatalog catalog) {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {

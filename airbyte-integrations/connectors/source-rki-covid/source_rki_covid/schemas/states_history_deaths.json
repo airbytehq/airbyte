@@ -8,12 +8,12 @@
     "state": {
       "type": "string"
     },
-    "cases": {
+    "deaths": {
       "type": "integer"
     },
     "date": {
       "type": "string"
     }
   },
-  "required": ["cases", "date", "name", "state"]
+  "required": ["date", "deaths", "name", "state"]
 }

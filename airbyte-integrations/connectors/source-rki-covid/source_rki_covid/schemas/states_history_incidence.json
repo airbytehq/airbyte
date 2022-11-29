@@ -8,12 +8,12 @@
     "state": {
       "type": "string"
     },
-    "cases": {
-      "type": "integer"
+    "weekIncidence": {
+      "type": ["number", "integer"]
     },
     "date": {
       "type": "string"
     }
   },
-  "required": ["cases", "date", "name", "state"]
+  "required": ["date", "name", "state", "weekIncidence"]
 }

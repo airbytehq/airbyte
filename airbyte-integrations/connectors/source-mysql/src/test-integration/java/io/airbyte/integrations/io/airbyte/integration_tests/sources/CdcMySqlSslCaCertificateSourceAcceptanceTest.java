@@ -112,7 +112,10 @@ public class CdcMySqlSslCaCertificateSourceAcceptanceTest extends SourceAcceptan
         .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
+<<<<<<< HEAD:airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/CdcMySqlSslCaCertificateSourceAcceptanceTest.java
         .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+=======
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream):airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/CdcMySqlSslCaCertificateSourceAcceptanceTest.java
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()

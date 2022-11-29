@@ -23,7 +23,10 @@ import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
 
+<<<<<<< HEAD
   private static final int HEARTBEAT_FREQUENCY_SEC = 10;
+=======
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream)
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
 
   static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {

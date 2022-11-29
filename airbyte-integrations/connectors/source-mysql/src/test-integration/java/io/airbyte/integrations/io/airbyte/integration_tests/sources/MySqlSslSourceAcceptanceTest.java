@@ -2,7 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
+<<<<<<< HEAD:airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/MySqlSslSourceAcceptanceTest.java
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+=======
+package io.airbyte.integrations.source.mysql;
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream):airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/MySqlSslSourceAcceptanceTest.java
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;

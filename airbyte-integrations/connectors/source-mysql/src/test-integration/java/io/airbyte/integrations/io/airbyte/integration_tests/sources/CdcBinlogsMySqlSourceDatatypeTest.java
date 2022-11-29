@@ -85,7 +85,10 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
     container.start();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "CDC")
+<<<<<<< HEAD:airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/io/airbyte/integration_tests/sources/CdcBinlogsMySqlSourceDatatypeTest.java
         .put("initial_waiting_seconds", INITIAL_CDC_WAITING_SECONDS)
+=======
+>>>>>>> cbdff87431 (updated source-rki-covid with states stream):airbyte-integrations/connectors/source-mysql/src/test-integration/java/io/airbyte/integrations/source/mysql/CdcBinlogsMySqlSourceDatatypeTest.java
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())

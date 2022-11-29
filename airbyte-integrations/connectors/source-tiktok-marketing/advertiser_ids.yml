@@ -1,0 +1,162 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://business-api.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=701c215d8bfa661acf1fa0086931b053feb2c7eb&secret=9e0ba341b3d684605d48940e75f553eb90b2b294&app_id=7085971481733103618
+  response:
+    body:
+      string: '<a href="https://biz-api.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=701c215d8bfa661acf1fa0086931b053feb2c7eb&amp;secret=9e0ba341b3d684605d48940e75f553eb90b2b294&amp;app_id=7085971481733103618">Temporary
+        Redirect</a>.
+
+
+        '
+    headers:
+      Cache-Control:
+      - max-age=0, no-cache, no-store
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '236'
+      Content-Type:
+      - text/html; charset=utf-8
+      Date:
+      - Fri, 16 Sep 2022 15:05:08 GMT
+      Expires:
+      - Fri, 16 Sep 2022 15:05:08 GMT
+      Location:
+      - https://biz-api.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=701c215d8bfa661acf1fa0086931b053feb2c7eb&secret=9e0ba341b3d684605d48940e75f553eb90b2b294&app_id=7085971481733103618
+      Pragma:
+      - no-cache
+      Server:
+      - nginx
+      Server-Timing:
+      - cdn-cache; desc=MISS, edge; dur=85, origin; dur=13
+      - inner; dur=3
+      X-Akamai-Request-ID:
+      - fb46e2a1.3642982
+      X-Cache:
+      - TCP_MISS from a88-221-221-133.deploy.akamaitechnologies.com (AkamaiGHost/10.9.4-44125806)
+        (-)
+      X-Cache-Remote:
+      - TCP_MISS from a104-126-116-20.deploy.akamaitechnologies.com (AkamaiGHost/10.9.3-43949849)
+        (-)
+      X-Origin-Response-Time:
+      - 13,104.126.116.20
+      X-Parent-Response-Time:
+      - 98,88.221.221.133
+      x-tt-logid:
+      - 20220916150507D2541EA099EE49CFE7AC
+      x-tt-trace-host:
+      - 0187fa220474ed9f3ce919185a4a99d3a80f27baa2153625a326437072514ab1e1b8d4150a8957e5798b3f32ccb16d6ec440cb10735fc3b9b0b87b580ea1d95c3b778b8f8fb04a8f726e41e6cc740a1f40be7a85f738beafb5e3daaa9c039eae4d
+      x-tt-trace-tag:
+      - id=16;cdn-cache=miss;type=dyn
+    status:
+      code: 307
+      message: Temporary Redirect
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.27.1
+    method: GET
+    uri: https://biz-api.tiktok.com/open_api/v1.2/oauth2/advertiser/get/?access_token=701c215d8bfa661acf1fa0086931b053feb2c7eb&secret=9e0ba341b3d684605d48940e75f553eb90b2b294&app_id=7085971481733103618
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA6yWXW/bNhSG/wrhi6EDmuDwm+ydYztx4jgJ7HwAW4eBtmhHsC2lorR1CPLfdyg3
+        ajCYCwr0wrJISXzOId/zks+9ZZn53icCH0lv50Nw69jqXU962FH5L40P9Z95FvsYMAaWKipBggEK
+        TEjKgcaf6LOTkY7fZK52+PZzb5uHGm9+f+657C9f1Xnw1X4kZSRwyUFoark2wHikv3mrcLs2irEL
+        T44ckXF/Gq9ut2iqta/I/MlVGxeCJ/0zfKCVAW5N7+UjOQRTGCZCMGYqGVDOD8Mu3HJDHsrtKmzy
+        Akc9qVyRdfCL/mBCHq4vT+eT8yvSb0L1uQFYLUPdFGuy2jcqMqxcg3HF7xEFgipIhWWkjT8AagWl
+        VtnDYZ1u3bIs8hjQaIbX1/bZbjHGpuCWGcmTyVtutBAK51tLaZhOJB/jz1QcfzqcdUlPz29vR5fD
+        0d3tfDBG+uzuanh6dzXBR5QqLRllCS7KxFJhlFSKK26lTHDnXxpXeTIq8q8d9W3ftyw1gGFJFqYI
+        OA/4j5lSThOs6fXV7aij/FbWNZmPyC9kUB6TSdQRfiyksEmOYAYLwGrKAIEyxRmWVV6XoSPd+KeQ
+        D0oy9E0dlo/bKKs2r89NlCMRkmvNjfofLLegjVJGK8xOH8bOyuUm1K56n3v0LhKlAlZRJShj2mgj
+        DyNbwtR9JT+DqTj6CHANKB0BUiSYq73+U6MYlIOVlCmrrTbG0MOjDE5vupjjfVvsgcz3ddxWw+pv
+        VGHxiP1+G/ZJvNEKZZJpnYrCCoGupgA0oxS1m4iiv1hEFWKh9c/x+q35Ol8gDBokTTIMZShFw1C0
+        wAVLzNdluc5rv3yMlLsBXruOV47S1CT8QwM3FjBR0BassYap9/xj6AIZVaH23fz2Z0NyU5Xryu12
+        WV75TZ2XBZnup7pYPrZuifMpITGfGAVmq6SkGtBPGBpmosLdtvbYgctU1L6oybhZfDez14fjHD0+
+        y30RauKP74/xGQemMEeZ4hvJlBCaA/IB6zHh1cEv8C7rFnSO7adHV+3cG/208pFYU+gkaaACrbRl
+        Ej1Uo5EmgAcT/nCGYq5//SmJW8qsijsVQydHT0h4z/flf3izfTzg2SHbGwHSZ02RrZpiQybtyqtt
+        u+y4faG5Jyx3zzcWdxOtmUZDYu/xZycnHb8jnvhqmxdHbZH7YoGHCHyq49g8sT0jWQnLuea4sVA8
+        N6iE8KflduMrn5OpX6+3njzEY0nVIv5rGfvy+4EPtGj3tGSEVmisGVwa1CXTMlEUNw1uphflP920
+        /PDOp9HDKOPop9HNlDTSHEbdn407Sry/91XI4+LjGamtcoG+CJjQHy8v/wIAAP//AwCr7owsegoA
+        AA==
+    headers:
+      Cache-Control:
+      - max-age=0, no-cache, no-store
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '1027'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 16 Sep 2022 15:05:08 GMT
+      Expires:
+      - Fri, 16 Sep 2022 15:05:08 GMT
+      Pragma:
+      - no-cache
+      Server:
+      - nginx
+      Server-Timing:
+      - cdn-cache; desc=MISS, edge; dur=163, origin; dur=188
+      - inner; dur=183
+      Vary:
+      - Accept-Encoding
+      X-API-Deprecation-Date:
+      - '2022-08-15T00:00:00Z'
+      X-API-Deprecation-Info:
+      - 'API for Business Version 1.3 is now live. To avoid disruption to your business,
+        we recommend you migrate all calls to v1.3 as soon as possible. Please visit
+        our migration guide for more details: https://ads.tiktok.com/marketing_api/docs?id=1740579480076290.'
+      X-Akamai-Request-ID:
+      - 765ad4.3642a66
+      X-Cache:
+      - TCP_MISS from a88-221-221-133.deploy.akamaitechnologies.com (AkamaiGHost/10.9.4-44125806)
+        (-)
+      X-Cache-Remote:
+      - TCP_MISS from a23-194-187-228.deploy.akamaitechnologies.com (AkamaiGHost/10.9.3-43949849)
+        (-)
+      X-Domain-Change-Info:
+      - We have moved to a new domain for API services after the Platform Upgrade
+        on 09/30/2021. Please update all of your requests with the new domain if you
+        haven't done so already. For more information, please visit https://ads.tiktok.com/marketing_api/docs?rid=esb88xalm6m&id=1709207085043713
+      X-Origin-Response-Time:
+      - 188,23.194.187.228
+      X-Parent-Response-Time:
+      - 351,88.221.221.133
+      X-TT-LOGID:
+      - 20220916150508010245130113014A2BE7
+      - 20220916150508010245130113014A2BE7
+      X_TT_LOGID:
+      - 20220916150508010245130113014A2BE7
+      stablecode:
+      - '0'
+      upstream-caught:
+      - None
+      x-tt-trace-host:
+      - 0187fa220474ed9f3ce919185a4a99d3a80f27baa2153625a326437072514ab1e118bb44bf590870ef151a9874747ed7ea57fa2c8a9350c533b3326488f63278217530b3e0e6614fbd71633eb758a18e5af67ccaab25f2b9b665de9e7d0879736d
+      x-tt-trace-tag:
+      - id=16;cdn-cache=miss;type=dyn
+    status:
+      code: 200
+      message: OK
+version: 1
