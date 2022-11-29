@@ -190,6 +190,7 @@ The `connectionSpecification` is [JSONSchema](https://json-schema.org) that desc
 
 The specification also contains information about what features the Actor supports.
 
+- `protocol_version` describes which version of the protocol the Connector supports. The default value is "0.2.0".
 - `supported_destination_sync_modes` - describes which sync modes a destination is able to support. See [Sync Modes](#source-sync-modes).
 
 `documentationUrl` and `changelogUrl` are optional fields that link to additional information about the connector.
