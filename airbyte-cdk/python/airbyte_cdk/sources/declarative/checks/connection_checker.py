@@ -56,9 +56,7 @@ class AvailabilityStrategy(ABC):
 
 
 class HTTPAvailabilityStrategy(AvailabilityStrategy):
-    """
-
-    """
+    """ """
 
     @staticmethod
     def check_availability(self, stream: Stream) -> Tuple[bool, any]:
@@ -70,7 +68,7 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
             # stream_slice = self._get_stream_slice(stream)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh) #stream_slice=stream_slice
+            records = stream.read_records(sync_mode=SyncMode.full_refresh)  # stream_slice=stream_slice
             next(records)
         except Exception as error:
             return False, f"Unable to connect to stream {stream.name} - {error}"

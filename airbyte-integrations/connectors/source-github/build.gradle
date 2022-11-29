@@ -12,6 +12,7 @@ airbytePython {
     moduleDirectory 'source_github'
 }
 
-dependencies {
-    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
-}
+// temp commented out to increase local build speed
+// dependencies {
+//     implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
+// }

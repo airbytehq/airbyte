@@ -6,8 +6,8 @@ from abc import abstractmethod
 from typing import Optional, Tuple
 
 from airbyte_cdk.sources.abstract_source import AbstractSource
+from airbyte_cdk.sources.declarative.checks.connection_checker import AvailabilityStrategy, ConnectionChecker
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker, AvailabilityStrategy
 
 
 class DeclarativeSource(AbstractSource):

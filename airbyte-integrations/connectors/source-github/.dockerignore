@@ -1,1 +1,11 @@
+.hypothesis
+.venv
+build
+comments.sqlite
+commit_comments.sqlite
+project_columns.sqlite
+projects.sqlite
+pull_requests.sqlite
+team_members.sqlite
+teams.sqlite
 secrets
