@@ -50,7 +50,6 @@ abstract class AirbyteDockerTask extends DefaultTask {
             def isArm64 = arch == "aarch64" || arch == "arm64"
             def buildPlatform = System.getenv('DOCKER_BUILD_PLATFORM') ?: isArm64 ? 'linux/arm64' : 'amd64'
 
-            println(scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks, buildPlatform)
             project.exec {
                 commandLine scriptPath, rootDir.absolutePath, projectDir.absolutePath, dockerfileName, tag, idFileOutput.absolutePath, followSymlinks, buildPlatform
             }

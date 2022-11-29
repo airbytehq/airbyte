@@ -5,7 +5,6 @@ RUN apt-get update && apt-get install -y bash && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /airbyte/integration_code
 COPY source_github ./source_github
-COPY airbyte-cdk airbyte-cdk
 COPY main.py ./
 COPY setup.py ./
 RUN pip install -e ./airbyte-cdk
