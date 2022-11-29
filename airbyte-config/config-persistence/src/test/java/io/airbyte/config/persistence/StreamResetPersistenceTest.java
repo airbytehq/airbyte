@@ -8,49 +8,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.factory.FlywayFactory;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
+class StreamResetPersistenceTest extends BaseConfigDatabaseTest {
 
   static StreamResetPersistence streamResetPersistence;
   private static final Logger LOGGER = LoggerFactory.getLogger(StreamResetPersistenceTest.class);
 
   @BeforeEach
   public void setup() throws Exception {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, StreamResetPersistenceTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
-    streamResetPersistence = spy(new StreamResetPersistence(database));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, flyway);
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     truncateAllTables();
-  }
 
-  @AfterEach
-  void tearDown() throws Exception {
-    dslContext.close();
-    DataSourceFactory.close(dataSource);
+    streamResetPersistence = spy(new StreamResetPersistence(database));
   }
 
   @Test
@@ -62,15 +38,15 @@ class StreamResetPersistenceTest extends BaseDatabaseConfigPersistenceTest {
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1, streamDescriptor2));
 
     final List<StreamDescriptor> result = streamResetPersistence.getStreamResets(connectionId);
-    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
+    LOGGER.info(database.query(ctx -> ctx.selectFrom("stream_reset").fetch().toString()));
     assertEquals(2, result.size());
 
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor1));
-    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
+    LOGGER.info(database.query(ctx -> ctx.selectFrom("stream_reset").fetch().toString()));
     assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
 
     streamResetPersistence.createStreamResets(connectionId, List.of(streamDescriptor2));
-    LOGGER.info(String.valueOf(dslContext.selectFrom("stream_reset").fetch()));
+    LOGGER.info(database.query(ctx -> ctx.selectFrom("stream_reset").fetch().toString()));
     assertEquals(2, streamResetPersistence.getStreamResets(connectionId).size());
   }
 
