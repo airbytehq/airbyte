@@ -1,0 +1,53 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "viewed_on": {
+      "type": ["null", "string"]
+    },
+    "card_id": {
+      "type": ["null", "integer"]
+    },
+    "card_name": {
+      "type": ["null", "string"]
+    },
+    "query_hash": {
+      "type": ["null", "string"]
+    },
+    "type": {
+      "type": ["null", "string"]
+    },
+    "collection_id": {
+      "type": ["null", "integer"]
+    },
+    "collection": {
+      "type": ["null", "string"]
+    },
+    "viewed_by_id": {
+      "type": ["null", "integer"]
+    },
+    "viewed_by": {
+      "type": ["null", "string"]
+    },
+    "saved_by_id": {
+      "type": ["null", "integer"]
+    },
+    "saved_by": {
+      "type": ["null", "string"]
+    },
+    "database_id": {
+      "type": ["null", "integer"]
+    },
+    "source_db": {
+      "type": ["null", "string"]
+    },
+    "table_id": {
+      "type": ["null", "integer"]
+    },
+    "table": {
+      "type": ["null", "string"]
+    },
+    "page_offset": {
+      "type": ["null", "integer"]
+    }
+  }
+}
