@@ -39,6 +39,7 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import io.micronaut.context.BeanRegistration;
@@ -82,6 +83,8 @@ class SyncWorkflowTest {
   private PersistStateActivityImpl persistStateActivity;
   private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
   private WebhookOperationActivityImpl webhookOperationActivity;
+  private RefreshSchemaActivityImpl refreshSchemaActivity;
+  private ConfigFetchActivityImpl configFetchActivity;
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
@@ -149,6 +152,8 @@ class SyncWorkflowTest {
     persistStateActivity = mock(PersistStateActivityImpl.class);
     normalizationSummaryCheckActivity = mock(NormalizationSummaryCheckActivityImpl.class);
     webhookOperationActivity = mock(WebhookOperationActivityImpl.class);
+    refreshSchemaActivity = mock(RefreshSchemaActivityImpl.class);
+    configFetchActivity = mock(ConfigFetchActivityImpl.class);
 
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
     when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
@@ -193,7 +198,7 @@ class SyncWorkflowTest {
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
-        persistStateActivity, normalizationSummaryCheckActivity, webhookOperationActivity);
+        persistStateActivity, normalizationSummaryCheckActivity, webhookOperationActivity, refreshSchemaActivity, configFetchActivity);
     testEnv.start();
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_QUEUE).build());
@@ -202,7 +207,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSuccess() {
+  void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -243,7 +248,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() {
+  void testReplicationFailedGracefully() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -333,7 +338,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() throws IOException {
+  void testSkipNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
@@ -356,7 +361,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testWebhookOperation() {
+  void testWebhookOperation() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     when(replicationActivity.replicate(any(), any(), any(), any(), any())).thenReturn(new StandardSyncOutput());
     final StandardSyncOperation webhookOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
