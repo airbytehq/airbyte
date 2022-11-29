@@ -25,7 +25,6 @@ and `integration_tests/abnormal_state.json` with
     "date": "2999-12-31"
   }
 }
-
 ```
 
 You can run the acceptance tests with the following commands:
