@@ -84,7 +84,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
       if (e instanceof SQLTransientException) {
         final String message = e.getMessage();
         if (message.contains("request timed out")) {
-          throw new ConfigErrorException("Connection timed out. Unable to contact server.");
+          throw new ConfigErrorException("Connection timed out. Unable to contact server. Please check your server settings or try again later");
         }
       }
       // Some databases like Redshift will have null cause
