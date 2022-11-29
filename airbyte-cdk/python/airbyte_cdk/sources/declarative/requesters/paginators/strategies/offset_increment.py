@@ -16,6 +16,21 @@ from dataclasses_jsonschema import JsonSchemaMixin
 class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
     """
     Pagination strategy that returns the number of records reads so far and returns it as the next page token
+    Examples:
+        # page_size to be a constant integer value
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: 2
+
+        # page_size to be a constant string value
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: "2"
+
+        # page_size to be an interpolated string value
+        pagination_strategy:
+          type: OffsetIncrement
+          page_size: "{{ options['items_per_page'] }}"
 
     Attributes:
         page_size (InterpolatedString): the number of records to request
@@ -27,6 +42,8 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._offset = 0
+        # InterpolatedString page_size may contain one int/str types,
+        # so we need to ensure that its `.string` attribute is of *string* type
         self.page_size.string = str(self.page_size.string)
         self.page_size = self.page_size.eval(self.config)
 
