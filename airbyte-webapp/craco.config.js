@@ -2,14 +2,6 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 module.exports = {
-  jest: {
-    configure: (jestConfig) => {
-      return {
-        ...jestConfig,
-        setupFiles: [...jestConfig.setupFiles, "./__test__/globalSetup.ts"],
-      };
-    },
-  },
   webpack: {
     configure: (webpackConfig) => {
       webpackConfig = {
