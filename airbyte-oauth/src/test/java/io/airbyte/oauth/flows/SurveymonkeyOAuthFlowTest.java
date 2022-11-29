@@ -4,6 +4,8 @@
 
 package io.airbyte.oauth.flows;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
@@ -12,7 +14,6 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
