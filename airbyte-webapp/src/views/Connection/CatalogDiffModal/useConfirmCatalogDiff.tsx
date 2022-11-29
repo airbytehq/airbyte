@@ -10,10 +10,10 @@ export const useConfirmCatalogDiff = () => {
   const { formatMessage } = useIntl();
   const { openModal } = useModalService();
   const { connection } = useConnectionEditService();
+  const { catalogDiff, syncCatalog } = connection;
 
   useEffect(() => {
     // If we have a catalogDiff we always want to show the modal
-    const { catalogDiff, syncCatalog } = connection;
     if (catalogDiff?.transforms && catalogDiff.transforms?.length > 0) {
       openModal<void>({
         title: formatMessage({ id: "connection.updateSchema.completed" }),
@@ -25,5 +25,5 @@ export const useConfirmCatalogDiff = () => {
         ),
       });
     }
-  }, [connection, formatMessage, openModal]);
+  }, [catalogDiff, syncCatalog, formatMessage, openModal]);
 };
