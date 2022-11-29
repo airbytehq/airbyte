@@ -13,7 +13,7 @@ jest.doMock("hooks/services/useConnectionHook", () => ({
 }));
 
 describe("<StatusCell />", () => {
-  it("renders switch when connection is not manual", () => {
+  it("renders switch when connection has schedule", () => {
     const { getByTestId } = render(<StatusCell id={mockId} onSync={jest.fn()} allowSync enabled />, {
       wrapper: TestWrapper,
     });
@@ -24,11 +24,30 @@ describe("<StatusCell />", () => {
     expect(switchElement).toBeChecked();
   });
 
+  it("renders button when connection does not have schedule", () => {
+    const { getByTestId } = render(<StatusCell id={mockId} onSync={jest.fn()} allowSync enabled isManual />, {
+      wrapper: TestWrapper,
+    });
+
+    expect(getByTestId("manual-sync-button")).toBeEnabled();
+  });
+
   it("disables switch when hasBreakingChange is true", () => {
     const { getByTestId } = render(<StatusCell id={mockId} onSync={jest.fn()} allowSync hasBreakingChange />, {
       wrapper: TestWrapper,
     });
 
     expect(getByTestId("enable-connection-switch")).toBeDisabled();
+  });
+
+  it("disables manual sync button when hasBreakingChange is true", () => {
+    const { getByTestId } = render(
+      <StatusCell id={mockId} onSync={jest.fn()} allowSync hasBreakingChange enabled isManual />,
+      {
+        wrapper: TestWrapper,
+      }
+    );
+
+    expect(getByTestId("manual-sync-button")).toBeDisabled();
   });
 });
