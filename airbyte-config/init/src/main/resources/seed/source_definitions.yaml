@@ -1117,6 +1117,14 @@
   icon: outreach.svg
   sourceType: api
   releaseStage: alpha
+- name: Pardot
+  sourceDefinitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
+  dockerRepository: airbyte/source-pardot
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
+  icon: pardot.svg
+  sourceType: api
+  releaseStage: alpha
 - name: PagerDuty
   sourceDefinitionId: 2817b3f0-04e4-4c7a-9f32-7a5e8a83db95
   dockerRepository: farosai/airbyte-pagerduty-source
