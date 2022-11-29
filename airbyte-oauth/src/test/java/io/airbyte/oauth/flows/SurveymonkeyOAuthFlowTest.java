@@ -12,6 +12,7 @@ import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
@@ -64,6 +65,15 @@ class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
     return Map.of(
         "access_token", "access_token_response",
         "client_id", MoreOAuthParameters.SECRET_MASK);
+  }
+
+  @Test
+  void testGetAccessTokenUrl() {
+    final SurveymonkeyOAuthFlow oauthFlow = (SurveymonkeyOAuthFlow) getOAuthFlow();
+    final String expectedAccessTokenUrl = "https://api.surveymonkey.com/oauth/token";
+
+    final String accessTokenUrl = oauthFlow.getAccessTokenUrl(getInputOAuthConfiguration());
+    assertEquals(accessTokenUrl, expectedAccessTokenUrl);
   }
 
   @Test
