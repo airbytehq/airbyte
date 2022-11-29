@@ -1,4 +1,5 @@
 import { Field, FieldProps, useFormikContext } from "formik";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { DataGeographyDropdown } from "components/common/DataGeographyDropdown";
@@ -33,8 +34,13 @@ export const DataResidency: React.FC<DataResidencyProps> = ({ name = "geography"
                   <FormattedMessage
                     id="connection.geographyDescription"
                     values={{
-                      lnk: (node: React.ReactNode) => (
+                      lnk1: (node: React.ReactNode) => (
                         <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
+                          {node}
+                        </a>
+                      ),
+                      lnk2: (node: React.ReactNode) => (
+                        <a href={links.connectionDataResidency} target="_blank" rel="noreferrer">
                           {node}
                         </a>
                       ),

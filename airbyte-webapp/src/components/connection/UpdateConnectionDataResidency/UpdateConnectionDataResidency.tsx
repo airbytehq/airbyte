@@ -50,8 +50,13 @@ export const UpdateConnectionDataResidency: React.FC = () => {
               <FormattedMessage
                 id="connection.geographyDescription"
                 values={{
-                  lnk: (node: React.ReactNode) => (
+                  lnk1: (node: React.ReactNode) => (
                     <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
+                      {node}
+                    </a>
+                  ),
+                  lnk2: (node: React.ReactNode) => (
+                    <a href={links.connectionDataResidency} target="_blank" rel="noreferrer">
                       {node}
                     </a>
                   ),
