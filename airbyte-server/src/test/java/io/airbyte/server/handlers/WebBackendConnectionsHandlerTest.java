@@ -496,7 +496,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -512,7 +513,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 

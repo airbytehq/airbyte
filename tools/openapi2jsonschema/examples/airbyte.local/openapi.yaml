@@ -2638,6 +2638,11 @@ components:
           $ref: "#/components/schemas/ConnectionStatus"
         syncCatalog:
           $ref: "#/components/schemas/AirbyteCatalog"
+        nonBreakingChangesPreference:
+          enum:
+            - ignore
+            - disable
+          type: string
       required:
         - connection
         - sourceId
