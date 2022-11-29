@@ -6,27 +6,31 @@ package io.airbyte.commons.protocol.migrations;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
 
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
-  private ConfiguredAirbyteCatalog catalog;
+  private final ConfiguredAirbyteCatalog catalog;
 
   public AirbyteMessageMigrationV1(ConfiguredAirbyteCatalog catalog) {
     this.catalog = catalog;
@@ -43,7 +47,19 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         downgradeSchema(schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
-      // TODO downgrade records
+      AirbyteRecordMessage record = newMessage.getRecord();
+      Optional<ConfiguredAirbyteStream> maybeStream = catalog.getStreams().stream()
+          .filter(stream -> stream.getStream().getName().equals(record.getStream())
+              && stream.getStream().getNamespace().equals(record.getNamespace()))
+          .findFirst();
+      // If this record doesn't belong to any configured stream, then there's no point downgrading it
+      // So only do the downgrade if we can find its stream
+      if (maybeStream.isPresent()) {
+        JsonNode schema = maybeStream.get().getStream().getJsonSchema();
+        JsonNode oldData = record.getData();
+        JsonNode newData = downgradeRecord(oldData, schema);
+        record.setData(newData);
+      }
     }
     return newMessage;
   }
@@ -117,7 +133,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       // If this schema has a $ref, then we need to convert it back to type/airbyte_type/format
       return true;
     } else if (schema.hasNonNull("oneOf")) {
-      // If this is a oneOf with at least one primitive $ref option, then we should consider converting it back
+      // If this is a oneOf with at least one primitive $ref option, then we should consider converting it
+      // back
       List<JsonNode> subschemas = getSubschemas(schema, "oneOf");
       return subschemas.stream().anyMatch(
           subschema -> subschema.hasNonNull("$ref")
@@ -131,7 +148,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    * Modifies the schema in-place to upgrade from the old-style type declaration to the new-style $ref
    * declaration. Assumes that the schema is an ObjectNode containing a primitive declaration, i.e.
    * either something like: {"type": "string"} or: {"type": ["string", "object"]}
-   *
+   * <p>
    * In the latter case, the schema may contain subschemas. This method mutually recurses with
    * {@link #mutateSchemas(Function, Consumer, JsonNode)} to upgrade those subschemas.
    *
@@ -205,10 +222,11 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Modifies the schema in-place to downgrade from the new-style $ref declaration to the old-style type
-   * declaration. Assumes that the schema is an ObjectNode containing a primitive declaration, i.e.
-   * either something like: {"$ref": "WellKnownTypes..."} or: {"oneOf": [{"$ref": "WellKnownTypes..."}, ...]}
-   *
+   * Modifies the schema in-place to downgrade from the new-style $ref declaration to the old-style
+   * type declaration. Assumes that the schema is an ObjectNode containing a primitive declaration,
+   * i.e. either something like: {"$ref": "WellKnownTypes..."} or: {"oneOf": [{"$ref":
+   * "WellKnownTypes..."}, ...]}
+   * <p>
    * In the latter case, the schema may contain subschemas. This method mutually recurses with
    * {@link #mutateSchemas(Function, Consumer, JsonNode)} to downgrade those subschemas.
    *
@@ -221,17 +239,20 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       ((ObjectNode) schema).removeAll();
       ((ObjectNode) schema).setAll(JsonSchemaReferenceTypes.REFERENCE_TYPE_TO_OLD_TYPE.get(referenceType));
     } else if (schema.hasNonNull("oneOf")) {
-      // If this is a oneOf, then we need to check whether we can recombine it into a single type declaration.
+      // If this is a oneOf, then we need to check whether we can recombine it into a single type
+      // declaration.
       // This means we must do three things:
       // 1. Downgrade each subschema
       // 2. Build a new `type` array, containing the `type` of each subschema
       // 3. Combine all the fields in each subschema (properties, items, etc)
-      // If any two subschemas have the same `type`, or the same field, then we can't combine them, but we should still downgrade them.
+      // If any two subschemas have the same `type`, or the same field, then we can't combine them, but we
+      // should still downgrade them.
       // See V0ToV1MigrationTest.CatalogDowngradeTest#testDowngradeMultiTypeFields for some examples.
 
       // We'll build up a node containing the combined subschemas.
       ObjectNode replacement = (ObjectNode) Jsons.emptyObject();
-      // As part of this, we need to build up a list of `type` entries. For ease of access, we'll keep it in a List.
+      // As part of this, we need to build up a list of `type` entries. For ease of access, we'll keep it
+      // in a List.
       List<String> types = new ArrayList<>();
 
       boolean canRecombineSubschemas = true;
@@ -272,7 +293,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             }
           }
         } else {
-          // If this subschema is a boolean, then the oneOf is doing something funky, and we shouldn't attempt to
+          // If this subschema is a boolean, then the oneOf is doing something funky, and we shouldn't attempt
+          // to
           // combine it into a single type entry
           canRecombineSubschemas = false;
         }
@@ -337,7 +359,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    * Generic utility method that recurses through all type declarations in the schema. For each type
    * declaration that are accepted by matcher, mutate them using transformer. For all other type
    * declarations, recurse into their subschemas (if any).
-   *
+   * <p>
    * Note that this modifies the schema in-place. Callers who need a copy of the old schema should
    * save schema.deepCopy() before calling this method.
    *
@@ -405,12 +427,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   /**
    * If schema contains key, then grab the subschema(s) at schema[key] and add them to the subschemas
    * list.
-   *
+   * <p>
    * For example: schema = {"items": [{"type": "string}]} key = "items" -> add {"type": "string"} to
    * subschemas
-   *
+   * <p>
    * schema = {"items": {"type": "string"}} key = "items" -> add {"type": "string"} to subschemas
-   *
+   * <p>
    * schema = {"additionalProperties": true} key = "additionalProperties" -> add nothing to subschemas
    * (technically `true` is a valid JsonSchema, but we don't want to modify it)
    */
@@ -467,6 +489,19 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       // Base case: this is a string or boolean, so we don't need to modify it
       return oldData;
     }
+  }
+
+  private static JsonNode downgradeRecord(JsonNode data, JsonNode schema) {
+    // TODO implement this
+    if (data.isTextual()) {
+      String refType = schema.get(JsonSchemaReferenceTypes.REF_KEY).asText();
+      if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType) || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
+        return Jsons.convertValue(data.asText(), NumericNode.class);
+      } else {
+        return data;
+      }
+    }
+    return null;
   }
 
   @Override
