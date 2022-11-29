@@ -2982,13 +2982,6 @@ components:
           format: uri
         icon:
           type: string
-        normalizationRepository:
-          type: string
-        normalizationTag:
-          type: string
-        supportDbt:
-          type: boolean
-          default: false
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionUpdate:
@@ -3020,13 +3013,6 @@ components:
           type: string
         dockerImageTag:
           type: string
-        normalizationRepository:
-          type: string
-        normalizationTag:
-          type: string
-        supportDbt:
-          type: boolean
-          default: false
         documentationUrl:
           type: string
           format: uri

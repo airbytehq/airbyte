@@ -95,9 +95,6 @@ public class DestinationDefinitionsHandler {
           .dockerRepository(standardDestinationDefinition.getDockerRepository())
           .dockerImageTag(standardDestinationDefinition.getDockerImageTag())
           .documentationUrl(new URI(standardDestinationDefinition.getDocumentationUrl()))
-          .normalizationRepository(standardDestinationDefinition.getNormalizationRepository())
-          .normalizationTag(standardDestinationDefinition.getNormalizationTag())
-          .supportDbt(standardDestinationDefinition.getSupportsDbt())
           .icon(loadIcon(standardDestinationDefinition.getIcon()))
           .protocolVersion(standardDestinationDefinition.getProtocolVersion())
           .releaseStage(getReleaseStage(standardDestinationDefinition))
@@ -234,9 +231,6 @@ public class DestinationDefinitionsHandler {
         .withSpec(spec)
         .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(false)
-        .withSupportsDbt(destinationDefCreate.getSupportDbt())
-        .withNormalizationRepository(destinationDefCreate.getNormalizationRepository())
-        .withNormalizationTag(destinationDefCreate.getNormalizationTag())
         .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM)
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefCreate.getResourceRequirements()));
     return destinationDefinition;
