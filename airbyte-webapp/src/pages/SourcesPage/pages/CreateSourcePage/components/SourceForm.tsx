@@ -60,6 +60,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
     <ConnectorCard
       formType="source"
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      description={<FormattedMessage id="sources.description" />}
       isLoading={isLoading}
       hasSuccess={hasSuccess}
       errorMessage={errorMessage}
