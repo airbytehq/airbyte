@@ -90,7 +90,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       List<StandardDestinationDefinition> destinationDefinitionList = configRepository.listStandardDestinationDefinitions(true);
       Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
           .filter(destinationDefinition -> config.getDestinationDockerImage()
-              .equalsIgnoreCase(DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag())))
+              .equalsIgnoreCase(
+                  DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag())))
           .findFirst();
       final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
           standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);

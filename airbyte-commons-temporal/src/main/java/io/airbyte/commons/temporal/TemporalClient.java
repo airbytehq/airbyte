@@ -4,6 +4,8 @@
 
 package io.airbyte.commons.temporal;
 
+import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.NON_RUNNING_JOB_ID;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -39,12 +41,6 @@ import io.temporal.client.WorkflowClient;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-import lombok.Builder;
-import lombok.Value;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.time.StopWatch;
-
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashSet;
@@ -58,8 +54,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-
-import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.NON_RUNNING_JOB_ID;
+import lombok.Builder;
+import lombok.Value;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 
 @Slf4j
 @Singleton
