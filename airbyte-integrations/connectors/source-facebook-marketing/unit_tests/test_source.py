@@ -99,20 +99,12 @@ class TestSourceFacebookMarketing:
 
         assert isinstance(spec, ConnectorSpecification)
 
-    def test_update_insights_streams(self, api, config):
+    def test_get_custom_insights_streams(self, api, config):
         config["custom_insights"] = [
             {"name": "test", "fields": ["account_id"], "breakdowns": ["ad_format_asset"], "action_breakdowns": ["action_device"]},
         ]
-        streams = SourceFacebookMarketing().streams(config)
         config = ConnectorConfig.parse_obj(config)
-        insights_args = dict(
-            api=api,
-            start_date=config.start_date,
-            end_date=config.end_date,
-        )
-        assert SourceFacebookMarketing()._update_insights_streams(
-            insights=config.custom_insights, default_args=insights_args, streams=streams
-        )
+        assert SourceFacebookMarketing().get_custom_insights_streams(api, config)
 
 
 def test_check_config(config_gen, requests_mock):
