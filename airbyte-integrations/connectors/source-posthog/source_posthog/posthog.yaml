@@ -99,27 +99,38 @@ definitions:
       path: "insights"
 
   events_stream:
-    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "events"
       path: "events"
+    primary_key: "id"
     stream_cursor_field: "timestamp"
+    schema_loader:
+      $ref: "*ref(definitions.schema_loader)"
     retriever:
-      $ref: "*ref(definitions.retriever)"
+      class_name: source_posthog.components.EventsSimpleRetriever
+      name: "{{ options['name'] }}"
+      primary_key: "{{ options['primary_key'] }}"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}"
+        path: "/projects/{{ stream_slice.project_id }}/{{ options['name'] }}/"
       stream_slicer:
-        type: CartesianProductStreamSlicer
+        class_name: source_posthog.components.EventsCartesianProductStreamSlicer
         stream_slicers:
+          - type: SubstreamSlicer
+            parent_stream_configs:
+            - stream: "*ref(definitions.projects_stream)"
+              parent_key: "id"
+              stream_slice_field: "project_id"
           - type: DatetimeStreamSlicer
             start_datetime:
               datetime: "{{ config['start_date'] }}"
-              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
             end_datetime:
-              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%SZ') }}"
-              datetime_format: "%Y-%m-%dT%H:%M:%SZ"
-            datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+              datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S%z') }}"
+              datetime_format: "%Y-%m-%dT%H:%M:%S%z"
+            datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
             step: 30d
             cursor_field: timestamp
             start_time_option:
@@ -128,11 +139,6 @@ definitions:
             end_time_option:
               field_name: before
               inject_into: request_parameter
-          - type: SubstreamSlicer
-            parent_stream_configs:
-            - stream: "*ref(definitions.projects_stream)"
-              parent_key: "id"
-              stream_slice_field: "project_id"
       paginator:
         type: "DefaultPaginator"
         url_base: "*ref(definitions.requester.url_base)"
