@@ -92,14 +92,14 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
-  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA = "select "
-      + "(exists (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA = "SELECT "
+      + "(EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
       + "AND "
-      + "(exists (select from %s.%s where %s is null limit 1)) as %s";
-  public static final String NULL_CURSOR_VALUE_NO_SCHEMA = "select "
-      + "(exists (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
+      + "(EXISTS (SELECT from %s.\"%s\" where '%s' is null limit 1)) as %s";
+  public static final String NULL_CURSOR_VALUE_NO_SCHEMA = "SELECT "
+      + "(EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
       + "AND "
-      + "(exists (select from %s where %s is null limit 1)) as %s";
+      + "(EXISTS (SELECT from \"%s\" where '%s' is null limit 1)) as %s";
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -513,7 +513,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
     final String query;
     final String resultColName = "nullValue";
-    // Query: Only if cursor column is NULLABLE, query whether it contains at least a single NULL value
+    // Query: Only if cursor column is NULLABLE, query whether it contains a NULL value
     if (StringUtils.isNotBlank(schema)) {
       query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA,
           schema, tableName, columnName, schema, tableName, columnName, resultColName);
@@ -521,12 +521,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA,
           tableName, columnName, tableName, columnName, resultColName);
     }
-    LOGGER.debug("null value query: {}", query);
+    LOGGER.info("null value query: {}", query);
     final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
         resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
     Preconditions.checkState(jsonNodes.size() == 1);
-    final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue();
-    LOGGER.debug("null value exist: {}", nullValExist);
+    final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
+    LOGGER.info("null value exist: {}", nullValExist);
     return !nullValExist;
   }
 }
