@@ -194,7 +194,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Terminating normalization process {}...", process.pid());
+    LOGGER.info("Terminating normalization process {}...", process.pid());
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
     /*
@@ -207,7 +207,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     } else if (process.exitValue() != 0) {
       throw new WorkerException("Normalization process " + process.pid() + " did not terminate normally (exit code: " + process.exitValue() + ")");
     } else {
-      LOGGER.debug("Normalization process {} successfully terminated.", process.pid());
+      LOGGER.info("Normalization process {} successfully terminated.", process.pid());
     }
   }
 
