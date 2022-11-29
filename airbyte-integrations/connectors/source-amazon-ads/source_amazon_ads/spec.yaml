@@ -13,6 +13,7 @@ connectionSpecification:
       title: Store Name *
       description:  The identification of one of your Amazon store
       order: 1
+      type: string
     client_id:
       title: Client ID
       description:
