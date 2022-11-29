@@ -5,3 +5,20 @@ tests:
   spec:
     - spec_path: "src/test-integration/resources/expected_spec.json"
       config_path: "secrets/config.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      timeout_seconds: "1200"
+      expect_records:
+        path: "integration_tests/expected_records.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      timeout_seconds: "1200"
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_inc.json"
+      timeout_seconds: "1200"
