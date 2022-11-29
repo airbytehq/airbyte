@@ -43,6 +43,7 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
@@ -495,7 +496,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -511,7 +513,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -539,7 +542,9 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .name(standardSync.getName())
         .syncCatalog(catalog)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
+        .notifySchemaChanges(false);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -553,7 +558,9 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .name(standardSync.getName())
         .syncCatalog(catalog)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
+        .notifySchemaChanges(false);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 
