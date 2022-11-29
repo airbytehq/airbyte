@@ -301,18 +301,25 @@ jobs:
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
-        run: |
-          curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Publish ${{ matrix.connector }}
-        run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+        uses: Wandalen/wretry.action@master
+        with:
+          command: |
+            echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache   
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors') && success()
         run: |
@@ -346,8 +353,11 @@ jobs:
           fi
       - name: Run gradle process changes
         if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          ./gradlew :airbyte-config:init:processResources
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-config:init:processResources
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
       - name: git config
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
