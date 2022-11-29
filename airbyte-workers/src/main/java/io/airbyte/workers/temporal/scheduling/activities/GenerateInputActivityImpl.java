@@ -109,7 +109,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withDockerImage(config.getDestinationDockerImage())
           .withProtocolVersion(config.getDestinationProtocolVersion())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
-          .withSupportDbt(supportDbt);
+          .withSupportsDbt(supportDbt);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())

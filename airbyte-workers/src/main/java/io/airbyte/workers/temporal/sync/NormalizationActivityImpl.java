@@ -47,9 +47,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Singleton
 public class NormalizationActivityImpl implements NormalizationActivity {
 
@@ -149,8 +147,6 @@ public class NormalizationActivityImpl implements NormalizationActivity {
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
                                                                                                               final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                               final JobRunConfig jobRunConfig) {
-    log.error("destination DBT -> {}", destinationLauncherConfig.getSupportDbt());
-    log.error("destination normalization -> {}", destinationLauncherConfig.getNormalizationDockerImage());
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),

@@ -18,7 +18,7 @@ properties:
     type: string
   normalizationDockerImage:
     type: string
-  supportDbt:
+  supportsDbt:
     type: boolean
     default: false
   protocolVersion:
