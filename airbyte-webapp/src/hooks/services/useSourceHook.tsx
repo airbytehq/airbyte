@@ -7,6 +7,7 @@ import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
 import { JobInfo } from "core/domain/job";
+import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
 
@@ -39,10 +40,11 @@ interface ConnectorProps {
 
 function useSourceService() {
   // const { apiUrl } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
-    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser]
   );
 }
 

@@ -1,6 +1,7 @@
 import { useMutation } from "react-query";
 
 import { LogsService } from "core/domain/logs/LogsService";
+import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";
@@ -15,10 +16,11 @@ export const logsKeys = {
 
 function useGetLogsService(): LogsService {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new LogsService(process.env.REACT_APP_API_URL as string, middlewares),
-    [process.env.REACT_APP_API_URL as string, middlewares]
+    () => new LogsService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+    [process.env.REACT_APP_API_URL as string, middlewares, removeUser]
   );
 }
 

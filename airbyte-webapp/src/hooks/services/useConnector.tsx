@@ -6,6 +6,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { SourceService } from "core/domain/connector/SourceService";
+import { useUser } from "core/localStorage";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -79,20 +80,22 @@ const useConnector = (): ConnectorService => {
 
 function useGetDestinationService(): DestinationService {
   // const { apiUrl } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }
 
 function useGetSourceService(): SourceService {
   // const { apiUrl } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }

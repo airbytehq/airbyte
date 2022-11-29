@@ -2,6 +2,7 @@ import { useQuery } from "react-query";
 
 // import { useConfig } from "config";
 import { SourceDefinitionSpecificationService } from "core/domain/connector/SourceDefinitionSpecificationService";
+import { useUser } from "core/localStorage";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
@@ -17,11 +18,17 @@ export const sourceDefinitionSpecificationKeys = {
 
 function useGetService(): SourceDefinitionSpecificationService {
   // const { apiUrl } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new SourceDefinitionSpecificationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
-    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+    () =>
+      new SourceDefinitionSpecificationService(
+        process.env.REACT_APP_API_URL as string,
+        requestAuthMiddleware,
+        removeUser
+      ),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser]
   );
 }
 

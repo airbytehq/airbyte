@@ -6,6 +6,7 @@ import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/d
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
 import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { useUser } from "core/localStorage";
 import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
 
 import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
@@ -47,16 +48,17 @@ export function useConnectorAuth(): {
 } {
   const { workspaceId } = useCurrentWorkspace();
   const { oauthRedirectUrl } = useConfig();
+  const { removeUser } = useUser();
 
   // TODO: move to separate initFacade and use refs instead
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   const sourceAuthService = useMemo(
-    () => new SourceAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new SourceAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
   const destinationAuthService = useMemo(
-    () => new DestinationAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new DestinationAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 

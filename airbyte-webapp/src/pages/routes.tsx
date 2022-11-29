@@ -5,6 +5,7 @@ import { useEffectOnce } from "react-use";
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useUser } from "core/localStorage";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -14,7 +15,6 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import { getAuthenticatedUser } from "../services/auth/AuthService";
 import { LoginPage } from "./AuthPage/LoginPage";
 import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
@@ -91,7 +91,6 @@ export const AutoMoveToAuth = () => {
 // );
 export const AutoSelectFirstWorkspace: React.FC = () => {
   const location = useLocation();
-  // const user = getAuthenticatedUser();
 
   return <Navigate to={`/${location.pathname}`} replace />;
 };
@@ -110,6 +109,7 @@ const RoutingWithWorkspace: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { search } = useLocation();
+  const { user } = useUser();
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
@@ -123,7 +123,6 @@ export const Routing: React.FC = () => {
   //     )),
   //   []
   // );
-  const user = getAuthenticatedUser();
 
   return (
     <>

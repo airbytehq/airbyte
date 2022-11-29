@@ -1,12 +1,14 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+
 // import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
+
+import { useUser } from "core/localStorage";
 
 // import { useConfig } from "config";
 // import { useExperiment } from "hooks/services/Experiment";
@@ -15,7 +17,6 @@ import Alert from "components/Alert";
 import { useAuthenticationService } from "../../../../services/auth/AuthSpecificationService";
 
 // import CheckBoxControl from "../../components/CheckBoxControl";
-import { RoutePaths } from "../../../routePaths";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
 // import {AuthService} from "../../../../services/auth/AuthService";
@@ -224,7 +225,7 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
-  const navigate = useNavigate();
+  const { setUser } = useUser();
 
   // const showName = !useExperiment("authPage.signup.hideName", false);
   // const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
@@ -274,8 +275,8 @@ export const SignupForm: React.FC = () => {
           async (values) => {
             signUp
               .create(values)
-              .then(() => {
-                navigate(`/${RoutePaths.Connections}`);
+              .then((res: any) => {
+                setUser?.(res);
               })
               .catch((err: any) => {
                 setErrorMessage(err.message);

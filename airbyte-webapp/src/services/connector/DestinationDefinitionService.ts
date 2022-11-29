@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
 import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
-import { getAuthenticatedUser } from "services/auth/AuthService";
+import { useUser } from "core/localStorage";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
@@ -19,11 +19,11 @@ export const destinationDefinitionKeys = {
 
 function useGetDestinationDefinitionService(): DestinationDefinitionService {
   // const { apiUrl } = useConfig();
-
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new DestinationDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new DestinationDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }
@@ -36,7 +36,7 @@ const useDestinationDefinitionList = (): {
   destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
-  const user = getAuthenticatedUser();
+  const { user } = useUser();
 
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
     const [
@@ -45,7 +45,7 @@ const useDestinationDefinitionList = (): {
     ] = await Promise.all([
       // service.list(),
       // service.listLatest(),
-      service.listLatestForWorkspace({ workspaceId: user?.workspaceId }),
+      service.listLatestForWorkspace({ workspaceId: user.workspaceId }),
     ]);
 
     // const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(

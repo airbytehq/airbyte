@@ -4,6 +4,7 @@ import { ThemeProvider } from "styled-components";
 
 import { ApiServices } from "core/ApiServices";
 import { I18nProvider } from "core/i18n";
+import { AuthContextProvider } from "core/localStorage";
 import { ServicesProvider } from "core/servicesProvider";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { defaultFeatures, FeatureService } from "hooks/services/Feature";
@@ -39,23 +40,25 @@ const StyleProvider: React.FC = ({ children }) => (
 const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
 
 const Services: React.FC = ({ children }) => (
-  <AnalyticsProvider>
-    <ApiErrorBoundary>
-      <WorkspaceServiceProvider>
-        <FeatureService features={defaultFeatures}>
-          <NotificationService>
-            <ConfirmationModalService>
-              <ModalServiceProvider>
-                <FormChangeTrackerService>
-                  <ApiServices>{children}</ApiServices>
-                </FormChangeTrackerService>
-              </ModalServiceProvider>
-            </ConfirmationModalService>
-          </NotificationService>
-        </FeatureService>
-      </WorkspaceServiceProvider>
-    </ApiErrorBoundary>
-  </AnalyticsProvider>
+  <AuthContextProvider>
+    <AnalyticsProvider>
+      <ApiErrorBoundary>
+        <WorkspaceServiceProvider>
+          <FeatureService features={defaultFeatures}>
+            <NotificationService>
+              <ConfirmationModalService>
+                <ModalServiceProvider>
+                  <FormChangeTrackerService>
+                    <ApiServices>{children}</ApiServices>
+                  </FormChangeTrackerService>
+                </ModalServiceProvider>
+              </ConfirmationModalService>
+            </NotificationService>
+          </FeatureService>
+        </WorkspaceServiceProvider>
+      </ApiErrorBoundary>
+    </AnalyticsProvider>
+  </AuthContextProvider>
 );
 
 const App: React.FC = () => {

@@ -6,6 +6,7 @@ import { Action, Namespace } from "core/analytics";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
+import { useUser } from "core/localStorage";
 import { useInitService } from "services/useInitService";
 
 // import { useConfig } from "../../config";
@@ -60,18 +61,20 @@ export interface ListConnection {
 
 function useWebConnectionService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new WebBackendConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    () => new WebBackendConnectionService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
     [process.env.REACT_APP_API_URL as string, middlewares]
   );
 }
 
 export function useConnectionService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new ConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    () => new ConnectionService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
     [process.env.REACT_APP_API_URL as string, middlewares]
   );
 }
