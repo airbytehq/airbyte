@@ -103,7 +103,6 @@
   dockerRepository: airbyte/source-appsflyer
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
-  icon: appsflyer.svg
   sourceType: api
   releaseStage: alpha
 - name: Appstore
@@ -1122,7 +1121,6 @@
   dockerRepository: airbyte/source-pardot
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
-  icon: pardot.svg
   sourceType: api
   releaseStage: alpha
 - name: PagerDuty
