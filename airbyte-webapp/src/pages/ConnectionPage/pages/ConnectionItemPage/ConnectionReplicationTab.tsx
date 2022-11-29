@@ -1,6 +1,7 @@
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useUnmount } from "react-use";
 
 import { SchemaError } from "components/CreateConnection/SchemaError";
 import LoadingSchema from "components/LoadingSchema";
@@ -40,7 +41,7 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const [saved, setSaved] = useState(false);
 
-  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
+  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, discardRefreshedSchema } =
     useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
   const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
@@ -134,7 +135,6 @@ export const ConnectionReplicationTab: React.FC = () => {
         }
 
         setSaved(true);
-        setSchemaHasBeenRefreshed(false);
       } catch (e) {
         setSubmitError(e);
       }
@@ -150,7 +150,6 @@ export const ConnectionReplicationTab: React.FC = () => {
       mode,
       openModal,
       saveConnection,
-      setSchemaHasBeenRefreshed,
       setSubmitError,
       workspaceId,
       allowSubOneHourCronExpressions,
@@ -158,6 +157,10 @@ export const ConnectionReplicationTab: React.FC = () => {
   );
 
   useConfirmCatalogDiff();
+
+  useUnmount(() => {
+    discardRefreshedSchema();
+  });
 
   return (
     <div className={styles.content}>
@@ -172,14 +175,18 @@ export const ConnectionReplicationTab: React.FC = () => {
         >
           {({ values, isSubmitting, isValid, dirty, resetForm }) => (
             <Form>
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
+              <ConnectionFormFields
+                values={values}
+                isSubmitting={isSubmitting}
+                dirty={dirty || schemaHasBeenRefreshed}
+              />
               <EditControls
                 isSubmitting={isSubmitting}
                 submitDisabled={!isValid}
                 dirty={dirty}
                 resetForm={async () => {
                   resetForm();
-                  setSchemaHasBeenRefreshed(false);
+                  discardRefreshedSchema();
                 }}
                 successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
                 errorMessage={getErrorMessage(isValid, dirty)}
