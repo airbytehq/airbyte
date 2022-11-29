@@ -25,6 +25,12 @@ acceptance_tests:
             bypass_reason: "stream not filled yet"
           - name: "conference_participants"
             bypass_reason: "stream not filled yet"
+          - name: "available_phone_numbers_local"
+            bypass_reason: "very volatile data"
+          - name: "available_phone_numbers_mobile"
+            bypass_reason: "very volatile data"
+          - name: "available_phone_numbers_toll_free"
+            bypass_reason: "very volatile data"
         timeout_seconds: 600
   incremental:
     tests:
