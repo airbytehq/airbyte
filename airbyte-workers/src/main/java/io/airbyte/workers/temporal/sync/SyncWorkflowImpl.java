@@ -12,22 +12,31 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.OperatorWebhookInput;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.WebhookOperationSummary;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.temporal.workflow.Workflow;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -55,6 +64,10 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private RefreshSchemaActivity refreshSchemaActivity;
+  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -62,7 +75,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId) {
+                                final UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
 
     ApmTraceUtils
         .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY,
@@ -72,6 +86,24 @@ public class SyncWorkflowImpl implements SyncWorkflow {
 
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
+
+    final UUID sourceCatalogId = configFetchActivity.getStandardSync(connectionId).getSourceCatalogId();
+
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+    if (envVariableFeatureFlags.autoDetectSchema()) {
+      if (refreshSchemaActivity.shouldRefreshSchema(sourceCatalogId)) {
+        LOGGER.info("Refreshing source schema...");
+        refreshSchemaActivity.refreshSchema(sourceCatalogId);
+      }
+      final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
+      if (Status.INACTIVE == status) {
+        LOGGER.info("Connection is disabled. Cancelling run.");
+        final StandardSyncOutput output =
+            new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED));
+        return output;
+      }
+    }
+
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
 

@@ -8,6 +8,7 @@ import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.N
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
@@ -26,10 +27,12 @@ import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Requires;
 import io.temporal.api.common.v1.WorkflowType;
 import io.temporal.api.enums.v1.WorkflowExecutionStatus;
@@ -398,12 +401,18 @@ public class TemporalClient {
         .withDestinationResourceRequirements(config.getDestinationResourceRequirements());
 
     return execute(jobRunConfig,
-        () -> getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
-            jobRunConfig,
-            sourceLauncherConfig,
-            destinationLauncherConfig,
-            input,
-            connectionId));
+        () -> {
+          try {
+            return getWorkflowStub(SyncWorkflow.class, TemporalJobType.SYNC).run(
+                jobRunConfig,
+                sourceLauncherConfig,
+                destinationLauncherConfig,
+                input,
+                connectionId);
+          } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
+            throw new RuntimeException(e);
+          }
+        });
   }
 
   public void migrateSyncIfNeeded(final Set<UUID> connectionIds) {
