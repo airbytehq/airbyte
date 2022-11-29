@@ -15,7 +15,7 @@ public class InvalidCursorInfoUtil {
             .collect(Collectors.joining(","));
   }
 
-  public record InvalidCursorInfo(String tableName, String cursorColumnName, String cursorSqlType) {
+  public record InvalidCursorInfo(String tableName, String cursorColumnName, String cursorSqlType, String cause) {
 
     @Override
     public String toString() {
@@ -23,6 +23,7 @@ public class InvalidCursorInfoUtil {
           "tableName='" + tableName + '\'' +
           ", cursorColumnName='" + cursorColumnName + '\'' +
           ", cursorSqlType=" + cursorSqlType +
+          ", cause=" + cause +
           '}';
     }
 
