@@ -2,15 +2,9 @@ import React from "react";
 
 import { Config, ConfigServiceProvider, ValueProvider, envConfigProvider, windowConfigProvider } from "config";
 
-import {
-  cloudEnvConfigProvider,
-  // fileConfigProvider,
-  defaultConfig,
-  cloudWindowConfigProvider,
-} from "./config";
+import { cloudEnvConfigProvider, defaultConfig, cloudWindowConfigProvider } from "./config";
 
 const configProviders: ValueProvider<Config> = [
-  // fileConfigProvider,
   cloudEnvConfigProvider,
   cloudWindowConfigProvider,
   envConfigProvider,

@@ -2,25 +2,6 @@ import type { CloudConfig } from "./types";
 
 import type { ConfigProvider } from "config/types";
 
-const CONFIG_PATH = "/config.json";
-
-const fileConfigProvider: ConfigProvider<CloudConfig> = async () => {
-  const response = await fetch(CONFIG_PATH);
-
-  if (response.ok) {
-    try {
-      const config = await response.json();
-
-      return config;
-    } catch (e) {
-      console.error("error occurred while parsing the json config");
-      return {};
-    }
-  }
-
-  return {};
-};
-
 const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     intercom: {
@@ -51,4 +32,4 @@ const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   };
 };
 
-export { fileConfigProvider, cloudWindowConfigProvider, cloudEnvConfigProvider };
+export { cloudWindowConfigProvider, cloudEnvConfigProvider };
