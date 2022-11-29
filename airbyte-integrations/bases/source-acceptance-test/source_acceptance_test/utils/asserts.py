@@ -67,7 +67,3 @@ def verify_records_schema(
             stream_errors[record.stream][str(error.schema_path)] = error
 
     return stream_errors
-
-
-def is_int(checker, value):
-    return isinstance(value, int)
