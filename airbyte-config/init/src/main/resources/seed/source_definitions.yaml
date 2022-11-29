@@ -235,7 +235,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: ClickUp
@@ -1162,6 +1162,13 @@
   icon: persistiq.svg
   sourceType: api
   releaseStage: alpha
+- name: Pexels API
+  sourceDefinitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
+  dockerRepository: airbyte/source-pexels-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  sourceType: api
+  releaseStage: alpha
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
@@ -1408,7 +1415,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.26
+  dockerImageTag: 1.0.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1448,6 +1455,7 @@
   dockerRepository: airbyte/source-senseforce
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
 - name: Sendinblue
@@ -1567,7 +1575,7 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
@@ -1666,7 +1674,7 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
@@ -1848,7 +1856,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.17
+  dockerImageTag: 0.2.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api

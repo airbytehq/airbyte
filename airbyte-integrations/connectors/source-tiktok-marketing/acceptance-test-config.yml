@@ -2,6 +2,7 @@
 # for more information about how to configure these tests
 
 connector_image: airbyte/source-tiktok-marketing:dev
+cache_discovered_catalog: False
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
@@ -80,8 +81,16 @@ tests:
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_basic.json"
       timeout_seconds: 7200
-      ignored_fields:  # Important: sometimes some streams does not return the same records in subsequent syncs
-        "ad_groups": ["dayparting", "enable_search_result", "display_mode", "schedule_infos", "feed_type", "status" ]
+      ignored_fields: # Important: sometimes some streams does not return the same records in subsequent syncs
+        "ad_groups":
+          [
+            "dayparting",
+            "enable_search_result",
+            "display_mode",
+            "schedule_infos",
+            "feed_type",
+            "status",
+          ]
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_reports_daily.json"
       timeout_seconds: 7200
