@@ -13,14 +13,12 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
-import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
@@ -219,14 +217,12 @@ public interface ServerFactory {
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
-          AttemptApiController.class,
           ConnectionApiController.class,
           DbMigrationApiController.class,
           DestinationApiController.class,
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           DestinationOauthApiController.class,
-          HealthApiController.class,
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,

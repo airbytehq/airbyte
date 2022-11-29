@@ -15,9 +15,11 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller("/v1/attempt/")
 @Api(description = "the Attempt API")
+@Slf4j
 public class AttemptApiController {
 
   private final AttemptHandler attemptHandler;
@@ -37,6 +39,8 @@ public class AttemptApiController {
                  message = "Successful Operation",
                  response = InternalOperationResult.class)})
   public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
+    log.error("Tessssttttttttt");
+
     throw new UnsupportedOperationException();
   }
 

@@ -43,7 +43,6 @@ import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
-import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
@@ -95,7 +94,6 @@ import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.apis.factories.StateApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.apis.factories.WorkspaceApiFactory;
-import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -145,8 +143,7 @@ public class ServerBeanFactory {
                                        @Named("configFlyway") final Flyway configsFlyway,
                                        @Named("jobs") final DSLContext jobsDslContext,
                                        @Named("jobsFlyway") final Flyway jobsFlyway,
-                                       final ConfigRepository configRepository,
-                                       final HealthApiController healthApiController)
+                                       final ConfigRepository configRepository)
       throws DatabaseCheckException, IOException {
     final Set<Class<?>> componentClasses = Set.of(
         AttemptApiController.class,
@@ -263,8 +260,6 @@ public class ServerBeanFactory {
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
-
-    final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
     final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
 
