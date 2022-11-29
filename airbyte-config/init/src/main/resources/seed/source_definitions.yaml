@@ -228,7 +228,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: ClickUp
@@ -1148,6 +1148,13 @@
   icon: persistiq.svg
   sourceType: api
   releaseStage: alpha
+- name: Pexels API
+  sourceDefinitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
+  dockerRepository: airbyte/source-pexels-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  sourceType: api
+  releaseStage: alpha
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
@@ -1434,6 +1441,7 @@
   dockerRepository: airbyte/source-senseforce
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
 - name: Sendinblue
