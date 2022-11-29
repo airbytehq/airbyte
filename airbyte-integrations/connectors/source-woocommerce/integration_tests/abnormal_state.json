@@ -1,11 +1,17 @@
 {
+  "coupons": {
+    "date_modified_gmt": "2100-01-01T00:00:00Z"
+  },
   "customers": {
-    "date_created": "2030-07-30T22:16:46"
+    "date_modified_gmt": "2100-01-01T00:00:00Z"
   },
   "orders": {
-    "date_modified": "2050-07-30T22:16:46"
+    "date_modified_gmt": "2100-01-01T00:00:00Z"
   },
-  "coupons": {
-    "date_modified": "2060-07-30T22:16:46"
+  "products": {
+    "date_modified_gmt": "2100-01-01T00:00:00Z"
+  },
+  "product_reviews": {
+    "date_created_gmt": "2100-01-01T00:00:00Z"
   }
 }
