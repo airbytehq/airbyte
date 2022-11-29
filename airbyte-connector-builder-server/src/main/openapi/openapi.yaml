@@ -77,6 +77,7 @@ components:
       required:
         - logs
         - slices
+        - inferred_schema
       properties:
         logs:
           type: array
@@ -84,6 +85,9 @@ components:
           items:
             type: object
             # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteLogMessage"
+        inferred_schema: 
+            type: object
+            description: The narrowest JSON Schema against which every AirbyteRecord in the slices can validate successfully. This is inferred from reading every record in the output slices. 
         slices:
           type: array
           description: The stream slices returned from the read command. If no stream slicer is configured, this should contain a single item containing all of the results.
