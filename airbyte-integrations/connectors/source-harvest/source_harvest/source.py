@@ -54,8 +54,11 @@ class SourceHarvest(AbstractSource):
         credentials = config.get("credentials", {})
         if credentials and "client_id" in credentials:
             return HarvestOauth2Authenticator(
-                config,
                 token_refresh_endpoint="https://id.getharvest.com/api/v2/oauth2/token",
+                client_id=credentials.get("client_id"),
+                client_secret=credentials.get("client_secret"),
+                refresh_token=credentials.get("refresh_token"),
+                account_id=config["account_id"],
             )
 
         api_token = credentials.get("api_token", config.get("api_token"))
