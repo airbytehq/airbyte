@@ -45,6 +45,22 @@ class ExactStream(HttpStream, ABC):
             "Accept": "application/json"
         }
 
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        """
+        The sync endpoints requires selection of fields to return. We use the configured catalog to make selection
+        of fields we want to have.
+        """
+        
+        # Contains the full next page, so don't append new query params
+        if next_page_token:
+            return {}
+
+        configured_properties = list(self.get_json_schema()["properties"].keys())
+        return {
+            "$select": ",".join(configured_properties)
+        }
+
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
         response_json = response.json()
