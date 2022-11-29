@@ -203,7 +203,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
      * Did the process actually terminate? If "yes", did it do so nominally?
      */
     if (process.isAlive()) {
-      throw new WorkerException("Normalization process " + process.pid() + " wasn't successful");
+      throw new WorkerException("Normalization process " + process.pid() + " did not terminate after 1 minute.");
     } else if (process.exitValue() != 0) {
       throw new WorkerException("Normalization process " + process.pid() + " did not terminate normally (exit code: " + process.exitValue() + ")");
     } else {
