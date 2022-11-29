@@ -1,0 +1,12 @@
+{
+  "host": "myhost",
+  "port": 1111,
+  "loading_method": {
+    "method": "S3",
+    "s3_bucket": "sample_bucket",
+    "s3_region": "us-east-1",
+    "aws_key_id": "yyy",
+    "aws_key_secret": "yyy"
+  }
+}
+

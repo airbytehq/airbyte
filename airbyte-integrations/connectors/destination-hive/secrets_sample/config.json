@@ -1,0 +1,18 @@
+{
+  "host": "host.com"
+  "port": 443,
+  "auth_type": "LDAP",
+  "use_ssl": "true",
+  "use_http_transport": "true",
+  "http_path": "hive",
+  "user": ""
+  "password": ""
+  "loading_method": {
+    "method": "S3",
+    "s3_bucket": "bucket-name"
+    "s3_region": "us-east-1",
+    "aws_key_id": "",
+    "aws_key_secret": "",
+  }
+}
+
