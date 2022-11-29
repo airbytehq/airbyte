@@ -434,7 +434,7 @@ class GermanHistoryHospitalization(IncrementalRkiCovidStream):
         return "germany/history/hospitalization/"
 
 
-# STATES FULL-REFRESH
+# STATES FULL-REFRESH.
 # source: states/history/cases/:days | FULL-REFRESH
 class ByStateRkiCovidStream(RkiCovidStream, ABC):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
