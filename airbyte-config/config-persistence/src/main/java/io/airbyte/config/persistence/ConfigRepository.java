@@ -291,10 +291,8 @@ public class ConfigRepository {
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
         .fetchStream())
         .map(DbConverter::buildStandardSourceDefinition)
-        // todo(cgardens) - the impls for default protocol version were different in list and get, which is
-        // right? used list.
-        .map(sourceDef -> sourceDef.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(sourceDef.getSpec() != null ? sourceDef.getSpec().getProtocolVersion() : null).serialize()));
+        // Ensure version is set. Needed for connectors not upgraded since we added versioning.
+        .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
   }
 
   public Map<UUID, Map.Entry<io.airbyte.config.ActorType, Version>> getActorDefinitionToProtocolVersionMap() throws IOException {
@@ -355,10 +353,8 @@ public class ConfigRepository {
         .and(includeTombstone ? noCondition() : ACTOR_DEFINITION.TOMBSTONE.notEqual(true))
         .fetchStream())
         .map(DbConverter::buildStandardDestinationDefinition)
-        // todo(cgardens) - the impls for default protocol version were different in list and get, which is
-        // right? used list.
-        .map(destDef -> destDef.withProtocolVersion(
-            AirbyteProtocolVersion.getWithDefault(destDef.getSpec() != null ? destDef.getSpec().getProtocolVersion() : null).serialize()));
+        // Ensure version is set. Needed for connectors not upgraded since we added versioning.
+        .map(def -> def.withProtocolVersion(AirbyteProtocolVersion.getWithDefault(def.getProtocolVersion()).serialize()));
   }
 
   public StandardDestinationDefinition getStandardDestinationDefinition(final UUID destinationDefinitionId)
