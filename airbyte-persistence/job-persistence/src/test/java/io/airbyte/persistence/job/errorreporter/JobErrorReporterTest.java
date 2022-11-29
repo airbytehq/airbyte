@@ -85,7 +85,7 @@ class JobErrorReporterTest {
     jobErrorReportingClient = mock(JobErrorReportingClient.class);
     webUrlHelper = mock(WebUrlHelper.class);
     jobErrorReporter = new JobErrorReporter(
-        configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, NORMALIZATION_IMAGE, NORMALIZATION_VERSION, webUrlHelper, jobErrorReportingClient);
+        configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, webUrlHelper, jobErrorReportingClient);
 
     Mockito.when(webUrlHelper.getConnectionUrl(WORKSPACE_ID, CONNECTION_ID)).thenReturn(CONNECTION_URL);
     Mockito.when(webUrlHelper.getWorkspaceUrl(WORKSPACE_ID)).thenReturn(WORKSPACE_URL);

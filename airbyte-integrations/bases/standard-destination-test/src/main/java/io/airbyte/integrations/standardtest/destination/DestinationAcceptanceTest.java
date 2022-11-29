@@ -57,8 +57,8 @@ import io.airbyte.workers.general.DefaultGetSpecWorker;
 import io.airbyte.workers.helper.EntrypointEnvChecker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
+import io.airbyte.workers.normalization.DefaultNormalizationRunner;
 import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.ProcessFactory;
@@ -120,6 +120,10 @@ public abstract class DestinationAcceptanceTest {
    * @return docker image name
    */
   protected abstract String getImageName();
+
+  protected String getNormalizationImageName() {
+    return null;
+  }
 
   /**
    * Configuration specific to the integration. Will be passed to integration where appropriate in
@@ -542,7 +546,9 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION, "");
+        new DefaultNormalizationRunner(
+            processFactory,
+            getNormalizationImageName());
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -845,10 +851,9 @@ public abstract class DestinationAcceptanceTest {
     // 'profiles.yml'
     // (we don't actually rely on normalization running anything else here though)
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
-        NormalizationRunnerFactory.create(
-            getImageName(),
+        new DefaultNormalizationRunner(
             processFactory,
-            NORMALIZATION_VERSION, ""));
+            getNormalizationImageName()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -861,9 +866,7 @@ public abstract class DestinationAcceptanceTest {
         // TODO once we're on DBT 1.x, switch this back to using the main branch
         .withGitRepoUrl("https://github.com/airbytehq/jaffle_shop.git")
         .withGitRepoBranch("pre_dbt_upgrade")
-        .withDockerImage(
-            NormalizationRunnerFactory.getNormalizationInfoForConnector(getImageName()).getLeft()
-                + ":" + NORMALIZATION_VERSION);
+        .withDockerImage(getNormalizationImageName());
     //
     // jaffle_shop is a fictional ecommerce store maintained by fishtownanalytics/dbt.
     //
@@ -923,10 +926,9 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
 
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
-        NormalizationRunnerFactory.create(
-            getImageName(),
+        new DefaultNormalizationRunner(
             processFactory,
-            NORMALIZATION_VERSION, ""));
+            getNormalizationImageName()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1270,10 +1272,9 @@ public abstract class DestinationAcceptanceTest {
       return destinationOutput;
     }
 
-    final NormalizationRunner runner = NormalizationRunnerFactory.create(
-        getImageName(),
+    final NormalizationRunner runner = new DefaultNormalizationRunner(
         processFactory,
-        NORMALIZATION_VERSION, "");
+        getNormalizationImageName());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,

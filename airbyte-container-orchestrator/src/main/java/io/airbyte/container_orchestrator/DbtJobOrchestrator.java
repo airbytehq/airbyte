@@ -18,7 +18,7 @@ import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DbtTransformationRunner;
 import io.airbyte.workers.general.DbtTransformationWorker;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
+import io.airbyte.workers.normalization.DefaultNormalizationRunner;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
@@ -69,10 +69,8 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         Math.toIntExact(jobRunConfig.getAttemptId()),
         workerConfigs.getResourceRequirements(),
         new DbtTransformationRunner(
-            processFactory, NormalizationRunnerFactory.create(
-                destinationLauncherConfig.getDockerImage(),
+            processFactory, new DefaultNormalizationRunner(
                 processFactory,
-                NormalizationRunnerFactory.NORMALIZATION_VERSION,
                 destinationLauncherConfig.getNormalizationDockerImage())));
 
     log.info("Running dbt worker...");
