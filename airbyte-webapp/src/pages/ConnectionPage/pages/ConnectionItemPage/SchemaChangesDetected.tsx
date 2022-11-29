@@ -1,35 +1,17 @@
 import classNames from "classnames";
-import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { Button } from "components/ui/Button";
 import { Text } from "components/ui/Text";
 
-import { SchemaChange } from "core/request/AirbyteClient";
+import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
 import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import styles from "./SchemaChangesDetected.module.scss";
-
-export const useSchemaChanges = (schemaChange: SchemaChange) => {
-  const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
-
-  return useMemo(() => {
-    const hasSchemaChanges = isSchemaChangesFeatureEnabled && schemaChange !== SchemaChange.no_change;
-    const hasBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.breaking;
-    const hasNonBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.non_breaking;
-
-    return {
-      schemaChange,
-      hasSchemaChanges,
-      hasBreakingSchemaChange,
-      hasNonBreakingSchemaChange,
-    };
-  }, [isSchemaChangesFeatureEnabled, schemaChange]);
-};
 
 export const SchemaChangesDetected: React.FC = () => {
   const {
@@ -62,7 +44,7 @@ export const SchemaChangesDetected: React.FC = () => {
   };
 
   return (
-    <div className={classNames(styles.container, schemaChangeClassNames)}>
+    <div className={classNames(styles.container, schemaChangeClassNames)} data-testid="schemaChangesDetected">
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>

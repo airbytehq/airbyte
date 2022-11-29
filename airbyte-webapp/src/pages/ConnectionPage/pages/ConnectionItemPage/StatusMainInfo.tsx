@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { ConnectorCard } from "components";
 
 import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { RoutePaths } from "pages/routePaths";
@@ -14,7 +15,7 @@ import { useDestinationDefinition } from "services/connector/DestinationDefiniti
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import { EnabledControl } from "./EnabledControl";
-import { SchemaChangesDetected, useSchemaChanges } from "./SchemaChangesDetected";
+import { SchemaChangesDetected } from "./SchemaChangesDetected";
 import styles from "./StatusMainInfo.module.scss";
 
 export const StatusMainInfo: React.FC = () => {
@@ -42,9 +43,13 @@ export const StatusMainInfo: React.FC = () => {
         };
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} data-testid="statusMainInfo">
       <div className={styles.pathContainer}>
-        <Link to={sourceConnectionPath} className={classNames(styles.connectorLink, schemaChangeClassNames)}>
+        <Link
+          to={sourceConnectionPath}
+          className={classNames(styles.connectorLink, schemaChangeClassNames)}
+          data-testid="statusMainInfo-sourceLink"
+        >
           <ConnectorCard
             connectionName={source.sourceName}
             icon={sourceDefinition?.icon}
@@ -53,7 +58,11 @@ export const StatusMainInfo: React.FC = () => {
           />
         </Link>
         <FontAwesomeIcon icon={faArrowRight} />
-        <Link to={destinationConnectionPath} className={styles.connectorLink}>
+        <Link
+          to={destinationConnectionPath}
+          className={styles.connectorLink}
+          data-testid="statusMainInfo-destinationLink"
+        >
           <ConnectorCard
             connectionName={destination.destinationName}
             icon={destinationDefinition?.icon}
