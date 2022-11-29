@@ -31,20 +31,12 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
-import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
-import io.airbyte.db.instance.development.DevDatabaseMigrator;
-import io.airbyte.db.instance.development.MigrationDevHelper;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -57,53 +49,24 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.sql.DataSource;
-import org.flywaydb.core.Flyway;
 import org.jooq.DSLContext;
-import org.jooq.SQLDialect;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.testcontainers.containers.PostgreSQLContainer;
 
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
-class ConfigRepositoryE2EReadWriteTest {
+class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
-  private static PostgreSQLContainer<?> container;
-  private DataSource dataSource;
-  private DSLContext dslContext;
-  private Database database;
   private ConfigRepository configRepository;
   private DatabaseConfigPersistence configPersistence;
-  private Flyway flyway;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
 
-  @BeforeAll
-  public static void dbSetup() {
-    container = new PostgreSQLContainer<>("postgres:13-alpine")
-        .withDatabaseName("airbyte")
-        .withUsername("docker")
-        .withPassword("docker");
-    container.start();
-  }
-
   @BeforeEach
   void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, ConfigRepositoryE2EReadWriteTest.class.getName(), ConfigsDatabaseMigrator.DB_IDENTIFIER,
-        ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(false);
     configPersistence = spy(new DatabaseConfigPersistence(database));
     configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         new StandardSyncPersistence(database)));
-    final ConfigsDatabaseMigrator configsDatabaseMigrator =
-        new ConfigsDatabaseMigrator(database, flyway);
-    final DevDatabaseMigrator devDatabaseMigrator = new DevDatabaseMigrator(configsDatabaseMigrator);
-    MigrationDevHelper.runLastMigration(devDatabaseMigrator);
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
       configRepository.writeStandardWorkspaceNoSecrets(workspace);
     }
@@ -134,11 +97,6 @@ class ConfigRepositoryE2EReadWriteTest {
     }
 
     database.transaction(ctx -> ctx.truncate(ACTOR_DEFINITION_WORKSPACE_GRANT).execute());
-  }
-
-  @AfterAll
-  public static void dbDown() {
-    container.close();
   }
 
   @Test
