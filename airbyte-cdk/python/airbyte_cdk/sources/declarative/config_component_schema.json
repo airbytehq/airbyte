@@ -1102,6 +1102,9 @@
           "properties": {
             "page_size": {
               "type": "integer"
+            },
+            "start_from_page": {
+              "type": "integer"
             }
           }
         }
