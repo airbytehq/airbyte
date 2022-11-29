@@ -2,14 +2,14 @@ const destinations = require("../../src/utils/connectors/destinations.json");
 const sources = require("../../src/utils/connectors/sources.json");
 
 // Create a map for connector id to variable name (i.e. flip the direction of the map)
-const sourceIds = Object.fromEntries(Object.entries(sources).map((entry) => [entry[1], entry[0]]));
-const destinationIds = Object.fromEntries(Object.entries(destinations).map((entry) => [entry[1], entry[0]]));
+const sourceIdToName = Object.fromEntries(Object.entries(sources).map((entry) => [entry[1], entry[0]]));
+const destinationIdToName = Object.fromEntries(Object.entries(destinations).map((entry) => [entry[1], entry[0]]));
 
 const validateStringContent = (context, node, string) => {
-  if (string in destinationIds) {
-    context.report({ node, messageId: "destinationId", data: { id: string, name: destinationIds[string] } });
-  } else if (string in sourceIds) {
-    context.report({ node, messageId: "sourceId", data: { id: string, name: sourceIds[string] } });
+  if (string in destinationIdToName) {
+    context.report({ node, messageId: "destinationId", data: { id: string, name: destinationIdToName[string] } });
+  } else if (string in sourceIdToName) {
+    context.report({ node, messageId: "sourceId", data: { id: string, name: sourceIdToName[string] } });
   }
 };
 
