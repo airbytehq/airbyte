@@ -10,7 +10,7 @@ import { useEnableConnection } from "hooks/services/useConnectionHook";
 
 interface IProps {
   allowSync?: boolean;
-  hasBreakingChange: boolean;
+  hasBreakingChange?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
@@ -51,6 +51,7 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync
           onChange={onSwitchChange}
           disabled={!allowSync || hasBreakingChange}
           loading={isLoading}
+          data-testid="enable-connection-switch"
         />
       </div>
     );
