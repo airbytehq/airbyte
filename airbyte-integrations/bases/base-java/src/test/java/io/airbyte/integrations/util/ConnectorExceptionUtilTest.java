@@ -2,7 +2,6 @@ package io.airbyte.integrations.util;
 
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
-import io.airbyte.integrations.base.AirbyteSqlException;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -99,7 +98,7 @@ class ConnectorExceptionUtilTest {
 
     @Test
     void getRootConfigErrorFromNonConfigException() {
-        AirbyteSqlException configErrorException = new AirbyteSqlException(CONFIG_EXCEPTION_MESSAGE);
+        SQLException configErrorException = new SQLException(CONFIG_EXCEPTION_MESSAGE);
         Exception exception = new Exception(COMMON_EXCEPTION_MESSAGE, configErrorException);
 
         Throwable actualRootConfigError = ConnectorExceptionUtil.getRootConfigError(exception);
