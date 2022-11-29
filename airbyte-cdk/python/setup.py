@@ -62,6 +62,7 @@ setup(
     python_requires=">=3.9",
     extras_require={
         "dev": [
+            "freezegun",
             "MyPy~=0.812",
             "pytest",
             "pytest-cov",
