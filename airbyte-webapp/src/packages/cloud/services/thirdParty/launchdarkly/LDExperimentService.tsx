@@ -33,14 +33,14 @@ import { rejectAfter } from "utils/promises";
  * states LaunchDarkly can provide for a user/feature pair:
  * |--------------------------+-----------------------------------------------|
  * | `{}`                     | use the application's default feature setting |
- * | `{ "overwrite": true }`  | enable the feature                            |
- * | `{ "overwrite": false }` | disable the feature                           |
+ * | `{ "enabled": true }`    | enable the feature                            |
+ * | `{ "enabled": false }`   | disable the feature                           |
  * |--------------------------+-----------------------------------------------|
  */
 const FEATURE_FLAG_PREFIX = "featureService";
 type LDFeatureName = `${typeof FEATURE_FLAG_PREFIX}.${FeatureItem}`;
 interface LDFeatureToggle {
-  overwrite?: boolean;
+  enabled?: boolean;
 }
 type LDFeatureFlagResponse = Record<LDFeatureName, LDFeatureToggle>;
 type LDInitState = "initializing" | "failed" | "initialized";
@@ -93,18 +93,18 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
 
   /**
    * Update the feature overwrites based on the LaunchDarkly value.
-   * The feature flag variants which do not include a JSON `overwrite` field are filtered
-   * out; then, each feature corresponding to one of the remaining overwrite flags is
-   * either enabled or disabled for the current user based on the boolean value of the
-   * overwrite field.
+   * The feature flag variants which do not include a JSON `enabled` field are filtered
+   * out; then, each feature corresponding to one of the remaining feature flag overwrites
+   * is either enabled or disabled for the current user based on the boolean value of its
+   * overwrite's `enabled` field.
    */
   const updateFeatureOverwrites = () => {
     const allFlags = (ldClient.current?.allFlags() ?? {}) as LDFeatureFlagResponse;
     const featureSet: FeatureSet = Object.fromEntries(
       Object.entries(allFlags)
         .filter(([flagName]) => flagName.startsWith(FEATURE_FLAG_PREFIX))
-        .map(([flagName, { overwrite }]) => [flagName.replace(`${FEATURE_FLAG_PREFIX}.`, ""), overwrite])
-        .filter(([_, overwrite]) => typeof overwrite !== "undefined")
+        .map(([flagName, { enabled }]) => [flagName.replace(`${FEATURE_FLAG_PREFIX}.`, ""), enabled])
+        .filter(([_, enabled]) => typeof enabled !== "undefined")
     );
 
     setFeatureOverwrites(featureSet);
