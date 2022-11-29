@@ -4,15 +4,14 @@
 
 import datetime
 import os
-import random
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, SyncMode, TraceType
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
-from mimesis import Datetime, Person
+from mimesis import Datetime, Numeric, Person
 from mimesis.locales import Locale
 
-from .utils import format_airbyte_time, random_date_in_range, read_json
+from .utils import format_airbyte_time, read_json
 
 
 class Products(Stream, IncrementalMixin):
@@ -74,6 +73,7 @@ class Purchases(Stream, IncrementalMixin):
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
         self.dt = Datetime(seed=self.seed)
+        self.numeric = Numeric(seed=self.seed)
 
     @property
     def state_checkpoint_interval(self) -> Optional[int]:
@@ -90,11 +90,22 @@ class Purchases(Stream, IncrementalMixin):
     def state(self, value: Mapping[str, Any]):
         self._state = value
 
+    def random_date_in_range(
+        self, start_date: datetime.datetime, end_date: datetime.datetime = datetime.datetime.now()
+    ) -> datetime.datetime:
+        time_between_dates = end_date - start_date
+        days_between_dates = time_between_dates.days
+        if days_between_dates < 2:
+            days_between_dates = 2
+        random_number_of_days = self.numeric.integer_number(0, days_between_dates)
+        random_date = start_date + datetime.timedelta(days=random_number_of_days)
+        return random_date
+
     def generate_purchases(self, user_id: int, purchases_count: int) -> list[Dict]:
         purchases: list[Dict] = []
         purchase_percent_remaining = 80  # ~ 20% of people will have no purchases
         total_products = 100
-        purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
+        purchase_percent_remaining = purchase_percent_remaining - self.numeric.integer_number(1, 100)
         i = 0
 
         time_a = self.dt.datetime()
@@ -103,13 +114,15 @@ class Purchases(Stream, IncrementalMixin):
 
         while purchase_percent_remaining > 0:
             id = purchases_count + i + 1
-            product_id = random.randrange(1, total_products)
-            added_to_cart_at = random_date_in_range(created_at)
+            product_id = self.numeric.integer_number(1, total_products)
+            added_to_cart_at = self.random_date_in_range(created_at)
             purchased_at = (
-                random_date_in_range(added_to_cart_at) if added_to_cart_at is not None and random.randrange(1, 100) <= 70 else None
+                self.random_date_in_range(added_to_cart_at)
+                if added_to_cart_at is not None and self.numeric.integer_number(1, 100) <= 70
+                else None
             )  # 70% likely to purchase the item in the cart
             returned_at = (
-                random_date_in_range(purchased_at) if purchased_at is not None and random.randrange(1, 100) <= 15 else None
+                self.random_date_in_range(purchased_at) if purchased_at is not None and self.numeric.integer_number(1, 100) <= 15 else None
             )  # 15% likely to return the item
 
             purchase = {
@@ -122,7 +135,7 @@ class Purchases(Stream, IncrementalMixin):
             }
             purchases.append(purchase)
 
-            purchase_percent_remaining = purchase_percent_remaining - random.randrange(1, 100)
+            purchase_percent_remaining = purchase_percent_remaining - self.numeric.integer_number(1, 100)
             i += 1
         return purchases
 
