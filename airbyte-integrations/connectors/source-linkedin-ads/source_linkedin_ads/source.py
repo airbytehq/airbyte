@@ -14,7 +14,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 
@@ -235,36 +235,6 @@ class Creatives(LinkedInAdsStreamSlicing):
     search_param_value = "urn:li:sponsoredCampaign:"
 
 
-class AdCreativeName(LinkedinAdsStream, ABC):
-    """
-    Get Creative name.
-    To retrieve a name for a creative for a Sponsored Content ad.
-    """
-
-    # parent_stream = Creatives
-    # parent_values_map = {"creative_id": "id"}
-    search_param = "projection"
-    search_param_value = "variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title)))))))"
-    pivot_by = "CREATIVE"
-
-    endpoint = "adCreativesV2/76053253"
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        return {}
-
-    def request_params(
-        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
-    ) -> MutableMapping[str, Any]:
-        # params = {"projection=(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"}
-        params = {}
-        params[self.search_param] = f"{self.search_param_value}"
-        return params
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        if response.json():
-            print("response:", response.json())
-            yield response.json().get("variables")
-
 class AdDirectSponsoredContents(LinkedInAdsStreamSlicing):
     """
     Get AdDirectSponsoredContents data using `account_id` slicing.
@@ -364,6 +334,67 @@ class AdCreativeAnalytics(LinkedInAdsAnalyticsStream):
     search_param = "creatives[0]"
     search_param_value = "urn:li:sponsoredCreative:"
     pivot_by = "CREATIVE"
+
+
+class AdCreativeName(LinkedinAdsStream):
+
+    endpoint = "adCreativesV2"
+    search_param = "projection"
+    search_param_value = "(variables(data(*,com.linkedin.ads.SponsoredUpdateCreativeVariables(*,share~(subject,text(text),content(contentEntities(*(description,entityLocation,title))))))))"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return {}
+
+    @property
+    def use_cache(self) -> bool:
+        return True
+
+    @property
+    def cache_filename(self):
+        return "creatives.yml"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
+    ) -> MutableMapping[str, Any]:
+        return {self.search_param: self.search_param_value}
+
+    def stream_slices(
+            self, sync_mode: SyncMode.incremental,
+            cursor_field: List[str] = None,
+            stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+
+        parent = Creatives(self.config)
+        parent_stream_slices = parent.stream_slices(
+            sync_mode=SyncMode.incremental,
+            cursor_field=cursor_field,
+            stream_state=stream_state
+        )
+
+        for stream_slice in parent_stream_slices:
+            parent_records = parent.read_records(
+                sync_mode=SyncMode.incremental, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+            )
+
+            for record in parent_records:
+                yield {
+                    "creative_id": record.get('id')
+                }
+
+    def parse_response(
+            self,
+            response: requests.Response,
+            stream_state: Mapping[str, Any],
+            stream_slice: Mapping[str, Any] = None,
+            next_page_token: Mapping[str, Any] = None) -> Iterable[Mapping]:
+        if response.json():
+            result = response.json()
+            result.update({"creative_id": stream_slice['creative_id']})
+            yield result
+
+    def path(
+            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return f"{self.endpoint}/{stream_slice['creative_id']}"
 
 
 class LinkedinAdsOAuth2Authenticator(Oauth2Authenticator):
