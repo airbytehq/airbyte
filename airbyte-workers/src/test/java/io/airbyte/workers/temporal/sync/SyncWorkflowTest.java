@@ -214,7 +214,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSuccess() {
+  void testSuccess() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -259,7 +259,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() {
+  void testReplicationFailedGracefully() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -382,7 +382,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testWebhookOperation() {
+  void testWebhookOperation() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     when(replicationActivity.replicate(any(), any(), any(), any(), any())).thenReturn(new StandardSyncOutput());
     final StandardSyncOperation webhookOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
