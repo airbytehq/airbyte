@@ -17,8 +17,32 @@ import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { rejectAfter } from "utils/promises";
 
-type LDFeatureName = `${FeatureItem}` | "overwrites";
-type RawLDFeatureName = `${typeof FEATURE_FLAG_PREFIX}.${LDFeatureName}`;
+/**
+ * This service hardcodes two conventions about the format of the LaunchDarkly feature
+ * flags we use to override feature settings:
+ * 1) each feature flag's key (a unique string which is used as the flag's field name in
+ *    LaunchDarkly's JSON payloads) is a string satisfying the LDFeatureName type.
+ * 2) for each feature flag, LaunchDarkly will return a JSON blob satisfying the
+ *    LDFeatureToggle type.
+ *
+ * The primary benefit of programmatically requiring a specific prefix is to provide a
+ * reliable search term which can be used in LaunchDarkly to filter the list of feature
+ * flags to all of, and only, the ones which can dynamically toggle features in the UI.
+ *
+ * LDFeatureToggle objects can take three forms, representing the three possible decision
+ * states LaunchDarkly can provide for a user/feature pair:
+ * |--------------------------+-----------------------------------------------|
+ * | `{}`                     | use the application's default feature setting |
+ * | `{ "overwrite": true }`  | enable the feature                            |
+ * | `{ "overwrite": false }` | disable the feature                           |
+ * |--------------------------+-----------------------------------------------|
+ */
+const FEATURE_FLAG_PREFIX = "featureService";
+type LDFeatureName = `${typeof FEATURE_FLAG_PREFIX}.${FeatureItem}`;
+interface LDFeatureToggle {
+  overwrite?: boolean;
+}
+type LDFeatureFlagResponse = Record<LDFeatureName, LDFeatureToggle>;
 type LDInitState = "initializing" | "failed" | "initialized";
 
 /**
@@ -26,19 +50,6 @@ type LDInitState = "initializing" | "failed" | "initialized";
  * before running disabling it.
  */
 const INITIALIZATION_TIMEOUT = 5000;
-
-// Originally, all feature toggles were contained within one single feature flag in
-// LaunchDarkly, using internal conventions to represent multiple feature toggles from a
-// single variant. `FEATURE_FLAG_EXPERIMENT` is the LaunchDarkly key for that shared
-// feature flag.
-//
-// This service hardcodes the convention that all feature overrides in LaunchDarkly use
-// keys that follow the format `${FEATURE_FLAG_PREFIX}.${FeatureItem}`. The primary
-// benefit of requiring the prefix in code is to provide a reliable search term which can
-// be used in LaunchDarkly to retrieve the complete set of flags which can be used to
-// dynamically toggle UI features.
-const FEATURE_FLAG_PREFIX = "featureService";
-const FEATURE_FLAG_EXPERIMENT: RawLDFeatureName = "featureService.overwrites";
 
 function mapUserToLDUser(user: User | null, locale: string): LDClient.LDUser {
   return user
@@ -82,37 +93,20 @@ const LDInitializationWrapper: React.FC<React.PropsWithChildren<{ apiKey: string
 
   /**
    * Update the feature overwrites based on the LaunchDarkly value.
-   * It's expected to be a comma separated list of features (the values
-   * of the enum) that should be enabled. Each can be prefixed with "-"
-   * to disable the feature instead.
+   * The feature flag variants which do not include a JSON `overwrite` field are filtered
+   * out; then, each feature corresponding to one of the remaining overwrite flags is
+   * either enabled or disabled for the current user based on the boolean value of the
+   * overwrite field.
    */
   const updateFeatureOverwrites = () => {
-    const { [FEATURE_FLAG_EXPERIMENT]: sharedFeatureOverwrites, ...independentFeatureOverwritesRaw } =
-      Object.fromEntries(
-        Object.entries(ldClient.current?.allFlags() ?? {}).filter(([id]) => id.startsWith(FEATURE_FLAG_PREFIX))
-      );
-
-    const sharedFeaturesSet = sharedFeatureOverwrites
-      .split(",")
-      .reduce((featureSet: FeatureSet, featureString: string) => {
-        const [key, enabled] = featureString.startsWith("-") ? [featureString.slice(1), false] : [featureString, true];
-        return {
-          ...featureSet,
-          [key]: enabled,
-        };
-      }, {} as FeatureSet);
-
-    // by convention, feature flags return one of three payloads, each with its own meaning:
-    // 1) `{ "overwrite": true }` :: enable the feature
-    // 2) `{ "overwrite": false }` :: disable the feature
-    // 3) `{}` :: `overwrite` is `undefined`, i.e. continue to use the application's default feature state
-    const independentFeaturesSet = Object.fromEntries(
-      Object.entries(independentFeatureOverwritesRaw)
-        .map(([flag, { overwrite }]) => [flag.replace(`${FEATURE_FLAG_PREFIX}.`, ""), overwrite])
-        .filter(([_, value]) => (typeof value === "undefined" ? false : true))
+    const allFlags = (ldClient.current?.allFlags() ?? {}) as LDFeatureFlagResponse;
+    const featureSet: FeatureSet = Object.fromEntries(
+      Object.entries(allFlags)
+        .filter(([flagName]) => flagName.startsWith(FEATURE_FLAG_PREFIX))
+        .map(([flagName, { overwrite }]) => [flagName.replace(`${FEATURE_FLAG_PREFIX}.`, ""), overwrite])
+        .filter(([_, overwrite]) => typeof overwrite !== "undefined")
     );
 
-    const featureSet: FeatureSet = { ...sharedFeaturesSet, ...independentFeaturesSet };
     setFeatureOverwrites(featureSet);
   };
 
