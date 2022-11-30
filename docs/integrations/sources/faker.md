@@ -1,16 +1,67 @@
-# Faker
+# Sample Data (Faker)
 
 ## Sync overview
 
-The Faker source generates sample data using the python [`faker`](https://faker.readthedocs.io/) package. Specifically, we generate data that looks like an e-commerce company's `users` table with the [`faker.profile()`](https://faker.readthedocs.io/en/master/providers/faker.providers.profile.html) method.
+The Sample Data (Faker) source generates sample data using the python [`mimesis`](https://mimesis.name/en/master/) package.
 
 ### Output schema
 
-Only `Users` is supported.
+This source will generate an "e-commerce-like" dataset with users, products, and purchases. Here's what is produced at a Postgres destination connected to this source:
 
-### Data type mapping
+```sql
+CREATE TABLE "public"."users" (
+    "id" float8,
+    "age" int8,
+    "name" text,
+    "email" text,
+    "title" text,
+    "gender" text,
+    "height" text,
+    "weight" int8,
+    "language" text,
+    "telephone" text,
+    "blood_type" text,
+    "created_at" timestamptz,
+    "occupation" text,
+    "updated_at" timestamptz,
+    "nationality" text,
+    "academic_degree" text,
+    -- "_airbyte_ab_id" varchar,
+    -- "_airbyte_emitted_at" timestamptz,
+    -- "_airbyte_normalized_at" timestamptz,
+    -- "_airbyte_dev_users_hashid" text,
+    -- "_airbyte_unique_key" text
+);
 
-Native Airbyte types (string, number, date, etc)
+CREATE TABLE "public"."products" (
+    "id" float8,
+    "make" text,
+    "year" float8,
+    "model" text,
+    "price" float8,
+    "created_at" timestamptz,
+    -- "_airbyte_ab_id" varchar,
+    -- "_airbyte_emitted_at" timestamptz,
+    -- "_airbyte_normalized_at" timestamptz,
+    -- "_airbyte_dev_products_hashid" text,
+    -- "_airbyte_unique_key" text
+);
+
+CREATE TABLE "public"."purchases" (
+    "id" float8,
+    "user_id" float8,
+    "product_id" float8,
+    "returned_at" timestamptz,
+    "purchased_at" timestamptz,
+    "added_to_cart_at" timestamptz,
+    -- "_airbyte_ab_id" varchar,
+    -- "_airbyte_emitted_at" timestamptz,
+    -- "_airbyte_normalized_at" timestamptz,
+    -- "_airbyte_dev_purchases_hashid" text,
+    -- "_airbyte_unique_key" text
+);
+
+```
 
 ### Features
 
@@ -21,21 +72,12 @@ Native Airbyte types (string, number, date, etc)
 | Namespaces        | No                   |       |
 
 Of note, if you choose `Incremental Sync`, state will be maintained between syncs, and once you hit `count` records, no new records will be added.
+
 You can choose a specific `seed` (integer) as an option for this connector which will guarantee that the same fake records are generated each time. Otherwise, random data will be created on each subsequent sync.
-
-### Rate Limiting & Performance Considerations
-
-N/A
-
-## Getting started
 
 ### Requirements
 
 None!
-
-### Setup guide
-
-N/A
 
 ## Changelog
 
