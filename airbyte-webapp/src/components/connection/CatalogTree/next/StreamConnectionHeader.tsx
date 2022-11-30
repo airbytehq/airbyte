@@ -5,7 +5,7 @@ import { FormattedMessage } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
 
-import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useSourceDefinition } from "services/connector/SourceDefinitionService";
 import { getIcon } from "utils/imageUtils";
@@ -17,7 +17,7 @@ const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>
 export const StreamConnectionHeader: React.FC = () => {
   const {
     connection: { source, destination },
-  } = useConnectionEditService();
+  } = useConnectionFormService();
   const sourceDefinition = useSourceDefinition(source.sourceDefinitionId);
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const sourceStyles = classnames(styles.connector, styles.source);
