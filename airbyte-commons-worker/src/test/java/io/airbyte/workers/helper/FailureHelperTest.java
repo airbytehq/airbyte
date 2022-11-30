@@ -179,4 +179,14 @@ class FailureHelperTest {
     assertEquals(failureReasonList.get(0), TRACE_FAILURE_REASON);
   }
 
+  @Test
+  void testUnknownOriginFailure() {
+    final Throwable t = new RuntimeException();
+    final Long jobId = 12345L;
+    final Integer attemptNumber = 1;
+    final FailureReason failureReason = FailureHelper.unknownOriginFailure(t, jobId, attemptNumber);
+    assertEquals(FailureOrigin.UNKNOWN, failureReason.getFailureOrigin());
+    assertEquals("An unknown failure occurred", failureReason.getExternalMessage());
+  }
+
 }

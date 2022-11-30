@@ -22,13 +22,13 @@ jobs:
     environment: more-secrets
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
 
       - name: Npm Caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.npm
@@ -38,7 +38,7 @@ jobs:
 
       # this intentionally does not use restore-keys so we don't mess with gradle caching
       - name: Gradle Caching
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             ~/.gradle/caches
@@ -46,13 +46,14 @@ jobs:
             **/.venv
           key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
 
-      - uses: actions/setup-java@v1
+      - uses: actions/setup-java@v3
         with:
-          java-version: '14'
+          distribution: "zulu"
+          java-version: "14"
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
-          node-version: 'lts/gallium'
+          node-version: "lts/gallium"
 
       - name: Build
         id: run-specific-test

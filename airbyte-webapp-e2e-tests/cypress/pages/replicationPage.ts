@@ -10,6 +10,8 @@ const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const successResult = "div[data-id='success-result']";
 const saveStreamChangesButton = "button[data-testid='resetModal-save']";
 const connectionNameInput = "input[data-testid='connectionName']";
+const refreshSourceSchemaButton = "button[data-testid='refresh-source-schema-btn']";
+const streamSyncEnabledSwitch = (streamName: string) => `[data-testid='${streamName}-stream-sync-switch']`;
 
 export const goToReplicationTab = () => {
   cy.get(replicationTab).click();
@@ -42,6 +44,16 @@ export const setupDestinationNamespaceSourceFormat = () => {
   cy.get(destinationNamespaceSource).click();
 };
 
+export const refreshSourceSchemaBtnClick = () => {
+  cy.get(refreshSourceSchemaButton).click();
+};
+
+
+
+export const resetModalSaveBtnClick = () => {
+  cy.get("[data-testid='resetModal-save']").click();
+};
+
 export const selectFullAppendSyncMode = () => {
   cy.get(syncModeDropdown).first().click({ force: true });
 
@@ -56,4 +68,8 @@ export const checkSuccessResult = () => {
 
 export const confirmStreamConfigurationChangedPopup = () => {
   cy.get(saveStreamChangesButton).click();
+};
+
+export const toggleStreamEnabledState = (streamName: string) => {
+  cy.get(streamSyncEnabledSwitch(streamName)).check({ force: true });
 };

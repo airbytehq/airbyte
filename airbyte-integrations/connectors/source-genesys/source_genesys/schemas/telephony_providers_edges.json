@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "division": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "descriptions": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "dateCreated": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "dateModified": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "modifiedBy": {
+      "type": ["null", "string"]
+    },
+    "createdBy": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "modifiedByApp": {
+      "type": ["null", "string"]
+    },
+    "createdByApp": {
+      "type": ["null", "string"]
+    },
+    "webRtcForceTurn": {
+      "type": ["null", "string"]
+    },
+    "make": {
+      "type": ["null", "string"]
+    },
+    "model": {
+      "type": ["null", "string"]
+    },
+    "apiVersion": {
+      "type": ["null", "string"]
+    },
+    "softwareVersion": {
+      "type": ["null", "string"]
+    },
+    "softwareVersionTimestamp": {
+      "type": ["null", "string"]
+    },
+    "softwareVersionPlatform": {
+      "type": ["null", "string"]
+    },
+    "softwareVersionConfiguration": {
+      "type": ["null", "string"]
+    },
+    "fullSoftwareVersion": {
+      "type": ["null", "string"]
+    },
+    "pairingId": {
+      "type": ["null", "string"]
+    },
+    "fingerprint": {
+      "type": ["null", "string"]
+    },
+    "fingerprintHint": {
+      "type": ["null", "string"]
+    },
+    "currentVersion": {
+      "type": ["null", "string"]
+    },
+    "stagedVersion": {
+      "type": ["null", "string"]
+    },
+    "patch": {
+      "type": ["null", "string"]
+    },
+    "statusCode": {
+      "type": ["null", "string"]
+    },
+    "onlineStatus": {
+      "type": ["null", "string"]
+    },
+    "serialNumber": {
+      "type": ["null", "string"]
+    },
+    "physicalEdge": {
+      "type": ["null", "boolean"]
+    },
+    "managed": {
+      "type": ["null", "boolean"]
+    },
+    "edgeDeploymentType": {
+      "type": ["null", "string"]
+    },
+    "conversationCount": {
+      "type": ["null", "number"]
+    },
+    "callDrainingState": {
+      "type": ["null", "string"]
+    },
+    "proxy": {
+      "type": ["null", "string"]
+    },
+    "offlineConfigCalled": {
+      "type": ["null", "boolean"]
+    },
+    "osName": {
+      "type": ["null", "string"]
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

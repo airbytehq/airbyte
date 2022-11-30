@@ -4,7 +4,7 @@ name: Notify FE team for FE label on issues
 
 on:
   issues:
-      types: [labeled]
+    types: [labeled]
 
 jobs:
   notify:
@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte Repo for PAT command
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Check PAT rate limits
         # Cannot share PAT outside of JOB context
         run: |
@@ -24,7 +24,7 @@ jobs:
         uses: jenschelkopf/issue-label-notification-action@1.3
         with:
           token: "${{ env.PAT }}"
-          message: 'cc {recipients}'
+          message: "cc {recipients}"
           # Specify a map of label -> team/user to notify
           recipients: |
             team/frontend=@airbytehq/frontend

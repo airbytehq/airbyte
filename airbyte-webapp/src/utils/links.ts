@@ -30,6 +30,8 @@ export const links = {
   webhookGuideLink: `${BASE_DOCS_LINK}/operator-guides/configuring-sync-notifications/`,
   cronReferenceLink: "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html",
   cloudAllowlistIPsLink: `${BASE_DOCS_LINK}/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-address`,
+  dataResidencySurvey: "https://forms.gle/Dr7MPTdt9k3xTinL8",
+  lowCodeYamlDescription: `${BASE_DOCS_LINK}/connector-development/config-based/understanding-the-yaml-file/yaml-overview`,
 } as const;
 
 export type OutboundLinks = typeof links;

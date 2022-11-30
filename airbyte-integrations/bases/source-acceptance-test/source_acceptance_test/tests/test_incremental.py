@@ -11,24 +11,40 @@ import pendulum
 import pytest
 from airbyte_cdk.models import AirbyteMessage, AirbyteStateMessage, AirbyteStateType, ConfiguredAirbyteCatalog, Type
 from source_acceptance_test import BaseTest
-from source_acceptance_test.config import IncrementalConfig
+from source_acceptance_test.config import Config, EmptyStreamConfiguration, IncrementalConfig
 from source_acceptance_test.utils import ConnectorRunner, JsonSchemaHelper, SecretDict, filter_output, incremental_only_catalog
 
 
-@pytest.fixture(name="future_state_path")
-def future_state_path_fixture(inputs, base_path) -> Path:
+@pytest.fixture(name="future_state_configuration")
+def future_state_configuration_fixture(inputs, base_path, test_strictness_level) -> Tuple[Path, List[EmptyStreamConfiguration]]:
     """Fixture with connector's future state path (relative to base_path)"""
-    if getattr(inputs, "future_state_path"):
-        return Path(base_path) / getattr(inputs, "future_state_path")
-    pytest.skip("`future_state_path` not specified, skipping")
+    if inputs.future_state and inputs.future_state.future_state_path:
+        return Path(base_path) / inputs.future_state.future_state_path, inputs.future_state.missing_streams
+    elif test_strictness_level is Config.TestStrictnessLevel.high:
+        pytest.fail("High test strictness level error: a future state configuration must be provided in high test strictness level.")
+    else:
+        pytest.skip("`future_state` not specified, skipping.")
 
 
 @pytest.fixture(name="future_state")
-def future_state_fixture(future_state_path) -> Path:
+def future_state_fixture(future_state_configuration, test_strictness_level, configured_catalog) -> List[MutableMapping]:
     """"""
+    future_state_path, missing_streams = future_state_configuration
     with open(str(future_state_path), "r") as file:
         contents = file.read()
-    return json.loads(contents)
+    states = json.loads(contents)
+    if test_strictness_level is Config.TestStrictnessLevel.high:
+        if not all([missing_stream.bypass_reason is not None for missing_stream in missing_streams]):
+            pytest.fail("High test strictness level error: all missing_streams must have a bypass reason specified.")
+        all_stream_names = set([stream.stream.name for stream in configured_catalog.streams])
+        streams_in_states = set([state["stream"]["stream_descriptor"]["name"] for state in states])
+        declared_missing_streams_names = set([missing_stream.name for missing_stream in missing_streams])
+        undeclared_missing_streams_names = all_stream_names - declared_missing_streams_names - streams_in_states
+        if undeclared_missing_streams_names:
+            pytest.fail(
+                f"High test strictness level error: {', '.join(undeclared_missing_streams_names)} streams are missing in your future_state file, please declare a state for those streams or fill-in a valid bypass_reason."
+            )
+    return states
 
 
 @pytest.fixture(name="cursor_paths")
