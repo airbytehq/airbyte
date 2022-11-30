@@ -41,6 +41,10 @@ class VersioningAcceptanceTests {
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
+            .setBasePath("/api"),
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8080)
             .setBasePath("/api"));
 
     workspaceId = apiClient.getWorkspaceApi().listWorkspaces().getWorkspaces().get(0).getWorkspaceId();

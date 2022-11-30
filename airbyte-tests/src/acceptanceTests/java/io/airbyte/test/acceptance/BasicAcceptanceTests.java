@@ -172,6 +172,10 @@ class BasicAcceptanceTests {
         new ApiClient().setScheme("http")
             .setHost("localhost")
             .setPort(8001)
+            .setBasePath("/api"),
+        new ApiClient().setScheme("http")
+            .setHost("localhost")
+            .setPort(8080)
             .setBasePath("/api"));
     webBackendApi = new WebBackendApi(
         new ApiClient().setScheme("http")
