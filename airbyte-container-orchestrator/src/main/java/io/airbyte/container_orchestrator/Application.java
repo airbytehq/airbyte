@@ -37,7 +37,7 @@ public class Application {
     try (final var ctx = Micronaut.run(Application.class, args)) {
       exitCode = ctx.getBean(Application.class).run();
     } catch (final Throwable t) {
-      log.error("could not run {}: {}", t.getMessage(), t);
+      log.error("could not run {}", t.getMessage(), t);
     } finally {
       // this mimics the pre-micronaut code, unsure if there is a better way in micronaut to ensure a
       // non-zero exit code
