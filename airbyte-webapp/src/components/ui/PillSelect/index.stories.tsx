@@ -22,22 +22,22 @@ const options = [
   {
     value: "first_name",
     label: "first_name",
-    pillLabel: "id",
+    pillLabel: "first_name",
   },
   {
     value: "last_name",
     label: "last_name",
-    pillLabel: "id",
+    pillLabel: "last_name",
   },
   {
     value: "email",
     label: "email",
-    pillLabel: "id",
+    pillLabel: "email",
   },
   {
     value: "company",
     label: "company",
-    pillLabel: "id",
+    pillLabel: "company",
   },
 ];
 
@@ -78,7 +78,7 @@ const optionsWithTwoValues = [
 ];
 
 export const PrimaryWithTwoValue = Template.bind({});
-Primary.args = {
+PrimaryWithTwoValue.args = {
   options: optionsWithTwoValues,
   value: "test1",
 };
