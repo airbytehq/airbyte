@@ -236,8 +236,6 @@ class ExportDataGet(KapicheExportApiStream, ABC):
             if response.status_code == 204:
                 break
             for record in  self.parse_response(response, fname):
-                # if int(self._cursor_value) < record[self.cursor_field]:
-                    # self._cursor_value = int(record[self.cursor_field])
                 yield record
 
             next_doc = response.headers.get('Kapiche-next-document-id')
