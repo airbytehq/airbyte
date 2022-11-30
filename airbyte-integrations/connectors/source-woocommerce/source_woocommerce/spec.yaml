@@ -26,7 +26,6 @@ connectionSpecification:
       type: string
       title: Shop Name
       description: The name of the store. For https://EXAMPLE.com, the shop name is 'EXAMPLE.com'.
-      airbyte_secret: true
       order: 2
     start_date:
       type: string
