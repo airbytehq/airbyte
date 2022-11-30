@@ -1,4 +1,24 @@
-{
-  "users": { "cursor": 99999999999999999 },
-  "purchases": { "cursor": 99999999999999999 }
-}
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "cursor": 99999999999999999
+      },
+      "stream_descriptor": {
+        "name": "users"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "cursor": 99999999999999999
+      },
+      "stream_descriptor": {
+        "name": "purchases"
+      }
+    }
+  }
+]
