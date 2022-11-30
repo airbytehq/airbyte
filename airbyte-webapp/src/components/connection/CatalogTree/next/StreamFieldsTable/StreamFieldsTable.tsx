@@ -4,6 +4,9 @@ import { createColumnHelper } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { CheckBox } from "components/ui/CheckBox";
+import { RadioButton } from "components/ui/RadioButton";
+
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -12,8 +15,6 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
-import { CheckBox } from "../../../../ui/CheckBox";
-import { RadioButton } from "../../../../ui/RadioButton";
 import { pathDisplayName } from "../../PathPopout";
 import { NextTable } from "../NextTable";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
