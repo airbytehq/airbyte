@@ -6,6 +6,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow-y: hidden;
 }
 
 .header {
@@ -14,16 +15,17 @@
   align-items: center;
   gap: variables.$spacing-md;
   padding: variables.$spacing-sm variables.$spacing-md;
-}
-
-.numLogsDisplay {
-  border-radius: variables.$border-radius-md;
-  background-color: colors.$blue;
-  padding: 1px variables.$spacing-sm;
-  color: colors.$white;
+  border: none;
+  cursor: pointer;
+  flex: 0 0 25px;
 }
 
 .logsDisplay {
   overflow-y: auto;
   height: 100%;
+  padding: variables.$spacing-md;
+}
+
+.error {
+  color: colors.$red;
 }

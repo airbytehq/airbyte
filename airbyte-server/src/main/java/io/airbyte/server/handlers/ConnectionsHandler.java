@@ -147,7 +147,9 @@ public class ConnectionsHandler {
         .withStatus(ApiPojoConverters.toPersistenceStatus(connectionCreate.getStatus()))
         .withSourceCatalogId(connectionCreate.getSourceCatalogId())
         .withGeography(getGeographyFromConnectionCreateOrWorkspace(connectionCreate))
-        .withBreakingChange(false);
+        .withBreakingChange(false)
+        .withNonBreakingChangesPreference(
+            ApiPojoConverters.toPersistenceNonBreakingChangesPreference(connectionCreate.getNonBreakingChangesPreference()));
     if (connectionCreate.getResourceRequirements() != null) {
       standardSync.withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(connectionCreate.getResourceRequirements()));
     }
@@ -179,7 +181,7 @@ public class ConnectionsHandler {
       eventRunner.createConnectionManagerWorkflow(connectionId);
     } catch (final Exception e) {
       LOGGER.error("Start of the connection manager workflow failed", e);
-      configRepository.deleteStandardSyncDefinition(standardSync.getConnectionId());
+      configRepository.deleteStandardSync(standardSync.getConnectionId());
       throw e;
     }
 
@@ -351,6 +353,14 @@ public class ConnectionsHandler {
 
     if (patch.getBreakingChange() != null) {
       sync.setBreakingChange(patch.getBreakingChange());
+    }
+
+    if (patch.getNotifySchemaChanges() != null) {
+      sync.setNotifySchemaChanges(patch.getNotifySchemaChanges());
+    }
+
+    if (patch.getNonBreakingChangesPreference() != null) {
+      sync.setNonBreakingChangesPreference(ApiPojoConverters.toPersistenceNonBreakingChangesPreference(patch.getNonBreakingChangesPreference()));
     }
   }
 

@@ -51,17 +51,24 @@ This source produces a single table for the target file as it replicates only on
 
 **This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
 
-## Getting Started (Airbyte Cloud)
+## Getting Started
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
+<!-- /env:cloud -->
 
-## Getting Started (Airbyte Open-Source)
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
+<!-- /env:oss -->
 
 #### Provider Specific Information
 
+* In case of Google Drive, it is necesary to use the Download URL, the format for that is `https://drive.google.com/uc?export=download&id=[DRIVE_FILE_ID]` where `[DRIVE_FILE_ID]` is the string found in the Share URL here `https://drive.google.com/file/d/[DRIVE_FILE_ID]/view?usp=sharing` 
 * In case of GCS, it is necessary to provide the content of the service account keyfile to access private buckets. See settings of [BigQuery Destination](../destinations/bigquery.md)
 * In case of AWS S3, the pair of `aws_access_key_id` and `aws_secret_access_key` is necessary to access private S3 buckets.
 * In case of AzBlob, it is necessary to provide the `storage_account` in which the blob you want to access resides. Either `sas_token` [(info)](https://docs.microsoft.com/en-us/azure/storage/blobs/sas-service-create?tabs=dotnet) or `shared_key` [(info)](https://docs.microsoft.com/en-us/azure/storage/common/storage-account-keys-manage?tabs=azure-portal) is necessary to access private blobs.

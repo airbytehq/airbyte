@@ -48,6 +48,11 @@ def test_strictness_level_fixture(acceptance_test_config: Config) -> Config.Test
     return acceptance_test_config.test_strictness_level
 
 
+@pytest.fixture(name="cache_discovered_catalog", scope="session")
+def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
+    return acceptance_test_config.cache_discovered_catalog
+
+
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
     """Fixture with connector's config path"""
@@ -238,9 +243,11 @@ def previous_cached_schemas_fixture() -> MutableMapping[str, AirbyteStream]:
 
 
 @pytest.fixture(name="discovered_catalog")
-def discovered_catalog_fixture(connector_config, docker_runner: ConnectorRunner, cached_schemas) -> MutableMapping[str, AirbyteStream]:
+def discovered_catalog_fixture(
+    connector_config, docker_runner: ConnectorRunner, cached_schemas, cache_discovered_catalog: bool
+) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
-    if not cached_schemas:
+    if not cached_schemas or not cache_discovered_catalog:
         output = docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
         for stream in catalogs[-1].streams:

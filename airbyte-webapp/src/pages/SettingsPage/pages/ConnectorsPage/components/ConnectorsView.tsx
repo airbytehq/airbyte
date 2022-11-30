@@ -48,7 +48,10 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
   const workspace = useCurrentWorkspace();
-  const availableConnectorDefinitions = useAvailableConnectorDefinitions(connectorsDefinitions, workspace);
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions<ConnectorDefinition>(
+    connectorsDefinitions,
+    workspace
+  );
 
   const columns = React.useMemo(
     () => [

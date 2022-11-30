@@ -16,6 +16,7 @@ import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -189,6 +190,10 @@ public class TemporalClient {
     final Optional<Long> jobId;
     final Optional<ErrorCode> errorCode;
 
+  }
+
+  public Optional<WorkflowState> getWorkflowState(final UUID connectionId) {
+    return connectionManagerUtils.getWorkflowState(client, connectionId);
   }
 
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
