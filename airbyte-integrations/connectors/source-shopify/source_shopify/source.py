@@ -452,9 +452,6 @@ class ProductsGraphQl(IncrementalShopifyStream):
                     record["shop_url"] = self.config["shop"]
                     yield record
 
-    def get_json_schema(self):
-        return {}
-
 
 class MetafieldProducts(MetafieldShopifySubstream):
     parent_stream_class: object = Products
