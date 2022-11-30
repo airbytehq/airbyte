@@ -12,6 +12,9 @@ This Source is capable of syncing the following Streams:
 * [Card](https://www.metabase.com/docs/latest/api/card.html#get-apicard)
 * [Collections](https://www.metabase.com/docs/latest/api/collection.html#get-apicollection)
 * [Dashboard](https://www.metabase.com/docs/latest/api/dashboard.html#get-apidashboard)
+* [Database](https://www.metabase.com/docs/latest/api/database.html#get-apidatabase)
+* Dataset Query Views: This requires an admin account to a metabase account with at least a PRO plan to retrieve data access audit logs.
+* [Snippet](https://www.metabase.com/docs/latest/api/native-query-snippet#get-apinative-query-snippet)
 * [User](https://www.metabase.com/docs/latest/api/user.html#get-apiuser)
 
 ### Data type mapping
@@ -70,5 +73,6 @@ authenticated query is running, which might trigger security alerts on the user'
 
 | Version | Date       | Pull Request                                             | Subject                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------|
+| 0.2.1   | 2022-11-30 | [](https://github.com/airbytehq/airbyte/pull/) | Add Snippets and Dataset Query Views streams |
 | 0.2.0   | 2022-10-28 | [18607](https://github.com/airbytehq/airbyte/pull/18607) | Disallow using `http` URLs |
 | 0.1.0   | 2022-06-15 | [6975](https://github.com/airbytehq/airbyte/pull/13752)  | Initial (alpha) release    |

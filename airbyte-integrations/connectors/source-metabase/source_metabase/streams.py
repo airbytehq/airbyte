@@ -7,8 +7,8 @@ from ast import literal_eval
 from typing import Any, Iterable, Mapping, Optional
 
 import requests
-from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams import IncrementalMixin
+from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class MetabaseStream(HttpStream, ABC):
@@ -62,7 +62,17 @@ class Dashboards(MetabaseStream):
         return "dashboard"
 
 
+class Databases(MetabaseStream):
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        result = response.json().get("data", [])
+        yield from result
+
+    def path(self, **kwargs) -> str:
+        return "database"
+
+
 class DatasetQueryViews(IncrementalMetabaseStream):
+    primary_key = None
     cursor_field = "viewed_on"
     http_method = "POST"
     page_size = 10000
@@ -86,14 +96,14 @@ class DatasetQueryViews(IncrementalMetabaseStream):
             "database_id",
             "source_db",
             "table_id",
-            "table"
+            "table",
         ]
         row_num = 0
         for row in literal_eval(str(rows_result)):
             result = {}
             for i in range(len(header)):
                 result[header[i]] = row[i]
-            result['page_offset'] = self.page_offset + row_num
+            result["page_offset"] = self.page_offset + row_num
             row_num += 1
             yield result
 
@@ -107,7 +117,7 @@ class DatasetQueryViews(IncrementalMetabaseStream):
             "type": "internal",
             "fn": "metabase-enterprise.audit-app.pages.users/query-views",
             "args": [],
-            "parameters": []
+            "parameters": [],
         }
         return payload
 
@@ -145,7 +155,6 @@ class Snippets(MetabaseStream):
 class Users(MetabaseStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         result = response.json().get("data", [])
-        print(f"Extracted {result}")
         yield from result
 
     def path(self, **kwargs) -> str:

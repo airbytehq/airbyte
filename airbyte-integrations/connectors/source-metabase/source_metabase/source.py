@@ -10,7 +10,7 @@ from airbyte_cdk.models import AirbyteMessage, ConfiguredAirbyteCatalog
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
-from source_metabase.streams import Activity, Cards, Collections, Dashboards, DatasetQueryViews, Snippets, Users
+from source_metabase.streams import Activity, Cards, Collections, Dashboards, Databases, DatasetQueryViews, Snippets, Users
 
 API_URL = "instance_api_url"
 USERNAME = "username"
@@ -111,6 +111,7 @@ class SourceMetabase(AbstractSource):
             Cards(**args),
             Collections(**args),
             Dashboards(**args),
+            Databases(**args),
             DatasetQueryViews(**args),
             Snippets(**args),
             Users(**args),

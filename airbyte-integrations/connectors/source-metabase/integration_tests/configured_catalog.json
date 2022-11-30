@@ -42,6 +42,38 @@
     },
     {
       "stream": {
+        "name": "databases",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "dataset_query_views",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": true,
+        "default_cursor_field": ["viewed_on"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["viewed_on"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
+        "name": "snippets",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
         "name": "users",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
