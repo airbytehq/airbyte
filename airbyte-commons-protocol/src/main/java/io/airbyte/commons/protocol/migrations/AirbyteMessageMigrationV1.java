@@ -15,6 +15,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import java.util.Optional;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteStream;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
