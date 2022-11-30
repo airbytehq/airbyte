@@ -5,7 +5,6 @@
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;

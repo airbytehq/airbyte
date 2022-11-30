@@ -8,7 +8,6 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.ConnectionUpdaterInput;
@@ -128,7 +127,6 @@ class ConnectionManagerWorkflowTest {
       mock(WorkflowConfigActivity.class, Mockito.withSettings().withoutAnnotations());
   private static final RouteToSyncTaskQueueActivity mRouteToSyncTaskQueueActivity =
       mock(RouteToSyncTaskQueueActivity.class, Mockito.withSettings().withoutAnnotations());
-  private static final EnvVariableFeatureFlags mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
   private static final String EVENT = "event = ";
 
   private TestWorkflowEnvironment testEnv;
@@ -1560,7 +1558,7 @@ class ConnectionManagerWorkflowTest {
 
   private static void startWorkflowAndWaitUntilReady(final ConnectionManagerWorkflow workflow, final ConnectionUpdaterInput input)
       throws InterruptedException {
-    WorkflowClient.start(workflow::run, input, mEnvVariableFeatureFlags);
+    WorkflowClient.start(workflow::run, input);
 
     boolean isReady = false;
 
