@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "required": ["version", "checker", "streams"],
+  "required": ["version", "check", "streams"],
   "properties": {
     "version": {
       "type": "string"
@@ -33,7 +33,7 @@
     },
     "DeclarativeStream": {
       "type": "object",
-      "required": ["schema_loader", "retriever", "config"],
+      "required": ["retriever", "config"],
       "properties": {
         "retriever": {
           "$ref": "#/definitions/SimpleRetriever"
@@ -43,7 +43,7 @@
         },
         "name": {
           "type": "string",
-          "default": "<property object at 0x1105c9e00>"
+          "default": "<property object at 0x105b8cf40>"
         },
         "primary_key": {
           "anyOf": [
@@ -66,7 +66,7 @@
               "type": "string"
             }
           ],
-          "default": "<property object at 0x1105c9db0>"
+          "default": "<property object at 0x105b8cef0>"
         },
         "schema_loader": {
           "anyOf": [
@@ -135,7 +135,7 @@
         },
         {
           "type": "object",
-          "required": ["requester", "record_selector"],
+          "required": ["requester", "record_selector", "config"],
           "properties": {
             "requester": {
               "$ref": "#/definitions/HttpRequester"
@@ -148,7 +148,7 @@
             },
             "name": {
               "type": "string",
-              "default": "<property object at 0x1105b74a0>"
+              "default": "<property object at 0x105b7c5e0>"
             },
             "_name": {
               "anyOf": [
@@ -182,7 +182,7 @@
                   "type": "string"
                 }
               ],
-              "default": "<property object at 0x1105b79f0>"
+              "default": "<property object at 0x105b7cb30>"
             },
             "_primary_key": {
               "type": "string",
@@ -641,18 +641,20 @@
             "error_handlers": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/ErrorHandler"
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/CompositeErrorHandler"
+                  },
+                  {
+                    "$ref": "#/definitions/DefaultErrorHandler"
+                  }
+                ]
               }
             }
           }
         }
       ],
       "description": "\n    Error handler that sequentially iterates over a list of `ErrorHandler`s\n\n    Sample config chaining 2 different retriers:\n        error_handler:\n          type: \"CompositeErrorHandler\"\n          error_handlers:\n            - response_filters:\n                - predicate: \"{{ 'codase' in response }}\"\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 5\n            - response_filters:\n                - http_codes: [403]\n                  action: RETRY\n              backoff_strategies:\n                - type: \"ConstantBackoff\"\n                  backoff_time_in_seconds: 10\n    Attributes:\n        error_handlers (List[ErrorHandler]): list of error handlers\n    "
-    },
-    "ErrorHandler": {
-      "type": "object",
-      "properties": {},
-      "description": "\n    Defines whether a request was successful and how to handle a failure.\n    "
     },
     "DefaultErrorHandler": {
       "allOf": [
@@ -674,7 +676,7 @@
             },
             "max_retries": {
               "type": "integer",
-              "default": "<property object at 0x1105690e0>"
+              "default": "<property object at 0x105b2d270>"
             },
             "_max_retries": {
               "type": "integer",
@@ -683,7 +685,20 @@
             "backoff_strategies": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/BackoffStrategy"
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/ConstantBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/ExponentialBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+                  },
+                  {
+                    "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+                  }
+                ]
               }
             }
           }
@@ -754,10 +769,156 @@
       },
       "description": "InterpolatedBoolean(condition: str, options: dataclasses.InitVar[typing.Mapping[str, typing.Any]])"
     },
+    "ConstantBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["backoff_time_in_seconds", "config"],
+          "properties": {
+            "backoff_time_in_seconds": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      ],
+      "description": "\n    Backoff strategy with a constant backoff interval\n\n    Attributes:\n        backoff_time_in_seconds (float): time to backoff before retrying a retryable request.\n    "
+    },
     "BackoffStrategy": {
       "type": "object",
       "properties": {},
       "description": "\n    Backoff strategy defining how long to wait before retrying a request that resulted in an error.\n    "
+    },
+    "ExponentialBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["config"],
+          "properties": {
+            "config": {
+              "type": "object"
+            },
+            "factor": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": 5
+            }
+          }
+        }
+      ],
+      "description": "\n    Backoff strategy with an exponential backoff interval\n\n    Attributes:\n        factor (float): multiplicative factor\n    "
+    },
+    "WaitTimeFromHeaderBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["header", "config"],
+          "properties": {
+            "header": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "regex": {
+              "type": "string"
+            }
+          }
+        }
+      ],
+      "description": "\n    Extract wait time from http header\n\n    Attributes:\n        header (str): header to read wait time from\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
+    },
+    "WaitUntilTimeFromHeaderBackoffStrategy": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/BackoffStrategy"
+        },
+        {
+          "type": "object",
+          "required": ["header", "config"],
+          "properties": {
+            "header": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "config": {
+              "type": "object"
+            },
+            "min_wait": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "regex": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            }
+          }
+        }
+      ],
+      "description": "\n    Extract time at which we can retry the request from response header\n    and wait for the difference between now and that time\n\n    Attributes:\n        header (str): header to read wait time from\n        min_wait (Optional[float]): minimum time to wait for safety\n        regex (Optional[str]): optional regex to apply on the header to extract its value\n    "
+    },
+    "ErrorHandler": {
+      "type": "object",
+      "properties": {},
+      "description": "\n    Defines whether a request was successful and how to handle a failure.\n    "
     },
     "Requester": {
       "allOf": [
@@ -1059,25 +1220,29 @@
             "stream_slicers": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/StreamSlicer"
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/CartesianProductStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/DatetimeStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/ListStreamSlicer"
+                  },
+                  {
+                    "$ref": "#/definitions/SingleSlice"
+                  },
+                  {
+                    "$ref": "#/definitions/SubstreamSlicer"
+                  }
+                ]
               }
             }
           }
         }
       ],
       "description": "\n    Stream slicers that iterates over the cartesian product of input stream slicers\n    Given 2 stream slicers with the following slices:\n    A: [{\"i\": 0}, {\"i\": 1}, {\"i\": 2}]\n    B: [{\"s\": \"hello\"}, {\"s\": \"world\"}]\n    the resulting stream slices are\n    [\n        {\"i\": 0, \"s\": \"hello\"},\n        {\"i\": 0, \"s\": \"world\"},\n        {\"i\": 1, \"s\": \"hello\"},\n        {\"i\": 1, \"s\": \"world\"},\n        {\"i\": 2, \"s\": \"hello\"},\n        {\"i\": 2, \"s\": \"world\"},\n    ]\n\n    Attributes:\n        stream_slicers (List[StreamSlicer]): Underlying stream slicers. The RequestOptions (e.g: Request headers, parameters, etc..) returned by this slicer are the combination of the RequestOptions of its input slicers. If there are conflicts e.g: two slicers define the same header or request param, the conflict is resolved by taking the value from the first slicer, where ordering is determined by the order in which slicers were input to this composite slicer.\n    "
-    },
-    "StreamSlicer": {
-      "allOf": [
-        {
-          "$ref": "#/definitions/RequestOptionsProvider"
-        },
-        {
-          "type": "object",
-          "properties": {}
-        }
-      ],
-      "description": "\n    Slices the stream into a subset of records.\n    Slices enable state checkpointing and data retrieval parallelization.\n\n    The stream slicer keeps track of the cursor state as a dict of cursor_field -> cursor_value\n\n    See the stream slicing section of the docs for more information.\n    "
     },
     "DatetimeStreamSlicer": {
       "allOf": [
@@ -1183,7 +1348,7 @@
         },
         "datetime_format": {
           "type": "string",
-          "default": "<property object at 0x1105a2b30>"
+          "default": "<property object at 0x105b66c70>"
         },
         "_datetime_format": {
           "type": "string",
@@ -1213,6 +1378,18 @@
         }
       },
       "description": "\n    Compares the provided date against optional minimum or maximum times. If date is earlier than\n    min_date, then min_date is returned. If date is greater than max_date, then max_date is returned.\n    If neither, the input date is returned.\n\n    The timestamp format accepts the same format codes as datetime.strfptime, which are\n    all the format codes required by the 1989 C standard.\n    Full list of accepted format codes: https://man7.org/linux/man-pages/man3/strftime.3.html\n\n    Attributes:\n        datetime (Union[InterpolatedString, str]): InterpolatedString or string representing the datetime in the format specified by `datetime_format`\n        datetime_format (str): Format of the datetime passed as argument\n        min_datetime (Union[InterpolatedString, str]): Represents the minimum allowed datetime value.\n        max_datetime (Union[InterpolatedString, str]): Represents the maximum allowed datetime value.\n    "
+    },
+    "StreamSlicer": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/RequestOptionsProvider"
+        },
+        {
+          "type": "object",
+          "properties": {}
+        }
+      ],
+      "description": "\n    Slices the stream into a subset of records.\n    Slices enable state checkpointing and data retrieval parallelization.\n\n    The stream slicer keeps track of the cursor state as a dict of cursor_field -> cursor_value\n\n    See the stream slicing section of the docs for more information.\n    "
     },
     "ListStreamSlicer": {
       "allOf": [
