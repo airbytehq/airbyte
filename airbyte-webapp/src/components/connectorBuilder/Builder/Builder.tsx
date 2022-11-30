@@ -35,9 +35,6 @@ export const Builder: React.FC = () => {
     <Formik
       initialValues={{
         version: "1.0.0",
-        checker: {
-          stream_names: [],
-        },
         check: {
           stream_names: [],
         },

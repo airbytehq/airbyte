@@ -18,6 +18,13 @@ interface EnumFieldProps {
   error: boolean;
 }
 
+interface ArrayFieldProps {
+  name: string;
+  value: string[];
+  setValue: (value: string[]) => void;
+  error: boolean;
+}
+
 interface BaseFieldProps {
   // path to the location in the Connector Manifest schema which should be set by this component
   path: string;
@@ -46,6 +53,14 @@ const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, 
   );
 };
 
+const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error }) => {
+  useEffect(() => {
+    setValue(value);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
+};
+
 export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
   let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
   if (!optional) {
@@ -72,7 +87,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
       {props.type === "text" && <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />}
       {props.type === "array" && (
-        <TagInput name={path} fieldValue={field.value ?? []} onChange={(value) => helpers.setValue(value)} />
+        <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
       )}
       {props.type === "enum" && (
         <EnumField

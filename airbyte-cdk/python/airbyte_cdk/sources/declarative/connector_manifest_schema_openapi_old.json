@@ -9,12 +9,12 @@
     "schemas": {
       "ConnectorManifest": {
         "type": "object",
-        "required": ["version", "check", "streams"],
+        "required": ["version", "checker", "streams"],
         "properties": {
           "version": {
             "type": "string"
           },
-          "check": {
+          "checker": {
             "$ref": "#/components/schemas/CheckStream"
           },
           "streams": {

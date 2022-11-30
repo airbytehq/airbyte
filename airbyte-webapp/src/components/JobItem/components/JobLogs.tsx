@@ -31,6 +31,8 @@ const mapAttemptStatusToIcon = (attempt: AttemptRead): StatusIconStatus => {
       return "success";
     case AttemptStatus.failed:
       return "error";
+    default:
+      return "loading";
   }
 };
 

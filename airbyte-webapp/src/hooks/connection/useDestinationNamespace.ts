@@ -21,4 +21,6 @@ export const useDestinationNamespace = (opt: NamespaceOptions): string | undefin
     case NamespaceDefinitionType.customformat:
       return opt.namespaceFormat;
   }
+
+  return undefined;
 };

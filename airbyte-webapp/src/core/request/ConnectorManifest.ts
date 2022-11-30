@@ -418,16 +418,16 @@ export type CursorPaginationStrategyAllOfConfig = { [key: string]: any };
 
 export type CursorPaginationStrategyAllOfCursorValue = InterpolatedString | string;
 
-export type RequestOptionInjectInto = typeof RequestOptionInjectInto[keyof typeof RequestOptionInjectInto];
+export type RequestOptionInjectInto = "request_parameter" | "header" | "path" | "body_data" | "body_json";
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare
 export const RequestOptionInjectInto = {
-  request_parameter: "request_parameter",
-  header: "header",
-  path: "path",
-  body_data: "body_data",
-  body_json: "body_json",
-} as const;
+  request_parameter: "request_parameter" as RequestOptionInjectInto,
+  header: "header" as RequestOptionInjectInto,
+  path: "path" as RequestOptionInjectInto,
+  body_data: "body_data" as RequestOptionInjectInto,
+  body_json: "body_json" as RequestOptionInjectInto,
+};
 
 /**
  * 
@@ -1283,6 +1283,6 @@ export interface CheckStream {
 
 export interface ConnectorManifest {
   version: string;
-  checker: CheckStream;
+  check: CheckStream;
   streams: DeclarativeStream[];
 }
