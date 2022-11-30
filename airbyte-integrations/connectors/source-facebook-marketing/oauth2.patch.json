@@ -1,7 +1,7 @@
 {
   "provider": "facebook",
-  "authUrlTemplate": "https://www.facebook.com/v12.0/dialog/oauth?client_id={{ urlencode client_id }}&redirect_uri={{ urlencode redirect_uri }}&state={{ urlencode state }}&scope=ads_management,ads_read,read_insights,business_management",
-  "accessTokenUrlTemplate": "https://graph.facebook.com/v12.0/oauth/access_token?client_id={{ urlencode client_id }}&client_secret={{ urlencode client_secret }}&grant_type=fb_exchange_token&fb_exchange_token={{ urlencode code }}",
+  "authUrlTemplate": "https://www.facebook.com/v12.0/dialog/oauth?client_id={{{ urlencode client_id }}}&redirect_uri={{{ urlencode redirect_uri }}}&state={{{ urlencode state }}}&scope=ads_management,ads_read,read_insights,business_management",
+  "accessTokenUrlTemplate": "https://graph.facebook.com/v12.0/oauth/access_token?client_id={{{ urlencode client_id }}}&client_secret={{{ urlencode client_secret }}}&grant_type=fb_exchange_token&fb_exchange_token={{{ urlencode code }}}",
   "accessTokenBody": "",
   "accessTokenHeaders": "",
   "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
