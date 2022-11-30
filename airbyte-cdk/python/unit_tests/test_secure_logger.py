@@ -134,7 +134,7 @@ def test_airbyte_secret_is_masked_on_logger_output(source_spec, mocker, config, 
         return_value=ConnectorSpecification(connectionSpecification=source_spec),
     )
     mocker.patch.object(MockSource, "configure", return_value=config)
-    mocker.patch.object(MockSource, "read_config", return_value=None)
+    mocker.patch.object(MockSource, "read_json_file", return_value=None)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     list(entrypoint.run(parsed_args))
@@ -180,7 +180,7 @@ def test_airbyte_secrets_are_masked_on_uncaught_exceptions(mocker, caplog, capsy
         return_value=ConnectorSpecification(connectionSpecification=source_spec),
     )
     mocker.patch.object(MockSource, "configure", return_value=simple_config)
-    mocker.patch.object(MockSource, "read_config", return_value=None)
+    mocker.patch.object(MockSource, "read_json_file", return_value=None)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
 
@@ -227,7 +227,7 @@ def test_non_airbyte_secrets_are_not_masked_on_uncaught_exceptions(mocker, caplo
         return_value=ConnectorSpecification(connectionSpecification=source_spec),
     )
     mocker.patch.object(MockSource, "configure", return_value=simple_config)
-    mocker.patch.object(MockSource, "read_config", return_value=None)
+    mocker.patch.object(MockSource, "read_json_file", return_value=None)
     mocker.patch.object(MockSource, "read_state", return_value={})
     mocker.patch.object(MockSource, "read_catalog", return_value={})
     mocker.patch.object(MockSource, "read", side_effect=Exception("Exception:" + NOT_A_SECRET_VALUE))
