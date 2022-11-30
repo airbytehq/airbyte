@@ -612,5 +612,5 @@
   "connectorBuilder.invalidYamlDownload": "Cannot download while YAML content is invalid.",
   "connectorBuilder.invalidYamlTest": "Cannot test stream while YAML content is invalid.",
 
-  "cloudApi.loginCallbackUrlError": "There was an error connecting to the API key portal. Please try again."
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
