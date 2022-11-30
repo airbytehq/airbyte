@@ -1,11 +1,12 @@
 @use "scss/colors";
+@use "scss/variables" as vars;
 
 // ------- <table/> --------
 .table {
   border-spacing: 0;
   width: 100%;
   max-width: 100%;
-  border-radius: 10px;
+  border-radius: vars.$border-radius-md;
 }
 
 .thead {
@@ -25,13 +26,13 @@
   font-weight: 600;
 
   &:first-child {
-    padding-left: 45px;
-    border-radius: 10px 0 0;
+    padding-left: calc(vars.$spacing-2xl + vars.$spacing-sm);
+    border-radius: vars.$border-radius-md 0 0;
   }
 
   &:last-child {
-    padding-left: 15px;
-    border-radius: 0 10px 0 0;
+    padding-left: vars.$spacing-lg;
+    border-radius: 0 vars.$border-radius-md 0 0;
   }
 }
 
@@ -48,7 +49,7 @@
 // --------- <td/> ---------
 
 .td {
-  padding: 16px 13px;
+  padding: vars.$spacing-lg calc(vars.$spacing-md + vars.$spacing-xs);
   font-size: 12px;
   line-height: 15px;
   font-weight: normal;
@@ -56,18 +57,18 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-bottom: 1px solid colors.$grey-100;
+  border-bottom: vars.$border-thin solid colors.$grey-100;
   width: auto;
 
   tr:last-child > & {
     border-bottom: none;
 
     &:first-child {
-      border-radius: 0 0 0 10px;
+      border-radius: 0 0 0 vars.$border-radius-md;
     }
 
     &:last-child {
-      border-radius: 0 0 10px;
+      border-radius: 0 0 vars.$border-radius-md;
     }
   }
 }
