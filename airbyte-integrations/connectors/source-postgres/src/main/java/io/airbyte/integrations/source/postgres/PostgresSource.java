@@ -92,14 +92,20 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
-  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA = "SELECT "
-      + "(EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
-      + "AND "
-      + "(EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s";
-  public static final String NULL_CURSOR_VALUE_NO_SCHEMA = "SELECT "
-      + "(EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s')) "
-      + "AND "
-      + "(EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s";
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA =
+      """
+        SELECT
+          (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+        AND
+          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
+  public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
+      """
+      SELECT
+        (EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+      AND
+        (EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -513,7 +519,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
     final String query;
     final String resultColName = "nullValue";
-    // Query: Only if cursor column is NULLABLE, query whether it contains a NULL value
+    // Query: Only if cursor column allows null values, query whether it contains one
     if (StringUtils.isNotBlank(schema)) {
       query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA,
           schema, tableName, columnName, schema, tableName, columnName, resultColName);

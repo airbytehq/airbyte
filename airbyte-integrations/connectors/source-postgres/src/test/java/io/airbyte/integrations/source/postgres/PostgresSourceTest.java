@@ -567,8 +567,8 @@ class PostgresSourceTest {
 
   private ConfiguredAirbyteStream createTableWithNullValueCursor(final Database database) throws SQLException {
     database.query(ctx -> {
-      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL);");
-      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL);");
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
       return null;
     });
 
@@ -584,4 +584,51 @@ class PostgresSourceTest {
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 
   }
+
+  @Test
+  public void viewWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream table = createViewWithNullValueCursor(database);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("""
+          CREATE VIEW test_view_null_cursor(id) as
+          SELECT test_table_null_cursor.id
+          FROM test_table_null_cursor
+          """);
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+                "test_view_null_cursor",
+                "public",
+                Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
 }
