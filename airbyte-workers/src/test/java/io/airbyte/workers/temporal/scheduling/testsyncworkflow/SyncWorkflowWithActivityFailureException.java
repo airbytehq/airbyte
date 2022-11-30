@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -24,7 +25,8 @@ public class SyncWorkflowWithActivityFailureException implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId) {
+                                final UUID connectionId,
+                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
     Workflow.sleep(SleepingSyncWorkflow.RUN_TIME);
     throw new ActivityFailure(1L, 1L, "Replication", "id", RetryState.RETRY_STATE_RETRY_POLICY_NOT_SET,
         "identity",

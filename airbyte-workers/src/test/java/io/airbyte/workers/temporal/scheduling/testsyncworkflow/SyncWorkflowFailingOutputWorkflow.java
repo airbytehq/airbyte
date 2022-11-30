@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
@@ -22,7 +23,8 @@ public class SyncWorkflowFailingOutputWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId) {
+                                final UUID connectionId,
+                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
     return null;
   }
 
