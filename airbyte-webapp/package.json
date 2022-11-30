@@ -10,7 +10,7 @@
     "prestart": "npm run generate-client",
     "start": "craco start",
     "prestart:cloud": "npm run generate-client",
-    "start:cloud": "AB_ENV=frontend-dev node -r ./scripts/environment.js ./node_modules/.bin/craco start",
+    "start:cloud": "AB_ENV=${AB_ENV-frontend-dev} node -r ./scripts/environment.js ./node_modules/.bin/craco start",
     "prebuild": "npm run generate-client",
     "build": "BUILD_PATH='./build/app' craco build",
     "pretest": "npm run generate-client",

@@ -27,8 +27,9 @@ Each of these concepts is described in greater depth in their respective section
 The Airbyte Protocol is versioned independently of the Airbyte Platform, and the version number is used to determine the compatibility between connectors and the Airbyte Platform.
 
 | Version  | Date of Change | Pull Request(s)                                                                                                     | Subject                                                                          |
-| :------- | :------------- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
-| `v0.3.2` | 2022-10-128    | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                            | `AirbyteEstimateTraceMessage` added                                              |
+|:---------|:---------------|:--------------------------------------------------------------------------------------------------------------------|:---------------------------------------------------------------------------------|
+| `v1.0.0` | 2022-11-28     | [17486](https://github.com/airbytehq/airbyte/pull/17486) & [19846](https://github.com/airbytehq/airbyte/pull/19846) | Well known data types added                                                      |
+| `v0.3.2` | 2022-10-28     | [18875](https://github.com/airbytehq/airbyte/pull/18875)                                                            | `AirbyteEstimateTraceMessage` added                                              |
 | `v0.3.1` | 2022-10-12     | [17907](https://github.com/airbytehq/airbyte/pull/17907)                                                            | `AirbyteControlMessage.ConnectorConfig` added                                    |
 | `v0.3.0` | 2022-09-09     | [16479](https://github.com/airbytehq/airbyte/pull/16479)                                                            | `AirbyteLogMessage.stack_trace` added                                            |
 | `v0.2.0` | 2022-06-10     | [13573](https://github.com/airbytehq/airbyte/pull/13573) & [12586](https://github.com/airbytehq/airbyte/pull/12586) | `STREAM` and `GLOBAL` STATE messages                                             |
@@ -190,6 +191,7 @@ The `connectionSpecification` is [JSONSchema](https://json-schema.org) that desc
 
 The specification also contains information about what features the Actor supports.
 
+- `protocol_version` describes which version of the protocol the Connector supports. The default value is "0.2.0".
 - `supported_destination_sync_modes` - describes which sync modes a destination is able to support. See [Sync Modes](#source-sync-modes).
 
 `documentationUrl` and `changelogUrl` are optional fields that link to additional information about the connector.
