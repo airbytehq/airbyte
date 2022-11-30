@@ -56,11 +56,8 @@ class AvailabilityStrategy(ABC):
 
 
 class HTTPAvailabilityStrategy(AvailabilityStrategy):
-    """
+    """ """
 
-    """
-
-    @staticmethod
     def check_availability(self, stream: Stream) -> Tuple[bool, any]:
         """
 
@@ -69,12 +66,26 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
         """
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
-            # stream_slice = self._get_stream_slice(stream)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh) #stream_slice=stream_slice
+            stream_slice = self._get_stream_slice(stream)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except Exception as error:
             return False, f"Unable to connect to stream {stream.name} - {error}"
         return True, None
+
+    def _get_stream_slice(self, stream):
+        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
+        # but not iterators such as lists or tuples
+        slices = iter(
+            stream.stream_slices(
+                cursor_field=stream.cursor_field,
+                sync_mode=SyncMode.full_refresh,
+            )
+        )
+        try:
+            return next(slices)
+        except StopIteration:
+            return {}
 
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
