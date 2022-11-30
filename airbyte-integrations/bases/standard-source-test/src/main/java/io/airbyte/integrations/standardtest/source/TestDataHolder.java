@@ -15,17 +15,17 @@ public class TestDataHolder {
   private static final String DEFAULT_CREATE_TABLE_SQL = "CREATE TABLE %1$s(%2$s INTEGER PRIMARY KEY, %3$s %4$s)";
   private static final String DEFAULT_INSERT_SQL = "INSERT INTO %1$s VALUES (%2$s, %3$s)";
 
-  private final String sourceType;
-  private final JsonSchemaType airbyteType;
-  private final List<String> values;
-  private final List<String> expectedValues;
-  private final String createTablePatternSql;
-  private final String insertPatternSql;
-  private final String fullSourceDataType;
-  private String nameSpace;
-  private long testNumber;
-  private String idColumnName;
-  private String testColumnName;
+  public final String sourceType;
+  public final JsonSchemaType airbyteType;
+  public final List<String> values;
+  public final List<String> expectedValues;
+  public final String createTablePatternSql;
+  public final String insertPatternSql;
+  public final String fullSourceDataType;
+  public String nameSpace;
+  public long testNumber;
+  public String idColumnName;
+  public String testColumnName;
 
   TestDataHolder(final String sourceType,
                  final JsonSchemaType airbyteType,

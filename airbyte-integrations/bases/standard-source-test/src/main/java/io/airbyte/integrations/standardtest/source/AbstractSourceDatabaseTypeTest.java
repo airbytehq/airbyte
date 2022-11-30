@@ -167,6 +167,29 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     final Database database = setupDatabase();
 
     initTests();
+    List<String> names = List.of(
+        "test_column_1",
+        "test_column_10",
+        "test_column_11",
+        "test_column_12",
+        "test_column_13",
+        "test_column_15",
+        "test_column_16",
+        "test_column_17",
+        "test_column_19",
+        "test_column_2",
+        "test_column_21",
+        "test_column_3",
+        "test_column_4",
+        "test_column_5",
+        "test_column_6",
+        "test_column_7",
+        "test_column_8",
+        "test_column_9"
+    );
+    TestDataUtils.makeColumnNameUnique(testDataHolders);
+    TestDataUtils.getCreateTestDataAsOneTable(testDataHolders, names);
+    var result = TestDataUtils.getInsertTestDataAsOneTable(testDataHolders, names, true).stream().collect(Collectors.joining(";\n")) + ";";
 
     for (final TestDataHolder test : testDataHolders) {
       database.query(ctx -> {
