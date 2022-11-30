@@ -25,10 +25,10 @@
 
     td {
       background-color: colors.$white;
-    }
 
-    td:first-child, th:first-child {
-      border-left-width: variables.$border-thin;
+      &:first-child, th:first-child {
+        border-left-width: variables.$border-thin;
+      }
     }
 
     &:first-child th:first-child {
