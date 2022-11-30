@@ -17,12 +17,13 @@ import java.util.function.Predicate;
  */
 public class ConnectorExceptionUtil {
 
+  public static final String COMMON_EXCEPTION_MESSAGE_TEMPLATE = "Could not connect with provided configuration. Error: %s";
   static final String RECOVERY_CONNECTION_ERROR_MESSAGE =
       "We're having issues syncing from a Postgres replica that is configured as a hot standby server. " +
           "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
-  static final String COMMON_EXCEPTION_MESSAGE_TEMPLATE = "Could not connect with provided configuration. Error: %s";
+  static final String NOT_ALLOWED_IP_ADDRESS_ERROR_MESSAGE = "This server can not access the database. Please see https://airbytehq.github.io/cloud/getting-started-with-airbyte-cloud#allowlist-ip-address for allowing Airbyte hosts.";
   private static final List<Predicate<Throwable>> configErrorPredicates =
-      List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(), isRecoveryConnectionExceptionPredicate());
+      List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(), isRecoveryConnectionExceptionPredicate(), isNotAllowedIPExceptionPredicate());
 
   public static boolean isConfigError(final Throwable e) {
     return configErrorPredicates.stream().anyMatch(predicate -> predicate.test(e));
@@ -36,6 +37,8 @@ public class ConnectorExceptionUtil {
       return ErrorMessage.getErrorMessage(connEx.getStateCode(), connEx.getErrorCode(), connEx.getExceptionMessage(), connEx);
     } else if (isRecoveryConnectionExceptionPredicate().test(e)) {
       return RECOVERY_CONNECTION_ERROR_MESSAGE;
+    } else if (isNotAllowedIPExceptionPredicate().test(e)) {
+      return NOT_ALLOWED_IP_ADDRESS_ERROR_MESSAGE;
     } else {
       return String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, e.getMessage() != null ? e.getMessage() : "");
     }
@@ -69,6 +72,12 @@ public class ConnectorExceptionUtil {
     return e -> e instanceof SQLException && e.getMessage()
         .toLowerCase(Locale.ROOT)
         .contains("due to conflict with recovery");
+  }
+
+  private static Predicate<Throwable> isNotAllowedIPExceptionPredicate() {
+    return e -> e instanceof SQLException
+            && e.getMessage().contains("Client with IP address")
+            && e.getMessage().contains("is not allowed to connect to this MySQL server.");
   }
 
 }
