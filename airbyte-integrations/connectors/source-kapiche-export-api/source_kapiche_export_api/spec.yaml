@@ -14,7 +14,7 @@ connectionSpecification:
       description: Auth tokens to use for the Export API.
       airbyte_secret: true
     export_api_url:
-      title: Export URL (botanic)
+      title: Export URL
       type: string
       description: Export url that is consumed to get all the export metadata.
       airbyte_secret: false
