@@ -23,8 +23,7 @@ public class SleepingSyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                                final UUID connectionId) {
 
     Workflow.sleep(RUN_TIME);
 

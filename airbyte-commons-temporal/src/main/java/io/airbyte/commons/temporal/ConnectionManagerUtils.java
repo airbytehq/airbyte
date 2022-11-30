@@ -4,7 +4,6 @@
 
 package io.airbyte.commons.temporal;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
 import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
@@ -63,10 +62,9 @@ public class ConnectionManagerUtils {
    */
   public ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
                                                                       final UUID connectionId,
-                                                                      final Function<ConnectionManagerWorkflow, Proc> signalMethod,
-                                                                      final EnvVariableFeatureFlags envVariableFeatureFlags)
+                                                                      final Function<ConnectionManagerWorkflow, Proc> signalMethod)
       throws DeletedWorkflowException {
-    return signalWorkflowAndRepairIfNecessary(client, connectionId, signalMethod, Optional.empty(), envVariableFeatureFlags);
+    return signalWorkflowAndRepairIfNecessary(client, connectionId, signalMethod, Optional.empty());
   }
 
   /**
@@ -87,10 +85,9 @@ public class ConnectionManagerUtils {
   public <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
                                                                           final UUID connectionId,
                                                                           final Function<ConnectionManagerWorkflow, Proc1<T>> signalMethod,
-                                                                          final T signalArgument,
-                                                                          final EnvVariableFeatureFlags envVariableFeatureFlags)
+                                                                          final T signalArgument)
       throws DeletedWorkflowException {
-    return signalWorkflowAndRepairIfNecessary(client, connectionId, signalMethod, Optional.of(signalArgument), envVariableFeatureFlags);
+    return signalWorkflowAndRepairIfNecessary(client, connectionId, signalMethod, Optional.of(signalArgument));
   }
 
   // This method unifies the logic of the above two, by using the optional signalArgument parameter to
@@ -101,8 +98,7 @@ public class ConnectionManagerUtils {
   private <T> ConnectionManagerWorkflow signalWorkflowAndRepairIfNecessary(final WorkflowClient client,
                                                                            final UUID connectionId,
                                                                            final Function<ConnectionManagerWorkflow, ? extends TemporalFunctionalInterfaceMarker> signalMethod,
-                                                                           final Optional<T> signalArgument,
-                                                                           final EnvVariableFeatureFlags envVariableFeatureFlags)
+                                                                           final Optional<T> signalArgument)
       throws DeletedWorkflowException {
     try {
       final ConnectionManagerWorkflow connectionManagerWorkflow = getConnectionManagerWorkflow(client, connectionId);
@@ -131,7 +127,7 @@ public class ConnectionManagerUtils {
       final ConnectionUpdaterInput startWorkflowInput = TemporalWorkflowUtils.buildStartWorkflowInput(connectionId);
 
       final BatchRequest batchRequest = client.newSignalWithStartRequest();
-      batchRequest.add(connectionManagerWorkflow::run, startWorkflowInput, envVariableFeatureFlags);
+      batchRequest.add(connectionManagerWorkflow::run, startWorkflowInput);
 
       // retrieve the signal from the lambda
       final TemporalFunctionalInterfaceMarker signal = signalMethod.apply(connectionManagerWorkflow);
@@ -166,11 +162,10 @@ public class ConnectionManagerUtils {
   }
 
   public ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client,
-                                                                  final UUID connectionId,
-                                                                  final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                                                                  final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
     final ConnectionUpdaterInput input = TemporalWorkflowUtils.buildStartWorkflowInput(connectionId);
-    WorkflowClient.start(connectionManagerWorkflow::run, input, envVariableFeatureFlags);
+    WorkflowClient.start(connectionManagerWorkflow::run, input);
 
     return connectionManagerWorkflow;
   }

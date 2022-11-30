@@ -26,8 +26,7 @@ public class NormalizationFailureSyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                                final UUID connectionId) {
 
     throw new ActivityFailure(1L, 1L, ACTIVITY_TYPE_NORMALIZE, "someId", RetryState.RETRY_STATE_UNSPECIFIED, "someIdentity", CAUSE);
   }

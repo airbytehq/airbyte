@@ -13,7 +13,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
@@ -78,8 +77,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags)
+                                final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
 
     ApmTraceUtils
