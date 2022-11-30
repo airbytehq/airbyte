@@ -57,8 +57,6 @@ public class PersistConfigHelper {
     final SourceApi sourceApi = apiClient.getSourceApi();
     final SourceRead source = sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId));
 
-    // TODO might need to strip out OAuth params
-
     final SourceRead updatedSource = sourceApi
         .updateSource(new SourceUpdate()
             .sourceId(sourceId)
@@ -78,8 +76,6 @@ public class PersistConfigHelper {
 
     final DestinationApi destinationApi = apiClient.getDestinationApi();
     final DestinationRead destination = destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId));
-
-    // TODO might need to strip out OAuth params
 
     final DestinationRead updatedDestination = destinationApi
         .updateDestination(new DestinationUpdate()
