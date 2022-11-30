@@ -8,21 +8,21 @@ bases:
 
 images:
   - name: airbyte/db
-    newTag: 0.40.18
+    newTag: 0.40.22
   - name: airbyte/bootloader
-    newTag: 0.40.18
+    newTag: 0.40.22
   - name: airbyte/server
-    newTag: 0.40.18
+    newTag: 0.40.22
   - name: airbyte/webapp
-    newTag: 0.40.18
+    newTag: 0.40.22
   - name: airbyte/worker
-    newTag: 0.40.18
+    newTag: 0.40.22
   - name: temporalio/auto-setup
     newTag: 1.7.0
   - name: airbyte/cron
-    newTag: 0.40.18
-  #- name: airbyte/connector-builder-server #FIXME: Uncomment this block when enabling airbyte-connector-builder
-  #  newTag: 0.40.18
+    newTag: 0.40.22
+  - name: airbyte/connector-builder-server
+    newTag: 0.40.22
 
 configMapGenerator:
   - name: airbyte-env

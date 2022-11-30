@@ -109,7 +109,7 @@
 - name: Asana
   sourceDefinitionId: d0243522-dccf-4978-8ba0-37ed47a0bdbf
   dockerRepository: airbyte/source-asana
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/asana
   icon: asana.svg
   sourceType: api
@@ -228,7 +228,7 @@
   dockerRepository: airbyte/source-clickhouse
   dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/clickhouse
-  icon: cliskhouse.svg
+  icon: clickhouse.svg
   sourceType: database
   releaseStage: alpha
 - name: ClickUp
@@ -246,6 +246,14 @@
   icon: close.svg
   sourceType: api
   releaseStage: alpha
+- name: CoinGecko Coins
+  sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
+  dockerRepository: airbyte/source-coingecko-coins
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
+  icon: coingeckocoins.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
@@ -253,6 +261,13 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/cockroachdb
   icon: cockroachdb.svg
   sourceType: database
+  releaseStage: alpha
+- name: Coda
+  sourceDefinitionId: 27f910fd-f832-4b2e-bcfd-6ab342e434d8
+  dockerRepository: airbyte/source-coda
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/coda
+  sourceType: api
   releaseStage: alpha
 - name: Coin API
   sourceDefinitionId: 919984ef-53a2-479b-8ffe-9c1ddb9fc3f3
@@ -296,6 +311,13 @@
   dockerRepository: airbyte/source-convertkit
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/convertkit
+  sourceType: api
+  releaseStage: alpha
+- name: Copper
+  sourceDefinitionId: 44f3002f-2df9-4f6d-b21c-02cd3b47d0dc
+  dockerRepository: airbyte/source-copper
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/copper
   sourceType: api
   releaseStage: alpha
 - name: Convex
@@ -415,7 +437,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.72
+  dockerImageTag: 0.2.74
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -445,7 +467,7 @@
 - name: Fauna
   sourceDefinitionId: 3825db3e-c94b-42ac-bd53-b5a9507ace2b
   dockerRepository: airbyte/source-fauna
-  dockerImageTag: dev
+  dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/fauna
   icon: fauna.svg
   sourceType: database
@@ -453,7 +475,7 @@
 - name: File
   sourceDefinitionId: 778daa7c-feaf-4db6-96f3-70fd645acc77
   dockerRepository: airbyte/source-file
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/file
   icon: file.svg
   sourceType: file
@@ -494,6 +516,12 @@
   icon: freshservice.svg
   sourceType: api
   releaseStage: alpha
+- name: Genesys
+  sourceDefinitionId: 5ea4459a-8f1a-452a-830f-a65c38cc438d
+  dockerRepository: airbyte/source-genesys
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/genesys
+  icon: genesys.svg
 - name: GetLago
   sourceDefinitionId: e1a3866b-d3b2-43b6-b6d7-8c1ee4d7f53f
   dockerRepository: airbyte/source-getlago
@@ -556,7 +584,7 @@
 - name: Google Ads
   sourceDefinitionId: 253487c0-2246-43ba-a21f-5116b20a2c50
   dockerRepository: airbyte/source-google-ads
-  dockerImageTag: 0.2.4
+  dockerImageTag: 0.2.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-ads
   icon: google-adwords.svg
   sourceType: api
@@ -596,7 +624,7 @@
 - name: Google Sheets
   sourceDefinitionId: 71607ba1-c0ac-4799-8049-7f4b90dd50f7
   dockerRepository: airbyte/source-google-sheets
-  dockerImageTag: 0.2.30
+  dockerImageTag: 0.2.31
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
   icon: google-sheets.svg
   sourceType: file
@@ -955,7 +983,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.13
+  dockerImageTag: 1.0.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1120,6 +1148,13 @@
   icon: persistiq.svg
   sourceType: api
   releaseStage: alpha
+- name: Pexels API
+  sourceDefinitionId: 69d9eb65-8026-47dc-baf1-e4bf67901fd6
+  dockerRepository: airbyte/source-pexels-api
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/pexels-api
+  sourceType: api
+  releaseStage: alpha
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
@@ -1149,6 +1184,14 @@
   dockerImageTag: 0.3.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/plaid
   icon: plaid.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Plausible
+  sourceDefinitionId: 603ba446-3d75-41d7-92f3-aba901f8b897
+  dockerRepository: airbyte/source-plausible
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/plausible
+  icon: plausible.svg
   sourceType: api
   releaseStage: alpha
 - name: Pocket
@@ -1185,7 +1228,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.25
+  dockerImageTag: 1.0.28
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1265,6 +1308,14 @@
   icon: recharge.svg
   sourceType: api
   releaseStage: generally_available
+- name: Recreation
+  sourceDefinitionId: 25d7535d-91e0-466a-aa7f-af81578be277
+  dockerRepository: airbyte/source-recreation
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/recreation
+  icon: recreation.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Recruitee
   sourceDefinitionId: 3b046ac7-d8d3-4eb3-b122-f96b2a16d8a8
   dockerRepository: airbyte/source-recruitee
@@ -1350,7 +1401,7 @@
 - name: Salesforce
   sourceDefinitionId: b117307c-14b6-41aa-9422-947e34922962
   dockerRepository: airbyte/source-salesforce
-  dockerImageTag: 1.0.26
+  dockerImageTag: 1.0.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/salesforce
   icon: salesforce.svg
   sourceType: api
@@ -1390,6 +1441,7 @@
   dockerRepository: airbyte/source-senseforce
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/senseforce
+  icon: senseforce.svg
   sourceType: api
   releaseStage: alpha
 - name: Sendinblue
@@ -1509,7 +1561,7 @@
 - name: SurveyMonkey
   sourceDefinitionId: badc5925-0485-42be-8caa-b34096cb71b5
   dockerRepository: airbyte/source-surveymonkey
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/surveymonkey
   icon: surveymonkey.svg
   sourceType: api
@@ -1601,11 +1653,19 @@
 - name: Twilio
   sourceDefinitionId: b9dc6155-672e-42ea-b10d-9f1f1fb95ab1
   dockerRepository: airbyte/source-twilio
-  dockerImageTag: 0.1.13
+  dockerImageTag: 0.1.14
   documentationUrl: https://docs.airbyte.com/integrations/sources/twilio
   icon: twilio.svg
   sourceType: api
   releaseStage: generally_available
+- name: Twilio Taskrouter
+  sourceDefinitionId: 2446953b-b794-429b-a9b3-c821ba992a48
+  dockerRepository: airbyte/source-twilio-taskrouter
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/twilio-taskrouter
+  icon: twilio.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Twitter
   sourceDefinitionId: d7fd4f40-5e5a-4b8b-918f-a73077f8c131
   dockerRepository: airbyte/source-twitter
@@ -1775,7 +1835,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.16
+  dockerImageTag: 0.2.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api

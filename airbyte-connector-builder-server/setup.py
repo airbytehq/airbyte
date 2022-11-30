@@ -14,7 +14,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="connector-builder-server",
-    version="0.0.1",
+    version="0.40.22",
     description="",
     long_description=README,
     author="Airbyte",
@@ -44,6 +44,14 @@ setup(
     install_requires=["airbyte-cdk~=0.8", "fastapi", "uvicorn"],
     python_requires=">=3.9.11",
     extras_require={
-        "tests": ["MyPy~=0.812", "pytest~=6.2.5", "pytest-cov", "pytest-mock", "pytest-recording", "requests-mock", "pre-commit"],
+        "tests": [
+            "MyPy~=0.812",
+            "pytest~=6.2.5",
+            "pytest-cov",
+            "pytest-mock",
+            "pytest-recording",
+            "requests-mock",
+            "pre-commit",
+        ],
     },
 )

@@ -66,8 +66,7 @@ public class S3ConsumerFactory {
         .collect(Collectors.toList());
   }
 
-  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(
-                                                                              final BlobStorageOperations storageOperations,
+  private static Function<ConfiguredAirbyteStream, WriteConfig> toWriteConfig(final BlobStorageOperations storageOperations,
                                                                               final NamingConventionTransformer namingResolver,
                                                                               final S3DestinationConfig s3Config) {
     return stream -> {

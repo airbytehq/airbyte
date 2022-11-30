@@ -6,7 +6,6 @@ import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
@@ -22,7 +21,6 @@ import CreateDestinationPage from "./destination/CreateDestinationPage";
 import { DestinationItemPage } from "./destination/DestinationItemPage";
 import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
 import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
-import OnboardingPage from "./OnboardingPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths, DestinationPaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
@@ -40,7 +38,7 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   useAnalyticsIdentifyUser(workspace.workspaceId);
 };
 
-const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
+const MainViewRoutes: React.FC = () => {
   return (
     <MainView>
       <ApiErrorBoundary>
@@ -58,13 +56,8 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) =
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
           <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
-          {workspace.displaySetupWizard ? (
-            <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
-          ) : null}
-          <Route
-            path="*"
-            element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
-          />
+
+          <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
         </Routes>
       </ApiErrorBoundary>
     </MainView>
@@ -96,11 +89,7 @@ const RoutingWithWorkspace: React.FC = () => {
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
 
-  return (
-    <OnboardingServiceProvider>
-      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
-    </OnboardingServiceProvider>
-  );
+  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
