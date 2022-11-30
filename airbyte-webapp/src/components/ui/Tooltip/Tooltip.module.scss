@@ -1,4 +1,5 @@
 @use "scss/colors";
+@use "scss/mixins";
 @use "scss/variables";
 @use "scss/z-indices";
 
@@ -8,13 +9,14 @@
 }
 
 .tooltip {
+  @include mixins.shadow;
+
   font-size: 12px;
   line-height: initial;
   padding: variables.$spacing-md;
   border-radius: variables.$border-radius-sm;
   max-width: 300px;
   z-index: z-indices.$tooltip;
-  box-shadow: 0 2px 4px rgba(colors.$dark-blue, 0.12);
   background: rgba(colors.$dark-blue, 0.9);
   color: colors.$white;
 

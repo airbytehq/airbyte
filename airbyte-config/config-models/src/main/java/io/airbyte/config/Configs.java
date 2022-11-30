@@ -579,6 +579,11 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
+  /**
+   * Define if the worker should run notification workflows. Defaults to true. Internal-use only.
+   */
+  public boolean shouldRunNotifyWorkflows();
+
   // Worker - Data Plane configs
 
   /**
@@ -681,6 +686,8 @@ public interface Configs {
    * Get number of attempts of the non long running activities
    */
   int getActivityNumberOfAttempt();
+
+  boolean getAutoDetectSchema();
 
   enum TrackingStrategy {
     SEGMENT,

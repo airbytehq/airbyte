@@ -63,7 +63,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           onChange={onSelect}
         >
           {() => (
-            <Button data-id={`select-${type}`}>
+            <Button data-testid={`select-${type}`}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}

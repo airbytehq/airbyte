@@ -23,7 +23,13 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
       <Disclosure>
         {({ open }) => (
           <>
-            <Disclosure.Button className={styles.accordionButton} aria-label="toggle accordion">
+            <Disclosure.Button
+              className={styles.accordionButton}
+              aria-label={`${open ? "collapse" : "expand"} list with changes in ${
+                streamTransform.streamDescriptor.name
+              } stream`}
+              data-testid={`toggle-accordion-${streamTransform.streamDescriptor.name}-stream`}
+            >
               <DiffAccordionHeader
                 streamDescriptor={streamTransform.streamDescriptor}
                 removedCount={removedItems.length}
@@ -32,7 +38,7 @@ export const DiffAccordion: React.FC<DiffAccordionProps> = ({ streamTransform })
                 open={open}
               />
             </Disclosure.Button>
-            <Disclosure.Panel>
+            <Disclosure.Panel className={styles.accordionPanel}>
               {removedItems.length > 0 && <DiffFieldTable fieldTransforms={removedItems} diffVerb="removed" />}
               {newItems.length > 0 && <DiffFieldTable fieldTransforms={newItems} diffVerb="new" />}
               {changedItems.length > 0 && <DiffFieldTable fieldTransforms={changedItems} diffVerb="changed" />}

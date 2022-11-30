@@ -1,7 +1,7 @@
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
-# On GCP (Compute Engine)
+# Deploy Airbyte on GCP (Compute Engine)
 
 This page guides you through deploying Airbyte Open Source on a [Google Cloud Platform (GCP) Compute Engine instance](https://cloud.google.com/compute/docs/instances) by setting up the deployment environment, installing and starting Airbyte, and connecting it to the GCP instance.
 
@@ -44,7 +44,7 @@ gcloud --project $PROJECT_ID compute instances list
 5. Connect to your instance in your local terminal:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
 6. Install Docker on your VM instance by following the below commands in your VM terminal:
@@ -81,7 +81,7 @@ To install and launch Airbyte:
 1. In your local terminal, connect to your Google Cloud instance:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME
 ```
 
 2. In your VM terminal, install Airbyte:
@@ -101,7 +101,7 @@ Warning: For security reasons, we strongly recommended not exposing Airbyte publ
 1. In your local terminal, create an SSH tunnel to connect the GCP instance to Airbyte:
 
 ```bash
-gcloud --project=$PROJECT_ID beta compute SSH $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
+gcloud --project=$PROJECT_ID beta compute ssh $INSTANCE_NAME -- -L 8000:localhost:8000 -N -f
 ```
 
 2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
