@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import uniqueId from "lodash/uniqueId";
 import { useCallback, useMemo } from "react";
 import { createGlobalState } from "react-use";
 
