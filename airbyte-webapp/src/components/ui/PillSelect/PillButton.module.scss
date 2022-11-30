@@ -60,7 +60,7 @@
   align-items: center;
   padding: 0;
   border: none;
-  border-radius: variables.$spacing-xl;
+  border-radius: variables.$border-radius-pill;
   cursor: pointer;
   transition: background-color variables.$transition-out, color variables.$transition-out;
 

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -656,12 +657,11 @@ class SourceDefinitionsHandlerTest {
     }
 
     @Test
-    @DisplayName("Icon should contain data")
+    @DisplayName("Icon should be an SVG icon")
     void testIconHoldsData() {
       final String icon = SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon());
       assertNotNull(icon);
-      assert (icon.length() > 3000);
-      assert (icon.length() < 6000);
+      assertTrue(icon.contains("<svg"));
     }
 
   }

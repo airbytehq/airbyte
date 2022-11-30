@@ -1,5 +1,5 @@
-@use "../../../scss/colors";
-@use "../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 @mixin knob-transform($position, $small: false) {
   @if $position == left {
@@ -31,7 +31,7 @@
     bottom: 0;
     background: colors.$grey-100;
     transition: variables.$transition;
-    border-radius: 20px;
+    border-radius: variables.$border-radius-pill;
     border: 1px solid colors.$grey-200;
 
     &.small::before {
