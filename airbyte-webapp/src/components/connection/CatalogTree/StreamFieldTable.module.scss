@@ -1,7 +1,8 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .rowsContainer {
   background: colors.$white;
-  border-radius: 8px;
+  border-radius: variables.$border-radius-md;
   margin: 0 10px 5px;
 }

@@ -7,6 +7,8 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
@@ -203,6 +205,8 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
     final JobErrorReporter jobErrorReporter =
@@ -276,7 +280,8 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner,
-        connectionsHandler);
+        connectionsHandler,
+        envVariableFeatureFlags);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 

@@ -1,7 +1,12 @@
 import React, { createContext, useCallback, useContext, useState } from "react";
 import { useIntl } from "react-intl";
 
-import { ConnectionScheduleType, OperationRead, WebBackendConnectionRead } from "core/request/AirbyteClient";
+import {
+  ConnectionScheduleType,
+  DestinationDefinitionSpecificationRead,
+  OperationRead,
+  WebBackendConnectionRead,
+} from "core/request/AirbyteClient";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
@@ -54,7 +59,24 @@ export const tidyConnectionFormValues = (
   return formValues;
 };
 
-const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: ConnectionServiceProps) => {
+interface ConnectionFormHook {
+  connection: ConnectionOrPartialConnection;
+  mode: ConnectionFormMode;
+  destDefinition: DestinationDefinitionSpecificationRead;
+  initialValues: FormikConnectionFormValues;
+  schemaError?: SchemaError;
+  formId: string;
+  setSubmitError: (submitError: FormError | null) => void;
+  getErrorMessage: (formValid: boolean, connectionDirty: boolean) => string | JSX.Element | null;
+  refreshSchema: () => Promise<void>;
+}
+
+const useConnectionForm = ({
+  connection,
+  mode,
+  schemaError,
+  refreshSchema,
+}: ConnectionServiceProps): ConnectionFormHook => {
   const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
   const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
   const { formatMessage } = useIntl();
@@ -84,7 +106,7 @@ const useConnectionForm = ({ connection, mode, schemaError, refreshSchema }: Con
   };
 };
 
-const ConnectionFormContext = createContext<ReturnType<typeof useConnectionForm> | null>(null);
+const ConnectionFormContext = createContext<ConnectionFormHook | null>(null);
 
 export const ConnectionFormServiceProvider: React.FC<React.PropsWithChildren<ConnectionServiceProps>> = ({
   children,

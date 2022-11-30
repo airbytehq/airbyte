@@ -369,6 +369,7 @@ exports[`CreateConnectionForm should render 1`] = `
                 </h2>
                 <button
                   class="<removed-for-snapshot-test>"
+                  data-testid="refresh-source-schema-btn"
                   type="button"
                 >
                   <div
@@ -674,6 +675,7 @@ exports[`CreateConnectionForm should render 1`] = `
                             <input
                               checked=""
                               class="<removed-for-snapshot-test>"
+                              data-testid="pokemon-stream-sync-switch"
                               type="checkbox"
                               value=""
                             />

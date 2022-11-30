@@ -1,11 +1,12 @@
 import { act, renderHook } from "@testing-library/react-hooks";
 import React from "react";
+import { mockCatalogDiff } from "test-utils/mock-data/mockCatalogDiff";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
 import { mockDestination } from "test-utils/mock-data/mockDestination";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
-import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import { WebBackendConnectionRead, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 
 import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
 import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
@@ -18,14 +19,24 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspace: () => mockWorkspace,
 }));
 
+const utils = {
+  getMockConnectionWithRefreshedCatalog: (): WebBackendConnectionRead => ({
+    ...mockConnection,
+    catalogDiff: mockCatalogDiff,
+    catalogId: `${mockConnection.catalogId}1`,
+  }),
+};
+
 jest.mock("../useConnectionHook", () => ({
   useGetConnection: () => mockConnection,
   useWebConnectionService: () => ({
-    getConnection: () => mockConnection,
+    getConnection: (_connectionId: string, withRefreshedCatalog?: boolean) =>
+      withRefreshedCatalog ? utils.getMockConnectionWithRefreshedCatalog() : mockConnection,
   }),
   useUpdateConnection: () => ({
     mutateAsync: jest.fn(async (connection: WebBackendConnectionUpdate) => {
-      return { ...mockConnection, ...connection };
+      const { sourceCatalogId, ...connectionUpdate } = connection;
+      return { ...mockConnection, ...connectionUpdate, catalogId: sourceCatalogId ?? mockConnection.catalogId };
     }),
     isLoading: false,
   }),
@@ -77,7 +88,7 @@ describe("ConnectionEditService", () => {
     expect(result.current.connection).toEqual({ ...mockConnection, ...mockUpdateConnection });
   });
 
-  it("should refresh connection", async () => {
+  it("should refresh schema", async () => {
     // Need to combine the hooks so both can be used.
     const useMyTestHook = () => {
       return [useConnectionEditService(), useConnectionFormService()] as const;
@@ -108,6 +119,77 @@ describe("ConnectionEditService", () => {
     });
 
     expect(result.current[0].schemaHasBeenRefreshed).toBe(true);
-    expect(result.current[0].connection).toEqual(mockConnection);
+    expect(result.current[0].schemaRefreshing).toBe(false);
+    expect(result.current[0].connection).toEqual(utils.getMockConnectionWithRefreshedCatalog());
+  });
+
+  it("should refresh schema only if the sync catalog has diffs", async () => {
+    // Need to combine the hooks so both can be used.
+    const useMyTestHook = () =>
+      ({ editService: useConnectionEditService(), formService: useConnectionFormService() } as const);
+
+    const { result } = renderHook(useMyTestHook, {
+      wrapper: Wrapper,
+      initialProps: {
+        connectionId: mockConnection.connectionId,
+      },
+    });
+
+    const connectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
+    };
+
+    const updatedConnection: WebBackendConnectionRead = {
+      ...mockConnection,
+      ...connectionUpdate,
+    };
+
+    jest.spyOn(utils, "getMockConnectionWithRefreshedCatalog").mockImplementationOnce(
+      (): WebBackendConnectionRead => ({
+        ...updatedConnection,
+        catalogDiff: { transforms: [] },
+      })
+    );
+
+    await act(async () => {
+      await result.current.editService.updateConnection(connectionUpdate);
+      await result.current.formService.refreshSchema();
+    });
+
+    expect(result.current.editService.schemaHasBeenRefreshed).toBe(false);
+    expect(result.current.editService.schemaRefreshing).toBe(false);
+    expect(result.current.editService.connection).toEqual(updatedConnection);
+  });
+
+  it("should discard the refreshed schema", async () => {
+    const useMyTestHook = () =>
+      ({ editService: useConnectionEditService(), formService: useConnectionFormService() } as const);
+
+    const { result } = renderHook(useMyTestHook, {
+      wrapper: Wrapper,
+      initialProps: {
+        connectionId: mockConnection.connectionId,
+      },
+    });
+
+    const connectionUpdate: WebBackendConnectionUpdate = {
+      connectionId: mockConnection.connectionId,
+      name: "new connection name",
+      prefix: "new connection prefix",
+    };
+
+    const updatedConnection = { ...mockConnection, ...connectionUpdate };
+
+    await act(async () => {
+      await result.current.formService.refreshSchema();
+      await result.current.editService.updateConnection(connectionUpdate);
+      result.current.editService.discardRefreshedSchema();
+    });
+
+    expect(result.current.editService.schemaHasBeenRefreshed).toBe(false);
+    expect(result.current.editService.schemaRefreshing).toBe(false);
+    expect(result.current.editService.connection).toEqual(updatedConnection);
   });
 });
