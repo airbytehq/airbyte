@@ -497,6 +497,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   private DowngradedNode downgradeNode(JsonNode data, JsonNode schema) {
+    // TODO handle oneOf case
     if (data.isTextual()) {
       String refType = schema.get(REF_KEY).asText();
       if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
@@ -509,7 +510,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
       }
     } else if (data.isObject()) {
-      // TODO handle this case
       boolean isObjectSchema;
       if (schema.hasNonNull(REF_KEY)) {
         // If the schema uses a reference type, then it's not an object schema.
@@ -530,7 +530,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         }
       } else {
         // If the schema doesn't declare a type at all (which is bad practice, but let's handle it anyway)
-        // Then check for a properties entry, and assume that
+        // Then check for a properties entry, and assume that this is an object if it's present
         isObjectSchema = schema.hasNonNull("properties");
       }
       if (!isObjectSchema) {
@@ -540,24 +540,77 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         JsonNode propertiesNode = schema.get("properties");
 
         Iterator<Entry<String, JsonNode>> dataFields = data.fields();
+        boolean matchedSchema = true;
         while (dataFields.hasNext()) {
           Entry<String, JsonNode> field = dataFields.next();
           String key = field.getKey();
           JsonNode value = field.getValue();
           if (propertiesNode != null && propertiesNode.hasNonNull(key)) {
+            // If we have a schema for this property, do the downgrade
             JsonNode subschema = propertiesNode.get(key);
             DowngradedNode downgradedNode = downgradeNode(value, subschema);
             downgradedData.set(key, downgradedNode.node);
+            if (!downgradedNode.matchedSchema) {
+              matchedSchema = false;
+            }
           } else {
+            // Else it's an additional property - we _could_ check additionalProperties,
+            // but that's annoying and we don't actually respect that in destinations/normalization anyway.
             downgradedData.set(key, value);
           }
         }
 
-        return new DowngradedNode(downgradedData, false);
+        return new DowngradedNode(downgradedData, matchedSchema);
       }
     } else if (data.isArray()) {
       // TODO handle this case
-      return new DowngradedNode(data, false);
+      boolean isArraySchema;
+      if (schema.hasNonNull(REF_KEY)) {
+        // If the schema uses a reference type, then it's not an array schema.
+        isArraySchema = false;
+      } else if (schema.hasNonNull("type")) {
+        // If the schema declares {type: array} or {type: [..., array, ...]}
+        // Then this is an array schema
+        JsonNode typeNode = schema.get("type");
+        if (typeNode.isArray()) {
+          isArraySchema = false;
+          for (JsonNode typeItem : typeNode) {
+            if ("array".equals(typeItem.asText())) {
+              isArraySchema = true;
+            }
+          }
+        } else {
+          isArraySchema = "array".equals(typeNode.asText());
+        }
+      } else {
+        // If the schema doesn't declare a type at all (which is bad practice, but let's handle it anyway)
+        // Then check for an items entry, and assume that this is an array if it's present
+        isArraySchema = schema.hasNonNull("items");
+      }
+      if (!isArraySchema) {
+        return new DowngradedNode(data, false);
+      } else {
+        ArrayNode downgradedItems = Jsons.arrayNode();
+        JsonNode itemsNode = schema.get("items");
+        if (itemsNode == null) {
+          // We _could_ check additionalItems, but much like the additionalProperties comment above:
+          // it's a lot of work for no payoff
+          return new DowngradedNode(data, true);
+        } else if (itemsNode.isArray()) {
+          // TODO handle the {type: [..., array, ...]} case
+          return new DowngradedNode(downgradedItems, true);
+        } else {
+          boolean matchedSchema = true;
+          for (JsonNode item : data) {
+            DowngradedNode downgradedNode = downgradeNode(item, itemsNode);
+            downgradedItems.add(downgradedNode.node);
+            if (!downgradedNode.matchedSchema) {
+              matchedSchema = false;
+            }
+          }
+          return new DowngradedNode(downgradedItems, matchedSchema);
+        }
+      }
     } else {
       // TODO uncomment this
       return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);

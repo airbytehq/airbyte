@@ -1258,6 +1258,66 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedMessage, downgradedMessage);
     }
 
+    @Test
+    public void testWeirdDowngrade() {
+      // TODO more complex stuff
+      // type: [array, object] -> two fields, one where the data is obj and one where data is array
+      // {type: null, items: {...}}
+      // type: [int, object] -> this is wrong, but we should handle it just in case
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {
+                 "type": "object",
+                 "properties": {
+                  "raw_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "raw_num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
+                  "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "typeless_object": {
+                    "properties": {
+                      "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    }
+                  }
+                }
+              }
+              """
+      );
+      JsonNode oldData = Jsons.deserialize(
+          """
+          {
+            "raw_int": 42,
+            "raw_num": 43.2,
+            "bad_int": "foo",
+            "typeless_object": {
+              "foo": "42"
+            }
+          }
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": {
+                "raw_int": 42,
+                "raw_num": 43.2,
+                "bad_int": "foo",
+                "typeless_object": {
+                  "foo": 42
+                }
+              }
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
     private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String schema) {
       return new ConfiguredAirbyteCatalog()
           .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
