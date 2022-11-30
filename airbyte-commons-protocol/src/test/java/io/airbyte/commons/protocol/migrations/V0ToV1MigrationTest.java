@@ -1199,7 +1199,7 @@ public class V0ToV1MigrationTest {
                  "properties": {
                   "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
                   "num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                  "string": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                  "binary": {"$ref": "WellKnownTypes.json#/definitions/BinaryData"},
                   "bool": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
                   "object": {
                     "type": "object",
