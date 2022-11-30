@@ -31,7 +31,7 @@ connectionSpecification:
             url_base:
               type: string
               const: "https://eu-api.surveysparrow.com/v3"
-        - title: Other locations based account
+        - title: Global account
           type: object
           properties:
             url_base:
