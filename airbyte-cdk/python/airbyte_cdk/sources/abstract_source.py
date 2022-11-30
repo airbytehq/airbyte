@@ -226,7 +226,7 @@ class AbstractSource(Source, ABC):
             sync_mode=SyncMode.incremental,
             stream_state=stream_state,
         )
-        logger.debug(f"Processing stream slices for {stream_name} (snc_mode: incremental)", extra={"stream_slices": slices})
+        logger.debug(f"Processing stream slices for {stream_name} (sync_mode: incremental)", extra={"stream_slices": slices})
 
         total_records_counter = 0
         has_slices = False
