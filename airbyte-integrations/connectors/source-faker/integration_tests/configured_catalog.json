@@ -89,11 +89,11 @@
             }
           }
         },
-        "supported_sync_modes": ["full_refresh"],
+        "supported_sync_modes": ["incremental"],
         "source_defined_cursor": true,
         "default_cursor_field": ["created_at"]
       },
-      "sync_mode": "full_refresh",
+      "sync_mode": "incremental",
       "destination_sync_mode": "overwrite"
     }
   ]

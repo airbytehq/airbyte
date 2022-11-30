@@ -14,18 +14,32 @@ from mimesis.locales import Locale
 from .utils import format_airbyte_time, read_json
 
 
-class Products(Stream):
+class Products(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
-        self._cursor_value = -1
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
 
-    def generate_products(self) -> list[Dict]:
+    @property
+    def state_checkpoint_interval(self) -> Optional[int]:
+        return self.records_per_slice
+
+    @property
+    def state(self) -> Mapping[str, Any]:
+        if hasattr(self, "_state"):
+            return self._state
+        else:
+            return {self.cursor_field: 0}
+
+    @state.setter
+    def state(self, value: Mapping[str, Any]):
+        self._state = value
+
+    def load_products(self) -> list[Dict]:
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
@@ -36,13 +50,20 @@ class Products(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        products = self.generate_products()
+        total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
+        products = self.load_products()
 
         median_record_byte_size = 180
-        yield generate_estimate(self.name, len(products), median_record_byte_size)
+        rows_to_emit = len(products) - total_records
+        if rows_to_emit > 0:
+            yield generate_estimate(self.name, rows_to_emit, median_record_byte_size)
 
         for product in products:
-            yield product
+            if product["id"] > total_records:
+                yield product
+                total_records = product["id"]
+
+        self.state = {self.cursor_field: total_records, "seed": self.seed}
 
 
 class Users(Stream, IncrementalMixin):
@@ -51,7 +72,6 @@ class Users(Stream, IncrementalMixin):
 
     def __init__(self, count: int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
-        self._cursor_value = -1
         self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
@@ -143,7 +163,6 @@ class Purchases(Stream, IncrementalMixin):
 
     def __init__(self, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
-        self._cursor_value = -1
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice

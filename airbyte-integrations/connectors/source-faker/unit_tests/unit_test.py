@@ -157,8 +157,8 @@ def test_read_big_random_data():
             latest_state = row
 
     assert record_rows_count == 1000 + 100  # 1000 users, and 100 products
-    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {}}
-    assert state_rows_count == 10 + 1 + 1
+    assert latest_state.state.data == {'users': {'seed': None, 'id': 1000}, 'products': {'id': 100, 'seed': None}}
+    assert state_rows_count == 10 + 1 + 1 + 1
 
 
 def test_with_purchases():
@@ -199,7 +199,7 @@ def test_with_purchases():
     assert record_rows_count > 1000 + 100  # should be greater than 1000 users, and 100 products
     assert state_rows_count > 10 + 1  # should be greater than 1000/100, and one state for the products
     assert latest_state.state.data["users"] == {"id": 1000, "seed": None}
-    assert latest_state.state.data["products"] == {}
+    assert latest_state.state.data["products"] == {'id': 100, 'seed': None}
     assert latest_state.state.data["purchases"]["user_id"] > 0
 
 

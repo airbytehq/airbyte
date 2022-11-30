@@ -26,7 +26,7 @@ class SourceFaker(AbstractSource):
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
 
         return [
-            Products(seed, records_per_sync, records_per_slice),
+            Products(count, seed, records_per_sync, records_per_slice),
             Users(count, seed, records_per_sync, records_per_slice),
             Purchases(seed, records_per_sync, records_per_slice),
         ]
