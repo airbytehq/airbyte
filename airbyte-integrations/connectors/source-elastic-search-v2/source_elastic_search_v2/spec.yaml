@@ -4,10 +4,10 @@ connectionSpecification:
   title: Elastic Search V2 Spec
   type: object
   required:
-    - TODO
+    - endpoint
   additionalProperties: false
   properties:
     # 'TODO: This schema defines the configuration required for the source. This usually involves metadata such as database and/or authentication information.':
-    TODO:
+    endpoint:
       type: string
-      description: describe me
+      description: "Normally, should be : http://aes-statistic01.prod.dld:9200"
