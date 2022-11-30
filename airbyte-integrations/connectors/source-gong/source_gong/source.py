@@ -292,16 +292,19 @@ class CallTranscripts(IncrementalGongStream):
             date = self._start_ts
             print("Start date is: ")
             print(date)
+            date = datetime.datetime.fromtimestamp(date)
+            date = date.strftime("%Y-%m-%dT%H:%M:%SZ")
             return {"filter": {
-            
+                "fromDateTime": date
 
                 }}
         else:
             print("Start date is: ")
             print(stream_state)
             date = datetime.datetime.fromtimestamp(stream_state[self.cursor_field])
+            date = date.strftime("%Y-%m-%dT%H:%M:%SZ")
             return {"filter": {
-               
+               "fromDateTime":date
                 }}
 
 
