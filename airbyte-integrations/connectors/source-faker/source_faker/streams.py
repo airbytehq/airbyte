@@ -256,7 +256,7 @@ class Purchases(Stream, IncrementalMixin):
                 yield purchase
                 purchases_count += 1
 
-        self.state = {self.cursor_field: purchases_count, "seed": self.seed}
+        self.state = {self.cursor_field: total_user_records, "seed": self.seed}
 
 
 def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
