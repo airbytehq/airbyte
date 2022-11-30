@@ -57,4 +57,4 @@ your employees to the right projects.
 
 | Version | Date       | Pull Request                                               | Subject                |
 | :------ | :--------- | :--------------------------------------------------------- | :--------------------- |
-| 0.1.0   | 2022-09-05 | [\#15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation |
+| 0.1.0   | 2022-09-05 | [15880](https://github.com/airbytehq/airbyte/pull/15880) | Initial implementation |
