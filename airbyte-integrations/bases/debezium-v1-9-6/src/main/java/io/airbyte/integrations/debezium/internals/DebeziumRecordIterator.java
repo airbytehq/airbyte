@@ -119,7 +119,7 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
           // wrap up sync if heartbeat position crossed the target OR heartbeat position hasn't changed for
           // too long
           if (targetPosition.reachedTargetPosition(heartbeatPos)
-              || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging())) {
+              || (heartbeatPos.equals(this.lastHeartbeatPosition) && heartbeatPosNotChanging()) && !signalledClose) {
             LOGGER.info("Closing: Heartbeat indicates sync is done");
             requestClose();
           }
@@ -142,8 +142,8 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
       }
       this.tsLastHeartbeat = null;
       this.lastHeartbeatPosition = null;
-      receivedFirstRecord = true;
-      maxInstanceOfNoRecordsFound = 0;
+      this.receivedFirstRecord = true;
+      this.maxInstanceOfNoRecordsFound = 0;
       return next;
     }
     return endOfData();
