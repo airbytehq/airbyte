@@ -1,10 +1,10 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .connectorLink {
   cursor: pointer;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
 
   &:hover {
     background-color: colors.$grey-50;
@@ -30,7 +30,7 @@
   flex-wrap: wrap;
   padding: variables.$spacing-md variables.$spacing-xl;
   background-color: white;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
 }
 
 .enabledControlContainer {
