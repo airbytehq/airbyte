@@ -4,12 +4,12 @@
 
 package io.airbyte.commons.protocol.migrations;
 
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.base.Strings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
@@ -20,6 +20,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -33,9 +34,11 @@ import java.util.stream.StreamSupport;
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
   private final ConfiguredAirbyteCatalog catalog;
+  private final JsonSchemaValidator validator;
 
   public AirbyteMessageMigrationV1(ConfiguredAirbyteCatalog catalog) {
     this.catalog = catalog;
+    this.validator = new JsonSchemaValidator();
   }
 
   @Override
@@ -59,8 +62,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       if (maybeStream.isPresent()) {
         JsonNode schema = maybeStream.get().getStream().getJsonSchema();
         JsonNode oldData = record.getData();
-        JsonNode newData = downgradeRecord(oldData, schema);
-        record.setData(newData);
+        DowngradedNode downgradedNode = downgradeNode(oldData, schema);
+        record.setData(downgradedNode.node);
       }
     }
     return newMessage;
@@ -493,21 +496,81 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     }
   }
 
-  private static JsonNode downgradeRecord(JsonNode data, JsonNode schema) {
-    // TODO implement this
+  private DowngradedNode downgradeNode(JsonNode data, JsonNode schema) {
     if (data.isTextual()) {
-      String refType = schema.get(JsonSchemaReferenceTypes.REF_KEY).asText();
+      String refType = schema.get(REF_KEY).asText();
       if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
           || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
         // Attempt to parse the text as a numeric JSON node
-        // TODO handle case where source produces bad data
-        return Jsons.deserialize(data.asText());
+        // TODO handle case where source produces invalid number (i.e. fail to parse number)
+        return new DowngradedNode(Jsons.deserialize(data.asText()), true);
       } else {
-        return data;
+        // TODO uncomment this
+        return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
       }
+    } else if (data.isObject()) {
+      // TODO handle this case
+      boolean isObjectSchema;
+      if (schema.hasNonNull(REF_KEY)) {
+        // If the schema uses a reference type, then it's not an object schema.
+        isObjectSchema = false;
+      } else if (schema.hasNonNull("type")) {
+        // If the schema declares {type: object} or {type: [..., object, ...]}
+        // Then this is an object schema
+        JsonNode typeNode = schema.get("type");
+        if (typeNode.isArray()) {
+          isObjectSchema = false;
+          for (JsonNode typeItem : typeNode) {
+            if ("object".equals(typeItem.asText())) {
+              isObjectSchema = true;
+            }
+          }
+        } else {
+          isObjectSchema = "object".equals(typeNode.asText());
+        }
+      } else {
+        // If the schema doesn't declare a type at all (which is bad practice, but let's handle it anyway)
+        // Then check for a properties entry, and assume that
+        isObjectSchema = schema.hasNonNull("properties");
+      }
+      if (!isObjectSchema) {
+        return new DowngradedNode(data, false);
+      } else {
+        ObjectNode downgradedData = (ObjectNode) Jsons.emptyObject();
+        JsonNode propertiesNode = schema.get("properties");
+
+        Iterator<Entry<String, JsonNode>> dataFields = data.fields();
+        while (dataFields.hasNext()) {
+          Entry<String, JsonNode> field = dataFields.next();
+          String key = field.getKey();
+          JsonNode value = field.getValue();
+          if (propertiesNode != null && propertiesNode.hasNonNull(key)) {
+            JsonNode subschema = propertiesNode.get(key);
+            DowngradedNode downgradedNode = downgradeNode(value, subschema);
+            downgradedData.set(key, downgradedNode.node);
+          } else {
+            downgradedData.set(key, value);
+          }
+        }
+
+        return new DowngradedNode(downgradedData, false);
+      }
+    } else if (data.isArray()) {
+      // TODO handle this case
+      return new DowngradedNode(data, false);
+    } else {
+      // TODO uncomment this
+      return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
     }
-    return null;
   }
+
+  /**
+   * Quick and dirty tuple. Used internally by {@link #downgradeNode(JsonNode, JsonNode)};
+   * callers probably only actually need the node.
+   * @param node Our attempt at downgrading the node, under the given schema
+   * @param matchedSchema Whether the original node actually matched the schema
+   */
+  private record DowngradedNode(JsonNode node, boolean matchedSchema) {}
 
   @Override
   public Version getPreviousVersion() {

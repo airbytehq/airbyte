@@ -1163,16 +1163,10 @@ public class V0ToV1MigrationTest {
 
     @Test
     public void testBasicDowngrade() {
-      ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog()
-          .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
-              .withName(STREAM_NAME)
-              .withNamespace(NAMESPACE_NAME)
-              .withJsonSchema(
-                  Jsons.deserialize(
-                      """
-                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                          """
-                  )))));
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+              """);
       JsonNode oldData = Jsons.deserialize(
           """
           "42"
@@ -1194,6 +1188,82 @@ public class V0ToV1MigrationTest {
           """,
           io.airbyte.protocol.models.v0.AirbyteMessage.class);
       assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    public void testNestedDowngrade() {
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {
+                 "type": "object",
+                 "properties": {
+                  "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
+                  "string": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                  "bool": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                  "object": {
+                    "type": "object",
+                    "properties": {
+                      "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    }
+                  },
+                  "array": {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                  }
+                }
+              }
+              """
+      );
+      JsonNode oldData = Jsons.deserialize(
+          """
+          {
+            "int": "42",
+            "num": "43.2",
+            "string": "42",
+            "bool": true,
+            "object": {
+              "int": "42"
+            },
+            "array": ["42"],
+            "additionalProperty": "42"
+          }
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": {
+                "int": 42,
+                "num": 43.2,
+                "string": "42",
+                "bool": true,
+                "object": {
+                  "int": 42
+                },
+                "array": [42],
+                "additionalProperty": "42"
+              }
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String schema) {
+      return new ConfiguredAirbyteCatalog()
+          .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.AirbyteStream()
+              .withName(STREAM_NAME)
+              .withNamespace(NAMESPACE_NAME)
+              .withJsonSchema(Jsons.deserialize(schema)))));
     }
 
     private AirbyteMessage createRecordMessage(JsonNode data) {
