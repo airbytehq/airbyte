@@ -31,6 +31,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.helpers.ConnectorSpecificationHelpers;
@@ -58,6 +59,7 @@ class DestinationHandlerTest {
   private Supplier<UUID> uuidGenerator;
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
+  private OAuthConfigSupplier oAuthConfigSupplier;
 
   // needs to match name of file in src/test/resources/icons
   private static final String ICON = "test-destination.svg";
@@ -74,6 +76,7 @@ class DestinationHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     configurationUpdate = mock(ConfigurationUpdate.class);
     secretsProcessor = mock(JsonSecretsProcessor.class);
+    oAuthConfigSupplier = mock(OAuthConfigSupplier.class);
 
     connectorSpecification = ConnectorSpecificationHelpers.generateConnectorSpecification();
 
@@ -103,7 +106,8 @@ class DestinationHandlerTest {
             connectionsHandler,
             uuidGenerator,
             secretsProcessor,
-            configurationUpdate);
+            configurationUpdate,
+            oAuthConfigSupplier);
   }
 
   @Test
