@@ -56,7 +56,7 @@ export interface DatePickerProps {
   onChange: (value: string) => void;
   withTime?: boolean;
   disabled?: boolean;
-  onBlur?: (ev: React.FocusEvent<HTMLInputElement>) => void;
+  onBlur?: (ev: React.FocusEvent<HTMLDivElement>) => void;
   placeholder?: string;
 }
 
@@ -101,6 +101,8 @@ export const DatePicker: React.FC<DatePickerProps> = ({
     }
   }, [locale]);
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const handleDatepickerChange = useCallback(
     (val: Date | null) => {
       const date = dayjs(val);
@@ -111,6 +113,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
       const formattedDate = withTime ? date.utcOffset(0, true).format() : date.format("YYYY-MM-DD");
       onChange(formattedDate);
+      inputRef.current?.focus();
     },
     [onChange, withTime]
   );
@@ -124,16 +127,23 @@ export const DatePicker: React.FC<DatePickerProps> = ({
 
   const localDate = useMemo(() => toEquivalentLocalTime(value), [value]);
 
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const handleWrapperBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    if (onBlur && !wrapperRef.current?.matches(":focus-within")) {
+      onBlur(event);
+    }
+  };
+
   return (
-    <div className={styles.wrapper}>
+    <div className={styles.wrapper} ref={wrapperRef} onBlur={handleWrapperBlur}>
       <Input
         placeholder={placeholder}
         error={error}
         value={value}
         onChange={handleInputChange}
-        onBlur={onBlur}
         onFocus={() => datepickerRef.current?.setOpen(true)}
         className={styles.input}
+        ref={inputRef}
       />
       <div className={styles.datepickerButtonContainer}>
         <ReactDatePicker
@@ -144,8 +154,6 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           locale={locale}
           selected={localDate}
           onChange={handleDatepickerChange}
-          onBlur={onBlur}
-          value={undefined}
           customInput={<DatepickerButton />}
           popperClassName={styles.popup}
         />

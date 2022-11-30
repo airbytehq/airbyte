@@ -121,4 +121,24 @@ describe(`${DatePicker.name}`, () => {
     expect(mockValue).toEqual(MOCK_DESIRED_DATETIME);
     jest.useRealTimers();
   });
+
+  it("focuses the input after selecting a date from the datepicker", async () => {
+    jest.useFakeTimers().setSystemTime(new Date("2010-09-05"));
+    let mockValue = "";
+    render(
+      <TestWrapper>
+        <DatePicker onChange={(value) => (mockValue = value)} value={mockValue} />
+      </TestWrapper>
+    );
+
+    const datepicker = screen.getByLabelText("Open datepicker");
+    userEvent.click(datepicker);
+    const date = screen.getByLabelText("Choose Sunday, September 12th, 2010");
+    userEvent.click(date);
+
+    const input = screen.getByTestId("input");
+
+    expect(input).toHaveFocus();
+    jest.useRealTimers();
+  });
 });
