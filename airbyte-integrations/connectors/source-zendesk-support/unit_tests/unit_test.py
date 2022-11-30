@@ -40,7 +40,6 @@ from source_zendesk_support.streams import (
     Tickets,
     Users,
     UserSettingsStream,
-    UserSubscriptionStream,
 )
 from test_data.data import TICKET_EVENTS_STREAM_RESPONSE
 from utils import read_full_refresh
@@ -132,19 +131,22 @@ def test_check(response, check_passed):
 
 
 @pytest.mark.parametrize(
-    "response, expected_n_streams",
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
     [
-        ("Enterprise", 18),
-        # if restricted, TicketForms stream will not be listed
-        ("Other", 17),
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
+        ({"error": "Not sufficient permissions"}, 403, 17, [
+            "An exception occurred while trying to access TicketForms stream: 403 Client"
+        ]),
     ],
-    ids=["full_access", "restricted_access"],
+    ids=["forms_accessible", "forms_inaccessible"],
 )
-def test_full_access_streams(response, expected_n_streams):
-    with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value=response) as mock_method:
-        result = SourceZendeskSupport().streams(config=TEST_CONFIG)
-        mock_method.assert_called()
-        assert len(result) == expected_n_streams
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
+    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = iter([record for record in caplog.records if record.levelname == "WARNING"])
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message
 
 
 @pytest.fixture(autouse=True)
@@ -282,9 +284,9 @@ class TestAllStreams:
         ],
     )
     def test_streams(self, expected_stream_cls):
-        with patch.object(UserSubscriptionStream, "get_subscription_plan", return_value="Enterprise") as mock_method:
+        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
             streams = SourceZendeskSupport().streams(TEST_CONFIG)
-            mock_method.assert_called()
+            mocked_records.assert_called()
             for stream in streams:
                 if expected_stream_cls in streams:
                     assert isinstance(stream, expected_stream_cls)
