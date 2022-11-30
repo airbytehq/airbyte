@@ -31,7 +31,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.declarative.checks.connection_checker import (
+from airbyte_cdk.sources.availability_strategy import (
     AvailabilityStrategy,
     HTTPAvailabilityStrategy,
     ScopedAvailabilityStrategy,
