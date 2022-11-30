@@ -4,13 +4,17 @@
 
 package io.airbyte.protocol.models;
 
+import static io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.PRIMITIVE_TO_REFERENCE_BIMAP;
+
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import java.util.Map;
 import java.util.Objects;
 
 public class JsonSchemaType {
 
   public static final String TYPE = "type";
+  public static final String REF = "$ref";
   public static final String FORMAT = "format";
   public static final String DATE_TIME = "date-time";
   public static final String DATE = "date";
@@ -24,6 +28,18 @@ public class JsonSchemaType {
   public static final String BASE_64 = "base64";
   public static final String AIRBYTE_TYPE = "airbyte_type";
   public static final String ITEMS = "items";
+
+  public static final JsonSchemaType STRING_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1).build();
+  public static final JsonSchemaType BINARY_DATA_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.BINARY_DATA_V1).build();
+  public static final JsonSchemaType DATE_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.DATE_V1).build();
+  public static final JsonSchemaType TIMESTAMP_WITH_TIMEZONE_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.TIMESTAMP_WITH_TIMEZONE_V1).build();
+  public static final JsonSchemaType TIMESTAMP_WITHOUT_TIMEZONE_V1 =
+      JsonSchemaType.builder(JsonSchemaPrimitive.TIMESTAMP_WITHOUT_TIMEZONE_V1).build();
+  public static final JsonSchemaType TIME_WITH_TIMEZONE_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.TIME_WITH_TIMEZONE_V1).build();
+  public static final JsonSchemaType TIME_WITHOUT_TIMEZONE_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.TIME_WITHOUT_TIMEZONE_V1).build();
+  public static final JsonSchemaType NUMBER_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER_V1).build();
+  public static final JsonSchemaType INTEGER_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.INTEGER_V1).build();
+  public static final JsonSchemaType BOOLEAN_V1 = JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN_V1).build();
 
   public static final JsonSchemaType STRING = JsonSchemaType.builder(JsonSchemaPrimitive.STRING).build();
   public static final JsonSchemaType NUMBER = JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER).build();
@@ -78,7 +94,11 @@ public class JsonSchemaType {
 
     private Builder(final JsonSchemaPrimitive type) {
       typeMapBuilder = ImmutableMap.builder();
-      typeMapBuilder.put(TYPE, type.name().toLowerCase());
+      if (JsonSchemaPrimitiveUtil.isV0Schema(type)) {
+        typeMapBuilder.put(TYPE, type.name().toLowerCase());
+      } else {
+        typeMapBuilder.put(REF, PRIMITIVE_TO_REFERENCE_BIMAP.get(type));
+      }
     }
 
     public Builder withFormat(final String value) {
