@@ -146,19 +146,17 @@ public class GlueOperations implements MetastoreOperations {
         yield arrayType;
       }
       case "object" -> {
-        String objectType = "struct<";
-        String columnTypes;
         if (jsonNode.has("properties")) {
-          Map<String, JsonNode> properties =
-            objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
-          columnTypes = properties.entrySet().stream()
-            .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
-            .collect(Collectors.joining(","));
+          String objectType = "struct<";
+          Map<String, JsonNode> properties = objectMapper.convertValue(jsonNode.get("properties"), new TypeReference<>() {});
+          String columnTypes = properties.entrySet().stream()
+              .map(p -> p.getKey() + " : " + transformSchemaRecursive(p.getValue()))
+              .collect(Collectors.joining(","));
+          objectType += (columnTypes + ">");
+          yield objectType;
         } else {
-          columnTypes = "";
+          yield "string";
         }
-        objectType += (columnTypes + ">");
-        yield objectType;
       }
       default -> type;
     };
