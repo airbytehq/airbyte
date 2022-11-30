@@ -109,9 +109,14 @@ public class KubePodProcess extends Process implements KubePod {
   private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
   private static final String DEFAULT_CPU_REQUEST = "0.1";
   private static final String DEFAULT_CPU_LIMIT = "0.2";
+  private static final String DEFAULT_SOCAT_CPU_REQUEST = "1.0";
+  private static final String DEFAULT_SOCAT_CPU_LIMIT = "1.5";
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
       .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
       .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
+  private static final ResourceRequirements DEFAULT_SOCAT_RESOURCES = new ResourceRequirements()
+      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
+      .withCpuLimit(DEFAULT_SOCAT_CPU_LIMIT).withCpuRequest(DEFAULT_SOCAT_CPU_REQUEST);
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -446,13 +451,17 @@ public class KubePodProcess extends Process implements KubePod {
     // Printing socat notice logs with socat -d -d
     // To print info logs as well use socat -d -d -d
     // more info: https://linux.die.net/man/1/socat
-    final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
+    final io.fabric8.kubernetes.api.model.ResourceRequirements heartbeatSidecarResources =
+        getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
+    final io.fabric8.kubernetes.api.model.ResourceRequirements socatSidecarResources =
+        getResourceRequirementsBuilder(DEFAULT_SOCAT_RESOURCES).build();
+
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
         .withCommand("sh", "-c", "socat -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -461,7 +470,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -470,7 +479,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -487,7 +496,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(heartbeatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
