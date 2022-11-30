@@ -38,6 +38,7 @@ public class ApiClientBeanFactory {
   public AirbyteApiClient airbyteApiClient(
                                            @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
                                            @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
+                                           @Value("${airbyte.internal.api.micronaut-host}") final String airbyteMicronautApiHost,
                                            @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
                                            @Named("internalApiScheme") final String internalApiScheme) {
     return new AirbyteApiClient(
@@ -45,6 +46,20 @@ public class ApiClientBeanFactory {
             .setScheme(internalApiScheme)
             .setHost(parseHostName(airbyteApiHost))
             .setPort(parsePort(airbyteApiHost))
+            .setBasePath("/api")
+            .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
+            .setRequestInterceptor(builder -> {
+              builder.setHeader("User-Agent", "WorkerApp");
+              // internalApiAuthToken is in BeanProvider because we want to create a new token each
+              // time we send a request.
+              if (!airbyteApiAuthHeaderName.isBlank()) {
+                builder.setHeader(airbyteApiAuthHeaderName, internalApiAuthToken.get());
+              }
+            }),
+        new io.airbyte.api.client.invoker.generated.ApiClient()
+            .setScheme(internalApiScheme)
+            .setHost(parseHostName(airbyteMicronautApiHost))
+            .setPort(parsePort(airbyteMicronautApiHost))
             .setBasePath("/api")
             .setHttpClientBuilder(HttpClient.newBuilder().version(Version.HTTP_1_1))
             .setRequestInterceptor(builder -> {

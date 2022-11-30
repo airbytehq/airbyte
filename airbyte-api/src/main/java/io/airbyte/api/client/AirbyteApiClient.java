@@ -50,7 +50,7 @@ public class AirbyteApiClient {
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
 
-  public AirbyteApiClient(final ApiClient apiClient) {
+  public AirbyteApiClient(final ApiClient apiClient, final ApiClient micronautApiClient) {
     connectionApi = new ConnectionApi(apiClient);
     destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
     destinationApi = new DestinationApi(apiClient);
@@ -62,7 +62,7 @@ public class AirbyteApiClient {
     sourceApi = new SourceApi(apiClient);
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
-    healthApi = new HealthApi(apiClient);
+    healthApi = new HealthApi(micronautApiClient);
     dbMigrationApi = new DbMigrationApi(apiClient);
     attemptApi = new AttemptApi(apiClient);
     stateApi = new StateApi(apiClient);

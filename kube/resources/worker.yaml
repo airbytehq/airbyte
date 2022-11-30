@@ -179,6 +179,11 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: INTERNAL_API_HOST
+            - name: INTERNAL_MICRONAUT_API_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: INTERNAL_MICRONAUT_API_HOST
             - name: JOB_KUBE_TOLERATIONS
               valueFrom:
                 configMapKeyRef:

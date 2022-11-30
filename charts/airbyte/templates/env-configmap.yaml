@@ -23,6 +23,7 @@ data:
   GCS_LOG_BUCKET: {{ .Values.global.logs.gcs.bucket | quote }}
   GOOGLE_APPLICATION_CREDENTIALS: {{ include "airbyte.gcpLogCredentialsPath" . | quote }}
   INTERNAL_API_HOST: {{ .Release.Name }}-airbyte-server-svc:{{ .Values.server.service.port }}
+  INTERNAL_MICRONAUT_API_HOST: {{ .Release.Name }}-airbyte-server-svc:{{ .Values.server.service.port }}
   CONNECTOR_BUILDER_API_HOST: {{ .Release.Name }}-airbyte-connector-builder-server-svc:{{ .Values.connectorBuilderServer.service.port }}
 {{- if $.Values.global.jobs.kube.annotations }}
   JOB_KUBE_ANNOTATIONS: {{ $.Values.global.jobs.kube.annotations | include "airbyte.flattenMap" | quote }}
