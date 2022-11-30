@@ -159,8 +159,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
-  public void run(final ConnectionUpdaterInput connectionUpdaterInput)
-      throws RetryableException {
+  public void run(final ConnectionUpdaterInput connectionUpdaterInput) throws RetryableException {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
 
