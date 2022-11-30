@@ -47,10 +47,14 @@ class BaseConnector(ABC, Generic[TConfig]):
         """
 
     @staticmethod
-    def read_config(config_path: str) -> TConfig:
+    def read_json_file(config_path: str) -> TConfig:
         with open(config_path, "r") as file:
             contents = file.read()
-        return json.loads(contents)
+
+        try:
+            return json.loads(contents)
+        except json.JSONDecodeError as error:
+            raise ValueError(f"Could not read json file {config_path}: `{error}`")
 
     @staticmethod
     def write_config(config: TConfig, config_path: str):

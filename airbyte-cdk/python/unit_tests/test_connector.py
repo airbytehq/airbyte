@@ -66,13 +66,26 @@ def nonempty_file(mock_config):
 
 
 @pytest.fixture
+def nonjson_file(mock_config):
+    with tempfile.NamedTemporaryFile("w") as file:
+        file.write("the content of this file is not JSON")
+        file.flush()
+        yield file
+
+
+@pytest.fixture
 def integration():
     return MockConnector()
 
 
-def test_read_config(nonempty_file, integration: Connector, mock_config):
-    actual = integration.read_config(nonempty_file.name)
+def test_read_json_file(nonempty_file, integration: Connector, mock_config):
+    actual = integration.read_json_file(nonempty_file.name)
     assert mock_config == actual
+
+
+def test_read_non_json_file(nonjson_file, integration: Connector):
+    with pytest.raises(ValueError, match="Could not read json file"):
+        integration.read_json_file(nonjson_file.name)
 
 
 def test_write_config(integration, mock_config):

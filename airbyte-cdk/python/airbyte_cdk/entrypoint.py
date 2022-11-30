@@ -82,7 +82,7 @@ class AirbyteEntrypoint(object):
                 message = AirbyteMessage(type=Type.SPEC, spec=source_spec)
                 yield message.json(exclude_unset=True)
             else:
-                raw_config = self.source.read_config(parsed_args.config)
+                raw_config = self.source.read_json_file(parsed_args.config)
                 config = self.source.configure(raw_config, temp_dir)
 
                 # Now that we have the config, we can use it to get a list of ai airbyte_secrets

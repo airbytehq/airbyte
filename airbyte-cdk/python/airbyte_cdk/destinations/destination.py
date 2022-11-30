@@ -94,7 +94,7 @@ class Destination(Connector, ABC):
         if cmd == "spec":
             yield AirbyteMessage(type=Type.SPEC, spec=spec)
             return
-        config = self.read_config(config_path=parsed_args.config)
+        config = self.read_json_file(config_path=parsed_args.config)
         if self.check_config_against_spec or cmd == "check":
             try:
                 check_config_against_spec_or_exit(config, spec)

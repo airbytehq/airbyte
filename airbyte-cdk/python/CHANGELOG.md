@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.0
+Improve error readability when error while reading JSON config files
+
 ## 0.11.1
 Low-code: Fix the component manifest schema to and validate check instead of checker
 
