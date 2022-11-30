@@ -17,7 +17,7 @@ class KapicheExportApiStream(HttpStream, ABC):
     Abstract Stream class for kapiche-export-api connector.
     All streams from airbyte must inherit from this as a base class.
     """
-    
+
     def __init__(self, authenticator: HttpAuthenticator = None):
         super().__init__(authenticator)
         self._url_base = ''
@@ -50,6 +50,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         authenticator: HttpAuthenticator,
         url: str = "",
         name: str = None,
+        site_name: str = "",
     ):
 
         self._session = requests.Session()
@@ -58,6 +59,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         self._cursor_value = 1
         self._url_base = url
         self._name = name
+        self.site_name = site_name
 
     # needed to instantiate the class
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, str]]:
@@ -118,8 +120,8 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         return pd.read_parquet(fname)
 
     def request_headers(self, *args, **kwargs) -> Mapping[str, Any]:
-        """ We do not require additional request headers at the moment. """
-        return {}
+        """ Add the required headers for the request. """
+        return {'Site-Name': self.site_name}
 
     def request_params(
         self,
@@ -164,7 +166,7 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         }
         request = self._create_prepared_request(
             path=self.path(),
-            headers=dict(**self.authenticator.get_auth_header()),
+            headers={ **self.request_headers(), **self.authenticator.get_auth_header()},
             params=self.request_params(start_document_id=1, docs_count=2),
         )
         request_kwargs = self.request_kwargs(stream=True)
@@ -218,30 +220,26 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         *args,
         **kwargs,
     ) -> Iterable[Mapping[str, Any]]:
-        pagination_complete = False
-
         fname = Path(f'./export_file_{self.path}.parquet')
         next_doc = self._cursor_value
-        while not pagination_complete:
+
+        while True:
             request_headers = self.request_headers()
             request = self._create_prepared_request(
                 path=self.path(),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                headers={ **request_headers, **self.authenticator.get_auth_header()},
                 params=self.request_params(start_document_id=next_doc),
             )
             request_kwargs = self.request_kwargs(stream=True)
 
             response = self._send_request(request, request_kwargs)
+            if response.status_code == 204:
+                break
             for record in  self.parse_response(response, fname):
-                if int(self._cursor_value) < record[self.cursor_field]:
-                    self._cursor_value = int(record[self.cursor_field])
                 yield record
 
-            if response.headers.get('Kapiche-next-document-id'):
-                next_doc = response.headers.get('Kapiche-next-document-id')
-                self._cursor_value = next_doc
-            else:
-                pagination_complete = True
+            next_doc = response.headers.get('Kapiche-next-document-id')
+            self._cursor_value = next_doc
 
         fname.unlink(missing_ok=True)
         self.schemaPath.unlink(missing_ok=True)
@@ -326,7 +324,7 @@ class SourceKapicheExportApi(AbstractSource):
 
         request = export_list_stream._create_prepared_request(
             path='export/list/',
-            headers=auth.get_auth_header()
+            headers={ 'Site-Name': config['site_name'], **auth.get_auth_header()}
         )
         response = export_list_stream._send_request(request, {})
 
@@ -345,7 +343,10 @@ class SourceKapicheExportApi(AbstractSource):
         auth = TokenAuthenticator(token=config["api_token"], auth_method='Site')
         export_list_stream = ExportDataList(authenticator=auth, url=config['export_api_url'])
 
-        request = export_list_stream._create_prepared_request(path='export/list/', headers=auth.get_auth_header())
+        request = export_list_stream._create_prepared_request(
+            path='export/list/',
+            headers={"Site-Name":config["site_name"], **auth.get_auth_header()}
+        )
         response = export_list_stream._send_request(request, {})
 
         if response.status_code != 200:
@@ -354,7 +355,11 @@ class SourceKapicheExportApi(AbstractSource):
         data = response.json()
         export_list = [
             ExportDataGet(
-                export['uuid'], auth, export['export_url'], f"{export['project_name']}-{export['analysis_name']}"
+                export['uuid'],
+                auth,
+                export['export_url'],
+                f"{export['project_name']}-{export['analysis_name']}",
+                config['site_name']
             )
             for export in data if export.get('enabled')
         ]

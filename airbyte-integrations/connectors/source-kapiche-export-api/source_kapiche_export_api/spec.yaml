@@ -6,6 +6,7 @@ connectionSpecification:
   required:
     - api_token
     - export_api_url
+    - site_name
   properties:
     api_token:
       title: API TOKEN
@@ -13,7 +14,12 @@ connectionSpecification:
       description: Auth tokens to use for the Export API.
       airbyte_secret: true
     export_api_url:
-      title: Export URL (botanic)
+      title: Export URL
       type: string
       description: Export url that is consumed to get all the export metadata.
+      airbyte_secret: false
+    site_name:
+      title: Site Name
+      type: string
+      description: Site Name as identified in Kapiche.
       airbyte_secret: false
