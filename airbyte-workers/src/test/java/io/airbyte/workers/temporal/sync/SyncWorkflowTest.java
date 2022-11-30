@@ -17,6 +17,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
@@ -118,6 +119,7 @@ class SyncWorkflowTest {
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
+  private EnvVariableFeatureFlags envVariableFeatureFlags;
 
   @BeforeEach
   void setUp() throws IOException {
@@ -154,6 +156,7 @@ class SyncWorkflowTest {
     webhookOperationActivity = mock(WebhookOperationActivityImpl.class);
     refreshSchemaActivity = mock(RefreshSchemaActivityImpl.class);
     configFetchActivity = mock(ConfigFetchActivityImpl.class);
+    envVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
 
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
     when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
@@ -203,7 +206,8 @@ class SyncWorkflowTest {
     final SyncWorkflow workflow =
         client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_QUEUE).build());
 
-    return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
+    return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId(),
+        envVariableFeatureFlags);
   }
 
   @Test

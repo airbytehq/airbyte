@@ -9,6 +9,7 @@ import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.N
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
@@ -81,19 +82,22 @@ public class TemporalClient {
   private final StreamResetPersistence streamResetPersistence;
   private final ConnectionManagerUtils connectionManagerUtils;
   private final StreamResetRecordsHelper streamResetRecordsHelper;
+  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public TemporalClient(@Named("workspaceRootTemporal") final Path workspaceRoot,
                         final WorkflowClient client,
                         final WorkflowServiceStubs service,
                         final StreamResetPersistence streamResetPersistence,
                         final ConnectionManagerUtils connectionManagerUtils,
-                        final StreamResetRecordsHelper streamResetRecordsHelper) {
+                        final StreamResetRecordsHelper streamResetRecordsHelper,
+                        final EnvVariableFeatureFlags envVariableFeatureFlags) {
     this.workspaceRoot = workspaceRoot;
     this.client = client;
     this.service = service;
     this.streamResetPersistence = streamResetPersistence;
     this.connectionManagerUtils = connectionManagerUtils;
     this.streamResetRecordsHelper = streamResetRecordsHelper;
+    this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
   private final Set<String> workflowNames = new HashSet<>();
@@ -408,7 +412,7 @@ public class TemporalClient {
                 sourceLauncherConfig,
                 destinationLauncherConfig,
                 input,
-                connectionId);
+                connectionId, envVariableFeatureFlags);
           } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
             throw new RuntimeException(e);
           }

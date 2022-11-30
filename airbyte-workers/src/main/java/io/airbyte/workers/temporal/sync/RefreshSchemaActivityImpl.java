@@ -40,7 +40,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
       return false;
     }
 
-    return !schemaRefreshRanRecently(sourceCatalogId) || true;
+    return !schemaRefreshRanRecently(sourceCatalogId);
   }
 
   @Override
@@ -48,11 +48,11 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
     SourceDiscoverSchemaRequestBody requestBody =
         new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true).connectionId(connectionId);
 
-     try {
+    try {
       airbyteApiClient.getSourceApi().discoverSchemaForSource(requestBody);
-     } catch (final Exception e) {
-       log.info("Attempted schema refresh, but failed.");
-     }
+    } catch (final Exception e) {
+      log.info("Attempted schema refresh, but failed.");
+    }
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {

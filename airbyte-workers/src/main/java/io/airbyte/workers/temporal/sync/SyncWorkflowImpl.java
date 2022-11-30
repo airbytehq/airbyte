@@ -76,7 +76,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId)
+                                final UUID connectionId,
+                                final EnvVariableFeatureFlags envVariableFeatureFlags)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
 
     ApmTraceUtils
@@ -89,7 +90,6 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
     if (version > Workflow.DEFAULT_VERSION) {
-      final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
       if (envVariableFeatureFlags.autoDetectSchema()) {
         final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
         if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
