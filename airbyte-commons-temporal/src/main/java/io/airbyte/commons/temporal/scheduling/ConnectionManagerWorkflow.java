@@ -4,6 +4,7 @@
 
 package io.airbyte.commons.temporal.scheduling;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.temporal.workflow.QueryMethod;
 import io.temporal.workflow.SignalMethod;
@@ -25,7 +26,7 @@ public interface ConnectionManagerWorkflow {
    * for scheduling syncs. This workflow will run and then continue running until deleted.
    */
   @WorkflowMethod
-  void run(ConnectionUpdaterInput connectionUpdaterInput);
+  void run(ConnectionUpdaterInput connectionUpdaterInput, EnvVariableFeatureFlags envVariableFeatureFlags);
 
   /**
    * Send a signal that will bypass the waiting time and run a sync. Nothing will happen if a sync is

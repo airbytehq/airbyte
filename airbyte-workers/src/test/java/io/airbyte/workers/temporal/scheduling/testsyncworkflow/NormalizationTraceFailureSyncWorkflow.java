@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
@@ -30,7 +31,8 @@ public class NormalizationTraceFailureSyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId) {
+                                final UUID connectionId,
+                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
 
     return new StandardSyncOutput()
         .withNormalizationSummary(new NormalizationSummary()
