@@ -93,6 +93,8 @@ class DefaultReplicationWorkerTest {
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
   private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE =
       AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Double.valueOf(123));
+  final Config CONNECTOR_CONFIG = new Config().withAdditionalProperty("my_key", "my_new_value");
+  final AirbyteMessage CONFIG_MESSAGE = AirbyteMessageUtils.createConfigControlMessage(CONNECTOR_CONFIG, 1D);
   private static final String STREAM1 = "stream1";
 
   private static final String NAMESPACE = "namespace";
@@ -141,6 +143,7 @@ class DefaultReplicationWorkerTest {
     when(mapper.mapMessage(RECORD_MESSAGE1)).thenReturn(RECORD_MESSAGE1);
     when(mapper.mapMessage(RECORD_MESSAGE2)).thenReturn(RECORD_MESSAGE2);
     when(mapper.mapMessage(RECORD_MESSAGE3)).thenReturn(RECORD_MESSAGE3);
+    when(mapper.mapMessage(CONFIG_MESSAGE)).thenReturn(CONFIG_MESSAGE);
   }
 
   @AfterEach
@@ -250,10 +253,7 @@ class DefaultReplicationWorkerTest {
 
   @Test
   void testReplicationRunnableSourceUpdateConfig() throws Exception {
-    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
-    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
-    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(configMsg), Optional.empty());
-    when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
+    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(CONFIG_MESSAGE), Optional.empty());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -269,16 +269,13 @@ class DefaultReplicationWorkerTest {
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
 
-    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), connectorConfig);
+    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), CONNECTOR_CONFIG);
   }
 
   @Test
   void testReplicationFailureOnSourceConfigPersistError() throws Exception {
-    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
-    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
-    when(source.attemptRead()).thenReturn(Optional.of(configMsg));
+    when(source.attemptRead()).thenReturn(Optional.of(CONFIG_MESSAGE));
     when(source.isFinished()).thenReturn(false, true);
-    when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
 
     final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
     doThrow(new ApiException(PERSIST_ERROR_MESSAGE)).when(persistConfigHelper).persistSourceConfig(Mockito.any(), Mockito.any());
@@ -299,14 +296,12 @@ class DefaultReplicationWorkerTest {
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
 
-    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), connectorConfig);
+    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), CONNECTOR_CONFIG);
   }
 
   @Test
   void testReplicationRunnableDestinationUpdateConfig() throws Exception {
-    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
-    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
-    when(destination.attemptRead()).thenReturn(Optional.of(STATE_MESSAGE), Optional.of(configMsg));
+    when(destination.attemptRead()).thenReturn(Optional.of(STATE_MESSAGE), Optional.of(CONFIG_MESSAGE));
     when(destination.isFinished()).thenReturn(false, false, true);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
@@ -323,14 +318,12 @@ class DefaultReplicationWorkerTest {
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
 
-    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), connectorConfig);
+    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), CONNECTOR_CONFIG);
   }
 
   @Test
   void testReplicationFailureOnDestinationConfigPersistError() throws Exception {
-    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
-    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
-    when(destination.attemptRead()).thenReturn(Optional.of(configMsg));
+    when(destination.attemptRead()).thenReturn(Optional.of(CONFIG_MESSAGE));
     when(destination.isFinished()).thenReturn(false, true);
 
     final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
@@ -352,7 +345,7 @@ class DefaultReplicationWorkerTest {
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
 
-    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), connectorConfig);
+    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), CONNECTOR_CONFIG);
   }
 
   @Test
