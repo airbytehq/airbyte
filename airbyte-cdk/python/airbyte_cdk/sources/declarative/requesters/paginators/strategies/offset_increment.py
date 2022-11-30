@@ -45,10 +45,9 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         # InterpolatedString page_size may contain one of int/str types,
         # so we need to ensure that its `.string` attribute is of *string* type
         self.page_size.string = str(self.page_size.string)
-        self.page_size = self.page_size.eval(self.config)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
-        if len(last_records) < self.page_size:
+        if len(last_records) < self.page_size.eval(self.config):
             return None
         else:
             self._offset += len(last_records)
@@ -58,4 +57,7 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
         self._offset = 0
 
     def get_page_size(self) -> Optional[int]:
-        return self.page_size
+        page_size = self.page_size.eval(self.config)
+        if not isinstance(page_size, int):
+            raise Exception(f"{page_size} is of type {type(page_size)}. Expected {int}")
+        return page_size

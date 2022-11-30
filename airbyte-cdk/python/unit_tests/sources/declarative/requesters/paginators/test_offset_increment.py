@@ -36,3 +36,14 @@ def test_offset_increment_paginator_strategy(test_name, page_size, expected_next
 
     paginator_strategy.reset()
     assert 0 == paginator_strategy._offset
+
+
+def test_offset_increment_paginator_strategy_rises():
+    paginator_strategy = OffsetIncrement(
+        page_size=InterpolatedString(string="{{ options['page_size'] }}", options={"page_size": "invalid value"}),
+        options={},
+        config={}
+    )
+    with pytest.raises(Exception) as exc:
+        paginator_strategy.get_page_size()
+    assert str(exc.value) == 'invalid value is of type <class \'str\'>. Expected <class \'int\'>'
