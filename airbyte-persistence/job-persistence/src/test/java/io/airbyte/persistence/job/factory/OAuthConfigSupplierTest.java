@@ -210,7 +210,7 @@ class OAuthConfigSupplierTest {
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
     when(configRepository.getStandardSourceDefinition(any()))
-        .thenReturn(testSourceDefinition);
+        .thenReturn(testSourceDefinition.withSpec(null));
     setupOAuthParamMocks(oauthParameters);
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
@@ -227,7 +227,7 @@ class OAuthConfigSupplierTest {
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
     when(configRepository.getStandardSourceDefinition(any()))
-        .thenReturn(testSourceDefinition);
+        .thenReturn(testSourceDefinition.withSpec(null));
     setupOAuthParamMocks(oauthParameters);
     final JsonNode actualConfig = oAuthConfigSupplier.maskSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     assertEquals(config, actualConfig);
