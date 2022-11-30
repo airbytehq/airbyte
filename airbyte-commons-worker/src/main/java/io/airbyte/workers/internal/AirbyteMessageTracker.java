@@ -238,8 +238,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   @SuppressWarnings("PMD") // until method is implemented
   private void handleEmittedOrchestratorConnectorConfig(final AirbyteControlConnectorConfigMessage configMessage,
                                                         final ConnectorType connectorType) {
-    // Currently being persisted as part of the DefaultReplicationWorker
-    // TODO decide if it should be persisted from here instead
+    // Config updates are being persisted as part of the DefaultNormalizationWorker.
+    // In the future, we could add tracking of these kinds of messages here. Nothing to do for now.
   }
 
   /**
