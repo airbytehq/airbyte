@@ -194,10 +194,20 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing normalization process");
+    LOGGER.info("Terminating normalization process {}...", process.pid());
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Normalization process wasn't successful");
+
+    /*
+     * After attempting to close the process check the following:
+     *
+     * Did the process actually terminate? If "yes", did it do so nominally?
+     */
+    if (process.isAlive()) {
+      throw new WorkerException("Normalization process " + process.pid() + " did not terminate after 1 minute.");
+    } else if (process.exitValue() != 0) {
+      throw new WorkerException("Normalization process " + process.pid() + " did not terminate normally (exit code: " + process.exitValue() + ")");
+    } else {
+      LOGGER.info("Normalization process {} successfully terminated.", process.pid());
     }
   }
 
