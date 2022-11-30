@@ -18,6 +18,8 @@ from source_zendesk_chat.streams import (
     Shortcuts,
     Skills,
     Triggers,
+    Conversions,
+    DepartmentEvents,
 )
 
 TEST_CONFIG: dict = {
@@ -165,6 +167,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, 1000),
             (Chats, 1000),
+            (Conversions, 1000),
+            (DepartmentEvents, 1000),
         ],
     )
     def test_state_checkpoint_interval(self, stream_cls, expected):
@@ -177,6 +181,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, "start_time"),
             (Chats, "update_timestamp"),
+            (Conversions, "timestamp"),
+            (DepartmentEvents, "timestamp"),
         ],
     )
     def test_cursor_field(self, stream_cls, expected):
@@ -189,6 +195,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, {"end_time": "123"}, {"start_time": "123"}),
             (Chats, {"end_time": "123"}, {"start_time": "123"}),
+            (Conversions, {"end_time": "123"}, {"start_time": "123"}),
+            (DepartmentEvents, {"end_time": "123"}, {"start_time": "123"}),
         ],
     )
     def test_next_page_token(self, requests_mock, stream_cls, test_response, expected):
@@ -205,6 +213,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, {}, {"start_time": "2021-01-01"}, {"start_time": "2021-01-01T00:00:00Z"}),
             (Chats, {"update_timestamp": "2022-02-02"}, {"update_timestamp": "2022-03-03"}, {"update_timestamp": "2022-03-03T00:00:00Z"}),
+            (Conversions, {}, {"timestamp": "2022-11-30"}, {"timestamp": "2022-11-30T00:00:00Z"}),
+            (DepartmentEvents, {}, {"timestamp": "2022-11-30"}, {"timestamp": "2022-11-30T00:00:00Z"}),
         ],
     )
     def test_get_updated_state(self, stream_cls, current_state, last_record, expected):
@@ -217,6 +227,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, {}, {"start_time": "123"}, {"limit": 1000, "start_time": "123", "fields": "agent_timeline(*)"}),
             (Chats, {"update_timestamp": "2022-02-02"}, {"start_time": "234"}, {"limit": 1000, "start_time": "234", "fields": "chats(*)"}),
+            (Conversions, {}, {"timestamp": "123"}, {"limit": 1000, "timestamp": "123", "fields": "conversions(*)"}),
+            (DepartmentEvents, {}, {"timestamp": "123"}, {"limit": 1000, "timestamp": "123", "fields": "department_events(*)"}),
         ],
     )
     def test_request_params(self, stream_cls, stream_state, next_page_token, expected):
@@ -237,6 +249,16 @@ class TestTimeIncrementalStreams:
                 {"chats": {"id": "234", "agent_id": "test_id", "update_timestamp": "2022-01-01"}},
                 [{"id": "234", "agent_id": "test_id", "update_timestamp": "2022-01-01T00:00:00Z"}],
             ),
+            (
+                Conversions,
+                {"conversions": {"id": "123", "goal_id": "test_id", "timestamp": "2022-01-01"}},
+                [{"id": "123", "goal_id": "test_id", "timestamp": "2022-01-01T00:00:00Z"}],
+            ),
+            (
+                DepartmentEvents,
+                {"department_events": {"id": "123", "department_id": "test_id", "timestamp": "2022-01-01"}},
+                [{"id": "123", "department_id": "test_id", "timestamp": "2022-01-01T00:00:00Z"}],
+            ),
         ],
     )
     def test_parse_response(self, requests_mock, stream_cls, test_response, expected):
@@ -252,6 +274,8 @@ class TestTimeIncrementalStreams:
         [
             (AgentTimelines, "incremental/agent_timeline"),
             (Chats, "incremental/chats"),
+            (Conversions, "incremental/conversions"),
+            (DepartmentEvents, "incremental/department_events"),
         ],
     )
     def test_path(self, stream_cls, expected):
