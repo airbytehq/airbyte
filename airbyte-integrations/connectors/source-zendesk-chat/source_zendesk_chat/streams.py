@@ -309,6 +309,7 @@ class RoutingSettings(Stream):
     ) -> str:
         return "routing_settings/account"
 
+
 class DepartmentEvents(TimeIncrementalStream):
     """
     Chats Stream: https://developer.zendesk.com/api-reference/live-chat/chat-api/incremental_export/#incremental-department-events-export

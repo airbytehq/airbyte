@@ -11,6 +11,8 @@ from source_zendesk_chat.streams import (
     AgentTimelines,
     Bans,
     Chats,
+    Conversions,
+    DepartmentEvents,
     Departments,
     Goals,
     Roles,
@@ -18,8 +20,6 @@ from source_zendesk_chat.streams import (
     Shortcuts,
     Skills,
     Triggers,
-    Conversions,
-    DepartmentEvents,
 )
 
 TEST_CONFIG: dict = {
