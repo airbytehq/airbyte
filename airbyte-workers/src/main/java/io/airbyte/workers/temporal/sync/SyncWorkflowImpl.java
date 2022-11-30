@@ -96,9 +96,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
           LOGGER.info("Refreshing source schema...");
           refreshSchemaActivity.refreshSchema(sourceId, connectionId);
         }
-        LOGGER.info("refreshed schema");
         final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
-        LOGGER.info("status is: " + status);
         if (Status.INACTIVE == status) {
           LOGGER.info("Connection is disabled. Cancelling run.");
           final StandardSyncOutput output =
