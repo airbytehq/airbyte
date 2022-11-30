@@ -14,32 +14,11 @@ export interface Signin {
   password: string;
 }
 
-export interface AuthenticatedUser {
-  account: string;
-  company: string;
-  firstName: string;
-  lang: string;
-  lastName: string;
-  token: string;
-  workspaceId: string;
-}
-
-const USER_KEY = "daspire-user";
-
-export function setAuthenticatedUser(userData: AuthenticatedUser) {
-  localStorage.setItem(USER_KEY, JSON.stringify(userData));
-}
-
-export function getAuthenticatedUser() {
-  return JSON.parse(localStorage.getItem(USER_KEY) as string);
-}
-
 export class AuthService extends AirbyteRequestService {
   public async create(signup: Signup): Promise<Signup> {
     return new Promise((resolve, reject) => {
       this.fetch<Signup>(`/user/register`, signup)
         .then((res: any) => {
-          setAuthenticatedUser(res.data);
           resolve(res.data);
         })
         .catch((err: any) => {
@@ -52,7 +31,6 @@ export class AuthService extends AirbyteRequestService {
     return new Promise((resolve, reject) => {
       this.fetch<Signin>(`/user/login`, signin)
         .then((res: any) => {
-          setAuthenticatedUser(res.data);
           resolve(res.data);
         })
         .catch((err: any) => {
