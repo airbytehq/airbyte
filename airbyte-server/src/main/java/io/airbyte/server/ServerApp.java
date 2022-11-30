@@ -248,8 +248,7 @@ public class ServerApp implements ServerRunnable {
         temporalService,
         streamResetPersistence,
         connectionManagerUtils,
-        streamResetRecordsHelper,
-        envVariableFeatureFlags);
+        streamResetRecordsHelper);
 
     final OAuthConfigSupplier oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     final DefaultSynchronousSchedulerClient syncSchedulerClient =

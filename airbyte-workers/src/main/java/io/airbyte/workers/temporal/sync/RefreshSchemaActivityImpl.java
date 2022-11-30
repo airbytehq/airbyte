@@ -29,7 +29,9 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   private final AirbyteApiClient airbyteApiClient;
   private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
-  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository, AirbyteApiClient airbyteApiClient, EnvVariableFeatureFlags envVariableFeatureFlags) {
+  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository,
+                                   AirbyteApiClient airbyteApiClient,
+                                   EnvVariableFeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
     this.airbyteApiClient = airbyteApiClient;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
@@ -48,7 +50,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   @Override
   public void refreshSchema(UUID sourceCatalogId, UUID connectionId) throws ApiException {
-    if(!envVariableFeatureFlags.autoDetectSchema()){
+    if (!envVariableFeatureFlags.autoDetectSchema()) {
       return;
     }
 

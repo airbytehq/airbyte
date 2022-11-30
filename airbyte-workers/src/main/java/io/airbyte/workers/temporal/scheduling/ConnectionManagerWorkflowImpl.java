@@ -12,7 +12,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.exception.RetryableException;
@@ -160,7 +159,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
-  public void run(final ConnectionUpdaterInput connectionUpdaterInput, final EnvVariableFeatureFlags envVariableFeatureFlags)
+  public void run(final ConnectionUpdaterInput connectionUpdaterInput)
       throws RetryableException {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, connectionUpdaterInput.getConnectionId()));
@@ -172,7 +171,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       recordMetric(new RecordMetricInput(connectionUpdaterInput, Optional.empty(), OssMetricsRegistry.TEMPORAL_WORKFLOW_ATTEMPT, null));
 
       try {
-        cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput, envVariableFeatureFlags);
+        cancellableSyncWorkflow = generateSyncWorkflowRunnable(connectionUpdaterInput);
         cancellableSyncWorkflow.run();
       } catch (final CanceledFailure cf) {
         // When a scope is cancelled temporal will throw a CanceledFailure as you can see here:
@@ -210,8 +209,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
   }
 
   @SuppressWarnings("PMD.EmptyIfStmt")
-  private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput,
-                                                         EnvVariableFeatureFlags envVariableFeatureFlags) {
+  private CancellationScope generateSyncWorkflowRunnable(final ConnectionUpdaterInput connectionUpdaterInput) {
     return Workflow.newCancellationScope(() -> {
       connectionId = connectionUpdaterInput.getConnectionId();
 
@@ -262,7 +260,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
           reportFailure(connectionUpdaterInput, checkFailureOutput, FailureCause.CONNECTION);
         } else {
           try {
-            standardSyncOutput = runChildWorkflow(jobInputs, envVariableFeatureFlags);
+            standardSyncOutput = runChildWorkflow(jobInputs);
           } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
             throw new RuntimeException(e);
           }
@@ -860,7 +858,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
    * since the latter is a long running workflow, in the future, using a different Node pool would
    * make sense.
    */
-  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs, EnvVariableFeatureFlags envVariableFeatureFlags)
+  private StandardSyncOutput runChildWorkflow(final GeneratedJobInput jobInputs)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     final String taskQueue = getSyncTaskQueue();
 
@@ -877,7 +875,7 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
         jobInputs.getSourceLauncherConfig(),
         jobInputs.getDestinationLauncherConfig(),
         jobInputs.getSyncInput(),
-        connectionId, envVariableFeatureFlags);
+        connectionId);
   }
 
   /**

@@ -4,7 +4,6 @@
 
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;

@@ -5,7 +5,6 @@
 package io.airbyte.commons.temporal.scheduling;
 
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.persistence.ConfigNotFoundException;
