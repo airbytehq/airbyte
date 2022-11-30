@@ -1,6 +1,6 @@
 import { merge } from "lodash";
 
-import { getAuthenticatedUser } from "services/auth/AuthService";
+import { getUser } from "core/AuthContext";
 
 import { Config } from "../../config";
 import { CommonRequestError } from "./CommonRequestError";
@@ -11,6 +11,7 @@ export interface ApiOverrideRequestOptions {
   config: Pick<Config, "apiUrl">;
   middlewares: RequestMiddleware[];
   signal?: RequestInit["signal"];
+  redirectUnauthenticatedUser?: () => void;
 }
 
 function getRequestBody<U>(data: U) {
@@ -49,12 +50,11 @@ export const apiOverride = async <T, U = unknown>(
     throw new Error("Please provide middlewares and config!");
   }
 
+  const user = getUser();
   const { apiUrl } = options.config;
   // Remove the `v1/` in the end of the apiUrl for now, during the transition period
   // to get rid of it from all environment variables.
   const requestUrl = `${apiUrl.replace(/\/v1\/?$/, "")}${url.startsWith("/") ? "" : "/"}${url}`;
-
-  const user = getAuthenticatedUser();
 
   for (const middleware of options.middlewares) {
     ({ headers } = await middleware({ headers }));
@@ -73,13 +73,21 @@ export const apiOverride = async <T, U = unknown>(
    * If it references a type that is `type: string`, and `format: binary` it does not interpret
    * it correctly. So I am making an assumption that if it's not explicitly JSON, it's a binary file.
    */
-  return parseResponse(response, responseType);
+  return parseResponse(response, responseType, options.redirectUnauthenticatedUser);
 };
 
 /** Parses errors from server */
-async function parseResponse<T>(response: Response, responseType?: "blob"): Promise<T> {
+async function parseResponse<T>(
+  response: Response,
+  responseType?: "blob",
+  redirectUnauthenticatedUser?: () => void
+): Promise<T> {
+  // const navigate = useNavigate();
   if (response.status === 204) {
     return {} as T;
+  }
+  if (response.status === 401) {
+    redirectUnauthenticatedUser?.();
   }
   if (response.status >= 200 && response.status < 300) {
     /*
