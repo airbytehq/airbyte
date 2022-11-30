@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.container_orchestrator;
+package io.airbyte.container_orchestrator.orchestrator;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
@@ -22,22 +22,29 @@ import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
 
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final Configs configs;
   private final WorkerConfigs workerConfigs;
   private final ProcessFactory processFactory;
+  private final JobRunConfig jobRunConfig;
 
-  public DbtJobOrchestrator(final Configs configs, final WorkerConfigs workerConfigs, final ProcessFactory processFactory) {
+  public DbtJobOrchestrator(final Configs configs,
+                            final WorkerConfigs workerConfigs,
+                            final ProcessFactory processFactory,
+                            final JobRunConfig jobRunConfig) {
     this.configs = configs;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
+    this.jobRunConfig = jobRunConfig;
   }
 
   @Override
@@ -53,15 +60,16 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
     final OperatorDbtInput dbtInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR,
+            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
 
     log.info("Setting up dbt worker...");
     final DbtTransformationWorker worker = new DbtTransformationWorker(
@@ -76,7 +84,8 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
                 destinationLauncherConfig.getNormalizationDockerImage())));
 
     log.info("Running dbt worker...");
-    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
+        jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     worker.run(dbtInput, jobRoot);
 
     return Optional.empty();
