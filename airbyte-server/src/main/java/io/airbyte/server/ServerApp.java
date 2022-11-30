@@ -8,7 +8,6 @@ import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;

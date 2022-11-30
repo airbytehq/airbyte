@@ -20,7 +20,6 @@ import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
-import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
