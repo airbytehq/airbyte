@@ -161,8 +161,7 @@ public class ConnectionManagerUtils {
     safeTerminateWorkflow(client, getConnectionManagerName(connectionId), reason);
   }
 
-  public ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client,
-                                                                  final UUID connectionId) {
+  public ConnectionManagerWorkflow startConnectionManagerNoSignal(final WorkflowClient client, final UUID connectionId) {
     final ConnectionManagerWorkflow connectionManagerWorkflow = newConnectionManagerWorkflowStub(client, connectionId);
     final ConnectionUpdaterInput input = TemporalWorkflowUtils.buildStartWorkflowInput(connectionId);
     WorkflowClient.start(connectionManagerWorkflow::run, input);
