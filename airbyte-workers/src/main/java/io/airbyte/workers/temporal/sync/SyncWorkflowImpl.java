@@ -87,20 +87,23 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
-    final UUID sourceCatalogId = configFetchActivity.getStandardSync(connectionId).getSourceCatalogId();
-
-    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
-    if (envVariableFeatureFlags.autoDetectSchema()) {
-      if (refreshSchemaActivity.shouldRefreshSchema(sourceCatalogId)) {
-        LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceCatalogId);
-      }
-      final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
-      if (Status.INACTIVE == status) {
-        LOGGER.info("Connection is disabled. Cancelling run.");
-        final StandardSyncOutput output =
-            new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED));
-        return output;
+    if (version > Workflow.DEFAULT_VERSION) {
+      final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+      if (envVariableFeatureFlags.autoDetectSchema()) {
+        final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
+        if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
+          LOGGER.info("Refreshing source schema...");
+          refreshSchemaActivity.refreshSchema(sourceId);
+        }
+        LOGGER.info("refreshed schema");
+        final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
+        LOGGER.info("status is: " + status);
+        if (Status.INACTIVE == status) {
+          LOGGER.info("Connection is disabled. Cancelling run.");
+          final StandardSyncOutput output =
+              new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED));
+          return output;
+        }
       }
     }
 

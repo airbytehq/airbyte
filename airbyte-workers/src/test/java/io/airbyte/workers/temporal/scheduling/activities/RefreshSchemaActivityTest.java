@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
@@ -23,6 +24,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
@@ -30,6 +32,7 @@ class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
 
+  static private AirbyteApiClient mApiClient;
   static private SourceApi mSourceApi;
 
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
@@ -38,9 +41,11 @@ class RefreshSchemaActivityTest {
 
   @BeforeEach
   void setUp() {
-    mConfigRepository = mock(ConfigRepository.class);
+    mApiClient = mock(AirbyteApiClient.class);
     mSourceApi = mock(SourceApi.class);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi);
+    mConfigRepository = mock(ConfigRepository.class);
+    Mockito.lenient().when(mApiClient.getSourceApi()).thenReturn(mSourceApi);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mApiClient);
   }
 
   @Test
