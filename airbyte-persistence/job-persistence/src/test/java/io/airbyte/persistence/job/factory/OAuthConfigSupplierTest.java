@@ -48,6 +48,7 @@ class OAuthConfigSupplierTest {
   private TrackingClient trackingClient;
   private OAuthConfigSupplier oAuthConfigSupplier;
   private UUID sourceDefinitionId;
+  private StandardSourceDefinition testSourceDefinition;
 
   @BeforeEach
   void setup() throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -55,6 +56,13 @@ class OAuthConfigSupplierTest {
     trackingClient = mock(TrackingClient.class);
     oAuthConfigSupplier = new OAuthConfigSupplier(configRepository, trackingClient);
     sourceDefinitionId = UUID.randomUUID();
+    testSourceDefinition = new StandardSourceDefinition()
+        .withSourceDefinitionId(sourceDefinitionId)
+        .withName("test")
+        .withDockerRepository("test/test")
+        .withDockerImageTag("dev")
+        .withSpec(null);
+
     setupStandardDefinitionMock(createAdvancedAuth()
         .withPredicateKey(List.of(CREDENTIALS, AUTH_TYPE))
         .withPredicateValue(OAUTH));
@@ -202,12 +210,7 @@ class OAuthConfigSupplierTest {
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
     when(configRepository.getStandardSourceDefinition(any()))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(sourceDefinitionId)
-            .withName("test")
-            .withDockerRepository("test/test")
-            .withDockerImageTag("dev")
-            .withSpec(null));
+        .thenReturn(testSourceDefinition);
     setupOAuthParamMocks(oauthParameters);
     final JsonNode actualConfig = oAuthConfigSupplier.injectSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     final ObjectNode expectedConfig = ((ObjectNode) Jsons.clone(config));
@@ -224,12 +227,7 @@ class OAuthConfigSupplierTest {
     final UUID workspaceId = UUID.randomUUID();
     final Map<String, Object> oauthParameters = generateOAuthParameters();
     when(configRepository.getStandardSourceDefinition(any()))
-        .thenReturn(new StandardSourceDefinition()
-            .withSourceDefinitionId(sourceDefinitionId)
-            .withName("test")
-            .withDockerRepository("test/test")
-            .withDockerImageTag("dev")
-            .withSpec(null));
+        .thenReturn(testSourceDefinition);
     setupOAuthParamMocks(oauthParameters);
     final JsonNode actualConfig = oAuthConfigSupplier.maskSourceOAuthParameters(sourceDefinitionId, workspaceId, Jsons.clone(config));
     assertEquals(config, actualConfig);
@@ -314,11 +312,7 @@ class OAuthConfigSupplierTest {
   }
 
   private void setupStandardDefinitionMock(final AdvancedAuth advancedAuth) throws JsonValidationException, ConfigNotFoundException, IOException {
-    when(configRepository.getStandardSourceDefinition(any())).thenReturn(new StandardSourceDefinition()
-        .withSourceDefinitionId(sourceDefinitionId)
-        .withName("test")
-        .withDockerRepository("test/test")
-        .withDockerImageTag("dev")
+    when(configRepository.getStandardSourceDefinition(any())).thenReturn(testSourceDefinition
         .withSpec(new ConnectorSpecification().withAdvancedAuth(advancedAuth)));
   }
 
