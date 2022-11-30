@@ -11,7 +11,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.declarative.checks.connection_checker import HTTPAvailabilityStrategy
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import MultipleTokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import MultipleTokenAuthenticator
 from requests.exceptions import HTTPError
 
 from .streams import (
