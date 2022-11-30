@@ -1,4 +1,5 @@
-@use "../../../../../scss/colors";
+@use "scss/colors";
+@use "scss/variables";
 
 .container {
   display: flex;
@@ -34,5 +35,5 @@
   max-width: 100%;
   padding: 3px 6px;
   background-color: colors.$dark-blue-400;
-  border-radius: 9px;
+  border-radius: variables.$border-radius-md;
 }
