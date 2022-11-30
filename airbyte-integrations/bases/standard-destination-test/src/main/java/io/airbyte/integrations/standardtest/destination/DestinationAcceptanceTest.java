@@ -542,7 +542,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION);
+        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION, "");
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -848,7 +848,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -926,7 +926,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1273,7 +1273,7 @@ public abstract class DestinationAcceptanceTest {
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
         processFactory,
-        NORMALIZATION_VERSION);
+        NORMALIZATION_VERSION, "");
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,

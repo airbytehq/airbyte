@@ -19,7 +19,9 @@ VERSION=dev BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" TRACKING_STRATEGY=logg
 # Uncomment for debugging. Warning, this is verbose.
 # trap 'echo "docker-compose logs:" && docker-compose logs -t --tail 1000 && docker-compose down && docker stop airbyte_ci_pg' EXIT
 
-docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci --name airbyte_ci_pg postgres
+docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_source --name airbyte_ci_pg_source postgres
+docker run --rm -d -p 5434:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_destination --name airbyte_ci_pg_destination postgres
+
 echo "Waiting for health API to be available..."
 # Retry loading the health API of the server to check that the server is fully available
 until $(curl --output /dev/null --fail --silent --max-time 5 --head localhost:8001/api/v1/health); do
