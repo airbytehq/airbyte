@@ -6,6 +6,7 @@ package io.airbyte.commons.protocol.migrations;
 
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
 
+import com.amazonaws.util.NumberUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -30,6 +31,7 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
+import org.apache.logging.log4j.util.Strings;
 
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
@@ -502,9 +504,18 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       String refType = schema.get(REF_KEY).asText();
       if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
           || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
-        // Attempt to parse the text as a numeric JSON node
-        // TODO handle case where source produces invalid number (i.e. fail to parse number)
-        return new DowngradedNode(Jsons.deserialize(data.asText()), true);
+        // We could do this as a try-catch, but this migration will run on every RecordMessage
+        // so it does need to be reasonably performant.
+        // Instead, we use a regex to check for numeric literals.
+        // Note that this does _not_ allow infinity/nan, even though protocol v1 _does_ allow them.
+        // This is because JSON numeric literals don't allow those values.
+        if (data.asText().matches("-?\\d+(\\.\\d+)?")) {
+          // If this string is a numeric literal, convert it to a numeric node.
+          return new DowngradedNode(Jsons.deserialize(data.asText()), true);
+        } else {
+          // Otherwise, just leave the node unchanged.
+          return new DowngradedNode(data, false);
+        }
       } else {
         // TODO uncomment this
         return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
