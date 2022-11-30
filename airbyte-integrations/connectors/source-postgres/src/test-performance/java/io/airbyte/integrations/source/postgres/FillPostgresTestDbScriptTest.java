@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.postgres;
@@ -8,16 +8,20 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourceFillDbWithTestData;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.params.provider.Arguments;
 
 public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestData {
 
   private JsonNode config;
+  private DSLContext dslContext;
 
   @Override
   protected JsonNode getConfig() {
@@ -25,7 +29,9 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
   }
 
   @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {}
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    dslContext.close();
+  }
 
   @Override
   protected String getImageName() {
@@ -39,23 +45,24 @@ public class FillPostgresTestDbScriptTest extends AbstractSourceFillDbWithTestDa
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", "your_host")
-        .put("port", 5432)
-        .put("database", dbName)
-        .put("username", "your_username")
-        .put("password", "your_pass")
+        .put(JdbcUtils.HOST_KEY, "your_host")
+        .put(JdbcUtils.PORT_KEY, 5432)
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, "your_username")
+        .put(JdbcUtils.PASSWORD_KEY, "your_pass")
         .put("replication_method", replicationMethod)
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            dbName),
-        "org.postgresql.Driver",
+    dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.POSTGRES);
+    final Database database = new Database(dslContext);
 
     return database;
   }

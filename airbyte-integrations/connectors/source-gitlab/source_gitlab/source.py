@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -17,6 +17,7 @@ from .streams import (
     EpicIssues,
     Epics,
     GitlabStream,
+    GroupIssueBoards,
     GroupLabels,
     GroupMembers,
     GroupMilestones,
@@ -43,7 +44,7 @@ class SourceGitlab(AbstractSource):
         auth = TokenAuthenticator(token=config["private_token"])
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
-        pids = list(filter(None, config.get("projects").split(" ")))
+        pids = list(filter(None, config.get("projects", "").split(" ")))
         gids = config.get("groups")
 
         if gids:
@@ -105,6 +106,7 @@ class SourceGitlab(AbstractSource):
             Commits(parent_stream=projects, repository_part=True, start_date=config["start_date"], **auth_params),
             epics,
             EpicIssues(parent_stream=epics, **auth_params),
+            GroupIssueBoards(parent_stream=groups, **auth_params),
             Issues(parent_stream=projects, start_date=config["start_date"], **auth_params),
             Jobs(parent_stream=pipelines, **auth_params),
             ProjectMilestones(parent_stream=projects, **auth_params),

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.notification;
@@ -30,19 +30,31 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SlackNotificationClientTest {
+class SlackNotificationClientTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SlackNotificationClientTest.class);
+  private static final UUID WORKSPACE_ID = UUID.randomUUID();
+  private static final UUID CONNECTION_ID = UUID.randomUUID();
+  private static final String TEST_PATH = "/test";
+  private static final String DESTINATION_TEST = "destination-test";
+  private static final String JOB_DESCRIPTION = "job description";
+  private static final String LOG_URL = "logUrl";
+  private static final String SOURCE_TEST = "source-test";
+  private static final Long JOB_ID = 1L;
 
   public static final String WEBHOOK_URL = "http://localhost:";
   private static final String EXPECTED_FAIL_MESSAGE = "Your connection from source-test to destination-test just failed...\n"
       + "This happened with job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private static final String EXPECTED_SUCCESS_MESSAGE = "Your connection from source-test to destination-test succeeded\n"
       + "This was for job description\n"
       + "\n"
-      + "You can access its logs here: logUrl\n";
+      + "You can access its logs here: logUrl\n"
+      + "\n"
+      + "Job ID: 1";
   private HttpServer server;
 
   @BeforeEach
@@ -60,11 +72,11 @@ public class SlackNotificationClientTest {
   @Test
   void testBadResponseWrongNotificationMessage() throws IOException, InterruptedException {
     final String message = UUID.randomUUID().toString();
-    server.createContext("/test", new ServerHandler("Message mismatched"));
+    server.createContext(TEST_PATH, new ServerHandler("Message mismatched"));
     final SlackNotificationClient client =
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
-            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
     assertThrows(IOException.class, () -> client.notifyFailure(message));
   }
 
@@ -74,7 +86,7 @@ public class SlackNotificationClientTest {
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
             .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/bad")));
-    assertThrows(IOException.class, () -> client.notifyJobFailure("source-test", "destination-test", "job description", "logUrl"));
+    assertThrows(IOException.class, () -> client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
@@ -82,40 +94,84 @@ public class SlackNotificationClientTest {
     final SlackNotificationClient client =
         new SlackNotificationClient(
             new Notification().withNotificationType(NotificationType.SLACK).withSlackConfiguration(new SlackNotificationConfiguration()));
-    assertFalse(client.notifyJobFailure("source-test", "destination-test", "job description", "logUrl"));
+    assertFalse(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
   void testNotify() throws IOException, InterruptedException {
     final String message = UUID.randomUUID().toString();
-    server.createContext("/test", new ServerHandler(message));
+    server.createContext(TEST_PATH, new ServerHandler(message));
     final SlackNotificationClient client =
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
-            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
     assertTrue(client.notifyFailure(message));
     assertFalse(client.notifySuccess(message));
   }
 
   @Test
   void testNotifyJobFailure() throws IOException, InterruptedException {
-    server.createContext("/test", new ServerHandler(EXPECTED_FAIL_MESSAGE));
+    server.createContext(TEST_PATH, new ServerHandler(EXPECTED_FAIL_MESSAGE));
     final SlackNotificationClient client =
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
-            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
-    assertTrue(client.notifyJobFailure("source-test", "destination-test", "job description", "logUrl"));
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
+    assertTrue(client.notifyJobFailure(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
   }
 
   @Test
   void testNotifyJobSuccess() throws IOException, InterruptedException {
-    server.createContext("/test", new ServerHandler(EXPECTED_SUCCESS_MESSAGE));
+    server.createContext(TEST_PATH, new ServerHandler(EXPECTED_SUCCESS_MESSAGE));
     final SlackNotificationClient client =
         new SlackNotificationClient(new Notification()
             .withNotificationType(NotificationType.SLACK)
             .withSendOnSuccess(true)
-            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + "/test")));
-    assertTrue(client.notifyJobSuccess("source-test", "destination-test", "job description", "logUrl"));
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
+    assertTrue(client.notifyJobSuccess(SOURCE_TEST, DESTINATION_TEST, JOB_DESCRIPTION, LOG_URL, JOB_ID));
+  }
+
+  @Test
+  void testNotifyConnectionDisabled() throws IOException, InterruptedException {
+    final String expectedNotificationMessage = String.format(
+        """
+        Your connection from source-test to destination-test was automatically disabled because it failed 100 times consecutively or has been failing for 14 days in a row.
+
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
+
+        Workspace ID: %s
+        Connection ID: %s
+        """,
+        WORKSPACE_ID, CONNECTION_ID);
+
+    server.createContext(TEST_PATH, new ServerHandler(expectedNotificationMessage));
+    final SlackNotificationClient client =
+        new SlackNotificationClient(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSendOnSuccess(true)
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
+    assertTrue(client.notifyConnectionDisabled("", SOURCE_TEST, DESTINATION_TEST, "job description.", WORKSPACE_ID, CONNECTION_ID));
+  }
+
+  @Test
+  void testNotifyConnectionDisabledWarning() throws IOException, InterruptedException {
+    final String expectedNotificationWarningMessage = String.format(
+        """
+        Your connection from source-test to destination-test is scheduled to be automatically disabled because it either failed 50 times consecutively or there were only failed jobs in the past 7 days. Once it has failed 100 times consecutively or has been failing for 14 days in a row, the connection will be automatically disabled.
+
+        Please address the failing issues to ensure your syncs continue to run. The most recent attempted job description.
+
+        Workspace ID: %s
+        Connection ID: %s
+        """,
+        WORKSPACE_ID, CONNECTION_ID);
+
+    server.createContext(TEST_PATH, new ServerHandler(expectedNotificationWarningMessage));
+    final SlackNotificationClient client =
+        new SlackNotificationClient(new Notification()
+            .withNotificationType(NotificationType.SLACK)
+            .withSendOnSuccess(true)
+            .withSlackConfiguration(new SlackNotificationConfiguration().withWebhook(WEBHOOK_URL + server.getAddress().getPort() + TEST_PATH)));
+    assertTrue(client.notifyConnectionDisableWarning("", SOURCE_TEST, DESTINATION_TEST, "job description.", WORKSPACE_ID, CONNECTION_ID));
   }
 
   static class ServerHandler implements HttpHandler {

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
@@ -10,8 +10,10 @@ import string
 from pathlib import Path
 from typing import Any, List, Mapping, Tuple
 
+import pendulum
 import pytest
 from smart_open import open as smart_open
+from source_s3.source_files_abstract.file_info import FileInfo
 from source_s3.source_files_abstract.formats.csv_parser import CsvParser
 
 from .abstract_test_parser import AbstractTestParser, memory_limit
@@ -331,6 +333,33 @@ class TestCsvParser(AbstractTestParser):
                 "line_checks": {},
                 "fails": ["test_get_inferred_schema", "test_stream_records"],
             },
+            "empty_advanced_options": {
+                "AbstractFileParser": CsvParser(
+                    format={"filetype": "csv", "advanced_options": ""},
+                    master_schema={
+                        "id": "integer",
+                        "name": "string",
+                        "valid": "boolean",
+                        "code": "integer",
+                        "degrees": "number",
+                        "birthday": "string",
+                        "last_seen": "string",
+                    },
+                ),
+                "filepath": os.path.join(SAMPLE_DIRECTORY, "csv/test_file_1.csv"),
+                "num_records": 8,
+                "inferred_schema": {
+                    "id": "integer",
+                    "name": "string",
+                    "valid": "boolean",
+                    "code": "integer",
+                    "degrees": "number",
+                    "birthday": "string",
+                    "last_seen": "string",
+                },
+                "line_checks": {},
+                "fails": [],
+            },
             "no_header_csv_file": {
                 # no header test
                 "AbstractFileParser": CsvParser(
@@ -376,7 +405,7 @@ class TestCsvParser(AbstractTestParser):
             next(expected_file)
             read_count = 0
             with smart_open(filepath, self._get_readmode({"AbstractFileParser": parser})) as f:
-                for record in parser.stream_records(f):
+                for record in parser.stream_records(f, FileInfo(key=filepath, size=file_size, last_modified=pendulum.now())):
                     record_line = ",".join("" if v is None else str(v) for v in record.values())
                     expected_line = next(expected_file).strip("\n")
                     assert record_line == expected_line

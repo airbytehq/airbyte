@@ -1,19 +1,10 @@
-# Destination Databricks
+# Destination Databricks Lakehouse
 
 This is the repository for the Databricks destination connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/destinations/databricks).
 
 ## Databricks JDBC Driver
-This connector requires a JDBC driver to connect to Databricks cluster. The driver is developed by Simba.
-
-{% hint style="warning" %}
-Before building, or using this connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
-{% endhint %}
-
-This is currently a private connector that is only available on Airbyte Cloud. We are working on a solution to publicize it (issue [\#6043](https://github.com/airbytehq/airbyte/issues/6043)).
-
-- If you want to use this connector now, you can build the connector locally, and publish it to your own docker registry. See the "[Build](#build)" or "[Building via Gradle](#building-via-gradle)" sections below for details. Please do not publish this connector publicly.
-- If you want to work on the connector code, first build the connector. The building process will automatically download the driver to the [`lib`](./lib) directory. You can also manually download the driver from [here](https://databricks.com/spark/jdbc-drivers-download).
+This connector requires a JDBC driver to connect to Databricks cluster. Before using this connector, you must agree to the [JDBC ODBC driver license](https://databricks.com/jdbc-odbc-driver-license). This means that you can only use this driver to connector third party applications to Apache Spark SQL within a Databricks offering using the ODBC and/or JDBC protocols.
 
 ## Local development
 
@@ -24,12 +15,14 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, you will need access to AWS S3 and Databricks cluster to run the integration tests:
+**If you are a community contributor**, you will need access to AWS S3, Azure blob storage, and Databricks cluster to run the integration tests:
 
 - Create a Databricks cluster. See [documentation](https://docs.databricks.com/clusters/create.html).
 - Create an S3 bucket. See [documentation](https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys).
-- Grant the Databricks cluster full access to the S3 bucket. Or mount it as Databricks File System (DBFS). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
+- Create an Azure storage container.
+- Grant the Databricks cluster full access to the S3 bucket and Azure container. Or mount it as Databricks File System (DBFS). See [documentation](https://docs.databricks.com/data/data-sources/aws/amazon-s3.html).
 - Place both Databricks and S3 credentials in `sample_secrets/config.json`, which conforms to the spec file in `src/main/resources/spec.json`.
+- Place both Databricks and Azure credentials in `sample_secrets/azure_config.json`, which conforms to the spec file in `src/main/resources/spec.json`.
 - Rename the directory from `sample_secrets` to `secrets`.
 - Note that the `secrets` directory is git-ignored by default, so there is no danger of accidentally checking in sensitive information.
 

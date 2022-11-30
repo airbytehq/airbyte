@@ -1,17 +1,17 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import StepsMenu from "components/StepsMenu";
+import { StepsMenu } from "components/ui/StepsMenu";
 
 export enum StepsTypes {
-  OVERVIEW = "Overview",
-  SETTINGS = "Settings",
+  OVERVIEW = "overview",
+  SETTINGS = "settings",
 }
 
-type IProps = {
-  currentStep: string;
+interface IProps {
+  currentStep?: string;
   setCurrentStep: (step: string) => void;
-};
+}
 
 const steps = [
   {

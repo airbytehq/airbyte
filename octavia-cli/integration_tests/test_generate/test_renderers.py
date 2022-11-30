@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import filecmp
@@ -7,6 +7,12 @@ import os
 
 import pytest
 import yaml
+from airbyte_api_client.model.airbyte_catalog import AirbyteCatalog
+from airbyte_api_client.model.airbyte_stream import AirbyteStream
+from airbyte_api_client.model.airbyte_stream_and_configuration import AirbyteStreamAndConfiguration
+from airbyte_api_client.model.airbyte_stream_configuration import AirbyteStreamConfiguration
+from airbyte_api_client.model.destination_sync_mode import DestinationSyncMode
+from airbyte_api_client.model.sync_mode import SyncMode
 from octavia_cli.generate.renderers import ConnectionRenderer, ConnectorSpecificationRenderer
 
 pytestmark = pytest.mark.integration
@@ -88,69 +94,27 @@ def test_expected_output_connector_specification_renderer(
     assert filecmp.cmp(output_path, expect_output_path)
 
 
-def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker):
-    mock_source = mocker.Mock(
-        resource_id="my_source_id",
-        catalog={
-            "streams": [
-                {
-                    "stream": {
-                        "name": "stream_1",
-                        "jsonSchema": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
-                            "properties": {
-                                "foo": {
-                                    "type": "number",
-                                }
-                            },
-                        },
-                        "supportedSyncModes": ["full_refresh"],
-                        "sourceDefinedCursor": None,
-                        "defaultCursorField": ["foo"],
-                        "sourceDefinedPrimaryKey": [],
-                        "namespace": None,
-                    },
-                    "config": {
-                        "syncMode": "full_refresh",
-                        "cursorField": [],
-                        "destinationSyncMode": "append",
-                        "primaryKey": [],
-                        "aliasName": "aliasMock",
-                        "selected": True,
-                    },
-                },
-                {
-                    "stream": {
-                        "name": "stream_2",
-                        "jsonSchema": {
-                            "$schema": "http://json-schema.org/draft-07/schema#",
-                            "properties": {
-                                "bar": {
-                                    "type": "number",
-                                }
-                            },
-                        },
-                        "supportedSyncModes": ["full_refresh", "incremental"],
-                        "sourceDefinedCursor": None,
-                        "defaultCursorField": [],
-                        "sourceDefinedPrimaryKey": [],
-                        "namespace": None,
-                    },
-                    "config": {
-                        "syncMode": "full_refresh",
-                        "cursorField": [],
-                        "destinationSyncMode": "append",
-                        "primaryKey": [],
-                        "aliasName": "aliasMock",
-                        "selected": True,
-                    },
-                },
-            ]
-        },
+@pytest.mark.parametrize(
+    "with_normalization, expected_yaml_path",
+    [
+        (False, "connection/expected_without_normalization.yaml"),
+        (True, "connection/expected_with_normalization.yaml"),
+    ],
+)
+def test_expected_output_connection_renderer(octavia_tmp_project_directory, mocker, with_normalization, expected_yaml_path):
+    stream = AirbyteStream(default_cursor_field=["foo"], json_schema={}, name="my_stream", supported_sync_modes=[SyncMode("full_refresh")])
+    config = AirbyteStreamConfiguration(
+        alias_name="pokemon", selected=True, destination_sync_mode=DestinationSyncMode("append"), sync_mode=SyncMode("full_refresh")
     )
-    mock_destination = mocker.Mock(resource_id="my_destination_id")
+    catalog = AirbyteCatalog([AirbyteStreamAndConfiguration(stream=stream, config=config)])
+    mock_source = mocker.Mock(resource_id="my_source_id", configuration_path="source_configuration_path", catalog=catalog)
+    mock_destination = mocker.Mock(
+        resource_id="my_destination_id",
+        configuration_path="destination_configuration_path",
+        definition=mocker.Mock(supports_dbt=with_normalization, supports_normalization=with_normalization),
+    )
 
     renderer = ConnectionRenderer("my_new_connection", mock_source, mock_destination)
     output_path = renderer.write_yaml(octavia_tmp_project_directory)
-    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, "connection/expected.yaml")
+    expect_output_path = os.path.join(EXPECTED_RENDERED_YAML_PATH, expected_yaml_path)
     assert filecmp.cmp(output_path, expect_output_path)

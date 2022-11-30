@@ -1,46 +1,77 @@
-import React from "react";
-import styled from "styled-components";
-import { CellProps } from "react-table";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
-import { useToggle } from "react-use";
+import { CellProps } from "react-table";
 
-import { Button, H5, LoadingButton } from "components";
-import Table from "components/Table";
+import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
+import { Table } from "components/ui/Table";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { useListUsers, useUserHook } from "packages/cloud/services/users/UseUserHook";
 import { User } from "packages/cloud/lib/domain/users";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import {
+  InviteUsersModalServiceProvider,
+  useInviteUsersModalService,
+} from "packages/cloud/services/users/InviteUsersModalService";
+import { useListUsers, useUserHook } from "packages/cloud/services/users/UseUserHook";
 
-import RoleToolTip from "./components/RoleToolTip";
+import styles from "./UsersSettingsView.module.scss";
 
-const Header = styled.div`
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-`;
-
-const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ workspaceId, email }) => {
+const RemoveUserSection: React.VFC<{ workspaceId: string; email: string }> = ({ workspaceId, email }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { removeUserLogic } = useUserHook();
   const { isLoading, mutate: removeUser } = removeUserLogic;
 
+  const onRemoveUserButtonClick = () => {
+    openConfirmationModal({
+      text: `modals.removeUser.text`,
+      title: `modals.removeUser.title`,
+      submitButtonText: "modals.removeUser.button.submit",
+      onSubmit: async () => {
+        removeUser({ email, workspaceId });
+        closeConfirmationModal();
+      },
+      submitButtonDataId: "remove",
+    });
+  };
+
   return (
-    <LoadingButton secondary onClick={() => removeUser({ email, workspaceId })} isLoading={isLoading}>
+    <Button variant="secondary" onClick={onRemoveUserButtonClick} isLoading={isLoading}>
       <FormattedMessage id="userSettings.user.remove" />
-    </LoadingButton>
+    </Button>
   );
 };
 
-export const UsersSettingsView: React.FC = () => {
-  const [modalIsOpen, toggleModal] = useToggle(false);
+const Header: React.VFC = () => {
+  const { toggleInviteUsersModalOpen } = useInviteUsersModalService();
+  return (
+    <div className={styles.header}>
+      <Heading as="h1" size="sm">
+        <FormattedMessage id="userSettings.table.title" />
+      </Heading>
+      <Button
+        onClick={() => {
+          toggleInviteUsersModalOpen();
+        }}
+        icon={<FontAwesomeIcon icon={faPlus} />}
+        data-testid="userSettings.button.addNewUser"
+      >
+        <FormattedMessage id="userSettings.button.addNewUser" />
+      </Button>
+    </div>
+  );
+};
+
+export const UsersTable: React.FC = () => {
   const { workspaceId } = useCurrentWorkspace();
-
   const users = useListUsers();
-
   const { user } = useAuthService();
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         Header: <FormattedMessage id="userSettings.table.column.fullname" />,
@@ -54,17 +85,19 @@ export const UsersSettingsView: React.FC = () => {
         accessor: "email",
         Cell: ({ cell }: CellProps<User>) => cell.value,
       },
-      {
-        Header: (
-          <>
-            <FormattedMessage id="userSettings.table.column.role" />
-            <RoleToolTip />
-          </>
-        ),
-        headerHighlighted: true,
-        accessor: "userId",
-        Cell: (_: CellProps<User>) => "admin",
-      },
+      // TEMP: Currently all cloud users are admins.
+      // Remove when there is more than role
+      // {
+      //   Header: (
+      //     <>
+      //       <FormattedMessage id="userSettings.table.column.role" />
+      //       <RoleToolTip />
+      //     </>
+      //   ),
+      //   headerHighlighted: true,
+      //   accessor: "userId",
+      //   Cell: (_: CellProps<User>) => "Admin",
+      // },
       {
         Header: <FormattedMessage id="userSettings.table.column.action" />,
         headerHighlighted: true,
@@ -74,25 +107,22 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
     [workspaceId, user]
   );
 
+  return <Table data={users ?? []} columns={columns} />;
+};
+
+export const UsersSettingsView: React.VFC = () => {
+  useTrackPage(PageTrackingCodes.SETTINGS_ACCESS_MANAGEMENT);
+
   return (
-    <>
-      <Header>
-        <H5>
-          <FormattedMessage id="userSettings.table.title" />
-        </H5>
-        <Button onClick={toggleModal} data-testid="userSettings.button.addNewUser">
-          + <FormattedMessage id="userSettings.button.addNewUser" />
-        </Button>
-      </Header>
-      <Table data={users ?? []} columns={columns} />
-      {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
-    </>
+    <InviteUsersModalServiceProvider invitedFrom="user.settings">
+      <Header />
+      <UsersTable />
+    </InviteUsersModalServiceProvider>
   );
 };

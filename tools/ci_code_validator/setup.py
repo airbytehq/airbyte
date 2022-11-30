@@ -13,13 +13,7 @@ MAIN_REQUIREMENTS = [
     "mypy==0.930",
 ]
 
-TEST_REQUIREMENTS = [
-    "requests-mock",
-    "pytest",
-    "black",
-    "lxml",
-    "isort"
-]
+TEST_REQUIREMENTS = ["requests-mock", "pytest", "black", "lxml", "isort"]
 
 setup(
     version="0.0.0",
@@ -29,15 +23,14 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    python_requires='>=3.7',
+    python_requires=">=3.9",
     extras_require={
         "tests": TEST_REQUIREMENTS,
-
     },
     entry_points={
-        'console_scripts': [
-            'ci_sonar_qube = ci_sonar_qube.main:main',
-            'ci_changes_detection = ci_changes_detection.main:main',
+        "console_scripts": [
+            "ci_sonar_qube = ci_sonar_qube.main:main",
+            "ci_changes_detection = ci_changes_detection.main:main",
         ],
     },
 )

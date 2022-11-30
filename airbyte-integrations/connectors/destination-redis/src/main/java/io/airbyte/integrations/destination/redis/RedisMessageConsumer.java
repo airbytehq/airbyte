@@ -1,13 +1,14 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.redis;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.time.Instant;
 import java.util.Map;
@@ -32,7 +33,7 @@ class RedisMessageConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   private AirbyteMessage lastMessage = null;
 
-  public RedisMessageConsumer(RedisConfig redisConfig,
+  public RedisMessageConsumer(JsonNode redisConfig,
                               ConfiguredAirbyteCatalog configuredCatalog,
                               Consumer<AirbyteMessage> outputRecordCollector) {
     this.configuredCatalog = configuredCatalog;

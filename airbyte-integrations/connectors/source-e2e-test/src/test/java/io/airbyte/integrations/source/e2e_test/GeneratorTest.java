@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.e2e_test;
@@ -14,7 +14,6 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 import net.jimblackler.jsongenerator.Configuration;
-import net.jimblackler.jsongenerator.DefaultConfig;
 import net.jimblackler.jsongenerator.Generator;
 import net.jimblackler.jsonschemafriend.Schema;
 import net.jimblackler.jsonschemafriend.SchemaStore;
@@ -30,7 +29,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class GeneratorTest {
 
   private static final JsonSchemaValidator JSON_VALIDATOR = new JsonSchemaValidator();
-  private static final Configuration CONFIG = new DefaultConfig();
+  private static final Configuration CONFIG = ContinuousFeedConstants.MOCK_JSON_CONFIG;
   private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
   public static class GeneratorSchemaProvider implements ArgumentsProvider {

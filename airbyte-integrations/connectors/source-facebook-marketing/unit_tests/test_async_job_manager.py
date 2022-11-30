@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -150,4 +150,27 @@ class TestInsightAsyncManager:
         manager = InsightAsyncJobManager(api=api, jobs=jobs)
 
         with pytest.raises(JobException, match=f"{jobs[1]}: failed more than {InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS} times."):
+            next(manager.completed_jobs(), None)
+
+    def test_nested_job_failed_too_many_times(self, api, mocker, time_mock, update_job_mock):
+        """Manager should fail when a nested job within a ParentAsyncJob failed too many times"""
+
+        def update_job_behaviour():
+            jobs[1].failed = True
+            sub_jobs[1].failed = True
+            sub_jobs[1].attempt_number = InsightAsyncJobManager.MAX_NUMBER_OF_ATTEMPTS
+            yield from range(10)
+
+        update_job_mock.side_effect = update_job_behaviour()
+        sub_jobs = [
+            mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
+            mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=False),
+        ]
+        jobs = [
+            mocker.Mock(spec=InsightAsyncJob, attempt_number=1, failed=False, completed=True),
+            mocker.Mock(spec=ParentAsyncJob, _jobs=sub_jobs, attempt_number=1, failed=False, completed=False),
+        ]
+        manager = InsightAsyncJobManager(api=api, jobs=jobs)
+
+        with pytest.raises(JobException):
             next(manager.completed_jobs(), None)

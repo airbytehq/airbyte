@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.s3;
@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -22,9 +23,11 @@ import io.airbyte.integrations.destination.s3.csv.CsvSheetGenerator;
 import io.airbyte.integrations.destination.s3.csv.S3CsvFormatConfig;
 import io.airbyte.integrations.destination.s3.csv.S3CsvWriter;
 import io.airbyte.integrations.destination.s3.csv.StagingDatabaseCsvSheetGenerator;
+import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -42,20 +45,19 @@ public class S3StreamCopierTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(S3StreamCopierTest.class);
 
-  private static final int PART_SIZE = 5;
   private static final S3DestinationConfig S3_CONFIG = S3DestinationConfig.create(
       "fake-bucket",
       "fake-bucketPath",
       "fake-region")
       .withEndpoint("fake-endpoint")
       .withAccessKeyCredential("fake-access-key-id", "fake-secret-access-key")
-      .withPartSize(PART_SIZE)
       .get();
   private static final ConfiguredAirbyteStream CONFIGURED_STREAM = new ConfiguredAirbyteStream()
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
           .withName("fake-stream")
-          .withNamespace("fake-namespace"));
+          .withNamespace("fake-namespace")
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
   private static final int UPLOAD_THREADS = 10;
   private static final int QUEUE_CAPACITY = 10;
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT
@@ -176,7 +178,10 @@ public class S3StreamCopierTest {
   }
 
   private void checkCsvWriterArgs(final S3CsvWriterArguments args) {
-    assertEquals(S3DestinationConfig.create(S3_CONFIG).withFormatConfig(new S3CsvFormatConfig(null, (long) PART_SIZE)).get(), args.config);
+    final S3DestinationConfig s3Config = S3DestinationConfig.create(S3_CONFIG)
+        .withFormatConfig(new S3CsvFormatConfig(null, CompressionType.NO_COMPRESSION))
+        .get();
+    assertEquals(s3Config, args.config);
     assertEquals(CONFIGURED_STREAM, args.stream);
     assertEquals(UPLOAD_TIME, args.uploadTime);
     assertEquals(UPLOAD_THREADS, args.uploadThreads);

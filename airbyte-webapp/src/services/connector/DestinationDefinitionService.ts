@@ -1,16 +1,13 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { DestinationDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { DestinationDefinitionService } from "core/domain/connector/DestinationDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import {
-  CreateDestinationDefinitionPayload,
-  DestinationDefinitionService,
-} from "core/domain/connector/DestinationDefinitionService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { DestinationDefinitionCreate, DestinationDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
@@ -20,7 +17,7 @@ export const destinationDefinitionKeys = {
   detail: (id: string) => [...destinationDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetDestinationDefinitionService(): DestinationDefinitionService {
+export function useGetDestinationDefinitionService(): DestinationDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -31,28 +28,28 @@ function useGetDestinationDefinitionService(): DestinationDefinitionService {
   );
 }
 
+export interface DestinationDefinitionReadWithLatestTag extends DestinationDefinitionRead {
+  latestDockerImageTag?: string;
+}
+
 const useDestinationDefinitionList = (): {
-  destinationDefinitions: DestinationDefinition[];
+  destinationDefinitions: DestinationDefinitionReadWithLatestTag[];
 } => {
   const service = useGetDestinationDefinitionService();
-  const workspace = useCurrentWorkspace();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(destinationDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([
-      service.list(workspace.workspaceId),
-      service.listLatest(workspace.workspaceId),
-    ]);
+    const [definition, latestDefinition] = await Promise.all([service.list(workspaceId), service.listLatest()]);
 
-    const destinationDefinitions: DestinationDefinition[] = definition.destinationDefinitions.map(
-      (destination: DestinationDefinition) => {
+    const destinationDefinitions: DestinationDefinitionRead[] = definition.destinationDefinitions.map(
+      (destination: DestinationDefinitionRead) => {
         const withLatest = latestDefinition.destinationDefinitions.find(
-          (latestDestination: DestinationDefinition) =>
-            latestDestination.destinationDefinitionId === destination.destinationDefinitionId
+          (latestDestination) => latestDestination.destinationDefinitionId === destination.destinationDefinitionId
         );
 
         return {
           ...destination,
-          latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+          latestDockerImageTag: withLatest?.dockerImageTag,
         };
       }
     );
@@ -62,26 +59,32 @@ const useDestinationDefinitionList = (): {
 };
 
 const useDestinationDefinition = <T extends string | undefined>(
-  id: T
-): T extends string ? DestinationDefinition : DestinationDefinition | undefined => {
+  destinationDefinitionId: T
+): T extends string ? DestinationDefinitionRead : DestinationDefinitionRead | undefined => {
   const service = useGetDestinationDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(destinationDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    destinationDefinitionKeys.detail(destinationDefinitionId || ""),
+    () => service.get({ workspaceId, destinationDefinitionId: destinationDefinitionId || "" }),
+    {
+      enabled: isDefined(destinationDefinitionId),
+    }
+  );
 };
 
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useMutation<DestinationDefinition, Error, CreateDestinationDefinitionPayload>(
-    (destinationDefinition) => service.create(destinationDefinition),
+  return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
+    (destinationDefinition) => service.createCustom({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
           destinationDefinitionKeys.lists(),
-          (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
+          (oldData: { destinationDefinitions: DestinationDefinitionRead[] } | undefined) => ({
             destinationDefinitions: [data, ...(oldData?.destinationDefinitions ?? [])],
           })
         );
@@ -95,7 +98,7 @@ const useUpdateDestinationDefinition = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    DestinationDefinition,
+    DestinationDefinitionRead,
     Error,
     {
       destinationDefinitionId: string;
@@ -107,7 +110,7 @@ const useUpdateDestinationDefinition = () => {
 
       queryClient.setQueryData(
         destinationDefinitionKeys.lists(),
-        (oldData: { destinationDefinitions: DestinationDefinition[] } | undefined) => ({
+        (oldData: { destinationDefinitions: DestinationDefinitionRead[] } | undefined) => ({
           destinationDefinitions:
             oldData?.destinationDefinitions.map((sd) =>
               sd.destinationDefinitionId === data.destinationDefinitionId ? data : sd

@@ -1,11 +1,15 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.config.StandardSync;
+import io.airbyte.config.persistence.ConfigNotFoundException;
+import io.airbyte.validation.json.JsonValidationException;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
+import java.io.IOException;
 import java.time.Duration;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -32,6 +36,8 @@ public interface ConfigFetchActivity {
     private Duration timeToWait;
 
   }
+
+  StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException;
 
   /**
    * Return how much time to wait before running the next sync. It will query the DB to get the last

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.config.specs;
@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 
 class SeedConnectorSpecGeneratorTest {
 
-  private static final UUID DEF_ID1 = java.util.UUID.randomUUID();
-  private static final UUID DEF_ID2 = java.util.UUID.randomUUID();
+  private static final UUID DEF_ID1 = UUID.randomUUID();
+  private static final UUID DEF_ID2 = UUID.randomUUID();
   private static final String CONNECTOR_NAME1 = "connector1";
   private static final String CONNECTOR_NAME2 = "connector2";
   private static final String DOCUMENTATION_URL = "https://wwww.example.com";

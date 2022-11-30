@@ -1,26 +1,34 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
+import { useLocation, useNavigate } from "react-router-dom";
 
-import MainPageWithScroll from "components/MainPageWithScroll";
-import PageTitle from "components/PageTitle";
-import StepsMenu from "components/StepsMenu";
 import { LoadingPage } from "components";
-import { FormPageContent } from "components/ConnectorBlocks";
+import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import ConnectionBlock from "components/ConnectionBlock";
-import HeadTitle from "components/HeadTitle";
-import CreateConnectionContent from "components/CreateConnectionContent";
+import { FormPageContent } from "components/ConnectorBlocks";
+import { CreateConnectionForm } from "components/CreateConnection/CreateConnectionForm";
+import { PageHeader } from "components/ui/PageHeader";
+import { StepsIndicator } from "components/ui/StepsIndicator";
 
-import useRouter from "hooks/useRouter";
-import { Destination, DestinationDefinition, Source, SourceDefinition } from "core/domain/connector";
-import { Connection } from "core/domain/connection";
-import { useSourceDefinition } from "services/connector/SourceDefinitionService";
-import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
-import { useGetSource } from "hooks/services/useSourceHook";
+import {
+  DestinationDefinitionRead,
+  DestinationRead,
+  SourceDefinitionRead,
+  SourceRead,
+} from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useGetDestination } from "hooks/services/useDestinationHook";
+import { useGetSource } from "hooks/services/useSourceHook";
+import { useLocationState } from "hooks/useLocationState";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
+import { useSourceDefinition } from "services/connector/SourceDefinitionService";
+import { ConnectorDocumentationWrapper } from "views/Connector/ConnectorDocumentationLayout";
 
-import DestinationForm from "./components/DestinationForm";
-import SourceForm from "./components/SourceForm";
-import ExistingEntityForm from "./components/ExistingEntityForm";
+import { ConnectionCreateDestinationForm } from "./ConnectionCreateDestinationForm";
+import { ConnectionCreateSourceForm } from "./ConnectionCreateSourceForm";
+import ExistingEntityForm from "./ExistingEntityForm";
 
 export enum StepsTypes {
   CREATE_ENTITY = "createEntity",
@@ -47,12 +55,12 @@ const hasDestinationId = (state: unknown): state is { destinationId: string } =>
 };
 
 function usePreloadData(): {
-  sourceDefinition?: SourceDefinition;
-  destination?: Destination;
-  source?: Source;
-  destinationDefinition?: DestinationDefinition;
+  sourceDefinition?: SourceDefinitionRead;
+  destination?: DestinationRead;
+  source?: SourceRead;
+  destinationDefinition?: DestinationDefinitionRead;
 } {
-  const { location } = useRouter();
+  const location = useLocation();
 
   const source = useGetSource(hasSourceId(location.state) ? location.state.sourceId : null);
 
@@ -64,8 +72,17 @@ function usePreloadData(): {
   return { source, sourceDefinition, destination, destinationDefinition };
 }
 
-const CreationFormPage: React.FC = () => {
-  const { location, push } = useRouter();
+export const CreationFormPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
+  const location = useLocation();
+  const { formatMessage } = useIntl();
+
+  // exp-signup-selected-source-definition
+  const state = useLocationState<{ sourceDefinitionId?: string }>();
+  const isSourceDefinitionSelected = Boolean(state?.sourceDefinitionId);
+
+  const navigate = useNavigate();
+  const { clearAllFormChanges } = useFormChangeTrackerService();
 
   // TODO: Probably there is a better way to figure it out instead of just checking third elem
   const locationType = location.pathname.split("/")[3];
@@ -77,9 +94,12 @@ const CreationFormPage: React.FC = () => {
       ? EntityStepsTypes.DESTINATION
       : EntityStepsTypes.SOURCE;
 
-  const hasConnectors = hasSourceId(location.state) && hasDestinationId(location.state);
   const [currentStep, setCurrentStep] = useState(
-    hasConnectors ? StepsTypes.CREATE_CONNECTION : StepsTypes.CREATE_ENTITY
+    hasSourceId(location.state) && hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTION
+      : hasSourceId(location.state) && !hasDestinationId(location.state)
+      ? StepsTypes.CREATE_CONNECTOR
+      : StepsTypes.CREATE_ENTITY
   );
 
   const [currentEntityStep, setCurrentEntityStep] = useState(
@@ -89,7 +109,8 @@ const CreationFormPage: React.FC = () => {
   const { destinationDefinition, sourceDefinition, source, destination } = usePreloadData();
 
   const onSelectExistingSource = (id: string) => {
-    push("", {
+    clearAllFormChanges();
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         sourceId: id,
@@ -100,7 +121,8 @@ const CreationFormPage: React.FC = () => {
   };
 
   const onSelectExistingDestination = (id: string) => {
-    push("", {
+    clearAllFormChanges();
+    navigate("", {
       state: {
         ...(location.state as Record<string, unknown>),
         destinationId: id,
@@ -115,10 +137,11 @@ const CreationFormPage: React.FC = () => {
       if (currentEntityStep === EntityStepsTypes.SOURCE) {
         return (
           <>
-            {type === EntityStepsTypes.CONNECTION && (
+            {/* // exp-signup-selected-source-definition */}
+            {type === EntityStepsTypes.CONNECTION && !isSourceDefinitionSelected && (
               <ExistingEntityForm type="source" onSubmit={onSelectExistingSource} />
             )}
-            <SourceForm
+            <ConnectionCreateSourceForm
               afterSubmit={() => {
                 if (type === "connection") {
                   setCurrentEntityStep(EntityStepsTypes.DESTINATION);
@@ -129,6 +152,7 @@ const CreationFormPage: React.FC = () => {
                 }
               }}
             />
+            <CloudInviteUsersHint connectorType="source" />
           </>
         );
       } else if (currentEntityStep === EntityStepsTypes.DESTINATION) {
@@ -137,43 +161,24 @@ const CreationFormPage: React.FC = () => {
             {type === EntityStepsTypes.CONNECTION && (
               <ExistingEntityForm type="destination" onSubmit={onSelectExistingDestination} />
             )}
-            <DestinationForm
+            <ConnectionCreateDestinationForm
               afterSubmit={() => {
                 setCurrentEntityStep(EntityStepsTypes.CONNECTION);
                 setCurrentStep(StepsTypes.CREATE_CONNECTION);
               }}
             />
+            <CloudInviteUsersHint connectorType="destination" />
           </>
         );
       }
     }
-
-    const afterSubmitConnection = (connection: Connection) => {
-      switch (type) {
-        case EntityStepsTypes.DESTINATION:
-          push(`../${source?.sourceId}`);
-          break;
-        case EntityStepsTypes.SOURCE:
-          push(`../${destination?.destinationId}`);
-          break;
-        default:
-          push(`../${connection.connectionId}`);
-          break;
-      }
-    };
 
     if (!source || !destination) {
       console.error("unexpected state met");
       return <LoadingPage />;
     }
 
-    return (
-      <CreateConnectionContent
-        source={source}
-        destination={destination}
-        afterSubmitConnection={afterSubmitConnection}
-      />
-    );
+    return <CreateConnectionForm source={source} destination={destination} />;
   };
 
   const steps =
@@ -181,30 +186,28 @@ const CreationFormPage: React.FC = () => {
       ? [
           {
             id: StepsTypes.CREATE_ENTITY,
-            name: <FormattedMessage id="onboarding.createSource" />,
+            name: formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTOR,
-            name: <FormattedMessage id="onboarding.createDestination" />,
+            name: formatMessage({ id: "onboarding.createDestination" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ]
       : [
           {
             id: StepsTypes.CREATE_ENTITY,
             name:
-              type === "destination" ? (
-                <FormattedMessage id="onboarding.createDestination" />
-              ) : (
-                <FormattedMessage id="onboarding.createSource" />
-              ),
+              type === "destination"
+                ? formatMessage({ id: "onboarding.createDestination" })
+                : formatMessage({ id: "onboarding.createSource" }),
           },
           {
             id: StepsTypes.CREATE_CONNECTION,
-            name: <FormattedMessage id="onboarding.setUpConnection" />,
+            name: formatMessage({ id: "onboarding.setUpConnection" }),
           },
         ];
 
@@ -217,34 +220,30 @@ const CreationFormPage: React.FC = () => {
   )[type];
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: titleId }]} />}
-      pageTitle={
-        <PageTitle
-          withLine
+    <>
+      <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
+      <ConnectorDocumentationWrapper>
+        <PageHeader
           title={<FormattedMessage id={titleId} />}
-          middleComponent={<StepsMenu lightMode data={steps} activeStep={currentStep} />}
+          middleComponent={<StepsIndicator steps={steps} activeStep={currentStep} />}
         />
-      }
-    >
-      <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
-        {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
-          <ConnectionBlock
-            itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
-            itemTo={
-              destination
-                ? {
-                    name: destination.name,
-                    icon: destinationDefinition?.icon,
-                  }
-                : undefined
-            }
-          />
-        )}
-        {renderStep()}
-      </FormPageContent>
-    </MainPageWithScroll>
+        <FormPageContent big={currentStep === StepsTypes.CREATE_CONNECTION}>
+          {currentStep !== StepsTypes.CREATE_CONNECTION && (!!source || !!destination) && (
+            <ConnectionBlock
+              itemFrom={source ? { name: source.name, icon: sourceDefinition?.icon } : undefined}
+              itemTo={
+                destination
+                  ? {
+                      name: destination.name,
+                      icon: destinationDefinition?.icon,
+                    }
+                  : undefined
+              }
+            />
+          )}
+          {renderStep()}
+        </FormPageContent>
+      </ConnectorDocumentationWrapper>
+    </>
   );
 };
-
-export default CreationFormPage;

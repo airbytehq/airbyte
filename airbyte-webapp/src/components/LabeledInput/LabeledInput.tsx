@@ -1,24 +1,14 @@
 import React from "react";
 
-import { Input, InputProps } from "components/base";
-import { ControlLabels } from "components/LabeledControl";
+import { ControlLabels, ControlLabelsProps } from "components/LabeledControl";
+import { Input, InputProps } from "components/ui/Input";
 
-type IProps = {
-  success?: boolean;
-  message?: React.ReactNode;
-  label?: React.ReactNode;
-  labelAdditionLength?: number;
-} & InputProps;
+type LabeledInputProps = Pick<ControlLabelsProps, "success" | "message" | "label"> &
+  InputProps & { className?: string };
 
-const LabeledInput: React.FC<IProps> = (props) => (
-  <ControlLabels
-    error={props.error}
-    success={props.success}
-    message={props.message}
-    label={props.label}
-    labelAdditionLength={props.labelAdditionLength}
-  >
-    <Input {...props} />
+const LabeledInput: React.FC<LabeledInputProps> = ({ error, success, message, label, className, ...inputProps }) => (
+  <ControlLabels error={error} success={success} message={message} label={label} className={className}>
+    <Input {...inputProps} error={error} />
   </ControlLabels>
 );
 

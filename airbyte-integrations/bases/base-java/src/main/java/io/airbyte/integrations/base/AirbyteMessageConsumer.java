@@ -1,14 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.integrations.base.sentry.AirbyteSentry;
 import io.airbyte.protocol.models.AirbyteMessage;
-import org.elasticsearch.common.collect.Map;
 
 /**
  * Interface for the destination's consumption of incoming records wrapped in an
@@ -48,8 +46,7 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void start() throws Exception {
-        AirbyteSentry.executeWithTracing("StartConsumer", consumer::start,
-            Map.of("consumerImpl", "appendOnClose"));
+        consumer.start();
       }
 
       @Override
@@ -59,10 +56,8 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
       @Override
       public void close() throws Exception {
-        AirbyteSentry.executeWithTracing("CloseConsumer", () -> {
-          consumer.close();
-          voidCallable.call();
-        }, Map.of("consumerImpl", "appendOnClose"));
+        consumer.close();
+        voidCallable.call();
       }
 
     };

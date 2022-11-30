@@ -1,39 +1,47 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.api.model.ConnectionRead;
-import io.airbyte.api.model.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.DestinationDefinitionRead;
-import io.airbyte.api.model.DestinationIdRequestBody;
-import io.airbyte.api.model.DestinationRead;
-import io.airbyte.api.model.JobDebugInfoRead;
-import io.airbyte.api.model.JobDebugRead;
-import io.airbyte.api.model.JobIdRequestBody;
-import io.airbyte.api.model.JobInfoRead;
-import io.airbyte.api.model.JobListRequestBody;
-import io.airbyte.api.model.JobReadList;
-import io.airbyte.api.model.JobWithAttemptsRead;
-import io.airbyte.api.model.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.SourceDefinitionRead;
-import io.airbyte.api.model.SourceIdRequestBody;
-import io.airbyte.api.model.SourceRead;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.DestinationDefinitionRead;
+import io.airbyte.api.model.generated.DestinationIdRequestBody;
+import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.JobDebugInfoRead;
+import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobIdRequestBody;
+import io.airbyte.api.model.generated.JobInfoLightRead;
+import io.airbyte.api.model.generated.JobInfoRead;
+import io.airbyte.api.model.generated.JobListRequestBody;
+import io.airbyte.api.model.generated.JobRead;
+import io.airbyte.api.model.generated.JobReadList;
+import io.airbyte.api.model.generated.JobWithAttemptsRead;
+import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDefinitionRead;
+import io.airbyte.api.model.generated.SourceIdRequestBody;
+import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.scheduler.models.Job;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.WorkflowStateConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -48,7 +56,9 @@ public class JobHistoryHandler {
   public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
+  private final WorkflowStateConverter workflowStateConverter;
   private final AirbyteVersion airbyteVersion;
+  private final TemporalClient temporalClient;
 
   public JobHistoryHandler(final JobPersistence jobPersistence,
                            final WorkerEnvironment workerEnvironment,
@@ -58,8 +68,10 @@ public class JobHistoryHandler {
                            final SourceDefinitionsHandler sourceDefinitionsHandler,
                            final DestinationHandler destinationHandler,
                            final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                           final AirbyteVersion airbyteVersion) {
+                           final AirbyteVersion airbyteVersion,
+                           final TemporalClient temporalClient) {
     jobConverter = new JobConverter(workerEnvironment, logConfigs);
+    workflowStateConverter = new WorkflowStateConverter();
     this.jobPersistence = jobPersistence;
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
@@ -67,6 +79,21 @@ public class JobHistoryHandler {
     this.destinationHandler = destinationHandler;
     this.destinationDefinitionsHandler = destinationDefinitionsHandler;
     this.airbyteVersion = airbyteVersion;
+    this.temporalClient = temporalClient;
+  }
+
+  @Deprecated(forRemoval = true)
+  public JobHistoryHandler(final JobPersistence jobPersistence,
+                           final WorkerEnvironment workerEnvironment,
+                           final LogConfigs logConfigs,
+                           final ConnectionsHandler connectionsHandler,
+                           final SourceHandler sourceHandler,
+                           final SourceDefinitionsHandler sourceDefinitionsHandler,
+                           final DestinationHandler destinationHandler,
+                           final DestinationDefinitionsHandler destinationDefinitionsHandler,
+                           final AirbyteVersion airbyteVersion) {
+    this(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler, sourceDefinitionsHandler, destinationHandler,
+        destinationDefinitionsHandler, airbyteVersion, null);
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -80,15 +107,25 @@ public class JobHistoryHandler {
         .collect(Collectors.toSet());
     final String configId = request.getConfigId();
 
-    final List<JobWithAttemptsRead> jobReads = jobPersistence.listJobs(configTypes,
-        configId,
-        (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
-            : DEFAULT_PAGE_SIZE,
-        (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0)
+    final int pageSize = (request.getPagination() != null && request.getPagination().getPageSize() != null) ? request.getPagination().getPageSize()
+        : DEFAULT_PAGE_SIZE;
+    final List<Job> jobs;
+
+    if (request.getIncludingJobId() != null) {
+      jobs = jobPersistence.listJobsIncludingId(configTypes, configId, request.getIncludingJobId(), pageSize);
+    } else {
+      jobs = jobPersistence.listJobs(configTypes, configId, pageSize,
+          (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
+    }
+
+    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
+
+    final List<JobWithAttemptsRead> jobReads = jobs
         .stream()
-        .map(attempt -> jobConverter.getJobWithAttemptsRead(attempt))
+        .map(JobConverter::getJobWithAttemptsRead)
         .collect(Collectors.toList());
-    return new JobReadList().jobs(jobReads);
+
+    return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
@@ -96,12 +133,59 @@ public class JobHistoryHandler {
     return jobConverter.getJobInfoRead(job);
   }
 
+  public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
+    return jobConverter.getJobInfoLightRead(job);
+  }
+
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
 
-    return buildJobDebugInfoRead(jobinfoRead);
+    final JobDebugInfoRead jobDebugInfoRead = buildJobDebugInfoRead(jobinfoRead);
+    if (temporalClient != null) {
+      final UUID connectionId = UUID.fromString(job.getScope());
+      temporalClient.getWorkflowState(connectionId)
+          .map(workflowStateConverter::getWorkflowStateRead)
+          .ifPresent(jobDebugInfoRead::setWorkflowState);
+    }
+
+    return jobDebugInfoRead;
+  }
+
+  public Optional<JobRead> getLatestRunningSyncJob(final UUID connectionId) throws IOException {
+    final List<Job> nonTerminalSyncJobsForConnection = jobPersistence.listJobsForConnectionWithStatuses(
+        connectionId,
+        Collections.singleton(ConfigType.SYNC),
+        JobStatus.NON_TERMINAL_STATUSES);
+
+    // there *should* only be a single running sync job for a connection, but
+    // jobPersistence.listJobsForConnectionWithStatuses orders by created_at desc so
+    // .findFirst will always return what we want.
+    return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
+  }
+
+  public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
+    return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
+  }
+
+  public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
+  }
+
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    return new AttemptNormalizationStatusReadList()
+        .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
+            .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
+  }
+
+  public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
+    return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
+        .map(JobConverter::getJobRead)
+        .collect(Collectors.toList());
   }
 
   private SourceRead getSourceRead(final ConnectionRead connectionRead) throws JsonValidationException, IOException, ConfigNotFoundException {
@@ -137,7 +221,7 @@ public class JobHistoryHandler {
     final DestinationRead destination = getDestinationRead(connection);
     final SourceDefinitionRead sourceDefinitionRead = getSourceDefinitionRead(source);
     final DestinationDefinitionRead destinationDefinitionRead = getDestinationDefinitionRead(destination);
-    final JobDebugRead jobDebugRead = jobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
+    final JobDebugRead jobDebugRead = JobConverter.getDebugJobInfoRead(jobInfoRead, sourceDefinitionRead, destinationDefinitionRead, airbyteVersion);
 
     return new JobDebugInfoRead()
         .attempts(jobInfoRead.getAttempts())

@@ -1,18 +1,28 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 import inspect
 import logging
 from abc import ABC, abstractmethod
+from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import airbyte_cdk.sources.utils.casing as casing
-from airbyte_cdk.models import AirbyteStream, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
+
+# list of all possible HTTP methods which can be used for sending of request bodies
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
+
+# A stream's read method can return one of the following types:
+# Mapping[str, Any]: The content of an AirbyteRecordMessage
+# AirbyteRecordMessage: An AirbyteRecordMessage
+# AirbyteLogMessage: A log message
+# AirbyteTraceMessage: A trace message
+StreamData = Union[Mapping[str, Any], AirbyteLogMessage, AirbyteTraceMessage]
 
 
 def package_name_from_class(cls: object) -> str:
@@ -75,6 +85,18 @@ class Stream(ABC):
         """
         return casing.camel_to_snake(self.__class__.__name__)
 
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method does not return user-friendly messages for any exception type, but it should be overriden as needed.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        return None
+
     @abstractmethod
     def read_records(
         self,
@@ -82,11 +104,12 @@ class Stream(ABC):
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Iterable[StreamData]:
         """
         This method should be overridden by subclasses to read records based on the inputs
         """
 
+    @lru_cache(maxsize=None)
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -99,6 +122,9 @@ class Stream(ABC):
 
     def as_airbyte_stream(self) -> AirbyteStream:
         stream = AirbyteStream(name=self.name, json_schema=dict(self.get_json_schema()), supported_sync_modes=[SyncMode.full_refresh])
+
+        if self.namespace:
+            stream.namespace = self.namespace
 
         if self.supports_incremental:
             stream.source_defined_cursor = self.source_defined_cursor
@@ -128,6 +154,14 @@ class Stream(ABC):
         :return: The name of the field used as a cursor. If the cursor is nested, return an array consisting of the path to the cursor.
         """
         return []
+
+    @property
+    def namespace(self) -> Optional[str]:
+        """
+        Override to return the namespace of this stream, e.g. the Postgres schema which this stream will emit records for.
+        :return: A string containing the name of the namespace.
+        """
+        return None
 
     @property
     def source_defined_cursor(self) -> bool:
@@ -204,7 +238,7 @@ class Stream(ABC):
                 elif isinstance(component, list):
                     wrapped_keys.append(component)
                 else:
-                    raise ValueError("Element must be either list or str.")
+                    raise ValueError(f"Element must be either list or str. Got: {type(component)}")
             return wrapped_keys
         else:
-            raise ValueError("Element must be either list or str.")
+            raise ValueError(f"Element must be either list or str. Got: {type(keys)}")

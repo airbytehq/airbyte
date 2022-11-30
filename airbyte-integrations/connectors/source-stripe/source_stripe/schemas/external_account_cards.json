@@ -1,0 +1,78 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "address_city": {
+      "type": ["string", "null"]
+    },
+    "address_country": {
+      "type": ["string", "null"]
+    },
+    "address_line1": {
+      "type": ["string", "null"]
+    },
+    "address_line1_check": {
+      "type": ["string", "null"]
+    },
+    "address_line2": {
+      "type": ["string", "null"]
+    },
+    "address_state": {
+      "type": ["string", "null"]
+    },
+    "address_zip": {
+      "type": ["string", "null"]
+    },
+    "address_zip_check": {
+      "type": ["string", "null"]
+    },
+    "brand": {
+      "type": ["string", "null"]
+    },
+    "country": {
+      "type": ["string", "null"]
+    },
+    "cvc_check": {
+      "type": ["string", "null"]
+    },
+    "dynamic_last4": {
+      "type": ["string", "null"]
+    },
+    "exp_month": {
+      "type": ["integer", "null"]
+    },
+    "exp_year": {
+      "type": ["integer", "null"]
+    },
+    "fingerprint": {
+      "type": ["string", "null"]
+    },
+    "funding": {
+      "type": ["string", "null"]
+    },
+    "last4": {
+      "type": ["string", "null"]
+    },
+    "metadata": {
+      "type": ["object", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "redaction": {
+      "type": ["string", "null"]
+    },
+    "tokenization_method": {
+      "type": ["string", "null"]
+    },
+    "account": {
+      "type": ["string", "null"]
+    }
+  }
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -9,7 +9,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
@@ -19,9 +20,12 @@ import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTes
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import org.jooq.DSLContext;
+import org.jooq.SQLDialect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.MariaDBContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.utility.DockerImageName;
 
 /**
@@ -31,6 +35,7 @@ import org.testcontainers.utility.DockerImageName;
 public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreDestinationAcceptanceTest.class);
+  private static final Network network = Network.newNetwork();
 
   private final ExtendedNameTransformer namingResolver = new MariadbColumnstoreNameTransformer();
 
@@ -66,17 +71,17 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
 
   @Override
   protected String getDefaultSchema(final JsonNode config) {
-    if (config.get("database") == null) {
+    if (config.get(JdbcUtils.DATABASE_KEY) == null) {
       return null;
     }
-    return config.get("database").asText();
+    return config.get(JdbcUtils.DATABASE_KEY).asText();
   }
 
   @Override
-  protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
-                                           String streamName,
-                                           String namespace,
-                                           JsonNode streamSchema)
+  protected List<JsonNode> retrieveRecords(final TestDestinationEnv testEnv,
+                                           final String streamName,
+                                           final String namespace,
+                                           final JsonNode streamSchema)
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
@@ -88,8 +93,8 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
     final JsonNode config = getConfig();
     return SshTunnel.sshWrap(
         config,
-        MariadbColumnstoreDestination.HOST_KEY,
-        MariadbColumnstoreDestination.PORT_KEY,
+        JdbcUtils.HOST_LIST_KEY,
+        JdbcUtils.PORT_LIST_KEY,
         (CheckedFunction<JsonNode, List<JsonNode>, Exception>) mangledConfig -> getDatabaseFromConfig(mangledConfig)
             .query(
                 ctx -> ctx
@@ -101,13 +106,16 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
-    return Databases.createMariaDbDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mariadb://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()));
+    final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MARIADB.getDriverClassName(),
+        String.format(DatabaseDriver.MARIADB.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.MARIADB);
+    return new Database(dslContext);
   }
 
   @Override
@@ -121,25 +129,25 @@ public abstract class SshMariadbColumnstoreDestinationAcceptanceTest extends Des
   }
 
   @Override
-  protected void setup(TestDestinationEnv testEnv) throws Exception {
-    bastion.initAndStartBastion();
+  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+    bastion.initAndStartBastion(network);
     startAndInitJdbcContainer();
   }
 
   private void startAndInitJdbcContainer() throws Exception {
-    DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
+    final DockerImageName mcsImage = DockerImageName.parse("fengdi/columnstore:1.5.2").asCompatibleSubstituteFor("mariadb");
     db = new MariaDBContainer<>(mcsImage)
-        .withNetwork(bastion.getNetWork());
+        .withNetwork(network);
     db.start();
 
-    String createUser = String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
-    String grantAll = String.format("GRANT ALL PRIVILEGES ON *.* TO '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
-    String createDb = String.format("CREATE DATABASE %s DEFAULT CHARSET = utf8;", db.getDatabaseName());
+    final String createUser = String.format("CREATE USER '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
+    final String grantAll = String.format("GRANT ALL PRIVILEGES ON *.* TO '%s'@'%%' IDENTIFIED BY '%s';", db.getUsername(), db.getPassword());
+    final String createDb = String.format("CREATE DATABASE %s DEFAULT CHARSET = utf8;", db.getDatabaseName());
     db.execInContainer("mariadb", "-e", createUser + grantAll + createDb);
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
+  protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
   }
 

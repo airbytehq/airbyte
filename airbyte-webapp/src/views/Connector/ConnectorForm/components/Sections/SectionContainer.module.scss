@@ -1,0 +1,9 @@
+@use "../../../../../scss/variables";
+
+.container {
+  margin-bottom: variables.$spacing-xl;
+
+  &:empty {
+    margin-bottom: 0;
+  }
+}

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -19,26 +19,35 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
     class S3Provider(BaseModel):
         class Config:
             title = "S3: Amazon Web Services"
+            # SourceFilesAbstractSpec field are ordered 10 apart to allow subclasses to insert their own spec's fields interspersed
+            schema_extra = {"order": 11, "description": "Use this to load files from S3 or S3-compatible services"}
 
-        bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.")
+        bucket: str = Field(description="Name of the S3 bucket where the file(s) exist.", order=0)
         aws_access_key_id: Optional[str] = Field(
+            title="AWS Access Key ID",
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
+            "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            order=1,
         )
         aws_secret_access_key: Optional[str] = Field(
+            title="AWS Secret Access Key",
             default=None,
-            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper permissions. If accessing publicly available data, this field is not necessary.",
+            description="In order to access private Buckets stored on AWS S3, this connector requires credentials with the proper "
+            "permissions. If accessing publicly available data, this field is not necessary.",
             airbyte_secret=True,
+            order=2,
         )
         path_prefix: str = Field(
             default="",
-            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, we can optimise finding these in S3. This is optional but recommended if your bucket contains many folders/files.",
+            description="By providing a path-like prefix (e.g. myFolder/thisTable/) under which all the relevant files sit, "
+            "we can optimize finding these in S3. This is optional but recommended if your bucket contains many "
+            "folders/files which you don't need to replicate.",
+            order=3,
         )
 
-        endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.")
-        use_ssl: bool = Field(default=None, description="Is remote server using secure SSL/TLS connection")
-        verify_ssl_cert: bool = Field(default=None, description="Allow self signed certificates")
+        endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
 
     provider: S3Provider
 
@@ -46,7 +55,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 class SourceS3(SourceFilesAbstract):
     stream_class = IncrementalFileStreamS3
     spec_class = SourceS3Spec
-    documentation_url = "https://docs.airbyte.io/integrations/sources/s3"
+    documentation_url = "https://docs.airbyte.com/integrations/sources/s3"
 
     def read_config(self, config_path: str) -> Mapping[str, Any]:
         config: Mapping[str, Any] = super().read_config(config_path)

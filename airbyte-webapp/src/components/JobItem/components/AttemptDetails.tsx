@@ -1,44 +1,31 @@
+import classNames from "classnames";
+import dayjs from "dayjs";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
-import dayjs from "dayjs";
 
-import { Attempt } from "core/domain/job/Job";
-import Status from "core/statuses";
+import { AttemptRead, AttemptStatus } from "../../../core/request/AirbyteClient";
+import styles from "./AttemptDetails.module.scss";
 
-type IProps = {
+interface AttemptDetailsProps {
   className?: string;
-  attempt: Attempt;
-  configType?: string;
-};
+  attempt: AttemptRead;
+  hasMultipleAttempts?: boolean;
+}
 
-const Details = styled.div`
-  font-size: 12px;
-  line-height: 15px;
-  color: ${({ theme }) => theme.greyColor40};
-`;
-const FailureReasonDetails = styled.div`
-  padding-bottom: 10px;
-`;
-
-const getFailureFromAttempt = (attempt: Attempt) => {
+const getFailureFromAttempt = (attempt: AttemptRead) => {
   return attempt.failureSummary && attempt.failureSummary.failures[0];
 };
 
-const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) => {
+const AttemptDetails: React.FC<AttemptDetailsProps> = ({ attempt, className, hasMultipleAttempts }) => {
   const { formatMessage } = useIntl();
 
-  if (attempt.status !== Status.SUCCEEDED && attempt.status !== Status.FAILED) {
-    return (
-      <Details className={className}>
-        <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-      </Details>
-    );
+  if (attempt.status !== AttemptStatus.succeeded && attempt.status !== AttemptStatus.failed) {
+    return null;
   }
 
-  const formatBytes = (bytes: number) => {
+  const formatBytes = (bytes?: number) => {
     if (!bytes) {
-      return <FormattedMessage id="sources.countBytes" values={{ count: bytes }} />;
+      return <FormattedMessage id="sources.countBytes" values={{ count: bytes || 0 }} />;
     }
 
     const k = 1024;
@@ -50,7 +37,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     return <FormattedMessage id={`sources.count${sizes[i]}`} values={{ count: result }} />;
   };
 
-  const getFailureOrigin = (attempt: Attempt) => {
+  const getFailureOrigin = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
     const failureOrigin = failure?.failureOrigin ?? formatMessage({ id: "errorView.unknown" });
 
@@ -59,7 +46,7 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
     })}: ${failureOrigin}`;
   };
 
-  const getFailureMessage = (attempt: Attempt) => {
+  const getExternalFailureMessage = (attempt: AttemptRead) => {
     const failure = getFailureFromAttempt(attempt);
     const failureMessage = failure?.externalMessage ?? formatMessage({ id: "errorView.unknown" });
 
@@ -73,52 +60,49 @@ const AttemptDetails: React.FC<IProps> = ({ attempt, className, configType }) =>
   const hours = Math.abs(date2.diff(date1, "hour"));
   const minutes = Math.abs(date2.diff(date1, "minute")) - hours * 60;
   const seconds = Math.abs(date2.diff(date1, "second")) - minutes * 60 - hours * 3600;
-  const isFailed = attempt.status === Status.FAILED;
+  const isFailed = attempt.status === AttemptStatus.failed;
 
   return (
-    <Details className={className}>
-      <div>
-        <span>{formatBytes(attempt.bytesSynced)} | </span>
+    <div className={classNames(styles.container, className)}>
+      <div className={styles.details}>
+        {hasMultipleAttempts && (
+          <strong className={classNames(styles.lastAttempt, { [styles.failed]: isFailed })}>
+            <FormattedMessage id="sources.lastAttempt" />
+          </strong>
+        )}
+        <span>{formatBytes(attempt?.totalStats?.bytesEmitted)}</span>
         <span>
           <FormattedMessage
             id="sources.countEmittedRecords"
             values={{ count: attempt.totalStats?.recordsEmitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           <FormattedMessage
             id="sources.countCommittedRecords"
             values={{ count: attempt.totalStats?.recordsCommitted || 0 }}
-          />{" "}
-          |{" "}
+          />
         </span>
         <span>
           {hours ? <FormattedMessage id="sources.hour" values={{ hour: hours }} /> : null}
           {hours || minutes ? <FormattedMessage id="sources.minute" values={{ minute: minutes }} /> : null}
           <FormattedMessage id="sources.second" values={{ second: seconds }} />
         </span>
-        {configType ? (
-          <span>
-            {" "}
-            | <FormattedMessage id={`sources.${configType}`} defaultMessage={configType} />
-          </span>
-        ) : null}
       </div>
       {isFailed && (
-        <FailureReasonDetails>
+        <div className={styles.failedMessage}>
           {formatMessage(
             {
               id: "ui.keyValuePairV3",
             },
             {
               key: getFailureOrigin(attempt),
-              value: getFailureMessage(attempt),
+              value: getExternalFailureMessage(attempt),
             }
           )}
-        </FailureReasonDetails>
+        </div>
       )}
-    </Details>
+    </div>
   );
 };
 

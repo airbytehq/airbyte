@@ -1,0 +1,11 @@
+{
+  "host": "testhost.snowflakecomputing.com",
+  "role": "AIRBYTE_ROLE",
+  "warehouse": "AIRBYTE_WAREHOUSE",
+  "database": "AIRBYTE_DATABASE",
+  "schema": "RESTRICTED_SCHEMA",
+  "username": "AIRBYTE_USER",
+  "credentials": {
+    "password": "test"
+  }
+}

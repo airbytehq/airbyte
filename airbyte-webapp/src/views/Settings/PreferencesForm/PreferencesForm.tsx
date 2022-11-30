@@ -1,19 +1,19 @@
-import React from "react";
-import styled from "styled-components";
-import { FormattedMessage, useIntl } from "react-intl";
 import { Field, FieldProps, Form, Formik } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 import * as yup from "yup";
 
-import { BigButton } from "components/CenteredPageComponents";
-import LabeledInput from "components/LabeledInput";
 import Label from "components/Label";
-import LabeledToggle from "components/LabeledToggle";
+import LabeledInput from "components/LabeledInput";
+import { LabeledSwitch } from "components/LabeledSwitch";
+import { Button } from "components/ui/Button";
 
-import { useConfig } from "config";
+import { links } from "utils/links";
 
 import EditControls from "./components/EditControls";
 
-export type PreferencesFormProps = {
+export interface PreferencesFormProps {
   onSubmit: (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -29,7 +29,7 @@ export type PreferencesFormProps = {
   };
   successMessage?: React.ReactNode;
   errorMessage?: React.ReactNode;
-};
+}
 
 const ButtonContainer = styled.div`
   text-align: center;
@@ -69,8 +69,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
   successMessage,
   errorMessage,
 }) => {
-  const formatMessage = useIntl().formatMessage;
-  const config = useConfig();
+  const { formatMessage } = useIntl();
 
   return (
     <Formik
@@ -80,11 +79,11 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
         news: preferencesValues?.news || false,
         securityUpdates: preferencesValues?.securityUpdates || false,
       }}
-      validateOnBlur={true}
+      validateOnBlur
       validateOnChange={false}
       validationSchema={preferencesValidationSchema}
-      onSubmit={async (values) => {
-        await onSubmit(values);
+      onSubmit={(values) => {
+        onSubmit(values);
       }}
     >
       {({ isSubmitting, values, handleChange, setFieldValue, resetForm, isValid, dirty }) => (
@@ -122,10 +121,10 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           </Subtitle>
           <Text>
             <FormattedMessage
-              id={"preferences.collectData"}
+              id="preferences.collectData"
               values={{
                 docs: (docs: React.ReactNode) => (
-                  <DocsLink target="_blank" href={config.ui.docsLink}>
+                  <DocsLink target="_blank" href={links.docsLink}>
                     {docs}
                   </DocsLink>
                 ),
@@ -135,7 +134,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="anonymousDataCollection">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.anonymizeData" />}
@@ -149,7 +148,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="news">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.featureUpdates" />}
@@ -164,7 +163,7 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
           <FormItem>
             <Field name="securityUpdates">
               {({ field }: FieldProps<string>) => (
-                <LabeledToggle
+                <LabeledSwitch
                   {...field}
                   disabled={!values.email}
                   label={<FormattedMessage id="preferences.securityUpdates" />}
@@ -183,9 +182,9 @@ const PreferencesForm: React.FC<PreferencesFormProps> = ({
             />
           ) : (
             <ButtonContainer>
-              <BigButton type="submit" disabled={isSubmitting}>
-                <FormattedMessage id={"form.continue"} />
-              </BigButton>
+              <Button size="lg" type="submit" disabled={isSubmitting}>
+                <FormattedMessage id="form.continue" />
+              </Button>
             </ButtonContainer>
           )}
         </Form>

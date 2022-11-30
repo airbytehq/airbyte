@@ -1,0 +1,81 @@
+{
+  "type": ["object", "null"],
+  "additionalProperties": true,
+  "properties": {
+    "_links": {
+      "type": ["object", "null"]
+    },
+    "user_id": {
+      "type": ["string", "null"]
+    },
+    "username": {
+      "type": ["string", "null"]
+    },
+    "email": {
+      "type": ["string", "null"]
+    },
+    "email_verified": {
+      "type": ["boolean", "null"]
+    },
+    "phone_number": {
+      "type": ["string", "null"]
+    },
+    "phone_verified": {
+      "type": ["boolean", "null"]
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "format": "date-time",
+      "type": ["string", "null"]
+    },
+    "identities": {
+      "type": "array",
+      "items": {
+        "type": ["object", "null"],
+        "additionalProperties": true
+      }
+    },
+    "app_metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "user_metadata": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "picture": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "nickname": {
+      "type": ["string", "null"]
+    },
+    "multifactor": {
+      "type": ["object", "null"],
+      "additionalProperties": true
+    },
+    "last_ip": {
+      "type": ["string", "null"]
+    },
+    "logins_count": {
+      "type": ["integer", "null"]
+    },
+    "blocked": {
+      "type": ["boolean", "null"]
+    },
+    "last_login": {
+      "type": ["string", "null"]
+    },
+    "given_name": {
+      "type": ["string", "null"]
+    },
+    "family_name": {
+      "type": ["string", "null"]
+    }
+  }
+}

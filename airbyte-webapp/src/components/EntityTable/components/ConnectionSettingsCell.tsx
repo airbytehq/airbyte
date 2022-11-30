@@ -1,7 +1,7 @@
+import { faCog } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCog } from "@fortawesome/free-solid-svg-icons";
 
 import { Link } from "components";
 
@@ -10,9 +10,9 @@ import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionI
 
 import { RoutePaths } from "../../../pages/routePaths";
 
-type IProps = {
+interface IProps {
   id: string;
-};
+}
 
 const Content = styled.div`
   color: ${({ theme }) => theme.greyColor60};

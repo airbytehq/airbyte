@@ -1,0 +1,21 @@
+@use "../../../../../../scss/colors";
+@use "../../../../../../scss/variables";
+
+.links {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  margin-bottom: variables.$spacing-xl;
+
+  .formLink {
+    font-size: 11px;
+    line-height: 13px;
+    color: colors.$grey-400;
+
+    .textBlock {
+      padding: 0 9px;
+      display: inline-block;
+    }
+  }
+}

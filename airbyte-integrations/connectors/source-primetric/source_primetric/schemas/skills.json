@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "level": {
+      "type": "integer"
+    },
+    "desc": {
+      "type": "string"
+    },
+    "abstract": {
+      "type": "boolean"
+    },
+    "path": {
+      "type": "string"
+    },
+    "ancestors": {
+      "type": "array",
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "has_children": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

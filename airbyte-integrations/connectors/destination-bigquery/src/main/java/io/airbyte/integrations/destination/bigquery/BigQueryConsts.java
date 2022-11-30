@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
@@ -23,7 +23,6 @@ public class BigQueryConsts {
   public static final String FORMAT = "format";
   public static final String KEEP_GCS_FILES = "keep_files_in_gcs-bucket";
   public static final String KEEP_GCS_FILES_VAL = "Keep all tmp files in GCS";
-  public static final String PART_SIZE = "part_size_mb";
 
   public static final String NAMESPACE_PREFIX = "n";
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.process;
@@ -7,6 +7,7 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -17,9 +18,13 @@ import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.WorkerException;
+import io.airbyte.workers.exception.WorkerException;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.informers.SharedIndexInformer;
+import io.micronaut.context.annotation.Value;
+import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.ServerSocket;
@@ -41,20 +46,32 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junitpioneer.jupiter.RetryingTest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// requires kube running locally to run. If using Minikube it requires MINIKUBE=true
-// Must have a timeout on this class because it tests child processes that may misbehave; otherwise
-// this can hang forever during failures.
+/**
+ * requires kube running locally to run. If using Minikube it requires MINIKUBE=true
+ * <p>
+ * Must have a timeout on this class because it tests child processes that may misbehave; otherwise
+ * this can hang forever during failures.
+ * <p>
+ * Many of the tests here use the {@link RetryingTest} annotation instead of the more common
+ * {@link Test} to allow multiple tries for a test to pass. This is because these tests sometimes
+ * fail transiently, and we haven't been able to fix that yet.
+ * <p>
+ * However, in general we should prefer using {@code @Test} instead and only resort to using
+ * {@code @RetryingTest} for tests that we can't get to pass reliably. New tests should thus default
+ * to using {@code @Test} if possible.
+ */
 @Timeout(value = 6,
          unit = TimeUnit.MINUTES)
+@MicronautTest
 public class KubePodProcessIntegrationTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcessIntegrationTest.class);
@@ -63,51 +80,53 @@ public class KubePodProcessIntegrationTest {
 
   private static final boolean IS_MINIKUBE = Boolean.parseBoolean(Optional.ofNullable(System.getenv("IS_MINIKUBE")).orElse("false"));
   private static List<Integer> openPorts;
-  private static int heartbeatPort;
-  private static String heartbeatUrl;
-  private static KubernetesClient fabricClient;
-  private static KubeProcessFactory processFactory;
+  @Value("${micronaut.server.port}")
+  private Integer heartbeatPort;
+  private String heartbeatUrl;
+  private KubernetesClient fabricClient;
+  private KubeProcessFactory processFactory;
   private static final ResourceRequirements DEFAULT_RESOURCE_REQUIREMENTS = new WorkerConfigs(new EnvConfigs()).getResourceRequirements();
-  private static final String ENV_KEY = "ENV_VAR_1";
-  private static final String ENV_VALUE = "ENV_VALUE_1";
-  private static final Map<String, String> ENV_MAP = ImmutableMap.of(ENV_KEY, ENV_VALUE);
-
-  private WorkerHeartbeatServer server;
 
   @BeforeAll
   public static void init() throws Exception {
-    openPorts = new ArrayList<>(getOpenPorts(30)); // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get
-                                                   // this
-
-    heartbeatPort = openPorts.get(0);
-    heartbeatUrl = getHost() + ":" + heartbeatPort;
-
-    fabricClient = new DefaultKubernetesClient();
-
+    // todo: should we offer port pairs to prevent deadlock? can create test here with fewer to get this
+    openPorts = new ArrayList<>(getOpenPorts(30));
     KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
-
-    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
-    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
-
-    processFactory =
-        new KubeProcessFactory(
-            workerConfigs,
-            "default",
-            fabricClient,
-            heartbeatUrl,
-            getHost(),
-            false);
   }
 
   @BeforeEach
   public void setup() throws Exception {
-    server = new WorkerHeartbeatServer(heartbeatPort);
-    server.startBackground();
+    heartbeatUrl = getHost() + ":" + heartbeatPort;
+
+    fabricClient = new DefaultKubernetesClient();
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
+    processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, heartbeatUrl, getHost(), false);
   }
 
-  @AfterEach
-  public void teardown() throws Exception {
-    server.stop();
+  @RetryingTest(3)
+  public void testInitKubePortManagerSingletonTwice() throws Exception {
+    /**
+     * Test init KubePortManagerSingleton twice: 1. with same ports should succeed 2. with different
+     * port should fail
+     *
+     * Every test has been init once in BeforeAll with getOpenPorts(30)
+     */
+
+    KubePortManagerSingleton originalKubePortManager = KubePortManagerSingleton.getInstance();
+
+    // init the second time with the same ports
+    KubePortManagerSingleton.init(new HashSet<>(openPorts.subList(1, openPorts.size() - 1)));
+    assertEquals(originalKubePortManager, KubePortManagerSingleton.getInstance());
+
+    // init the second time with different ports
+    final List<Integer> differentOpenPorts = new ArrayList<>(getOpenPorts(32));
+    Exception exception = assertThrows(RuntimeException.class, () -> {
+      KubePortManagerSingleton.init(new HashSet<>(differentOpenPorts.subList(1, differentOpenPorts.size() - 1)));
+    });
+    assertTrue(exception.getMessage().contains("Cannot initialize twice with different ports!"));
   }
 
   /**
@@ -115,7 +134,7 @@ public class KubePodProcessIntegrationTest {
    * once, and check that they are all running in hopes of identifying regressions that introduce
    * flakiness.
    */
-  @Test
+  @RetryingTest(3)
   public void testConcurrentRunning() throws Exception {
     final var totalJobs = 5;
 
@@ -147,7 +166,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(totalJobs, successCount.get());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testSuccessfulSpawning() throws Exception {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -160,7 +179,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testLongSuccessfulSpawning() throws Exception {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -232,7 +251,7 @@ public class KubePodProcessIntegrationTest {
     portsTaken.forEach(KubePortManagerSingleton.getInstance()::offer);
   }
 
-  @Test
+  @RetryingTest(3)
   public void testSuccessfulSpawningWithQuotes() throws Exception {
     // start a finite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -247,7 +266,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testEnvMapSet() throws Exception {
     // start a finite process
     final Process process = getProcess("echo ENV_VAR_1=$ENV_VAR_1");
@@ -260,7 +279,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testPipeInEntrypoint() throws Exception {
     // start a process that has a pipe in the entrypoint
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -273,7 +292,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(0, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   @Timeout(20)
   public void testDeletingPodImmediatelyAfterCompletion() throws Exception {
     // start a process that requests
@@ -281,15 +300,14 @@ public class KubePodProcessIntegrationTest {
     final var uuid = UUID.randomUUID();
     final Process process = getProcess(Map.of("uuid", uuid.toString()), "sleep 1 && exit 10");
 
-    final var pod = fabricClient.pods().list().getItems().stream()
-        .filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
+    final var pod = fabricClient.pods().list().getItems().stream().filter(p -> p.getMetadata() != null && p.getMetadata().getLabels() != null)
         .filter(p -> p.getMetadata().getLabels().containsKey("uuid") && p.getMetadata().getLabels().get("uuid").equals(uuid.toString()))
         .collect(Collectors.toList()).get(0);
-    fabricClient.resource(pod).watch(new ExitCodeWatcher(
-        exitCode -> {
-          fabricClient.pods().delete(pod);
-        },
-        exception -> {}));
+    final SharedIndexInformer<Pod> podInformer =
+        fabricClient.pods().inNamespace(pod.getMetadata().getNamespace()).withName(pod.getMetadata().getName()).inform();
+    podInformer.addEventHandler(new ExitCodeWatcher(pod.getMetadata().getName(), pod.getMetadata().getNamespace(), exitCode -> {
+      fabricClient.pods().delete(pod);
+    }, () -> {}));
 
     process.waitFor();
 
@@ -299,7 +317,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(10, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testExitCodeRetrieval() throws Exception {
     // start a process that requests
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -312,7 +330,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(10, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testMissingEntrypoint() throws WorkerException, InterruptedException {
     // start a process with an entrypoint that doesn't exist
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
@@ -325,14 +343,20 @@ public class KubePodProcessIntegrationTest {
     assertEquals(127, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testKillingWithoutHeartbeat() throws Exception {
+    heartbeatUrl = "invalid_host";
+
+    fabricClient = new DefaultKubernetesClient();
+
+    final WorkerConfigs workerConfigs = spy(new WorkerConfigs(new EnvConfigs()));
+    when(workerConfigs.getEnvMap()).thenReturn(Map.of("ENV_VAR_1", "ENV_VALUE_1"));
+
+    processFactory = new KubeProcessFactory(workerConfigs, "default", fabricClient, heartbeatUrl, getHost(), false);
+
     // start an infinite process
     final var availablePortsBefore = KubePortManagerSingleton.getInstance().getNumAvailablePorts();
     final Process process = getProcess("while true; do echo hi; sleep 1; done");
-
-    // kill the heartbeat server
-    server.stop();
 
     // waiting for process
     process.waitFor();
@@ -343,7 +367,7 @@ public class KubePodProcessIntegrationTest {
     assertNotEquals(0, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testExitValueWaitsForMainToTerminate() throws Exception {
     // start a long running main process
     final Process process = getProcess("sleep 2; exit 13;");
@@ -359,7 +383,7 @@ public class KubePodProcessIntegrationTest {
     assertEquals(13, process.exitValue());
   }
 
-  @Test
+  @RetryingTest(3)
   public void testCopyLargeFiles() throws Exception {
     final int numFiles = 1;
     final int numLinesPerFile = 200000;
@@ -391,11 +415,7 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final String entrypoint) throws WorkerException {
     // these files aren't used for anything, it's just to check for exceptions when uploading
-    final var files = ImmutableMap.of(
-        "file0", "fixed str",
-        "file1", getRandomFile(1),
-        "file2", getRandomFile(100),
-        "file3", getRandomFile(1000));
+    final var files = ImmutableMap.of("file0", "fixed str", "file1", getRandomFile(1), "file2", getRandomFile(100), "file3", getRandomFile(1000));
 
     return getProcess(entrypoint, files);
   }
@@ -410,18 +430,8 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
       throws WorkerException {
-    return processFactory.create(
-        "some-id",
-        0,
-        Path.of("/tmp/job-root"),
-        "busybox:latest",
-        false,
-        files,
-        entrypoint,
-        DEFAULT_RESOURCE_REQUIREMENTS,
-        customLabels,
-        Collections.emptyMap(),
-        Collections.emptyMap());
+    return processFactory.create("tester", "some-id", 0, Path.of("/tmp/job-root"), "busybox:latest", false, files, entrypoint,
+        DEFAULT_RESOURCE_REQUIREMENTS, customLabels, Collections.emptyMap(), Collections.emptyMap());
   }
 
   private static Set<Integer> getOpenPorts(final int count) {

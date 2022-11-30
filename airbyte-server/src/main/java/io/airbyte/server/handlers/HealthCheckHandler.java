@@ -1,17 +1,17 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.server.handlers;
 
-import io.airbyte.api.model.HealthCheckRead;
+import io.airbyte.api.model.generated.HealthCheckRead;
 import io.airbyte.config.persistence.ConfigRepository;
 
 public class HealthCheckHandler {
 
   private final ConfigRepository repository;
 
-  public HealthCheckHandler(ConfigRepository repository) {
+  public HealthCheckHandler(final ConfigRepository repository) {
     this.repository = repository;
   }
 

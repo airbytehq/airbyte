@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2_strict_encrypt;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 public class Db2StrictEncryptSource extends SpecModifyingSource implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(Db2StrictEncryptSource.class);
-  public static final String DRIVER_CLASS = "com.ibm.db2.jcc.DB2Driver";
+  public static final String DRIVER_CLASS = Db2Source.DRIVER_CLASS;
 
   public Db2StrictEncryptSource() {
     super(new Db2Source());

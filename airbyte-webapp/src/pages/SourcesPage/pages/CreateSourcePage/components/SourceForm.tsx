@@ -1,28 +1,26 @@
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
+import { useLocation } from "react-router-dom";
 
-import useRouter from "hooks/useRouter";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
 import { ConnectionConfiguration } from "core/domain/connection";
-import { useAnalyticsService } from "hooks/services/Analytics/useAnalyticsService";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { SourceDefinition } from "core/domain/connector";
+import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { ServiceFormValues } from "views/Connector/ServiceForm/types";
+import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
+import { ConnectorCard } from "views/Connector/ConnectorCard";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
-type IProps = {
+interface SourceFormProps {
   onSubmit: (values: {
     name: string;
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
   }) => void;
-  afterSelectConnector?: () => void;
-  sourceDefinitions: SourceDefinition[];
+  sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
-  error?: { message?: string; status?: number } | null;
-};
+  error?: FormError | null;
+}
 
 const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: string } => {
   return (
@@ -32,9 +30,8 @@ const hasSourceDefinitionId = (state: unknown): state is { sourceDefinitionId: s
   );
 };
 
-const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess, afterSelectConnector }) => {
-  const { location } = useRouter();
-  const analyticsService = useAnalyticsService();
+export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefinitions, error, hasSuccess }) => {
+  const location = useLocation();
 
   const [sourceDefinitionId, setSourceDefinitionId] = useState<string | null>(
     hasSourceDefinitionId(location.state) ? location.state.sourceDefinitionId : null
@@ -48,44 +45,31 @@ const SourceForm: React.FC<IProps> = ({ onSubmit, sourceDefinitions, error, hasS
 
   const onDropDownSelect = (sourceDefinitionId: string) => {
     setSourceDefinitionId(sourceDefinitionId);
-    const connector = sourceDefinitions.find((item) => item.sourceDefinitionId === sourceDefinitionId);
-
-    if (afterSelectConnector) {
-      afterSelectConnector();
-    }
-
-    analyticsService.track("New Source - Action", {
-      action: "Select a connector",
-      connector_source_definition: connector?.name,
-      connector_source_definition_id: sourceDefinitionId,
-    });
   };
 
-  const onSubmitForm = async (values: ServiceFormValues) => {
-    await onSubmit({
+  const onSubmitForm = (values: ConnectorCardValues) => {
+    onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
-      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
-      hasSuccess={hasSuccess}
-      fetchingConnectorError={sourceDefinitionError}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      description={<FormattedMessage id="sources.description" />}
+      isLoading={isLoading}
+      hasSuccess={hasSuccess}
+      errorMessage={errorMessage}
+      fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      onSubmit={onSubmitForm}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );
 };
-
-export default SourceForm;

@@ -2,9 +2,11 @@
 
 ## High-Level Overview
 
-{% hint style="info" %}
+:::info
+
 The high-level overview contains all the information you need to use Namespaces when pulling from APIs. Information past that can be read for advanced or educational purposes.
-{% endhint %}
+
+:::
 
 When looking through our connector docs, you'll notice that some sources and destinations support "Namespaces." These allow you to organize and separate your data into groups in the destination if the destination supports it. In most cases, namespaces are schemas in the database you're replicating to. If your desired destination doesn't support it, you can ignore this feature.
 
@@ -41,7 +43,7 @@ Available options for namespace configurations are:
 
 ### - Mirror source structure
 
-Some sources \(such as databases based on JDBC for example\) are providing namespace informations from which a stream has been extracted from. Whenever a source is able to fill this field in the catalog.json file, the destination will try to reproduce exactly the same namespace when this configuraton is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination Connector settings".
+Some sources \(such as databases based on JDBC for example\) are providing namespace information from which a stream has been extracted. Whenever a source is able to fill this field in the catalog.json file, the destination will try to reproduce exactly the same namespace when this configuration is set. For sources or streams where the source namespace is not known, the behavior will fall back to the "Destination Connector settings".
 
 ### - Destination connector settings
 

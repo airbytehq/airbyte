@@ -42,7 +42,7 @@ jest.mock("services/connector/DestinationDefinitionService", () => ({
   }),
 }));
 
-test.skip("should not call sourceDefinition.updateVersion for deprecated call", async () => {
+it.skip("should not call sourceDefinition.updateVersion for deprecated call", async () => {
   const { result, waitForNextUpdate } = renderHook(() => useConnector());
 
   act(() => {
@@ -57,7 +57,7 @@ test.skip("should not call sourceDefinition.updateVersion for deprecated call", 
   // });
 });
 
-test.skip("should not call destinationDefinition.updateVersion for deprecated call", async () => {
+it.skip("should not call destinationDefinition.updateVersion for deprecated call", async () => {
   const { result, waitForNextUpdate } = renderHook(() => useConnector());
 
   act(() => {

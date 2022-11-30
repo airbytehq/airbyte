@@ -5,6 +5,9 @@
     "id": {
       "type": ["null", "integer"]
     },
+    "parent_id": {
+      "type": "integer"
+    },
     "sent_by": {
       "type": ["null", "string"]
     },

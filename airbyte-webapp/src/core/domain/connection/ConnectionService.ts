@@ -1,42 +1,24 @@
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
-import { CommonRequestError } from "core/request/CommonRequestError";
+import { deleteConnection, resetConnection, syncConnection, getState, getStateType } from "../../request/AirbyteClient";
+import { AirbyteRequestService } from "../../request/AirbyteRequestService";
 
-import { Connection } from "./types";
-
-class ConnectionService extends AirbyteRequestService {
-  get url() {
-    return "connections";
+export class ConnectionService extends AirbyteRequestService {
+  public sync(connectionId: string) {
+    return syncConnection({ connectionId }, this.requestOptions);
   }
 
-  public async sync(connectionId: string): Promise<unknown> {
-    const rs = await this.fetch<Connection>(`${this.url}/sync`, {
-      connectionId,
-    });
-
-    return rs;
+  public reset(connectionId: string) {
+    return resetConnection({ connectionId }, this.requestOptions);
   }
 
-  public async reset(connectionId: string): Promise<unknown> {
-    const rs = await this.fetch<Connection>(`${this.url}/reset`, {
-      connectionId,
-    });
-
-    return rs;
+  public delete(connectionId: string) {
+    return deleteConnection({ connectionId }, this.requestOptions);
   }
 
-  public async delete(connectionId: string): Promise<void> {
-    // needs proper type and refactor of CommonRequestError
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await this.fetch<any>(`${this.url}/delete`, {
-      connectionId,
-    });
+  public getState(connectionId: string) {
+    return getState({ connectionId }, this.requestOptions);
+  }
 
-    if (result.status === "failure") {
-      throw new CommonRequestError(result, result.message);
-    }
-
-    return result;
+  public getStateType(connectionId: string) {
+    return getStateType({ connectionId }, this.requestOptions);
   }
 }
-
-export { ConnectionService };

@@ -4,6 +4,10 @@
 
 The Airbyte Kafka destination allows you to sync data to Kafka. Each stream is written to the corresponding Kafka topic.
 
+## Prerequisites
+- For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Kafka connector to version `0.1.10` or newer
+
+
 ### Sync overview
 
 #### Output schema
@@ -98,6 +102,8 @@ _NOTE_: Some configurations for SSL are not available yet.
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.9 | 2022-06-17 | [13864](https://github.com/airbytehq/airbyte/pull/13864) | Updated stacktrace format for any trace message errors |
+| 0.1.7 | 2022-04-19 | [12134](https://github.com/airbytehq/airbyte/pull/12134) | Add PLAIN Auth |
 | 0.1.6 | 2022-02-15 | [10186](https://github.com/airbytehq/airbyte/pull/10186) | Add SCRAM-SHA-512 Auth |
 | 0.1.5 | 2022-02-14 | [10256](https://github.com/airbytehq/airbyte/pull/10256) | Add `-XX:+ExitOnOutOfMemoryError` JVM option |
 | 0.1.4 | 2022-01-31 | [\#9905](https://github.com/airbytehq/airbyte/pull/9905) |  Fix SASL config read issue |

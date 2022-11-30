@@ -2,18 +2,21 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
+import { SourceDefinitionRead } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useConnector from "hooks/services/useConnector";
 import { useSourceList } from "hooks/services/useSourceHook";
-import { SourceDefinition } from "core/domain/connector";
 import { useSourceDefinitionList, useUpdateSourceDefinition } from "services/connector/SourceDefinitionService";
 
 import ConnectorsView from "./components/ConnectorsView";
 
 const SourcesPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.SETTINGS_SOURCE);
+
   const [isUpdateSuccess, setIsUpdateSucces] = useState(false);
   const [feedbackList, setFeedbackList] = useState<Record<string, string>>({});
 
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { sources } = useSourceList();
   const { sourceDefinitions } = useSourceDefinitionList();
 
@@ -40,8 +43,8 @@ const SourcesPage: React.FC = () => {
     [feedbackList, formatMessage, updateSourceDefinition]
   );
 
-  const usedSourcesDefinitions: SourceDefinition[] = useMemo(() => {
-    const sourceDefinitionMap = new Map<string, SourceDefinition>();
+  const usedSourcesDefinitions: SourceDefinitionRead[] = useMemo(() => {
+    const sourceDefinitionMap = new Map<string, SourceDefinitionRead>();
     sources.forEach((source) => {
       const sourceDefinition = sourceDefinitions.find(
         (sourceDefinition) => sourceDefinition.sourceDefinitionId === source.sourceDefinitionId

@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "support_email": {
+      "type": ["null", "string"]
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    },
+    "product_id": {
+      "type": ["null", "integer"]
+    },
+    "default_reply_email": {
+      "type": ["null", "boolean"]
+    },
+    "mailbox_type": {
+      "type": ["null", "string"]
+    },
+    "custom_mailbox": {
+      "type": ["null", "string"]
+    },
+    "access_type": {
+      "type": ["null", "string"]
+    },
+    "incoming": {
+      "type": ["null", "string"]
+    },
+    "mail_server": {
+      "type": ["null", "string"]
+    },
+    "port": {
+      "type": ["null", "integer"]
+    },
+    "use_ssl": {
+      "type": ["null", "boolean"]
+    },
+    "delete_from_server": {
+      "type": ["null", "boolean"]
+    },
+    "authentication": {
+      "type": ["null", "string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "password": {
+      "type": ["null", "string"]
+    }
+  }
+}

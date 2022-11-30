@@ -1,20 +1,20 @@
 import { useCallback, useMemo, useRef } from "react";
+import { useIntl } from "react-intl";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
-import {
-  ConnectorDefinitionSpecification,
-  ConnectorSpecification,
-  DestinationGetConsentPayload,
-  SourceGetConsentPayload,
-} from "core/domain/connector";
 import { useConfig } from "config";
-import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
-import { useGetService } from "core/servicesProvider";
-import { RequestMiddleware } from "core/request/RequestMiddleware";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
+import { SourceAuthService } from "core/domain/connector/SourceAuthService";
+import { DestinationOauthConsentRequest, SourceOauthConsentRequest } from "core/request/AirbyteClient";
+import { isCommonRequestError } from "core/request/CommonRequestError";
+import { useConnectorForm } from "views/Connector/ConnectorForm/connectorFormContext";
 
-import useRouter from "../useRouter";
+import { useDefaultRequestMiddlewares } from "../../services/useDefaultRequestMiddlewares";
+import { useQuery } from "../useQuery";
+import { useAppMonitoringService } from "./AppMonitoringService";
+import { useNotificationService } from "./Notification";
 import { useCurrentWorkspace } from "./useWorkspace";
 
 let windowObjectReference: Window | null = null; // global variable
@@ -42,54 +42,93 @@ export function useConnectorAuth(): {
     connector: ConnectorDefinitionSpecification,
     oAuthInputConfiguration: Record<string, unknown>
   ) => Promise<{
-    payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+    payload: SourceOauthConsentRequest | DestinationOauthConsentRequest;
     consentUrl: string;
   }>;
   completeOauthRequest: (
-    params: SourceGetConsentPayload | DestinationGetConsentPayload,
+    params: SourceOauthConsentRequest | DestinationOauthConsentRequest,
     queryParams: Record<string, unknown>
   ) => Promise<Record<string, unknown>>;
 } {
+  const { formatMessage } = useIntl();
+  const { trackError } = useAppMonitoringService();
   const { workspaceId } = useCurrentWorkspace();
   const { apiUrl, oauthRedirectUrl } = useConfig();
-  const middlewares = useGetService<RequestMiddleware[]>("DefaultRequestMiddlewares");
+  const notificationService = useNotificationService();
+  const { connectorId } = useConnectorForm();
 
   // TODO: move to separate initFacade and use refs instead
-  const sourceAuthService = useMemo(() => new SourceAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
-  const destinationAuthService = useMemo(() => new DestinationAuthService(apiUrl, middlewares), [apiUrl, middlewares]);
+  const requestAuthMiddleware = useDefaultRequestMiddlewares();
+
+  const sourceAuthService = useMemo(
+    () => new SourceAuthService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
+  const destinationAuthService = useMemo(
+    () => new DestinationAuthService(apiUrl, requestAuthMiddleware),
+    [apiUrl, requestAuthMiddleware]
+  );
 
   return {
     getConsentUrl: async (
       connector: ConnectorDefinitionSpecification,
       oAuthInputConfiguration: Record<string, unknown>
     ): Promise<{
-      payload: SourceGetConsentPayload | DestinationGetConsentPayload;
+      payload: SourceOauthConsentRequest | DestinationOauthConsentRequest;
       consentUrl: string;
     }> => {
-      if (isSourceDefinitionSpecification(connector)) {
-        const payload = {
-          workspaceId,
-          sourceDefinitionId: ConnectorSpecification.id(connector),
-          redirectUrl: `${oauthRedirectUrl}/auth_flow`,
-          oAuthInputConfiguration,
-        };
-        const response = await sourceAuthService.getConsentUrl(payload);
+      try {
+        if (isSourceDefinitionSpecification(connector)) {
+          const payload: SourceOauthConsentRequest = {
+            workspaceId,
+            sourceDefinitionId: ConnectorSpecification.id(connector),
+            redirectUrl: `${oauthRedirectUrl}/auth_flow`,
+            oAuthInputConfiguration,
+            sourceId: connectorId,
+          };
+          const response = await sourceAuthService.getConsentUrl(payload);
 
-        return { consentUrl: response.consentUrl, payload };
-      } else {
-        const payload = {
+          return { consentUrl: response.consentUrl, payload };
+        }
+        const payload: DestinationOauthConsentRequest = {
           workspaceId,
           destinationDefinitionId: ConnectorSpecification.id(connector),
           redirectUrl: `${oauthRedirectUrl}/auth_flow`,
           oAuthInputConfiguration,
+          destinationId: connectorId,
         };
         const response = await destinationAuthService.getConsentUrl(payload);
 
         return { consentUrl: response.consentUrl, payload };
+      } catch (e) {
+        // If this API returns a 404 the OAuth credentials have not been added to the database.
+        if (isCommonRequestError(e) && e.status === 404) {
+          if (process.env.NODE_ENV === "development") {
+            notificationService.registerNotification({
+              id: "oauthConnector.credentialsMissing",
+              // Since it's dev only we don't need i18n on this string
+              title: "OAuth is not enabled for this connector on this environment.",
+            });
+          } else {
+            // Log error to our monitoring, this should never happen and means OAuth credentials
+            // where missed
+            trackError(e, {
+              id: "oauthConnector.credentialsMissing",
+              connectorSpecId: ConnectorSpecification.id(connector),
+              workspaceId,
+            });
+            notificationService.registerNotification({
+              id: "oauthConnector.credentialsMissing",
+              title: formatMessage({ id: "connector.oauthCredentialsMissing" }),
+              isError: true,
+            });
+          }
+        }
+        throw e;
       }
     },
     completeOauthRequest: async (
-      params: SourceGetConsentPayload | DestinationGetConsentPayload,
+      params: SourceOauthConsentRequest | DestinationOauthConsentRequest,
       queryParams: Record<string, unknown>
     ): Promise<Record<string, unknown>> => {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -97,7 +136,7 @@ export function useConnectorAuth(): {
         ...params,
         queryParams,
       };
-      return (payload as SourceGetConsentPayload).sourceDefinitionId
+      return (payload as SourceOauthConsentRequest).sourceDefinitionId
         ? sourceAuthService.completeOauth(payload)
         : destinationAuthService.completeOauth(payload);
     },
@@ -113,7 +152,7 @@ export function useRunOauthFlow(
   run: (oauthInputParams: Record<string, unknown>) => void;
 } {
   const { getConsentUrl, completeOauthRequest } = useConnectorAuth();
-  const param = useRef<SourceGetConsentPayload | DestinationGetConsentPayload>();
+  const param = useRef<SourceOauthConsentRequest | DestinationOauthConsentRequest>();
 
   const [{ loading }, onStartOauth] = useAsyncFn(
     async (oauthInputParams: Record<string, unknown>) => {
@@ -166,7 +205,7 @@ export function useRunOauthFlow(
 }
 
 export function useResolveNavigate(): void {
-  const { query } = useRouter();
+  const query = useQuery();
 
   useEffectOnce(() => {
     window.opener.postMessage(query);

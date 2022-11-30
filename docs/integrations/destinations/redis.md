@@ -22,14 +22,14 @@ For the **_hash_** implementation as a Redis data type the keys and the hashes a
 
 ### Features
 
-### Features
-
-| Feature                       | Support| Notes                                                                             |
-| :-----------------------------| :-----:| :---------------------------------------------------------------------------------|
-| Full Refresh Sync             | ✅     |  Existing keys in the Redis cache are deleted and replaced with the new keys.     |
-| Incremental - Append Sync     | ✅     |  New keys are inserted in the same keyspace without touching the existing keys.   |
-| Incremental - Deduped History | ❌     |                                                                                   |
-| Namespaces                    | ✅     | Namespaces will be used to determine the correct Redis key.                       |
+| Feature                       | Support| Notes                                                                          |
+|:------------------------------| :-----:|:-------------------------------------------------------------------------------|
+| Full Refresh Sync             | ✅     | Existing keys in the Redis cache are deleted and replaced with the new keys.   |
+| Incremental - Append Sync     | ✅     | New keys are inserted in the same keyspace without touching the existing keys. |
+| Incremental - Deduped History | ❌     |                                                                                |
+| Namespaces                    | ✅     | Namespaces will be used to determine the correct Redis key.                    |
+| SSH Tunnel Connection         | ✅     |                                                                                |
+| SSL connection                | ✅     |                                                                                |
 
 
 ### Performance considerations
@@ -48,7 +48,18 @@ save snapshots periodically on disk.
     * **_username_**: Username for authenticating with the Redis server.
     * **_password_**: Password for authenticating with the Redis server.
     * **_cache_type_**: Redis cache/data type to use when storing the incoming messages. i.e hash,set,list,stream,etc.
+* SSL toggle the switch to connect using SSL
+*  For SSL Modes, select:
+    - **disable** to disable encrypted communication between Airbyte and the source
+    - **verify-full** to always require encryption and verify the identity of the source
 
 ### Setup guide
 
 ######TODO: more info, screenshots?, etc...
+
+## Changelog
+
+| Version | Date       | Pull Request                                               | Subject          |
+|:--------|:-----------|:-----------------------------------------------------------|:-----------------|
+| 0.1.4   | 2022-10-25 | [\#18358](https://github.com/airbytehq/airbyte/pull/18358) | TLS support      |
+| 0.1.3   | 2022-10-18 | [\#17951](https://github.com/airbytehq/airbyte/pull/17951) | Add SSH support  |

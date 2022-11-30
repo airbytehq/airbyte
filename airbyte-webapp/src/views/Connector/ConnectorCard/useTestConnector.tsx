@@ -1,9 +1,12 @@
 import { useRef } from "react";
 
-import { ServiceFormValues } from "views/Connector/ServiceForm";
-import { ConnectorHelper, Scheduler } from "core/domain/connector";
+import { ConnectorHelper } from "core/domain/connector";
 import { ConnectorT } from "core/domain/connector/types";
+import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { CheckConnectorParams, useCheckConnector } from "hooks/services/useConnector";
+import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+
+import { ConnectorCardValues } from "../ConnectorForm";
 
 export const useTestConnector = (
   props: {
@@ -18,10 +21,12 @@ export const useTestConnector = (
   isTestConnectionInProgress: boolean;
   isSuccess: boolean;
   onStopTesting: () => void;
-  testConnector: (v?: ServiceFormValues) => Promise<Scheduler>;
+  testConnector: (v?: ConnectorCardValues) => Promise<CheckConnectionRead>;
   error: Error | null;
+  reset: () => void;
 } => {
   const { mutateAsync, isLoading, error, isSuccess, reset } = useCheckConnector(props.formType);
+  const workspace = useCurrentWorkspace();
 
   const abortControllerRef = useRef<AbortController | null>(null);
 
@@ -29,6 +34,7 @@ export const useTestConnector = (
     isTestConnectionInProgress: isLoading,
     isSuccess,
     error,
+    reset,
     onStopTesting: () => {
       abortControllerRef.current?.abort();
       reset();
@@ -56,15 +62,14 @@ export const useTestConnector = (
             signal: controller.signal,
           };
         }
-      } else {
+      } else if (values) {
         // creating new connection
-        if (values) {
-          payload = {
-            connectionConfiguration: values.connectionConfiguration,
-            signal: controller.signal,
-            selectedConnectorDefinitionId: values.serviceType,
-          };
-        }
+        payload = {
+          connectionConfiguration: values.connectionConfiguration,
+          signal: controller.signal,
+          selectedConnectorDefinitionId: values.serviceType,
+          workspaceId: workspace.workspaceId,
+        };
       }
 
       if (!payload) {

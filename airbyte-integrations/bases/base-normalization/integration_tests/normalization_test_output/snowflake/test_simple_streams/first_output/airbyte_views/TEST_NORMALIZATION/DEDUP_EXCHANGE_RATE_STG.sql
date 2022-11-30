@@ -1,12 +1,12 @@
 
-  create or replace  view "AIRBYTE_DATABASE"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_STG" 
+  create or replace  view "INTEGRATION_TEST_NORMALIZATION"._AIRBYTE_TEST_NORMALIZATION."DEDUP_EXCHANGE_RATE_STG" 
   
    as (
     
 with __dbt__cte__DEDUP_EXCHANGE_RATE_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
+-- depends_on: "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"currency"')) as CURRENCY,
@@ -19,7 +19,7 @@ select
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE as table_alias
+from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_DEDUP_EXCHANGE_RATE as table_alias
 -- DEDUP_EXCHANGE_RATE
 where 1 = 1
 

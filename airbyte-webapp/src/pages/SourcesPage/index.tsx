@@ -1,3 +1,3 @@
-import SourcesPage from "./SourcesPage";
+import { SourcesPage } from "./SourcesPage";
 
 export default SourcesPage;

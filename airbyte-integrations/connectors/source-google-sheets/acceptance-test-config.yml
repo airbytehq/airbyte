@@ -1,9 +1,9 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-google-sheets:dev
 tests:
   spec:
-    - spec_path: "google_sheets_source/spec.json"
+    - spec_path: "google_sheets_source/spec.yaml"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -24,5 +24,3 @@ tests:
   full_refresh:
     - config_path: "secrets/service_config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-
-

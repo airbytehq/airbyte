@@ -1,12 +1,14 @@
 # HTTP Request (Graveyarded)
 
-{% hint style="warning" %}
+:::caution
+
 This connector is graveyarded and will not be receiving any updates from the Airbyte team. Its functionalities have been replaced by the [Airbyte CDK](../../connector-development/cdk-python/README.md), which allows you to create source connectors for any HTTP API.
-{% endhint %}
+
+:::
 
 ## Overview
 
-This connector allows you to generally connect to any HTTP API. In order to use this connector, you must manually bring it in as a custom connector. The steps to do this can be found [here](../../connector-development/tutorials/cdk-tutorial-python-http/7-use-connector-in-airbyte.md). 
+This connector allows you to generally connect to any HTTP API. In order to use this connector, you must manually bring it in as a custom connector. The steps to do this can be found [here](../../connector-development/tutorials/cdk-tutorial-python-http/use-connector-in-airbyte.md). 
 
 ## Where do I find the Docker image?
 

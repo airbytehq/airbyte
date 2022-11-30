@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery.uploader;
@@ -51,6 +51,10 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     this.syncMode = syncMode;
     this.bigQuery = bigQuery;
     this.recordFormatter = recordFormatter;
+  }
+
+  public BigQueryRecordFormatter getRecordFormatter() {
+    return recordFormatter;
   }
 
   protected void postProcessAction(final boolean hasFailed) throws Exception {

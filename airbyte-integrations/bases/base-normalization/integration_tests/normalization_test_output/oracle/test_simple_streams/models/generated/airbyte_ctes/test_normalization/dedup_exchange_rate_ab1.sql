@@ -20,5 +20,5 @@ select
 from {{ source('test_normalization', 'airbyte_raw_dedup_exchange_rate') }} 
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause(quote('_AIRBYTE_EMITTED_AT')) }}
+{{ incremental_clause(quote('_AIRBYTE_EMITTED_AT'), this) }}
 

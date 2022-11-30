@@ -26,3 +26,9 @@ yarn-error.log*
 .npmrc
 .env.development
 .env.production
+
+storybook-static/
+
+# Ignore generated API clients, since they're automatically generated
+/src/core/request/AirbyteClient.ts
+/src/core/request/ConnectorBuilderClient.ts

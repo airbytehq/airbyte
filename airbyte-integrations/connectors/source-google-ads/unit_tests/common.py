@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
 
 from google.ads.googleads.errors import GoogleAdsException
-from google.ads.googleads.v8 import GoogleAdsFailure
+from google.ads.googleads.v11 import GoogleAdsFailure
 
 
 class MockSearchRequest:
@@ -45,11 +45,11 @@ class MockErroringGoogleAdsService:
         raise make_google_ads_exception(1)
 
 
-def make_google_ads_exception(failure_code: int):
+def make_google_ads_exception(failure_code: int = 1, failure_msg: str = "it failed", error_type: str = "request_error"):
     # There is no easy way I could find to mock a GoogleAdsException without doing something heinous like this
     # Following the definition of the object here
     # https://developers.google.com/google-ads/api/reference/rpc/v10/GoogleAdsFailure
-    protobuf_as_json = json.dumps({"errors": [{"error_code": {"request_error": failure_code}, "message": "it failed"}], "request_id": "1"})
+    protobuf_as_json = json.dumps({"errors": [{"error_code": {error_type: failure_code}, "message": failure_msg}], "request_id": "1"})
     failure = type(GoogleAdsFailure).from_json(GoogleAdsFailure, protobuf_as_json)
     return GoogleAdsException(None, None, failure, 1)
 

@@ -1,14 +1,25 @@
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
-import { Field, FieldArray, FieldProps, Form, Formik } from "formik";
 import * as yup from "yup";
 
-import { Button, DropDown, H5, Input, LoadingButton, Modal } from "components";
+import { H5 } from "components/base/Titles";
 import { Cell, Header, Row } from "components/SimpleTableComponents";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
+import { Modal } from "components/ui/Modal";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
+import { useNotificationService } from "hooks/services/Notification";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
+
+import styles from "./InviteUsersModal.module.scss";
 
 const requestConnectorValidationSchema = yup.object({
   users: yup.array().of(
@@ -30,10 +41,6 @@ const Controls = styled.div`
   margin-top: 26px;
 `;
 
-const SendInvitationButton = styled(LoadingButton)`
-  margin-left: 10px;
-`;
-
 const FormHeader = styled(Header)`
   margin-bottom: 14px;
 `;
@@ -42,30 +49,36 @@ const FormRow = styled(Row)`
   margin-bottom: 8px;
 `;
 
+const ROLE_OPTIONS = [
+  {
+    value: "admin",
+    label: "admin",
+  },
+];
+
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
+  invitedFrom: "source" | "destination" | "user.settings";
 }> = (props) => {
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
   const { inviteUserLogic } = useUserHook();
+  const { registerNotification } = useNotificationService();
   const { mutateAsync: invite } = inviteUserLogic;
-  const roleOptions = [
-    {
-      value: "admin",
-      label: "admin",
-    },
-  ];
+
+  const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
+  const analyticsService = useAnalyticsService();
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
-        validateOnBlur={true}
-        validateOnChange={true}
+        validateOnBlur
+        validateOnChange
         validationSchema={requestConnectorValidationSchema}
         initialValues={{
           users: [
             {
               email: "",
-              role: roleOptions[0].value,
+              role: ROLE_OPTIONS[0].value,
             },
           ],
         }}
@@ -73,12 +86,21 @@ export const InviteUsersModal: React.FC<{
           await invite(
             { users: values.users, workspaceId },
             {
-              onSuccess: () => props.onClose(),
+              onSuccess: () => {
+                registerNotification({
+                  title: formatMessage({ id: "addUsers.success.title" }),
+                  id: "invite-users-success",
+                });
+                props.onClose();
+              },
             }
           );
+          analyticsService.track(Namespace.USER, Action.INVITE, {
+            invited_from: props.invitedFrom,
+          });
         }}
       >
-        {({ values, isValid, isSubmitting, dirty }) => {
+        {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {
           return (
             <Form>
               <Content>
@@ -88,11 +110,13 @@ export const InviteUsersModal: React.FC<{
                       <FormattedMessage id="modals.addUser.email.label" />
                     </H5>
                   </Cell>
-                  <Cell>
-                    <H5>
-                      <FormattedMessage id="modals.addUser.role.label" />
-                    </H5>
-                  </Cell>
+                  {isRoleVisible && (
+                    <Cell>
+                      <H5>
+                        <FormattedMessage id="modals.addUser.role.label" />
+                      </H5>
+                    </Cell>
+                  )}
                 </FormHeader>
                 <FieldArray
                   name="users"
@@ -105,22 +129,37 @@ export const InviteUsersModal: React.FC<{
                               {({ field }: FieldProps<string>) => <Input {...field} placeholder="email@company.com" />}
                             </Field>
                           </Cell>
-                          <Cell>
-                            <Field name={`users[${index}].role`}>
-                              {({ field }: FieldProps) => {
-                                return (
-                                  <DropDown
-                                    isDisabled
-                                    value={field.value}
-                                    placeholder={formatMessage({
-                                      id: "modals.addUser.role.placeholder",
-                                    })}
-                                    options={roleOptions}
-                                  />
-                                );
-                              }}
-                            </Field>
-                          </Cell>
+                          {isRoleVisible && (
+                            <Cell>
+                              <Field name={`users[${index}].role`}>
+                                {({ field }: FieldProps) => {
+                                  return (
+                                    <DropDown
+                                      isDisabled
+                                      value={field.value}
+                                      placeholder={formatMessage({
+                                        id: "modals.addUser.role.placeholder",
+                                      })}
+                                      options={ROLE_OPTIONS}
+                                    />
+                                  );
+                                }}
+                              </Field>
+                            </Cell>
+                          )}
+                          <Button
+                            className={styles.deleteButton}
+                            type="button"
+                            disabled={values.users.length < 2}
+                            onClick={() => {
+                              setFieldValue("users", [
+                                ...values.users.slice(0, index),
+                                ...values.users.slice(index + 1),
+                              ]);
+                            }}
+                            variant="secondary"
+                            icon={<FontAwesomeIcon icon={faTimes} />}
+                          />
                         </FormRow>
                       ))}
                       <Button
@@ -129,10 +168,10 @@ export const InviteUsersModal: React.FC<{
                         onClick={() =>
                           arrayHelpers.push({
                             email: "",
-                            role: roleOptions[0].value,
+                            role: ROLE_OPTIONS[0].value,
                           })
                         }
-                        secondary
+                        variant="secondary"
                       >
                         <FormattedMessage id="modals.addUser.button.addUser" />
                       </Button>
@@ -141,17 +180,18 @@ export const InviteUsersModal: React.FC<{
                 />
 
                 <Controls>
-                  <Button type="button" secondary onClick={() => props.onClose()}>
+                  <Button type="button" variant="secondary" onClick={props.onClose}>
                     <FormattedMessage id="modals.addUser.button.cancel" />
                   </Button>
-                  <SendInvitationButton
+                  <Button
+                    className={styles.sendInvitationButton}
                     data-testid="modals.addUser.button.submit"
                     type="submit"
                     disabled={!isValid || !dirty}
                     isLoading={isSubmitting}
                   >
                     <FormattedMessage id="modals.addUser.button.submit" />
-                  </SendInvitationButton>
+                  </Button>
                 </Controls>
               </Content>
             </Form>

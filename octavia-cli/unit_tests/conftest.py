@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import pytest
@@ -7,4 +7,9 @@ import pytest
 
 @pytest.fixture
 def mock_api_client(mocker):
+    return mocker.Mock()
+
+
+@pytest.fixture
+def mock_telemetry_client(mocker):
     return mocker.Mock()

@@ -12,7 +12,7 @@ select
         else cast({{ adapter.quote('date') }} as date)
         end as {{ adapter.quote('date') }}
         ,
-    cast({{ empty_string_to_null('timestamp_col') }} as {{ type_timestamp_with_timezone() }}(1024)) as timestamp_col,
+    cast({{ empty_string_to_null('timestamp_col') }} as {{ type_timestamp_with_timezone() }}) as timestamp_col,
     cast({{ adapter.quote('HKD@spéçiäl & characters') }} as {{ dbt_utils.type_float() }}) as {{ adapter.quote('HKD@spéçiäl & characters') }},
     cast(hkd_special___characters as {{ dbt_utils.type_string() }}(1024)) as hkd_special___characters,
     cast(nzd as {{ dbt_utils.type_float() }}) as nzd,
@@ -23,5 +23,5 @@ select
 from {{ ref('dedup_exchange_rate_ab1') }}
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

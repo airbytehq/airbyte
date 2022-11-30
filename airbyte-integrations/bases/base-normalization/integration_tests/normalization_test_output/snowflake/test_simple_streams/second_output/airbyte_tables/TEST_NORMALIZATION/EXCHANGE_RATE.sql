@@ -1,12 +1,12 @@
 
 
-      create or replace  table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE"  as
+      create or replace  table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."EXCHANGE_RATE"  as
       (select * from(
             
 with __dbt__cte__EXCHANGE_RATE_AB1 as (
 
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
--- depends_on: "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
+-- depends_on: "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
 select
     to_varchar(get_path(parse_json(_airbyte_data), '"id"')) as ID,
     to_varchar(get_path(parse_json(_airbyte_data), '"currency"')) as CURRENCY,
@@ -17,10 +17,14 @@ select
     to_varchar(get_path(parse_json(_airbyte_data), '"NZD"')) as NZD,
     to_varchar(get_path(parse_json(_airbyte_data), '"USD"')) as USD,
     to_varchar(get_path(parse_json(_airbyte_data), '"column`_''with""_quotes"')) as "column`_'with""_quotes",
+    to_varchar(get_path(parse_json(_airbyte_data), '"datetime_tz"')) as DATETIME_TZ,
+    to_varchar(get_path(parse_json(_airbyte_data), '"datetime_no_tz"')) as DATETIME_NO_TZ,
+    to_varchar(get_path(parse_json(_airbyte_data), '"time_tz"')) as TIME_TZ,
+    to_varchar(get_path(parse_json(_airbyte_data), '"time_no_tz"')) as TIME_NO_TZ,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
-from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE as table_alias
+from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE as table_alias
 -- EXCHANGE_RATE
 where 1 = 1
 ),  __dbt__cte__EXCHANGE_RATE_AB2 as (
@@ -61,6 +65,28 @@ select
     cast("column`_'with""_quotes" as 
     varchar
 ) as "column`_'with""_quotes",
+    case
+        when DATETIME_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{4}' then to_timestamp_tz(DATETIME_TZ, 'YYYY-MM-DDTHH24:MI:SSTZHTZM')
+        when DATETIME_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}(\\+|-)\\d{2}' then to_timestamp_tz(DATETIME_TZ, 'YYYY-MM-DDTHH24:MI:SSTZH')
+        when DATETIME_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{4}' then to_timestamp_tz(DATETIME_TZ, 'YYYY-MM-DDTHH24:MI:SS.FFTZHTZM')
+        when DATETIME_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}(\\+|-)\\d{2}' then to_timestamp_tz(DATETIME_TZ, 'YYYY-MM-DDTHH24:MI:SS.FFTZH')
+        when DATETIME_TZ = '' then NULL
+    else to_timestamp_tz(DATETIME_TZ)
+    end as DATETIME_TZ
+    ,
+    case
+        when DATETIME_NO_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}' then to_timestamp(DATETIME_NO_TZ, 'YYYY-MM-DDTHH24:MI:SS')
+        when DATETIME_NO_TZ regexp '\\d{4}-\\d{2}-\\d{2}T(\\d{2}:){2}\\d{2}\\.\\d{1,7}' then to_timestamp(DATETIME_NO_TZ, 'YYYY-MM-DDTHH24:MI:SS.FF')
+        when DATETIME_NO_TZ = '' then NULL
+    else to_timestamp(DATETIME_NO_TZ)
+    end as DATETIME_NO_TZ
+    ,
+    cast(nullif(TIME_TZ, '') as 
+    varchar
+) as TIME_TZ,
+    cast(nullif(TIME_NO_TZ, '') as 
+    time
+) as TIME_NO_TZ,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT
@@ -90,6 +116,14 @@ select
     varchar
 ), '') || '-' || coalesce(cast("column`_'with""_quotes" as 
     varchar
+), '') || '-' || coalesce(cast(DATETIME_TZ as 
+    varchar
+), '') || '-' || coalesce(cast(DATETIME_NO_TZ as 
+    varchar
+), '') || '-' || coalesce(cast(TIME_TZ as 
+    varchar
+), '') || '-' || coalesce(cast(TIME_NO_TZ as 
+    varchar
 ), '') as 
     varchar
 )) as _AIRBYTE_EXCHANGE_RATE_HASHID,
@@ -109,13 +143,17 @@ select
     NZD,
     USD,
     "column`_'with""_quotes",
+    DATETIME_TZ,
+    DATETIME_NO_TZ,
+    TIME_TZ,
+    TIME_NO_TZ,
     _AIRBYTE_AB_ID,
     _AIRBYTE_EMITTED_AT,
     convert_timezone('UTC', current_timestamp()) as _AIRBYTE_NORMALIZED_AT,
     _AIRBYTE_EXCHANGE_RATE_HASHID
 from __dbt__cte__EXCHANGE_RATE_AB3
--- EXCHANGE_RATE from "AIRBYTE_DATABASE".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
+-- EXCHANGE_RATE from "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION._AIRBYTE_RAW_EXCHANGE_RATE
 where 1 = 1
             ) order by (_AIRBYTE_EMITTED_AT)
       );
-    alter table "AIRBYTE_DATABASE".TEST_NORMALIZATION."EXCHANGE_RATE" cluster by (_AIRBYTE_EMITTED_AT);
+    alter table "INTEGRATION_TEST_NORMALIZATION".TEST_NORMALIZATION."EXCHANGE_RATE" cluster by (_AIRBYTE_EMITTED_AT);

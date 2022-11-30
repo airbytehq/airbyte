@@ -1,13 +1,13 @@
 import { useMutation, useQueryClient } from "react-query";
 
-import { SourceDefinition } from "core/domain/connector";
 import { useConfig } from "config";
+import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
-import { CreateSourceDefinitionPayload, SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { isDefined } from "utils/common";
 
+import { SourceDefinitionCreate, SourceDefinitionRead } from "../../core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "../Scope";
 import { useSuspenseQuery } from "./useSuspenseQuery";
 
@@ -17,7 +17,7 @@ export const sourceDefinitionKeys = {
   detail: (id: string) => [...sourceDefinitionKeys.all, "details", id] as const,
 };
 
-function useGetSourceDefinitionService(): SourceDefinitionService {
+export function useGetSourceDefinitionService(): SourceDefinitionService {
   const { apiUrl } = useConfig();
 
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
@@ -28,26 +28,27 @@ function useGetSourceDefinitionService(): SourceDefinitionService {
   );
 }
 
+export interface SourceDefinitionReadWithLatestTag extends SourceDefinitionRead {
+  latestDockerImageTag?: string;
+}
+
 const useSourceDefinitionList = (): {
-  sourceDefinitions: SourceDefinition[];
+  sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
-  const workspace = useCurrentWorkspace();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
-    const [definition, latestDefinition] = await Promise.all([
-      service.list(workspace.workspaceId),
-      service.listLatest(workspace.workspaceId),
-    ]);
+    const [definition, latestDefinition] = await Promise.all([service.list(workspaceId), service.listLatest()]);
 
-    const sourceDefinitions: SourceDefinition[] = definition.sourceDefinitions.map((source: SourceDefinition) => {
+    const sourceDefinitions = definition.sourceDefinitions.map((source) => {
       const withLatest = latestDefinition.sourceDefinitions.find(
-        (latestSource: SourceDefinition) => latestSource.sourceDefinitionId === source.sourceDefinitionId
+        (latestSource) => latestSource.sourceDefinitionId === source.sourceDefinitionId
       );
 
       return {
         ...source,
-        latestDockerImageTag: withLatest?.dockerImageTag ?? "",
+        latestDockerImageTag: withLatest?.dockerImageTag,
       };
     });
 
@@ -56,26 +57,32 @@ const useSourceDefinitionList = (): {
 };
 
 const useSourceDefinition = <T extends string | undefined>(
-  id: T
-): T extends string ? SourceDefinition : SourceDefinition | undefined => {
+  sourceDefinitionId: T
+): T extends string ? SourceDefinitionRead : SourceDefinitionRead | undefined => {
   const service = useGetSourceDefinitionService();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useSuspenseQuery(sourceDefinitionKeys.detail(id || ""), () => service.get(id || ""), {
-    enabled: isDefined(id),
-  });
+  return useSuspenseQuery(
+    sourceDefinitionKeys.detail(sourceDefinitionId || ""),
+    () => service.get({ workspaceId, sourceDefinitionId: sourceDefinitionId || "" }),
+    {
+      enabled: isDefined(sourceDefinitionId),
+    }
+  );
 };
 
 const useCreateSourceDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
-  return useMutation<SourceDefinition, Error, CreateSourceDefinitionPayload>(
-    (sourceDefinition) => service.create(sourceDefinition),
+  return useMutation<SourceDefinitionRead, Error, SourceDefinitionCreate>(
+    (sourceDefinition) => service.createCustom({ workspaceId, sourceDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
           sourceDefinitionKeys.lists(),
-          (oldData: { sourceDefinitions: SourceDefinition[] } | undefined) => ({
+          (oldData: { sourceDefinitions: SourceDefinitionRead[] } | undefined) => ({
             sourceDefinitions: [data, ...(oldData?.sourceDefinitions ?? [])],
           })
         );
@@ -89,7 +96,7 @@ const useUpdateSourceDefinition = () => {
   const queryClient = useQueryClient();
 
   return useMutation<
-    SourceDefinition,
+    SourceDefinitionRead,
     Error,
     {
       sourceDefinitionId: string;
@@ -101,7 +108,7 @@ const useUpdateSourceDefinition = () => {
 
       queryClient.setQueryData(
         sourceDefinitionKeys.lists(),
-        (oldData: { sourceDefinitions: SourceDefinition[] } | undefined) => ({
+        (oldData: { sourceDefinitions: SourceDefinitionRead[] } | undefined) => ({
           sourceDefinitions:
             oldData?.sourceDefinitions.map((sd) => (sd.sourceDefinitionId === data.sourceDefinitionId ? data : sd)) ??
             [],

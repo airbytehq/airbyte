@@ -1,13 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
-from typing import List, Optional
+from typing import Any, Dict, List, Optional, Type
 
-import pendulum
 from airbyte_cdk.sources.config import BaseConfig
 from facebook_business.adobjects.adsinsights import AdsInsights
 from pydantic import BaseModel, Field, PositiveInt
@@ -19,6 +18,7 @@ ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+EMPTY_PATTERN = "^$"
 
 
 class InsightConfig(BaseModel):
@@ -47,7 +47,7 @@ class InsightConfig(BaseModel):
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
-        default=[],
+        default=["action_type", "action_target_id", "action_destination"],
     )
 
     time_increment: Optional[PositiveInt] = Field(
@@ -77,6 +77,13 @@ class InsightConfig(BaseModel):
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
     )
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Custom Insights Lookback Window",
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
+    )
 
 
 class ConnectorConfig(BaseConfig):
@@ -84,6 +91,10 @@ class ConnectorConfig(BaseConfig):
 
     class Config:
         title = "Source Facebook Marketing"
+
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type["ConnectorConfig"]) -> None:
+            schema["properties"]["end_date"].pop("format")
 
     account_id: str = Field(
         title="Account ID",
@@ -111,9 +122,9 @@ class ConnectorConfig(BaseConfig):
             "All data generated between start_date and this date will be replicated. "
             "Not setting this option will result in always syncing the latest data."
         ),
-        pattern=DATE_TIME_PATTERN,
+        pattern=EMPTY_PATTERN + "|" + DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
-        default_factory=pendulum.now,
+        default_factory=lambda: datetime.now(tz=timezone.utc),
     )
 
     access_token: str = Field(
@@ -121,7 +132,7 @@ class ConnectorConfig(BaseConfig):
         order=3,
         description=(
             "The value of the access token generated. "
-            'See the <a href="https://docs.airbyte.io/integrations/sources/facebook-marketing">docs</a> for more information'
+            'See the <a href="https://docs.airbyte.com/integrations/sources/facebook-marketing">docs</a> for more information'
         ),
         airbyte_secret=True,
     )
@@ -146,4 +157,29 @@ class ConnectorConfig(BaseConfig):
         description=(
             "A list which contains insights entries, each entry must have a name and can contains fields, breakdowns or action_breakdowns)"
         ),
+    )
+
+    page_size: Optional[PositiveInt] = Field(
+        title="Page Size of Requests",
+        order=7,
+        default=100,
+        description=(
+            "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases."
+        ),
+    )
+
+    insights_lookback_window: Optional[PositiveInt] = Field(
+        title="Insights Lookback Window",
+        order=8,
+        description="The attribution window",
+        maximum=28,
+        mininum=1,
+        default=28,
+    )
+
+    max_batch_size: Optional[PositiveInt] = Field(
+        title="Maximum size of Batched Requests",
+        order=9,
+        description="Maximum batch size used when sending batch requests to Facebook API. Most users do not need to set this field unless they specifically need to tune the connector to address specific issues or use cases.",
+        default=50,
     )

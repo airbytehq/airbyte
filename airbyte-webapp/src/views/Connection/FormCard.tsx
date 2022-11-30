@@ -1,54 +1,69 @@
+import { Form, Formik, FormikConfig, FormikHelpers } from "formik";
 import React from "react";
-import { Form, Formik, FormikConfig } from "formik";
-import { useMutation } from "react-query";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
+import { useMutation } from "react-query";
 
-import EditControls from "views/Connection/ConnectionForm/components/EditControls";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
+
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { generateMessageFromError } from "utils/errorStatusMessage";
 import { CollapsibleCardProps, CollapsibleCard } from "views/Connection/CollapsibleCard";
-import { createFormErrorMessage } from "utils/errorStatusMessage";
+import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 
-const FormContainer = styled(Form)`
-  padding: 22px 27px 15px 24px;
-`;
+import styles from "./FormCard.module.scss";
 
-export const FormCard: React.FC<
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  CollapsibleCardProps & { bottomSeparator?: boolean; form: FormikConfig<any> }
-> = ({ children, form, bottomSeparator = true, ...props }) => {
+interface FormCardProps<T> extends CollapsibleCardProps {
+  bottomSeparator?: boolean;
+  form: FormikConfig<T>;
+  submitDisabled?: boolean;
+}
+
+export const FormCard = <T extends object>({
+  children,
+  form,
+  bottomSeparator = true,
+  submitDisabled,
+  ...props
+}: React.PropsWithChildren<FormCardProps<T>>) => {
   const { formatMessage } = useIntl();
+  const { mode } = useConnectionFormService();
 
   const { mutateAsync, error, reset, isSuccess } = useMutation<
-    unknown,
+    void,
     Error,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    any
-  >(async ({ values, formikHelpers }) => form.onSubmit(values, formikHelpers));
+    { values: T; formikHelpers: FormikHelpers<T> }
+  >(async ({ values, formikHelpers }) => {
+    form.onSubmit(values, formikHelpers);
+  });
 
-  const errorMessage = error ? createFormErrorMessage(error) : null;
+  const errorMessage = error ? generateMessageFromError(error) : null;
 
   return (
     <Formik {...form} onSubmit={(values, formikHelpers) => mutateAsync({ values, formikHelpers })}>
       {({ resetForm, isSubmitting, dirty, isValid }) => (
         <CollapsibleCard {...props}>
-          <FormContainer>
+          <Form className={styles.formCard}>
+            <FormChangeTracker changed={dirty} />
             {children}
             <div>
-              <EditControls
-                withLine={bottomSeparator}
-                isSubmitting={isSubmitting}
-                dirty={dirty}
-                resetForm={() => {
-                  resetForm();
-                  reset();
-                }}
-                successMessage={isSuccess && formatMessage({ id: "form.changesSaved" })}
-                errorMessage={
-                  errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
-                }
-              />
+              {mode !== "readonly" && (
+                <EditControls
+                  withLine={bottomSeparator}
+                  isSubmitting={isSubmitting}
+                  dirty={dirty}
+                  submitDisabled={!isValid || submitDisabled}
+                  resetForm={() => {
+                    resetForm();
+                    reset();
+                  }}
+                  successMessage={isSuccess && formatMessage({ id: "form.changesSaved" })}
+                  errorMessage={
+                    errorMessage ?? !isValid ? formatMessage({ id: "connectionForm.validation.error" }) : null
+                  }
+                />
+              )}
             </div>
-          </FormContainer>
+          </Form>
         </CollapsibleCard>
       )}
     </Formik>

@@ -16,5 +16,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_1_prefix_startwith_number') }} as table_alias
 -- 1_prefix_startwith_number
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

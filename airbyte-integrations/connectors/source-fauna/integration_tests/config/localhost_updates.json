@@ -1,0 +1,25 @@
+{
+  "secret": "secret",
+  "domain": "localhost",
+  "port": 8443,
+  "scheme": "http",
+  "collection": {
+    "name": "foo",
+    "data_column": true,
+    "additional_columns": [
+      {
+        "name": "a",
+        "path": ["data", "a"],
+        "type": "integer"
+      }
+    ],
+    "page_size": 64,
+    "updates": {
+      "update_mode": "enabled",
+      "index": "foo_ts"
+    },
+    "deletions": {
+      "deletion_mode": "ignore"
+    }
+  }
+}

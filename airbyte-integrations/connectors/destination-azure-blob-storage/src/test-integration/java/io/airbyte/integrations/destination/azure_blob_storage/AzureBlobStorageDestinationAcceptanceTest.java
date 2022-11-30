@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -17,6 +17,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.jackson.MoreMappers;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +82,8 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
     var blobItemList = StreamSupport.stream(containerClient.listBlobs().spliterator(), false)
         .collect(Collectors.toList());
     var filteredBlobList = blobItemList.stream()
-        .filter(blob -> blob.getName().contains(streamName + "/")).collect(Collectors.toList());
+        .filter(blob -> blob.getName().startsWith(streamName + "/"))
+        .toList();
     if (!filteredBlobList.isEmpty()) {
       List<AppendBlobClient> clobClientList = new ArrayList<>();
       filteredBlobList.forEach(blobItem -> {
@@ -95,6 +98,26 @@ public abstract class AzureBlobStorageDestinationAcceptanceTest extends Destinat
   }
 
   protected abstract JsonNode getFormatConfig();
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new AdvancedTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
+  }
 
   /**
    * This method does the following:

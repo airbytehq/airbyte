@@ -1,0 +1,80 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.icon {
+  margin-right: 7px;
+  margin-top: -1px;
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+}
+
+.streamHeaderContent {
+  background: colors.$white;
+  border-bottom: 1px solid colors.$grey-50;
+  padding: 0 variables.$spacing-md;
+  margin-bottom: 1px;
+  gap: variables.$spacing-sm;
+  min-height: 50px;
+  height: 50px;
+  align-items: center;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+
+  &:hover {
+    background: colors.$grey-30;
+    cursor: pointer;
+  }
+
+  &.disabledChange {
+    background-color: colors.$red-50;
+  }
+
+  &.enabledChange {
+    background-color: colors.$green-50;
+  }
+
+  &.error {
+    border: 1px solid colors.$red;
+  }
+
+  &.selected {
+    background-color: colors.$blue-transparent;
+  }
+
+  &.disabled {
+    background-color: colors.$grey-50;
+  }
+}
+
+.streamRowCheckboxCell {
+  margin-right: variables.$spacing-sm;
+  max-width: 43px;
+  text-align: center;
+  font-size: 10px;
+  line-height: 13px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-left: variables.$spacing-xl + variables.$spacing-sm;
+}
+
+.arrowCell {
+  width: 20px;
+}
+
+.cellText {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.syncModeCell {
+  width: variables.$width-wide-menu;
+  min-width: variables.$width-wide-menu;
+}

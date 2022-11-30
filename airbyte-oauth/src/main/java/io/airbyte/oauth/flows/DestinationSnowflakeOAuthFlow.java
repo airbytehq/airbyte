@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -29,16 +29,16 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
   private static final String ACCESS_TOKEN_URL = "https://%s/oauth/token-request";
 
   public DestinationSnowflakeOAuthFlow(
-                                       ConfigRepository configRepository,
-                                       HttpClient httpClient) {
+                                       final ConfigRepository configRepository,
+                                       final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId,
-                                    String clientId,
-                                    String redirectUrl,
-                                    JsonNode inputOAuthConfiguration)
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
       throws IOException {
     try {
       return new URIBuilder(
@@ -55,20 +55,20 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getAccessTokenUrl(JsonNode inputOAuthConfiguration) {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return String.format(ACCESS_TOKEN_URL, extractTokenUrl(inputOAuthConfiguration));
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
+  protected String extractCodeParameter(final Map<String, Object> queryParams) throws IOException {
     return super.extractCodeParameter(queryParams);
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId,
-                                                              String clientSecret,
-                                                              String authCode,
-                                                              String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         // required
         .put("grant_type", "authorization_code")
@@ -112,6 +112,7 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
   /**
    * Extract all OAuth outputs from distant API response and store them in a flat map.
    */
+  @Override
   protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl)
       throws IOException {
     final Map<String, Object> result = new HashMap<>();
@@ -132,13 +133,13 @@ public class DestinationSnowflakeOAuthFlow extends BaseOAuth2Flow {
     return result;
   }
 
-  private String extractAuthorizeUrl(JsonNode inputOAuthConfiguration) {
-    var url = inputOAuthConfiguration.get("host");
+  private String extractAuthorizeUrl(final JsonNode inputOAuthConfiguration) {
+    final var url = inputOAuthConfiguration.get("host");
     return url == null ? StringUtils.EMPTY : url.asText();
   }
 
-  private String extractTokenUrl(JsonNode inputOAuthConfiguration) {
-    var url = inputOAuthConfiguration.get("host");
+  private String extractTokenUrl(final JsonNode inputOAuthConfiguration) {
+    final var url = inputOAuthConfiguration.get("host");
     // var url = inputOAuthConfiguration.get("token_url");
     return url == null ? StringUtils.EMPTY : url.asText();
   }

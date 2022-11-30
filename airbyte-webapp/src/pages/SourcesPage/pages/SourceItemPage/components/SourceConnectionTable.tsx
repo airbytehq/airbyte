@@ -1,40 +1,25 @@
 import React, { useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 
 import { ConnectionTable } from "components/EntityTable";
 import useSyncActions from "components/EntityTable/hooks";
-import { getConnectionTableData } from "components/EntityTable/utils";
 import { ITableDataItem } from "components/EntityTable/types";
+import { getConnectionTableData } from "components/EntityTable/utils";
 
-import { Connection } from "core/domain/connection";
-import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
-import { useSourceDefinitionList } from "services/connector/SourceDefinitionService";
-import { useDestinationDefinitionList } from "services/connector/DestinationDefinitionService";
 
-type IProps = {
-  connections: Connection[];
-};
+import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
+import styles from "./SourceConnectionTable.module.scss";
+
+interface IProps {
+  connections: WebBackendConnectionListItem[];
+}
 
 const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
-  const { push } = useRouter();
-  const { changeStatus, syncManualConnection } = useSyncActions();
+  const navigate = useNavigate();
+  const { syncManualConnection } = useSyncActions();
 
-  const { sourceDefinitions } = useSourceDefinitionList();
-
-  const { destinationDefinitions } = useDestinationDefinitionList();
-
-  const data = getConnectionTableData(connections, sourceDefinitions, destinationDefinitions, "source");
-
-  const onChangeStatus = useCallback(
-    async (connectionId: string) => {
-      const connection = connections.find((item) => item.connectionId === connectionId);
-
-      if (connection) {
-        await changeStatus(connection);
-      }
-    },
-    [changeStatus, connections]
-  );
+  const data = getConnectionTableData(connections, "source");
 
   const onSync = useCallback(
     async (connectionId: string) => {
@@ -46,16 +31,12 @@ const SourceConnectionTable: React.FC<IProps> = ({ connections }) => {
     [connections, syncManualConnection]
   );
 
-  const clickRow = (source: ITableDataItem) => push(`../../${RoutePaths.Connections}/${source.connectionId}`);
+  const clickRow = (source: ITableDataItem) => navigate(`../../../${RoutePaths.Connections}/${source.connectionId}`);
 
   return (
-    <ConnectionTable
-      data={data}
-      onClickRow={clickRow}
-      entity="source"
-      onChangeStatus={onChangeStatus}
-      onSync={onSync}
-    />
+    <div className={styles.content}>
+      <ConnectionTable data={data} onClickRow={clickRow} entity="source" onSync={onSync} />
+    </div>
   );
 };
 

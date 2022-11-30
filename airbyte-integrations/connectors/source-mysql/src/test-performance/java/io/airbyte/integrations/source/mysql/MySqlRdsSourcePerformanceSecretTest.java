@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.mysql;
@@ -9,11 +9,14 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.performancetest.AbstractSourcePerformanceTest;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.stream.Stream;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.params.provider.Arguments;
 
@@ -31,29 +34,31 @@ public class MySqlRdsSourcePerformanceSecretTest extends AbstractSourcePerforman
     final JsonNode plainConfig = Jsons.deserialize(IOs.readFile(Path.of(PERFORMANCE_SECRET_CREDS)));
 
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", plainConfig.get("host"))
-        .put("port", plainConfig.get("port"))
-        .put("database", dbName)
-        .put("username", plainConfig.get("username"))
-        .put("password", plainConfig.get("password"))
+        .put(JdbcUtils.HOST_KEY, plainConfig.get(JdbcUtils.HOST_KEY))
+        .put(JdbcUtils.PORT_KEY, plainConfig.get(JdbcUtils.PORT_KEY))
+        .put(JdbcUtils.DATABASE_KEY, dbName)
+        .put(JdbcUtils.USERNAME_KEY, plainConfig.get(JdbcUtils.USERNAME_KEY))
+        .put(JdbcUtils.PASSWORD_KEY, plainConfig.get(JdbcUtils.PASSWORD_KEY))
         .put("replication_method", plainConfig.get("replication_method"))
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:mysql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            dbName),
-        "com.mysql.cj.jdbc.Driver",
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.MYSQL.getDriverClassName(),
+        String.format(DatabaseDriver.MYSQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
         SQLDialect.MYSQL,
-        Map.of("zeroDateTimeBehavior", "convertToNull"));
+        Map.of("zeroDateTimeBehavior", "convertToNull"))) {
 
-    // It disable strict mode in the DB and allows to insert specific values.
-    // For example, it's possible to insert date with zero values "2021-00-00"
-    database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
-    database.close();
+      final Database database = new Database(dslContext);
+
+      // It disable strict mode in the DB and allows to insert specific values.
+      // For example, it's possible to insert date with zero values "2021-00-00"
+      database.query(ctx -> ctx.execute("SET @@sql_mode=''"));
+    }
   }
 
   /**

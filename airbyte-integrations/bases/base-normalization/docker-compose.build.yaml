@@ -43,3 +43,17 @@ services:
       context: .
       labels:
         io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-redshift:
+    image: airbyte/normalization-redshift:${VERSION}
+    build:
+      dockerfile: redshift.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}
+  normalization-tidb:
+    image: airbyte/normalization-tidb:${VERSION}
+    build:
+      dockerfile: tidb.Dockerfile
+      context: .
+      labels:
+        io.airbyte.git-revision: ${GIT_REVISION}

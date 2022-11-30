@@ -12,6 +12,7 @@ tests:
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["group_issue_boards"]
 # We cannot use these tests for testing Incremental, since for Gitlab the State is saved for each Project separately,
 # and the Acceptance Tests at this stage do not support this functionality.
 # Therefore, we hardcode the cursor_paths for our config.

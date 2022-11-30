@@ -1,0 +1,57 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "end_at": "2099-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "calls"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "status_end_at": "2099-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "user_status"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "studio_flow_executions_aggregated.flow_execution_finished_time": "2099-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "studio_flow_execution"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "finished_at": "2099-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "contacts"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "ring_finished_at_time": "2099-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "ring_attempts"
+      }
+    }
+  }
+]

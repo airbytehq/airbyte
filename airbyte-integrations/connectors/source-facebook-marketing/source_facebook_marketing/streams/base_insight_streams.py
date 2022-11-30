@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import logging
@@ -7,10 +7,12 @@ from typing import Any, Iterable, Iterator, List, Mapping, MutableMapping, Optio
 
 import airbyte_cdk.sources.utils.casing as casing
 import pendulum
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import FailureType, SyncMode
 from airbyte_cdk.sources.streams.core import package_name_from_class
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
+from airbyte_cdk.utils import AirbyteTracedException
 from cached_property import cached_property
+from facebook_business.exceptions import FacebookBadObjectError
 from source_facebook_marketing.streams.async_job import AsyncJob, InsightAsyncJob
 from source_facebook_marketing.streams.async_job_manager import InsightAsyncJobManager
 
@@ -46,16 +48,10 @@ class AdsInsights(FBMarketingIncrementalStream):
     # HTTP response.
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
-    # Facebook freezes insight data 28 days after it was generated, which means that all data
-    # from the past 28 days may have changed since we last emitted it, so we retrieve it again.
-    INSIGHTS_LOOKBACK_PERIOD = pendulum.duration(days=28)
 
-    action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-
-    breakdowns = []
 
     def __init__(
         self,
@@ -64,16 +60,18 @@ class AdsInsights(FBMarketingIncrementalStream):
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
         time_increment: Optional[int] = None,
+        insights_lookback_window: int = None,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        self.action_breakdowns = action_breakdowns or self.action_breakdowns
-        self.breakdowns = breakdowns or self.breakdowns
+        self.action_breakdowns = action_breakdowns or self.ALL_ACTION_BREAKDOWNS
+        self.breakdowns = breakdowns or []
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
+        self._insights_lookback_window = insights_lookback_window
 
         # state
         self._cursor_value: Optional[pendulum.Date] = None  # latest period that was read
@@ -91,6 +89,16 @@ class AdsInsights(FBMarketingIncrementalStream):
         """Build complex PK based on slices and breakdowns"""
         return ["date_start", "account_id", "ad_id"] + self.breakdowns
 
+    @property
+    def insights_lookback_period(self):
+        """
+        Facebook freezes insight data 28 days after it was generated, which means that all data
+        from the past 28 days may have changed since we last emitted it, so we retrieve it again.
+        But in some cases users my have define their own lookback window, thats
+        why the value for `insights_lookback_window` is set throught config.
+        """
+        return pendulum.duration(days=self._insights_lookback_window)
+
     def list_objects(self, params: Mapping[str, Any]) -> Iterable:
         """Because insights has very different read_records we don't need this method anymore"""
 
@@ -103,8 +111,15 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
-        for obj in job.get_result():
-            yield obj.export_all_data()
+        try:
+            for obj in job.get_result():
+                yield obj.export_all_data()
+        except FacebookBadObjectError as e:
+            raise AirbyteTracedException(
+                message=f"API error occurs on Facebook side during job: {job}, wrong (empty) response received with errors: {e} "
+                f"Please try again later",
+                failure_type=FailureType.system_error,
+            ) from e
 
         self._completed_slices.add(job.interval.start)
         if job.interval.start == self._next_cursor_value:
@@ -180,6 +195,18 @@ class AdsInsights(FBMarketingIncrementalStream):
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
 
+    def check_breakdowns(self):
+        """
+        Making call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+        """
+        params = {
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": ["account_id"],
+        }
+        self._api.account.get_insights(params=params, is_async=False)
+
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
@@ -217,13 +244,12 @@ class AdsInsights(FBMarketingIncrementalStream):
         """
         today = pendulum.today().date()
         oldest_date = today - self.INSIGHTS_RETENTION_PERIOD
-        refresh_date = today - self.INSIGHTS_LOOKBACK_PERIOD
-
+        refresh_date = today - self.insights_lookback_period
         if self._cursor_value:
             start_date = self._cursor_value + pendulum.duration(days=self.time_increment)
             if start_date > refresh_date:
                 logger.info(
-                    f"The cursor value within refresh period ({self.INSIGHTS_LOOKBACK_PERIOD}), start sync from {refresh_date} instead."
+                    f"The cursor value within refresh period ({self.insights_lookback_period}), start sync from {refresh_date} instead."
                 )
             start_date = min(start_date, refresh_date)
 
@@ -234,7 +260,6 @@ class AdsInsights(FBMarketingIncrementalStream):
             start_date = self._start_date
         if start_date < oldest_date:
             logger.warning(f"Loading insights older then {self.INSIGHTS_RETENTION_PERIOD} is not possible. Start sync from {oldest_date}.")
-
         return max(oldest_date, start_date)
 
     def request_params(self, **kwargs) -> MutableMapping[str, Any]:
@@ -258,7 +283,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         loader = ResourceSchemaLoader(package_name_from_class(self.__class__))
         schema = loader.get_schema("ads_insights")
         if self._fields:
-            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields}
+            schema["properties"] = {k: v for k, v in schema["properties"].items() if k in self._fields + [self.cursor_field]}
         if self.breakdowns:
             breakdowns_properties = loader.get_schema("ads_insights_breakdowns")["properties"]
             schema["properties"].update({prop: breakdowns_properties[prop] for prop in self.breakdowns})

@@ -3,17 +3,17 @@ import { useAsync } from "react-use";
 
 import { LoadingPage } from "components";
 
-import { Config, ValueProvider } from "./types";
 import { applyProviders } from "./configProviders";
+import { Config, ValueProvider } from "./types";
 
-export type ConfigContext<T extends Config = Config> = {
+export interface ConfigContextData<T extends Config = Config> {
   config: T;
-};
+}
 
-export const configContext = React.createContext<ConfigContext | null>(null);
+export const ConfigContext = React.createContext<ConfigContextData | null>(null);
 
 export function useConfig<T extends Config>(): T {
-  const configService = useContext(configContext);
+  const configService = useContext(ConfigContext);
 
   if (configService === null) {
     throw new Error("useConfig must be used within a ConfigProvider");
@@ -22,24 +22,23 @@ export function useConfig<T extends Config>(): T {
   return useMemo(() => configService.config as unknown as T, [configService.config]);
 }
 
-const ConfigServiceInner: React.FC<{
-  defaultConfig: Config;
-  providers?: ValueProvider<Config>;
-}> = ({ children, defaultConfig, providers }) => {
+const ConfigServiceInner: React.FC<
+  React.PropsWithChildren<{
+    defaultConfig: Config;
+    providers?: ValueProvider<Config>;
+  }>
+> = ({ children, defaultConfig, providers }) => {
   const { loading, value } = useAsync(
     async () => (providers ? applyProviders(defaultConfig, providers) : defaultConfig),
     [providers]
   );
-  const config: ConfigContext | null = useMemo(() => (value ? { config: value } : null), [value]);
+  const config: ConfigContextData | null = useMemo(() => (value ? { config: value } : null), [value]);
 
   if (loading) {
     return <LoadingPage />;
   }
 
-  return <configContext.Provider value={config}>{children}</configContext.Provider>;
+  return <ConfigContext.Provider value={config}>{children}</ConfigContext.Provider>;
 };
 
-export const ConfigServiceProvider: React.FC<{
-  defaultConfig: Config;
-  providers?: ValueProvider<Config>;
-}> = React.memo(ConfigServiceInner);
+export const ConfigServiceProvider = React.memo(ConfigServiceInner);

@@ -1,143 +1,115 @@
-# On Azure\(VM\)
+# Deploy Airbyte on Azure (Cloud Shell)
 
-{% hint style="info" %}
-The instructions have been tested on `Azure VM Linux (ubuntu 18.04)`
-{% endhint %}
+This page guides you through deploying Airbyte Open Source on a Microsoft Azure VM by setting up the deployment environment, installing and starting Airbyte, and connecting it to the VM.
 
-## Launch Azure Cloud Shell
+:::info
 
-Launch cloud shell by going to [https://shell.azure.com/bash](https://shell.azure.com/bash)
+The instructions have been tested on a standard DS1 v2 (1 vcpu, 3.5 GiB memory) Microsoft Azure VM with Ubuntu 18.04.
 
-![](../.gitbook/assets/azure_shell_launch.png)
+:::
 
-## Create a new virtual machine
+## Set up the environment
 
-### Create resource group
+Install Docker and Docker Compose in the VM:
 
-```bash
-# Inside Azure cloud shell
-rgName=airbyte-demo
-rgLocation=eastus
-az group create --name $rgName --location $rgLocation
-```
+1. [Create a new VM](https://learn.microsoft.com/en-us/azure/virtual-machines/) and [generate the SSH keys](https://learn.microsoft.com/en-us/azure/virtual-machines/ssh-keys-portal) to connect to the VM. You’ll need the SSH keys to connect to the VM remotely later. 
 
-![](../.gitbook/assets/azure_shell_create_rg.png)
+2. To connect to the VM, run the following command in the Azure Cloud Shell:
 
-### Create virtual machine
+    ```bash
+    ssh <admin username>@<IP address>
+    ```
+    If successfully connected to the VM, the working directory of Cloud Shell should look like this: `<admin username>@<virtual machine name>:~$`
 
-```bash
-# Inside Azure cloud shell
-userName=byteuser
-vmName=airbyte
-dnsName=$(head -3 /dev/urandom | tr -dc a-z | cut -c -16)
-publicIp=$(az vm create --resource-group $rgName \
-  --name $vmName --image UbuntuLTS \
-  --admin-username $userName \
-  --public-ip-address-dns-name $dnsName \
-  --generate-ssh-keys --query 'publicIpAddress' -o json)
-echo $publicIp
-```
+3. To install Docker, run the following commands:
 
-This step will create a virtual machine and add a user account named `byteuser`. The `--generate-ssh-keys` option will generate a new ssh key and put it to the default key location \(~/.ssh\)
+    ```bash
+    sudo apt-get update -y
+    sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-release -y
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    sudo apt-get update
+    sudo apt-get install docker-ce docker-ce-cli -y
+    sudo usermod -a -G docker $USER
+    ```
 
-**Note: Copy the `publicIpAddress` output, you will need this address later to connect from your workstation.**
+4. To install Docker Compose, run the following command:
 
-![](../.gitbook/assets/azure_shell_create_vm.png)
+    ```bash
+    sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    ```
 
-### Download SSH key
+5. Check Docker Compose version:
 
-```bash
-# Inside Azure cloud shell
-download ~/.ssh/id_rsa
-```
+    ```bash
+    docker-compose --version
+    ```
 
-Make sure to update the permissions on the private key, or you'll get an error telling you that permissions for this file are too open.
-```bash
-chmod 600 ./$YOUR_PATH_TO_DOWNLOADS/id_rsa
-```
+6. Close the SSH connection to ensure that the group modification is considered:
 
-Above command will generate download link and give you pop-up on right bottom side, click on `Click here to download your file.` to download private key. Note: Save this file, you will need it to connect to your VM in [Connect to Airbyte](on-azure-vm-cloud-shell.md#connect-to-airbyte) step.
+    ```bash
+    logout
+    ```
 
-![](../.gitbook/assets/azure_shell_download_ssh_key.png)
+7. Reconnect to the VM:
 
-### Connect to virtual machine
+    ```bash
+    ssh <admin username>@<IP address>
+    ```
 
-If you get this error: `Could not resolve hostname "XX.XXX.X.XXX": Name or service not known`, just manually enter the publicIp host name when running the ssh command.
+## Install and start Airbyte
 
-```bash
-# Inside Azure cloud shell
-ssh $userName@$publicIp
-```
+Download Airbyte and deploy it in the VM using Docker Compose:
 
-## Install environment
+1. Ensure that you are connected to the VM:
 
-* Install `docker`
+    ```bash
+    ssh <admin username>@<IP address>
+    ```
 
-```bash
-# Inside Azure cloud shell
-sudo apt-get update -y
-sudo apt-get install apt-transport-https ca-certificates curl gnupg lsb-release -y
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
-echo "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-sudo apt-get install docker-ce docker-ce-cli -y
-sudo usermod -a -G docker $USER
-```
+2. Create and use a new directory:
 
-* Install `docker-compose`
+    ```bash 
+    mkdir airbyte
+    cd airbyte
+    ```
 
-```bash
-# Inside Azure cloud shell
-sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
-```
+3. Download Airbyte from GitHub: 
 
-* Close the ssh connection to ensure the group modification is taken into account
+    ```bash
+    wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+    ```
 
-```bash
-# Inside Azure cloud shell
-logout
-```
+4. Start Airbyte by running the following command:
 
-* Reconnect to virtual machine 
+    ```bash
+    sudo docker-compose up -d
+    ```
+    This step takes about two minutes to complete. When done, you will see the cursor prompt.
 
-```bash
-# Inside Azure cloud shell
-ssh $userName@$publicIp
-```
-
-## Install and Start Airbyte
-
-```bash
-# Inside Azure cloud shell
-mkdir airbyte && cd airbyte
-wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
-sudo docker-compose up -d
-```
 
 ## Connect to Airbyte
 
-{% hint style="danger" %}
-For security reasons, we strongly recommend to not expose Airbyte on Internet available ports. Future versions will add support for SSL & Authentication.
-{% endhint %}
+Test a remote connection to your VM locally and verify that Airbyte is up and running.
 
-{% hint style="info" %}
-This part assumes that you have access to a terminal on your workstation
-{% endhint %}
+1. In your local machine, open a terminal. 
+2. Go to the folder where you stored the SSH key.
+3. Create a SSH tunnel for `port 8000` by typing the following command:
 
-* Create ssh tunnel for port 8000
+    ```bash 
+    ssh -N -L 8000:localhost:8000 -i <your SSH key file> <admin username>@<IP address>
+    ```
+	As a result, nothing happens. The cursor prompt keeps blinking.
 
-  ```bash
-  # Inside your workstation terminal
-  # 1. Replace $SSH_KEY with private key path downloaded from earlier steps
-  # 2. Replace $INSTANCE_IP with publicIpAddress noted from earlier steps
-  ssh -N -L 8000:localhost:8000 -i $SSH_KEY byteuser@$INSTANCE_IP
-  ```
+4. Open a web browser and navigate to `http://localhost:8000`. You will see Airbyte’s landing page. 
 
-* Just visit [http://localhost:8000](http://localhost:8000) in your browser and start moving some data!
+:::danger
+
+For security reasons, it is strongly recommended not to expose Airbyte on Internet available ports. Future versions will add support for SSL and authentication.
+
+:::
 
 ## Troubleshooting
 
-If you encounter any issues, just connect to our [Slack](https://slack.airbyte.io). Our community will help! We also have a [FAQ](../troubleshooting/on-deploying.md) section in our docs for common problems.
-
+If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).

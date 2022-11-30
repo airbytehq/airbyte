@@ -1,17 +1,18 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mqtt;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.HashMap;
 import java.util.Map;
@@ -86,7 +87,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
           MqttDestination.COLUMN_NAME_EMITTED_AT, recordMessage.getEmittedAt(),
           MqttDestination.COLUMN_NAME_DATA, recordMessage.getData()));
 
-      final MqttMessage message = new MqttMessage(payload.toString().getBytes());
+      final MqttMessage message = new MqttMessage(payload.toString().getBytes(Charsets.UTF_8));
       message.setRetained(config.isRetainedMessage());
       message.setQos(config.getQos());
 
@@ -98,7 +99,7 @@ public class MqttRecordConsumer extends FailureTrackingAirbyteMessageConsumer {
 
   Map<AirbyteStreamNameNamespacePair, String> buildTopicMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> config.getTopicPattern()
             .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))
             .replaceAll("\\{stream}", Optional.ofNullable(pair.getName()).orElse("")),

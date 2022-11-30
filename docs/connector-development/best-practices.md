@@ -49,3 +49,18 @@ When reviewing connectors, we'll use the following "checklist" to verify whether
 
 Most APIs enforce rate limits. Your connector should gracefully handle those \(i.e: without failing the connector process\). The most common way to handle rate limits is to implement backoff.
 
+## Maintaining connectors
+
+Once a connector has been published for use within Airbyte, we must take special care to account for the customer impact of updates to the connector.
+
+### Schema Breaking Changes
+
+For connectors that are GA certified or highly used by customers, we should not introduce backwards incompatible changes into a stream's schema that impact how existing data is replicated and represented in the downstream destination. The schema serves as a contract with customers to define how data is synchronized. Subtractive changes can COMPLETELY BREAK a customer's workflows built on top of Airbyte, sometimes in a silent way. 
+
+The following types of changes are to be considered to be breaking:
+
+* Removing a property field from a schema
+* Renaming a property field in a schema
+* Changing a property's data type
+
+Exceptions can be made on a case by case basis, but if your updates require a subtractive change to the schema, you should consider whether the change is necessary or if there is an alternative that will not break backwards compatibility.

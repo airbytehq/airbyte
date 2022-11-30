@@ -17,7 +17,6 @@ The primary key for the following streams is `id`:
 - engagements_meetings
 - engagements_notes
 - engagements_tasks
-- feedback_submissions
 - forms
 - line_items
 - marketing_emails
@@ -81,7 +80,7 @@ From the Airbyte repository root, run:
 #### Create credentials
 
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/hubspot)
-to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_hubspot/spec.json` file. Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information. See `sample_files/sample_config.json` for a sample config file.
+to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_hubspot/spec.yaml` file. Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information. See `sample_files/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `source hubspot test creds`
 and place them into `secrets/config.json`.
@@ -100,7 +99,7 @@ python main.py read --config secrets/config.json --catalog sample_files/configur
 Make sure to familiarize yourself with [pytest test discovery](https://docs.pytest.org/en/latest/goodpractices.html#test-discovery) to know how your test files and methods should be named. First install test dependencies into your virtual environment:
 
 ```
-pip install .[tests]
+pip install .'[tests]'
 ```
 
 ### Unit Tests

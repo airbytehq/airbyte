@@ -6,13 +6,13 @@ coverage:
   status:
     patch:
       default:
-        target: 100%
+        target: 90%
         if_no_uploads: error
         if_not_found: failure
         if_ci_failed: failure
     project:
       default:
-        target: 100%
+        target: 90%
         if_no_uploads: error
         if_not_found: failure
         if_ci_failed: failure

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from base64 import b64encode
@@ -61,6 +61,7 @@ from .streams import (
     Sprints,
     TimeTracking,
     Users,
+    UsersGroupsDetailed,
     Workflows,
     WorkflowSchemes,
     WorkflowStatusCategories,
@@ -163,6 +164,7 @@ class SourceJira(AbstractSource):
             SprintIssues(**incremental_args),
             TimeTracking(**args),
             Users(**args),
+            UsersGroupsDetailed(**args),
             Workflows(**args),
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),

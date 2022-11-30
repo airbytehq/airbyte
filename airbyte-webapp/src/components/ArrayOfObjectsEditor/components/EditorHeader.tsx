@@ -1,36 +1,38 @@
 import React from "react";
-import styled from "styled-components";
 import { FormattedMessage } from "react-intl";
 
-import { Button } from "components";
+import { Button } from "components/ui/Button";
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  color: ${({ theme }) => theme.textColor};
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  margin: 5px 0;
-`;
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 
-type EditorHeaderProps = {
+import styles from "./EditorHeader.module.scss";
+
+interface EditorHeaderProps {
   mainTitle?: React.ReactNode;
   addButtonText?: React.ReactNode;
   itemsCount: number;
   onAddItem: () => void;
-};
+  mode?: ConnectionFormMode;
+  disabled?: boolean;
+}
 
-const EditorHeader: React.FC<EditorHeaderProps> = ({ itemsCount, onAddItem, mainTitle, addButtonText }) => {
+const EditorHeader: React.FC<EditorHeaderProps> = ({
+  itemsCount,
+  onAddItem,
+  mainTitle,
+  addButtonText,
+  mode,
+  disabled,
+}) => {
   return (
-    <Content>
+    <div className={styles.editorHeader}>
       {mainTitle || <FormattedMessage id="form.items" values={{ count: itemsCount }} />}
-      <Button secondary type="button" onClick={onAddItem} data-testid="addItemButton">
-        {addButtonText || <FormattedMessage id="form.addItems" />}
-      </Button>
-    </Content>
+      {mode !== "readonly" && (
+        <Button variant="secondary" type="button" onClick={onAddItem} data-testid="addItemButton" disabled={disabled}>
+          {addButtonText || <FormattedMessage id="form.addItems" />}
+        </Button>
+      )}
+    </div>
   );
 };
 

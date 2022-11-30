@@ -13,7 +13,7 @@
     },
     "properties": {
       "type": "object",
-      "additionalProperties": {},
+      "additionalProperties": true,
       "description": "The properties of the object, as arbitrary key-value pairs. These properties can be searched using JQL, if the extractions (see [Issue Field Option Property Index](https://developer.atlassian.com/cloud/jira/platform/modules/issue-field-option-property-index/)) are defined in the descriptor for the issue field module."
     },
     "config": {
@@ -85,6 +85,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of the options for a select list issue field."
 }

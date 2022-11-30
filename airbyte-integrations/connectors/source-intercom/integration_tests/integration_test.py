@@ -1,10 +1,12 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 
 import json
 import time
 from copy import deepcopy
+from datetime import datetime
 from pathlib import Path
 from typing import Mapping
 from unittest.mock import patch
@@ -109,9 +111,10 @@ def test_companies_scroll(stream_attributes):
 @patch("source_intercom.source.Companies.can_use_scroll", lambda *args: False)
 def test_switch_to_standard_endpoint(stream_attributes):
     authenticator = VersionApiAuthenticator(token=stream_attributes["access_token"])
+    start_date = datetime.strptime(stream_attributes["start_date"], "%Y-%m-%dT%H:%M:%SZ").timestamp()
     stream1 = Companies(authenticator=authenticator)
     stream2 = Companies(authenticator=authenticator)
-    stream3 = ConversationParts(authenticator=authenticator)
+    stream3 = ConversationParts(authenticator=authenticator, start_date=start_date)
 
     # read the first stream and stop
     for slice in stream1.stream_slices(sync_mode=SyncMode.full_refresh):

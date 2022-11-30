@@ -9,10 +9,10 @@
       "type": ["null", "string"]
     },
     "label.name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "label.resource_name": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     }
   }
 }

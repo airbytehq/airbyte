@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.mariadb_columnstore;
@@ -17,13 +17,9 @@ import java.sql.Statement;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(MariadbColumnstoreSqlOperations.class);
   private final String MINIMUM_VERSION = "5.5.3";
   Pattern VERSION_PATTERN = Pattern.compile("^(\\d+\\.\\d+\\.\\d+)-MariaDB");
   private boolean isLocalFileEnabled = false;
@@ -70,7 +66,7 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     database.execute(connection -> {
-      try (Statement stmt = connection.createStatement()) {
+      try (final Statement stmt = connection.createStatement()) {
         stmt.addBatch("BEGIN;");
         for (final String query : queries) {
           stmt.addBatch(query);
@@ -103,13 +99,15 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private Semver getVersion(final JdbcDatabase database) throws SQLException {
-    final List<String> value = database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("SELECT version()"),
-        resultSet -> resultSet.getString("version()")).collect(Collectors.toList());
-    Matcher matcher = VERSION_PATTERN.matcher(value.get(0));
+    final List<String> versions = database.queryStrings(
+        connection -> connection.createStatement().executeQuery("SELECT version()"),
+        resultSet -> resultSet.getString("version()"));
+
+    final Matcher matcher = VERSION_PATTERN.matcher(versions.get(0));
     if (matcher.find()) {
       return new Semver(matcher.group(1));
     } else {
-      throw new RuntimeException(String.format("Unexpected version string: %s\nExpected version format is X.X.X-MariaDB", value.get(0)));
+      throw new RuntimeException(String.format("Unexpected version string: %s\nExpected version format is X.X.X-MariaDB", versions.get(0)));
     }
   }
 
@@ -122,11 +120,10 @@ public class MariadbColumnstoreSqlOperations extends JdbcSqlOperations {
   }
 
   private boolean checkIfLocalFileIsEnabled(final JdbcDatabase database) throws SQLException {
-    final List<String> value =
-        database.unsafeResultSetQuery(connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
-            resultSet -> resultSet.getString("Value")).collect(Collectors.toList());
-
-    return value.get(0).equalsIgnoreCase("on");
+    final List<String> localFiles = database.queryStrings(
+        connection -> connection.createStatement().executeQuery("SHOW GLOBAL VARIABLES LIKE 'local_infile'"),
+        resultSet -> resultSet.getString("Value"));
+    return localFiles.get(0).equalsIgnoreCase("on");
   }
 
   private void tryEnableLocalFile(final JdbcDatabase database) throws SQLException {

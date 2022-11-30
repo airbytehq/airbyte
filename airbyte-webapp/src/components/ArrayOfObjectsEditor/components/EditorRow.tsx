@@ -1,56 +1,60 @@
 import React from "react";
-import styled from "styled-components";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faTimes } from "@fortawesome/free-solid-svg-icons";
-import { FormattedMessage } from "react-intl";
+import { useIntl } from "react-intl";
 
-import { Button } from "components";
+import { CrossIcon } from "components/icons/CrossIcon";
+import { PencilIcon } from "components/icons/PencilIcon";
+import { Button } from "components/ui/Button";
+import { Tooltip } from "components/ui/Tooltip";
 
-const Content = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-direction: row;
-  color: ${({ theme }) => theme.textColor};
-  font-weight: 500;
-  font-size: 14px;
-  line-height: 17px;
-  padding: 5px 12px 6px 14px;
-  border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
+import styles from "./EditorRow.module.scss";
 
-  &:last-child {
-    border: none;
-  }
-`;
-
-const Delete = styled(FontAwesomeIcon)`
-  color: ${({ theme }) => theme.greyColor55};
-  font-weight: 300;
-  font-size: 14px;
-  line-height: 24px;
-  margin-left: 7px;
-  cursor: pointer;
-`;
-
-type EditorRowProps = {
-  name: string;
+interface EditorRowProps {
+  name?: React.ReactNode;
+  description?: React.ReactNode;
   id: number;
   onEdit: (id: number) => void;
   onRemove: (id: number) => void;
-};
+  disabled?: boolean;
+}
 
-const EditorRow: React.FC<EditorRowProps> = ({ name, id, onEdit, onRemove }) => {
-  return (
-    <Content>
-      <div>{name || id}</div>
-      <div>
-        <Button secondary onClick={() => onEdit(id)} type="button">
-          <FormattedMessage id="form.edit" />
-        </Button>
-        <Delete icon={faTimes} onClick={() => onRemove(id)} />
+export const EditorRow: React.FC<EditorRowProps> = ({ name, id, description, onEdit, onRemove, disabled }) => {
+  const { formatMessage } = useIntl();
+
+  const body = (
+    <div className={styles.body}>
+      <div className={styles.name}>{name || id}</div>
+      <div className={styles.actions}>
+        <Button
+          size="xs"
+          type="button"
+          variant="clear"
+          arial-label={formatMessage({ id: "form.edit" })}
+          onClick={() => onEdit(id)}
+          disabled={disabled}
+          icon={<PencilIcon />}
+        />
+        <Button
+          size="xs"
+          type="button"
+          variant="clear"
+          aria-label={formatMessage({ id: "form.delete" })}
+          onClick={() => onRemove(id)}
+          disabled={disabled}
+          icon={<CrossIcon />}
+        />
       </div>
-    </Content>
+    </div>
+  );
+
+  return (
+    <div className={styles.container}>
+      {description ? (
+        <Tooltip control={body} placement="top">
+          {description}
+        </Tooltip>
+      ) : (
+        body
+      )}
+    </div>
   );
 };
-
-export { EditorRow };

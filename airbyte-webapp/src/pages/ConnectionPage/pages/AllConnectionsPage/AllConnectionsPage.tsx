@@ -1,48 +1,57 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
+import { useNavigate } from "react-router-dom";
 
-import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-import HeadTitle from "components/HeadTitle";
-import Placeholder, { ResourceTypes } from "components/Placeholder";
+import { LoadingPage, MainPageWithScroll } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { ConnectionOnboarding } from "components/connection/ConnectionOnboarding";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
 
-import useRouter from "hooks/useRouter";
-import { FeatureItem, useFeatureService } from "hooks/services/Feature";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
 import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter();
+  const navigate = useNavigate();
 
+  useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
   const { connections } = useConnectionList();
-  const { hasFeature } = useFeatureService();
-  const allowCreateConnection = hasFeature(FeatureItem.AllowCreateConnection);
 
-  const onClick = () => push(`${RoutePaths.ConnectionNew}`);
+  const onCreateClick = (sourceDefinitionId?: string) =>
+    navigate(`${RoutePaths.ConnectionNew}`, { state: { sourceDefinitionId } });
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
-      pageTitle={
-        <PageTitle
-          title={<FormattedMessage id="sidebar.connections" />}
-          endComponent={
-            <Button onClick={onClick} disabled={!allowCreateConnection}>
-              <FormattedMessage id="connection.newConnection" />
-            </Button>
+    <Suspense fallback={<LoadingPage />}>
+      {connections.length ? (
+        <MainPageWithScroll
+          headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+          pageTitle={
+            <PageHeader
+              title={<FormattedMessage id="sidebar.connections" />}
+              endComponent={
+                <Button
+                  icon={<FontAwesomeIcon icon={faPlus} />}
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onCreateClick()}
+                >
+                  <FormattedMessage id="connection.newConnection" />
+                </Button>
+              }
+            />
           }
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>
-        {connections.length ? (
+        >
           <ConnectionsTable connections={connections} />
-        ) : (
-          <Placeholder resource={ResourceTypes.Connections} />
-        )}
-      </Suspense>
-    </MainPageWithScroll>
+        </MainPageWithScroll>
+      ) : (
+        <ConnectionOnboarding onCreate={onCreateClick} />
+      )}
+    </Suspense>
   );
 };
 

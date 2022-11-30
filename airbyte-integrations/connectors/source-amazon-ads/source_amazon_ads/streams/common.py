@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from abc import ABC, abstractmethod
@@ -14,7 +14,6 @@ from pydantic import BaseModel, ValidationError
 from source_amazon_ads.constants import URL_MAPPING
 from source_amazon_ads.schemas import CatalogModel
 from source_amazon_ads.schemas.profile import Profile
-from source_amazon_ads.spec import AmazonAdsConfig
 
 """
 This class hierarchy may seem overcomplicated so here is a visualization of
@@ -74,10 +73,10 @@ class BasicAmazonAdsStream(Stream, ABC):
     Base class for all Amazon Ads streams.
     """
 
-    def __init__(self, config: AmazonAdsConfig, profiles: List[Profile] = None):
+    def __init__(self, config: Mapping[str, Any], profiles: List[Profile] = None):
         self._profiles = profiles or []
-        self._client_id = config.client_id
-        self._url = URL_MAPPING[config.region]
+        self._client_id = config["client_id"]
+        self._url = URL_MAPPING[config["region"]]
 
     @property
     @abstractmethod
@@ -98,7 +97,9 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
     Class for getting data from streams that based on single http request.
     """
 
-    def __init__(self, config: AmazonAdsConfig, *args, profiles: List[Profile] = None, **kwargs):
+    data_field = ""
+
+    def __init__(self, config: Mapping[str, Any], *args, profiles: List[Profile] = None, **kwargs):
         # Each AmazonAdsStream instance are dependant on list of profiles.
         BasicAmazonAdsStream.__init__(self, config, profiles=profiles)
         HttpStream.__init__(self, *args, **kwargs)
@@ -122,7 +123,10 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
         :return an object representing single record in the response
         """
         if response.status_code == HTTPStatus.OK:
-            yield from response.json()
+            if self.data_field:
+                yield from response.json().get(self.data_field, [])
+            else:
+                yield from response.json()
             return
 
         """
@@ -152,7 +156,7 @@ class AmazonAdsStream(HttpStream, BasicAmazonAdsStream):
             response.raise_for_status()
             raise Exception(response.text)
 
-        self.logger.warn(
+        self.logger.warning(
             f"Unexpected error {resp.code} when processing request {response.request.url} for "
             f"{response.request.headers['Amazon-Advertising-API-Scope']} profile: {resp.details}"
         )

@@ -1,15 +1,16 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import json
+import logging
 import re
 from collections import defaultdict
 from datetime import datetime
 from typing import Dict, FrozenSet, Iterable, List
 
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog
+from airbyte_cdk.models.airbyte_protocol import AirbyteRecordMessage, AirbyteStream, ConfiguredAirbyteCatalog, SyncMode
 from google.oauth2 import credentials as client_account
 from google.oauth2 import service_account
 from googleapiclient import discovery
@@ -17,6 +18,8 @@ from googleapiclient import discovery
 from .models.spreadsheet import RowData, Spreadsheet
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets.readonly", "https://www.googleapis.com/auth/drive.readonly"]
+
+logger = logging.getLogger("airbyte")
 
 
 class Helpers(object):
@@ -57,7 +60,7 @@ class Helpers(object):
             "properties": {field: {"type": "string"} for field in fields},
         }
 
-        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=["full_refresh"])
+        return AirbyteStream(name=sheet_name, json_schema=sheet_json_schema, supported_sync_modes=[SyncMode.full_refresh])
 
     @staticmethod
     def get_valid_headers_and_duplicates(header_row_values: List[str]) -> (List[str], List[str]):
@@ -135,7 +138,7 @@ class Helpers(object):
         client, spreadsheet_id: str, requested_sheets_and_columns: Dict[str, FrozenSet[str]]
     ) -> Dict[str, Dict[int, str]]:
         available_sheets = Helpers.get_sheets_in_spreadsheet(client, spreadsheet_id)
-        print(f"available_sheets: {available_sheets}")
+        logger.info(f"Available sheets: {available_sheets}")
         available_sheets_to_column_index_to_name = defaultdict(dict)
         for sheet, columns in requested_sheets_and_columns.items():
             if sheet in available_sheets:
@@ -199,7 +202,7 @@ class Helpers(object):
         if re.match(r"(http://)|(https://)", id_or_url):
             # This is a URL
             m = re.search(r"(/)([-\w]{40,})([/]?)", id_or_url)
-            if m.group(2):
+            if m is not None and m.group(2):
                 return m.group(2)
         else:
             return id_or_url

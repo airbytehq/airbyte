@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pipedrive",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/pipedrive",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pipedrive Spec",
@@ -25,8 +25,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Client",
-                "enum": ["Client"],
-                "default": "Client",
                 "order": 0
               },
               "client_id": {
@@ -57,8 +55,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "Token",
-                "enum": ["Token"],
-                "default": "Token",
                 "order": 0
               },
               "api_token": {

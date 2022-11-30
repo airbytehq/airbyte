@@ -1,26 +1,25 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.bigquery;
 
-import static java.util.Objects.isNull;
-
 import com.codepoetics.protonpack.StreamUtils;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.auth.oauth2.ServiceAccountCredentials;
+import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -32,22 +31,24 @@ import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUpl
 import io.airbyte.integrations.destination.bigquery.uploader.BigQueryUploaderFactory;
 import io.airbyte.integrations.destination.bigquery.uploader.UploaderType;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
+import io.airbyte.integrations.destination.gcs.GcsDestination;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.GcsNameTransformer;
 import io.airbyte.integrations.destination.gcs.GcsStorageOperations;
 import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
-import io.airbyte.integrations.destination.s3.avro.AvroSerializedBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +57,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import org.apache.avro.Schema;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -86,71 +88,72 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
-      BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
+      BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
+
+      final Dataset dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation);
+      if (!dataset.getLocation().equals(datasetLocation)) {
+        throw new ConfigErrorException("Actual dataset location doesn't match to location from config");
+      }
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        // TODO: use GcsDestination::check instead of writing our own custom logic to check perms
-        // this is not currently possible because using the Storage class to check perms requires
-        // a service account key, and the GCS destination does not accept a Service Account Key,
-        // only an HMAC key
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkStorageIamPermissions(config);
-        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
-          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
-        }
+        checkGcsPermission(config);
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
       if (result.getLeft() != null) {
         return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
       } else {
-        return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
+        throw new ConfigErrorException(result.getRight());
       }
     } catch (final Exception e) {
-      LOGGER.info("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+      LOGGER.error("Check failed.", e);
+      throw new ConfigErrorException(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
-  public AirbyteConnectionStatus checkStorageIamPermissions(final JsonNode config) {
+  /**
+   * This method does two checks: 1) permissions related to the bucket, and 2) the ability to create
+   * and delete an actual file. The latter is important because even if the service account may have
+   * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
+   */
+  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
+    final List<String> missingPermissions = new ArrayList<>();
 
     try {
-      final ServiceAccountCredentials credentials = getServiceAccountCredentials(config);
-
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       final Storage storage = StorageOptions.newBuilder()
           .setProjectId(config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText())
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
+          .setHeaderProvider(BigQueryUtils.getHeaderProvider())
           .build().getService();
       final List<Boolean> permissionsCheckStatusList = storage.testIamPermissions(bucketName, REQUIRED_PERMISSIONS);
 
-      final List<String> missingPermissions = StreamUtils
+      missingPermissions.addAll(StreamUtils
           .zipWithIndex(permissionsCheckStatusList.stream())
           .filter(i -> !i.getValue())
           .map(i -> REQUIRED_PERMISSIONS.get(Math.toIntExact(i.getIndex())))
-          .toList();
+          .toList());
 
-      if (!missingPermissions.isEmpty()) {
-        LOGGER.error("Please make sure you account has all of these permissions:{}", REQUIRED_PERMISSIONS);
-
-        return new AirbyteConnectionStatus()
-            .withStatus(AirbyteConnectionStatus.Status.FAILED)
-            .withMessage("Could not connect to the Gcs bucket with the provided configuration. "
-                + "Missing permissions: " + missingPermissions);
-      }
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-
+      final GcsDestination gcsDestination = new GcsDestination();
+      final JsonNode gcsJsonNodeConfig = BigQueryUtils.getGcsJsonNodeConfig(config);
+      return gcsDestination.check(gcsJsonNodeConfig);
     } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the Gcs bucket: {}", e.getMessage());
+      final StringBuilder message = new StringBuilder("Cannot access the GCS bucket.");
+      if (!missingPermissions.isEmpty()) {
+        message.append(" The following permissions are missing on the service account: ")
+            .append(String.join(", ", missingPermissions))
+            .append(".");
+      }
+      message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
 
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the Gcs bucket with the provided configuration. \n" + e
-              .getMessage());
+      LOGGER.error(message.toString(), e);
+      throw new ConfigErrorException("Could not access the GCS bucket with the provided configuration.\n", e);
     }
   }
 
@@ -159,15 +162,11 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
     try {
       final BigQueryOptions.Builder bigQueryBuilder = BigQueryOptions.newBuilder();
-      ServiceAccountCredentials credentials = null;
-      if (BigQueryUtils.isUsingJsonCredentials(config)) {
-        // handle the credentials json being passed as a json object or a json object already serialized as
-        // a string.
-        credentials = getServiceAccountCredentials(config);
-      }
+      final GoogleCredentials credentials = getServiceAccountCredentials(config);
       return bigQueryBuilder
           .setProjectId(projectId)
-          .setCredentials(!isNull(credentials) ? credentials : ServiceAccountCredentials.getApplicationDefault())
+          .setCredentials(credentials)
+          .setHeaderProvider(BigQueryUtils.getHeaderProvider())
           .build()
           .getService();
     } catch (final IOException e) {
@@ -175,14 +174,19 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     }
   }
 
-  private ServiceAccountCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
-    final ServiceAccountCredentials credentials;
+  private static GoogleCredentials getServiceAccountCredentials(final JsonNode config) throws IOException {
+    if (!BigQueryUtils.isUsingJsonCredentials(config)) {
+      LOGGER.info("No service account key json is provided. It is required if you are using Airbyte cloud.");
+      LOGGER.info("Using the default service account credential from environment.");
+      return GoogleCredentials.getApplicationDefault();
+    }
+
+    // The JSON credential can either be a raw JSON object, or a serialized JSON object.
     final String credentialsString = config.get(BigQueryConsts.CONFIG_CREDS).isObject()
         ? Jsons.serialize(config.get(BigQueryConsts.CONFIG_CREDS))
         : config.get(BigQueryConsts.CONFIG_CREDS).asText();
-    credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
-    return credentials;
+    return GoogleCredentials.fromStream(
+        new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
   }
 
   @Override
@@ -208,6 +212,9 @@ public class BigQueryDestination extends BaseConnector implements Destination {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap = new HashMap<>();
     for (final ConfiguredAirbyteStream configStream : catalog.getStreams()) {
       final AirbyteStream stream = configStream.getStream();
+      if (StringUtils.isEmpty(stream.getNamespace())) {
+        stream.setNamespace(BigQueryUtils.getDatasetId(config));
+      }
       final String streamName = stream.getName();
       final UploaderConfig uploaderConfig = UploaderConfig
           .builder()
@@ -220,11 +227,18 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .isDefaultAirbyteTmpSchema(isDefaultAirbyteTmpTableSchema())
           .build();
 
-      uploaderMap.put(
-          AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
-          BigQueryUploaderFactory.getUploader(uploaderConfig));
+      putStreamIntoUploaderMap(stream, uploaderConfig, uploaderMap);
     }
     return uploaderMap;
+  }
+
+  protected void putStreamIntoUploaderMap(final AirbyteStream stream,
+                                          final UploaderConfig uploaderConfig,
+                                          final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
+      throws IOException {
+    uploaderMap.put(
+        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
+        BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 
   /**
@@ -253,7 +267,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                                            final Consumer<AirbyteMessage> outputRecordCollector)
       throws IOException {
     final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> writeConfigs = getUploaderMap(config, catalog);
-    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector);
+    return new BigQueryRecordConsumer(writeConfigs, outputRecordCollector, BigQueryUtils.getDatasetId(config));
   }
 
   public AirbyteMessageConsumer getGcsRecordConsumer(final JsonNode config,
@@ -282,7 +296,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
             avroFormatConfig,
             recordFormatterCreator,
             getAvroSchemaCreator(),
-            () -> new FileBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX));
+            () -> new FileBuffer(S3AvroFormatConfig.DEFAULT_SUFFIX));
 
     LOGGER.info("Creating BigQuery staging message consumer with staging ID {} at {}", stagingId, syncDatetime);
     return new BigQueryStagingConsumerFactory().create(

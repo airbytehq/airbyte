@@ -2,8 +2,9 @@ import React, { useCallback, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn } from "react-use";
 
+import { DestinationDefinitionRead } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import useConnector from "hooks/services/useConnector";
-import { DestinationDefinition } from "core/domain/connector";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -13,8 +14,10 @@ import { useDestinationList } from "../../../../hooks/services/useDestinationHoo
 import ConnectorsView from "./components/ConnectorsView";
 
 const DestinationsPage: React.FC = () => {
+  useTrackPage(PageTrackingCodes.SETTINGS_DESTINATION);
+
   const [isUpdateSuccess, setIsUpdateSuccess] = useState(false);
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { destinations } = useDestinationList();
 
@@ -43,8 +46,8 @@ const DestinationsPage: React.FC = () => {
     [feedbackList, formatMessage, updateDestinationDefinition]
   );
 
-  const usedDestinationDefinitions = useMemo<DestinationDefinition[]>(() => {
-    const destinationDefinitionMap = new Map<string, DestinationDefinition>();
+  const usedDestinationDefinitions = useMemo<DestinationDefinitionRead[]>(() => {
+    const destinationDefinitionMap = new Map<string, DestinationDefinitionRead>();
     destinations.forEach((destination) => {
       const destinationDefinition = destinationDefinitions.find(
         (destinationDefinition) => destinationDefinition.destinationDefinitionId === destination.destinationDefinitionId

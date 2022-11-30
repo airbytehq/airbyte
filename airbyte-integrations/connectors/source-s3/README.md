@@ -21,6 +21,7 @@ development environment of choice. To activate it from the terminal, run:
 ```
 source .venv/bin/activate
 pip install -r requirements.txt
+pip install '.[tests]'
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
 

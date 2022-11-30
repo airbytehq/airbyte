@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from enum import Enum
-from typing import Union
+from typing import Any, List, Text, Union
 
 import pendulum
 import pytest
@@ -30,6 +30,11 @@ def simple_state_fixture():
             "ts_updated": "2015-01-01T22:03:11",
         }
     }
+
+
+@pytest.fixture(name="none_state")
+def none_state_fixture():
+    return {"my_stream": None}
 
 
 @pytest.fixture(name="nested_state")
@@ -59,7 +64,7 @@ def stream_schema_fixture():
 def stream_mapping_fixture(stream_schema):
     return {
         "my_stream": ConfiguredAirbyteStream(
-            stream=AirbyteStream(name="my_stream", json_schema=stream_schema),
+            stream=AirbyteStream(name="my_stream", json_schema=stream_schema, supported_sync_modes=[SyncMode.full_refresh]),
             sync_mode=SyncMode.full_refresh,
             destination_sync_mode=DestinationSyncMode.append,
         )
@@ -102,15 +107,6 @@ def test_nested_path(records, stream_mapping, nested_state):
     assert state_value == pendulum.datetime(2015, 1, 1, 22, 3, 11), "state value must be correctly found"
 
 
-def test_nested_path_unknown(records, stream_mapping, simple_state):
-    stream_mapping["my_stream"].cursor_field = ["ts_created"]
-    paths = {"my_stream": ["unknown", "ts_created"]}
-
-    result = records_with_state(records=records, state=simple_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
-    with pytest.raises(KeyError):
-        next(result)
-
-
 def test_absolute_path(records, stream_mapping, singer_state):
     stream_mapping["my_stream"].cursor_field = ["ts_created"]
     paths = {"my_stream": ["bookmarks", "my_stream", "ts_created"]}
@@ -120,6 +116,14 @@ def test_absolute_path(records, stream_mapping, singer_state):
 
     assert record_value == pendulum.datetime(2015, 11, 1, 22, 3, 11), "record value must be correctly found"
     assert state_value == pendulum.datetime(2014, 1, 1, 22, 3, 11), "state value must be correctly found"
+
+
+def test_none_state(records, stream_mapping, none_state):
+    stream_mapping["my_stream"].cursor_field = ["ts_created"]
+    paths = {"my_stream": ["unknown", "ts_created"]}
+
+    result = records_with_state(records=records, state=none_state, stream_mapping=stream_mapping, state_cursor_paths=paths)
+    assert next(result, None) is None
 
 
 def test_json_schema_helper_pydantic_generated():
@@ -204,3 +208,52 @@ def test_get_object_strucutre(object, pathes):
 )
 def test_get_expected_schema_structure(schema, pathes):
     assert get_expected_schema_structure(schema) == pathes
+
+
+@pytest.mark.parametrize(
+    "keys, num_paths, last_value",
+    [
+        (["description"], 1, "Tests that keys can be found inside lists of dicts"),
+        (["option1"], 2, {"a_key": "a_value"}),
+        (["option2"], 1, ["value1", "value2"]),
+        (["nonexistent_key"], 0, None),
+        (["option1", "option2"], 3, ["value1", "value2"])
+    ],
+)
+def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
+    schema = {
+        "title": "Key_inside_oneOf",
+        "description": "Tests that keys can be found inside lists of dicts",
+        "type": "object",
+        "properties": {
+            "credentials": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "common": {"type": "string", "const": "option1", "default": "option1"},
+                            "option1": {"type": "string"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "common": {"type": "string", "const": "option2", "default": "option2"},
+                            "option1": {"a_key": "a_value"},
+                            "option2": ["value1", "value2"],
+                        },
+                    },
+                ],
+            }
+        },
+    }
+    schema_helper = JsonSchemaHelper(schema)
+    variant_paths = schema_helper.find_nodes(keys=keys)
+    assert len(variant_paths) == num_paths
+
+    if variant_paths:
+        values_at_nodes = []
+        for path in variant_paths:
+            values_at_nodes.append(schema_helper.get_node(path))
+        assert last_value in values_at_nodes

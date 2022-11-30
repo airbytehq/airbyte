@@ -32,6 +32,9 @@
     "sms_method": {
       "type": ["null", "string"]
     },
+    "public_application_connect_enabled": {
+      "type": ["null", "boolean"]
+    },
     "sms_status_callback": {
       "type": ["null", "string"]
     },
@@ -64,5 +67,5 @@
     }
   },
   "type": "object",
-  "additionalProperties": false
+  "additionalProperties": true
 }

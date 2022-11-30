@@ -1,35 +1,42 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import csv
 import ctypes
-import io
 import math
+import os
 import time
 from abc import ABC
+from contextlib import closing
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Type, Union
 
+import pandas as pd
 import pendulum
 import requests  # type: ignore[import]
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import ConfiguredAirbyteCatalog, SyncMode
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
+from numpy import nan
 from pendulum import DateTime  # type: ignore[attr-defined]
 from requests import codes, exceptions
 
 from .api import UNSUPPORTED_FILTERING_STREAMS, Salesforce
-from .exceptions import SalesforceException
+from .exceptions import SalesforceException, TmpFileIOError
 from .rate_limiting import default_backoff_handler
 
 # https://stackoverflow.com/a/54517228
 CSV_FIELD_SIZE_LIMIT = int(ctypes.c_ulong(-1).value // 2)
 csv.field_size_limit(CSV_FIELD_SIZE_LIMIT)
 
+DEFAULT_ENCODING = "utf-8"
+
 
 class SalesforceStream(HttpStream, ABC):
     page_size = 2000
     transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    encoding = DEFAULT_ENCODING
 
     def __init__(
         self, sf_api: Salesforce, pk: str, stream_name: str, sobject_options: Mapping[str, Any] = None, schema: dict = None, **kwargs
@@ -123,10 +130,15 @@ class SalesforceStream(HttpStream, ABC):
                     return
             raise error
 
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        if isinstance(exception, exceptions.ConnectionError):
+            return f"After {self.max_retries} retries the connector has failed with a network error. It looks like Salesforce API experienced temporary instability, please try again later."
+        return super().get_error_display_message(exception)
+
 
 class BulkSalesforceStream(SalesforceStream):
-    page_size = 30000
-    DEFAULT_WAIT_TIMEOUT_SECONDS = 600
+    page_size = 15000
+    DEFAULT_WAIT_TIMEOUT_SECONDS = 86400  # 24-hour bulk job running time
     MAX_CHECK_INTERVAL_SECONDS = 2.0
     MAX_RETRY_NUMBER = 3
 
@@ -136,9 +148,9 @@ class BulkSalesforceStream(SalesforceStream):
     transformer = TypeTransformer(TransformConfig.CustomSchemaNormalization | TransformConfig.DefaultSchemaNormalization)
 
     @default_backoff_handler(max_tries=5, factor=15)
-    def _send_http_request(self, method: str, url: str, json: dict = None):
+    def _send_http_request(self, method: str, url: str, json: dict = None, stream: bool = False):
         headers = self.authenticator.get_auth_header()
-        response = self._session.request(method, url=url, headers=headers, json=json)
+        response = self._session.request(method, url=url, headers=headers, json=json, stream=stream)
         if response.status_code not in [200, 204]:
             self.logger.error(f"error body: {response.text}, sobject options: {self.sobject_options}")
         response.raise_for_status()
@@ -146,7 +158,7 @@ class BulkSalesforceStream(SalesforceStream):
 
     def create_stream_job(self, query: str, url: str) -> Optional[str]:
         """
-        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.htm
+        docs: https://developer.salesforce.com/docs/atlas.en-us.api_asynch.meta/api_asynch/create_job.html
         """
         json = {"operation": "queryAll", "query": query, "contentType": "CSV", "columnDelimiter": "COMMA", "lineEnding": "LF"}
         try:
@@ -182,6 +194,11 @@ class BulkSalesforceStream(SalesforceStream):
                         f"Cannot receive data for stream '{self.name}' ,"
                         f"sobject options: {self.sobject_options}, error message: '{error_message}'"
                     )
+                elif error.response.status_code == codes.FORBIDDEN and error_code == "REQUEST_LIMIT_EXCEEDED":
+                    self.logger.error(
+                        f"Cannot receive data for stream '{self.name}' ,"
+                        f"sobject options: {self.sobject_options}, Error message: '{error_data.get('message')}'"
+                    )
                 elif error.response.status_code == codes.BAD_REQUEST and error_message.endswith("does not support query"):
                     self.logger.error(
                         f"The stream '{self.name}' is not queryable, "
@@ -210,7 +227,7 @@ class BulkSalesforceStream(SalesforceStream):
                     # this is only job metadata without payload
                     error_message = job_info.get("errorMessage")
                     if not error_message:
-                        # not all failed response can have "errorMessage" and we need to print full response body
+                        # not all failed response can have "errorMessage" and we need to show full response body
                         error_message = job_info
                     self.logger.error(f"JobStatus: {job_status}, sobject options: {self.sobject_options}, error message: '{error_message}'")
 
@@ -234,7 +251,7 @@ class BulkSalesforceStream(SalesforceStream):
         for i in range(0, self.MAX_RETRY_NUMBER):
             job_id = self.create_stream_job(query=query, url=url)
             if not job_id:
-                return None, None
+                return None, job_status
             job_full_url = f"{url}/{job_id}"
             job_status = self.wait_for_job(url=job_full_url)
             if job_status not in ["UploadComplete", "InProgress"]:
@@ -248,22 +265,56 @@ class BulkSalesforceStream(SalesforceStream):
             return None, job_status
         return job_full_url, job_status
 
-    def filter_null_bytes(self, s: str):
+    def filter_null_bytes(self, b: bytes):
         """
         https://github.com/airbytehq/airbyte/issues/8300
         """
-        res = s.replace("\x00", "")
-        if len(res) < len(s):
-            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(s), len(res))
+        res = b.replace(b"\x00", b"")
+        if len(res) < len(b):
+            self.logger.warning("Filter 'null' bytes from string, size reduced %d -> %d chars", len(b), len(res))
         return res
 
-    def download_data(self, url: str) -> Iterable[Tuple[int, Mapping[str, Any]]]:
-        job_data = self._send_http_request("GET", f"{url}/results")
-        decoded_content = self.filter_null_bytes(job_data.content.decode("utf-8"))
-        fp = io.StringIO(decoded_content, newline="")
-        csv_data = csv.DictReader(fp, dialect="unix")
-        for n, row in enumerate(csv_data, 1):
-            yield n, row
+    def download_data(self, url: str, chunk_size: int = 1024) -> tuple[str, str]:
+        """
+        Retrieves binary data result from successfully `executed_job`, using chunks, to avoid local memory limitations.
+        @ url: string - the url of the `executed_job`
+        @ chunk_size: int - the buffer size for each chunk to fetch from stream, in bytes, default: 1024 bytes
+        Return the tuple containing string with file path of downloaded binary data (Saved temporarily) and file encoding.
+        """
+        # set filepath for binary data from response
+        tmp_file = os.path.realpath(os.path.basename(url))
+        with closing(self._send_http_request("GET", f"{url}/results", stream=True)) as response, open(tmp_file, "wb") as data_file:
+            response_encoding = response.apparent_encoding or response.encoding or self.encoding
+            for chunk in response.iter_content(chunk_size=chunk_size):
+                data_file.write(self.filter_null_bytes(chunk))
+        # check the file exists
+        if os.path.isfile(tmp_file):
+            return tmp_file, response_encoding
+        else:
+            raise TmpFileIOError(f"The IO/Error occured while verifying binary data. Stream: {self.name}, file {tmp_file} doesn't exist.")
+
+    def read_with_chunks(self, path: str, file_encoding: str, chunk_size: int = 100) -> Iterable[Tuple[int, Mapping[str, Any]]]:
+        """
+        Reads the downloaded binary data, using lines chunks, set by `chunk_size`.
+        @ path: string - the path to the downloaded temporarily binary data.
+        @ file_encoding: string - encoding for binary data file according to Standard Encodings from codecs module
+        @ chunk_size: int - the number of lines to read at a time, default: 100 lines / time.
+        """
+        try:
+            with open(path, "r", encoding=file_encoding) as data:
+                chunks = pd.read_csv(data, chunksize=chunk_size, iterator=True, dialect="unix")
+                for chunk in chunks:
+                    chunk = chunk.replace({nan: None}).to_dict(orient="records")
+                    for row in chunk:
+                        yield row
+        except pd.errors.EmptyDataError as e:
+            self.logger.info(f"Empty data received. {e}")
+            yield from []
+        except IOError as ioe:
+            raise TmpFileIOError(f"The IO/Error occured while reading tmp data. Called: {path}. Stream: {self.name}", ioe)
+        finally:
+            # remove binary tmp file, after data is read
+            os.remove(path)
 
     def abort_job(self, url: str):
         data = {"state": "Aborted"}
@@ -292,7 +343,6 @@ class BulkSalesforceStream(SalesforceStream):
 
         if self.primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
             query += f"ORDER BY {self.primary_key} ASC LIMIT {self.page_size}"
-
         return {"q": query}
 
     def read_records(
@@ -325,12 +375,15 @@ class BulkSalesforceStream(SalesforceStream):
 
             count = 0
             record: Mapping[str, Any] = {}
-            for count, record in self.download_data(url=job_full_url):
+            for record in self.read_with_chunks(*self.download_data(url=job_full_url)):
+                count += 1
                 yield record
             self.delete_job(url=job_full_url)
 
             if count < self.page_size:
-                # this is a last page
+                # Salesforce doesn't give a next token or something to know the request was
+                # the last page. The connectors will sync batches in `page_size` and
+                # considers that batch is smaller than the `page_size` it must be the last page.
                 break
 
             next_page_token = self.next_page_token(record)
@@ -423,7 +476,11 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
     def next_page_token(self, last_record: Mapping[str, Any]) -> Optional[Mapping[str, Any]]:
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
             page_token: str = last_record[self.cursor_field]
-            return {"next_token": page_token}
+            res = {"next_token": page_token}
+            # use primary key as additional filtering param, if cursor_field is not increased from previous page
+            if self.primary_key and self.prev_start_date == page_token:
+                res["primary_key"] = last_record[self.primary_key]
+            return res
         return None
 
     def request_params(
@@ -433,11 +490,40 @@ class BulkIncrementalSalesforceStream(BulkSalesforceStream, IncrementalSalesforc
 
         stream_date = stream_state.get(self.cursor_field)
         next_token = (next_page_token or {}).get("next_token")
+        primary_key = (next_page_token or {}).get("primary_key")
         start_date = next_token or stream_date or self.start_date
+        self.prev_start_date = start_date
 
         query = f"SELECT {','.join(selected_properties.keys())} FROM {self.name} "
         if start_date:
-            query += f"WHERE {self.cursor_field} >= {start_date} "
+            if primary_key and self.name not in UNSUPPORTED_FILTERING_STREAMS:
+                query += f"WHERE ({self.cursor_field} = {start_date} AND {self.primary_key} > '{primary_key}') OR ({self.cursor_field} > {start_date}) "
+            else:
+                query += f"WHERE {self.cursor_field} >= {start_date} "
         if self.name not in UNSUPPORTED_FILTERING_STREAMS:
-            query += f"ORDER BY {self.cursor_field} ASC LIMIT {self.page_size}"
+            order_by_fields = [self.cursor_field, self.primary_key] if self.primary_key else [self.cursor_field]
+            query += f"ORDER BY {','.join(order_by_fields)} ASC LIMIT {self.page_size}"
         return {"q": query}
+
+
+class Describe(Stream):
+    """
+    Stream of sObjects' (Salesforce Objects) describe:
+    https://developer.salesforce.com/docs/atlas.en-us.api_rest.meta/api_rest/resources_sobject_describe.htm
+    """
+
+    name = "Describe"
+    primary_key = "name"
+
+    def __init__(self, sf_api: Salesforce, catalog: ConfiguredAirbyteCatalog = None, **kwargs):
+        super().__init__(**kwargs)
+        self.sf_api = sf_api
+        if catalog:
+            self.sobjects_to_describe = [s.stream.name for s in catalog.streams if s.stream.name != self.name]
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        Yield describe response of SObjects defined in catalog as streams only.
+        """
+        for sobject in self.sobjects_to_describe:
+            yield self.sf_api.describe(sobject=sobject)

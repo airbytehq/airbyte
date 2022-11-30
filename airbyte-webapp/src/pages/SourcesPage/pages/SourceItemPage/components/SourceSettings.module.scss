@@ -1,0 +1,7 @@
+@use "../../../../../scss/variables";
+
+.content {
+  width: 80%;
+  max-width: 813px;
+  margin: variables.$spacing-xl auto;
+}

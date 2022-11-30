@@ -1,44 +1,34 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
-import { SourceDefinition } from "./types";
+import {
+  getSourceDefinitionForWorkspace,
+  listLatestSourceDefinitions,
+  listSourceDefinitionsForWorkspace,
+  SourceDefinitionIdWithWorkspaceId,
+  updateSourceDefinition,
+  SourceDefinitionUpdate,
+  CustomSourceDefinitionCreate,
+  createCustomSourceDefinition,
+} from "../../request/AirbyteClient";
 
-class SourceDefinitionService extends AirbyteRequestService {
-  get url(): string {
-    return "source_definitions";
+export class SourceDefinitionService extends AirbyteRequestService {
+  public get(body: SourceDefinitionIdWithWorkspaceId) {
+    return getSourceDefinitionForWorkspace(body, this.requestOptions);
   }
 
-  public get(sourceDefinitionId: string): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/get`, {
-      sourceDefinitionId,
-    });
+  public list(workspaceId: string) {
+    return listSourceDefinitionsForWorkspace({ workspaceId }, this.requestOptions);
   }
 
-  public list(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinition[] }> {
-    return this.fetch(`${this.url}/list`, {
-      workspaceId,
-    });
+  public listLatest() {
+    return listLatestSourceDefinitions(this.requestOptions);
   }
 
-  public listLatest(workspaceId: string): Promise<{ sourceDefinitions: SourceDefinition[] }> {
-    return this.fetch(`${this.url}/list_latest`, {
-      workspaceId,
-    });
+  public update(body: SourceDefinitionUpdate) {
+    return updateSourceDefinition(body, this.requestOptions);
   }
 
-  public update(body: { sourceDefinitionId: string; dockerImageTag: string }): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/update`, body);
-  }
-
-  public create(body: CreateSourceDefinitionPayload): Promise<SourceDefinition> {
-    return this.fetch<SourceDefinition>(`${this.url}/create`, body);
+  public createCustom(body: CustomSourceDefinitionCreate) {
+    return createCustomSourceDefinition(body, this.requestOptions);
   }
 }
-
-export type CreateSourceDefinitionPayload = {
-  name: string;
-  documentationUrl: string;
-  dockerImageTag: string;
-  dockerRepository: string;
-};
-
-export { SourceDefinitionService };

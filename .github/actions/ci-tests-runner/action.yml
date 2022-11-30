@@ -26,16 +26,16 @@ inputs:
 runs:
   using: "composite"
   steps:
-
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: 3.7
+        python-version: 3.9
 
     - name: Install Java
-      uses: actions/setup-java@v1
+      uses: actions/setup-java@v3
       with:
-        java-version: '17'
+        distribution: "zulu"
+        java-version: "17"
 
     - name: Tests of CI
       shell: bash
@@ -57,20 +57,20 @@ runs:
       id: gcloud-tunnel
       shell: bash
       run: |
-          while true; do
-            PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
-            status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
-            if [ "${status}" != "0" ]; then
-                echo "$PORT is free to use";
-                break;
-            fi
-          done
-          IPS=($(hostname -I))
-          LOCAL_IP_PORT="${IPS[0]}:${PORT}"
-          gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
-          echo ::set-output name=pid::$!
-          echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
-          echo "::echo::on"
+        while true; do
+          PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
+          status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
+          if [ "${status}" != "0" ]; then
+              echo "$PORT is free to use";
+              break;
+          fi
+        done
+        IPS=($(hostname -I))
+        LOCAL_IP_PORT="${IPS[0]}:${PORT}"
+        gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
+        echo pid=$! >> $GITHUB_OUTPUT
+        echo "sonar-host=http://${LOCAL_IP_PORT}/" >> $GITHUB_OUTPUT
+        echo "::echo::on"
 
     - name: Python Tests
       id: ci-py-tests
@@ -87,10 +87,6 @@ runs:
       with:
         module-name: ${{ inputs.module-name }}
         module-folder: ${{ inputs.module-folder }}
-
-
-
-
 
     - name: Prepare SQ Options
       shell: bash
@@ -129,19 +125,18 @@ runs:
         fi
 
         # join the array to string format
-        echo ::set-output name=external_reports::$(IFS=, ; echo "${REPORT_FILES[*]}")
-        echo ::set-output name=options::$(IFS=' ' ; echo "${OPTIONS[*]}")
+        echo external_reports=$(IFS=, ; echo "${REPORT_FILES[*]}") >> $GITHUB_OUTPUT
+        echo options=$(IFS=' ' ; echo "${OPTIONS[*]}") >> $GITHUB_OUTPUT
 
     - name: Create SonarQube Project
       shell: bash
       id: create-sq-project
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
-        echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
+        echo "sq_project_name=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})" >> $GITHUB_OUTPUT
         ROOT_DIR=$(git rev-parse --show-toplevel)
         MODULE_DIR=$(python -c "print('${{ inputs.module-folder }}'.replace('${ROOT_DIR}', '.'))")
-        echo "::set-output name=module_dir::${MODULE_DIR}"
-
+        echo "module_dir::${MODULE_DIR}" >> $GITHUB_OUTPUT
 
     - name: SonarQube Scan
 
@@ -150,17 +145,17 @@ runs:
         SONAR_TOKEN: ${{ inputs.sonar-token }}
         SONAR_HOST_URL: ${{ steps.gcloud-tunnel.outputs.sonar-host }}
       with:
-          projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
-          args: >
-            -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
-            -Dsonar.verbose=true
-            -Dsonar.working.directory=/tmp/scannerwork
-            -Dsonar.language=${{ inputs.module-lang }}
-            -Dsonar.sourceEncoding=UTF-8
-            -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
-            -Dsonar.exclusions=reports/**,*.toml,*_tests/**,setup.py,main.py
-            -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
-            ${{ steps.sq-options.outputs.options }}
+        projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
+        args: >
+          -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
+          -Dsonar.verbose=true
+          -Dsonar.working.directory=/tmp/scannerwork
+          -Dsonar.language=${{ inputs.module-lang }}
+          -Dsonar.sourceEncoding=UTF-8
+          -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
+          -Dsonar.exclusions=reports/**,*.toml,*_tests/**,setup.py,main.py
+          -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
+          ${{ steps.sq-options.outputs.options }}
 
     - name: Generate SonarQube Report
       shell: bash
@@ -174,7 +169,7 @@ runs:
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
         body="${body//$'\r'/'%0D'}"
-        echo "::set-output name=sq-report::$body"
+        echo "sq-report=$body" >> $GITHUB_OUTPUT
 
     - name: Add Comment
       if: ${{ github.event_name == 'pull_request' }}

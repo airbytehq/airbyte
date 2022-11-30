@@ -1,6 +1,6 @@
 # Connector Specification Reference
 
-The [connector specification](../understanding-airbyte/airbyte-specification.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
+The [connector specification](../understanding-airbyte/airbyte-protocol.md#spec) describes what inputs can be used to configure a connector. Like the rest of the Airbyte Protocol, it uses [JsonSchema](https://json-schema.org), but with some slight modifications.
 
 ## Demoing your specification
 
@@ -48,6 +48,11 @@ will result in the following configuration on the UI:
 ![Screen Shot 2021-11-18 at 7 14 04 PM](https://user-images.githubusercontent.com/6246757/142558797-135f6c73-f05d-479f-9d88-e20cae85870c.png)
 
 
+:::info
+
+Within an object definition, if some fields have the `order` property defined, and others don't, then the fields without the `order` property defined should be rendered last in the UI. Among those elements (which don't have `order` defined), no ordering is guaranteed. 
+
+:::
 
 
 ### Multi-line String inputs
@@ -77,13 +82,41 @@ By default, string inputs in the UI can lose their linebreaks. In order to accep
 
 this will display a multi-line textbox in the UI like the following screenshot: ![Screen Shot 2021-08-04 at 11 13 09 PM](https://user-images.githubusercontent.com/6246757/128300404-1dc35323-bceb-4f93-9b81-b23cc4beb670.png)
 
-### Using `oneOf`s
+### Hiding inputs in the UI
+In some rare cases, a connector may wish to expose an input that is not available in the UI, but is still potentially configurable when running the connector outside of Airbyte, or via the UI. For example, exposing a very technical configuration like the page size of an outgoing HTTP requests may only be relevant to power users, and therefore shouldn't be available via the UI but might make sense to expose via the API. 
+
+In this case, use the `"airbyte_hidden": true` keyword to hide that field from the UI. E.g: 
+
+```
+{
+  "first_name": {
+    "type": "string",
+    "title": "First Name"
+  },
+  "secret_name": {
+    "type": "string",
+    "title": "You can't see me!!!",
+    "airbyte_hidden": true
+  }
+}
+```
+
+Results in the following form:
+
+![hidden fields](../.gitbook/assets/spec_reference_hidden_field_screenshot.png)
+
+
+## Airbyte Modifications to `jsonschema`
+
+### Using `oneOf`
 
 In some cases, a connector needs to accept one out of many options. For example, a connector might need to know the compression codec of the file it will read, which will render in the Airbyte UI as a list of the available codecs. In JSONSchema, this can be expressed using the [oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) keyword.
 
-{% hint style="info" %}
+:::info
+
 Some connectors may follow an older format for dropdown lists, we are currently migrating away from that to this standard.
-{% endhint %}
+
+:::
 
 In order for the Airbyte UI to correctly render a specification, however, a few extra rules must be followed:
 
@@ -101,7 +134,6 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "File Source Spec",
     "type": "object",
-    "additionalProperties": false,
     "required": ["dataset_name", "format", "url", "provider"],
     "properties": {
       "dataset_name": {
@@ -153,3 +185,28 @@ In each item in the `oneOf` array, the `option_title` string field exists with t
 }
 ```
 
+### Using `enum`
+
+In regular `jsonschema`, some drafts enforce that `enum` lists must contain distinct values, while others do not. For consistency, Airbyte enforces this restriction.
+
+For example, this spec is invalid, since `a_format` is listed twice under the enumerated property `format`:
+
+```javascript
+{
+  "connection_specification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "File Source Spec",
+    "type": "object",
+    "required": ["format"],
+    "properties": {
+      "dataset_name": {
+        ...
+      },
+      "format": {
+        type: "string",
+        enum: ["a_format", "another_format", "a_format"]
+      },
+    }
+  }
+}
+```

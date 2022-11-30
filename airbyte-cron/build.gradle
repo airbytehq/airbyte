@@ -1,0 +1,52 @@
+plugins {
+    id 'application'
+}
+
+dependencies {
+    implementation 'com.auth0:java-jwt:3.19.2'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'io.sentry:sentry:6.3.1'
+    implementation libs.bundles.temporal
+    implementation libs.bundles.datadog
+
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
+
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+}
+
+mainClassName = 'io.airbyte.cron.MicronautCronRunner'
+
+application {
+    mainClass = mainClassName
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
+
+run {
+    // default for running on local machine.
+    env.each { entry ->
+        environment entry.getKey(), entry.getValue()
+    }
+
+    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
+    environment 'AIRBYTE_VERSION', env.VERSION
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}

@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.snowflake;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -14,25 +15,26 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -41,11 +43,17 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new SnowflakeSQLNameTransformer();
+  protected static final String NO_ACTIVE_WAREHOUSE_ERR_MSG =
+      "No active warehouse selected in the current session.  Select an active warehouse with the 'use warehouse' command.";
+
+  protected static final String NO_USER_PRIVILEGES_ERR_MSG =
+      "Schema 'TEXT_SCHEMA' already exists, but current role has no privileges on it.";
 
   // this config is based on the static config, and it contains a random
   // schema name that is different for each test run
   private JsonNode config;
   private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -55,6 +63,26 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected JsonNode getConfig() {
     return config;
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new SnowflakeTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
   public JsonNode getStaticConfig() {
@@ -79,7 +107,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       throws Exception {
     return retrieveRecordsFromTable(NAME_TRANSFORMER.getRawTableName(streamName), NAME_TRANSFORMER.getNamespace(namespace))
         .stream()
-        .map(j -> Jsons.deserialize(j.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
         .collect(Collectors.toList());
   }
 
@@ -113,42 +141,27 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
       throws Exception {
     final String tableName = NAME_TRANSFORMER.getIdentifier(streamName);
     final String schema = NAME_TRANSFORMER.getNamespace(namespace);
-    // Temporarily disabling the behavior of the ExtendedNameTransformer, see (issue #1785) so we don't
-    // use quoted names
-    // if (!tableName.startsWith("\"")) {
-    // // Currently, Normalization always quote tables identifiers
-    // tableName = "\"" + tableName + "\"";
-    // }
     return retrieveRecordsFromTable(tableName, schema);
   }
 
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = NAME_TRANSFORMER.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
-  }
-
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws SQLException {
+    TimeZone timeZone = TimeZone.getTimeZone("UTC");
+    TimeZone.setDefault(timeZone);
+
     return database.bufferedResultSetQuery(
         connection -> {
           try (final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));) {
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
             assertTrue(tableInfo.next());
             // check that we're creating permanent tables. DBT defaults to transient tables, which have
             // `TRANSIENT` as the value for the `kind` column.
             assertEquals("TABLE", tableInfo.getString("kind"));
+            connection.createStatement().execute("ALTER SESSION SET TIMEZONE = 'UTC';");
             return connection.createStatement()
                 .executeQuery(String.format("SELECT * FROM %s.%s ORDER BY %s ASC;", schema, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT));
           }
         },
-        JdbcUtils.getDefaultSourceOperations()::rowToJson);
+        new SnowflakeTestSourceOperations()::rowToJson);
   }
 
   // for each test we create a new schema in the database. run the test in there and then remove it.
@@ -160,7 +173,8 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     this.config = Jsons.clone(getStaticConfig());
     ((ObjectNode) config).put("schema", schemaName);
 
-    database = SnowflakeDatabase.getDatabase(config);
+    dataSource = SnowflakeDatabase.createDataSource(config, OssCloudEnvVarConsts.AIRBYTE_OSS);
+    database = SnowflakeDatabase.getDatabase(dataSource);
     database.execute(createSchemaQuery);
   }
 
@@ -168,7 +182,31 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   protected void tearDown(final TestDestinationEnv testEnv) throws Exception {
     final String createSchemaQuery = String.format("DROP SCHEMA IF EXISTS %s", config.get("schema").asText());
     database.execute(createSchemaQuery);
-    database.close();
+    DataSourceFactory.close(dataSource);
+  }
+
+  @Test
+  public void testCheckWithNoActiveWarehouseConnection() throws Exception {
+    // Config to user(creds) that has no warehouse assigned
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/internal_staging_config_no_active_warehouse.json")));
+
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_ACTIVE_WAREHOUSE_ERR_MSG);
+  }
+
+  @Test
+  public void testCheckWithNoTextSchemaPermissionConnection() throws Exception {
+    // Config to user (creds) that has no permission to schema
+    final JsonNode config = Jsons.deserialize(IOs.readFile(
+        Path.of("secrets/config_no_text_schema_permission.json")));
+
+    StandardCheckConnectionOutput standardCheckConnectionOutput = runCheck(config);
+
+    assertEquals(Status.FAILED, standardCheckConnectionOutput.getStatus());
+    assertThat(standardCheckConnectionOutput.getMessage()).contains(NO_USER_PRIVILEGES_ERR_MSG);
   }
 
   @Test
@@ -182,6 +220,13 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     assertEquals(Status.SUCCEEDED, runCheckWithCatchedException(deprecatedStyleConfig));
   }
 
+  @Test
+  void testCheckWithKeyPairAuth() throws Exception {
+    final JsonNode credentialsJsonString = Jsons.deserialize(IOs.readFile(Path.of("secrets/config_key_pair.json")));
+    final AirbyteConnectionStatus check = new SnowflakeDestination(OssCloudEnvVarConsts.AIRBYTE_OSS).check(credentialsJsonString);
+    assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, check.getStatus());
+  }
+
   /**
    * This test is disabled because it is very slow, and should only be run manually for now.
    */
@@ -192,7 +237,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
 
     final List<AirbyteMessage> largeNumberRecords =
         Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());

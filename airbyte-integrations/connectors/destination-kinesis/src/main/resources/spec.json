@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/kinesis",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kinesis",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -8,19 +8,28 @@
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Kinesis Destination Spec",
     "type": "object",
-    "required": ["shardCount", "accessKey", "privateKey", "bufferSize"],
+    "required": [
+      "endpoint",
+      "region",
+      "shardCount",
+      "accessKey",
+      "privateKey",
+      "bufferSize"
+    ],
     "additionalProperties": true,
     "properties": {
       "endpoint": {
         "title": "Endpoint",
         "description": "AWS Kinesis endpoint.",
         "type": "string",
+        "examples": ["kinesis.us‑west‑1.amazonaws.com"],
         "order": 0
       },
       "region": {
         "title": "Region",
         "description": "AWS region. Your account determines the Regions that are available to you.",
         "type": "string",
+        "examples": ["us‑west‑1"],
         "order": 1
       },
       "shardCount": {

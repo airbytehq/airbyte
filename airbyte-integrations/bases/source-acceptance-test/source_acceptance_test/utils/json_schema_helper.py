@@ -1,10 +1,10 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from functools import reduce
-from typing import Any, List, Mapping, Optional, Set
+from typing import Any, Dict, List, Mapping, Optional, Set, Text, Union
 
 import pendulum
 from jsonref import JsonRef
@@ -122,21 +122,23 @@ class JsonSchemaHelper:
         return node
 
     def find_nodes(self, keys: List[str]) -> List[List[str]]:
-        """Get all nodes of schema that has specifies properties
+        """Find all paths that lead to nodes with the specified keys.
 
-        :param keys:
+        :param keys: list of keys
         :return: list of json object paths
         """
         variant_paths = []
 
-        def traverse_schema(_schema, path=None):
+        def traverse_schema(_schema: Union[Dict[Text, Any], List], path=None):
             path = path or []
             if path and path[-1] in keys:
                 variant_paths.append(path)
-            for item in _schema:
-                next_obj = _schema[item] if isinstance(_schema, dict) else item
-                if isinstance(next_obj, (list, dict)):
-                    traverse_schema(next_obj, [*path, item])
+            if isinstance(_schema, dict):
+                for item in _schema:
+                    traverse_schema(_schema[item], [*path, item])
+            elif isinstance(_schema, list):
+                for i, item in enumerate(_schema):
+                    traverse_schema(_schema[i], [*path, i])
 
         traverse_schema(self._schema)
         return variant_paths
@@ -168,7 +170,7 @@ def get_object_structure(obj: dict) -> List[str]:
 
 def get_expected_schema_structure(schema: dict, annotate_one_of: bool = False) -> List[str]:
     """
-    Travers through json schema and compose list of property keys that object expected to have.
+    Traverse through json schema and compose list of property keys that object expected to have.
     :param annotate_one_of: Generate one_of index in path
     :param schema: jsonschema to get expected paths
     :returns list of object property keys paths

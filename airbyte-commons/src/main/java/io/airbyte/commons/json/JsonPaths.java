@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.commons.json;
@@ -15,6 +15,7 @@ import com.jayway.jsonpath.spi.json.JacksonJsonNodeJsonProvider;
 import com.jayway.jsonpath.spi.json.JsonProvider;
 import com.jayway.jsonpath.spi.mapper.JacksonMappingProvider;
 import com.jayway.jsonpath.spi.mapper.MappingProvider;
+import io.airbyte.commons.json.JsonSchemas.FieldNameOrList;
 import io.airbyte.commons.util.MoreIterators;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -42,14 +43,14 @@ import org.slf4j.LoggerFactory;
  * returning a list for query results. In addition, we provide helper functions that will just
  * return a single value (see: {@link JsonPaths#getSingleValue(JsonNode, String)}). These should
  * only be used if it is not possible for a query to return more than one value.
- *
- * Note: Package private as most uses of JsonPaths seems like they can be hidden inside other
- * commons libraries (i.e. Jsons and JsonsSchemas). If this assumption proves incorrect, we can open
- * it up.
  */
-class JsonPaths {
+public class JsonPaths {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonPaths.class);
+
+  static final String JSON_PATH_START_CHARACTER = "$";
+  static final String JSON_PATH_LIST_SPLAT = "[*]";
+  static final String JSON_PATH_FIELD_SEPARATOR = ".";
 
   // set default configurations at start up to match our JSON setup.
   static {
@@ -82,6 +83,32 @@ class JsonPaths {
     });
   }
 
+  public static String empty() {
+    return JSON_PATH_START_CHARACTER;
+  }
+
+  public static String appendField(final String jsonPath, final String field) {
+    return jsonPath + JSON_PATH_FIELD_SEPARATOR + field;
+  }
+
+  public static String appendAppendListSplat(final String jsonPath) {
+    return jsonPath + JSON_PATH_LIST_SPLAT;
+  }
+
+  /**
+   * Map path produced by {@link JsonSchemas} to the JSONPath format.
+   *
+   * @param jsonSchemaPath - path as described in {@link JsonSchemas}
+   * @return path as JSONPath
+   */
+  public static String mapJsonSchemaPathToJsonPath(final List<FieldNameOrList> jsonSchemaPath) {
+    String jsonPath = empty();
+    for (final FieldNameOrList fieldNameOrList : jsonSchemaPath) {
+      jsonPath = fieldNameOrList.isList() ? appendAppendListSplat(jsonPath) : appendField(jsonPath, fieldNameOrList.getFieldName());
+    }
+    return jsonPath;
+  }
+
   /*
    * This version of the JsonPath Configuration object allows queries to return to the path of values
    * instead of the values that were found.
@@ -105,7 +132,7 @@ class JsonPaths {
    * @param jsonPath - path to validate
    */
   public static void assertIsSingleReturnQuery(final String jsonPath) {
-    Preconditions.checkArgument(!jsonPath.contains("*"), "Cannot accept paths with wildcards because they may return more than one item.");
+    Preconditions.checkArgument(JsonPath.isPathDefinite(jsonPath), "Cannot accept paths with wildcards because they may return more than one item.");
   }
 
   /**

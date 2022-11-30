@@ -32,9 +32,7 @@ select
     cast("id" as 
     bigint
 ) as "id",
-    cast(currency as 
-    varchar
-) as currency,
+    cast(currency as text) as currency,
     cast(nullif("date", '') as 
     date
 ) as "date",
@@ -44,9 +42,7 @@ select
     cast("HKD@spéçiäl & characters" as 
     float
 ) as "HKD@spéçiäl & characters",
-    cast(hkd_special___characters as 
-    varchar
-) as hkd_special___characters,
+    cast(hkd_special___characters as text) as hkd_special___characters,
     cast(nzd as 
     float
 ) as nzd,
@@ -63,25 +59,7 @@ where 1 = 1
 )-- SQL model to build a hash column based on the values of this record
 -- depends_on: __dbt__cte__dedup_exchange_rate_ab2
 select
-    md5(cast(coalesce(cast("id" as 
-    varchar
-), '') || '-' || coalesce(cast(currency as 
-    varchar
-), '') || '-' || coalesce(cast("date" as 
-    varchar
-), '') || '-' || coalesce(cast(timestamp_col as 
-    varchar
-), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as 
-    varchar
-), '') || '-' || coalesce(cast(hkd_special___characters as 
-    varchar
-), '') || '-' || coalesce(cast(nzd as 
-    varchar
-), '') || '-' || coalesce(cast(usd as 
-    varchar
-), '') as 
-    varchar
-)) as _airbyte_dedup_exchange_rate_hashid,
+    md5(cast(coalesce(cast("id" as text), '') || '-' || coalesce(cast(currency as text), '') || '-' || coalesce(cast("date" as text), '') || '-' || coalesce(cast(timestamp_col as text), '') || '-' || coalesce(cast("HKD@spéçiäl & characters" as text), '') || '-' || coalesce(cast(hkd_special___characters as text), '') || '-' || coalesce(cast(nzd as text), '') || '-' || coalesce(cast(usd as text), '') as text)) as _airbyte_dedup_exchange_rate_hashid,
     tmp.*
 from __dbt__cte__dedup_exchange_rate_ab2 tmp
 -- dedup_exchange_rate

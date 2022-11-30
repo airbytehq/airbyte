@@ -29,7 +29,7 @@ red_text='\033[31m'
 default_text='\033[39m'
 
 # set -x/xtrace' uses a Sony PS4 for more info
-PS4="$blue_text"'${BASH_SOURCE}:${LINENO}:default_text '
+PS4="$blue_text"'${BASH_SOURCE}:${LINENO}:'"$default_text "
 
 # Last for more pretty output
 set -o xtrace  # -x display every line before exectution; enables PS4

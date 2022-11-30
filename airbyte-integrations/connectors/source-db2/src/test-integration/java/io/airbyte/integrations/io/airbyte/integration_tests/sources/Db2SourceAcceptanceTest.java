@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -11,8 +11,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.db2.Db2Source;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
@@ -30,6 +33,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.Db2Container;
 
@@ -41,11 +45,10 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   private static final String STREAM_NAME1 = "ID_AND_NAME1";
   private static final String STREAM_NAME2 = "ID_AND_NAME2";
   private static final String STREAM_NAME3 = "ID_AND_NAME3";
-  public static final String PASSWORD = "password";
 
   private Db2Container db;
   private JsonNode config;
-  private JdbcDatabase database;
+  private DataSource dataSource;
 
   @Override
   protected String getImageName() {
@@ -62,14 +65,14 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
     return config;
   }
 
-  private JsonNode getConfig(String userName, String password) {
+  private JsonNode getConfig(final String userName, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", db.getHost())
-        .put("port", db.getFirstMappedPort())
+        .put(JdbcUtils.HOST_KEY, db.getHost())
+        .put(JdbcUtils.PORT_KEY, db.getFirstMappedPort())
         .put("db", db.getDatabaseName())
-        .put("username", userName)
-        .put("password", password)
-        .put("encryption", Jsons.jsonNode(ImmutableMap.builder()
+        .put(JdbcUtils.USERNAME_KEY, userName)
+        .put(JdbcUtils.PASSWORD_KEY, password)
+        .put(JdbcUtils.ENCRYPTION_KEY, Jsons.jsonNode(ImmutableMap.builder()
             .put("encryption_method", "unencrypted")
             .build()))
         .build());
@@ -100,7 +103,7 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getState() throws Exception {
+  protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
   }
 
@@ -111,45 +114,49 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
 
     config = getConfig(db.getUsername(), db.getPassword());
 
-    database = Databases.createJdbcDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:db2://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("db").asText()),
-        Db2Source.DRIVER_CLASS);
+    dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        Db2Source.DRIVER_CLASS,
+        String.format(DatabaseDriver.DB2.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get("db").asText()));
 
-    final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
-    final String createTableQuery1 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
-    final String createTableQuery2 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
-    final String createTableQuery3 = String
-        .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
-    final String insertIntoTableQuery1 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME1);
-    final String insertIntoTableQuery2 = String
-        .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
-            SCHEMA_NAME, STREAM_NAME2);
-    final String grantSelect1 = String
-        .format("GRANT SELECT ON TABLE %s.%s TO %s",
-            SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
-    final String grantSelect2 = String
-        .format("GRANT SELECT ON TABLE %s.%s TO %s",
-            SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
+    try {
+      final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
 
-    database.execute(createSchemaQuery);
-    database.execute(createTableQuery1);
-    database.execute(createTableQuery2);
-    database.execute(createTableQuery3);
-    database.execute(insertIntoTableQuery1);
-    database.execute(insertIntoTableQuery2);
-    database.execute(grantSelect1);
-    database.execute(grantSelect2);
+      final String createSchemaQuery = String.format("CREATE SCHEMA %s", SCHEMA_NAME);
+      final String createTableQuery1 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME1);
+      final String createTableQuery2 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME2);
+      final String createTableQuery3 = String
+          .format("CREATE TABLE %s.%s (ID INTEGER, NAME VARCHAR(200))", SCHEMA_NAME, STREAM_NAME3);
+      final String insertIntoTableQuery1 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME1);
+      final String insertIntoTableQuery2 = String
+          .format("INSERT INTO %s.%s (ID, NAME) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash')",
+              SCHEMA_NAME, STREAM_NAME2);
+      final String grantSelect1 = String
+          .format("GRANT SELECT ON TABLE %s.%s TO %s",
+              SCHEMA_NAME, STREAM_NAME1, LESS_PERMITTED_USER);
+      final String grantSelect2 = String
+          .format("GRANT SELECT ON TABLE %s.%s TO %s",
+              SCHEMA_NAME, STREAM_NAME3, LESS_PERMITTED_USER);
 
-    database.close();
+      database.execute(createSchemaQuery);
+      database.execute(createTableQuery1);
+      database.execute(createTableQuery2);
+      database.execute(createTableQuery3);
+      database.execute(insertIntoTableQuery1);
+      database.execute(insertIntoTableQuery2);
+      database.execute(grantSelect1);
+      database.execute(grantSelect2);
+    } finally {
+      DataSourceFactory.close(dataSource);
+    }
   }
 
   @Override
@@ -160,10 +167,10 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   @Test
   public void testCheckPrivilegesForUserWithLessPerm() throws Exception {
     createUser(LESS_PERMITTED_USER);
-    JsonNode config = getConfig(LESS_PERMITTED_USER, PASSWORD);
+    final JsonNode config = getConfig(LESS_PERMITTED_USER, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
-    List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
+    final List<String> expected = List.of(STREAM_NAME3, STREAM_NAME1);
     assertEquals(expected.size(), actualNamesWithPermission.size());
     assertEquals(expected, actualNamesWithPermission);
   }
@@ -172,21 +179,21 @@ public class Db2SourceAcceptanceTest extends SourceAcceptanceTest {
   public void testCheckPrivilegesForUserWithoutPerm() throws Exception {
     createUser(USER_WITH_OUT_PERMISSIONS);
 
-    JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, PASSWORD);
+    final JsonNode config = getConfig(USER_WITH_OUT_PERMISSIONS, JdbcUtils.PASSWORD_KEY);
 
     final List<String> actualNamesWithPermission = getActualNamesWithPermission(config);
-    List<String> expected = Collections.emptyList();
+    final List<String> expected = Collections.emptyList();
     assertEquals(0, actualNamesWithPermission.size());
     assertEquals(expected, actualNamesWithPermission);
   }
 
-  private void createUser(String lessPermittedUser) throws IOException, InterruptedException {
-    String encryptedPassword = db.execInContainer("openssl", "passwd", PASSWORD).getStdout().replaceAll("\n", "");
+  private void createUser(final String lessPermittedUser) throws IOException, InterruptedException {
+    final String encryptedPassword = db.execInContainer("openssl", "passwd", JdbcUtils.PASSWORD_KEY).getStdout().replaceAll("\n", "");
     db.execInContainer("useradd", lessPermittedUser, "-p", encryptedPassword);
   }
 
-  private List<String> getActualNamesWithPermission(JsonNode config) throws Exception {
-    AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
+  private List<String> getActualNamesWithPermission(final JsonNode config) throws Exception {
+    final AirbyteCatalog airbyteCatalog = new Db2Source().discover(config);
     return airbyteCatalog
         .getStreams()
         .stream()

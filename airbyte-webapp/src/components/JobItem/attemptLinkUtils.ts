@@ -1,6 +1,6 @@
 import { useLocation } from "react-router-dom";
 
-import { Attempt } from "core/domain/job";
+import { AttemptRead } from "core/request/AirbyteClient";
 
 const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
 
@@ -8,7 +8,7 @@ const PARSE_REGEXP = /^#(?<jobId>\w*)::(?<attemptId>\w*)$/;
  * Create and returns a link for a specific job and (optionally) attempt.
  * The returned string is the hash part of a URL.
  */
-export const buildAttemptLink = (jobId: number | string, attemptId?: Attempt["id"]): string => {
+export const buildAttemptLink = (jobId: number | string, attemptId?: AttemptRead["id"]): string => {
   return `#${jobId}::${attemptId ?? ""}`;
 };
 

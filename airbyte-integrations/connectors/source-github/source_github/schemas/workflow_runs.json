@@ -46,13 +46,19 @@
     },
     "pull_requests": {
       "type": "array",
-      "items": {}
+      "items": {
+        "type": ["null", "object"],
+        "properties": {},
+        "additionalProperties": true
+      }
     },
     "created_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "run_attempt": {
       "type": ["null", "integer"]

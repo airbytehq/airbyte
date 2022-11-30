@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": "string"
+    },
+    "links": {
+      "properties": {},
+      "type": ["null", "object"]
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "timeEntryEnabled": {
+      "type": ["null", "boolean"]
+    },
+    "timeEntryLocked": {
+      "type": ["null", "boolean"]
+    },
+    "timeEntryApproval": {
+      "type": ["null", "boolean"]
+    },
+    "resourceRates": {
+      "items": {
+        "properties": {
+          "resource": {
+            "type": ["null", "string"]
+          },
+          "companyBillingRateId": {
+            "type": ["null", "string"]
+          },
+          "companyBillingRate": {
+            "type": ["null", "number"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "includeBookedTimeReports": {
+      "type": ["null", "boolean"]
+    },
+    "includeBookedTimeGrid": {
+      "type": ["null", "boolean"]
+    },
+    "projectManagers": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "resources": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "workDays": {
+      "items": {
+        "type": ["null", "boolean"]
+      },
+      "type": ["null", "array"]
+    },
+    "useProjectDays": {
+      "type": ["null", "boolean"]
+    },
+    "budget": {
+      "properties": {
+        "hasBudget": {
+          "type": ["null", "boolean"]
+        },
+        "projectHours": {
+          "properties": {
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "hours": {
+              "type": ["null", "number"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "cashAmount": {
+          "properties": {
+            "active": {
+              "type": ["null", "boolean"]
+            },
+            "amount": {
+              "type": ["null", "number"]
+            },
+            "currency": {
+              "type": ["null", "string"]
+            },
+            "billingRate": {
+              "properties": {
+                "useDefault": {
+                  "type": ["null", "boolean"]
+                },
+                "rate": {
+                  "type": ["null", "number"]
+                },
+                "id": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            }
+          },
+          "type": ["null", "object"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "companyBillingRateId": {
+      "type": ["null", "string"]
+    },
+    "budgetHours": {
+      "type": ["null", "number"]
+    },
+    "budgetCashAmount": {
+      "type": ["null", "number"]
+    },
+    "budgetCurrency": {
+      "type": ["null", "string"]
+    },
+    "useStatusColor": {
+      "type": ["null", "boolean"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "useProjectDuration": {
+      "type": ["null", "boolean"]
+    },
+    "start": {
+      "type": ["null", "string"]
+    },
+    "end": {
+      "type": ["null", "string"]
+    },
+    "backgroundColor": {
+      "type": ["null", "string"]
+    },
+    "projectCode": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "string"]
+    },
+    "customFields": {
+      "items": {
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "templateType": {
+            "type": "string"
+          },
+          "templateLabel": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "choices": {
+            "items": {
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "choiceId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "type": ["null", "array"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "timeEntryNoteRequired": {
+      "type": ["null", "boolean"]
+    },
+    "projectRate": {
+      "properties": {
+        "external": {
+          "properties": {
+            "defaultRateId": {
+              "type": ["null", "string"]
+            },
+            "customRates": {
+              "items": {
+                "properties": {
+                  "_id": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "resourceId": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "type": ["null", "array"]
+            }
+          },
+          "type": ["null", "object"]
+        },
+        "internal": {
+          "properties": {
+            "customRates": {
+              "items": {
+                "properties": {
+                  "_id": {
+                    "type": ["null", "string"]
+                  },
+                  "id": {
+                    "type": ["null", "string"]
+                  },
+                  "resourceId": {
+                    "type": ["null", "string"]
+                  }
+                },
+                "type": ["null", "object"]
+              },
+              "type": ["null", "array"]
+            },
+            "defaultRateId": {
+              "type": ["null", "string"]
+            }
+          },
+          "type": ["null", "object"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "items": {
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    }
+  }
+}

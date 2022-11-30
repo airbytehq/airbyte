@@ -1,0 +1,27 @@
+name: Trigger action in cloud based on push
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  repo-sync:
+    name: "Fire a Repo Dispatch event to airbyte-cloud"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte Repo for PAT command
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        # Cannot share PAT outside of JOB context
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.OCTAVIA_4_ROOT_ACCESS }} \
+            ${{ secrets.OCTAVIA_PAT }}
+      - name: Repository Dispatch
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ env.PAT }}
+          repository: airbytehq/airbyte-cloud
+          event-type: oss-push-to-master
+          client-payload: '{"ref": "${{ github.ref }}", "sha": "${{ github.sha }}"}'

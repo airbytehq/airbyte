@@ -1,0 +1,46 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/FailureReason.yaml
+title: FailureSummary
+type: object
+required:
+  - timestamp
+additionalProperties: false
+properties:
+  failureOrigin:
+    description: Indicates where the error originated. If not set, the origin of error is not well known.
+    type: string
+    enum:
+      - source
+      - destination
+      - replication
+      - persistence
+      - normalization
+      - dbt
+      - airbyte_platform
+      - unknown
+  failureType:
+    description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
+    type: string
+    enum:
+      - config_error
+      - system_error
+      - manual_cancellation
+  internalMessage:
+    description: Human readable failure description for consumption by technical system operators, like Airbyte engineers or OSS users.
+    type: string
+  externalMessage:
+    description: Human readable failure description for presentation in the UI to non-technical users.
+    type: string
+  metadata:
+    description: Key-value pairs of relevant data
+    type: object
+    additionalProperties: true
+  stacktrace:
+    description: Raw stacktrace associated with the failure.
+    type: string
+  retryable:
+    description: True if it is known that retrying may succeed, e.g. for a transient failure. False if it is known that a retry will not succeed, e.g. for a configuration issue. If not set, retryable status is not well known.
+    type: boolean
+  timestamp:
+    type: integer

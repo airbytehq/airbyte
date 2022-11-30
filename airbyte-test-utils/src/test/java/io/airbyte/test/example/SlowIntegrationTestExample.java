@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.test.example;
@@ -13,10 +13,11 @@ import org.junit.jupiter.api.Test;
  */
 @IntegrationTest
 @Slf4j
-public class SlowIntegrationTestExample {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SlowIntegrationTestExample {
 
   @Test
-  public void longTest() {
+  void longTest() {
     log.error("Start test - slow integration");
     log.error("end test - slow integration");
   }

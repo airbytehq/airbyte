@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "time_period_start": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "time_period_end": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "time_open": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "time_close": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "price_open": {
+      "type": ["null", "number"]
+    },
+    "price_high": {
+      "type": ["null", "number"]
+    },
+    "price_low": {
+      "type": ["null", "number"]
+    },
+    "price_close": {
+      "type": ["null", "number"]
+    },
+    "volume_traded": {
+      "type": ["null", "number"]
+    },
+    "trades_count": {
+      "type": ["null", "integer"]
+    }
+  }
+}

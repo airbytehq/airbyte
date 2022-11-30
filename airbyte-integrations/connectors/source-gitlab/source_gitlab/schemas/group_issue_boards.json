@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "hide_backlog_list": {
+      "type": ["null", "boolean"]
+    },
+    "hide_closed_list": {
+      "type": ["null", "boolean"]
+    },
+    "project": {
+      "type": ["null", "integer"]
+    },
+    "lists": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "label": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "description": {
+                "type": ["null", "string"]
+              },
+              "description_html": {
+                "type": ["null", "string"]
+              },
+              "text_color": {
+                "type": ["null", "string"]
+              },
+              "color": {
+                "type": ["null", "string"]
+              }
+            }
+          },
+          "position": {
+            "type": ["null", "integer"]
+          }
+        }
+      }
+    },
+    "group_id": {
+      "type": ["null", "integer"]
+    }
+  }
+}
