@@ -252,8 +252,8 @@ class DefaultReplicationWorkerTest {
   void testReplicationRunnableSourceUpdateConfig() throws Exception {
     final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
     final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
-     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(configMsg), Optional.empty());
-     when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
+    when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(configMsg), Optional.empty());
+    when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
