@@ -38,7 +38,7 @@ connectionSpecification:
               type: string
               const: "https://api.surveysparrow.com/v3"
       default:
-        title: Other locations based account
+        title: Global account
         type: object
         properties:
           url_base:
