@@ -123,16 +123,7 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
         },
       }),
     ],
-    [
-      columnHelper,
-      formatMessage,
-      isCursor,
-      isPrimaryKey,
-      onCursorSelect,
-      onPkSelect,
-      shouldDefineCursor,
-      shouldDefinePk,
-    ]
+    [columnHelper, formatMessage, isCursor, isPrimaryKey, onCursorSelect, onPkSelect]
   );
 
   const destinationColumns = useMemo(
