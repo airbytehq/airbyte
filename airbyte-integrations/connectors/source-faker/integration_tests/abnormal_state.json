@@ -20,5 +20,16 @@
         "name": "purchases"
       }
     }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "user_id": 99999999999999999
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
   }
 ]
