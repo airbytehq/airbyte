@@ -8,7 +8,7 @@ export const initialSetupCompleted = (completed = true) => {
     });
   });
 
-  cy.on('uncaught:exception', (err, runnable) => {
+  cy.on("uncaught:exception", (err, runnable) => {
     return false;
   });
 };

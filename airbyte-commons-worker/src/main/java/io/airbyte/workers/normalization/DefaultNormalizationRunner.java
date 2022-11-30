@@ -70,6 +70,13 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     }
   }
 
+  public DefaultNormalizationRunner(final ProcessFactory processFactory,
+                                    final String normalizationImage) {
+    this.processFactory = processFactory;
+    this.normalizationImageName = normalizationImage;
+    this.destinationType = null;
+  }
+
   @Override
   public boolean configureDbt(final String jobId,
                               final int attempt,
