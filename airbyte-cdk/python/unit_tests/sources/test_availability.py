@@ -114,6 +114,7 @@ def test_http_availability_strategy(mocker):
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
     assert source.availability_strategy.check_availability(stream_1)[0] is False
+    assert "403 Client Error" in source.availability_strategy.check_availability(stream_1)[1]
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)

@@ -108,9 +108,9 @@ class AbstractSource(Source, ABC):
                         f" Available streams: {stream_instances.keys()}"
                     )
                 if self.availability_strategy is not None:
-                    stream_is_available, reason = self.availability_strategy.check_availability(stream_instance)
+                    stream_is_available, error = self.availability_strategy.check_availability(stream_instance)
                     if not stream_is_available:
-                        logger.info(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. {reason}")
+                        logger.info(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
                         continue
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")

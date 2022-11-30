@@ -12,32 +12,31 @@ from airbyte_cdk.sources.streams import Stream
 
 class AvailabilityStrategy(ABC):
     """
-    Abstract base class for checking a connection
+    Abstract base class for checking stream availability
     """
 
     @abstractmethod
     def check_availability(self, stream: Stream) -> Tuple[bool, any]:
         """
-        Tests if the input configuration can be used to successfully connect to the integration e.g: if a provided Stripe API token can be used to connect
-        to the Stripe API.
+        Checks stream availability.
 
         :param stream: stream
-        :return: A tuple of (boolean, error). If boolean is true, then the connection check is successful
-          and we can connect to the underlying data source using the provided configuration.
-          Otherwise, the input config cannot be used to connect to the underlying data source,
-          and the "error" object should describe what went wrong.
-          The error object will be cast to string to display the problem to the user.
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
         """
 
 
 class HTTPAvailabilityStrategy(AvailabilityStrategy):
-    """ """
-
-    def check_availability(self, stream: Stream) -> Tuple[bool, any]:
+    def check_availability(self, stream: Stream) -> Tuple[bool, str]:
         """
+        Check stream availability by attempting to read the first record of the
+        stream.
 
-        :param stream:
-        :return:
+        :param stream: stream
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
         """
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
@@ -45,7 +44,7 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
-            return False, f"Unable to connect to stream {stream.name} - {error}"
+            return False, repr(error)
         return True, None
 
     def _get_stream_slice(self, stream):
@@ -66,9 +65,13 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
     def check_availability(self, stream: Stream) -> Tuple[bool, Optional[str]]:
         """
+        Check stream availability based on required scopes for streams and
+        the scopes granted to the source.
 
-        :param stream:
-        :return:
+        :param stream: stream
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
         """
         required_scopes_for_stream = self.required_scopes()[stream.name]
         granted_scopes = self.get_granted_scopes()
