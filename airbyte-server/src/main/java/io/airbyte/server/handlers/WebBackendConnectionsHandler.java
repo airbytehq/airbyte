@@ -353,6 +353,7 @@ public class WebBackendConnectionsHandler {
        */
       diff = refreshedCatalog.get().getCatalogDiff();
       connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
+      connection.setStatus(refreshedCatalog.get().getConnectionStatus());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
@@ -621,6 +622,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
     connectionCreate.geography(webBackendConnectionCreate.getGeography());
+    connectionCreate.nonBreakingChangesPreference(webBackendConnectionCreate.getNonBreakingChangesPreference());
 
     return connectionCreate;
   }
