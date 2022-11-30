@@ -100,44 +100,45 @@ class ContainerOrchestratorAcceptanceTests {
   void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
+  // This test is flaky.  It is commented out until that condition us understood
+  // See: https://github.com/airbytehq/airbyte-cloud/issues/3618
+  // @Test
+  // void testDowntimeDuringSync() throws Exception {
+  //   final String connectionName = "test-connection";
+  //   final UUID sourceId = testHarness.createPostgresSource().getSourceId();
+  //   final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
+  //   final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
+  //   final SyncMode syncMode = SyncMode.FULL_REFRESH;
+  //   final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
+  //   catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
 
-  @Test
-  void testDowntimeDuringSync() throws Exception {
-    final String connectionName = "test-connection";
-    final UUID sourceId = testHarness.createPostgresSource().getSourceId();
-    final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
-    final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
-    final SyncMode syncMode = SyncMode.FULL_REFRESH;
-    final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
-    catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
+  //   LOGGER.info("Creating connection...");
+  //   final UUID connectionId =
+  //       testHarness.createConnection(connectionName, sourceId, destinationId, List.of(), catalog, ConnectionScheduleType.MANUAL, null)
+  //           .getConnectionId();
 
-    LOGGER.info("Creating connection...");
-    final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(), catalog, ConnectionScheduleType.MANUAL, null)
-            .getConnectionId();
+  //   LOGGER.info("Run manual sync...");
+  //   final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
 
-    LOGGER.info("Run manual sync...");
-    final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+  //   LOGGER.info("Waiting for job to run...");
+  //   waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
 
-    LOGGER.info("Waiting for job to run...");
-    waitWhileJobHasStatus(apiClient.getJobsApi(), connectionSyncRead.getJob(), Set.of(JobStatus.PENDING));
+  //   LOGGER.info("Scaling down worker...");
+  //   kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(0, true);
 
-    LOGGER.info("Scaling down worker...");
-    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(0, true);
+  //   LOGGER.info("Scaling up worker...");
+  //   kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
 
-    LOGGER.info("Scaling up worker...");
-    kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
+  //   waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
 
-    waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
+  //   final long numAttempts = apiClient.getJobsApi()
+  //       .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
+  //       .getAttempts()
+  //       .size();
 
-    final long numAttempts = apiClient.getJobsApi()
-        .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-        .getAttempts()
-        .size();
-
-    // it should be able to accomplish the resume without an additional attempt!
-    assertEquals(1, numAttempts);
-  }
+  //   // it should be able to accomplish the resume without an additional attempt!
+  //   assertEquals(1, numAttempts);
+  // }
 
   @AfterEach
   void tearDown() {
