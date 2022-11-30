@@ -7,20 +7,20 @@ import { useDebounce, useLocalStorage } from "react-use";
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { StreamsListRequestBodyManifest } from "core/request/ConnectorBuilderClient";
+import { useManifestTemplate } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
-import { template } from "./YamlTemplate";
 
 export const YamlEditor: React.FC = () => {
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
-
+  const template = useManifestTemplate();
   const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
   const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
   useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
 
-  const { yamlIsValid, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
+  const { yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
 
   const monaco = useMonaco();
 
@@ -73,7 +73,10 @@ export const YamlEditor: React.FC = () => {
           theme="airbyte-light"
           onChange={(value) => setYamlValue(value ?? "")}
           lineNumberCharacterWidth={6}
-          onMount={(editor) => (yamlEditorRef.current = editor)}
+          onMount={(editor) => {
+            setYamlEditorIsMounted(true);
+            yamlEditorRef.current = editor;
+          }}
         />
       </div>
     </div>

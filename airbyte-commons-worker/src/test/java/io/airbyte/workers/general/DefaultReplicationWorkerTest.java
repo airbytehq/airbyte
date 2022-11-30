@@ -91,6 +91,8 @@ class DefaultReplicationWorkerTest {
   private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE =
       AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Double.valueOf(123));
   private static final String STREAM1 = "stream1";
+
+  private static final String NAMESPACE = "namespace";
   private static final String INDUCED_EXCEPTION = "induced exception";
 
   private Path jobRoot;
@@ -305,7 +307,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
     final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
-    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createTraceMessage("a trace message", 123456.0);
+    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorMessage("a trace message", 123456.0);
     when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
     when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
     when(source.isFinished()).thenReturn(false, false, false, false, true);
@@ -483,8 +485,9 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalBytesEmitted()).thenReturn(100L);
     when(messageTracker.getTotalSourceStateMessagesEmitted()).thenReturn(3L);
     when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(1L);
-    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(STREAM1, 100L));
-    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, NAMESPACE), 100L));
+    when(messageTracker.getStreamToEmittedRecords())
+        .thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, NAMESPACE), 12L));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(5L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(4L);
     when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(Optional.of(6L));
@@ -519,6 +522,7 @@ class DefaultReplicationWorkerTest {
             .withStreamStats(Collections.singletonList(
                 new StreamSyncStats()
                     .withStreamName(STREAM1)
+                    .withStreamNamespace(NAMESPACE)
                     .withStats(new SyncStats()
                         .withBytesEmitted(100L)
                         .withRecordsEmitted(12L)
@@ -599,9 +603,11 @@ class DefaultReplicationWorkerTest {
     when(messageTracker.getTotalRecordsCommitted()).thenReturn(Optional.of(6L));
     when(messageTracker.getTotalSourceStateMessagesEmitted()).thenReturn(3L);
     when(messageTracker.getTotalDestinationStateMessagesEmitted()).thenReturn(2L);
-    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(STREAM1, 100L));
-    when(messageTracker.getStreamToEmittedRecords()).thenReturn(Collections.singletonMap(STREAM1, 12L));
-    when(messageTracker.getStreamToCommittedRecords()).thenReturn(Optional.of(Collections.singletonMap(STREAM1, 6L)));
+    when(messageTracker.getStreamToEmittedBytes()).thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, NAMESPACE), 100L));
+    when(messageTracker.getStreamToEmittedRecords())
+        .thenReturn(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, NAMESPACE), 12L));
+    when(messageTracker.getStreamToCommittedRecords())
+        .thenReturn(Optional.of(Collections.singletonMap(new AirbyteStreamNameNamespacePair(STREAM1, NAMESPACE), 6L)));
     when(messageTracker.getMaxSecondsToReceiveSourceStateMessage()).thenReturn(10L);
     when(messageTracker.getMeanSecondsToReceiveSourceStateMessage()).thenReturn(8L);
     when(messageTracker.getMaxSecondsBetweenStateMessageEmittedAndCommitted()).thenReturn(Optional.of(12L));
@@ -631,6 +637,7 @@ class DefaultReplicationWorkerTest {
     final List<StreamSyncStats> expectedStreamStats = Collections.singletonList(
         new StreamSyncStats()
             .withStreamName(STREAM1)
+            .withStreamNamespace(NAMESPACE)
             .withStats(new SyncStats()
                 .withBytesEmitted(100L)
                 .withRecordsEmitted(12L)

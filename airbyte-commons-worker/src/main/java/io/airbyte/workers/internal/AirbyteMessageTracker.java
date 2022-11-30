@@ -8,6 +8,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Charsets;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import com.google.common.hash.HashFunction;
@@ -19,10 +20,12 @@ import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteControlConnectorConfigMessage;
 import io.airbyte.protocol.models.AirbyteControlMessage;
+import io.airbyte.protocol.models.AirbyteEstimateTraceMessage;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
@@ -33,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -48,7 +52,8 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final AtomicReference<State> destinationOutputState;
   private final Map<Short, Long> streamToRunningCount;
   private final HashFunction hashFunction;
-  private final BiMap<String, Short> streamNameToIndex;
+  private final BiMap<AirbyteStreamNameNamespacePair, Short> nameNamespacePairToIndex;
+  private final Map<AirbyteStreamNameNamespacePair, StreamStats> nameNamespacePairToStreamStats;
   private final Map<Short, Long> streamToTotalBytesEmitted;
   private final Map<Short, Long> streamToTotalRecordsEmitted;
   private final StateDeltaTracker stateDeltaTracker;
@@ -57,6 +62,11 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final List<AirbyteTraceMessage> sourceErrorTraceMessages;
   private final StateAggregator stateAggregator;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
+
+  // These variables support SYNC level estimates and are meant for sources where stream level
+  // estimates are not possible e.g. CDC sources.
+  private Long totalRecordsEstimatedSync;
+  private Long totalBytesEstimatedSync;
 
   private short nextStreamIndex;
 
@@ -76,6 +86,11 @@ public class AirbyteMessageTracker implements MessageTracker {
     DESTINATION
   }
 
+  /**
+   * POJO for all per-stream stats.
+   */
+  private record StreamStats(long estimatedBytes, long emittedBytes, long estimatedRecords, long emittedRecords) {}
+
   public AirbyteMessageTracker() {
     this(new StateDeltaTracker(STATE_DELTA_TRACKER_MEMORY_LIMIT_BYTES),
         new DefaultStateAggregator(new EnvVariableFeatureFlags().useStreamCapableState()),
@@ -89,8 +104,9 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.sourceOutputState = new AtomicReference<>();
     this.destinationOutputState = new AtomicReference<>();
     this.streamToRunningCount = new HashMap<>();
-    this.streamNameToIndex = HashBiMap.create();
+    this.nameNamespacePairToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
+    this.nameNamespacePairToStreamStats = new HashMap<>();
     this.streamToTotalBytesEmitted = new HashMap<>();
     this.streamToTotalRecordsEmitted = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
@@ -139,7 +155,7 @@ public class AirbyteMessageTracker implements MessageTracker {
       stateMetricsTracker.setFirstRecordReceivedAt(LocalDateTime.now());
     }
 
-    final short streamIndex = getStreamIndex(recordMessage.getStream());
+    final short streamIndex = getStreamIndex(AirbyteStreamNameNamespacePair.fromRecordMessage(recordMessage));
 
     final long currentRunningCount = streamToRunningCount.getOrDefault(streamIndex, 0L);
     streamToRunningCount.put(streamIndex, currentRunningCount + 1);
@@ -250,7 +266,7 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   private void handleEmittedTrace(final AirbyteTraceMessage traceMessage, final ConnectorType connectorType) {
     switch (traceMessage.getType()) {
-      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage, connectorType);
+      case ESTIMATE -> handleEmittedEstimateTrace(traceMessage.getEstimate());
       case ERROR -> handleEmittedErrorTrace(traceMessage, connectorType);
       default -> log.warn("Invalid message type for trace message: {}", traceMessage);
     }
@@ -264,17 +280,43 @@ public class AirbyteMessageTracker implements MessageTracker {
     }
   }
 
-  @SuppressWarnings("PMD") // until method is implemented
-  private void handleEmittedEstimateTrace(final AirbyteTraceMessage estimateTraceMessage, final ConnectorType connectorType) {
+  /**
+   * There are several assumptions here:
+   * <p>
+   * - Assume the estimate is a whole number and not a sum i.e. each estimate replaces the previous
+   * estimate.
+   * <p>
+   * - Sources cannot emit both STREAM and SYNC estimates in a same sync. Error out if this happens.
+   */
+  @SuppressWarnings("PMD.AvoidDuplicateLiterals")
+  private void handleEmittedEstimateTrace(final AirbyteEstimateTraceMessage estimate) {
+    switch (estimate.getType()) {
+      case STREAM -> {
+        Preconditions.checkArgument(totalBytesEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
+        Preconditions.checkArgument(totalRecordsEstimatedSync == null, "STREAM and SYNC estimates should not be emitted in the same sync.");
+
+        log.debug("Saving stream estimates for namespace: {}, stream: {}", estimate.getNamespace(), estimate.getName());
+        nameNamespacePairToStreamStats.put(
+            new AirbyteStreamNameNamespacePair(estimate.getName(), estimate.getNamespace()),
+            new StreamStats(estimate.getByteEstimate(), 0L, estimate.getRowEstimate(), 0L));
+      }
+      case SYNC -> {
+        Preconditions.checkArgument(nameNamespacePairToStreamStats.isEmpty(), "STREAM and SYNC estimates should not be emitted in the same sync.");
+
+        log.debug("Saving sync estimates");
+        totalBytesEstimatedSync = estimate.getByteEstimate();
+        totalRecordsEstimatedSync = estimate.getRowEstimate();
+      }
+    }
 
   }
 
-  private short getStreamIndex(final String streamName) {
-    if (!streamNameToIndex.containsKey(streamName)) {
-      streamNameToIndex.put(streamName, nextStreamIndex);
+  private short getStreamIndex(final AirbyteStreamNameNamespacePair pair) {
+    if (!nameNamespacePairToIndex.containsKey(pair)) {
+      nameNamespacePairToIndex.put(pair, nextStreamIndex);
       nextStreamIndex++;
     }
-    return streamNameToIndex.get(streamName);
+    return nameNamespacePairToIndex.get(pair);
   }
 
   private int getStateHashCode(final AirbyteStateMessage stateMessage) {
@@ -347,36 +389,54 @@ public class AirbyteMessageTracker implements MessageTracker {
    * because committed record counts cannot be reliably computed.
    */
   @Override
-  public Optional<Map<String, Long>> getStreamToCommittedRecords() {
+  public Optional<Map<AirbyteStreamNameNamespacePair, Long>> getStreamToCommittedRecords() {
     if (unreliableCommittedCounts) {
       return Optional.empty();
     }
     final Map<Short, Long> streamIndexToCommittedRecordCount = stateDeltaTracker.getStreamToCommittedRecords();
     return Optional.of(
         streamIndexToCommittedRecordCount.entrySet().stream().collect(
-            Collectors.toMap(
-                entry -> streamNameToIndex.inverse().get(entry.getKey()),
-                Map.Entry::getValue)));
+            Collectors.toMap(entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue)));
   }
 
   /**
    * Swap out stream indices for stream names and return total records emitted by stream.
    */
   @Override
-  public Map<String, Long> getStreamToEmittedRecords() {
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords() {
     return streamToTotalRecordsEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamNameToIndex.inverse().get(entry.getKey()),
-        Map.Entry::getValue));
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
+  }
+
+  /**
+   * Swap out stream indices for stream names and return total records estimated by stream.
+   */
+  @Override
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords() {
+    return nameNamespacePairToStreamStats.entrySet().stream().collect(
+        Collectors.toMap(
+            Entry::getKey,
+            entry -> entry.getValue().estimatedRecords()));
   }
 
   /**
    * Swap out stream indices for stream names and return total bytes emitted by stream.
    */
   @Override
-  public Map<String, Long> getStreamToEmittedBytes() {
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes() {
     return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> streamNameToIndex.inverse().get(entry.getKey()),
-        Map.Entry::getValue));
+        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
+  }
+
+  /**
+   * Swap out stream indices for stream names and return total bytes estimated by stream.
+   */
+  @Override
+  public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes() {
+    return nameNamespacePairToStreamStats.entrySet().stream().collect(
+        Collectors.toMap(
+            Entry::getKey,
+            entry -> entry.getValue().estimatedBytes()));
   }
 
   /**
@@ -388,11 +448,39 @@ public class AirbyteMessageTracker implements MessageTracker {
   }
 
   /**
+   * Compute sum of estimated record counts across all streams.
+   */
+  @Override
+  public long getTotalRecordsEstimated() {
+    if (!nameNamespacePairToStreamStats.isEmpty()) {
+      return nameNamespacePairToStreamStats.values().stream()
+          .map(e -> e.estimatedRecords)
+          .reduce(0L, Long::sum);
+    }
+
+    return totalRecordsEstimatedSync;
+  }
+
+  /**
    * Compute sum of emitted bytes across all streams.
    */
   @Override
   public long getTotalBytesEmitted() {
     return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
+  }
+
+  /**
+   * Compute sum of estimated bytes across all streams.
+   */
+  @Override
+  public long getTotalBytesEstimated() {
+    if (!nameNamespacePairToStreamStats.isEmpty()) {
+      return nameNamespacePairToStreamStats.values().stream()
+          .map(e -> e.estimatedBytes)
+          .reduce(0L, Long::sum);
+    }
+
+    return totalBytesEstimatedSync;
   }
 
   /**
