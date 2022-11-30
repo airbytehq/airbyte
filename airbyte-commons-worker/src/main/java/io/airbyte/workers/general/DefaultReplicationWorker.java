@@ -268,8 +268,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
               }
             } catch (final ApiException e) {
-              // TODO this should probably throw rather than just log and continue
               LOGGER.error("Error trying to save updated destination config", e);
+              throw new RuntimeException(e);
             }
 
           }
@@ -333,8 +333,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               try {
                 persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
               } catch (final ApiException e) {
-                // TODO this should probably throw rather than just log and continue
                 LOGGER.error("Error trying to save updated source config", e);
+                throw new RuntimeException(e);
               }
             }
 

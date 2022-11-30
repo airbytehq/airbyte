@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -45,10 +46,12 @@ import io.airbyte.protocol.models.AirbyteLogMessage.Level;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.*;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
+import io.airbyte.workers.helper.PersistConfigHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -106,6 +109,7 @@ class DefaultReplicationWorkerTest {
   private RecordSchemaValidator recordSchemaValidator;
   private MetricClient metricClient;
   private WorkerMetricReporter workerMetricReporter;
+  private PersistConfigHelper persistConfigHelper;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -125,6 +129,7 @@ class DefaultReplicationWorkerTest {
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
     recordSchemaValidator = mock(RecordSchemaValidator.class);
+    persistConfigHelper = mock(PersistConfigHelper.class);
     metricClient = MetricClientFactory.getMetricClient();
     workerMetricReporter = new WorkerMetricReporter(metricClient, "docker_image:v1.0.0");
 
@@ -153,7 +158,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     worker.run(syncInput, jobRoot);
 
@@ -181,7 +187,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     worker.run(syncInput, jobRoot);
 
@@ -211,7 +218,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -231,12 +239,120 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) && f.getStacktrace().contains(SOURCE_ERROR_MESSAGE)));
+  }
+
+  @Test
+  void testReplicationRunnableSourceUpdateConfig() throws Exception {
+    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
+    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
+     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(configMsg), Optional.empty());
+     when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        persistConfigHelper);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
+
+    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), connectorConfig);
+  }
+
+  @Test
+  void testReplicationFailureOnSourceConfigPersistError() throws Exception {
+    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
+    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
+    when(source.attemptRead()).thenReturn(Optional.of(configMsg));
+    when(source.isFinished()).thenReturn(false, true);
+    when(mapper.mapMessage(configMsg)).thenReturn(configMsg);
+
+    final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
+    doThrow(new ApiException(PERSIST_ERROR_MESSAGE)).when(persistConfigHelper).persistSourceConfig(Mockito.any(), Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        persistConfigHelper);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
+
+    verify(persistConfigHelper).persistSourceConfig(Long.valueOf(JOB_ID), connectorConfig);
+  }
+
+  @Test
+  void testReplicationRunnableDestinationUpdateConfig() throws Exception {
+    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
+    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
+    when(destination.attemptRead()).thenReturn(Optional.of(STATE_MESSAGE), Optional.of(configMsg));
+    when(destination.isFinished()).thenReturn(false, false, true);
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        persistConfigHelper);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
+
+    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), connectorConfig);
+  }
+
+  @Test
+  void testReplicationFailureOnDestinationConfigPersistError() throws Exception {
+    final Config connectorConfig = new Config().withAdditionalProperty("my_key", "my_new_value");
+    final AirbyteMessage configMsg = AirbyteMessageUtils.createConfigControlMessage(connectorConfig, 1D);
+    when(destination.attemptRead()).thenReturn(Optional.of(configMsg));
+    when(destination.isFinished()).thenReturn(false, true);
+
+    final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
+    doThrow(new ApiException(PERSIST_ERROR_MESSAGE)).when(persistConfigHelper).persistDestinationConfig(Mockito.any(), Mockito.any());
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        persistConfigHelper);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream()
+        .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
+
+    verify(persistConfigHelper).persistDestinationConfig(Long.valueOf(JOB_ID), connectorConfig);
   }
 
   @Test
@@ -253,7 +369,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -274,7 +391,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()
@@ -296,7 +414,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -322,7 +441,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     worker.run(syncInput, jobRoot);
 
@@ -346,7 +466,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -367,7 +488,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -389,7 +511,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -412,7 +535,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     worker.run(syncInput, jobRoot);
 
@@ -453,7 +577,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -501,7 +626,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -568,7 +694,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -587,7 +714,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -621,7 +749,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -667,7 +796,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -687,7 +817,8 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter,
+        persistConfigHelper);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 
