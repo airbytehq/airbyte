@@ -80,7 +80,7 @@ color_output = true
 error_summary = true
 
 [tool.pytest.ini_options]
-minversion = "6.0"
+minversion = "6.2.5"
 addopts ="-r a --capture=no -vv --log-level=DEBUG --color=yes"
 
 

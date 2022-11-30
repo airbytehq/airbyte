@@ -2,11 +2,14 @@ import classNames from "classnames";
 import React from "react";
 
 import { H5 } from "components/base/Titles";
+import { Text } from "components/ui/Text";
 
+import { InfoTooltip } from "../Tooltip";
 import styles from "./Card.module.scss";
 
 export interface CardProps {
   title?: React.ReactNode;
+  description?: React.ReactNode;
   className?: string;
   fullWidth?: boolean;
   lightPadding?: boolean;
@@ -17,6 +20,7 @@ export interface CardProps {
 export const Card: React.FC<React.PropsWithChildren<CardProps>> = ({
   children,
   title,
+  description,
   className,
   fullWidth,
   lightPadding,
@@ -31,14 +35,22 @@ export const Card: React.FC<React.PropsWithChildren<CardProps>> = ({
       })}
     >
       {title ? (
-        <H5
-          className={classNames(styles.title, {
+        <div
+          className={classNames(styles.header, {
             [styles.lightPadding]: lightPadding || !children,
             [styles.roundedBottom]: roundedBottom,
+            [styles.withDescription]: description,
           })}
         >
-          {title}
-        </H5>
+          <H5 className={classNames(styles.title)}>{title}</H5>
+          {description && (
+            <InfoTooltip>
+              <Text className={styles.infoTooltip} size="sm">
+                {description}
+              </Text>
+            </InfoTooltip>
+          )}
+        </div>
       ) : null}
       {children}
     </div>
