@@ -40,7 +40,7 @@ export const BulkEditServiceProvider: React.FC<
 
   const isActive = selectedBatchNodes.size > 0;
   useEffect(() => {
-    if (status.editControlsVisible !== !isActive) {
+    if (status && status.editControlsVisible !== !isActive) {
       setStatus({ ...status, editControlsVisible: !isActive });
     }
   }, [setStatus, isActive, status]);
