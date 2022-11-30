@@ -24,7 +24,8 @@ You must be the owner of a Notion workspace to create a new integration.
 
 ### Step 2: Set up the Notion connector in Airbyte
 
-#### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. Log in to your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
@@ -34,10 +35,12 @@ You must be the owner of a Notion workspace to create a new integration.
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, click **Authenticate your Notion account**.
           * Log in and Authorize the Notion account. Select the permissions you want to allow Airbyte.
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
+<!-- /env:cloud -->
 
-#### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Log in to your Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**.
@@ -46,8 +49,9 @@ You must be the owner of a Notion workspace to create a new integration.
 5. Choose the method of authentication:
       * If you select **Access Token**, paste the access token from [Step 8](#step-1-set-up-notion​).
       * If you select **OAuth2.0** authorization, paste the client ID, access token, and client secret from [Step 8](#step-1-set-up-notion​).
-6. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+6. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -65,7 +69,7 @@ The Notion source connector supports the following streams. For more information
 * [databases](https://developers.notion.com/reference/retrieve-a-database)
 * [pages](https://developers.notion.com/reference/retrieve-a-page)
 * [users](https://developers.notion.com/reference/get-user)
-      
+
 :::note
 
 The users stream does not support Incremental - Append sync mode.

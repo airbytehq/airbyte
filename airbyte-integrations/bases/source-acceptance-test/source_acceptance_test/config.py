@@ -141,13 +141,18 @@ class FullRefreshConfig(BaseConfig):
     )
 
 
+class FutureStateConfig(BaseConfig):
+    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    missing_streams: List[EmptyStreamConfiguration] = Field(default=[], description="List of missings streams with valid bypass reasons.")
+
+
 class IncrementalConfig(BaseConfig):
     config_path: str = config_path
     configured_catalog_path: Optional[str] = configured_catalog_path
     cursor_paths: Optional[Mapping[str, List[str]]] = Field(
         description="For each stream, the path of its cursor field in the output state messages."
     )
-    future_state_path: Optional[str] = Field(description="Path to a state file with values in far future")
+    future_state: Optional[FutureStateConfig] = Field(description="Configuration for the future state.")
     timeout_seconds: int = timeout_seconds
     threshold_days: int = Field(
         description="Allow records to be emitted with a cursor value this number of days before the state cursor",
@@ -184,6 +189,9 @@ class Config(BaseConfig):
         high = "high"
         low = "low"
 
+    cache_discovered_catalog: bool = Field(
+        default=True, description="Enable or disable caching of discovered catalog for reuse in multiple tests."
+    )
     connector_image: str = Field(description="Docker image to test, for example 'airbyte/source-hubspot:dev'")
     acceptance_tests: AcceptanceTestConfigurations = Field(description="List of the acceptance test to run with their configs")
     base_path: Optional[str] = Field(description="Base path for all relative paths")
@@ -230,6 +238,9 @@ class Config(BaseConfig):
                 basic_read_tests["empty_streams"] = [
                     {"name": empty_stream_name} for empty_stream_name in basic_read_tests.get("empty_streams", [])
                 ]
+        for incremental_test in migrated_config["acceptance_tests"].get("incremental", {}).get("tests", []):
+            if "future_state_path" in incremental_test:
+                incremental_test["future_state"] = {"future_state_path": incremental_test.pop("future_state_path")}
         return migrated_config
 
     @root_validator(pre=True)

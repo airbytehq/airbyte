@@ -2,14 +2,18 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import logging
 
 import pendulum
+import pytest
 import requests
+from airbyte_cdk.config_observation import ObservedDict
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
     Oauth2Authenticator,
+    SingleUseRefreshTokenOauth2Authenticator,
     TokenAuthenticator,
 )
 from requests import Response
@@ -126,11 +130,12 @@ class TestOauth2Authenticator:
             refresh_token="some_refresh_token",
             scopes=["scope1", "scope2"],
             token_expiry_date=pendulum.now().add(days=3),
+            grant_type="some_grant_type",
             refresh_request_body={"custom_field": "in_outbound_request", "another_field": "exists_in_body", "scopes": ["no_override"]},
         )
         body = oauth.build_refresh_request_body()
         expected = {
-            "grant_type": "refresh_token",
+            "grant_type": "some_grant_type",
             "client_id": "some_client_id",
             "client_secret": "some_client_secret",
             "refresh_token": "some_refresh_token",
@@ -172,6 +177,73 @@ class TestOauth2Authenticator:
         oauth(prepared_request)
 
         assert {"Authorization": "Bearer access_token"} == prepared_request.headers
+
+
+class TestSingleUseRefreshTokenOauth2Authenticator:
+    @pytest.fixture
+    def connector_config(self):
+        return {
+            "credentials": {
+                "access_token": "my_access_token",
+                "refresh_token": "my_refresh_token",
+                "client_id": "my_client_id",
+                "client_secret": "my_client_secret",
+            }
+        }
+
+    @pytest.fixture
+    def invalid_connector_config(self):
+        return {"no_credentials_key": "foo"}
+
+    def test_init(self, connector_config):
+        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config,
+            token_refresh_endpoint="foobar",
+        )
+        assert isinstance(authenticator._connector_config, ObservedDict)
+
+    def test_init_with_invalid_config(self, invalid_connector_config):
+        with pytest.raises(ValueError):
+            SingleUseRefreshTokenOauth2Authenticator(
+                invalid_connector_config,
+                token_refresh_endpoint="foobar",
+            )
+
+    def test_get_access_token(self, capsys, mocker, connector_config):
+        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config,
+            token_refresh_endpoint="foobar",
+        )
+        authenticator.refresh_access_token = mocker.Mock(return_value=("new_access_token", 42, "new_refresh_token"))
+        authenticator.token_has_expired = mocker.Mock(return_value=True)
+        access_token = authenticator.get_access_token()
+        captured = capsys.readouterr()
+        airbyte_message = json.loads(captured.out)
+        expected_new_config = connector_config.copy()
+        expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
+        assert airbyte_message["control"]["connectorConfig"]["config"] == expected_new_config
+        assert authenticator.access_token == access_token == "new_access_token"
+        assert authenticator.get_refresh_token() == "new_refresh_token"
+        assert authenticator.get_token_expiry_date() > pendulum.now()
+        authenticator.token_has_expired = mocker.Mock(return_value=False)
+        access_token = authenticator.get_access_token()
+        captured = capsys.readouterr()
+        assert not captured.out
+        assert authenticator.access_token == access_token == "new_access_token"
+
+    def test_refresh_access_token(self, mocker, connector_config):
+        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config,
+            token_refresh_endpoint="foobar",
+        )
+        authenticator._get_refresh_access_token_response = mocker.Mock(
+            return_value={
+                authenticator.get_access_token_name(): "new_access_token",
+                authenticator.get_expires_in_name(): 42,
+                authenticator.get_refresh_token_name(): "new_refresh_token",
+            }
+        )
+        assert authenticator.refresh_access_token() == ("new_access_token", 42, "new_refresh_token")
 
 
 def mock_request(method, url, data):

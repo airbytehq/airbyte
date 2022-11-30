@@ -9,26 +9,8 @@ on:
         description: "Publish artifacts for the following git ref (if unspecified, uses the latest commit for the current branch):"
         required: false
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
-    runs-on: ubuntu-latest
-    outputs:
-      pat: ${{ steps.variables.outputs.pat }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-      - name: Check PAT rate limits
-        id: variables
-        run: |
-          ./tools/bin/find_non_rate_limited_PAT \
-            ${{ secrets.AIRBYTEIO_PAT }} \
-            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
-            ${{ secrets.SUPERTOPHER_PAT }} \
-            ${{ secrets.DAVINCHIA_PAT }}
   start-runner:
     name: "Start Runner on AWS"
-    needs: find_valid_pat
     timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
@@ -36,14 +18,21 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
 
   generate-tags:
     name: "Generate Dev and Master Tags"
@@ -53,7 +42,7 @@ jobs:
       master_tag: ${{ steps.set-outputs.outputs.master_tag }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
       - name: Generate Outputs
@@ -62,7 +51,7 @@ jobs:
         run: |-
           set -x
 
-          commit_sha=$(git rev-parse --short=7 HEAD)
+          commit_sha=$(git rev-parse --short=10 HEAD)
 
           # set dev_tag
           # AirbyteVersion.java allows versions that have a prefix of 'dev'
@@ -83,7 +72,7 @@ jobs:
     environment: more-secrets
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: ${{ github.event.inputs.oss_ref || github.ref }}
 
@@ -116,7 +105,7 @@ jobs:
     runs-on: ${{ needs.start-runner.outputs.label }}
     steps:
       - name: Login to Docker (on Master)
-        uses: docker/login-action@v1
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_HUB_USERNAME }}
           password: ${{ secrets.DOCKER_HUB_PASSWORD }}

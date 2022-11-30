@@ -7,6 +7,7 @@ package io.airbyte.server;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
@@ -63,11 +64,14 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
@@ -210,6 +214,8 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
     final JobErrorReporter jobErrorReporter =
@@ -256,11 +262,14 @@ public class ServerApp implements ServerRunnable {
 
     final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
     final DestinationHandler destinationHandler = new DestinationHandler(
         configRepository,
@@ -280,7 +289,8 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner,
-        connectionsHandler);
+        connectionsHandler,
+        envVariableFeatureFlags);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
@@ -289,7 +299,7 @@ public class ServerApp implements ServerRunnable {
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
-    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
 
     final SourceHandler sourceHandler = new SourceHandler(
         configRepository,
@@ -309,7 +319,8 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         destinationHandler,
         destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
+        configs.getAirbyteVersion(),
+        temporalClient);
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 
@@ -325,6 +336,19 @@ public class ServerApp implements ServerRunnable {
     final StatePersistence statePersistence = new StatePersistence(configsDatabase);
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
+
+    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        eventRunner,
+        configRepository);
+
+    final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
     LOGGER.info("Starting server...");
 
@@ -360,7 +384,9 @@ public class ServerApp implements ServerRunnable {
         sourceHandler,
         sourceDefinitionsHandler,
         stateHandler,
-        workspacesHandler);
+        workspacesHandler,
+        webBackendConnectionsHandler,
+        webBackendGeographiesHandler);
   }
 
   public static void main(final String[] args) {

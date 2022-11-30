@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.21
+Optionally disable discovered catalog caching. [#19806](https://github.com/airbytehq/airbyte/pull/19806).
+
+## 0.2.20
+Stricter integer field schema validation. [#19820](https://github.com/airbytehq/airbyte/pull/19820).
+
+## 0.2.19
+Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).
+
+## 0.2.18
+Test connector specification against exposed secret fields. [#19124](https://github.com/airbytehq/airbyte/pull/19124).
+
+## 0.2.17
+Make `incremental.future_state` mandatory in `high` `test_strictness_level`. [#19085](https://github.com/airbytehq/airbyte/pull/19085/).
+
 ## 0.2.16
 Run `basic_read` on the discovered catalog in `high` `test_strictness_level`. [#18937](https://github.com/airbytehq/airbyte/pull/18937).
 
