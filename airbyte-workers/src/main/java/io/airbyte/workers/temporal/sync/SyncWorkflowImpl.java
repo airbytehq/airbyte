@@ -26,6 +26,7 @@ import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -93,7 +94,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
         if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
           LOGGER.info("Refreshing source schema...");
-          refreshSchemaActivity.refreshSchema(sourceId);
+          refreshSchemaActivity.refreshSchema(sourceId, connectionId);
         }
         LOGGER.info("refreshed schema");
         final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
@@ -101,7 +102,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
         if (Status.INACTIVE == status) {
           LOGGER.info("Connection is disabled. Cancelling run.");
           final StandardSyncOutput output =
-              new StandardSyncOutput().withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED));
+              new StandardSyncOutput()
+                  .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
           return output;
         }
       }

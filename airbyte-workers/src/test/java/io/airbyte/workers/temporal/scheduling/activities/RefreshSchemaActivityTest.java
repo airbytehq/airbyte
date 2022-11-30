@@ -73,7 +73,8 @@ class RefreshSchemaActivityTest {
   @Test
   void testRefreshSchema() throws ApiException {
     UUID sourceId = UUID.randomUUID();
-    refreshSchemaActivity.refreshSchema(sourceId);
+    UUID connectionId = UUID.randomUUID();
+    refreshSchemaActivity.refreshSchema(sourceId, connectionId);
     SourceDiscoverSchemaRequestBody requestBody =
         new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
     verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);

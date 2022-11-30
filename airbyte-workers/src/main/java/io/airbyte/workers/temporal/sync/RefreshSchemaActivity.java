@@ -18,6 +18,7 @@ public interface RefreshSchemaActivity {
   @ActivityMethod
   boolean shouldRefreshSchema(UUID sourceCatalogId) throws IOException;
 
-  public void refreshSchema(UUID sourceCatalogId) throws JsonValidationException, ConfigNotFoundException, IOException, ApiException;
+  public void refreshSchema(UUID sourceCatalogId, UUID connectionId)
+      throws JsonValidationException, ConfigNotFoundException, IOException, ApiException;
 
 }

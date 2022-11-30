@@ -17,7 +17,9 @@ import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.Optional;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Singleton
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
@@ -42,11 +44,15 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   }
 
   @Override
-  public void refreshSchema(UUID sourceCatalogId) throws ApiException {
+  public void refreshSchema(UUID sourceCatalogId, UUID connectionId) throws ApiException {
     SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true);
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true).connectionId(connectionId);
 
-    airbyteApiClient.getSourceApi().discoverSchemaForSource(requestBody);
+     try {
+      airbyteApiClient.getSourceApi().discoverSchemaForSource(requestBody);
+     } catch (final Exception e) {
+       log.info("Attempted schema refresh, but failed.");
+     }
   }
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
