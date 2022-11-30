@@ -86,6 +86,7 @@
   dockerRepository: airbyte/destination-clickhouse
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
+  icon: clickhouse.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-clickhouse
   normalizationTag: 0.2.24
