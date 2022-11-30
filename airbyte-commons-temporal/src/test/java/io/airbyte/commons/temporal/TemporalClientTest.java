@@ -23,7 +23,6 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Sets;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.commons.temporal.scheduling.CheckConnectionWorkflow;
@@ -109,7 +108,6 @@ public class TemporalClientTest {
   private ConnectionManagerUtils connectionManagerUtils;
   private StreamResetRecordsHelper streamResetRecordsHelper;
   private Path workspaceRoot;
-  private EnvVariableFeatureFlags envVariableFeatureFlags;
 
   @BeforeEach
   void setup() throws IOException {
@@ -125,10 +123,9 @@ public class TemporalClientTest {
     mockWorkflowStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_RUNNING);
     connectionManagerUtils = spy(new ConnectionManagerUtils());
     streamResetRecordsHelper = mock(StreamResetRecordsHelper.class);
-    envVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
     temporalClient =
         spy(new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, connectionManagerUtils,
-            streamResetRecordsHelper, envVariableFeatureFlags));
+            streamResetRecordsHelper));
   }
 
   @Nested
@@ -142,7 +139,7 @@ public class TemporalClientTest {
 
       temporalClient = spy(
           new TemporalClient(workspaceRoot, workflowClient, workflowServiceStubs, streamResetPersistence, mConnectionManagerUtils,
-              streamResetRecordsHelper, envVariableFeatureFlags));
+              streamResetRecordsHelper));
     }
 
     @Test
@@ -161,7 +158,7 @@ public class TemporalClientTest {
       temporalClient.restartClosedWorkflowByStatus(WorkflowExecutionStatus.WORKFLOW_EXECUTION_STATUS_FAILED);
       verify(mConnectionManagerUtils).safeTerminateWorkflow(eq(workflowClient), eq(connectionId),
           anyString());
-      verify(mConnectionManagerUtils).startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId), any(EnvVariableFeatureFlags.class));
+      verify(mConnectionManagerUtils).startConnectionManagerNoSignal(eq(workflowClient), eq(connectionId));
     }
 
   }
@@ -297,7 +294,7 @@ public class TemporalClientTest {
           .withDockerImage(IMAGE_NAME2);
 
       temporalClient.submitSync(JOB_ID, ATTEMPT_ID, syncConfig, CONNECTION_ID);
-      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID, envVariableFeatureFlags);
+      discoverCatalogWorkflow.run(JOB_RUN_CONFIG, LAUNCHER_CONFIG, destinationLauncherConfig, input, CONNECTION_ID);
       verify(workflowClient).newWorkflowStub(SyncWorkflow.class, TemporalWorkflowUtils.buildWorkflowOptions(TemporalJobType.SYNC));
     }
 

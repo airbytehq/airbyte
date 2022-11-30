@@ -31,8 +31,7 @@ public class NormalizationTraceFailureSyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                                final UUID connectionId) {
 
     return new StandardSyncOutput()
         .withNormalizationSummary(new NormalizationSummary()

@@ -25,8 +25,7 @@ public interface SyncWorkflow {
                          IntegrationLauncherConfig sourceLauncherConfig,
                          IntegrationLauncherConfig destinationLauncherConfig,
                          StandardSyncInput syncInput,
-                         UUID connectionId,
-                         EnvVariableFeatureFlags envVariableFeatureFlags)
+                         UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException;
 
 }

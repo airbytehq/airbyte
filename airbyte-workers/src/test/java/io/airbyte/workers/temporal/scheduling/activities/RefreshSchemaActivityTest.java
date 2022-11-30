@@ -13,6 +13,7 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
@@ -34,6 +35,7 @@ class RefreshSchemaActivityTest {
 
   static private AirbyteApiClient mApiClient;
   static private SourceApi mSourceApi;
+  static private EnvVariableFeatureFlags mEnvVariableFeatureFlags;
 
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
 
@@ -44,8 +46,9 @@ class RefreshSchemaActivityTest {
     mApiClient = mock(AirbyteApiClient.class);
     mSourceApi = mock(SourceApi.class);
     mConfigRepository = mock(ConfigRepository.class);
+    mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
     Mockito.lenient().when(mApiClient.getSourceApi()).thenReturn(mSourceApi);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mApiClient);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mApiClient, mEnvVariableFeatureFlags);
   }
 
   @Test

@@ -32,8 +32,7 @@ public class SourceAndDestinationFailureSyncWorkflow implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                                final UUID connectionId) {
 
     return new StandardSyncOutput()
         .withFailures(FAILURE_REASONS.stream().toList())

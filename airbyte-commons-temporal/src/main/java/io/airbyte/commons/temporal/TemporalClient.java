@@ -9,7 +9,6 @@ import static io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow.N
 import com.google.common.annotations.VisibleForTesting;
 import com.google.protobuf.ByteString;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.DeletedWorkflowException;
 import io.airbyte.commons.temporal.exception.UnreachableWorkflowException;
@@ -82,22 +81,19 @@ public class TemporalClient {
   private final StreamResetPersistence streamResetPersistence;
   private final ConnectionManagerUtils connectionManagerUtils;
   private final StreamResetRecordsHelper streamResetRecordsHelper;
-  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public TemporalClient(@Named("workspaceRootTemporal") final Path workspaceRoot,
                         final WorkflowClient client,
                         final WorkflowServiceStubs service,
                         final StreamResetPersistence streamResetPersistence,
                         final ConnectionManagerUtils connectionManagerUtils,
-                        final StreamResetRecordsHelper streamResetRecordsHelper,
-                        final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                        final StreamResetRecordsHelper streamResetRecordsHelper) {
     this.workspaceRoot = workspaceRoot;
     this.client = client;
     this.service = service;
     this.streamResetPersistence = streamResetPersistence;
     this.connectionManagerUtils = connectionManagerUtils;
     this.streamResetRecordsHelper = streamResetRecordsHelper;
-    this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
   private final Set<String> workflowNames = new HashSet<>();
@@ -110,7 +106,7 @@ public class TemporalClient {
     nonRunningWorkflow.forEach(connectionId -> {
       connectionManagerUtils.safeTerminateWorkflow(client, connectionId, "Terminating workflow in "
           + "unreachable state before starting a new workflow for this connection");
-      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId, envVariableFeatureFlags);
+      connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
     });
   }
 
@@ -214,8 +210,7 @@ public class TemporalClient {
     }
 
     try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync,
-          envVariableFeatureFlags);
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::submitManualSync);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't sync a deleted connection.", e);
       return new ManualOperationResult(
@@ -248,7 +243,7 @@ public class TemporalClient {
     final long jobId = connectionManagerUtils.getCurrentJobId(client, connectionId);
 
     try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob, envVariableFeatureFlags);
+      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::cancelJob);
     } catch (final DeletedWorkflowException e) {
       log.error("Can't cancel a deleted workflow", e);
       return new ManualOperationResult(
@@ -294,11 +289,9 @@ public class TemporalClient {
 
     try {
       if (syncImmediatelyAfter) {
-        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnectionAndSkipNextScheduling,
-            envVariableFeatureFlags);
+        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnectionAndSkipNextScheduling);
       } else {
-        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection,
-            envVariableFeatureFlags);
+        connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId, workflow -> workflow::resetConnection);
       }
     } catch (final DeletedWorkflowException e) {
       log.error("Can't reset a deleted workflow", e);
@@ -415,7 +408,7 @@ public class TemporalClient {
                 sourceLauncherConfig,
                 destinationLauncherConfig,
                 input,
-                connectionId, envVariableFeatureFlags);
+                connectionId);
           } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
             throw new RuntimeException(e);
           }
@@ -478,7 +471,7 @@ public class TemporalClient {
   public ConnectionManagerWorkflow submitConnectionUpdaterAsync(final UUID connectionId) {
     log.info("Starting the scheduler temporal wf");
     final ConnectionManagerWorkflow connectionManagerWorkflow =
-        connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId, envVariableFeatureFlags);
+        connectionManagerUtils.startConnectionManagerNoSignal(client, connectionId);
     try {
       CompletableFuture.supplyAsync(() -> {
         try {

@@ -13,7 +13,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKFLOW_TRACE_OPERATION_
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
@@ -76,8 +75,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId,
-                                final EnvVariableFeatureFlags envVariableFeatureFlags)
+                                final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
 
     ApmTraceUtils
@@ -90,20 +88,18 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
     if (version > Workflow.DEFAULT_VERSION) {
-      if (envVariableFeatureFlags.autoDetectSchema()) {
-        final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
-        if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
-          LOGGER.info("Refreshing source schema...");
-          refreshSchemaActivity.refreshSchema(sourceId, connectionId);
-        }
-        final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
-        if (Status.INACTIVE == status) {
-          LOGGER.info("Connection is disabled. Cancelling run.");
-          final StandardSyncOutput output =
-              new StandardSyncOutput()
-                  .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-          return output;
-        }
+      final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
+      if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
+        LOGGER.info("Refreshing source schema...");
+        refreshSchemaActivity.refreshSchema(sourceId, connectionId);
+      }
+      final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
+      if (Status.INACTIVE == status) {
+        LOGGER.info("Connection is disabled. Cancelling run.");
+        final StandardSyncOutput output =
+            new StandardSyncOutput()
+                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+        return output;
       }
     }
 
