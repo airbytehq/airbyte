@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "entityType": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "type":{
+      "type": "string"
+    },
+    "path": {
+      "type": "array"
+    },
+    "createdAt":{
+      "type": "string"
+    },
+    "tag": {
+      "type": "string"
+    },
+    "sql": {
+      "type": "array"
+    },
+    "sqlContext": {
+      "type": "array"
+    },
+    "accessControlList": {
+      "type": "object"
+    },
+    "fields": {
+      "type": "array"
+    }
+  }
+}

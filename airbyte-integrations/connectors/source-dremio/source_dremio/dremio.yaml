@@ -1,0 +1,51 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "{{ config['base_url']}}/api/v3"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "_dremio{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  catalog_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "catalog"
+      path: "/catalog"
+
+streams:
+  - "*ref(definitions.catalog_stream)"
+
+check:
+  stream_names:
+    - "catalog"
+
+spec:
+  documentation_url: "https://docs.dremio.com/software/rest-api/"
+  connection_specification:
+    title: Dremio Spec
+    type: object
+    required:
+      - api_key
+      - base_url
+    additionalProperties: true
+    properties:
+      api_key:
+        type: string
+        description: "API Key that is generated when you authenticate to Dremio API"
+      base_url:
+        type: string
+        description: "URL of your Dremio instance"

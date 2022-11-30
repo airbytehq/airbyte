@@ -1,0 +1,30 @@
+{
+  "catalogs": {
+      "entityType": "dataset",
+      "id": "28bb8400-6f7f-4807-9e7f-cbf0bb21d204",
+      "type": "VIRTUAL_DATASET",
+      "path": [
+        "sandbox",
+        "taxi_queries",
+        "passenger_counts"
+      ],
+      "createdAt": "2019-01-10T16:44:05.323Z",
+      "tag": "0",
+      "sql": "SELECT COUNT(*) as four_passenger_count\nFROM \"DEV HDFS\".data.nyctaxi.\"yellow_tripdata_2009-01.csv\"\nWHERE \"Passenger_Count\" >= 4",
+      "sqlContext": [
+        "sandbox",
+        "taxi_queries"
+      ],
+      "accessControlList": {
+        "version": 0
+      },
+      "fields": [
+        {
+          "name": "four_passenger_count",
+          "type": {
+            "name": "BIGINT"
+          }
+        }
+      ]
+    }
+}
