@@ -1,17 +1,57 @@
-{
-  "coupons": {
-    "date_modified_gmt": "2100-01-01T00:00:00Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "coupons"
+      }
+    }
   },
-  "customers": {
-    "date_modified_gmt": "2100-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "customers"
+      }
+    }
   },
-  "orders": {
-    "date_modified_gmt": "2100-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "orders"
+      }
+    }
   },
-  "products": {
-    "date_modified_gmt": "2100-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
   },
-  "product_reviews": {
-    "date_created_gmt": "2100-01-01T00:00:00Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created_gmt": "2100-01-01T00:00:00Z"
+      },
+      "stream_descriptor": {
+        "name": "product_reviews"
+      }
+    }
   }
-}
+]
