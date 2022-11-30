@@ -1,7 +1,7 @@
 import { faEye, faEyeSlash } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useImperativeHandle, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
@@ -13,12 +13,15 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   light?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({ light, error, ...props }, ref) => {
   const { formatMessage } = useIntl();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const inputSelectionStartRef = useRef<number | null>(null);
+
+  // Necessary to bind a ref passed from the parent in to our internal inputRef
+  useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
 
   const [isContentVisible, toggleIsContentVisible] = useToggle(false);
   const [focused, setFocused] = useState(false);
@@ -115,4 +118,4 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
       ) : null}
     </div>
   );
-};
+});
