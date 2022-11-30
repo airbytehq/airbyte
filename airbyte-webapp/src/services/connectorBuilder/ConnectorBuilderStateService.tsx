@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
+import { useIntl } from "react-intl";
 
 import {
   StreamReadRequestBodyConfig,
@@ -6,6 +7,8 @@ import {
   StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
+
+import { useListStreams } from "./ConnectorBuilderApiService";
 
 interface Context {
   jsonManifest: StreamsListRequestBodyManifest;
@@ -26,12 +29,12 @@ interface Context {
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  // const { formatMessage } = useIntl();
+  const { formatMessage } = useIntl();
 
   // json manifest
   const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   const [yamlIsValid, setYamlIsValid] = useState(true);
-  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(false);
+  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -46,23 +49,25 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     }
   }, [configString]);
 
+  console.log("jsonManifest", jsonManifest);
+
   // streams
-  // const {
-  //   data: streamListRead,
-  //   isError: isStreamListError,
-  //   error: streamListError,
-  // } = useListStreams({ manifest: jsonManifest, config: configJson });
-  // const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
-  // const streamListErrorMessage = isStreamListError
-  //   ? streamListError instanceof Error
-  //     ? streamListError.message || unknownErrorMessage
-  //     : unknownErrorMessage
-  //   : undefined;
-  // const streams = useMemo(() => {
-  //   return streamListRead?.streams ?? [];
-  // }, [streamListRead]);
-  const streamListErrorMessage = undefined;
-  const streams = useMemo(() => [{ name: "stream1", url: "url1" }], []);
+  const {
+    data: streamListRead,
+    isError: isStreamListError,
+    error: streamListError,
+  } = useListStreams({ manifest: jsonManifest, config: configJson });
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
+  const streamListErrorMessage = isStreamListError
+    ? streamListError instanceof Error
+      ? streamListError.message || unknownErrorMessage
+      : unknownErrorMessage
+    : undefined;
+  const streams = useMemo(() => {
+    return streamListRead?.streams ?? [];
+  }, [streamListRead]);
+  // const streamListErrorMessage = undefined;
+  // const streams = useMemo(() => [{ name: "stream1", url: "url1" }], []);
   const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
   const [selectedStreamName, setSelectedStream] = useState(firstStreamName);

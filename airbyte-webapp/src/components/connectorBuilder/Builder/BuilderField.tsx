@@ -6,6 +6,7 @@ import * as yup from "yup";
 import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
+import { TagInput } from "components/ui/TagInput";
 import { Text } from "components/ui/Text";
 
 import styles from "./BuilderField.module.scss";
@@ -25,7 +26,7 @@ interface BaseFieldProps {
   optional?: boolean;
 }
 
-type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "enum"; options: string[] });
+type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   useEffect(() => {
@@ -46,7 +47,7 @@ const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, 
 };
 
 export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
-  let yupSchema = yup.string();
+  let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
   if (!optional) {
     yupSchema = yupSchema.required("form.empty.error");
   }
@@ -70,6 +71,9 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
       {props.type === "text" && <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />}
+      {props.type === "array" && (
+        <TagInput name={path} fieldValue={field.value ?? []} onChange={(value) => helpers.setValue(value)} />
+      )}
       {props.type === "enum" && (
         <EnumField
           options={props.options}
