@@ -37,5 +37,5 @@ The Lemlist connector should not run into Lemlist API limitations under normal u
 
 | Version | Date       | Pull Request                                           | Subject         |
 | :------ | :--------- | :----------------------------------------------------- | :-------------- |
-| 0.1.1   | ?          | [unknown](https://github.com/airbytehq/airbyte/pulls)  | Bump Version    |
+| 0.1.1   | Unknown    | Unknown                                                | Bump Version    |
 | 0.1.0   | 2021-10-14 | [7062](https://github.com/airbytehq/airbyte/pull/7062) | Initial Release |
