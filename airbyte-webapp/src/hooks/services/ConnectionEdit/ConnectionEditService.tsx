@@ -1,4 +1,4 @@
-import { pick } from "lodash";
+import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
