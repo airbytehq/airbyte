@@ -22,9 +22,9 @@ def test_get_json_schema(found_schema, found_error, expected_schema):
 
     json_file_schema_loader = MagicMock()
     if found_schema:
-        json_file_schema_loader.get_json_schema.return_value = {"type": "object", "properties": {}}
+        json_file_schema_loader.get_schema.return_value = {"type": "object", "properties": {}}
     if found_error:
-        json_file_schema_loader.get_json_schema.side_effect = found_error
+        json_file_schema_loader.get_schema.side_effect = found_error
 
     default_schema_loader.default_loader = json_file_schema_loader
 
