@@ -10,9 +10,8 @@ source connector.
 WARNING: Do not modify this file.
 """
 
-import logging
+
 # Declarative Source
 class SourcePosthog(YamlDeclarativeSource):
     def __init__(self):
         super().__init__(**{"path_to_yaml": "posthog.yaml"})
-        self.logger.setLevel(logging.DEBUG)

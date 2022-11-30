@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from dataclasses import InitVar, dataclass, field
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union, ChainMap
+
+from dataclasses import dataclass
+from typing import Any, Iterable, Mapping, MutableMapping, Optional
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
@@ -12,7 +13,6 @@ from airbyte_cdk.sources.declarative.types import Record, StreamSlice
 
 @dataclass
 class EventsSimpleRetriever(SimpleRetriever):
-
     def request_params(
         self,
         stream_state: StreamSlice,
@@ -49,23 +49,24 @@ class EventsSimpleRetriever(SimpleRetriever):
             self.stream_slicer.get_request_params,
         )
 
+
 @dataclass
 class EventsCartesianProductStreamSlicer(CartesianProductStreamSlicer):
     """Connector requires support of nested state - each project should have own timestamp value, like:
-        {
-            "project_id1": {
-              "timestamp": "2021-02-01T10:21:35.003000Z"
-            },
-            "project_idX": {
-              "timestamp": "2022-11-17:00:00.000000Z"
-            }
+    {
+        "project_id1": {
+          "timestamp": "2021-02-01T10:21:35.003000Z"
+        },
+        "project_idX": {
+          "timestamp": "2022-11-17:00:00.000000Z"
         }
-        we also have to support old-style (before 0.1.8) states, like:
-        {
-            "timestamp": "2021-17-01T10:21:35.003000Z"
-        }
+    }
+    we also have to support old-style (before 0.1.8) states, like:
+    {
+        "timestamp": "2021-17-01T10:21:35.003000Z"
+    }
 
-        Slicer also produces separate datetime slices for each project
+    Slicer also produces separate datetime slices for each project
     """
 
     def __post_init__(self, options: Mapping[str, Any]):
@@ -99,10 +100,10 @@ class EventsCartesianProductStreamSlicer(CartesianProductStreamSlicer):
         project_slicer, datetime_slicer = self.stream_slicers
 
         # support of old style state: it contains only a single 'timestamp' field
-        old_style_state = stream_state if 'timestamp' in stream_state else {}
+        old_style_state = stream_state if "timestamp" in stream_state else {}
 
         for project_slice in project_slicer.stream_slices(sync_mode, stream_state):
-            project_id = str(project_slice.get('project_id', ''))
+            project_id = str(project_slice.get("project_id", ""))
 
             # use old_style_state if state does not contain states for each project
             project_state = stream_state.get(project_id, {}) or old_style_state
@@ -112,13 +113,13 @@ class EventsCartesianProductStreamSlicer(CartesianProductStreamSlicer):
 
             # fix date ranges: start_time of next slice must be equal to end_time of previous slice
             if project_datetime_slices and project_state:
-                project_datetime_slices[0]['start_time'] = project_state['timestamp']
+                project_datetime_slices[0]["start_time"] = project_state["timestamp"]
             for i, datetime_slice in enumerate(project_datetime_slices[1:], start=1):
-                datetime_slice['start_time'] = project_datetime_slices[i-1]['end_time']
+                datetime_slice["start_time"] = project_datetime_slices[i - 1]["end_time"]
 
             # Add project id to each slice
             for datetime_slice in project_datetime_slices:
-                datetime_slice['project_id'] = project_id
+                datetime_slice["project_id"] = project_id
 
             slices.extend(project_datetime_slices)
 
