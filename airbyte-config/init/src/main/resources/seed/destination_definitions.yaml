@@ -39,7 +39,7 @@
 - name: BigQuery
   destinationDefinitionId: 22f6c74f-5699-40ff-833c-4a879ea40133
   dockerRepository: airbyte/destination-bigquery
-  dockerImageTag: 1.2.7
+  dockerImageTag: 1.2.8
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
@@ -55,7 +55,7 @@
 - name: BigQuery (denormalized typed struct)
   destinationDefinitionId: 079d5540-f236-4294-ba7c-ade8fd918496
   dockerRepository: airbyte/destination-bigquery-denormalized
-  dockerImageTag: 1.2.7
+  dockerImageTag: 1.2.8
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
@@ -86,6 +86,7 @@
   dockerRepository: airbyte/destination-clickhouse
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/clickhouse
+  icon: clickhouse.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-clickhouse
   normalizationTag: 0.2.24
