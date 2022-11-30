@@ -105,6 +105,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_refresh_endpoint: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_token_name: str = "refresh_token",
@@ -143,6 +144,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             self.get_refresh_token(),
             scopes,
             token_expiry_date,
+            token_expiry_date_format,
             access_token_name,
             expires_in_name,
             refresh_request_body,
@@ -197,7 +199,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             t0 = pendulum.now()
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
             self.access_token = new_access_token
-            self.set_token_expiry_date(t0.add(seconds=access_token_expires_in))
+            self.set_token_expiry_date(t0, access_token_expires_in)
             self.set_refresh_token(new_refresh_token)
         return self.access_token
 
