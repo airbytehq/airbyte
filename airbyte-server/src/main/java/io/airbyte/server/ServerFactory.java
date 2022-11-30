@@ -230,7 +230,6 @@ public interface ServerFactory {
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           DestinationOauthApiController.class,
-          HealthApiController.class,
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
