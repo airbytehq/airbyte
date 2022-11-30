@@ -78,7 +78,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId)
+                                final UUID connectionId,
+                                final EnvVariableFeatureFlags envVariableFeatureFlags)
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
 
     ApmTraceUtils
