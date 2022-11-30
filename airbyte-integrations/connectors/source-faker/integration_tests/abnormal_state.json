@@ -3,7 +3,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "cursor": 99999999999999999
+        "id": 99999999999999999
       },
       "stream_descriptor": {
         "name": "users"
@@ -14,7 +14,7 @@
     "type": "STREAM",
     "stream": {
       "stream_state": {
-        "cursor": 99999999999999999
+        "user_id": 99999999999999999
       },
       "stream_descriptor": {
         "name": "purchases"

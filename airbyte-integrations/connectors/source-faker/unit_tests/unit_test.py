@@ -200,7 +200,7 @@ def test_with_purchases():
     assert state_rows_count > 10 + 1  # should be greater than 1000/100, and one state for the products
     assert latest_state.state.data["users"] == {"id": 1000, "seed": None}
     assert latest_state.state.data["products"] == {}
-    assert latest_state.state.data["purchases"]["id"] > 0
+    assert latest_state.state.data["purchases"]["user_id"] > 0
 
 
 def test_sync_ends_with_limit():
