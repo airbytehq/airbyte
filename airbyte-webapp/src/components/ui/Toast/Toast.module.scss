@@ -1,3 +1,126 @@
+@use "../../../scss/colors";
+
+@keyframes slide-up-animations {
+  0% {
+    transform: translate(-50%, -100%);
+    bottom: -49px;
+  }
+
+  100% {
+    transform: translate(-50%, 0);
+    bottom: 49px;
+  }
+}
+
+.toastContainer {
+  position: fixed;
+  bottom: 49px;
+  left: 50%;
+  transform: translate(-50%, 0);
+  z-index: 20;
+  padding: 25px 25px 22px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  animation: slide-up-animations 0.25s linear;
+}
+
+.iconContainer {
+  padding: 10px;
+  margin-right: 20px;
+  border-radius: 9px;
+}
+
+.toastIcon {
+  width: 15px;
+  height: 15px;
+  background: white;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.warning {
+  background-color: colors.$yellow-50;
+  border: 1px solid colors.$yellow-500;
+
+  .iconContainer {
+    background-color: colors.$yellow-500;
+  }
+
+  .toastIcon {
+    color: colors.$yellow-500;
+  }
+}
+
+.error {
+  background-color: colors.$red-50;
+  border: 1px solid colors.$red-300;
+
+  .iconContainer {
+    background-color: colors.$red-300;
+  }
+
+  .toastIcon {
+    color: colors.$red-300;
+  }
+}
+
+.success {
+  background-color: colors.$green-50;
+  border: 1px solid colors.$green-200;
+
+  .iconContainer {
+    background-color: colors.$green-200;
+  }
+
+  .toastIcon {
+    color: colors.$green-200;
+  }
+}
+
+.info {
+  background-color: colors.$blue-50;
+  border: 1px solid colors.$blue-400;
+
+  .iconContainer {
+    background-color: colors.$blue-400;
+  }
+
+  .toastIcon {
+    color: colors.$blue-400;
+  }
+}
+
+.title {
+  color: colors.$dark-blue-900;
+  font-style: normal;
+  font-size: 15px;
+  line-height: 18px;
+  margin: 0;
+}
+
+.text {
+  color: colors.$dark-blue-700;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 17px;
+  margin-top: 5px;
+}
+
 .closeButton {
+  svg {
+    font-size: 20px;
+    color: colors.$dark-blue-900;
+  }
+}
+
+.closeButton,
+.actionButton {
   margin-left: 10px;
+}
+
+.actionButton {
+  background-color: colors.$dark-blue-900 !important;
 }

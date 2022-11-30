@@ -1,6 +1,6 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
-import { Toast } from "./Toast";
+import { Toast, ToastType } from "./Toast";
 
 export default {
   title: "UI/Toast",
@@ -8,6 +8,7 @@ export default {
   argTypes: {
     title: { type: { name: "string", required: false } },
     text: { type: { name: "string", required: false } },
+    type: { type: { name: "string", required: false } },
     onClose: { table: { disable: true } },
   },
 } as ComponentMeta<typeof Toast>;
@@ -32,4 +33,34 @@ WithCloseButton.args = {
   onClose: () => {
     console.log("Closed!");
   },
+};
+
+export const WarningToast = Template.bind({});
+WarningToast.args = {
+  title: "With Close button",
+  text: "This is a card with a close button",
+  onClose: () => {
+    console.log("Closed!");
+  },
+  type: ToastType.WARNING,
+};
+
+export const ErrorToast = Template.bind({});
+ErrorToast.args = {
+  title: "With Close button",
+  text: "This is a card with a close button",
+  onClose: () => {
+    console.log("Closed!");
+  },
+  type: ToastType.ERROR,
+};
+
+export const SuccessToast = Template.bind({});
+SuccessToast.args = {
+  title: "With Close button",
+  text: "This is a card with a close button",
+  onClose: () => {
+    console.log("Closed!");
+  },
+  type: ToastType.SUCCESS,
 };
