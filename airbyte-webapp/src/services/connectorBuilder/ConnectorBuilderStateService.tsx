@@ -1,17 +1,15 @@
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
+import { useLocalStorage } from "react-use";
 
-import {
-  StreamReadRequestBodyConfig,
-  StreamsListReadStreamsItem,
-  StreamsListRequestBodyManifest,
-} from "core/request/ConnectorBuilderClient";
+import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
 interface Context {
-  jsonManifest: StreamsListRequestBodyManifest;
+  jsonManifest: ConnectorManifest;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
@@ -19,7 +17,7 @@ interface Context {
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -32,7 +30,18 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const { formatMessage } = useIntl();
 
   // json manifest
-  const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
+  const defaultJsonManifest = {
+    version: "1.0.0",
+    check: {
+      stream_names: [],
+    },
+    streams: [],
+  };
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+    "connectorBuilderManifest",
+    defaultJsonManifest
+  );
+  const manifest = jsonManifest ?? defaultJsonManifest;
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
@@ -49,14 +58,14 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     }
   }, [configString]);
 
-  console.log("jsonManifest", jsonManifest);
+  console.log("manifest", manifest);
 
   // streams
   const {
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
-  } = useListStreams({ manifest: jsonManifest, config: configJson });
+  } = useListStreams({ manifest, config: configJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
     ? streamListError instanceof Error
@@ -82,7 +91,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
 
   const ctx = {
-    jsonManifest,
+    jsonManifest: manifest,
     yamlEditorIsMounted,
     yamlIsValid,
     streams,

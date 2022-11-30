@@ -31,15 +31,11 @@ const FormObserver: React.FC = () => {
 
 // Note: we are explicitly NOT using intl for the BuilderField strings, in order to keep this easier to maintain
 export const Builder: React.FC = () => {
+  const { jsonManifest } = useConnectorBuilderState();
+
   return (
     <Formik
-      initialValues={{
-        version: "1.0.0",
-        check: {
-          stream_names: [],
-        },
-        streams: [],
-      }}
+      initialValues={jsonManifest}
       onSubmit={(values: ConnectorManifest) => {
         console.log(values);
       }}
