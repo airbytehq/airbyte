@@ -124,8 +124,8 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticat
     maxsize - The maximum size of the cache
     ttl - time-to-live value in seconds
     docs https://cachetools.readthedocs.io/en/latest/
-    maxsize=1000 - when the cache is full, in this case more than 1000, 
-    i.e. by adding another item the cache would exceed its maximum size, the cache must choose which item(s) to discard  
+    maxsize=1000 - when the cache is full, in this case more than 1000,
+    i.e. by adding another item the cache would exceed its maximum size, the cache must choose which item(s) to discard
     ttl=86400 means that cached token will live for 86400 seconds (one day)
 """
 cacheSessionTokenAuthenticator = TTLCache(maxsize=1000, ttl=86400)
@@ -219,7 +219,7 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
     def is_valid_session_token(self) -> bool:
         try:
             response = requests.get(
-                f"{self._api_url.eval(self.config)}user/current",headers={self.auth_header: self._session_token.eval(self.config)}
+                f"{self._api_url.eval(self.config)}user/current", headers={self.auth_header: self._session_token.eval(self.config)}
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
