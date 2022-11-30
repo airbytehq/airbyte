@@ -237,7 +237,6 @@ public class SchedulerHandler {
 
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
-    log.info("discover schema request: " + discoverSchemaRequestBody);
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
     final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
