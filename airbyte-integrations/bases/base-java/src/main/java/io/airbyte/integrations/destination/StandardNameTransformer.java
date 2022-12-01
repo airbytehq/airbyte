@@ -32,12 +32,12 @@ public class StandardNameTransformer implements NamingConventionTransformer {
 
   @Override
   public String getRawTableName(final String streamName) {
-    return convertStreamName("_airbyte_raw_" + streamName);
+    return convertStreamName("_daspire_raw_" + streamName);
   }
 
   @Override
   public String getTmpTableName(final String streamName) {
-    return convertStreamName(Strings.addRandomSuffix("_airbyte_tmp", "_", 3) + "_" + streamName);
+    return convertStreamName(Strings.addRandomSuffix("_daspire_tmp", "_", 3) + "_" + streamName);
   }
 
   @Override
