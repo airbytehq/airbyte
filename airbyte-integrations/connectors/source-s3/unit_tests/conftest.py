@@ -49,7 +49,7 @@ def config_fixture(tmp_path):
             fp,
         )
     source = SourceS3()
-    config = source.read_config(config_file)
+    config = source.read_json_file(config_file)
     return config
 
 

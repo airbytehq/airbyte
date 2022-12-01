@@ -116,6 +116,14 @@ class TestConnectorSpec:
         os.remove(json_path)
 
     @pytest.fixture
+    def use_invalid_json_spec(self):
+        json_path = os.path.join(SPEC_ROOT, "spec.json")
+        with open(json_path, "w") as f:
+            f.write("the content of this file is not JSON")
+        yield
+        os.remove(json_path)
+
+    @pytest.fixture
     def use_yaml_spec(self):
         spec = {"documentationUrl": "https://airbyte.com/#yaml", "connectionSpecification": self.CONNECTION_SPECIFICATION}
 
@@ -129,6 +137,10 @@ class TestConnectorSpec:
         connector_spec = integration.spec(logger)
         assert connector_spec.documentationUrl == "https://airbyte.com/#json"
         assert connector_spec.connectionSpecification == self.CONNECTION_SPECIFICATION
+
+    def test_spec_from_improperly_formatted_json_file(self, integration, use_invalid_json_spec):
+        with pytest.raises(ValueError, match="Could not read json spec file"):
+            integration.spec(logger)
 
     def test_spec_from_yaml_file(self, integration, use_yaml_spec):
         connector_spec = integration.spec(logger)
