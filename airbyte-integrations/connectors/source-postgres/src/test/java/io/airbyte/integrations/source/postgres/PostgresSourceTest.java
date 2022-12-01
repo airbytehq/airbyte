@@ -18,6 +18,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
@@ -26,7 +27,6 @@ import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.source.relationaldb.InvalidCursorException;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
@@ -196,18 +196,6 @@ class PostgresSourceTest {
         .put(JdbcUtils.USERNAME_KEY, psqlDb.getUsername())
         .put(JdbcUtils.PASSWORD_KEY, psqlDb.getPassword())
         .put(JdbcUtils.SSL_KEY, false)
-        .build());
-  }
-
-  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", true)
         .build());
   }
 
@@ -482,22 +470,6 @@ class PostgresSourceTest {
   }
 
   @Test
-  void testGetDefaultConnectionPropertiesWithoutSsl() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, Collections.emptyMap());
-  };
-
-  @Test
-  void testGetDefaultConnectionPropertiesWithSsl() {
-    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, ImmutableMap.of(
-        "ssl", "true",
-        "sslmode", "require"));
-  };
-
-  @Test
   void testGetUsername() {
     final String username = "airbyte-user";
 
@@ -526,7 +498,7 @@ class PostgresSourceTest {
             new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(tableWithInvalidCursorType));
 
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
-        assertThat(throwable).isInstanceOf(InvalidCursorException.class)
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
                 "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
       } finally {
@@ -568,7 +540,8 @@ class PostgresSourceTest {
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1111,
         JdbcUtils.USERNAME_KEY, "user",
-        JdbcUtils.DATABASE_KEY, "db/foo"));
+        JdbcUtils.DATABASE_KEY, "db/foo",
+        JdbcUtils.SSL_KEY, "false"));
   }
 
 }

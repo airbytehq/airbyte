@@ -2,6 +2,7 @@
 
 exports[`#useInitialValues should generate initial values w/ 'not create' mode: false 1`] = `
 Object {
+  "geography": "auto",
   "name": "Scrafty <> Heroku Postgres",
   "namespaceDefinition": "source",
   "namespaceFormat": "\${SOURCE_NAMESPACE}",
@@ -534,6 +535,7 @@ Object {
 
 exports[`#useInitialValues should generate initial values w/ 'not create' mode: true 1`] = `
 Object {
+  "geography": "auto",
   "namespaceDefinition": "source",
   "namespaceFormat": "\${SOURCE_NAMESPACE}",
   "normalization": "basic",
@@ -1065,6 +1067,7 @@ Object {
 
 exports[`#useInitialValues should generate initial values w/ no 'not create' mode 1`] = `
 Object {
+  "geography": "auto",
   "name": "Scrafty <> Heroku Postgres",
   "namespaceDefinition": "source",
   "namespaceFormat": "\${SOURCE_NAMESPACE}",

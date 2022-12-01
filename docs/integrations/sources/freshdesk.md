@@ -14,7 +14,7 @@ To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL]
 4. Enter the name for the Freshdesk connector.
 5. For **Domain**, enter your [Freshdesk domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url).
 6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
-7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+7. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
 9. Click **Set up source**.
 
@@ -49,7 +49,9 @@ The Freshdesk connector should not run into Freshdesk API limitations under norm
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                               |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------ |
+|:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------|
+| 0.3.8   | 2022-11-11 | [19349](https://github.com/airbytehq/airbyte/pull/19349) | Do not rely on response.json() when deciding to retry a request                       |
+| 0.3.7   | 2022-11-03 | [18397](https://github.com/airbytehq/airbyte/pull/18397) | Fix base url for v2 API.                                                              |
 | 0.3.6   | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states.                                                         |
 | 0.3.5   | 2022-09-27 | [17249](https://github.com/airbytehq/airbyte/pull/17249) | Added nullable to all stream schemas, added transformation into declared schema types |
 | 0.3.4   | 2022-09-27 | [17243](https://github.com/airbytehq/airbyte/pull/17243) | Fixed the issue, when selected stream is not available due to Subscription Plan       |

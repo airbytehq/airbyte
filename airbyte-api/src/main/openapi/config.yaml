@@ -168,6 +168,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/workspaces/get_by_connection_id:
+    post:
+      tags:
+        - workspace
+      summary: Find workspace by connection id
+      operationId: getWorkspaceByConnectionId
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConnectionIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WorkspaceRead"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/workspaces/update:
     post:
       tags:
@@ -2266,6 +2289,26 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/InternalOperationResult"
+  /v1/attempt/save_stats:
+    post:
+      tags:
+        - attempt
+        - internal
+      summary: For worker to set sync stats of a running attempt.
+      operationId: saveStats
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SaveStatsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful Operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InternalOperationResult"
 
 components:
   securitySchemes:
@@ -2892,6 +2935,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
     SourceSearch:
       type: object
       properties:
@@ -3328,6 +3373,8 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3735,19 +3782,35 @@ components:
           type: string
     OperatorWebhook:
       type: object
-      required:
-        - executionUrl
       properties:
-        executionUrl:
-          type: string
-          description: The URL to call to execute the webhook operation via POST request.
-        executionBody:
-          type: string
-          description: If populated, this will be sent with the POST request.
         webhookConfigId:
           type: string
           format: uuid
           description: The id of the webhook configs to use from the workspace.
+        webhookType:
+          type: string
+          enum:
+            - dbtCloud
+        dbtCloud:
+          type: object
+          required:
+            - accountId
+            - jobId
+          properties:
+            accountId:
+              type: integer
+              description: The account id associated with the job
+            jobId:
+              type: integer
+              description: The job id associated with the job
+        executionUrl:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
+        executionBody:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
     CheckOperationRead:
       type: object
       required:
@@ -3976,6 +4039,13 @@ components:
           $ref: "#/components/schemas/SourceDefinitionRead"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionRead"
+    WorkflowStateRead:
+      type: object
+      required:
+        - running
+      properties:
+        running:
+          type: boolean
     JobWithAttemptsRead:
       type: object
       properties:
@@ -4047,6 +4117,12 @@ components:
           type: integer
           format: int64
         recordsCommitted:
+          type: integer
+          format: int64
+        estimatedRecords:
+          type: integer
+          format: int64
+        estimatedBytes:
           type: integer
           format: int64
     AttemptStreamStats:
@@ -4161,6 +4237,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+        workflowState:
+          $ref: "#/components/schemas/WorkflowStateRead"
     AttemptInfoRead:
       type: object
       required:
@@ -4600,6 +4678,8 @@ components:
           type: string
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -4616,6 +4696,8 @@ components:
           type: string
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     OAuthConsentRead:
       type: object
       required:
@@ -4642,6 +4724,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -4661,6 +4745,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
@@ -4892,6 +4978,23 @@ components:
         processingTaskQueue:
           type: string
           default: ""
+    SaveStatsRequestBody:
+      type: object
+      required:
+        - jobId
+        - attemptNumber
+        - stats
+      properties:
+        jobId:
+          $ref: "#/components/schemas/JobId"
+        attemptNumber:
+          $ref: "#/components/schemas/AttemptNumber"
+        stats:
+          $ref: "#/components/schemas/AttemptStats"
+        streamStats:
+          type: array
+          items:
+            $ref: "#/components/schemas/AttemptStreamStats"
     InternalOperationResult:
       type: object
       required:

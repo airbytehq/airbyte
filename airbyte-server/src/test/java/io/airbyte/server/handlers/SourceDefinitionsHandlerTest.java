@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -32,7 +33,11 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.ActorType;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSourceDefinition;
@@ -524,6 +529,11 @@ class SourceDefinitionsHandlerTest {
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
     verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
+
+    final Configs configs = new EnvConfigs();
+    final AirbyteProtocolVersionRange protocolVersionRange =
+        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
+    verify(configRepository).clearUnsupportedProtocolVersionFlag(updatedSource.getSourceDefinitionId(), ActorType.SOURCE, protocolVersionRange);
   }
 
   @Test
@@ -647,12 +657,11 @@ class SourceDefinitionsHandlerTest {
     }
 
     @Test
-    @DisplayName("Icon should contain data")
+    @DisplayName("Icon should be an SVG icon")
     void testIconHoldsData() {
       final String icon = SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon());
       assertNotNull(icon);
-      assert (icon.length() > 3000);
-      assert (icon.length() < 6000);
+      assertTrue(icon.contains("<svg"));
     }
 
   }

@@ -4,10 +4,10 @@
 
 package io.airbyte.server;
 
-import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.lang.CloseableShutdownHook;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
@@ -18,13 +18,11 @@ import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
+import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
@@ -65,21 +63,21 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
+import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendConnectionsHandler;
+import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
-import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
-import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -216,6 +214,8 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
+    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
     final JobErrorReporter jobErrorReporter =
@@ -256,25 +256,20 @@ public class ServerApp implements ServerRunnable {
     final HttpClient httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     final EventRunner eventRunner = new TemporalEventRunner(temporalClient);
 
-    // It is important that the migration to the temporal scheduler is performed before the server
-    // accepts any requests.
-    // This is why this migration is performed here instead of in the bootloader - so that the server
-    // blocks on this.
-    // TODO (https://github.com/airbytehq/airbyte/issues/12823): remove this method after the next
-    // "major" version bump as it will no longer be needed.
-    migrateExistingConnectionsToTemporalScheduler(configRepository, jobPersistence, eventRunner);
-
     final WorkspaceHelper workspaceHelper = new WorkspaceHelper(configRepository, jobPersistence);
 
     final JsonSchemaValidator schemaValidator = new JsonSchemaValidator();
 
     final AttemptHandler attemptHandler = new AttemptHandler(jobPersistence);
 
+    final ConnectionHelper connectionHelper = new ConnectionHelper(configRepository, workspaceHelper);
+
     final ConnectionsHandler connectionsHandler = new ConnectionsHandler(
         configRepository,
         workspaceHelper,
         trackingClient,
-        eventRunner);
+        eventRunner,
+        connectionHelper);
 
     final DestinationHandler destinationHandler = new DestinationHandler(
         configRepository,
@@ -294,7 +289,8 @@ public class ServerApp implements ServerRunnable {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner,
-        connectionsHandler);
+        connectionsHandler,
+        envVariableFeatureFlags);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
@@ -303,7 +299,7 @@ public class ServerApp implements ServerRunnable {
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
-    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    final OAuthHandler oAuthHandler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
 
     final SourceHandler sourceHandler = new SourceHandler(
         configRepository,
@@ -323,7 +319,8 @@ public class ServerApp implements ServerRunnable {
         sourceDefinitionsHandler,
         destinationHandler,
         destinationDefinitionsHandler,
-        configs.getAirbyteVersion());
+        configs.getAirbyteVersion(),
+        temporalClient);
 
     final LogsHandler logsHandler = new LogsHandler(configs);
 
@@ -335,6 +332,23 @@ public class ServerApp implements ServerRunnable {
         sourceHandler);
 
     final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
+
+    final StatePersistence statePersistence = new StatePersistence(configsDatabase);
+
+    final StateHandler stateHandler = new StateHandler(statePersistence);
+
+    final WebBackendConnectionsHandler webBackendConnectionsHandler = new WebBackendConnectionsHandler(
+        connectionsHandler,
+        stateHandler,
+        sourceHandler,
+        destinationHandler,
+        jobHistoryHandler,
+        schedulerHandler,
+        operationsHandler,
+        eventRunner,
+        configRepository);
+
+    final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
     LOGGER.info("Starting server...");
 
@@ -367,29 +381,12 @@ public class ServerApp implements ServerRunnable {
         openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
-        workspacesHandler);
-  }
-
-  @VisibleForTesting
-  static void migrateExistingConnectionsToTemporalScheduler(final ConfigRepository configRepository,
-                                                            final JobPersistence jobPersistence,
-                                                            final EventRunner eventRunner)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    // Skip the migration if it was already performed, to save on resources/startup time
-    if (jobPersistence.isSchedulerMigrated()) {
-      LOGGER.info("Migration to temporal scheduler has already been performed");
-      return;
-    }
-
-    LOGGER.info("Start migration to the new scheduler...");
-    final Set<UUID> connectionIds =
-        configRepository.listStandardSyncs().stream()
-            .filter(standardSync -> standardSync.getStatus() == Status.ACTIVE || standardSync.getStatus() == Status.INACTIVE)
-            .map(StandardSync::getConnectionId)
-            .collect(Collectors.toSet());
-    eventRunner.migrateSyncIfNeeded(connectionIds);
-    jobPersistence.setSchedulerMigrationDone();
-    LOGGER.info("Done migrating to the new scheduler...");
+        sourceHandler,
+        sourceDefinitionsHandler,
+        stateHandler,
+        workspacesHandler,
+        webBackendConnectionsHandler,
+        webBackendGeographiesHandler);
   }
 
   public static void main(final String[] args) {

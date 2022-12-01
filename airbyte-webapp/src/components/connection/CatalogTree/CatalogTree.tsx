@@ -28,7 +28,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   isLoading,
 }) => {
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
-  const { mode } = useConnectionFormService();
+  const { initialValues, mode } = useConnectionFormService();
 
   const [searchString, setSearchString] = useState("");
 
@@ -38,7 +38,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   );
 
   const sortedSchema = useMemo(
-    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+    () => [...streams].sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
     [streams]
   );
 
@@ -52,6 +52,14 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
+
+  const changedStreams = useMemo(
+    () =>
+      streams.filter((stream, idx) => {
+        return stream.config?.selected !== initialValues.syncCatalog.streams[idx].config?.selected;
+      }),
+    [initialValues.syncCatalog.streams, streams]
+  );
 
   return (
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
@@ -69,7 +77,11 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
             <BulkHeader />
           </>
         )}
-        <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
+        <CatalogTreeBody
+          streams={filteredStreams}
+          changedStreams={changedStreams}
+          onStreamChanged={onSingleStreamChanged}
+        />
       </LoadingBackdrop>
       {isNewStreamsTableEnabled && <BulkEditPanel />}
     </BulkEditServiceProvider>

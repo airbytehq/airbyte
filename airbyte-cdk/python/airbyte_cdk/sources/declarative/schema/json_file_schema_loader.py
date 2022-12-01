@@ -15,15 +15,18 @@ from dataclasses_jsonschema import JsonSchemaMixin
 
 
 def _default_file_path() -> str:
-    # schema files are always in "source_<connector_name>/schemas/<stream_name>.json
-    # the connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
+    # Schema files are always in "source_<connector_name>/schemas/<stream_name>.json
+    # The connector's module name can be inferred by looking at the modules loaded and look for the one starting with source_
     source_modules = [
-        k for k, v in sys.modules.items() if "source_" in k  # example: ['source_exchange_rates', 'source_exchange_rates.source']
-    ]
-    if not source_modules:
-        raise RuntimeError("Expected at least one module starting with 'source_'")
-    module = source_modules[0].split(".")[0]
-    return f"./{module}/schemas/{{{{options['name']}}}}.json"
+        k for k, v in sys.modules.items() if "source_" in k
+    ]  # example: ['source_exchange_rates', 'source_exchange_rates.source']
+    if source_modules:
+        module = source_modules[0].split(".")[0]
+        return f"./{module}/schemas/{{{{options['name']}}}}.json"
+
+    # If we are not in a source_ module, the most likely scenario is we're processing a manifest from the connector builder
+    # server which does not require a json schema to be defined.
+    return "./{{options['name']}}.json"
 
 
 @dataclass

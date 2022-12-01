@@ -28,8 +28,8 @@
 
 .nameContainer {
   composes: textContainer;
-  background-color: colors.$beige-100;
-  border: variables.$border-thin solid colors.$beige-100;
+  background-color: colors.$grey-100;
+  border: variables.$border-thin solid colors.$grey-100;
   border-radius: variables.$border-radius-sm;
   padding: 0 variables.$spacing-xl;
 

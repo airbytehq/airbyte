@@ -24,6 +24,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
@@ -91,9 +92,6 @@ public class DefaultJobPersistence implements JobPersistence {
   private final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
-  private static final Set<String> SYSTEM_SCHEMA = Set
-      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
-          "catalog_history");
   public static final String ATTEMPT_NUMBER = "attempt_number";
   private static final String JOB_ID = "job_id";
   private static final String WHERE = "WHERE ";
@@ -222,6 +220,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     final Job job = getJob(ctx, jobId);
+    if (job.isJobInTerminalState()) {
+      // If the job is already terminal, no need to set a new status
+      return;
+    }
     job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
@@ -793,18 +795,6 @@ public class DefaultJobPersistence implements JobPersistence {
     setMetadata(SECRET_MIGRATION_STATUS, "true");
   }
 
-  private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
-
-  @Override
-  public boolean isSchedulerMigrated() throws IOException {
-    return getMetadata(SCHEDULER_MIGRATION_STATUS).count() == 1;
-  }
-
-  @Override
-  public void setSchedulerMigrationDone() throws IOException {
-    setMetadata(SCHEDULER_MIGRATION_STATUS, "true");
-  }
-
   @Override
   public Optional<String> getVersion() throws IOException {
     return getMetadata(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME).findFirst();
@@ -847,6 +837,27 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setAirbyteProtocolVersionMin(final Version version) throws IOException {
     setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME, version.serialize());
+  }
+
+  @Override
+  public Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException {
+    final Optional<Version> min = getAirbyteProtocolVersionMin();
+    final Optional<Version> max = getAirbyteProtocolVersionMax();
+
+    if (min.isPresent() != max.isPresent()) {
+      // Flagging this because this would be highly suspicious but not bad enough that we should fail
+      // hard.
+      // If the new config is fine, the system should self-heal.
+      LOGGER.warn("Inconsistent AirbyteProtocolVersion found, only one of min/max was found. (min:{}, max:{})",
+          min.map(Version::serialize).orElse(""), max.map(Version::serialize).orElse(""));
+    }
+
+    if (min.isEmpty() && max.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new AirbyteProtocolVersionRange(min.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION),
+        max.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION)));
   }
 
   private Stream<String> getMetadata(final String keyName) throws IOException {
@@ -911,27 +922,6 @@ public class DefaultJobPersistence implements JobPersistence {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
-  /**
-   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the
-   * schemas available
-   */
-  @Override
-  public Map<String, Stream<JsonNode>> dump() throws IOException {
-    final Map<String, Stream<JsonNode>> result = new HashMap<>();
-    for (final String schema : listSchemas()) {
-      final List<String> tables = listAllTables(schema);
-
-      for (final String table : tables) {
-        if (result.containsKey(table)) {
-          throw new RuntimeException("Multiple tables found with the same name " + table);
-        }
-        result.put(table.toUpperCase(), exportTable(schema, table));
-      }
-    }
-
-    return result;
-  }
-
   private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
     final Map<JobsDatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
@@ -976,25 +966,6 @@ public class DefaultJobPersistence implements JobPersistence {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private List<String> listAllTables(final String schema) throws IOException {
-    if (schema != null) {
-      return jobDatabase.query(context -> context.meta().getSchemas(schema).stream()
-          .flatMap(s -> context.meta(s).getTables().stream())
-          .map(Named::getName)
-          .collect(Collectors.toList()));
-    } else {
-      return List.of();
-    }
-  }
-
-  private List<String> listSchemas() throws IOException {
-    return jobDatabase.query(context -> context.meta().getSchemas().stream()
-        .map(Named::getName)
-        .filter(c -> !SYSTEM_SCHEMA.contains(c))
-        .collect(Collectors.toList()));
-
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {
