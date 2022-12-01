@@ -20,7 +20,6 @@ const windowConfigProvider: ConfigProvider = async () => {
 };
 
 const envConfigProvider: ConfigProvider = async () => {
-  console.log(`${process.env.REACT_APP_API_URL}`);
   return {
     // TODO: hard coding this just to check the deployment issue.
     apiUrl: process.env.REACT_APP_API_URL,

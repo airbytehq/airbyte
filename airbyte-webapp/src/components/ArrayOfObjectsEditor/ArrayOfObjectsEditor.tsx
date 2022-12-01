@@ -43,7 +43,9 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   disabled,
   editModalSize,
 }: ArrayOfObjectsEditorProps<T>): JSX.Element => {
-  const onAddItem = React.useCallback(() => onStartEdit(items.length), [onStartEdit, items]);
+  const onAddItem = React.useCallback(() => {
+    onStartEdit(items.length);
+  }, [onStartEdit, items]);
   const isEditable = editableItemIndex !== null && editableItemIndex !== undefined;
 
   const renderEditModal = () => {
