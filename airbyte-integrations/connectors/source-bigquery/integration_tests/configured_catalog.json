@@ -2,7 +2,7 @@
   "streams": [
     {
       "stream": {
-        "name": "sat_basic_dataset",
+        "name": "sat_full_dataset_without_null",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"],
         "source_defined_cursor": null,
