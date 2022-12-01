@@ -48,6 +48,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
+// Test
 public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private static final String DB_NAME = MODELS_SCHEMA;
