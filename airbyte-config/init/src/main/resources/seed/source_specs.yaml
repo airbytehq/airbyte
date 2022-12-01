@@ -4638,7 +4638,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.6"
+- dockerImage: "airbyte/source-gitlab:0.1.7"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -4649,7 +4649,7 @@
       - "api_url"
       - "private_token"
       - "start_date"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_url:
           type: "string"
