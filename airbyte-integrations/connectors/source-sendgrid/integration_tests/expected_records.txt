@@ -128,31 +128,31 @@
 {"stream": "templates", "data": {"id": "146adde5-53ca-4ff7-af4e-24b21c6108e3", "name": "Template number 2", "generation": "legacy", "updated_at": "2021-02-03 13:31:18", "versions": []}, "emitted_at": 1631093374000}
 {"stream": "templates", "data": {"id": "bdc5cb3e-081f-4eeb-9068-c57a99ecd022", "name": "Template number 1", "generation": "legacy", "updated_at": "2021-02-03 13:31:15", "versions": []}, "emitted_at": 1631093374000}
 {"stream": "templates", "data": {"id": "d94c4158-8729-4dd4-aeca-7e5e903791c4", "name": "Template number 0", "generation": "legacy", "updated_at": "2021-02-03 13:31:09", "versions": []}, "emitted_at": 1631093374000}
-{"stream": "global_suppressions", "data": {"created": 1621425285, "email": "vadym.hevlich@zazmic.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test9@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test8@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test7@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test6@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test5@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test4@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test3@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test2@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test21@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test20@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test1@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test19@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test18@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test17@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test16@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test15@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test14@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test13@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test12@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test11@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test10@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357462, "email": "test0@example.com"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357235, "email": "test-fake-email-2@testmail.co"}, "emitted_at": 1631093375000}
-{"stream": "global_suppressions", "data": {"created": 1612357168, "email": "test-fake-email@testmail.co"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1621428885, "email": "vadym.hevlich@zazmic.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test9@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test8@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test7@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test6@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test5@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test4@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test3@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test2@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test21@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test20@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test1@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test19@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test18@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test17@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test16@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test15@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test14@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test13@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test12@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test11@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test10@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612361062, "email": "test0@example.com"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612360835, "email": "test-fake-email-2@testmail.co"}, "emitted_at": 1631093375000}
+{"stream": "global_suppressions", "data": {"created": 1612360768, "email": "test-fake-email@testmail.co"}, "emitted_at": 1631093375000}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 0", "id": 14760, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 1", "id": 14761, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
 {"stream": "suppression_groups", "data": {"name": "Test Suggestions Group 2", "id": 14762, "description": "Suggestions for testing new stream.", "is_default": false, "unsubscribes": 0}, "emitted_at": 1631093377000}
@@ -200,9 +200,9 @@
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number8@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "test-forsuppressiongroup number9@example.com", "group_id": 14772, "group_name": "Test Suggestions Group 12", "created_at": 1612363238}, "emitted_at": 1631093393000}
 {"stream": "suppression_group_members", "data": {"email": "avida.d3@gmail.com", "group_id": 14780, "group_name": "Test Suggestions Group 20", "created_at": 1631093329}, "emitted_at": 1631093393000}
-{"stream": "bounces", "data": {"created": 1621439283, "email": "vadym.hevlich@zazmic_com", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
-{"stream": "bounces", "data": {"created": 1621439221, "email": "vadym.hevlich@zazmicinvalid", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
-{"stream": "bounces", "data": {"created": 1621439211, "email": "vadym.hevlich@zazmicio", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
-{"stream": "bounces", "data": {"created": 1621437507, "email": "vadym.hevlich@zazmiccom2", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
-{"stream": "bounces", "data": {"created": 1621437504, "email": "vadym.hevlich@zazmiccom1", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
-{"stream": "bounces", "data": {"created": 1621426437, "email": "vadym.hevlich@zazmiccom", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621442883, "email": "vadym.hevlich@zazmic_com", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621442821, "email": "vadym.hevlich@zazmicinvalid", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621442811, "email": "vadym.hevlich@zazmicio", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621441107, "email": "vadym.hevlich@zazmiccom2", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621441104, "email": "vadym.hevlich@zazmiccom1", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}
+{"stream": "bounces", "data": {"created": 1621430037, "email": "vadym.hevlich@zazmiccom", "reason": "Invalid Domain", "status": ""}, "emitted_at": 1631093396000}

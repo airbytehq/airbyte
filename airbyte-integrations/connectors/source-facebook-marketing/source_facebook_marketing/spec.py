@@ -47,7 +47,7 @@ class InsightConfig(BaseModel):
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
-        default=[],
+        default=["action_type", "action_target_id", "action_destination"],
     )
 
     time_increment: Optional[PositiveInt] = Field(

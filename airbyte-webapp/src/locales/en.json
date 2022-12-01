@@ -219,7 +219,6 @@
   "sources.frequentlyUsed": "Suggested sources",
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "New source",
-  "sources.createFirst": "Connect your first source",
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",
   "sources.status": "Status",
@@ -283,7 +282,6 @@
 
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "New destination",
-  "destinations.createFirst": "Connect your first destination",
   "destinations.description": "<b>Destinations</b> are where you <b>send</b> or <b>push</b> your data to.",
   "destinations.noDestinations": "Destination list is empty",
   "destinations.noSources": "No sources yet",

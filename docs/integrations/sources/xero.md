@@ -45,7 +45,7 @@ As Xero uses .NET, some date fields in records could be in [.NET JSON date forma
 6. For **Tenant ID** field, enter your Xero Organisation's [Tenant ID](https://developer.xero.com/documentation/guides/oauth2/auth-flow/#xero-tenants)
 7. For **Scopes** field enter scopes you used for user's authorization on "Configuration" screen of your Xero App
 8. Choose **Custom Connections Authentication** as **Authentication** option
-9. For **Start date** enter UTC date and time in the format YYYY-MM-DDTHH:mm:ssZ as the start date and time of ingestion.
+9. For **Start date** enter UTC date and time in the format `YYYY-MM-DDTHH:mm:ssZ` as the start date and time of ingestion.
 10. Click **Set up source**.
 
 ## Supported sync modes
