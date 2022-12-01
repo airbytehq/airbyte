@@ -78,15 +78,13 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   @Override
   public DatabaseMetaData getMetaData() throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
-      final DatabaseMetaData metaData = connection.getMetaData();
-      return metaData;
-    } catch (final SQLException e) {
-      if (e instanceof SQLTransientException) {
-        final String message = e.getMessage();
-        if (message.contains("request timed out")) {
-          throw new ConfigErrorException("Connection timed out. Unable to contact server. Please check your server settings or try again later", e);
-        }
+      return connection.getMetaData();
+    } catch (final SQLTransientException e) {
+      final String message = e.getMessage();
+      if (message.contains("request timed out")) {
+        throw new ConfigErrorException("Connection timed out. Unable to contact server. Please check your server settings or try again later", e);
       }
+    } catch (final SQLException e) {
       // Some databases like Redshift will have null cause
       if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
         throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
@@ -95,6 +93,7 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
         throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
       }
     }
+    throw new RuntimeException("Failed to get metadata fron Datasource");
   }
 
   /**
