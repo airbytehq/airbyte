@@ -18,7 +18,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -36,7 +35,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -268,7 +266,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+  public AbstractJdbcSource<PostgresType> getJdbcSource() {
     return new PostgresSource();
   }
 
@@ -414,11 +412,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "2006-01-01T17:23:54.123456",
         Lists.newArrayList(getTestMessages().get(1),
             getTestMessages().get(2)));
-  }
-
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new PostgresSourceOperations();
   }
 
   @Override
