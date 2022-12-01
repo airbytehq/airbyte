@@ -26,7 +26,6 @@ dependencies {
     implementation 'org.junit.platform:junit-platform-launcher:1.7.0'
     implementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     implementation 'org.junit.jupiter:junit-jupiter-params:5.8.1'
-    implementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
 }
 
 def getFullPath(String className) {
