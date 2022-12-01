@@ -6,7 +6,6 @@ import React from "react";
 import { Text } from "components/ui/Text";
 
 import { Button } from "../Button";
-/* eslint css-modules/no-unused-class: [2, { markAsUsed: ['warning', 'error', 'success', 'info'] }] */
 import styles from "./Toast.module.scss";
 
 export enum ToastType {
@@ -16,10 +15,9 @@ export enum ToastType {
   INFO = "info",
 }
 
-interface ToastProps {
+export interface ToastProps {
   text?: string | React.ReactNode;
   type?: ToastType;
-  hasError?: boolean;
   onAction?: () => void;
   actionBtnText?: string;
   onClose?: () => void;
@@ -32,9 +30,16 @@ const ICON_MAPPING = {
   [ToastType.INFO]: faExclamation,
 };
 
+const STYLES_BY_TYPE: Readonly<Record<ToastType, string>> = {
+  [ToastType.WARNING]: styles.warning,
+  [ToastType.ERROR]: styles.error,
+  [ToastType.SUCCESS]: styles.success,
+  [ToastType.INFO]: styles.info,
+};
+
 export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, actionBtnText, onClose, text }) => {
   return (
-    <div className={classNames(styles.toastContainer, styles[type])}>
+    <div className={classNames(styles.toastContainer, STYLES_BY_TYPE[type])}>
       <div className={classNames(styles.iconContainer)}>
         <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>

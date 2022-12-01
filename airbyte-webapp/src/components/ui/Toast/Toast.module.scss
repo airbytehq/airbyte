@@ -16,6 +16,21 @@ $toast-icon-container-size: 34px;
   }
 }
 
+@mixin type($name, $color, $background) {
+  &.#{$name} {
+    background-color: $background;
+    border: 1px solid $color;
+
+    .iconContainer {
+      background-color: $color;
+    }
+
+    .toastIcon {
+      color: $color;
+    }
+  }
+}
+
 .toastContainer {
   display: flex;
   flex-direction: row;
@@ -30,6 +45,11 @@ $toast-icon-container-size: 34px;
   padding: vars.$spacing-md;
   border-radius: vars.$border-radius-md;
   animation: slide-up-animations 0.25s linear;
+
+  @include type("info", colors.$blue-400, colors.$blue-50);
+  @include type("warning", colors.$yellow-500, colors.$yellow-50);
+  @include type("success", colors.$green-200, colors.$green-50);
+  @include type("error", colors.$red-300, colors.$red-50);
 }
 
 .iconContainer {
@@ -50,61 +70,15 @@ $toast-icon-container-size: 34px;
   border-radius: 50%;
 }
 
-.warning {
-  background-color: colors.$yellow-50;
-  border: 1px solid colors.$yellow-500;
-
-  .iconContainer {
-    background-color: colors.$yellow-500;
-  }
-
-  .toastIcon {
-    color: colors.$yellow-500;
-  }
-}
-
-.error {
-  background-color: colors.$red-50;
-  border: 1px solid colors.$red-300;
-
-  .iconContainer {
-    background-color: colors.$red-300;
-  }
-
-  .toastIcon {
-    color: colors.$red-300;
-  }
-}
-
-.success {
-  background-color: colors.$green-50;
-  border: 1px solid colors.$green-200;
-
-  .iconContainer {
-    background-color: colors.$green-200;
-  }
-
-  .toastIcon {
-    color: colors.$green-200;
-  }
-}
-
-.info {
-  background-color: colors.$blue-50;
-  border: 1px solid colors.$blue-400;
-
-  .iconContainer {
-    background-color: colors.$blue-400;
-  }
-
-  .toastIcon {
-    color: colors.$blue-400;
-  }
-}
-
 .text {
   line-height: 17px;
   text-align: center;
+}
+
+// style can be removed when Button Dark style will be implemented
+// https://github.com/airbytehq/airbyte/issues/19445
+.actionButton {
+  background-color: colors.$dark-blue-900 !important;
 }
 
 .closeButton {
@@ -112,8 +86,4 @@ $toast-icon-container-size: 34px;
     font-size: 20px;
     color: colors.$dark-blue-900;
   }
-}
-
-.actionButton {
-  background-color: colors.$dark-blue-900 !important;
 }
