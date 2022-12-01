@@ -106,6 +106,8 @@ def run_test(destination_type: DestinationType, column_count: int, expected_exce
     elif destination_type.value == DestinationType.REDSHIFT.value:
         # set unique schema for Redshift test
         dbt_test_utils.set_target_schema(dbt_test_utils.generate_random_string("test_ephemeral_"))
+    if destination_type.value == DestinationType.DATABEND.value:
+        pytest.skip("ephemeral materialization isn't supported in Databend yet")
     else:
         dbt_test_utils.set_target_schema("test_ephemeral")
     print(f"Testing ephemeral for destination {destination_type.value} with column count {column_count}")
