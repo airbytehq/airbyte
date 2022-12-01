@@ -104,7 +104,8 @@ class ContainerOrchestratorAcceptanceTests {
   @Test
   @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
   void testDowntimeDuringSync() throws Exception {
-    // NOTE: PMD assert warning suppressed because the assertion was flaky. The test will throw if the sync does not succeed.
+    // NOTE: PMD assert warning suppressed because the assertion was flaky. The test will throw if the
+    // sync does not succeed.
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
