@@ -33,7 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class PersistConfigHelperTest {
+class PersistConfigHelperTest {
 
   private static final Long JOB_ID = 123L;
   private static final UUID CONNECTION_ID = UUID.randomUUID();
