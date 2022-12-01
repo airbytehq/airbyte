@@ -5,15 +5,10 @@ import { Navigate, useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components/LoadingPage";
 
-import { useConfig } from "config";
-import { getSpeakeasyCallbackUrl } from "core/request/CloudApiClient";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
+import { useSpeakeasyRedirect } from "packages/cloud/services/cloudApi/useSpeakeasyRedirect";
 import { RoutePaths } from "pages/routePaths";
-import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
-
-const SPEAKEASY_QUERY_KEY = "speakeasy-redirect";
 
 export const SpeakeasyRedirectPage = () => {
   const { trackError } = useAppMonitoringService();
@@ -26,12 +21,7 @@ export const SpeakeasyRedirectPage = () => {
 };
 
 const SpeakeasyLoginRedirect = () => {
-  const { apiUrl } = useConfig();
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
-
-  const { redirectUrl } = useSuspenseQuery(SPEAKEASY_QUERY_KEY, () =>
-    getSpeakeasyCallbackUrl({ config: { apiUrl }, middlewares: requestAuthMiddleware })
-  );
+  const { redirectUrl } = useSpeakeasyRedirect();
 
   return (
     <Suspense fallback={<LoadingPage />}>
