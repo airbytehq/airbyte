@@ -30,7 +30,9 @@ import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.StandardCheckConnectionInput;
 import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.WorkerDestinationConfig;
+import io.airbyte.config.init.LocalDefinitionsProvider;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
@@ -96,7 +98,6 @@ import org.slf4j.LoggerFactory;
 public abstract class DestinationAcceptanceTest {
 
   private static final Random RANDOM = new Random();
-  private static final String NORMALIZATION_VERSION = "dev";
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
@@ -122,7 +123,17 @@ public abstract class DestinationAcceptanceTest {
   protected abstract String getImageName();
 
   protected String getNormalizationImageName() {
-    return null;
+    try {
+      LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
+      Optional<StandardDestinationDefinition> optionalDefinition = provider.getDestinationDefinitions().stream()
+          .filter(definition -> getImageName().equalsIgnoreCase(definition.getDockerRepository()))
+          .findFirst();
+      return optionalDefinition
+          .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":" + standardDestinationDefinition.getDockerImageTag())
+          .orElse(null);
+    } catch (IOException e) {
+      return null;
+    }
   }
 
   /**
