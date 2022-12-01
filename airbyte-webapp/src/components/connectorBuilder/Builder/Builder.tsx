@@ -1,8 +1,6 @@
 import { Form, Formik, useFormikContext } from "formik";
 import { useEffect } from "react";
 
-import { Button } from "components/ui/Button";
-
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { usePatchFormik } from "views/Connector/ConnectorForm/useBuildForm";
@@ -57,31 +55,6 @@ export const Builder: React.FC<BuilderProps> = ({ toggleYamlEditor }) => {
                 label="API Url"
                 tooltip="Base URL of the API"
               />
-              <BuilderField
-                type="text"
-                path="streams[0].$options.name"
-                label="Stream Name"
-                tooltip="Name of the stream"
-              />
-              <BuilderField
-                type="text"
-                path="streams[0].$options.path"
-                label="Path URL"
-                tooltip="Path of the endpoint that this stream represents."
-              />
-              <BuilderField
-                type="array"
-                path="streams[0].retriever.record_selector.extractor.field_pointer"
-                label="Field Pointer"
-                tooltip="Pointer into the response that should be extracted as the final record"
-              />
-              <BuilderField
-                type="enum"
-                path="streams[0].retriever.requester.http_method"
-                options={["GET", "POST"]}
-                label="HTTP Method"
-                tooltip="HTTP method to use for requests sent to the API"
-              />
             </BuilderCard>
             <BuilderCard>
               <BuilderOneOf
@@ -133,9 +106,33 @@ export const Builder: React.FC<BuilderProps> = ({ toggleYamlEditor }) => {
                 ]}
               />
             </BuilderCard>
-            <Button className={styles.submitButton} size="sm" type="submit">
-              Submit
-            </Button>
+            <BuilderCard>
+              <BuilderField
+                type="text"
+                path="streams[0].$options.name"
+                label="Stream Name"
+                tooltip="Name of the stream"
+              />
+              <BuilderField
+                type="text"
+                path="streams[0].$options.path"
+                label="Path URL"
+                tooltip="Path of the endpoint that this stream represents."
+              />
+              <BuilderField
+                type="array"
+                path="streams[0].retriever.record_selector.extractor.field_pointer"
+                label="Field Pointer"
+                tooltip="Pointer into the response that should be extracted as the final record"
+              />
+              <BuilderField
+                type="enum"
+                path="streams[0].retriever.requester.http_method"
+                options={["GET", "POST"]}
+                label="HTTP Method"
+                tooltip="HTTP method to use for requests sent to the API"
+              />
+            </BuilderCard>
           </Form>
         </div>
       </>

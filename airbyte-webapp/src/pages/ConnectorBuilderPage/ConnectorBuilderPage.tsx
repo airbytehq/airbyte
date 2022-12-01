@@ -13,7 +13,7 @@ import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
   const { formatMessage } = useIntl();
-  const [showYamlEditor, toggleYamlEditor] = useToggle(false);
+  const [showYamlEditor, toggleYamlEditor] = useToggle(true);
 
   return (
     <ResizablePanels

@@ -2,12 +2,10 @@ import { useMonaco } from "@monaco-editor/react";
 import { load, YAMLException } from "js-yaml";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useRef, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
-import { useManifestTemplate } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
@@ -20,12 +18,12 @@ interface YamlEditorProps {
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
-  const template = useManifestTemplate();
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
-  useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
-
-  const { yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
+  // const template = useManifestTemplate();
+  // const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
+  // useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
+  const { yamlManifest, yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } =
+    useConnectorBuilderState();
+  const [yamlValue, setYamlValue] = useState(yamlManifest);
 
   const monaco = useMonaco();
 

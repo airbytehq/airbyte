@@ -1,3 +1,4 @@
+import { dump } from "js-yaml";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
@@ -10,6 +11,7 @@ import { useListStreams } from "./ConnectorBuilderApiService";
 
 interface Context {
   jsonManifest: ConnectorManifest;
+  yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
@@ -18,6 +20,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setYamlManifest: (yamlValue: string) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -44,6 +47,11 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const manifest = jsonManifest ?? defaultJsonManifest;
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
+
+  const [yamlManifest, setYamlManifest] = useState("");
+  useEffect(() => {
+    setYamlManifest(dump(jsonManifest));
+  }, [jsonManifest]);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -92,6 +100,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
   const ctx = {
     jsonManifest: manifest,
+    yamlManifest,
     yamlEditorIsMounted,
     yamlIsValid,
     streams,
@@ -100,6 +109,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     configString,
     configJson,
     setJsonManifest,
+    setYamlManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
     setSelectedStream,
