@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import dateutil
+import dateutil.parser
 import pendulum
 
 
