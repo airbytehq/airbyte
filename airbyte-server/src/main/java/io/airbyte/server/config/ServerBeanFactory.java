@@ -44,6 +44,7 @@ import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
+import io.airbyte.server.apis.HealthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
@@ -144,7 +145,9 @@ public class ServerBeanFactory {
                                        @Named("configFlyway") final Flyway configsFlyway,
                                        @Named("jobs") final DSLContext jobsDslContext,
                                        @Named("jobsFlyway") final Flyway jobsFlyway,
-                                       final ConfigRepository configRepository)
+                                       final ConfigRepository configRepository,
+                                       final HealthApiController healthApiController,
+                                       final AttemptApiController attemptApiController)
       throws DatabaseCheckException, IOException {
     final Set<Class<?>> componentClasses = Set.of(
         ConnectionApiController.class,

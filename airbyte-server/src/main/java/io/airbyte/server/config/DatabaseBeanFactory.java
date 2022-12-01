@@ -11,6 +11,8 @@ import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
 import io.airbyte.db.factory.DatabaseCheckFactory;
 import io.airbyte.db.instance.DatabaseConstants;
+import io.airbyte.persistence.job.DefaultJobPersistence;
+import io.airbyte.persistence.job.JobPersistence;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
@@ -85,6 +87,12 @@ public class DatabaseBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public ConfigRepository configRepository(@Named("configDatabase") final Database configDatabase) {
     return new ConfigRepository(configDatabase);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobDatabase) {
+    return new DefaultJobPersistence(jobDatabase);
   }
 
   @Singleton
