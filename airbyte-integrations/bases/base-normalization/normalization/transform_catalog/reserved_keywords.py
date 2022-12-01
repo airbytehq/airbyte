@@ -2047,7 +2047,6 @@ ORACLE = {
     "WITH",
 }
 
-
 # https://docs.microsoft.com/en-us/sql/t-sql/language-elements/reserved-keywords-transact-sql?view=sql-server-ver15
 MSSQL = {
     "ADD",
@@ -3110,6 +3109,8 @@ TIDB = {
     "ZEROFILL",
 }
 
+DATABEND: Set[str] = set()
+
 RESERVED_KEYWORDS = {
     DestinationType.BIGQUERY.value: BIGQUERY,
     DestinationType.POSTGRES.value: POSTGRES,
@@ -3120,6 +3121,7 @@ RESERVED_KEYWORDS = {
     DestinationType.MSSQL.value: MSSQL,
     DestinationType.CLICKHOUSE.value: CLICKHOUSE,
     DestinationType.TIDB.value: TIDB,
+    DestinationType.DATABEND.value: DATABEND,
 }
 
 

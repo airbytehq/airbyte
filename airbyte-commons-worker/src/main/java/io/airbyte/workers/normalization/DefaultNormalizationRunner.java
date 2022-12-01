@@ -64,7 +64,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     REDSHIFT,
     SNOWFLAKE,
     CLICKHOUSE,
-    TIDB
+    TIDB,
+    DATABEND
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType,

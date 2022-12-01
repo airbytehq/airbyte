@@ -34,6 +34,7 @@ public class NormalizationRunnerFactory {
           .put("airbyte/destination-redshift", ImmutablePair.of("airbyte/normalization-redshift", DestinationType.REDSHIFT))
           .put("airbyte/destination-snowflake", ImmutablePair.of("airbyte/normalization-snowflake", DestinationType.SNOWFLAKE))
           .put("airbyte/destination-tidb", ImmutablePair.of("airbyte/normalization-tidb", DestinationType.TIDB))
+          .put("airbyte/destination-databend", ImmutablePair.of("airbyte/normalization-databend", DestinationType.DATABEND))
           .build();
 
   public static NormalizationRunner create(final String connectorImageName,

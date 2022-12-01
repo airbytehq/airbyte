@@ -29,6 +29,7 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
     DestinationType.TIDB.value: 64,
+    DestinationType.DATABEND.value: 255,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -172,6 +173,10 @@ class DestinationNameTransformer:
                 result = result.replace("'", "_")
             elif self.destination_type.value != DestinationType.MYSQL.value and self.destination_type.value != DestinationType.TIDB.value:
                 result = result.replace('"', '""')
+            elif self.destination_type.value == DestinationType.DATABEND.value:
+                result = result.replace('"', "_")
+                result = result.replace("`", "_")
+                result = result.replace("'", "_")
             else:
                 result = result.replace("`", "_")
             result = result.replace("'", "\\'")
@@ -239,6 +244,8 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DATABEND.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -279,6 +286,8 @@ class DestinationNameTransformer:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
+        elif self.destination_type.value == DestinationType.DATABEND.value:
+            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result

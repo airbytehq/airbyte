@@ -6,6 +6,7 @@
     - postgres: unnest() -> https://www.postgresqltutorial.com/postgresql-array/
     - MSSQL: openjson() –> https://docs.microsoft.com/en-us/sql/relational-databases/json/validate-query-and-change-json-data-with-built-in-functions-sql-server?view=sql-server-ver15
     - ClickHouse: ARRAY JOIN –> https://clickhouse.com/docs/zh/sql-reference/statements/select/array-join/
+    - Databend: unnest() -> https://databend.rs/doc/sql-reference/data-types/data-type-array-types/
 #}
 
 {# cross_join_unnest -------------------------------------------------     #}
@@ -24,6 +25,10 @@
 
 {% macro clickhouse__cross_join_unnest(stream_name, array_col) -%}
     ARRAY JOIN {{ array_col }}
+{%- endmacro %}
+
+{% macro databend__cross_join_unnest(stream_name, array_col) -%}
+    unnest({{ array_col }})
 {%- endmacro %}
 
 {% macro oracle__cross_join_unnest(stream_name, array_col) -%}
