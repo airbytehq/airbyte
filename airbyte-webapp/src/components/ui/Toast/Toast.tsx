@@ -3,8 +3,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 
+import { Text } from "components/ui/Text";
+
 import { Button } from "../Button";
-// eslint-disable-next-line css-modules/no-unused-class
+/* eslint css-modules/no-unused-class: [2, { markAsUsed: ['warning', 'error', 'success', 'info'] }] */
 import styles from "./Toast.module.scss";
 
 export enum ToastType {
@@ -15,11 +17,11 @@ export enum ToastType {
 }
 
 interface ToastProps {
-  title: string | React.ReactNode;
   text?: string | React.ReactNode;
   type?: ToastType;
   hasError?: boolean;
   onAction?: () => void;
+  actionBtnText?: string;
   onClose?: () => void;
 }
 
@@ -30,19 +32,22 @@ const ICON_MAPPING = {
   [ToastType.INFO]: faExclamation,
 };
 
-export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, onClose, title, text }) => {
+export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, actionBtnText, onClose, text }) => {
   return (
     <div className={classNames(styles.toastContainer, styles[type])}>
       <div className={classNames(styles.iconContainer)}>
         <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>
       <div>
-        <h5 className={styles.title}>{title}</h5>
-        {text && <div className={styles.text}>{text}</div>}
+        {text && (
+          <Text size="lg" className={styles.text}>
+            {text}
+          </Text>
+        )}
       </div>
       {onAction && (
         <Button className={styles.actionButton} onClick={onAction}>
-          Action
+          {actionBtnText}
         </Button>
       )}
       {onClose && (

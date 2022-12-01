@@ -1,4 +1,8 @@
-@use "../../../scss/colors";
+@use "scss/colors";
+@use "scss/variables" as vars;
+
+$toast-icon-size: 13px;
+$toast-icon-container-size: 34px;
 
 @keyframes slide-up-animations {
   0% {
@@ -13,31 +17,37 @@
 }
 
 .toastContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: vars.$spacing-md;
   position: fixed;
+  box-sizing: border-box;
   bottom: 49px;
   left: 50%;
   transform: translate(-50%, 0);
   z-index: 20;
-  padding: 25px 25px 22px;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  padding: vars.$spacing-md;
+  border-radius: vars.$border-radius-md;
   animation: slide-up-animations 0.25s linear;
 }
 
 .iconContainer {
-  padding: 10px;
-  margin-right: 20px;
-  border-radius: 9px;
+  width: $toast-icon-container-size;
+  height: $toast-icon-container-size;
+  padding: vars.$border-radius-md;
+  border-radius: vars.$border-radius-md;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .toastIcon {
-  width: 15px;
-  height: 15px;
-  background: white;
+  width: $toast-icon-size;
+  height: $toast-icon-size;
+  background: colors.$white;
   border-radius: 50%;
-  padding: 2px;
 }
 
 .warning {
@@ -92,21 +102,9 @@
   }
 }
 
-.title {
-  color: colors.$dark-blue-900;
-  font-style: normal;
-  font-size: 15px;
-  line-height: 18px;
-  margin: 0;
-}
-
 .text {
-  color: colors.$dark-blue-700;
-  font-style: normal;
-  font-weight: normal;
-  font-size: 14px;
   line-height: 17px;
-  margin-top: 5px;
+  text-align: center;
 }
 
 .closeButton {
@@ -114,11 +112,6 @@
     font-size: 20px;
     color: colors.$dark-blue-900;
   }
-}
-
-.closeButton,
-.actionButton {
-  margin-left: 10px;
 }
 
 .actionButton {
