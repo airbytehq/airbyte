@@ -389,14 +389,14 @@ class SyncWorkflowTest {
     assertEquals(actualOutput.getWebhookOperationSummary().getSuccesses().get(0), WEBHOOK_CONFIG_ID);
   }
 
-   @Test
-   void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+  @Test
+  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
     when(configFetchActivity.getStandardSync(any())).thenReturn(new StandardSync().withSourceId(UUID.randomUUID()).withStatus(Status.INACTIVE));
     StandardSyncOutput output = execute();
     verifyNoInteractions(replicationActivity);
     verifyNoInteractions(normalizationActivity);
     assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
-   }
+  }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
   private void cancelWorkflow() {
@@ -458,4 +458,5 @@ class SyncWorkflowTest {
       throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     verify(refreshSchemaActivity).refreshSchema(SOURCE_ID, sync.getConnectionId());
   }
+
 }
