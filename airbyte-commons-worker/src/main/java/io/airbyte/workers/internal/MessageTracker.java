@@ -6,9 +6,9 @@ package io.airbyte.workers.internal;
 
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v1.AirbyteTraceMessage;
 import java.util.Map;
 import java.util.Optional;
 

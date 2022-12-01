@@ -26,7 +26,7 @@ properties:
   configuredAirbyteCatalog:
     description: the configured airbyte catalog
     type: object
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   destinationDockerImage:
     description: Image name of the destination with tag.
     type: string

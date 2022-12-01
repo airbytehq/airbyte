@@ -4,8 +4,8 @@
 
 package io.airbyte.workers.internal;
 
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 
 /**
  * Interface to allow map operations on data as they pass from Source to Destination. This interface

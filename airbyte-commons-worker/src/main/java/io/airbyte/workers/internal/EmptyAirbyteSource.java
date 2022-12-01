@@ -13,13 +13,13 @@ import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.config.helpers.StateMessageHelper;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.AirbyteGlobalState;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v1.AirbyteStreamState;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -201,7 +201,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
                 .withType(AirbyteStateType.STREAM)
                 .withStream(
                     new AirbyteStreamState()
-                        .withStreamDescriptor(new io.airbyte.protocol.models.StreamDescriptor()
+                        .withStreamDescriptor(new StreamDescriptor()
                             .withName(streamsToReset.getName())
                             .withNamespace(streamsToReset.getNamespace()))
                         .withStreamState(null)));
@@ -235,7 +235,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     // the global state always containing the entire
     // state
     streamsToReset.forEach(configStreamDescriptor -> {
-      final io.airbyte.protocol.models.StreamDescriptor streamDescriptor = new io.airbyte.protocol.models.StreamDescriptor()
+      final StreamDescriptor streamDescriptor = new StreamDescriptor()
           .withName(configStreamDescriptor.getName())
           .withNamespace(configStreamDescriptor.getNamespace());
       if (!currentState.getGlobal().getStreamStates().stream().map(streamState -> streamState.getStreamDescriptor()).toList()

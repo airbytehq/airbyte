@@ -7,8 +7,8 @@ package io.airbyte.workers.normalization;
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.OperatorDbt;
 import io.airbyte.config.ResourceRequirements;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.AirbyteTraceMessage;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 

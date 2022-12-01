@@ -17,7 +17,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.init.DefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;

@@ -6,7 +6,7 @@ package io.airbyte.workers.internal;
 
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.config.WorkerDestinationConfig;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
 import java.nio.file.Path;
 import java.util.Optional;
 

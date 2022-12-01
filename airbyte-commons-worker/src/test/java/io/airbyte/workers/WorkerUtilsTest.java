@@ -16,7 +16,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v1.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.time.Duration;

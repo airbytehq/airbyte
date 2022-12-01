@@ -9,8 +9,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage.AirbyteStateType;
 import java.util.List;
 
 class SingleStateAggregator implements StateAggregator {

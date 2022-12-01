@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.internal;
 
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;

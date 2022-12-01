@@ -16,7 +16,7 @@ properties:
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalog:
     type: object
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   connectionId:
     type: string
     format: uuid

@@ -5,7 +5,7 @@
 package io.airbyte.workers.temporal.sync;
 
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 import java.util.UUID;

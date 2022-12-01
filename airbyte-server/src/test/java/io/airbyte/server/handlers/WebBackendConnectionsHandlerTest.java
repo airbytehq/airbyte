@@ -81,10 +81,10 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v1.CatalogHelpers;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
 import io.airbyte.server.helpers.DestinationDefinitionHelpers;
@@ -755,7 +755,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.updateConnection(any())).thenReturn(connectionRead);
     when(connectionsHandler.getConnection(expected.getConnectionId())).thenReturn(connectionRead);
 
-    final List<io.airbyte.protocol.models.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
+    final List<io.airbyte.protocol.models.v1.StreamDescriptor> connectionStreams = List.of(ConnectionHelpers.STREAM_DESCRIPTOR);
     when(configRepository.getAllStreamsForConnection(expected.getConnectionId())).thenReturn(connectionStreams);
 
     final ManualOperationResult successfulResult = ManualOperationResult.builder().jobId(Optional.empty()).failingReason(Optional.empty()).build();
@@ -838,10 +838,10 @@ class WebBackendConnectionsHandlerTest {
     verify(connectionsHandler, times(1)).updateConnection(any());
     final InOrder orderVerifier = inOrder(eventRunner);
     orderVerifier.verify(eventRunner, times(1)).resetConnection(connectionId.getConnectionId(),
-        List.of(new io.airbyte.protocol.models.StreamDescriptor().withName("addStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("updateStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("configUpdateStream"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("removeStream")),
+        List.of(new io.airbyte.protocol.models.v1.StreamDescriptor().withName("addStream"),
+            new io.airbyte.protocol.models.v1.StreamDescriptor().withName("updateStream"),
+            new io.airbyte.protocol.models.v1.StreamDescriptor().withName("configUpdateStream"),
+            new io.airbyte.protocol.models.v1.StreamDescriptor().withName("removeStream")),
         true);
   }
 

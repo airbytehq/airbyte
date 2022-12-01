@@ -22,9 +22,9 @@ import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
@@ -64,7 +64,7 @@ class DefaultGetSpecWorkerTest {
 
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
-        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
+        .withSpec(Jsons.deserialize(expectedSpecString, ConnectorSpecification.class));
 
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);
@@ -98,7 +98,7 @@ class DefaultGetSpecWorkerTest {
 
     final AirbyteMessage message = new AirbyteMessage()
         .withType(Type.SPEC)
-        .withSpec(Jsons.deserialize(expectedSpecString, io.airbyte.protocol.models.ConnectorSpecification.class));
+        .withSpec(Jsons.deserialize(expectedSpecString, ConnectorSpecification.class));
 
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(Jsons.serialize(message).getBytes(Charsets.UTF_8)));
     when(process.waitFor(anyLong(), any())).thenReturn(true);

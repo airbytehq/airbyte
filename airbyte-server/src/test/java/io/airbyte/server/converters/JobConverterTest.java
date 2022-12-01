@@ -52,9 +52,9 @@ import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v1.AirbyteStream;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -246,8 +246,8 @@ class JobConverterTest {
     final JobConfig resetConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
         .withResetConnection(new JobResetConnectionConfig().withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(List.of(
-            new io.airbyte.protocol.models.StreamDescriptor().withName("users"),
-            new io.airbyte.protocol.models.StreamDescriptor().withName("accounts")))));
+            new io.airbyte.protocol.models.v1.StreamDescriptor().withName("users"),
+            new io.airbyte.protocol.models.v1.StreamDescriptor().withName("accounts")))));
     final Job resetJob = new Job(
         JOB_ID,
         ConfigType.RESET_CONNECTION,

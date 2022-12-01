@@ -15,8 +15,8 @@ import static org.mockito.Mockito.when;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope.Builder;
-import io.airbyte.protocol.models.AirbyteLogMessage;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteLogMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;

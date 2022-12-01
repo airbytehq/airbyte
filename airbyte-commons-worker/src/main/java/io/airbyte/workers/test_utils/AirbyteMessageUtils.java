@@ -7,18 +7,18 @@ package io.airbyte.workers.test_utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
-import io.airbyte.protocol.models.AirbyteEstimateTraceMessage;
-import io.airbyte.protocol.models.AirbyteGlobalState;
-import io.airbyte.protocol.models.AirbyteLogMessage;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
-import io.airbyte.protocol.models.AirbyteStreamState;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.v1.AirbyteEstimateTraceMessage;
+import io.airbyte.protocol.models.v1.AirbyteGlobalState;
+import io.airbyte.protocol.models.v1.AirbyteLogMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v1.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v1.AirbyteStreamState;
+import io.airbyte.protocol.models.v1.AirbyteTraceMessage;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -148,7 +148,7 @@ public class AirbyteMessageUtils {
                                                             final Double emittedAt,
                                                             final AirbyteErrorTraceMessage.FailureType failureType) {
     final var msg = new AirbyteTraceMessage()
-        .withType(io.airbyte.protocol.models.AirbyteTraceMessage.Type.ERROR)
+        .withType(AirbyteTraceMessage.Type.ERROR)
         .withError(new AirbyteErrorTraceMessage().withMessage(message))
         .withEmittedAt(emittedAt);
 

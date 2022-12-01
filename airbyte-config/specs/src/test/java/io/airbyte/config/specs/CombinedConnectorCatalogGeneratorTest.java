@@ -13,7 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DockerImageSpec;
 import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;

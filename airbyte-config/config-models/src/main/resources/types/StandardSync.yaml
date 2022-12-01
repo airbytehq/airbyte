@@ -41,7 +41,7 @@ properties:
   name:
     type: string
   catalog:
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   status:
     type: string
     enum:

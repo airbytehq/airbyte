@@ -6,9 +6,9 @@ package io.airbyte.server.converters;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import io.airbyte.protocol.models.AuthSpecification;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.OAuth2Specification;
+import io.airbyte.protocol.models.v1.AuthSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.OAuth2Specification;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;

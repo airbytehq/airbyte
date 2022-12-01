@@ -6,10 +6,10 @@ package io.airbyte.workers.internal;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v1.AirbyteStream;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import java.util.regex.Pattern;
 import org.apache.logging.log4j.util.Strings;
 import org.slf4j.Logger;

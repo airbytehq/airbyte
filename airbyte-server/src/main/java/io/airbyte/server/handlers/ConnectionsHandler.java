@@ -43,8 +43,8 @@ import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WorkspaceHelper;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.CatalogHelpers;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.converters.CatalogDiffConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -504,7 +504,7 @@ public class ConnectionsHandler {
     }
     final ActorCatalog catalog = configRepository.getActorCatalogById(connection.getSourceCatalogId());
     return Optional.of(CatalogConverter.toApi(Jsons.object(catalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class)));
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class)));
   }
 
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)

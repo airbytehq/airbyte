@@ -24,7 +24,7 @@ import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Collections;

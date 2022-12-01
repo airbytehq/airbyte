@@ -15,7 +15,7 @@ properties:
   state:
     "$ref": State.yaml
   output_catalog:
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   failures:
     type: array
     items:

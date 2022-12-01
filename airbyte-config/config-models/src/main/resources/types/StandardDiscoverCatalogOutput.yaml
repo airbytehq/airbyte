@@ -11,4 +11,4 @@ properties:
   catalog:
     description: describes the available schemas.
     type: object
-    existingJavaType: io.airbyte.protocol.models.AirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.AirbyteCatalog
