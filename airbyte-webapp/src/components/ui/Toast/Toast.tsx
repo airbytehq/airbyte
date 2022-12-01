@@ -16,7 +16,7 @@ export enum ToastType {
 }
 
 export interface ToastProps {
-  text?: string | React.ReactNode;
+  text: string | React.ReactNode;
   type?: ToastType;
   onAction?: () => void;
   actionBtnText?: string;
