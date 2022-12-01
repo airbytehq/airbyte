@@ -414,7 +414,7 @@ public class TemporalClient {
                 destinationLauncherConfig,
                 input,
                 connectionId);
-          } catch (JsonValidationException|ConfigNotFoundException|IOException|ApiException e) {
+          } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
             throw new RuntimeException(e);
           }
         });
