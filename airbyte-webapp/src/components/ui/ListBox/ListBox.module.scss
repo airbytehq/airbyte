@@ -5,6 +5,20 @@
   width: 100%;
   height: 100%;
   cursor: pointer;
+  border: 1px solid colors.$grey-50;
+  background-color: colors.$grey-50;
+  border-radius: 4px;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  line-height: 20px;
+  min-height: 36px;
+
+  &:hover {
+    border: 1px solid colors.$grey-100;
+  }
 }
 
 .optionsContainer {
