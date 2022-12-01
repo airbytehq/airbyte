@@ -4,6 +4,9 @@
 
 package io.airbyte.config.persistence.split_secrets;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
 import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
@@ -51,6 +54,8 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
    * @see SecretCache
    */
   public AWSSecretManagerPersistence(final String region) {
+    checkNotNull(region, "Region cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkArgument(!region.isEmpty(), "Region can't be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
     this.client = AWSSecretsManagerClientBuilder
         .standard()
         .withRegion(region)
@@ -60,6 +65,9 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
 
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
+    // fail fast, return an empty
+    if (coordinate == null) return Optional.empty();
+
     String secretString = null;
     try {
       log.debug("Reading secret {}", coordinate.getCoordinateBase());
@@ -72,6 +80,10 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
 
   @Override
   public void write(final SecretCoordinate coordinate, final String payload) {
+    checkNotNull(coordinate, "SecretCoordinate cannot be null");
+    checkNotNull(payload, "Payload cannot be null");
+    checkArgument(!payload.isEmpty(), "Payload shouldn't be empty");
+
     if (read(coordinate).isPresent()) {
       log.debug("Secret {} found updating payload.", coordinate.getCoordinateBase());
       final UpdateSecretRequest request = new UpdateSecretRequest()
