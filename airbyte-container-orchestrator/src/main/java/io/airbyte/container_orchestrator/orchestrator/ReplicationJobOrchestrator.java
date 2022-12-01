@@ -11,7 +11,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
@@ -62,19 +61,22 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
   private final JobRunConfig jobRunConfig;
+  private final AirbyteApiClient airbyteApiClient;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
                                     final FeatureFlags featureFlags,
                                     final AirbyteMessageSerDeProvider serDeProvider,
                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
-                                    final JobRunConfig jobRunConfig) {
+                                    final JobRunConfig jobRunConfig,
+                                    final AirbyteApiClient airbyteApiClient) {
     this.configs = configs;
     this.processFactory = processFactory;
     this.featureFlags = featureFlags;
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.jobRunConfig = jobRunConfig;
+    this.airbyteApiClient = airbyteApiClient;
   }
 
   @Override
@@ -146,7 +148,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
-        new PersistConfigHelper(getAirbyteApiClient()));
+        new PersistConfigHelper(airbyteApiClient));
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
@@ -155,15 +157,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     log.info("Returning output...");
     return Optional.of(Jsons.serialize(replicationOutput));
-  }
-
-  private AirbyteApiClient getAirbyteApiClient() {
-    // TODO make this actually functional
-    return new AirbyteApiClient(
-        new ApiClient().setScheme("http")
-            .setHost("airbyte-server-svc")
-            .setPort(8001)
-            .setBasePath("/api"));
   }
 
   private AirbyteStreamFactory getStreamFactory(final Version protocolVersion, final MdcScope.Builder mdcScope) {
