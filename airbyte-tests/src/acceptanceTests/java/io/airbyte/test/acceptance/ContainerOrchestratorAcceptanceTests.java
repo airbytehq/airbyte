@@ -102,8 +102,8 @@ class ContainerOrchestratorAcceptanceTests {
   }
   // This test is flaky.  It is commented out until that condition us understood
   // See: https://github.com/airbytehq/airbyte/issues/19948
-  @disabled
   @Test
+  @Disabled
   void testDowntimeDuringSync() throws Exception {
     final String connectionName = "test-connection";
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
