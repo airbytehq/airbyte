@@ -3,7 +3,7 @@
 #
 
 from datetime import datetime
-from typing import Any, Dict
+from typing import Dict
 from unittest.mock import AsyncMock, MagicMock, call, patch
 
 from airbyte_cdk.models import (
@@ -13,12 +13,11 @@ from airbyte_cdk.models import (
     ConfiguredAirbyteCatalog,
     ConfiguredAirbyteStream,
     DestinationSyncMode,
-    Status,
     SyncMode,
     Type,
 )
-from destination_databend.destination import DestinationDatabend, DatabendClient
-from pytest import fixture, mark
+from destination_databend.destination import DatabendClient, DestinationDatabend
+from pytest import fixture
 
 
 @fixture

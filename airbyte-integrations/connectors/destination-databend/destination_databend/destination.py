@@ -3,24 +3,25 @@
 #
 
 
-from typing import Any, Iterable, Mapping
-from logging import getLogger
 import json
 from datetime import datetime
+from logging import getLogger
+from typing import Any, Iterable, Mapping
+from uuid import uuid4
+
 from airbyte_cdk import AirbyteLogger
-from destination_databend.client import DatabendClient
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from destination_databend.client import DatabendClient
+
 from .writer import create_databend_wirter
-from typing import Any, Dict, Iterable, Mapping, Optional
-from uuid import uuid4
 
 logger = getLogger("airbyte")
 
 
 class DestinationDatabend(Destination):
     def write(
-            self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -79,7 +80,7 @@ class DestinationDatabend(Destination):
         try:
             client = DatabendClient(**config)
             cursor = client.open()
-            cursor.execute('select 1')
+            cursor.execute("select 1")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

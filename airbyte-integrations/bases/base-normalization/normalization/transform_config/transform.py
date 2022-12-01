@@ -78,9 +78,9 @@ class TransformConfig:
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
         if (
-                "tunnel_method" in config.keys()
-                and "tunnel_method" in config["tunnel_method"]
-                and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
+            "tunnel_method" in config.keys()
+            and "tunnel_method" in config["tunnel_method"]
+            and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
         ):
             return True
         else:
