@@ -27,3 +27,9 @@
   align-items: center;
   justify-content: center;
 }
+
+.downloadButton {
+  margin-top: auto;
+  margin-bottom: variables.$spacing-md;
+  width: 85%;
+}

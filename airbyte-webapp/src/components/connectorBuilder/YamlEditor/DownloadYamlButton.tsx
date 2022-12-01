@@ -7,6 +7,8 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { downloadFile } from "utils/file";
 
+import styles from "./DownloadYamlButton.module.scss";
+
 interface DownloadYamlButtonProps {
   className?: string;
   yaml: string;
@@ -22,6 +24,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
 
   const downloadButton = (
     <Button
+      className={styles.button}
       onClick={downloadYaml}
       disabled={!yamlIsValid}
       icon={yamlIsValid ? <FontAwesomeIcon icon={faDownload} /> : <FontAwesomeIcon icon={faWarning} />}
