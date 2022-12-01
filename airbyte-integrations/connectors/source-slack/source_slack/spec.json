@@ -46,10 +46,10 @@
             "type": "object",
             "title": "Sign in via Slack (OAuth)",
             "required": [
-              "access_token",
+              "option_title",
               "client_id",
               "client_secret",
-              "option_title"
+              "access_token"
             ],
             "properties": {
               "option_title": {
@@ -57,24 +57,20 @@
                 "const": "Default OAuth2.0 authorization"
               },
               "client_id": {
-                "title": "Client ID",
-                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id.",
                 "type": "string",
-                "examples": ["slack-client-id-example"],
-                "airbyte_secret": true
+                "title": "Client ID",
+                "description": "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this id."
               },
               "client_secret": {
+                "type": "string",
                 "title": "Client Secret",
                 "description": "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help finding this secret.",
-                "type": "string",
-                "examples": ["slack-client-secret-example"],
                 "airbyte_secret": true
               },
               "access_token": {
+                "type": "string",
                 "title": "Access token",
                 "description": "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
-                "type": "string",
-                "examples": ["slack-access-token-example"],
                 "airbyte_secret": true
               }
             },
@@ -83,7 +79,7 @@
           {
             "type": "object",
             "title": "API Token",
-            "required": ["api_token", "option_title"],
+            "required": ["option_title", "api_token"],
             "properties": {
               "option_title": {
                 "type": "string",
