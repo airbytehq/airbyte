@@ -33,7 +33,6 @@ import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -108,10 +107,7 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId,
-                                                                    final UUID destinationId,
-                                                                    final boolean isBroken,
-                                                                    final Status status) {
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId, final boolean isBroken) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -120,7 +116,7 @@ public class ConnectionHelpers {
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
         .withPrefix(STANDARD_SYNC_PREFIX)
-        .withStatus(status)
+        .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
         .withSourceCatalogId(UUID.randomUUID())
         .withSourceId(sourceId)
@@ -170,6 +166,7 @@ public class ConnectionHelpers {
         .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.SOURCE)
         .namespaceFormat(null)
         .prefix("presto_to_hudi")
+        .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
         .scheduleType(ConnectionScheduleType.BASIC)
         .scheduleData(generateBasicConnectionScheduleData())
@@ -200,14 +197,6 @@ public class ConnectionHelpers {
       connectionRead.schedule(new ConnectionSchedule()
           .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
           .units(standardSync.getSchedule().getUnits()));
-    }
-
-    if (standardSync.getStatus() == Status.INACTIVE) {
-      connectionRead.setStatus(ConnectionStatus.INACTIVE);
-    } else if (standardSync.getStatus() == Status.ACTIVE) {
-      connectionRead.setStatus(ConnectionStatus.ACTIVE);
-    } else if (standardSync.getStatus() == Status.DEPRECATED) {
-      connectionRead.setStatus(ConnectionStatus.DEPRECATED);
     }
 
     return connectionRead;

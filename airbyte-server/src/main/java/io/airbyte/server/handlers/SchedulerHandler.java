@@ -15,8 +15,6 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
@@ -29,7 +27,6 @@ import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.LogRead;
-import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
@@ -42,7 +39,6 @@ import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -99,7 +95,6 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
@@ -109,8 +104,7 @@ public class SchedulerHandler {
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
-                          final ConnectionsHandler connectionsHandler,
-                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                          final ConnectionsHandler connectionsHandler) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -120,8 +114,7 @@ public class SchedulerHandler {
         jobPersistence,
         eventRunner,
         new JobConverter(workerEnvironment, logConfigs),
-        connectionsHandler,
-        envVariableFeatureFlags);
+        connectionsHandler);
   }
 
   @VisibleForTesting
@@ -133,8 +126,7 @@ public class SchedulerHandler {
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
-                   final ConnectionsHandler connectionsHandler,
-                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                   final ConnectionsHandler connectionsHandler) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -144,7 +136,6 @@ public class SchedulerHandler {
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
     this.connectionsHandler = connectionsHandler;
-    this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
@@ -369,32 +360,16 @@ public class SchedulerHandler {
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
-    final ConnectionRead connectionRead = connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId());
     final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-        connectionRead.getSyncCatalog();
+        connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId()).getSyncCatalog();
     CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
         CatalogConverter.toProtocol(currentAirbyteCatalog));
     boolean containsBreakingChange = containsBreakingChange(diff);
     ConnectionUpdate updateObject =
         new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
-    ConnectionStatus connectionStatus;
-    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
-      connectionStatus = ConnectionStatus.INACTIVE;
-    } else {
-      connectionStatus = ConnectionStatus.ACTIVE;
-    }
-    updateObject.status(connectionStatus);
     connectionsHandler.updateConnection(updateObject);
-    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
+    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange);
 
-  }
-
-  private boolean shouldDisableConnection(boolean containsBreakingChange, NonBreakingChangesPreference preference, CatalogDiff diff) {
-    if (!envVariableFeatureFlags.autoDetectSchema()) {
-      return false;
-    }
-
-    return containsBreakingChange || (preference == NonBreakingChangesPreference.DISABLE && !diff.getTransforms().isEmpty());
   }
 
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
