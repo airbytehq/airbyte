@@ -387,6 +387,8 @@ class DbtIntegrationTest(object):
             }
         elif destination_type.value == DestinationType.MYSQL.value:
             profiles_config["database"] = self.target_schema
+        elif destination_type.value == DestinationType.DATABEND.value:
+            profiles_config["database"] = self.target_schema
         elif destination_type.value == DestinationType.REDSHIFT.value:
             profiles_config["schema"] = self.target_schema
             if random_schema:
@@ -443,6 +445,8 @@ class DbtIntegrationTest(object):
             return "airbyte/normalization-redshift:dev"
         elif DestinationType.TIDB.value == destination_type.value:
             return "airbyte/normalization-tidb:dev"
+        elif DestinationType.DATABEND.value == destination_type.value:
+            return "airbyte/normalization-databend:dev"
         else:
             return "airbyte/normalization:dev"
 

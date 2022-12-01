@@ -59,6 +59,7 @@ class TransformConfig:
             DestinationType.MSSQL.value: self.transform_mssql,
             DestinationType.CLICKHOUSE.value: self.transform_clickhouse,
             DestinationType.TIDB.value: self.transform_tidb,
+            DestinationType.DATABEND.value: self.transform_databend,
         }[integration_type.value](config)
 
         # merge pre-populated base_profile with destination-specific configuration.
@@ -77,9 +78,9 @@ class TransformConfig:
     def is_ssh_tunnelling(config: Dict[str, Any]) -> bool:
         tunnel_methods = ["SSH_KEY_AUTH", "SSH_PASSWORD_AUTH"]
         if (
-            "tunnel_method" in config.keys()
-            and "tunnel_method" in config["tunnel_method"]
-            and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
+                "tunnel_method" in config.keys()
+                and "tunnel_method" in config["tunnel_method"]
+                and config["tunnel_method"]["tunnel_method"].upper() in tunnel_methods
         ):
             return True
         else:
@@ -343,6 +344,20 @@ class TransformConfig:
             "username": config["username"],
             "password": config.get("password", ""),
         }
+        return dbt_config
+
+    @staticmethod
+    def transform_databend(config: Dict[str, Any]):
+        print("transform_databend")
+        dbt_config = {
+            "type": "databend",
+            "host": config["host"],
+            "port": config["port"],
+            "schema": config["database"],
+            "user": config["username"],
+        }
+        if "pass" in config:
+            dbt_config["pass"] = config["password"]
         return dbt_config
 
     @staticmethod
