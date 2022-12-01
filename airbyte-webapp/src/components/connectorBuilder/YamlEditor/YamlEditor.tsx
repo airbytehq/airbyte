@@ -2,25 +2,28 @@ import { useMonaco } from "@monaco-editor/react";
 import { load, YAMLException } from "js-yaml";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useRef, useState } from "react";
-import { useDebounce, useLocalStorage } from "react-use";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
-import { StreamsListRequestBodyManifest } from "core/request/ConnectorBuilderClient";
-import { useManifestTemplate } from "services/connectorBuilder/ConnectorBuilderApiService";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
-export const YamlEditor: React.FC = () => {
-  const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
-  const template = useManifestTemplate();
-  const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  const [yamlValue, setYamlValue] = useState(locallyStoredYaml ?? template);
-  useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
+interface YamlEditorProps {
+  toggleYamlEditor: () => void;
+}
 
-  const { yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } = useConnectorBuilderState();
+export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
+  const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
+  // const template = useManifestTemplate();
+  // const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
+  // useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
+  const { yamlManifest, yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } =
+    useConnectorBuilderState();
+  const [yamlValue, setYamlValue] = useState(yamlManifest);
 
   const monaco = useMonaco();
 
@@ -30,7 +33,7 @@ export const YamlEditor: React.FC = () => {
       const yamlEditorModel = yamlEditorRef.current.getModel();
 
       try {
-        const json = load(yamlValue) as StreamsListRequestBodyManifest;
+        const json = load(yamlValue) as ConnectorManifest;
         setJsonManifest(json);
         setYamlIsValid(true);
 
@@ -64,7 +67,8 @@ export const YamlEditor: React.FC = () => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <DownloadYamlButton yaml={yamlValue} yamlIsValid={yamlIsValid} />
+        <UiYamlToggleButton className={styles.yamlToggle} yamlSelected onClick={toggleYamlEditor} />
+        <DownloadYamlButton className={styles.downloadButton} yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>
         <CodeEditor

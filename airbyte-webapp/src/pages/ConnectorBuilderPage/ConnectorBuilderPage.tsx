@@ -1,5 +1,8 @@
+import classnames from "classnames";
 import { useIntl } from "react-intl";
+import { useToggle } from "react-use";
 
+import { Builder } from "components/connectorBuilder/Builder/Builder";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
@@ -10,12 +13,21 @@ import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
   const { formatMessage } = useIntl();
+  const [showYamlEditor, toggleYamlEditor] = useToggle(true);
 
   return (
     <ResizablePanels
-      className={styles.container}
+      className={classnames({ [styles.gradientBg]: showYamlEditor, [styles.solidBg]: !showYamlEditor })}
       firstPanel={{
-        children: <YamlEditor />,
+        children: (
+          <>
+            {showYamlEditor ? (
+              <YamlEditor toggleYamlEditor={toggleYamlEditor} />
+            ) : (
+              <Builder toggleYamlEditor={toggleYamlEditor} />
+            )}
+          </>
+        ),
         className: styles.leftPanel,
         minWidth: 100,
       }}

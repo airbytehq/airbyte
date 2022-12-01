@@ -6,11 +6,15 @@
 }
 
 .rightPanel {
-  border-top-left-radius: variables.$border-radius-lg;
-  border-bottom-left-radius: variables.$border-radius-lg;
+  border-top-left-radius: variables.$border-radius-md;
+  border-bottom-left-radius: variables.$border-radius-md;
   background-color: colors.$white;
 }
 
-.container {
+.gradientBg {
   background-image: linear-gradient(colors.$grey-50, colors.$grey-100);
+}
+
+.solidBg {
+  background-color: colors.$grey-50;
 }

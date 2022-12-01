@@ -55,7 +55,6 @@ const MainViewRoutes: React.FC = () => {
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
 
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
         </Routes>
@@ -109,6 +108,7 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
+      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />

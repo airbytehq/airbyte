@@ -9,13 +9,24 @@
 
 .control {
   flex: 0 0 auto;
-  background-color: transparent;
+  background-color: colors.$grey-30;
   display: flex;
   padding: variables.$spacing-md;
   flex-direction: row;
-  justify-content: flex-end;
+
+  // justify-content: flex-end;
 }
 
 .editorContainer {
+  padding-top: variables.$spacing-xl;
   flex: 1 1 0;
+}
+
+.yamlToggle {
+  margin-left: 42px;
+  margin-top: 5px;
+}
+
+.downloadButton {
+  margin-left: auto;
 }
