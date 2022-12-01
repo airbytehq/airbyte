@@ -11,6 +11,7 @@ from urllib.error import URLError
 
 import backoff
 import pendulum
+from airbyte_cdk.config_observation import observe_connector_config
 from airbyte_cdk.logger import AirbyteLogger
 from bingads.authorization import AuthorizationData, OAuthTokens, OAuthWebAuthCodeGrant
 from bingads.service_client import ServiceClient
@@ -38,45 +39,35 @@ class Client:
 
     def __init__(
         self,
-        tenant_id: str,
-        reports_start_date: str,
-        developer_token: str = None,
-        client_id: str = None,
-        client_secret: str = None,
-        refresh_token: str = None,
-        **kwargs: Mapping[str, Any],
+        config,
     ) -> None:
+        self.config = observe_connector_config(config)
         self.authorization_data: Mapping[str, AuthorizationData] = {}
-        self.refresh_token = refresh_token
-        self.developer_token = developer_token
-
-        self.client_id = client_id
-        self.client_secret = client_secret
-
-        self.authentication = self._get_auth_client(client_id, tenant_id, client_secret)
+        self.authentication = self._get_auth_client()
         self.oauth: OAuthTokens = self._get_access_token()
-        self.reports_start_date = pendulum.parse(reports_start_date).astimezone(tz=timezone.utc)
+        self.reports_start_date = pendulum.parse(config["reports_start_date"]).astimezone(tz=timezone.utc)
 
-    def _get_auth_client(self, client_id: str, tenant_id: str, client_secret: str = None) -> OAuthWebAuthCodeGrant:
-        # https://github.com/BingAds/BingAds-Python-SDK/blob/e7b5a618e87a43d0a5e2c79d9aa4626e208797bd/bingads/authorization.py#L390
-        auth_creds = {
-            "client_id": client_id,
+    @property
+    def auth_creds(self):
+        return {
+            "client_id": self.config["client_id"],
             "redirection_uri": "",  # should be empty string
-            "client_secret": None,
-            "tenant": tenant_id,
+            "client_secret": self.config.get("client_secret"),
+            "tenant": self.config["tenant_id"],
         }
-        # the `client_secret` should be provided for `non-public clients` only
-        # https://docs.microsoft.com/en-us/advertising/guides/authentication-oauth-get-tokens?view=bingads-13#request-accesstoken
-        if client_secret and client_secret != "":
-            auth_creds["client_secret"] = client_secret
-        return OAuthWebAuthCodeGrant(**auth_creds)
+
+    def _get_auth_client(self) -> OAuthWebAuthCodeGrant:
+        return OAuthWebAuthCodeGrant(**self.auth_creds, token_refreshed_callback=self.update_tokens)
+
+    def update_tokens(self, new_oauth_tokens: OAuthTokens):
+        self.config["refresh_token"] = new_oauth_tokens.refresh_token
 
     @lru_cache(maxsize=4)
     def _get_auth_data(self, customer_id: str = None, account_id: Optional[str] = None) -> AuthorizationData:
         return AuthorizationData(
             account_id=account_id,
             customer_id=customer_id,
-            developer_token=self.developer_token,
+            developer_token=self.config["developer_token"],
             authentication=self.authentication,
         )
 
@@ -85,7 +76,7 @@ class Client:
         # clear caches to be able to use new access token
         self.get_service.cache_clear()
         self._get_auth_data.cache_clear()
-        return self.authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        return self.authentication.request_oauth_tokens_by_refresh_token(self.config["refresh_token"])
 
     def is_token_expiring(self) -> bool:
         """

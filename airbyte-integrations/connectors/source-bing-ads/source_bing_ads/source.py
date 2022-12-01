@@ -719,7 +719,7 @@ class SourceBingAds(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
-            client = Client(**config)
+            client = Client(config)
             account_ids = {str(account["Id"]) for account in Accounts(client, config).read_records(SyncMode.full_refresh)}
             if account_ids:
                 return True, None
@@ -738,7 +738,7 @@ class SourceBingAds(AbstractSource):
         ]
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        client = Client(**config)
+        client = Client(config)
         streams = [
             Accounts(client, config),
             AdGroups(client, config),
