@@ -44,8 +44,21 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
-            return False, repr(error)
+            return self.handle_http_error(stream, error)
         return True, None
+
+    def handle_http_error(self, stream: Stream, error: HTTPError):
+        """
+        Override this method to define error handling for various `HTTPError`s
+        that are raised while attempting to check a stream's availability.
+
+        :param stream: stream
+        :param error: HTTPerror raised while checking stream's availability.
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
+        """
+        return False, repr(error)
 
     def _get_stream_slice(self, stream):
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
