@@ -4,13 +4,13 @@ import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useRef, useState } from "react";
 import { useDebounce, useLocalStorage } from "react-use";
 
-import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useManifestTemplate } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
@@ -69,7 +69,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <Button onClick={toggleYamlEditor}>Switch to UI</Button>
+        <UiYamlToggleButton className={styles.yamlToggle} yamlSelected onClick={toggleYamlEditor} />
         <DownloadYamlButton className={styles.downloadButton} yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>

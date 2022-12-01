@@ -1,0 +1,25 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  // padding: variables.$spacing-sm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.yamlToggle {
+  margin-top: variables.$spacing-lg;
+}
+
+.connectorImg {
+  width: 90px;
+  box-shadow: 0 2px 4px rgba(26, 25, 77, 12%);
+  border-radius: 25px;
+  padding: variables.$spacing-xl;
+  margin-top: variables.$spacing-xl;
+}
+
+.connectorName {
+  margin-top: variables.$spacing-md;
+}

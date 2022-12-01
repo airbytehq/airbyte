@@ -1,0 +1,40 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.button {
+  cursor: pointer;
+  border: variables.$border-thin solid colors.$dark-blue;
+  background-color: colors.$white;
+  display: flex;
+  border-radius: 6px;
+  padding: 0;
+  overflow: hidden;
+  height: 21px;
+}
+
+.text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 100%;
+  font-weight: 700;
+}
+
+.ui {
+  // border-radius: 6px 0 0 6px;
+}
+
+.yaml {
+  // border-radius: 0 6px 6px 0;
+}
+
+.selected {
+  background-color: colors.$white;
+  color: colors.$dark-blue;
+}
+
+.unselected {
+  background-color: colors.$dark-blue;
+  color: colors.$white;
+}

@@ -1,6 +1,19 @@
 @use "scss/variables";
+@use "scss/colors";
 
 .container {
+  height: 100%;
+  display: flex;
+}
+
+.sidebar {
+  flex: 0 0 200px;
+  background-color: colors.$white;
+  box-shadow: 2px 0 10px rgba(26, 25, 77, 10%);
+}
+
+.form {
+  flex: 1;
   padding: variables.$spacing-xl;
   display: flex;
   flex-direction: column;

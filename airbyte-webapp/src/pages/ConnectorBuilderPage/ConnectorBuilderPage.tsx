@@ -1,3 +1,4 @@
+import classnames from "classnames";
 import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
@@ -16,7 +17,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
 
   return (
     <ResizablePanels
-      className={styles.container}
+      className={classnames({ [styles.gradientBg]: showYamlEditor, [styles.solidBg]: !showYamlEditor })}
       firstPanel={{
         children: (
           <>

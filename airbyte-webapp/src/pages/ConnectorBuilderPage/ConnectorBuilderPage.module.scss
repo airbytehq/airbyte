@@ -11,6 +11,10 @@
   background-color: colors.$white;
 }
 
-.container {
+.gradientBg {
   background-image: linear-gradient(colors.$grey-50, colors.$grey-100);
+}
+
+.solidBg {
+  background-color: colors.$grey-50;
 }
