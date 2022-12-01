@@ -5,11 +5,11 @@ const sources = require("../../src/utils/connectors/sources.json");
 const sourceIdToName = Object.fromEntries(Object.entries(sources).map((entry) => [entry[1], entry[0]]));
 const destinationIdToName = Object.fromEntries(Object.entries(destinations).map((entry) => [entry[1], entry[0]]));
 
-const validateStringContent = (context, node, string) => {
-  if (string in destinationIdToName) {
-    context.report({ node, messageId: "destinationId", data: { id: string, name: destinationIdToName[string] } });
-  } else if (string in sourceIdToName) {
-    context.report({ node, messageId: "sourceId", data: { id: string, name: sourceIdToName[string] } });
+const validateStringContent = (context, node, nodeContent) => {
+  if (nodeContent in destinationIdToName) {
+    context.report({ node, messageId: "destinationId", data: { id: nodeContent, name: destinationIdToName[nodeContent] } });
+  } else if (nodeContent in sourceIdToName) {
+    context.report({ node, messageId: "sourceId", data: { id: nodeContent, name: sourceIdToName[nodeContent] } });
   }
 };
 
