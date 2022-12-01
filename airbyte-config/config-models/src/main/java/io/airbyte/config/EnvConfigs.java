@@ -766,7 +766,9 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
-  public String getSocatSidecarKubeCpuLimit() { return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit()); }
+  public String getSocatSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit());
+  }
 
   @Override
   public String getJobKubeBusyboxImage() {
