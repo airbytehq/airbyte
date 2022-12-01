@@ -77,8 +77,7 @@ public class SyncWorkflowImpl implements SyncWorkflow {
                                 final IntegrationLauncherConfig sourceLauncherConfig,
                                 final IntegrationLauncherConfig destinationLauncherConfig,
                                 final StandardSyncInput syncInput,
-                                final UUID connectionId)
-      throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
+                                final UUID connectionId) {
 
     ApmTraceUtils
         .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), CONNECTION_ID_KEY, connectionId.toString(), JOB_ID_KEY,
@@ -92,12 +91,26 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-      final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
-      if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
-        LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId, connectionId);
+      UUID sourceId = null;
+      try {
+        sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
+      } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+        LOGGER.error("An error occurred fetching the connection during schema refresh processing. Skipping schema refresh. ", e);
       }
-      final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
+      try {
+        if (sourceId != null && refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
+          LOGGER.info("Refreshing source schema...");
+          refreshSchemaActivity.refreshSchema(sourceId, connectionId);
+        }
+      } catch (IOException | JsonValidationException | ConfigNotFoundException | ApiException e) {
+        LOGGER.error("An error occurred while refreshing the source schema. Skipping schema refresh. ", e);
+      }
+      Status status = null;
+      try {
+        status = configFetchActivity.getStandardSync(connectionId).getStatus();
+      } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+        LOGGER.error("An error occurred while fetching the connection status. ", e);
+      }
       if (Status.INACTIVE == status) {
         LOGGER.info("Connection is disabled. Cancelling run.");
         final StandardSyncOutput output =
