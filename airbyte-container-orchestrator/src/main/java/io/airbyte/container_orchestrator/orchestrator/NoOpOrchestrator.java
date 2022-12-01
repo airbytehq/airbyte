@@ -2,17 +2,20 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.container_orchestrator;
+package io.airbyte.container_orchestrator.orchestrator;
 
 import io.airbyte.workers.process.AsyncOrchestratorPodProcess;
+import java.lang.invoke.MethodHandles;
 import java.util.Optional;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * For testing only.
  */
-@Slf4j
 public class NoOpOrchestrator implements JobOrchestrator<String> {
+
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
 
   @Override
   public String getOrchestratorName() {

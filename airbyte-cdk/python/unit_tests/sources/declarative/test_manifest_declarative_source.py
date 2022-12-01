@@ -470,9 +470,9 @@ def test_generate_schema():
     schema = json.loads(schema_str)
 
     assert "version" in schema["required"]
-    assert "checker" in schema["required"]
+    assert "check" in schema["required"]
     assert "streams" in schema["required"]
-    assert schema["properties"]["checker"]["$ref"] == "#/definitions/CheckStream"
+    assert schema["properties"]["check"]["$ref"] == "#/definitions/CheckStream"
     assert schema["properties"]["streams"]["items"]["$ref"] == "#/definitions/DeclarativeStream"
 
     check_stream = schema["definitions"]["CheckStream"]
