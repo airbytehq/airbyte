@@ -1,7 +1,7 @@
 import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
-import { capitalize } from "lodash";
+import capitalize from "lodash/capitalize";
 
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
