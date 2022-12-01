@@ -33,6 +33,7 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
+  const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true";
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -55,7 +56,9 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
-          <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
+          {isSchemaChangesFeatureEnabled && (
+            <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
+          )}
         </Section>
         <Section>
           <Heading as="h2" size="sm">

@@ -12,7 +12,6 @@ import styles from "./NonBreakingChangesPreferenceField.module.scss";
 
 export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form }) => {
   const { formatMessage } = useIntl();
-  // todo: is the default set when the connection object is created or do i need to set it here...
 
   const preferenceOptions = useMemo(() => {
     const values = Object.values(NonBreakingChangesPreference);
