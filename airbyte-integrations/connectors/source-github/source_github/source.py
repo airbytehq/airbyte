@@ -239,45 +239,41 @@ class SourceGithub(AbstractSource):
 
 
 class GithubAvailabilityStrategy(HTTPAvailabilityStrategy):
-    def check_availability(self, stream: Stream) -> Tuple[bool, any]:
+    def handle_http_error(self, stream: Stream, error: HTTPError):
         stream_slice = self._get_stream_slice(stream)
         # get out the stream_slice parts for later use.
         organisation = stream_slice.get("organization", "")
         repository = stream_slice.get("repository", "")
-        try:
-            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-            next(records)
-            return True, None
-        except HTTPError as e:
-            if e.response.status_code == requests.codes.NOT_FOUND:
-                # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(stream, Organizations):
-                    error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-                else:
-                    error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e.response.json().get("message"))
-                # When using the `check_availability` method, we should raise an error if we do not have access to the repository.
-                if isinstance(stream, Repositories):
-                    raise e
-                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-                # For all `Organization` based streams
-                elif isinstance(stream, Organizations) or isinstance(stream, Teams) or isinstance(stream, Users):
-                    error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
-                # For all other `Repository` base streams
-                else:
-                    error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-            elif e.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.CONFLICT:
-                error_msg = (
-                    f"`{stream.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
-                )
-            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
-                error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
 
-            return False, error_msg
+        if error.response.status_code == requests.codes.NOT_FOUND:
+            # A lot of streams are not available for repositories owned by a user instead of an organization.
+            if isinstance(stream, Organizations):
+                error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+            else:
+                error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+        elif error.response.status_code == requests.codes.FORBIDDEN:
+            error_msg = str(error.response.json().get("message"))
+            # When using the `check_availability` method, we should raise an error if we do not have access to the repository.
+            if isinstance(stream, Repositories):
+                raise error
+            # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+            # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+            # For all `Organization` based streams
+            elif isinstance(stream, Organizations) or isinstance(stream, Teams) or isinstance(stream, Users):
+                error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+            # For all other `Repository` base streams
+            else:
+                error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+        elif error.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
+            # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+            # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+            error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
+        elif error.response.status_code == requests.codes.CONFLICT:
+            error_msg = (
+                f"`{stream.name}` stream isn't available for repository "
+                f"`{stream_slice['repository']}`, it seems like this repository is empty."
+            )
+        elif error.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
+            error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+
+        return False, error_msg
