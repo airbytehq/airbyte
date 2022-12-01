@@ -68,6 +68,9 @@
       "type": ["null", "string"],
       "format": "date"
     },
+     "segments.device": {
+      "type": ["null", "string"]
+    },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
     },
