@@ -4,14 +4,14 @@
 .centered {
   margin-left: auto;
   margin-right: auto;
-  width: 90%;
+  width: 75%;
   max-width: 320px;
 }
 
 .button {
   padding: variables.$spacing-md;
   background-color: transparent;
-  border-radius: variables.$border-radius-md;
+  border-radius: variables.$border-radius-lg;
   border: none;
   display: flex;
   justify-content: center;

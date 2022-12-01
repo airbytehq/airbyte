@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.e2e_test.logging;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;

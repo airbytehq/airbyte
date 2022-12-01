@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Map;
 import java.util.Optional;
@@ -55,7 +56,7 @@ public interface MessageTracker {
    * @return returns a map of committed record count by stream name. If committed record counts cannot
    *         be computed, empty.
    */
-  Optional<Map<String, Long>> getStreamToCommittedRecords();
+  Optional<Map<AirbyteStreamNameNamespacePair, Long>> getStreamToCommittedRecords();
 
   /**
    * Get the per-stream emitted record count. This includes messages that were emitted by the source,
@@ -63,7 +64,15 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getStreamToEmittedRecords();
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedRecords();
+
+  /**
+   * Get the per-stream estimated record count provided by
+   * {@link io.airbyte.protocol.models.AirbyteEstimateTraceMessage}.
+   *
+   * @return returns a map of estimated record count by stream name.
+   */
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedRecords();
 
   /**
    * Get the per-stream emitted byte count. This includes messages that were emitted by the source,
@@ -71,7 +80,15 @@ public interface MessageTracker {
    *
    * @return returns a map of emitted record count by stream name.
    */
-  Map<String, Long> getStreamToEmittedBytes();
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes();
+
+  /**
+   * Get the per-stream estimated byte count provided by
+   * {@link io.airbyte.protocol.models.AirbyteEstimateTraceMessage}.
+   *
+   * @return returns a map of estimated bytes by stream name.
+   */
+  Map<AirbyteStreamNameNamespacePair, Long> getStreamToEstimatedBytes();
 
   /**
    * Get the overall emitted record count. This includes messages that were emitted by the source, but
@@ -82,12 +99,26 @@ public interface MessageTracker {
   long getTotalRecordsEmitted();
 
   /**
+   * Get the overall estimated record count.
+   *
+   * @return returns the total count of estimated records across all streams.
+   */
+  long getTotalRecordsEstimated();
+
+  /**
    * Get the overall emitted bytes. This includes messages that were emitted by the source, but never
    * committed by the destination.
    *
    * @return returns the total emitted bytes across all streams.
    */
   long getTotalBytesEmitted();
+
+  /**
+   * Get the overall estimated bytes.
+   *
+   * @return returns the total count of estimated bytes across all streams.
+   */
+  long getTotalBytesEstimated();
 
   /**
    * Get the overall committed record count.

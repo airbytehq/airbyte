@@ -178,7 +178,6 @@ public class ActivityBeanFactory {
   public RetryOptions containerOrchestratorRetryOptions() {
     return RetryOptions.newBuilder()
         .setDoNotRetry(RuntimeException.class.getName(), WorkerException.class.getName())
-        .setMaximumAttempts(1)
         .build();
   }
 

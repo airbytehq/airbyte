@@ -21,8 +21,8 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
-import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
@@ -151,7 +151,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     return database.bufferedResultSetQuery(
         connection -> {
           try (final ResultSet tableInfo = connection.createStatement()
-              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema));) {
+              .executeQuery(String.format("SHOW TABLES LIKE '%s' IN SCHEMA %s;", tableName, schema))) {
             assertTrue(tableInfo.next());
             // check that we're creating permanent tables. DBT defaults to transient tables, which have
             // `TRANSIENT` as the value for the `kind` column.
@@ -237,7 +237,7 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename), AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
-        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).collect(Collectors.toList());
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class)).toList();
 
     final List<AirbyteMessage> largeNumberRecords =
         Collections.nCopies(15000000, messages).stream().flatMap(List::stream).collect(Collectors.toList());
