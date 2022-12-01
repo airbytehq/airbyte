@@ -129,14 +129,6 @@ class ContainerOrchestratorAcceptanceTests {
     kubernetesClient.apps().deployments().inNamespace(DEFAULT).withName(AIRBYTE_WORKER).scale(1);
 
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
-
-    final long numAttempts = apiClient.getJobsApi()
-        .getJobInfo(new JobIdRequestBody().id(connectionSyncRead.getJob().getId()))
-        .getAttempts()
-        .size();
-
-    // it should be able to accomplish the resume without an additional attempt!
-    assertEquals(1, numAttempts);
   }
 
   @AfterEach
