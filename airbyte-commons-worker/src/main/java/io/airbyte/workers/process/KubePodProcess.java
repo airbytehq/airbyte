@@ -7,6 +7,8 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.metrics.lib.MetricClientFactory;
@@ -101,22 +103,19 @@ import org.slf4j.MDC;
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
 public class KubePodProcess extends Process implements KubePod {
 
+  private static final Configs configs = new EnvConfigs();
+
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   public static final String MAIN_CONTAINER_NAME = "main";
   public static final String INIT_CONTAINER_NAME = "init";
-  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
-  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
-  private static final String DEFAULT_CPU_REQUEST = "0.1";
-  private static final String DEFAULT_CPU_LIMIT = "0.2";
-  private static final String DEFAULT_SOCAT_CPU_REQUEST = "1.0";
-  private static final String DEFAULT_SOCAT_CPU_LIMIT = "1.5";
+
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
-      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
+      .withMemoryLimit(configs.getSidecarKubeMemoryLimit()).withMemoryRequest(configs.getSidecarMemoryRequest())
+      .withCpuLimit(configs.getSidecarKubeCpuLimit()).withCpuRequest(configs.getSidecarKubeCpuRequest());
   private static final ResourceRequirements DEFAULT_SOCAT_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
-      .withCpuLimit(DEFAULT_SOCAT_CPU_LIMIT).withCpuRequest(DEFAULT_SOCAT_CPU_REQUEST);
+      .withMemoryLimit(configs.getSidecarKubeMemoryLimit()).withMemoryRequest(configs.getSidecarMemoryRequest())
+      .withCpuLimit(configs.getSocatSidecarKubeCpuLimit()).withCpuRequest(configs.getSocatSidecarKubeCpuRequest());
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";

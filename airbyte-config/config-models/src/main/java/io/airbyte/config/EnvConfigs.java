@@ -73,7 +73,17 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
+  private static final String DEFAULT_SIDECAR_MEMORY_REQUEST = "25Mi";
+  private static final String SIDECAR_MEMORY_REQUEST = "SIDECAR_MEMORY_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT = "50Mi";
+  private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
+  private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
+  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -726,9 +736,37 @@ public class EnvConfigs implements Configs {
   }
 
   @Override
+  public String getSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_REQUEST, DEFAULT_SIDECAR_KUBE_CPU_REQUEST);
+  }
+
+  @Override
+  public String getSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_LIMIT, DEFAULT_SIDECAR_KUBE_CPU_LIMIT);
+  }
+
+  @Override
+  public String getSidecarKubeMemoryLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_MEMORY_LIMIT, DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT);
+  }
+
+  @Override
+  public String getSidecarMemoryRequest() {
+    return getEnvOrDefault(SIDECAR_MEMORY_REQUEST, DEFAULT_SIDECAR_MEMORY_REQUEST);
+  }
+
+  @Override
   public String getJobKubeSocatImage() {
     return getEnvOrDefault(JOB_KUBE_SOCAT_IMAGE, DEFAULT_JOB_KUBE_SOCAT_IMAGE);
   }
+
+  @Override
+  public String getSocatSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_REQUEST, getSidecarKubeCpuRequest());
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuLimit() { return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit()); }
 
   @Override
   public String getJobKubeBusyboxImage() {
