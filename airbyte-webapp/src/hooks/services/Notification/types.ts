@@ -1,13 +1,6 @@
-import React from "react";
+import { ToastProps } from "components/ui/Toast";
 
-export interface Notification {
-  id: string | number;
-  title: React.ReactNode;
-  text?: React.ReactNode;
-  isError?: boolean;
-  nonClosable?: boolean;
-  onClose?: () => void;
-}
+export type Notification = ToastProps & { id: string | number; nonClosable?: boolean };
 
 export interface NotificationServiceApi {
   addNotification: (notification: Notification) => void;
