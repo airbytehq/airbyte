@@ -566,8 +566,10 @@ export interface SynchronousJobRead {
   configId?: string;
   createdAt: number;
   endedAt: number;
+  status?: string;
   succeeded: boolean;
   logs?: LogRead;
+  job?: any
 }
 
 export interface AttemptInfoRead {
