@@ -45,10 +45,7 @@ class Products(Stream, IncrementalMixin):
 
     def read_records(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         products = self.load_products()
@@ -127,10 +124,7 @@ class Users(Stream, IncrementalMixin):
 
     def read_records(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         records_in_sync = 0
@@ -235,10 +229,7 @@ class Purchases(Stream, IncrementalMixin):
 
     def read_records(
         self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
+        **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         purchases_count = self.state[self.cursor_field] if self.cursor_field in self.state else 0
 
