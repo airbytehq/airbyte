@@ -197,8 +197,8 @@ def write_report(depended_connectors):
     destination_status_summary = get_status_summary(destination_rows)
 
     comment = template.format(
-        source_open="closed",  # if source_status_summary == "❌" else "closed", (see #19451)
-        destination_open="closed",  # if destination_status_summary == "❌" else "closed", (see #19451)
+        source_open="open" if source_status_summary == "❌" else "closed",
+        destination_open="open" if destination_status_summary == "❌" else "closed",
         source_status_summary=source_status_summary,
         destination_status_summary=destination_status_summary,
         other_status_summary=other_status_summary,
