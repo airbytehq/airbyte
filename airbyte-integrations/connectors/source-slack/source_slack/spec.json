@@ -76,13 +76,6 @@
                 "type": "string",
                 "examples": ["slack-access-token-example"],
                 "airbyte_secret": true
-              },
-              "refresh_token": {
-                "title": "Refresh token",
-                "description": "Slack refresh_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\">docs</a> if you need help generating the token.",
-                "type": "string",
-                "examples": ["slack-refresh-token-example"],
-                "airbyte_secret": true
               }
             },
             "order": 0
