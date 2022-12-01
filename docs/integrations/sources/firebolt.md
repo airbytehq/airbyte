@@ -55,8 +55,8 @@ You can now use the Airbyte Firebolt source.
 
 ## Changelog
 
-
+.pre-commit-config.yaml
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
-| 0.2.0 | 2022-09-09 | TBD | Reading from views |
+| 0.2.0 | 2022-09-09 | https://github.com/airbytehq/airbyte/pull/16583 | Reading from views |
 | 0.1.0 | 2022-04-28 | https://github.com/airbytehq/airbyte/pull/13874 | Create Firebolt source |
