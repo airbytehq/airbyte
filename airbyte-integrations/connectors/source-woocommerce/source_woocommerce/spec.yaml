@@ -8,7 +8,7 @@ connectionSpecification:
     - api_secret
     - shop
     - start_date
-  additionalProperties: false
+  additionalProperties: true
   properties:
     api_key:
       type: string
