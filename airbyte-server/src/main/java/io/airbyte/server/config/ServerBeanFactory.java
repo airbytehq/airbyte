@@ -7,6 +7,7 @@ package io.airbyte.server.config;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
@@ -146,7 +147,6 @@ public class ServerBeanFactory {
                                        final ConfigRepository configRepository)
       throws DatabaseCheckException, IOException {
     final Set<Class<?>> componentClasses = Set.of(
-        AttemptApiController.class,
         ConnectionApiController.class,
         DbMigrationApiController.class,
         DestinationApiController.class,
@@ -279,6 +279,8 @@ public class ServerBeanFactory {
 
     final OperationsHandler operationsHandler = new OperationsHandler(configRepository);
 
+    final EnvVariableFeatureFlags featureFlags = new EnvVariableFeatureFlags();
+
     final SchedulerHandler schedulerHandler = new SchedulerHandler(
         configRepository,
         secretsRepositoryReader,
@@ -288,7 +290,8 @@ public class ServerBeanFactory {
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
         eventRunner,
-        connectionsHandler);
+        connectionsHandler,
+        featureFlags);
 
     final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
