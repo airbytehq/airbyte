@@ -270,7 +270,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             if original_exception:
                 raise original_exception
             raise DefaultBackoffException(request=request, response=response)
-        if response:
+        if response is not None:
             backoff_time = self.backoff_time(response)
             time.sleep(max(0, int(backoff_time - response.elapsed.total_seconds())))
         self.future_requests.append(
