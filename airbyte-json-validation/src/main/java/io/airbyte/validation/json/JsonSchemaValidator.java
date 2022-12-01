@@ -5,14 +5,19 @@
 package io.airbyte.validation.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.networknt.schema.JsonMetaSchema;
+import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
-import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationContext;
 import com.networknt.schema.ValidationMessage;
 import io.airbyte.commons.string.Strings;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -25,13 +30,37 @@ import org.slf4j.LoggerFactory;
 public class JsonSchemaValidator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
+  // This URI just needs to point at any path in the same directory as /app/WellKnownTypes.json
+  // It's required for the JsonSchema#validate method to resolve $ref correctly.
+  private static final URI DEFAULT_BASE_URI;
 
-  private final SchemaValidatorsConfig schemaValidatorsConfig;
+  static {
+    try {
+      DEFAULT_BASE_URI = new URI("file:///app/nonexistent_file.json");
+    } catch (URISyntaxException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private final JsonSchemaFactory jsonSchemaFactory;
+  private final URI baseUri;
 
   public JsonSchemaValidator() {
-    this.schemaValidatorsConfig = new SchemaValidatorsConfig();
+    this(DEFAULT_BASE_URI);
+  }
+
+  /**
+   * The public constructor hardcodes a URL with access to WellKnownTypes.json. This method allows
+   * tests to override that URI
+   *
+   * Required to resolve $ref schemas using WellKnownTypes.json
+   *
+   * @param baseUri The base URI for schema resolution
+   */
+  @VisibleForTesting
+  protected JsonSchemaValidator(URI baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
+    this.baseUri = baseUri;
   }
 
   public Set<String> validate(final JsonNode schemaJson, final JsonNode objectJson) {
@@ -60,8 +89,38 @@ public class JsonSchemaValidator {
     Preconditions.checkNotNull(schemaJson);
     Preconditions.checkNotNull(objectJson);
 
-    return jsonSchemaFactory.getSchema(schemaJson, schemaValidatorsConfig)
-        .validate(objectJson);
+    // Default to draft-07, but have handling for the other metaschemas that networknt supports
+    JsonMetaSchema metaschema;
+    JsonNode metaschemaNode = schemaJson.get("$schema");
+    if (metaschemaNode == null || metaschemaNode.asText() == null || metaschemaNode.asText().isEmpty()) {
+      metaschema = JsonMetaSchema.getV7();
+    } else {
+      String metaschemaString = metaschemaNode.asText();
+      // We're not using "http://....".equals(), because we want to avoid weirdness with https, etc.
+      if (metaschemaString.contains("json-schema.org/draft-04")) {
+        metaschema = JsonMetaSchema.getV4();
+      } else if (metaschemaString.contains("json-schema.org/draft-06")) {
+        metaschema = JsonMetaSchema.getV6();
+      } else if (metaschemaString.contains("json-schema.org/draft/2019-09")) {
+        metaschema = JsonMetaSchema.getV201909();
+      } else if (metaschemaString.contains("json-schema.org/draft/2020-12")) {
+        metaschema = JsonMetaSchema.getV202012();
+      } else {
+        metaschema = JsonMetaSchema.getV7();
+      }
+    }
+
+    ValidationContext context = new ValidationContext(
+        jsonSchemaFactory.getUriFactory(),
+        null,
+        metaschema,
+        jsonSchemaFactory,
+        null);
+    JsonSchema schema = new JsonSchema(
+        context,
+        baseUri,
+        schemaJson);
+    return schema.validate(objectJson);
   }
 
   public boolean test(final JsonNode schemaJson, final JsonNode objectJson) {
