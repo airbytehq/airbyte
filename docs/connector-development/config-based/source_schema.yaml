@@ -132,30 +132,30 @@ definitions:
     anyOf:
       - "$ref": "#/definitions/OAuthAuthenticator"
       - "$ref": "#/definitions/ApiKeyAuthenticator"
-      - "$ref": "#/definitions/BearerTokenAuthenticator"
+      - "$ref": "#/definitions/BearerAuthenticator"
       - "$ref": "#/definitions/BasicHttpAuthenticator"
   ApiKeyAuthenticator:
     type: object
     additionalProperties: false
     required:
       - header
-      - api_token
+      - api_key
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
-      header:
+      inject_into:
+        type: "#/definitions/InjectInto"
+      api_key:
         type: string
-      api_token:
-        type: string
-  BearerTokenAuthenticator:
+  BearerAuthenticator:
     type: object
     additionalProperties: false
     required:
-      - api_token
+      - bearer_token
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
-      api_token:
+      bearer_token:
         type: string
   BasicHttpAuthenticator:
     type: object
