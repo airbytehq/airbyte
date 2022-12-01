@@ -6,6 +6,7 @@ package io.airbyte.db.bigquery;
 
 import static io.airbyte.db.DataTypeUtils.returnNullIfInvalid;
 import static io.airbyte.db.DataTypeUtils.toISO8601String;
+import static io.airbyte.db.DataTypeUtils.toISO8601StringWithMicroseconds;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -25,6 +26,8 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Collections;
 import java.util.Date;
 import org.slf4j.Logger;
@@ -56,7 +59,8 @@ public class BigQuerySourceOperations implements SourceOperations<BigQueryResult
       case BYTES -> JsonUtil.putBytesValueIntoJson(node, fieldValue.getBytesValue(), fieldName);
       case DATE -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATE_FORMAT)), fieldName);
       case DATETIME -> JsonUtil.putStringValueIntoJson(node, toISO8601String(getDateValue(fieldValue, BIG_QUERY_DATETIME_FORMAT)), fieldName);
-      case TIMESTAMP -> JsonUtil.putStringValueIntoJson(node, toISO8601String(fieldValue.getTimestampValue() / 1000), fieldName);
+      case TIMESTAMP -> JsonUtil.putStringValueIntoJson(node,
+          toISO8601StringWithMicroseconds(Instant.EPOCH.plus(fieldValue.getTimestampValue(), ChronoUnit.MICROS)), fieldName);
       default -> JsonUtil.putStringValueIntoJson(node, fieldValue.getStringValue(), fieldName);
     }
   }
