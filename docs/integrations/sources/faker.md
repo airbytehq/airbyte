@@ -83,7 +83,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 0.3.0   | 2022-11-28 | [19490](https://github.com/airbytehq/airbyte/pull/19490) | Faker uses the CDK; rename streams to be lower-case (breaking), add determinism to random purchases, and rename |
+| 1.0.0   | 2022-11-28 | [19490](https://github.com/airbytehq/airbyte/pull/19490) | Faker uses the CDK; rename streams to be lower-case (breaking), add determinism to random purchases, and rename |
 | 0.2.1   | 2022-10-14 | [19197](https://github.com/airbytehq/airbyte/pull/19197) | Emit `AirbyteEstimateTraceMessage`                                                                              |
 | 0.2.0   | 2022-10-14 | [18021](https://github.com/airbytehq/airbyte/pull/18021) | Move to mimesis for speed!                                                                                      |
 | 0.1.8   | 2022-10-12 | [17889](https://github.com/airbytehq/airbyte/pull/17889) | Bump to test publish command (2)                                                                                |
