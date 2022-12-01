@@ -61,7 +61,6 @@ public class AirbyteMessageTracker implements MessageTracker {
   private final HashFunction hashFunction;
   private final BiMap<AirbyteStreamNameNamespacePair, Short> nameNamespacePairToIndex;
   private final Map<AirbyteStreamNameNamespacePair, StreamStats> nameNamespacePairToStreamStats;
-  private final Map<Short, Long> streamToTotalBytesEmitted;
   private final StateDeltaTracker stateDeltaTracker;
   private final StateMetricsTracker stateMetricsTracker;
   private final List<AirbyteTraceMessage> destinationErrorTraceMessages;
@@ -108,7 +107,6 @@ public class AirbyteMessageTracker implements MessageTracker {
     this.nameNamespacePairToIndex = HashBiMap.create();
     this.hashFunction = Hashing.murmur3_32_fixed();
     this.nameNamespacePairToStreamStats = new HashMap<>();
-    this.streamToTotalBytesEmitted = new HashMap<>();
     this.stateDeltaTracker = stateDeltaTracker;
     this.stateMetricsTracker = stateMetricsTracker;
     this.nextStreamIndex = 0;
@@ -163,11 +161,11 @@ public class AirbyteMessageTracker implements MessageTracker {
 
     final var currStats = nameNamespacePairToStreamStats.getOrDefault(nameNamespace, new StreamStats());
     currStats.emittedRecords++;
-    nameNamespacePairToStreamStats.put(nameNamespace, currStats);
 
     final int estimatedNumBytes = Jsons.getEstimatedByteSize(recordMessage.getData());
-    final long currentTotalStreamBytes = streamToTotalBytesEmitted.getOrDefault(streamIndex, 0L);
-    streamToTotalBytesEmitted.put(streamIndex, currentTotalStreamBytes + estimatedNumBytes);
+    currStats.emittedBytes += estimatedNumBytes;
+
+    nameNamespacePairToStreamStats.put(nameNamespace, currStats);
   }
 
   /**
@@ -428,8 +426,9 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public Map<AirbyteStreamNameNamespacePair, Long> getStreamToEmittedBytes() {
-    return streamToTotalBytesEmitted.entrySet().stream().collect(Collectors.toMap(
-        entry -> nameNamespacePairToIndex.inverse().get(entry.getKey()), Entry::getValue));
+    return nameNamespacePairToStreamStats.entrySet().stream().collect(Collectors.toMap(
+        Entry::getKey,
+        entry -> entry.getValue().emittedBytes));
   }
 
   /**
@@ -472,7 +471,9 @@ public class AirbyteMessageTracker implements MessageTracker {
    */
   @Override
   public long getTotalBytesEmitted() {
-    return streamToTotalBytesEmitted.values().stream().reduce(0L, Long::sum);
+    return nameNamespacePairToStreamStats.values().stream()
+        .map(e -> e.emittedBytes)
+        .reduce(0L, Long::sum);
   }
 
   /**
