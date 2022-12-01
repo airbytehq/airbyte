@@ -5,6 +5,7 @@
 
 from abc import ABC
 from datetime import date, datetime, timedelta
+from json import JSONDecodeError
 from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -62,6 +63,14 @@ class NetsuiteStream(HttpStream, ABC):
         return schema
 
     def get_schema(self, ref: str) -> Union[Mapping[str, Any], str]:
+        
+        def get_json_response(response: requests.Response) -> dict:
+            try:
+                return response.json()
+            except JSONDecodeError as e:
+                self.logger.error(f"Cannot get schema for {self.name}, actual response: {e.response.text}")
+                raise
+            
         # try to retrieve the schema from the cache
         schema = self.schemas.get(ref)
         if not schema:
@@ -72,8 +81,11 @@ class NetsuiteStream(HttpStream, ABC):
             if resp.status_code == 404:
                 schema = {"title": ref, "type": "string"}
             else:
+                # check for 200 status
                 resp.raise_for_status
-                schema = resp.json()
+                # handle response
+                schema = get_json_response(resp)
+    
             self.schemas[ref] = schema
         return schema
 
