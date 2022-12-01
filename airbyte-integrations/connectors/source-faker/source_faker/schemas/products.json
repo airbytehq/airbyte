@@ -5,7 +5,7 @@
     "id": { "type": "number" },
     "make": { "type": "string" },
     "model": { "type": "string" },
-    "year": { "type": "string" },
+    "year": { "type": "number" },
     "price": { "type": "number" },
     "created_at": {
       "type": "string",
