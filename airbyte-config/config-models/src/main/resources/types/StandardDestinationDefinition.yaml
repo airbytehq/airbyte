@@ -64,4 +64,3 @@ properties:
     type: string
   supportsDbt:
     type: boolean
-    default: false
