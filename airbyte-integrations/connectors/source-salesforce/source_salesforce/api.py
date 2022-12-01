@@ -173,7 +173,6 @@ UNSUPPORTED_BULK_API_SALESFORCE_OBJECTS = [
     "CaseTeamMember",
     "AttachedContentDocument",
     "AggregateResult",
-    "AccountHistory",
     "ChannelProgramLevelShare",
     "AccountBrandShare",
     "AccountFeed",
