@@ -1,10 +1,10 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/v1/airbyte_protocol.yaml
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
-version: 0.3.2
+version: 1.0.0
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
