@@ -48,6 +48,7 @@ class RefreshSchemaActivityTest {
     mConfigRepository = mock(ConfigRepository.class);
     mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
     Mockito.lenient().when(mApiClient.getSourceApi()).thenReturn(mSourceApi);
+    when(mEnvVariableFeatureFlags.autoDetectSchema()).thenReturn(true);
     refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mApiClient, mEnvVariableFeatureFlags);
   }
 
@@ -79,7 +80,7 @@ class RefreshSchemaActivityTest {
     UUID connectionId = UUID.randomUUID();
     refreshSchemaActivity.refreshSchema(sourceId, connectionId);
     SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId);
     verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 

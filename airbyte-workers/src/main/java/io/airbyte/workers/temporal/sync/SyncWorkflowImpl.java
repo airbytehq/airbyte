@@ -51,6 +51,8 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private static final int CURRENT_VERSION = 2;
   private static final String NORMALIZATION_SUMMARY_CHECK_TAG = "normalization_summary_check";
   private static final int NORMALIZATION_SUMMARY_CHECK_CURRENT_VERSION = 1;
+  private static final String AUTO_DETECT_SCHEMA_TAG = "auto_detect_schema";
+  private static final int AUTO_DETECT_SCHEMA_VERSION = 1;
 
   @TemporalActivityStub(activityOptionsBeanName = "longRunActivityOptions")
   private ReplicationActivity replicationActivity;
@@ -87,7 +89,9 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
-    if (version > Workflow.DEFAULT_VERSION) {
+    final int autoDetectSchemaVersion =
+        Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
       final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
       if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
         LOGGER.info("Refreshing source schema...");
