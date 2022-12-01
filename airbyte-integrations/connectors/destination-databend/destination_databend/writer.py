@@ -1,9 +1,12 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from collections import defaultdict
-import json
 from datetime import datetime
-from time import time
-from airbyte_cdk import AirbyteLogger
 from itertools import chain
+
+from airbyte_cdk import AirbyteLogger
 from destination_databend.client import DatabendClient
 
 
@@ -104,8 +107,10 @@ class DatabendSQLWriter(DatabendWriter):
         cursor = self.cursor
         # id, written_at, data
         for table, data in self._buffer.items():
-            cursor.execute(f"INSERT INTO _airbyte_raw_{table} (_airbyte_ab_id,_airbyte_emitted_at,_airbyte_data) VALUES (%, %, %)",
-                          list(chain.from_iterable(data)))
+            cursor.execute(
+                f"INSERT INTO _airbyte_raw_{table} (_airbyte_ab_id,_airbyte_emitted_at,_airbyte_data) VALUES (%, %, %)",
+                list(chain.from_iterable(data)),
+            )
         self._buffer.clear()
         self._values = 0
 

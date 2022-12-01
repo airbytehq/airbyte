@@ -1,8 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 from typing import Any, Union
-from unittest.mock import ANY, MagicMock, call, patch
+from unittest.mock import MagicMock
 
 from destination_databend.writer import DatabendSQLWriter
 from pytest import fixture, mark
@@ -26,14 +27,6 @@ def test_sql_default(sql_writer: DatabendSQLWriter) -> None:
 @mark.parametrize("writer", ["sql_writer"])
 def test_sql_create(client: MagicMock, writer: Union[DatabendSQLWriter], request: Any) -> None:
     writer = request.getfixturevalue(writer)
-    expected_query = """
-        CREATE FACT TABLE IF NOT EXISTS _airbyte_raw_dummy (
-            _airbyte_ab_id TEXT,
-            _airbyte_emitted_at TIMESTAMP,
-            _airbyte_data TEXT
-        )
-        PRIMARY INDEX _airbyte_ab_id
-        """
     writer.create_raw_table("dummy")
 
 
@@ -51,6 +44,3 @@ def test_data_buffering(sql_writer: DatabendSQLWriter) -> None:
     assert len(sql_writer._buffer["dummy"]) == 2
     assert len(sql_writer._buffer["dummy2"]) == 1
     assert len(sql_writer._buffer.keys()) == 2
-
-
-

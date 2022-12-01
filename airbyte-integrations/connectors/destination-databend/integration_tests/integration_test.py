@@ -2,11 +2,11 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import json, logging
+import json
+import logging
 from typing import Any, Dict, List, Mapping
 
 import pytest
-from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
     AirbyteMessage,
     AirbyteRecordMessage,
