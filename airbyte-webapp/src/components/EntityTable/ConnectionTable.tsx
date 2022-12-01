@@ -84,16 +84,18 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
         Header: "",
         accessor: "lastSyncStatus",
         customWidth: 1,
-        Cell: ({ cell }: CellProps<ITableDataItem>) => (
-          <LabeledSwitch
-            id={`${cell.row.values.connectionId}`}
-            checked={cell.row.values.status === "Active" ? true : false}
-            onClick={() => {
-              onChangeStatus(cell.row.values.connectionId);
-            }}
-            loading={rowId === cell.row.values.connectionId && statusLoading ? true : false}
-          />
-        ),
+        Cell: ({ cell }: CellProps<ITableDataItem>) => {
+          return (
+            <LabeledSwitch
+              id={`${cell.row.original.connectionId}`}
+              checked={cell.row.values.status === "Active" ? true : false}
+              onClick={() => {
+                onChangeStatus(cell.row.original.connectionId);
+              }}
+              loading={rowId === cell.row.original.connectionId && statusLoading ? true : false}
+            />
+          );
+        },
       },
       {
         Header: (
