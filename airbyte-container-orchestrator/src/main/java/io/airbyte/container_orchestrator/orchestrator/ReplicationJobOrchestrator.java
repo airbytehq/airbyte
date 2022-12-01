@@ -32,7 +32,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.general.ReplicationWorker;
 import io.airbyte.workers.helper.PersistConfigHelper;
 import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
