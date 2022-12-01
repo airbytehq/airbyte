@@ -11,21 +11,21 @@ properties:
   check:
     "$ref": "#/definitions/ConnectionChecker"
 definitions:
-  "$options":
+  "$parameters":
     type: object
-    additionalProperties: true
+    additionalProperties: false
   ConnectionChecker:
     type: object
     anyOf:
       - "$ref": "#/definitions/CheckStream"
   CheckStream:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - stream_names
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       stream_names:
         type: array
         items:
@@ -39,23 +39,21 @@ definitions:
       "$ref": "#/definitions/Stream"
   Stream:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - name
       - retriever
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       name:
         type: string
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
       retriever:
         "$ref": "#/definitions/Retriever"
-      stream_cursor_field:
+      cursor_field:
         type: string
-      transformations:
-        "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
   PrimaryKey:
@@ -64,42 +62,41 @@ definitions:
     type: object
     anyOf:
       - "$ref": "#/definitions/SimpleRetriever"
-  SimpleRetriever:
+  DefaultRetriever:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
-      - name
       - requester
       - record_selector
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      name:
-        type: string
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       primary_key:
         "$ref": "#/definitions/PrimaryKey"
       requester:
         "$ref": "#/definitions/Requester"
       record_selector:
-        "$ref": "#/definitions/HttpSelector"
+        "$ref": "#/definitions/RecordSelector"
       paginator:
         "$ref": "#/definitions/Paginator"
-      stream_slicer:
+      iterators:
         "$ref": "#/definitions/StreamSlicer"
+      cursor:
+        "$ref": "#/definitions/CursorStreamSlicer"
   Requester:
     type: object
     anyOf:
       - "$ref": "#/definitions/HttpRequester"
   HttpRequester:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - name
       - url_base
       - path
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       name:
         type: string
       url_base:
@@ -111,8 +108,14 @@ definitions:
       http_method:
         "$ref": "#/definitions/HttpMethod"
         default: "GET"
-      request_options_provider:
-        "$ref": "#/definitions/RequestOptionsProvider"
+      request_parameters:
+        "$ref": "#/definitions/RequestInput"
+      request_headers:
+        "$ref": "#/definitions/RequestInput"
+      request_body_data:
+        "$ref": "#/definitions/RequestInput"
+      request_body_json:
+        "$ref": "#/definitions/RequestInput"
       authenticator:
         "$ref": "#/definitions/Authenticator"
       error_handler:
@@ -122,73 +125,55 @@ definitions:
     enum:
       - GET
       - POST
-  RequestOptionsProvider:
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
-  InterpolatedRequestOptionsProvider:
-    type: object
-    additionalProperties: true
-    properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      request_parameters:
-        "$ref": "#/definitions/RequestInput"
-      request_headers:
-        "$ref": "#/definitions/RequestInput"
-      request_body_data:
-        "$ref": "#/definitions/RequestInput"
-      request_body_json:
-        "$ref": "#/definitions/RequestInput"
   RequestInput:
     type: object
-    additionalProperties: true
+    additionalProperties: false
   Authenticator:
     type: object
     description: "Authenticator type"
     anyOf:
-      - "$ref": "#/definitions/OAuth"
+      - "$ref": "#/definitions/OAuthAuthenticator"
       - "$ref": "#/definitions/ApiKeyAuthenticator"
-      - "$ref": "#/definitions/BearerAuthenticator"
+      - "$ref": "#/definitions/BearerTokenAuthenticator"
       - "$ref": "#/definitions/BasicHttpAuthenticator"
   ApiKeyAuthenticator:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - header
       - api_token
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       api_token:
         type: string
-  BearerAuthenticator:
+  BearerTokenAuthenticator:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - api_token
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       api_token:
         type: string
   BasicHttpAuthenticator:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - username
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       username:
         type: string
       password:
         type: string
-  OAuth:
+  OAuthAuthenticator:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - token_refresh_endpoint
       - client_id
@@ -197,8 +182,8 @@ definitions:
       - access_token_name
       - expires_in_name
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       token_refresh_endpoint:
         type: string
       client_id:
@@ -211,7 +196,7 @@ definitions:
         type: array
         items:
           type: string
-        default: []
+        default: [ ]
       token_expiry_date:
         type: string
       access_token_name:
@@ -232,38 +217,32 @@ definitions:
       - "$ref": "#/definitions/NoPagination"
   DefaultPaginator:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
-      - page_token_option
       - pagination_strategy
-      - url_base
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      page_size:
-        type: integer
-      page_size_option:
-        "$ref": "#/definitions/RequestOption"
-      page_token_option:
-        "$ref": "#/definitions/RequestOption"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
+      page_size_inject_into:
+        "$ref": "#/definitions/InjectInto"
+      page_token_inject_into:
+        "$ref": "#/definitions/InjectInto"
       pagination_strategy:
         "$ref": "#/definitions/PaginationStrategy"
-      url_base:
-        type: string
   NoPagination:
     type: object
-    additionalProperties: true
-  RequestOption:
+    additionalProperties: false
+  InjectInto:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - inject_into
     properties:
       inject_into:
-        "$ref": "#/definitions/RequestOptionType"
+        "$ref": "#/definitions/InjectIntoType"
       field_name:
         type: string
-  RequestOptionType:
+  InjectIntoType:
     type: string
     enum:
       - request_parameter
@@ -277,15 +256,15 @@ definitions:
       - "$ref": "#/definitions/CursorPagination"
       - "$ref": "#/definitions/OffsetIncrement"
       - "$ref": "#/definitions/PageIncrement"
-  CursorPagination:
+  LinkPagination:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
-      - cursor_value
+      - link_value
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      cursor_value:
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
+      link_value:
         type: string
       stop_condition:
         type: string
@@ -293,82 +272,84 @@ definitions:
         type: integer
   OffsetIncrement:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - page_size
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       page_size:
         type: integer
   PageIncrement:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - page_size
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       page_size:
         type: integer
-  HttpSelector:
+  RecordSelector:
     type: object
     anyOf:
-      - "$ref": "#/definitions/RecordSelector"
-  RecordSelector:
+      - "$ref": "#/definitions/DefaultSelector"
+  DefaultSelector:
     type: object
     required:
       - extractor
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       extractor:
         "$ref": "#/definitions/RecordExtractor"
       record_filter:
         "$ref": "#/definitions/RecordFilter"
+      transformations:
+        "$ref": "#/definitions/RecordTransformation"
   RecordExtractor:
     type: object
     anyOf:
       - "$ref": "#/definitions/DpathExtractor"
   DpathExtractor:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
-      - field_pointer
+      - field_path
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
-      field_pointer:
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
+      field_path:
         type: array
         items:
           type: string
   RecordFilter:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       condition:
         type: string
   StreamSlicer:
     type: object
     anyOf:
-      - "$ref": "#/definitions/DatetimeStreamSlicer"
+      - "$ref": "#/definitions/CursorStreamSlicer"
       - "$ref": "#/definitions/ListStreamSlicer"
       - "$ref": "#/definitions/CartesianProductStreamSlicer"
       - "$ref": "#/definitions/SubstreamSlicer"
       - "$ref": "#/definitions/SingleSlice"
   SingleSlice:
     type: object
-    additionalProperties: true
+    additionalProperties: false
   SubstreamSlicer:
     type: object
     required:
       - parent_stream_configs
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       parent_stream_configs:
         type: array
         items:
@@ -379,26 +360,26 @@ definitions:
       - stream
       - parent_key
       - stream_slice_field
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       stream:
         "$ref": "#/definitions/Stream"
       parent_key:
         type: string
       stream_slice_field:
         type: string
-      request_option:
-        "$ref": "#/definitions/RequestOption"
+      request_inject_into:
+        "$ref": "#/definitions/InjectInto"
   CartesianProductStreamSlicer:
     type: object
     required:
       - stream_slicers
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       stream_slicers:
         type: array
         items:
@@ -408,18 +389,18 @@ definitions:
     required:
       - slice_values
       - cursor_field
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       slice_values:
         type: array
         items:
           type: string
       cursor_field:
         type: string
-      request_option:
-        "$ref": "#/definitions/RequestOption"
+      inject_into:
+        "$ref": "#/definitions/InjectInto"
   DatetimeStreamSlicer:
     type: object
     required:
@@ -430,8 +411,8 @@ definitions:
       - datetime_format
     additional_properties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       start_datetime:
         "$ref": "#/definitions/MinMaxDatetime"
       end_datetime:
@@ -442,10 +423,10 @@ definitions:
         type: string
       datetime_format:
         type: string
-      start_time_option:
-        "$ref": "#/definitions/RequestOption"
-      end_time_option:
-        "$ref": "#/definitions/RequestOption"
+      start_time_inject_into:
+        "$ref": "#/definitions/InjectInto"
+      end_time_inject_into:
+        "$ref": "#/definitions/InjectInto"
       stream_state_field_start:
         type: string
       stream_state_field_end:
@@ -456,10 +437,10 @@ definitions:
     type: object
     required:
       - datetime
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       datetime:
         type: string
       datetime_format:
@@ -478,10 +459,10 @@ definitions:
     type: object
     required:
       - max_retries
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       response_filters:
         type: array
         items:
@@ -493,14 +474,14 @@ definitions:
         type: array
         items:
           "$ref": "#/definitions/BackoffStrategy"
-        default: []
+        default: [ ]
   CompositeErrorHandler:
     type: object
     required:
       - error_handlers
     additionalProperties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       error_handlers:
         type: array
         items:
@@ -509,17 +490,17 @@ definitions:
     type: object
     required:
       - action
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       action:
         "$ref": "#/definitions/ResponseAction"
       http_codes:
         type: array
         items:
           type: integer
-        default: []
+        default: [ ]
       error_message_contains:
         type: string
       predicate:
@@ -540,43 +521,43 @@ definitions:
       - "$ref": "#/definitions/WaitUntilTimeFromHeader"
   ExponentialBackoff:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       factor:
         type: integer
         default: 5
   ConstantBackoff:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - backoff_time_in_seconds
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       backoff_time_in_seconds:
         type: number
   WaitTimeFromHeader:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
         type: string
   WaitUntilTimeFromHeader:
     type: object
-    additionalProperties: true
+    additionalProperties: false
     required:
       - header
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       header:
         type: string
       regex:
@@ -592,10 +573,10 @@ definitions:
     type: object
     required:
       - fields
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       fields:
         type: array
         items:
@@ -605,10 +586,10 @@ definitions:
     required:
       - path
       - value
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       path:
         "$ref": "#/definitions/FieldPointer"
       value:
@@ -621,10 +602,10 @@ definitions:
     type: object
     required:
       - field_pointers
-    additionalProperties: true
+    additionalProperties: false
     properties:
-      "$options":
-        "$ref": "#/definitions/$options"
+      "$parameters":
+        "$ref": "#/definitions/$parameters"
       field_pointers:
         type: array
         items:
