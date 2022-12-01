@@ -5,27 +5,29 @@ info:
   version: 1.0.0
 paths:
   /speakeasy_callback_url:
-    summary: This Endpoint will generate a JWT that can be used to login to the Speakeasy
+    summary:
+      This Endpoint will generate a JWT that can be used to login to the Speakeasy
       developer portal. The URL that is generated from the GET contains where the
       user should be redirected to and has the JWT as in the speakeasyAccessToken
       query parameter.
     get:
       tags:
-      - Speakeasy
+        - Speakeasy
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RedirectUrlResponse'
+                $ref: "#/components/schemas/RedirectUrlResponse"
           description: Returns a valid RedirectUrlResponse
         "403":
           description: If a valid JWT was not found then return a Forbidden.
       security:
-      - JWT: []
+        - JWT: []
       operationId: getSpeakeasyCallbackUrl
       summary: Get the Speakeasy Callback URL
-      description: Return a JSON datastructure that contains the URL that should be
+      description:
+        Return a JSON datastructure that contains the URL that should be
         redirected to in the redirectUrl field.
 components:
   schemas:

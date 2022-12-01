@@ -174,6 +174,12 @@ public class DbConverter {
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
             : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
+        .withNormalizationRepository(record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY) == null ? null
+            : record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY))
+        .withNormalizationTag(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG) == null ? null
+            : record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
+        .withSupportsDbt(record.get(ACTOR_DEFINITION.SUPPORTS_DBT) == null ? null
+            : record.get(ACTOR_DEFINITION.SUPPORTS_DBT))
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));

@@ -14,6 +14,6 @@
   width: calc(100% - variables.$width-size-menu);
   height: calc(100vh - 100px);
   background: colors.$white;
-  border-radius: 15px 15px 0 0;
+  border-radius: variables.$border-radius-2xl variables.$border-radius-2xl 0 0;
   box-shadow: 0 0 22px rgba(colors.$dark-blue-900, 12%);
 }
