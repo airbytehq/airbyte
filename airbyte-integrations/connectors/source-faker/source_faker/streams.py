@@ -4,9 +4,9 @@
 
 import datetime
 import os
-from typing import Any, Dict, Iterable, List, Mapping, Optional
+from typing import Any, Dict, Iterable, Mapping, Optional
 
-from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, SyncMode, TraceType
+from airbyte_cdk.models import AirbyteEstimateTraceMessage, AirbyteTraceMessage, EstimateType, TraceType
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from mimesis import Datetime, Numeric, Person
 from mimesis.locales import Locale
@@ -43,10 +43,7 @@ class Products(Stream, IncrementalMixin):
         dirname = os.path.dirname(os.path.realpath(__file__))
         return read_json(os.path.join(dirname, "record_data", "products.json"))
 
-    def read_records(
-        self,
-        **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         products = self.load_products()
 
@@ -122,10 +119,7 @@ class Users(Stream, IncrementalMixin):
 
         return profile
 
-    def read_records(
-        self,
-        **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         records_in_sync = 0
         records_in_slice = 0
@@ -227,10 +221,7 @@ class Purchases(Stream, IncrementalMixin):
             i += 1
         return purchases
 
-    def read_records(
-        self,
-        **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         purchases_count = self.state[self.cursor_field] if self.cursor_field in self.state else 0
 
         if total_user_records <= 0:
