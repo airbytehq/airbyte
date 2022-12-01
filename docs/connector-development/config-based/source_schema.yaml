@@ -52,8 +52,6 @@ definitions:
         "$ref": "#/definitions/PrimaryKey"
       retriever:
         "$ref": "#/definitions/Retriever"
-      cursor_field:
-        type: string
       checkpoint_interval:
         type: integer
   PrimaryKey:
