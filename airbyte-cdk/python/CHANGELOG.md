@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
 ## 0.11.0
 Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
 
