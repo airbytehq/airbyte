@@ -1105,7 +1105,7 @@ jobs:
         with:
           k3s-version: v1.21.2+k3s1
           helm-version: v3.9.4
-          extra-setup-args: --docker --kube-apiserver-arg service-node-port-range=6000-32767
+          extra-setup-args: --docker --kube-apiserver-arg service-node-port-range=6000-32767 --kubelet-arg=cgroup-driver=systemd
 
       - name: Try the cluster !
         uses: Wandalen/wretry.action@master
