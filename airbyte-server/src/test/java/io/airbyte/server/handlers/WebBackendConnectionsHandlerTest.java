@@ -43,6 +43,7 @@ import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.JobWithAttemptsRead;
 import io.airbyte.api.model.generated.NamespaceDefinitionType;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.OperationRead;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
@@ -75,6 +76,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
@@ -172,9 +174,10 @@ class WebBackendConnectionsHandlerTest {
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync =
-        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false);
+        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false, Status.ACTIVE);
     final StandardSync brokenStandardSync =
-        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true);
+        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true, Status.INACTIVE);
+
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
     when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
@@ -276,7 +279,7 @@ class WebBackendConnectionsHandlerTest {
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
                     .updateStream(null))));
 
-    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
+    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead,
         new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
             .catalogDiff(new CatalogDiff().transforms(List.of(
                 new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
@@ -418,7 +421,7 @@ class WebBackendConnectionsHandlerTest {
     expectedWithNewSchema.getSyncCatalog().getStreams().get(0).getConfig().setSelectedFields(List.of("id"));
     SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
-            .breakingChange(false);
+            .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
@@ -435,11 +438,12 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
     SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
-            .breakingChange(true);
+            .breakingChange(true).connectionStatus(ConnectionStatus.INACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
     expectedWithNewSchemaAndBreakingChange.getSyncCatalog().getStreams().get(0).getConfig().setSelectedFields(List.of("id"));
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, brokenConnectionRead,
         operationReadList);
     assertEquals(expectedWithNewSchemaAndBreakingChange, result);
   }
@@ -497,7 +501,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -513,7 +518,8 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .syncCatalog(catalog)
         .sourceCatalogId(sourceCatalogId)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE);
 
     final ConnectionCreate actual = WebBackendConnectionsHandler.toConnectionCreate(input, operationIds);
 
@@ -541,7 +547,9 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .name(standardSync.getName())
         .syncCatalog(catalog)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
+        .notifySchemaChanges(false);
 
     final List<UUID> operationIds = List.of(newOperationId);
 
@@ -555,7 +563,9 @@ class WebBackendConnectionsHandlerTest {
         .schedule(schedule)
         .name(standardSync.getName())
         .syncCatalog(catalog)
-        .geography(Geography.US);
+        .geography(Geography.US)
+        .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
+        .notifySchemaChanges(false);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
 

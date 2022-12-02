@@ -2935,6 +2935,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
     SourceSearch:
       type: object
       properties:
@@ -3371,6 +3373,8 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
