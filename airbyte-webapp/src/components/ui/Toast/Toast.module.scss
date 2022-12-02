@@ -4,16 +4,17 @@
 
 $toast-icon-size: 13px;
 $toast-icon-container-size: 34px;
+$toast-bottom-margin: 27px;
 
 @keyframes slide-up-animations {
   0% {
     transform: translate(-50%, -100%);
-    bottom: -49px;
+    bottom: -60px;
   }
 
   100% {
     transform: translate(-50%, 0);
-    bottom: 49px;
+    bottom: $toast-bottom-margin;
   }
 }
 
@@ -39,7 +40,7 @@ $toast-icon-container-size: 34px;
   gap: vars.$spacing-md;
   position: fixed;
   box-sizing: border-box;
-  bottom: 49px;
+  bottom: $toast-bottom-margin;
   left: 50%;
   transform: translate(-50%, 0);
   z-index: z-indices.$notification;
