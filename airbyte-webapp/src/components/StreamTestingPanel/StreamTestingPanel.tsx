@@ -36,7 +36,7 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
             <FormattedMessage
               id="connectorBuilder.ensureProperYaml"
               values={{
-                a: (node: React.ReactNode) => (
+                lnk: (node: React.ReactNode) => (
                   <a href={links.lowCodeYamlDescription} target="_blank" rel="noreferrer">
                     {node}
                   </a>

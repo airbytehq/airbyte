@@ -593,7 +593,7 @@
   "connectorBuilder.unknownError": "An unknown error has occurred",
   "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
   "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
-  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>.",
+  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <lnk>the docs</lnk>.",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
