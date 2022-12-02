@@ -17,11 +17,15 @@ from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
 from connector_builder.generated.models.stream_read import StreamRead
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
-from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
-from connector_builder.generated.models.stream_read_slices import StreamReadSlices
+from connector_builder.generated.models.stream_read_request_body import \
+    StreamReadRequestBody
+from connector_builder.generated.models.stream_read_slices import \
+    StreamReadSlices
 from connector_builder.generated.models.streams_list_read import StreamsListRead
-from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
-from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
+from connector_builder.generated.models.streams_list_read_streams import \
+    StreamsListReadStreams
+from connector_builder.generated.models.streams_list_request_body import \
+    StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
 
 
@@ -120,10 +124,11 @@ spec:
                 else:
                     single_slice.pages.append(message_group)
         except Exception as error:
-            # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
+            self.logger.error(f"Could not perform read with with error: {error.args[0]}")
 
-        return StreamRead(logs=log_messages, slices=[single_slice])
+        ret = StreamRead(logs=log_messages, slices=[single_slice])
+        self.logger.info(ret)
+        return ret
 
     def _get_message_groups(self, messages: Iterable[AirbyteMessage]) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
         """
@@ -146,6 +151,7 @@ spec:
         current_page_request: Optional[HttpRequest] = None
         current_page_response: Optional[HttpResponse] = None
         for message in messages:
+            self.logger.info(f"message: {message}")
             if first_page and message.type == Type.LOG and message.log.message.startswith("request:"):
                 first_page = False
                 request = self._create_request_from_log_message(message.log)
