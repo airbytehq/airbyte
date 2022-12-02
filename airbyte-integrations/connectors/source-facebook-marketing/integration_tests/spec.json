@@ -269,9 +269,9 @@
                 ]
               }
             },
-            "action_breakdowns_allow_empty": {
+            "_action_breakdowns_allow_empty": {
               "title": "Action Breakdowns Allow Empty",
-              "description": "Allows action_breakdowns be empty list",
+              "description": "Allows action_breakdowns to be an empty list",
               "default": true,
               "airbyte_hidden": true,
               "type": "boolean"
