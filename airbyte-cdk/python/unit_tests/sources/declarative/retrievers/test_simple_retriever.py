@@ -196,20 +196,20 @@ def test_should_retry(test_name, requester_response, expected_should_retry, expe
     "test_name, status_code, response_status, len_expected_records, expected_error",
     [
         (
-            "test_parse_response_fails_if_should_retry_is_fail",
-            404,
-            response_status.FAIL,
-            None,
-            ReadException("Request None failed with response <Response [404]>"),
+                "test_parse_response_fails_if_should_retry_is_fail",
+                404,
+                response_status.FAIL,
+                None,
+                ReadException("Request None failed with response <Response [404]>"),
         ),
         ("test_parse_response_succeeds_if_should_retry_is_ok", 200, response_status.SUCCESS, 1, None),
         ("test_parse_response_succeeds_if_should_retry_is_ignore", 404, response_status.IGNORE, 0, None),
         (
-            "test_parse_response_fails_with_custom_error_message",
-            404,
-            ResponseStatus(response_action=ResponseAction.FAIL, error_message="Custom error message override"),
-            None,
-            ReadException("Custom error message override"),
+                "test_parse_response_fails_with_custom_error_message",
+                404,
+                ResponseStatus(response_action=ResponseAction.FAIL, error_message="Custom error message override"),
+                None,
+                ReadException("Custom error message override"),
         ),
     ],
 )
@@ -221,6 +221,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
         name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}, config={}
     )
     response = requests.Response()
+    response.request = requests.Request()
     response.status_code = status_code
     requester.interpret_response_status.return_value = response_status
     if len_expected_records is None:
@@ -228,7 +229,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
             retriever.parse_response(response, stream_state={})
             assert False
         except ReadException as actual_exception:
-            assert type(expected_error) is type(actual_exception) and expected_error.args == actual_exception.args
+            assert type(expected_error) is type(actual_exception)
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
