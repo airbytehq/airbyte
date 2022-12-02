@@ -321,7 +321,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         if response_status.action == ResponseAction.FAIL:
             error_message = (
                 response_status.error_message
-                or f"Request to {response.request.url} failed with response {HttpStream.parse_response_error_message(response)} ({response.status_code})"
+                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpStream.parse_response_error_message(response)}"
             )
             raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
