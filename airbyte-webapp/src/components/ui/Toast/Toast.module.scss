@@ -1,6 +1,7 @@
 @use "scss/colors";
 @use "scss/variables" as vars;
 @use "scss/z-indices";
+@use "scss/mixins";
 
 $toast-icon-size: 13px;
 $toast-icon-container-size: 34px;
@@ -47,6 +48,8 @@ $toast-bottom-margin: 27px;
   padding: vars.$spacing-md;
   border-radius: vars.$border-radius-md;
   animation: slide-up-animations 0.25s ease-out;
+
+  @include mixins.shadow;
 
   @include type("info", colors.$blue-400, colors.$blue-50);
   @include type("warning", colors.$yellow-500, colors.$yellow-50);
