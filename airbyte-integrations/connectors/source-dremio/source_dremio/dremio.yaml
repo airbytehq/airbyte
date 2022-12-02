@@ -46,6 +46,9 @@ spec:
       api_key:
         type: string
         description: "API Key that is generated when you authenticate to Dremio API"
+        airbyte_secret: true
       base_url:
         type: string
         description: "URL of your Dremio instance"
+        pattern: "^https://"
+        default: "https://app.dremio.cloud"
