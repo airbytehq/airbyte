@@ -2,13 +2,10 @@ import { getSpeakeasyCallbackUrl } from "packages/cloud/lib/domain/speakeasy";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
-import { useConfig } from "../config";
-
 const SPEAKEASY_QUERY_KEY = "speakeasy-redirect";
 
 export const useSpeakeasyRedirect = () => {
-  const { cloudApiUrl } = useConfig();
-  const config = { apiUrl: cloudApiUrl };
+  const config = { apiUrl: "/cloud_api" };
   const middlewares = useDefaultRequestMiddlewares();
   const requestOptions = { config, middlewares };
 
