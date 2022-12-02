@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import logging
 from typing import Any, Dict, Iterable, List
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level
@@ -15,7 +14,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 
 
 class LowCodeSourceAdapter:
-    logger = logging.getLogger("airbyte.connector-builder")
 
     def __init__(self, manifest: Dict[str, Any]):
         # Request and response messages are only emitted for a sources that have debug turned on
