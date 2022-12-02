@@ -20,7 +20,7 @@ interface StreamFieldTableProps {
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
   return (
-    <>
+    <div className={styles.container}>
       <TreeRowWrapper noBorder>
         <FieldHeader />
       </TreeRowWrapper>
@@ -38,6 +38,6 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
           </TreeRowWrapper>
         ))}
       </div>
-    </>
+    </div>
   );
 };

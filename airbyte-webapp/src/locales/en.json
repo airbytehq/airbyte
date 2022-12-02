@@ -344,7 +344,7 @@
 
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
-  "connection.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
+  "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink>Learn more</docLink>.",
   "connection.geography.auto": "Airbyte Default",
   "connection.geography.us": "United States",
   "connection.geography.eu": "European Union",
@@ -370,6 +370,10 @@
   "connection.canceling": "Canceling...",
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
+
+  "connection.schemaChange.breaking": "Breaking schema updates detected.",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
+  "connection.schemaChange.reviewAction": "Review changes",
 
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
@@ -494,6 +498,7 @@
   "settings.cookiePreferences": "Cookie Preferences",
   "settings.dataResidency": "Data Residency",
   "settings.defaultDataResidency": "Default Data Residency",
+  "settings.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
   "settings.defaultGeography": "Geography",
   "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. The default data residency setting only affects new connections. Existing connections will retain their data residency setting. <lnk>Learn more</lnk>.",
   "settings.defaultDataResidencyUpdateError": "There was an error updating the default data residency for this workspace.",

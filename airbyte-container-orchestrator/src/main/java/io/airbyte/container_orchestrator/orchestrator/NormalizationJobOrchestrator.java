@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.container_orchestrator;
+package io.airbyte.container_orchestrator.orchestrator;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
@@ -33,10 +33,12 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
 
   private final Configs configs;
   private final ProcessFactory processFactory;
+  private final JobRunConfig jobRunConfig;
 
-  public NormalizationJobOrchestrator(final Configs configs, final ProcessFactory processFactory) {
+  public NormalizationJobOrchestrator(final Configs configs, final ProcessFactory processFactory, final JobRunConfig jobRunConfig) {
     this.configs = configs;
     this.processFactory = processFactory;
+    this.jobRunConfig = jobRunConfig;
   }
 
   @Override
@@ -52,15 +54,17 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
   @Trace(operationName = JOB_ORCHESTRATOR_OPERATION_NAME)
   @Override
   public Optional<String> runJob() throws Exception {
-    final JobRunConfig jobRunConfig = JobOrchestrator.readJobRunConfig();
+    // final JobRunConfig jobRunConfig = readJobRunConfig();
     final NormalizationInput normalizationInput = readInput();
 
     final IntegrationLauncherConfig destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
-        Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        Path.of(KubePodProcess.CONFIG_DIR,
+            ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage()));
+        .addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
 
     log.info("Setting up normalization worker...");
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(
@@ -74,8 +78,10 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         configs.getWorkerEnvironment());
 
     log.info("Running normalization worker...");
-    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(), jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
-    final NormalizationSummary normalizationSummary = normalizationWorker.run(normalizationInput, jobRoot);
+    final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
+        jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    final NormalizationSummary normalizationSummary = normalizationWorker.run(normalizationInput,
+        jobRoot);
 
     return Optional.of(Jsons.serialize(normalizationSummary));
   }
