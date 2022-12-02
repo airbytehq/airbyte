@@ -359,6 +359,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
             "sh",
             "-c",
             String.format("""
+                          echo "creating pipes"
+                          touch /pipes/src-out
+                          touch /pipes/src-err
+                          touch /pipes/dst-in
+                          touch /pipes/dst-out
+                          touch /pipes/dst-err
+
                           i=0
                           until [ $i -gt 60 ]
                           do
@@ -396,18 +403,18 @@ public class AsyncOrchestratorPodProcess implements KubePod {
           .replaceAll("TERMINATION_FILE_MAIN", "/termination/main")
           .replaceAll("OPTIONAL_STDIN", "")
           .replace("ENTRYPOINT_OVERRIDE_VALUE", "") // use replace and not replaceAll to preserve escaping and quoting
-          .replaceAll("ARGS", "TODO")
-          .replaceAll("STDERR_PIPE_FILE", "/pipes/stderr")
-          .replaceAll("STDOUT_PIPE_FILE", "/pipes/stdout");
+          .replaceAll("ARGS", "read --config source_config.json --catalog source_catalog.json")
+          .replaceAll("STDERR_PIPE_FILE", "/pipes/src-err")
+          .replaceAll("STDOUT_PIPE_FILE", "/pipes/src-out");
 
       dstCmd = MoreResources.readResource("entrypoints/sync/main.sh")
           .replaceAll("TERMINATION_FILE_CHECK", "/termination/check")
           .replaceAll("TERMINATION_FILE_MAIN", "/termination/main")
-          .replaceAll("OPTIONAL_STDIN", "< /pipes/stdin")
+          .replaceAll("OPTIONAL_STDIN", "< /pipes/dst-in")
           .replace("ENTRYPOINT_OVERRIDE_VALUE", "") // use replace and not replaceAll to preserve escaping and quoting
-          .replaceAll("ARGS", "TODO")
-          .replaceAll("STDERR_PIPE_FILE", "/pipes/stderr")
-          .replaceAll("STDOUT_PIPE_FILE", "/pipes/stdout");
+          .replaceAll("ARGS", "write --config destination_config.json --catalog destination_catalog.json")
+          .replaceAll("STDERR_PIPE_FILE", "/pipes/dst-err")
+          .replaceAll("STDOUT_PIPE_FILE", "/pipes/dst-out");
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }

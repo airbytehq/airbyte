@@ -5,9 +5,6 @@
 package io.airbyte.container_orchestrator.orchestrator;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.JOB_ORCHESTRATOR_OPERATION_NAME;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
-import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_KEY;
 
 import datadog.trace.api.Trace;
 import io.airbyte.commons.features.FeatureFlags;
@@ -20,7 +17,6 @@ import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
 import io.airbyte.config.ReplicationOutput;
 import io.airbyte.config.StandardSyncInput;
-import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -45,7 +41,6 @@ import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -97,10 +92,10 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
 
-    ApmTraceUtils.addTagsToTrace(
-        Map.of(JOB_ID_KEY, jobRunConfig.getJobId(),
-            DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
-            SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
+    // ApmTraceUtils.addTagsToTrace(
+    // Map.of(JOB_ID_KEY, jobRunConfig.getJobId(),
+    // DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
+    // SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
     log.info("Setting up source launcher...");
     final var sourceLauncher = new AirbyteIntegrationLauncher(
@@ -109,8 +104,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getSourceResourceRequirements());
-
-    log.info("Setting up destination launcher...");
+    //
+    // log.info("Setting up destination launcher...");
     final var destinationLauncher = new AirbyteIntegrationLauncher(
         destinationLauncherConfig.getJobId(),
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
@@ -158,5 +153,21 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope)
         : new DefaultAirbyteStreamFactory(mdcScope);
   }
+
+  // private class SidecarReplicationWorker implements ReplicationWorker {
+  //
+  // private static final Logger LOGGER = LoggerFactory.getLogger(SidecarReplicationWorker.class);
+  //
+  // @Override
+  // public ReplicationOutput run(final StandardSyncInput standardSyncInput, final Path jobRoot)
+  // throws WorkerException {
+  // LOGGER.info("starting sidecar repl worker");
+  // }
+  //
+  // @Override
+  // public void cancel() {
+  //
+  // }
+  // }
 
 }

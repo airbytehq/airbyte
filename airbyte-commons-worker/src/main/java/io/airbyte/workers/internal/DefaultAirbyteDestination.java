@@ -6,33 +6,32 @@ package io.airbyte.workers.internal;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.LoggingHelper.Color;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD")
 public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
@@ -46,7 +45,9 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private final AtomicBoolean inputHasEnded = new AtomicBoolean(false);
 
-  private Process destinationProcess = null;
+  private File stdErr;
+  private File stdOut;
+  private final Process destinationProcess = null;
   private AirbyteMessageBufferedWriter writer = null;
   private Iterator<AirbyteMessage> messageIterator = null;
   private Integer exitValue = null;
@@ -67,21 +68,25 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws IOException, WorkerException {
-    Preconditions.checkState(destinationProcess == null);
+    Preconditions.checkState(stdErr == null);
 
     LOGGER.info("Running destination...");
-    destinationProcess = integrationLauncher.write(
-        jobRoot,
-        WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
-        WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
-        Jsons.serialize(destinationConfig.getCatalog()));
-    // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(destinationProcess.getErrorStream(), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
+    // destinationProcess = integrationLauncher.write(
+    // jobRoot,
+    // WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
+    // Jsons.serialize(destinationConfig.getDestinationConnectionConfiguration()),
+    // WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME,
+    // Jsons.serialize(destinationConfig.getCatalog()));
+    // // stdout logs are logged elsewhere since stdout also contains data
+    stdErr = new File("/pipes/dst-err");
+    stdOut = new File("/pipes/dst-out");
+    LineGobbler.gobble(new FileInputStream(stdErr), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
-    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
+    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+    // writer = messageWriterFactory.createWriter(new BufferedWriter(new
+    // OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(destinationProcess.getInputStream()))
+    messageIterator = streamFactory.create(IOs.newBufferedReader(new FileInputStream(stdOut)))
         .filter(message -> message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .iterator();
   }
@@ -107,22 +112,23 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
-    if (destinationProcess == null) {
-      LOGGER.debug("Destination process already exited");
-      return;
-    }
+    // if (destinationProcess == null) {
+    // LOGGER.debug("Destination process already exited");
+    // return;
+    // }
 
     if (!inputHasEnded.get()) {
       notifyEndOfInput();
     }
 
     LOGGER.debug("Closing destination process");
-    WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
-    if (destinationProcess.isAlive() || getExitValue() != 0) {
-      final String message =
-          destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
-      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
-    }
+    // WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
+    // if (destinationProcess.isAlive() || getExitValue() != 0) {
+    // final String message =
+    // destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with
+    // code " + getExitValue();
+    // throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+    // }
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)

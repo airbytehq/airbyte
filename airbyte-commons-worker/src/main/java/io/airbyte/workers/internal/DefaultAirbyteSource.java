@@ -19,19 +19,19 @@ import io.airbyte.commons.logging.MdcScope.Builder;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.process.IntegrationLauncher;
+import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD")
 public class DefaultAirbyteSource implements AirbyteSource {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteSource.class);
@@ -47,9 +47,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final AirbyteStreamFactory streamFactory;
   private final HeartbeatMonitor heartbeatMonitor;
 
-  private Process sourceProcess = null;
+  private File stdErr;
+  private File stdOut;
+  private final Process sourceProcess = null;
   private Iterator<AirbyteMessage> messageIterator = null;
-  private Integer exitValue = null;
+  private final Integer exitValue = null;
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
@@ -72,21 +74,25 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
-    Preconditions.checkState(sourceProcess == null);
+    Preconditions.checkState(stdOut == null);
 
-    sourceProcess = integrationLauncher.read(jobRoot,
-        WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
-        WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
-        Jsons.serialize(sourceConfig.getCatalog()),
-        sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
-        sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
+    // sourceProcess = integrationLauncher.read(jobRoot,
+    // WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
+    // Jsons.serialize(sourceConfig.getSourceConnectionConfiguration()),
+    // WorkerConstants.SOURCE_CATALOG_JSON_FILENAME,
+    // Jsons.serialize(sourceConfig.getCatalog()),
+    // sourceConfig.getState() == null ? null : WorkerConstants.INPUT_STATE_JSON_FILENAME,
+    // sourceConfig.getState() == null ? null : Jsons.serialize(sourceConfig.getState().getState()));
     // stdout logs are logged elsewhere since stdout also contains data
-    LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
+    // LineGobbler.gobble(sourceProcess.getErrorStream(), LOGGER::error, "airbyte-source",
+    // CONTAINER_LOG_MDC_BUILDER);
+    stdErr = new File("/pipes/src-err");
+    stdOut = new File("/pipes/src-out");
+    LineGobbler.gobble(new FileInputStream(stdErr), LOGGER::error, "airbyte-source", CONTAINER_LOG_MDC_BUILDER);
 
     logInitialStateAsJSON(sourceConfig);
 
-    messageIterator = streamFactory.create(IOs.newBufferedReader(sourceProcess.getInputStream()))
+    messageIterator = streamFactory.create(IOs.newBufferedReader(System.in))
         .peek(message -> heartbeatMonitor.beat())
         .filter(message -> message.getType() == Type.RECORD || message.getType() == Type.STATE || message.getType() == Type.TRACE)
         .iterator();
@@ -95,24 +101,26 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
-    Preconditions.checkState(sourceProcess != null);
+    Preconditions.checkState(stdOut != null);
 
     /*
      * As this check is done on every message read, it is important for this operation to be efficient.
      * Short circuit early to avoid checking the underlying process. note: hasNext is blocking.
      */
-    return !messageIterator.hasNext() && !sourceProcess.isAlive();
+    return !messageIterator.hasNext();// && !sourceProcess.isAlive();
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() throws IllegalStateException {
-    Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
-    Preconditions.checkState(!sourceProcess.isAlive(), "Source process is still alive, cannot retrieve exit value.");
-
-    if (exitValue == null) {
-      exitValue = sourceProcess.exitValue();
-    }
+    // Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit
+    // value.");
+    // Preconditions.checkState(!sourceProcess.isAlive(), "Source process is still alive, cannot
+    // retrieve exit value.");
+    //
+    // if (exitValue == null) {
+    // exitValue = sourceProcess.exitValue();
+    // }
 
     return exitValue;
   }
@@ -128,21 +136,22 @@ public class DefaultAirbyteSource implements AirbyteSource {
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
-    if (sourceProcess == null) {
-      LOGGER.debug("Source process already exited");
-      return;
-    }
-
-    LOGGER.debug("Closing source process");
-    WorkerUtils.gentleClose(
-        sourceProcess,
-        GRACEFUL_SHUTDOWN_DURATION.toMillis(),
-        TimeUnit.MILLISECONDS);
-
-    if (sourceProcess.isAlive() || getExitValue() != 0) {
-      final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process exit with code " + getExitValue();
-      throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
-    }
+    // if (sourceProcess == null) {
+    // LOGGER.debug("Source process already exited");
+    // return;
+    // }
+    //
+    // LOGGER.debug("Closing source process");
+    // WorkerUtils.gentleClose(
+    // sourceProcess,
+    // GRACEFUL_SHUTDOWN_DURATION.toMillis(),
+    // TimeUnit.MILLISECONDS);
+    //
+    // if (sourceProcess.isAlive() || getExitValue() != 0) {
+    // final String message = sourceProcess.isAlive() ? "Source has not terminated " : "Source process
+    // exit with code " + getExitValue();
+    // throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
+    // }
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
