@@ -1987,7 +1987,7 @@
 - name: Zoom
   sourceDefinitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
   dockerRepository: airbyte/source-zoom
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/zoom
   sourceType: api
   icon: zoom.svg
