@@ -181,6 +181,15 @@ class ConnectorRunner:
         return self._image.attrs["Config"]["Entrypoint"]
 
     def _persist_new_configuration(self, new_configuration: dict, configuration_emitted_at: int) -> Optional[Path]:
+        """Store new configuration values to an updated_configurations subdir under the original configuration path.
+        N.B. The new configuration will not be stored if no configuration path was passed to the ConnectorRunner.
+        Args:
+            new_configuration (dict): The updated configuration
+            configuration_emitted_at (int): Timestamp at which the configuration was emitted (ms)
+
+        Returns:
+            Optional[Path]: The updated configuration path if it was persisted.
+        """
         if self._connector_configuration_path is None:
             logging.warning("No configuration path was passed to the ConnectorRunner. The new configuration was not persisted")
             return None

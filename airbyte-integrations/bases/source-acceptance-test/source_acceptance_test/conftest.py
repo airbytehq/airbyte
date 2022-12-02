@@ -56,7 +56,7 @@ def cache_discovered_catalog_fixture(acceptance_test_config: Config) -> bool:
 
 @pytest.fixture(name="connector_config_path")
 def connector_config_path_fixture(inputs, base_path) -> Path:
-    """Fixture with connector's config path"""
+    """Fixture with connector's config path. The path to the latest updated configurations will be returned if any."""
     original_configuration_path = Path(base_path) / getattr(inputs, "config_path")
     updated_configurations_glob = f"{original_configuration_path.parent}/updated_configurations/{original_configuration_path.stem}|**{original_configuration_path.suffix}"
     existing_configurations_path_creation_time = [
