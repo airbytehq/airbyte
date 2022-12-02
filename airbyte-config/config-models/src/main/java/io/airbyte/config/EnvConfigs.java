@@ -17,7 +17,6 @@ import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs.GcsConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.MinioConfig;
 import io.airbyte.config.storage.CloudStorageConfigs.S3Config;
-import jakarta.inject.Singleton;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -36,7 +35,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SuppressWarnings({"PMD.LongVariable", "PMD.CyclomaticComplexity", "PMD.AvoidReassigningParameters", "PMD.ConstructorCallsOverridableMethod"})
-@Singleton
 public class EnvConfigs implements Configs {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(EnvConfigs.class);

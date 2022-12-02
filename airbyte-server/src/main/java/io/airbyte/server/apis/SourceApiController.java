@@ -18,7 +18,6 @@ import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
