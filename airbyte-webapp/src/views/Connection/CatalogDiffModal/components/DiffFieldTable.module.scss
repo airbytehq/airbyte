@@ -17,14 +17,14 @@
   border-spacing: 0;
 
   & tbody > tr:first-of-type > td:nth-of-type(2) {
-    border-radius: variables.$border-radius-sm variables.$border-radius-sm 0 0;
+    border-radius: variables.$border-radius-md variables.$border-radius-md 0 0;
   }
 
   & tbody > tr:last-of-type > td:nth-of-type(2) {
-    border-radius: 0 0 variables.$border-radius-sm variables.$border-radius-sm;
+    border-radius: 0 0 variables.$border-radius-md variables.$border-radius-md;
   }
 
   & tbody > tr:only-of-type > td:nth-of-type(2) {
-    border-radius: variables.$border-radius-sm;
+    border-radius: variables.$border-radius-md;
   }
 }

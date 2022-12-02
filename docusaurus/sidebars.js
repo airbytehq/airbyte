@@ -71,7 +71,7 @@ module.exports = {
         },
         'cloud/core-concepts',
         'cloud/managing-airbyte-cloud',
-
+        'cloud/dbt-cloud-integration',
       ],
     },
     {
@@ -210,6 +210,7 @@ module.exports = {
           type: 'category',
           label: 'Low-code connector development',
           items: [
+            'connector-development/config-based/connector-builder-ui',
             {
               label: 'Low-code CDK Intro',
               type: 'doc',

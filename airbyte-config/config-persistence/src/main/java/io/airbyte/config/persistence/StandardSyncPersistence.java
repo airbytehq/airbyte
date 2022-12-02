@@ -21,11 +21,14 @@ import io.airbyte.config.ActorType;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.ConfigWithMetadata;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.tables.Actor;
 import io.airbyte.db.instance.configs.jooq.generated.tables.ActorDefinition;
+import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.StreamDescriptor;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -71,11 +74,7 @@ public class StandardSyncPersistence {
   }
 
   public List<StandardSync> listStandardSync() throws IOException {
-    return listStandardSyncWithMetadata().stream().map(ConfigWithMetadata::getConfig).toList();
-  }
-
-  public List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata() throws IOException {
-    return listStandardSyncWithMetadata(Optional.empty());
+    return listStandardSyncWithMetadata(Optional.empty()).stream().map(ConfigWithMetadata::getConfig).toList();
   }
 
   public void writeStandardSync(final StandardSync standardSync) throws IOException {
@@ -85,6 +84,12 @@ public class StandardSyncPersistence {
     });
   }
 
+  /**
+   * Deletes a connection (sync) and all of dependent resources (state and connection_operations).
+   *
+   * @param standardSyncId - id of the sync (a.k.a. connection_id)
+   * @throws IOException - error while accessing db.
+   */
   public void deleteStandardSync(final UUID standardSyncId) throws IOException {
     database.transaction(ctx -> {
       PersistenceHelpers.deleteConfig(CONNECTION_OPERATION, CONNECTION_OPERATION.CONNECTION_ID, standardSyncId, ctx);
@@ -115,6 +120,11 @@ public class StandardSyncPersistence {
       clearProtocolVersionFlag(ctx, standardSyncsToReEnable);
       return null;
     });
+  }
+
+  public List<StreamDescriptor> getAllStreamsForConnection(final UUID connectionId) throws ConfigNotFoundException, IOException {
+    final StandardSync standardSync = getStandardSync(connectionId);
+    return CatalogHelpers.extractStreamDescriptors(standardSync.getCatalog());
   }
 
   private List<ConfigWithMetadata<StandardSync>> listStandardSyncWithMetadata(final Optional<UUID> configId) throws IOException {
@@ -195,6 +205,8 @@ public class StandardSyncPersistence {
           .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
           .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
               io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
+          .set(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE, standardSync.getNonBreakingChangesPreference().value())
+          .set(CONNECTION.NOTIFY_SCHEMA_CHANGES, standardSync.getNotifySchemaChanges())
           .where(CONNECTION.ID.eq(standardSync.getConnectionId()))
           .execute();
 
@@ -238,6 +250,9 @@ public class StandardSyncPersistence {
           .set(CONNECTION.GEOGRAPHY, Enums.toEnum(standardSync.getGeography().value(),
               io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType.class).orElseThrow())
           .set(CONNECTION.BREAKING_CHANGE, standardSync.getBreakingChange())
+          .set(CONNECTION.NON_BREAKING_CHANGE_PREFERENCE,
+              standardSync.getNonBreakingChangesPreference() == null ? NonBreakingChangesPreference.IGNORE.value()
+                  : standardSync.getNonBreakingChangesPreference().value())
           .set(CONNECTION.CREATED_AT, timestamp)
           .set(CONNECTION.UPDATED_AT, timestamp)
           .execute();

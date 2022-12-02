@@ -22,6 +22,7 @@ import { DestinationItemPage } from "pages/destination/DestinationItemPage";
 import { DestinationOverviewPage } from "pages/destination/DestinationOverviewPage";
 import { DestinationSettingsPage } from "pages/destination/DestinationSettingsPage";
 import SourcesPage from "pages/SourcesPage";
+import { SpeakeasyRedirectPage } from "pages/SpeakeasyRedirectPage";
 import { useCurrentWorkspace, WorkspaceServiceProvider } from "services/workspaces/WorkspacesService";
 import { setSegmentAnonymousId, useGetSegmentAnonymousId } from "utils/crossDomainUtils";
 import { storeUtmFromQuery } from "utils/utmStorage";
@@ -109,6 +110,7 @@ const MainViewRoutes = () => {
 
   return (
     <Routes>
+      <Route path={RoutePaths.SpeakeasyRedirect} element={<SpeakeasyRedirectPage />} />
       {[CloudRoutes.Login, CloudRoutes.Signup, CloudRoutes.FirebaseAction].map((r) => (
         <Route key={r} path={`${r}/*`} element={query.from ? <Navigate to={query.from} replace /> : <DefaultView />} />
       ))}
@@ -128,7 +130,7 @@ const MainViewRoutes = () => {
 };
 
 export const Routing: React.FC = () => {
-  const { user, inited, providers } = useAuthService();
+  const { user, inited, providers, hasCorporateEmail } = useAuthService();
 
   const { search } = useLocation();
 
@@ -146,9 +148,15 @@ export const Routing: React.FC = () => {
         : null,
     [user]
   );
+
+  const userTraits = useMemo(
+    () => (user ? { providers, email: user.email, isCorporate: hasCorporateEmail() } : {}),
+    [hasCorporateEmail, providers, user]
+  );
+
   useGetSegmentAnonymousId();
   useAnalyticsRegisterValues(analyticsContext);
-  useAnalyticsIdentifyUser(user?.userId, { providers, email: user?.email });
+  useAnalyticsIdentifyUser(user?.userId, userTraits);
 
   if (!inited) {
     return <LoadingPage />;

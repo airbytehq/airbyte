@@ -9,6 +9,9 @@ from typing import Any, Dict, Iterable, Optional, Union
 from urllib.parse import parse_qs, urljoin, urlparse
 
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
+from fastapi import Body, HTTPException
+from jsonschema import ValidationError
+
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -20,7 +23,6 @@ from connector_builder.generated.models.streams_list_read import StreamsListRead
 from connector_builder.generated.models.streams_list_read_streams import StreamsListReadStreams
 from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
 from connector_builder.impl.low_code_cdk_adapter import LowCodeSourceAdapter
-from fastapi import Body, HTTPException
 
 
 class DefaultApiImpl(DefaultApi):
@@ -28,7 +30,6 @@ class DefaultApiImpl(DefaultApi):
 
     async def get_manifest_template(self) -> str:
         return """version: "0.1.0"
-
 definitions:
   selector:
     extractor:
@@ -96,7 +97,7 @@ spec:
                     )
                 )
         except Exception as error:
-            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
@@ -112,7 +113,7 @@ spec:
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
@@ -120,7 +121,7 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
 
@@ -198,6 +199,6 @@ spec:
     def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
         try:
             return LowCodeSourceAdapter(manifest=manifest)
-        except Exception as error:
+        except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")
