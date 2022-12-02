@@ -4,10 +4,15 @@
 
 package io.airbyte.workers.process;
 
+import static io.airbyte.workers.sync.ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG;
+import static io.airbyte.workers.sync.ReplicationLauncherWorker.INIT_FILE_SOURCE_LAUNCHER_CONFIG;
+
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.helpers.LogClientSingleton;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.workers.storage.DocumentStoreClient;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
@@ -15,6 +20,8 @@ import io.fabric8.kubernetes.api.model.DeletionPropagation;
 import io.fabric8.kubernetes.api.model.EnvVar;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
+import io.fabric8.kubernetes.api.model.Quantity;
+import io.fabric8.kubernetes.api.model.ResourceRequirementsBuilder;
 import io.fabric8.kubernetes.api.model.SecretVolumeSourceBuilder;
 import io.fabric8.kubernetes.api.model.Volume;
 import io.fabric8.kubernetes.api.model.VolumeBuilder;
@@ -256,15 +263,13 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
   }
 
-  // but does that mean there won't be a docker equivalent?
-  public void create(final Map<String, String> allLabels,
-                     final ResourceRequirements resourceRequirements,
-                     final Map<String, String> fileMap,
-                     final Map<Integer, Integer> portMap,
-                     final Map<String, String> nodeSelectors) {
+  private record Vols(List<Volume> volumes, List<VolumeMount> mounts) {
+
+  }
+
+  private Vols createVols(final List<EnvVar> envVars) {
     final List<Volume> volumes = new ArrayList<>();
-    final List<VolumeMount> volumeMounts = new ArrayList<>();
-    final List<EnvVar> envVars = new ArrayList<>();
+    final List<VolumeMount> mounts = new ArrayList<>();
 
     volumes.add(new VolumeBuilder()
         .withName("airbyte-config")
@@ -273,7 +278,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .endEmptyDir()
         .build());
 
-    volumeMounts.add(new VolumeMountBuilder()
+    mounts.add(new VolumeMountBuilder()
         .withName("airbyte-config")
         .withMountPath(KubePodProcess.CONFIG_DIR)
         .build());
@@ -287,14 +292,58 @@ public class AsyncOrchestratorPodProcess implements KubePod {
               .build())
           .build());
 
-      volumeMounts.add(new VolumeMountBuilder()
+      mounts.add(new VolumeMountBuilder()
           .withName("airbyte-secret")
           .withMountPath(secretMountPath)
           .build());
 
       envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
-
     }
+
+    volumes.add(new VolumeBuilder()
+        .withName("airbyte-pipes")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build());
+
+    mounts.add(new VolumeMountBuilder()
+        .withName("airbyte-pipes")
+        .withMountPath("/pipes")
+        .build());
+
+    volumes.add(new VolumeBuilder()
+        .withName("airbyte-termination")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build());
+
+    mounts.add(new VolumeMountBuilder()
+        .withName("airbyte-termination")
+        .withMountPath("/termination")
+        .build());
+
+    volumes.add(new VolumeBuilder()
+        .withName("tmp")
+        .withNewEmptyDir()
+        .endEmptyDir()
+        .build());
+
+    mounts.add(new VolumeMountBuilder()
+        .withName("tmp")
+        .withMountPath("/tmp")
+        .build());
+
+    return new Vols(volumes, mounts);
+  }
+
+  // but does that mean there won't be a docker equivalent?
+  public void create(final Map<String, String> allLabels,
+                     final ResourceRequirements resourceRequirements,
+                     final Map<String, String> fileMap,
+                     final Map<Integer, Integer> portMap,
+                     final Map<String, String> nodeSelectors) {
+    final List<EnvVar> envVars = new ArrayList<>();
+    final Vols vols = createVols(envVars);
 
     // Copy all additionally provided environment variables
     envVars.addAll(environmentVariables.entrySet().stream().map(e -> new EnvVar(e.getKey(), e.getValue(), null)).toList());
@@ -305,7 +354,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     final var initContainer = new ContainerBuilder()
         .withName(KubePodProcess.INIT_CONTAINER_NAME)
         .withImage("busybox:1.35")
-        .withVolumeMounts(volumeMounts)
+        .withVolumeMounts(vols.mounts())
         .withCommand(List.of(
             "sh",
             "-c",
@@ -336,7 +385,61 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withResources(KubePodProcess.getResourceRequirementsBuilder(resourceRequirements).build())
         .withEnv(envVars)
         .withPorts(containerPorts)
-        .withVolumeMounts(volumeMounts)
+        .withVolumeMounts(vols.mounts())
+        .build();
+
+    final String srcCmd;
+    final String dstCmd;
+    try {
+      srcCmd = MoreResources.readResource("entrypoints/sync/main.sh")
+          .replaceAll("TERMINATION_FILE_CHECK", "/termination/check")
+          .replaceAll("TERMINATION_FILE_MAIN", "/termination/main")
+          .replaceAll("OPTIONAL_STDIN", "")
+          .replace("ENTRYPOINT_OVERRIDE_VALUE", "") // use replace and not replaceAll to preserve escaping and quoting
+          .replaceAll("ARGS", "TODO")
+          .replaceAll("STDERR_PIPE_FILE", "/pipes/stderr")
+          .replaceAll("STDOUT_PIPE_FILE", "/pipes/stdout");
+
+      dstCmd = MoreResources.readResource("entrypoints/sync/main.sh")
+          .replaceAll("TERMINATION_FILE_CHECK", "/termination/check")
+          .replaceAll("TERMINATION_FILE_MAIN", "/termination/main")
+          .replaceAll("OPTIONAL_STDIN", "< /pipes/stdin")
+          .replace("ENTRYPOINT_OVERRIDE_VALUE", "") // use replace and not replaceAll to preserve escaping and quoting
+          .replaceAll("ARGS", "TODO")
+          .replaceAll("STDERR_PIPE_FILE", "/pipes/stderr")
+          .replaceAll("STDOUT_PIPE_FILE", "/pipes/stdout");
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+
+    final var resReq = new ResourceRequirementsBuilder()
+        .withRequests(Map.of("cpu", new Quantity("512m"), "memory", new Quantity("512Mi")))
+        .withLimits(Map.of("cpu", new Quantity("1024m"), "memory", new Quantity("1024Mi")))
+        .build();
+
+    final IntegrationLauncherConfig srcConfig = Jsons.deserialize(fileMap.get(INIT_FILE_SOURCE_LAUNCHER_CONFIG), IntegrationLauncherConfig.class);
+    final var srcContainer = new ContainerBuilder()
+        .withName("src")
+        .withImage(srcConfig.getDockerImage())
+        .withImagePullPolicy("IfNotPresent")
+        .withCommand("sh", "-c", srcCmd)
+        .withEnv(envVars)
+        .withWorkingDir("/config")
+        .withVolumeMounts(vols.mounts())
+        .withResources(resReq)
+        .build();
+
+    final IntegrationLauncherConfig dstConfig = Jsons.deserialize(fileMap.get(INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
+        IntegrationLauncherConfig.class);
+    final var dstContainer = new ContainerBuilder()
+        .withName("dst")
+        .withImage(dstConfig.getDockerImage())
+        .withImagePullPolicy("IfNotPresent")
+        .withCommand("sh", "-c", dstCmd)
+        .withEnv(envVars)
+        .withWorkingDir("/config")
+        .withVolumeMounts(vols.mounts())
+        .withResources(resReq)
         .build();
 
     final Pod podToCreate = new PodBuilder()
@@ -350,9 +453,9 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withServiceAccount("airbyte-admin")
         .withAutomountServiceAccountToken(true)
         .withRestartPolicy("Never")
-        .withContainers(mainContainer)
+        .withContainers(mainContainer, srcContainer, dstContainer)
         .withInitContainers(initContainer)
-        .withVolumes(volumes)
+        .withVolumes(vols.volumes())
         .withNodeSelector(nodeSelectors)
         .endSpec()
         .build();
