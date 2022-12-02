@@ -25,9 +25,9 @@ connectionSpecification:
       title: Project Name
       type: string
       description: >-
-         (optional) Use this if you want to filter the API call for only one given project (can be used in addition to the "Experiment Name Prefix" field)
+         Use this if you want to filter the API call for only one given project (can be used in addition to the "Experiment Name Prefix" field)
     nameprefix:
       title: Experiment Name Prefix
       type: string
       description: >-
-         (optional) Use this if you want to filter the API call for only one given experiment prefix (can be used in addition to the "Project Name" field)
+         Use this if you want to filter the API call for only one given experiment prefix (can be used in addition to the "Project Name" field)
