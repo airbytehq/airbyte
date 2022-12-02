@@ -6,13 +6,24 @@ from typing import Optional
 _schema = shopify_schema
 _schema_root = _schema.shopify_schema
 
+# the graphql api requires the query filter to be snake case even though the column returned is camel case
+def _camel_to_snake(camel_case: str):
+    snake_case = []
+    for char in camel_case:
+        if char.isupper():
+            snake_case.append('_' + char.lower())
+        else:
+            snake_case.append(char)
+    return ''.join(snake_case).lstrip('_')
+
 
 def get_query_products(first: int, filter_field: str, filter_value: str, next_page_token: Optional[str]):
     op = sgqlc.operation.Operation(_schema_root.query_type)
+    snake_case_filter_field = _camel_to_snake(filter_field)
     if next_page_token:
-        products = op.products(first=first, query=f"{filter_field}:>'{filter_value}'", after=next_page_token)
+        products = op.products(first=first, query=f"{snake_case_filter_field}:>'{filter_value}'", after=next_page_token)
     else:
-        products = op.products(first=first, query=f"{filter_field}:>'{filter_value}'")
+        products = op.products(first=first, query=f"{snake_case_filter_field}:>'{filter_value}'")
     products.nodes.id()
     products.nodes.title()
     products.nodes.updated_at()

@@ -395,7 +395,7 @@ class Products(IncrementalShopifyStream):
 
 
 class ProductsGraphQl(IncrementalShopifyStream):
-    filter_field = "updated_at"
+    filter_field = "updatedAt"
     cursor_field = "updatedAt"
     data_field = "graphql"
     http_method = "POST"
