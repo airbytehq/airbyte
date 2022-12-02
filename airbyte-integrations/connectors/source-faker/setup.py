@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 MAIN_REQUIREMENTS = ["airbyte-cdk~=0.2", "mimesis==6.1.1"]
 
 TEST_REQUIREMENTS = [
-    "pytest~=7.0",
+    "pytest~=6.2",
     "source-acceptance-test",
 ]
 
