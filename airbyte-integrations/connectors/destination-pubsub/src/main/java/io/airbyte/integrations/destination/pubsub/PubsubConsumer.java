@@ -6,15 +6,12 @@ package io.airbyte.integrations.destination.pubsub;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.Publisher;
-import com.google.common.base.Charsets;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.protobuf.ByteString;
 import com.google.pubsub.v1.PubsubMessage;
-import com.google.pubsub.v1.TopicName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
@@ -24,7 +21,6 @@ import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import java.io.ByteArrayInputStream;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -96,7 +92,7 @@ public class PubsubConsumer extends FailureTrackingAirbyteMessageConsumer {
     var messageBuilder = PubsubMessage.newBuilder()
         .putAllAttributes(attributes.get(streamKey))
         .setData(ByteString.copyFromUtf8(Jsons.serialize(data)));
-    if(config.isOrderingEnabled()) {
+    if (config.isOrderingEnabled()) {
       messageBuilder.setOrderingKey(streamKey.toString());
     }
     publisher.publish(messageBuilder.build());

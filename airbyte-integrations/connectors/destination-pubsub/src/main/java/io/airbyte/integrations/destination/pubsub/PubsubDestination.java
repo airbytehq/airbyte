@@ -6,15 +6,11 @@ package io.airbyte.integrations.destination.pubsub;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.api.gax.core.FixedCredentialsProvider;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.pubsub.v1.TopicAdminClient;
 import com.google.cloud.pubsub.v1.TopicAdminSettings;
-import com.google.common.base.Charsets;
 import com.google.common.base.Preconditions;
 import com.google.iam.v1.TestIamPermissionsRequest;
 import com.google.iam.v1.TestIamPermissionsResponse;
-import com.google.pubsub.v1.TopicName;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
@@ -23,7 +19,6 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Consumer;
@@ -32,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 public class PubsubDestination extends BaseConnector implements Destination {
 
-   static final String STREAM = "_stream";
+  static final String STREAM = "_stream";
   static final String NAMESPACE = "_namespace";
   private static final Logger LOGGER = LoggerFactory.getLogger(PubsubDestination.class);
 

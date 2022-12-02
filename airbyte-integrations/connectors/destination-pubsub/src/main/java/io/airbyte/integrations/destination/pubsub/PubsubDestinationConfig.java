@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.pubsub;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -26,8 +30,10 @@ public class PubsubDestinationConfig {
   private final boolean orderingEnabled;
   private final BatchingSettings batchingSettings;
 
-  private PubsubDestinationConfig(TopicName topic, ServiceAccountCredentials credentials,
-      boolean orderingEnabled, BatchingSettings batchingSettings) {
+  private PubsubDestinationConfig(TopicName topic,
+                                  ServiceAccountCredentials credentials,
+                                  boolean orderingEnabled,
+                                  BatchingSettings batchingSettings) {
     this.topic = topic;
     this.credentials = credentials;
     this.orderingEnabled = orderingEnabled;
@@ -39,7 +45,8 @@ public class PubsubDestinationConfig {
     final String topicName = config.get(CONFIG_TOPIC_ID).asText();
     final TopicName topic = TopicName.of(projectId, topicName);
     final String credentialsString = config.get(CONFIG_CREDS).isObject()
-        ? Jsons.serialize(config.get(CONFIG_CREDS)) : config.get(CONFIG_CREDS).asText();
+        ? Jsons.serialize(config.get(CONFIG_CREDS))
+        : config.get(CONFIG_CREDS).asText();
     final ServiceAccountCredentials credentials = ServiceAccountCredentials
         .fromStream(new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
 
@@ -54,9 +61,10 @@ public class PubsubDestinationConfig {
 
     return new PubsubDestinationConfig(topic, credentials, orderingEnabled, batchingSetting);
   }
+
   private static <T> T getOrDefault(JsonNode node, String key, Function<JsonNode, T> consumer, T defaultValue) {
     var value = node.get(key);
-    if(value != null) {
+    if (value != null) {
       return consumer.apply(value);
     } else {
       return defaultValue;
@@ -78,4 +86,5 @@ public class PubsubDestinationConfig {
   public TopicName getTopic() {
     return topic;
   }
+
 }

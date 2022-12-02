@@ -4,7 +4,6 @@
 
 package io.airbyte.integration.destination.pubsub;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.pubsub.PubsubConsumer;
 import io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig;
