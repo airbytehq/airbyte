@@ -14,6 +14,7 @@ import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/form
 
 import styles from "./DestinationNamespaceModal.module.scss";
 import { ExampleSettingsTable, ExampleSettingsTableProps } from "./ExampleSettingsTable";
+import { getTableData } from "./tableData";
 
 const destinationNamespaceValidationSchema = yup.object().shape({
   namespaceDefinition: yup
@@ -105,22 +106,7 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
               }),
             },
           ],
-          data: [
-            {
-              sourceNamespace: formatMessage({
-                id: "connectionForm.modal.destinationNamespace.table.data.public",
-              }),
-              destinationNamespace: formatMessage({
-                id: "connectionForm.modal.destinationNamespace.table.data.mySchema",
-              }),
-            },
-            {
-              sourceNamespace: "",
-              destinationNamespace: formatMessage({
-                id: "connectionForm.modal.destinationNamespace.table.data.mySchema",
-              }),
-            },
-          ],
+          data: getTableData(formatMessage),
         };
       case NamespaceDefinitionType.customformat:
         return {
