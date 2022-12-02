@@ -44,7 +44,7 @@ $toast-icon-container-size: 34px;
   z-index: 20;
   padding: vars.$spacing-md;
   border-radius: vars.$border-radius-md;
-  animation: slide-up-animations 0.25s linear;
+  animation: slide-up-animations 0.25s ease-out;
 
   @include type("info", colors.$blue-400, colors.$blue-50);
   @include type("warning", colors.$yellow-500, colors.$yellow-50);
