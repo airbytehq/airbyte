@@ -53,14 +53,8 @@ class LowCodeSourceAdapter:
 
         # the generator can raise an exception
         # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
-        while True:
-            try:
-                message = next(generator)
-                yield message
-            except StopIteration:
-                # done iterating. return
-                return
-            except Exception as e:
-                # catch the exception and yield it as an AirbyteLogMessage
-                yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=str(e)))
-                return
+        try:
+            yield from generator
+        except Exception as e:
+            yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=str(e)))
+            return
