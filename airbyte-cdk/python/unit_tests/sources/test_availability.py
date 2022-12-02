@@ -10,7 +10,7 @@ from airbyte_cdk.models import (
     AirbyteStream,
     SyncMode,
 )
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.availability_strategy import (
     AvailabilityStrategy,
     HTTPAvailabilityStrategy,
@@ -40,7 +40,7 @@ class MockSource(AbstractSource):
 
 def test_availability_strategy():
     class MockAvailabilityStrategy(AvailabilityStrategy):
-        def check_availability(self, stream: Stream) -> Tuple[bool, any]:
+        def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
             if stream.name == "available_stream":
                 return True, None
             return False, f"Could not reach stream '{stream.name}'."
@@ -55,9 +55,9 @@ def test_availability_strategy():
 
     source = MockSourceWithAvailabilityStrategy(streams=[stream_1, stream_2])
     assert isinstance(source.availability_strategy, MockAvailabilityStrategy)
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
-    assert source.availability_strategy.check_availability(stream_2)[0] is False
-    assert "Could not reach stream 'unavailable_stream'" in source.availability_strategy.check_availability(stream_2)[1]
+    assert source.availability_strategy.check_availability(source, logger, stream_1)[0] is True
+    assert source.availability_strategy.check_availability(source, logger, stream_2)[0] is False
+    assert "Could not reach stream 'unavailable_stream'" in source.availability_strategy.check_availability(source, logger, stream_2)[1]
 
 
 def test_scoped_availability_strategy():
@@ -77,9 +77,9 @@ def test_scoped_availability_strategy():
     stream_2 = AirbyteStream(name="projectV2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
 
     source = MockSourceWithScopedAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
-    assert source.availability_strategy.check_availability(stream_2)[0] is False
-    assert "Missing required scopes: ['read:project']" in source.availability_strategy.check_availability(stream_2)[1]
+    assert source.availability_strategy.check_availability(source, logger, stream_1)[0] is True
+    assert source.availability_strategy.check_availability(source, logger, stream_2)[0] is False
+    assert "Missing required scopes: ['read:project']" in source.availability_strategy.check_availability(source, logger, stream_2)[1]
 
 
 def test_http_availability_strategy(mocker):
@@ -113,9 +113,9 @@ def test_http_availability_strategy(mocker):
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert source.availability_strategy.check_availability(stream_1)[0] is False
-    assert "403 Client Error" in source.availability_strategy.check_availability(stream_1)[1]
+    assert source.availability_strategy.check_availability(source, logger, stream_1)[0] is False
+    assert "403 Client Error" in source.availability_strategy.check_availability(source, logger, stream_1)[1]
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
+    assert source.availability_strategy.check_availability(source, logger, stream_1)[0] is True

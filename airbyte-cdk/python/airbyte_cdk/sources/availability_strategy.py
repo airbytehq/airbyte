@@ -1,13 +1,14 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
+import logging
 from abc import ABC, abstractmethod
 from requests import HTTPError
 from typing import Dict, List, Optional, Text, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources import Source
 
 
 class AvailabilityStrategy(ABC):
@@ -16,10 +17,12 @@ class AvailabilityStrategy(ABC):
     """
 
     @abstractmethod
-    def check_availability(self, stream: Stream) -> Tuple[bool, any]:
+    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
         """
         Checks stream availability.
 
+        :param source: source
+        :param logger: source logger
         :param stream: stream
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available. Otherwise, the stream is unavailable for some reason and
@@ -28,11 +31,13 @@ class AvailabilityStrategy(ABC):
 
 
 class HTTPAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream) -> Tuple[bool, str]:
+    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
 
+        :param source: source
+        :param logger: source logger
         :param stream: stream
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available. Otherwise, the stream is unavailable for some reason and
@@ -76,11 +81,13 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
 
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability based on required scopes for streams and
         the scopes granted to the source.
 
+        :param source: source
+        :param logger: source logger
         :param stream: stream
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available. Otherwise, the stream is unavailable for some reason and
