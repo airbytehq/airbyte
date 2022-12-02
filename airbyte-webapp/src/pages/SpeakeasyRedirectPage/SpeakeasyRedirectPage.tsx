@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components/LoadingPage";
 
-import { AppMonitoringServiceProviderValue, useAppMonitoringService } from "hooks/services/AppMonitoringService";
+import { useAppMonitoringService, TrackErrorFn } from "hooks/services/AppMonitoringService";
 import { useSpeakeasyRedirect } from "packages/cloud/services/speakeasy";
 import { RoutePaths } from "pages/routePaths";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
@@ -48,7 +48,7 @@ const CloudApiErrorView = () => {
 };
 
 interface SpeakeasyErrorBoundaryProps {
-  trackError: AppMonitoringServiceProviderValue["trackError"];
+  trackError: TrackErrorFn;
 }
 
 export class SpeakeasyErrorBoundary extends React.Component<React.PropsWithChildren<SpeakeasyErrorBoundaryProps>> {
