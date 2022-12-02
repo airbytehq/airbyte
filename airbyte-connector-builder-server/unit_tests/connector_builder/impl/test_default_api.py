@@ -342,7 +342,6 @@ def test_invalid_manifest():
     }
 
     expected_status_code = 400
-    expected_detail = "Invalid connector manifest with error: 'streams' is a required property"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
@@ -350,7 +349,6 @@ def test_invalid_manifest():
         loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras")))
 
     assert actual_exception.value.status_code == expected_status_code
-    assert expected_detail in actual_exception.value.detail
 
 
 def test_read_stream_invalid_group_format():
@@ -371,12 +369,10 @@ def test_read_stream_invalid_group_format():
             loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras")))
 
         assert actual_exception.value.status_code == 400
-        assert "Could not perform read with with error" in actual_exception.value.detail
 
 
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
-    expected_detail = "Could not perform read with with error"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
@@ -384,7 +380,6 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
         loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest")))
 
     assert actual_exception.value.status_code == expected_status_code
-    assert expected_detail in actual_exception.value.detail
 
 
 @pytest.mark.parametrize(
