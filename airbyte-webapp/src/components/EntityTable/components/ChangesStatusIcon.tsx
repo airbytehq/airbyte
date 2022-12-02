@@ -7,6 +7,7 @@ import { FormattedMessage } from "react-intl";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { SchemaChange } from "core/request/AirbyteClient";
+import { convertSnakeToCamel } from "utils/strings";
 
 import styles from "./ChangesStatusIcon.module.scss";
 
@@ -22,22 +23,12 @@ export const ChangesStatusIcon: React.FC<ChangesStatusIconProps> = ({ schemaChan
     [styles.breaking]: schemaChange === "breaking",
     [styles.nonBreaking]: schemaChange === "non_breaking",
   });
-  let schemaChangeLocalizationKey;
-  switch (schemaChange) {
-    case "breaking":
-      schemaChangeLocalizationKey = "breaking";
-      break;
-    case "non_breaking":
-      schemaChangeLocalizationKey = "nonBreaking";
-      break;
-  }
-  const tooltipComponent = <FormattedMessage id={`connection.schemaChange.${schemaChangeLocalizationKey}`} />;
   return (
     <Tooltip
       containerClassName={styles.tooltipContainer}
       control={<FontAwesomeIcon className={iconStyle} icon={faExclamationCircle} size="2x" />}
     >
-      {tooltipComponent}
+      <FormattedMessage id={`connection.schemaChange.${convertSnakeToCamel(schemaChange)}`} />
     </Tooltip>
   );
 };
