@@ -39,7 +39,7 @@ const CloudApiErrorView = () => {
   return (
     <ErrorOccurredView
       message={<FormattedMessage id="cloudApi.loginCallbackUrlError" />}
-      ctaButtonText={<FormattedMessage id="ui.goBack" />}
+      ctaButtonText={<FormattedMessage id="ui.goToHome" />}
       onCtaButtonClick={() => {
         navigate(RoutePaths.Root);
       }}

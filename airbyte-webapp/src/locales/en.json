@@ -548,6 +548,7 @@
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
+  "ui.goToHome": "Go to homepage",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
