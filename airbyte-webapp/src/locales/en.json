@@ -383,6 +383,10 @@
   "connection.progress.recordsSynced": "{synced, number} / {total, number} {synced, plural, one {record synced} other {records synced}} ({speed, number} records/sec)",
   "connection.progress.bytesSynced": "{synced} / {total} synced ({speed}/sec)",
 
+  "connection.schemaChange.breaking": "Breaking schema updates detected.",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
+  "connection.schemaChange.reviewAction": "Review changes",
+
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
