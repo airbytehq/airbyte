@@ -6,8 +6,8 @@
 import sys
 
 from airbyte_cdk.entrypoint import launch
-from source_stock_ticker_api import SourceStockTickerApi
+from source_python_http_example import SourcePythonHttpExample
 
 if __name__ == "__main__":
-    source = SourceStockTickerApi()
+    source = SourcePythonHttpExample()
     launch(source, sys.argv[1:])

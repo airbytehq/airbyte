@@ -5,5 +5,5 @@ plugins {
 }
 
 airbytePython {
-    moduleDirectory 'source_stock_ticker_api'
+    moduleDirectory 'source_python_http_example'
 }

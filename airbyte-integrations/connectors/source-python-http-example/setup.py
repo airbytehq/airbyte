@@ -16,8 +16,8 @@ TEST_REQUIREMENTS = [
 ]
 
 setup(
-    name="source_stock_ticker_api",
-    description="Source implementation for Stock Ticker Api.",
+    name="source_python_http_example",
+    description="Source implementation for Python Http Example.",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),

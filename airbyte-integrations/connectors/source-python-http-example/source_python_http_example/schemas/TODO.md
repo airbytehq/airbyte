@@ -1,4 +1,4 @@
-# TODO: Define your stream schemas
+`1  # TODO: Define your stream schemas
 Your connector must describe the schema of each stream it can output using [JSONSchema](https://json-schema.org). 
 
 The simplest way to do this is to describe the schema of your streams using one `.json` file per stream. You can also dynamically generate the schema of your stream in code, or you can combine both approaches: start with a `.json` file and dynamically add properties to it. 
