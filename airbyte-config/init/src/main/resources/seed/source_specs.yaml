@@ -4638,7 +4638,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.7"
+- dockerImage: "airbyte/source-gitlab:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -13517,7 +13517,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-smartsheets:0.1.12"
+- dockerImage: "airbyte/source-smartsheets:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
@@ -13561,31 +13561,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    advanced_auth:
-      auth_flow_type: "oauth2.0"
-      predicate_key: []
-      predicate_value: ""
-      oauth_config_specification:
-        complete_oauth_output_specification:
-          type: "object"
-          additionalProperties: false
-          properties:
-            access_token:
-              type: "string"
-              path_in_connector_config:
-              - "access_token"
-        complete_oauth_server_input_specification:
-          type: "object"
-          additionalProperties: false
-          properties:
-            client_id:
-              type: "string"
-            client_secret:
-              type: "string"
-        complete_oauth_server_output_specification:
-          type: "object"
-          additionalProperties: false
-          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
@@ -17196,7 +17171,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoom:0.1.0"
+- dockerImage: "airbyte/source-zoom:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
     connectionSpecification:
