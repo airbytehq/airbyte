@@ -82,6 +82,7 @@ export const buildYupFormForJsonSchema = (
       if (typeof jsonSchema.items === "object" && !Array.isArray(jsonSchema.items)) {
         schema = yup
           .array()
+          .required("you need this!")
           .of(
             buildYupFormForJsonSchema(
               jsonSchema.items,
