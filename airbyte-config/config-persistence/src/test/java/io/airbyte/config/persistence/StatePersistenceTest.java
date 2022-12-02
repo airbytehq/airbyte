@@ -16,7 +16,6 @@ import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
-import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -58,10 +57,7 @@ class StatePersistenceTest extends BaseConfigDatabaseTest {
   }
 
   private void setupTestData() throws JsonValidationException, IOException {
-    configRepository = new ConfigRepository(
-        database,
-        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        new StandardSyncPersistence(database));
+    configRepository = new ConfigRepository(database);
 
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
     final StandardSourceDefinition sourceDefinition = MockData.publicSourceDefinition();
