@@ -1,4 +1,4 @@
-import { getSpeakeasyCallbackUrl } from "packages/cloud/lib/domain/cloudApi";
+import { getSpeakeasyCallbackUrl } from "packages/cloud/lib/domain/speakeasy";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
