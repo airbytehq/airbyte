@@ -104,7 +104,7 @@ class ContainerOrchestratorAcceptanceTests {
   // This test is flaky.  It is commented out until that condition us understood
   // See: https://github.com/airbytehq/airbyte/issues/19948
   @Test
-  @Disabled
+  @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
   void testDowntimeDuringSync() throws Exception {
     // NOTE: PMD assert warning suppressed because the assertion was flaky. The test will throw if the
     // sync does not succeed.
