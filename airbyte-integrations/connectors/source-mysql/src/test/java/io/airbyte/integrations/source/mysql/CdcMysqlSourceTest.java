@@ -32,6 +32,8 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.debezium.CdcSourceTest;
 import io.airbyte.integrations.debezium.CdcTargetPosition;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -104,6 +106,10 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
   private void revokeAllPermissions() {
     executeQuery("REVOKE ALL PRIVILEGES, GRANT OPTION FROM " + container.getUsername() + "@'%';");
+  }
+
+  private void revokeReplicationClientPermission() {
+    executeQuery("REVOKE REPLICATION CLIENT ON *.* FROM " + container.getUsername() + "@'%';");
   }
 
   private void grantCorrectPermissions() {
@@ -214,6 +220,17 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Test
+  protected void syncWithReplicationClientPrivilegeRevoked() throws Exception {
+    revokeReplicationClientPermission();
+    final AirbyteConnectionStatus status = getSource().check(getConfig());
+    final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+        + " for CDC mode.";
+    assertTrue(status.getStatus().equals(Status.FAILED));
+    assertTrue(status.getMessage().contains(expectedErrorMessage));
+
+  }
+
+  @Test
   protected void syncShouldHandlePurgedLogsGracefully() throws Exception {
 
     final int recordsToCreate = 20;
@@ -226,6 +243,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
+    revokeReplicationClientPermission();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
