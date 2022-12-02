@@ -17,7 +17,7 @@ from pydantic import ValidationError
 
 
 class ConnectorRunner:
-    def __init__(self, image_name: str, volume: Path, connector_configuration_path: Optional[Path], should_persist_new_configurations=True):
+    def __init__(self, image_name: str, volume: Path, connector_configuration_path: Optional[Path] = None):
         self._client = docker.from_env()
         try:
             self._image = self._client.images.get(image_name)
@@ -28,7 +28,6 @@ class ConnectorRunner:
         self._runs = 0
         self._volume_base = volume
         self._connector_configuration_path = connector_configuration_path
-        self._should_persist_new_configurations = should_persist_new_configurations
 
     @property
     def output_folder(self) -> Path:
@@ -182,8 +181,8 @@ class ConnectorRunner:
         return self._image.attrs["Config"]["Entrypoint"]
 
     def _persist_new_configuration(self, new_configuration: dict, configuration_emitted_at: int) -> Optional[Path]:
-        if not self._should_persist_new_configurations:
-            logging.warning("New configuration persistence is disabled. The new configuration was not persisted")
+        if self._connector_configuration_path is None:
+            logging.warning("No configuration path was passed to the ConnectorRunner. The new configuration was not persisted")
             return None
 
         with open(self._connector_configuration_path) as old_configuration_file:

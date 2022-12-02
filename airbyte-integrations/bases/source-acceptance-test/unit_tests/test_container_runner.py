@@ -38,12 +38,12 @@ class TestContainerRunner:
         mocker.patch.object(connector_runner.ConnectorRunner, "read", mocker.Mock(return_value=records_reads))
         mocker.patch.object(connector_runner.ConnectorRunner, "_persist_new_configuration")
 
-        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, old_configuration_path)
+        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, connector_configuration_path=old_configuration_path)
         list(runner.run("dummy_cmd"))
         runner._persist_new_configuration.assert_called_once_with(new_configuration, 1)
 
     @pytest.mark.parametrize(
-        "should_persist_new_configurations, old_configuration, new_configuration, new_configuration_emitted_at, expect_new_configuration",
+        "pass_configuration_path, old_configuration, new_configuration, new_configuration_emitted_at, expect_new_configuration",
         [
             pytest.param(
                 True,
@@ -70,17 +70,20 @@ class TestContainerRunner:
         self,
         mocker,
         tmp_path,
-        should_persist_new_configurations,
+        pass_configuration_path,
         old_configuration,
         new_configuration,
         new_configuration_emitted_at,
         expect_new_configuration,
     ):
-        old_configuration_path = tmp_path / "config.json"
-        with open(old_configuration_path, "w") as old_configuration_file:
-            json.dump(old_configuration, old_configuration_file)
+        if pass_configuration_path:
+            old_configuration_path = tmp_path / "config.json"
+            with open(old_configuration_path, "w") as old_configuration_file:
+                json.dump(old_configuration, old_configuration_file)
+        else:
+            old_configuration_path = None
         mocker.patch.object(connector_runner, "docker")
-        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, old_configuration_path, should_persist_new_configurations)
+        runner = connector_runner.ConnectorRunner("source-test:dev", tmp_path, old_configuration_path)
         new_configuration_path = runner._persist_new_configuration(new_configuration, new_configuration_emitted_at)
         if not expect_new_configuration:
             assert new_configuration_path is None
