@@ -307,7 +307,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
     final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
-    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createTraceMessage("a trace message", 123456.0);
+    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorMessage("a trace message", 123456.0);
     when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
     when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
     when(source.isFinished()).thenReturn(false, false, false, false, true);
