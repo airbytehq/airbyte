@@ -5,6 +5,7 @@
 package io.airbyte.commons.protocol.migrations;
 
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import jakarta.inject.Singleton;
@@ -27,12 +28,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<Airbyt
 
   @Override
   public Version getPreviousVersion() {
-    return new Version("0.0.0");
+    return AirbyteProtocolVersion.V0;
   }
 
   @Override
   public Version getCurrentVersion() {
-    return new Version("1.0.0");
+    return AirbyteProtocolVersion.V1;
   }
 
 }
