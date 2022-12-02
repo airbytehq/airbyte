@@ -22,7 +22,7 @@ class AirbyteMessageSerDeProviderMicronautTest {
   @Test
   void testSerDeInjection() {
     // This should contain the list of all the supported majors of the airbyte protocol
-    final Set<String> expectedVersions = new HashSet<>(List.of("0"));
+    final Set<String> expectedVersions = new HashSet<>(List.of("0", "1"));
 
     assertEquals(expectedVersions, serDeProvider.getDeserializerKeys());
     assertEquals(expectedVersions, serDeProvider.getSerializerKeys());
