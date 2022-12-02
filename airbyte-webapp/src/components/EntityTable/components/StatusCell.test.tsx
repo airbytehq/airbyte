@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react";
 import { TestWrapper } from "test-utils/testutils";
 
-import StatusCell from "./StatusCell";
+import { StatusCell } from "./StatusCell";
 
 const mockId = "mock-id";
 
