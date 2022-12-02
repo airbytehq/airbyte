@@ -1,13 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-from datetime import timezone
 
 from dateutil.parser import parse
 from dateutil.tz import tzutc
 from pytest import fixture
-
-from source_babelforce.source import IncrementalBabelforceStream, DEFAULT_CURSOR
+from source_babelforce.source import DEFAULT_CURSOR, IncrementalBabelforceStream
 
 
 @fixture

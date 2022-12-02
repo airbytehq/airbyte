@@ -1,8 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from datetime import datetime
 from unittest.mock import MagicMock
 
 import pytest
-
 from source_babelforce.source import Calls, InvalidStartAndEndDateException
 
 
@@ -69,5 +72,4 @@ def test_parse_response(patch_base_class):
         "items": [fake_item]
     }
     inputs = {"response": MagicMock(json=MagicMock(return_value=fake_call_json))}
-    expected_parsed_object = {}
     assert next(stream.parse_response(**inputs)) == fake_item
