@@ -1172,6 +1172,12 @@ jobs:
           path: "/actions-runner/_work/airbyte/airbyte/*"
           key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
+      
+      - name: "Display logs of k3s"
+        if: always()
+        shell: bash
+        run: |
+          journalctl -xeu k3s.service
     
 
   # # In case of self-hosted EC2 errors, remove this block.
