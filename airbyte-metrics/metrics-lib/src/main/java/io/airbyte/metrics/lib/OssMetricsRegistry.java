@@ -134,7 +134,10 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "number of bytes synced during replication"),
   REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
       "replication_records_synced",
-      "number of records synced during replication");
+      "number of records synced during replication"),
+  RESET_REQUEST(MetricEmittingApps.WORKER,
+      "reset_request",
+      "number of requested resets");
 
   private final MetricEmittingApp application;
   private final String metricName;
