@@ -13,7 +13,7 @@
 
 .optionsMenu {
   background-color: colors.$white;
-  border-radius: variables.$border-radius-md;
+  border-radius: variables.$border-radius-lg;
   box-shadow: 0 7px 15px -5px colors.$grey;
   padding: variables.$spacing-md;
   margin-top: 0;
@@ -31,7 +31,7 @@
 
 .optionValue {
   padding: variables.$spacing-lg variables.$spacing-md;
-  border-radius: variables.$border-radius-md;
+  border-radius: variables.$border-radius-lg;
   cursor: pointer;
 }
 

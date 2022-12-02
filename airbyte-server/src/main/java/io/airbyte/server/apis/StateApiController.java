@@ -20,12 +20,12 @@ public class StateApiController implements StateApi {
 
   @Override
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
-    return ConfigurationApi.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
+    return ApiHelper.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Override
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> stateHandler.getState(connectionIdRequestBody));
+    return ApiHelper.execute(() -> stateHandler.getState(connectionIdRequestBody));
   }
 
 }
