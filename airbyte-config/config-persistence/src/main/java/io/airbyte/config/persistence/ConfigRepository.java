@@ -121,12 +121,12 @@ public class ConfigRepository {
    * @return true if read succeeds, even if the table is empty, and false if any error happens.
    */
   public boolean healthCheck() {
-    try {
-      database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
-    } catch (final Exception e) {
-      LOGGER.error("Health check error: ", e);
-      return false;
-    }
+    // try {
+    // database.query(ctx -> ctx.select(WORKSPACE.ID).from(WORKSPACE).limit(1).fetch());
+    // } catch (final Exception e) {
+    // LOGGER.error("Health check error: ", e);
+    // return false;
+    // }
     return true;
   }
 
