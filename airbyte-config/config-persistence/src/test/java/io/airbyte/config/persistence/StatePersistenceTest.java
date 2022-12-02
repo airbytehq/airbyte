@@ -39,7 +39,6 @@ import org.junit.jupiter.api.Test;
 
 class StatePersistenceTest extends BaseConfigDatabaseTest {
 
-  private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
   private static final String STATE_ONE = "\"state1\"";
@@ -58,7 +57,7 @@ class StatePersistenceTest extends BaseConfigDatabaseTest {
   }
 
   private void setupTestData() throws JsonValidationException, IOException {
-    configRepository = new ConfigRepository(
+    final ConfigRepository configRepository = new ConfigRepository(
         database,
         new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         new StandardSyncPersistence(database));
@@ -68,15 +67,14 @@ class StatePersistenceTest extends BaseConfigDatabaseTest {
     final SourceConnection sourceConnection = MockData.sourceConnections().get(0);
     final StandardDestinationDefinition destinationDefinition = MockData.publicDestinationDefinition();
     final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
-    final StandardSync sync = MockData.standardSyncs().get(0);
+    // we don't need sync operations in this test suite, zero them out.
+    final StandardSync sync = Jsons.clone(MockData.standardSyncs().get(0)).withOperationIds(Collections.emptyList());
 
     configRepository.writeStandardWorkspaceNoSecrets(workspace);
     configRepository.writeStandardSourceDefinition(sourceDefinition);
     configRepository.writeSourceConnectionNoSecrets(sourceConnection);
     configRepository.writeStandardDestinationDefinition(destinationDefinition);
     configRepository.writeDestinationConnectionNoSecrets(destinationConnection);
-    configRepository.writeStandardSyncOperation(MockData.standardSyncOperations().get(0));
-    configRepository.writeStandardSyncOperation(MockData.standardSyncOperations().get(1));
     configRepository.writeStandardSync(sync);
 
     connectionId = sync.getConnectionId();
@@ -239,7 +237,7 @@ class StatePersistenceTest extends BaseConfigDatabaseTest {
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize(GLOBAL_STATE))
-                .withStreamStates(Arrays.asList(
+                .withStreamStates(List.of(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(Jsons.deserialize(STATE_TWO))))));
@@ -424,7 +422,7 @@ class StatePersistenceTest extends BaseConfigDatabaseTest {
     assertEquals(
         new StateWrapper()
             .withStateType(StateType.STREAM)
-            .withStateMessages(Arrays.asList(
+            .withStateMessages(List.of(
                 new AirbyteStateMessage()
                     .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
