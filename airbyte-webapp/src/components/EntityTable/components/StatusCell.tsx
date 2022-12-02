@@ -14,6 +14,7 @@ import styles from "./StatusCell.module.scss";
 
 interface IProps {
   allowSync?: boolean;
+  hasBreakingChange?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
@@ -26,7 +27,16 @@ const ProgressMessage = styled.div`
   padding: 7px 0;
 `;
 
-export const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync, allowSync, schemaChange }) => {
+export const StatusCell: React.FC<IProps> = ({
+  enabled,
+  isManual,
+  id,
+  isSyncing,
+  onSync,
+  allowSync,
+  schemaChange,
+  hasBreakingChange,
+}) => {
   const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
   const isSchemaChangesFeatureEnabled = process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES_FEATURE_ENABLED === "true";
   const [{ loading }, OnLaunch] = useAsyncFn(
@@ -54,7 +64,13 @@ export const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing,
         onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
         onKeyPress={(event: React.SyntheticEvent) => event.stopPropagation()}
       >
-        <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} loading={isLoading} />
+        <Switch
+          checked={enabled}
+          onChange={onSwitchChange}
+          disabled={!allowSync || hasBreakingChange}
+          loading={isLoading}
+          data-testid="enable-connection-switch"
+        />
       </div>
     );
   } else if (isSyncing) {
@@ -65,7 +81,13 @@ export const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing,
     );
   } else {
     ControlComponent = (
-      <Button size="xs" onClick={OnLaunch} isLoading={loading} disabled={!allowSync || !enabled}>
+      <Button
+        size="xs"
+        onClick={OnLaunch}
+        isLoading={loading}
+        disabled={!allowSync || !enabled || hasBreakingChange}
+        data-testid="manual-sync-button"
+      >
         <FormattedMessage id="tables.launch" />
       </Button>
     );

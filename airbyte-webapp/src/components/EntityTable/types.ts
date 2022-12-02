@@ -26,6 +26,7 @@ interface ITableDataItem {
   lastSync?: number | null;
   scheduleData?: ConnectionScheduleData;
   scheduleType?: ConnectionScheduleType;
+  schemaChange: SchemaChange;
   lastSyncStatus: string | null;
   schemaChange: SchemaChange;
   connectorIcon?: string;

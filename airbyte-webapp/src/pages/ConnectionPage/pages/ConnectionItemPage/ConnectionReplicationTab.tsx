@@ -166,30 +166,33 @@ export const ConnectionReplicationTab: React.FC = () => {
         <SchemaError schemaError={schemaError} />
       ) : !schemaRefreshing && connection ? (
         <Formik
+          initialStatus={{ editControlsVisible: true }}
           initialValues={initialValues}
           validationSchema={createConnectionValidationSchema({ mode, allowSubOneHourCronExpressions })}
           onSubmit={onFormSubmit}
           enableReinitialize
         >
-          {({ values, isSubmitting, isValid, dirty, resetForm }) => (
+          {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
             <Form>
               <ConnectionFormFields
                 values={values}
                 isSubmitting={isSubmitting}
                 dirty={dirty || schemaHasBeenRefreshed}
               />
-              <EditControls
-                isSubmitting={isSubmitting}
-                submitDisabled={!isValid}
-                dirty={dirty}
-                resetForm={async () => {
-                  resetForm();
-                  discardRefreshedSchema();
-                }}
-                successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                errorMessage={getErrorMessage(isValid, dirty)}
-                enableControls={schemaHasBeenRefreshed || dirty}
-              />
+              {status.editControlsVisible && (
+                <EditControls
+                  isSubmitting={isSubmitting}
+                  submitDisabled={!isValid}
+                  dirty={dirty}
+                  resetForm={async () => {
+                    resetForm();
+                    discardRefreshedSchema();
+                  }}
+                  successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                  errorMessage={getErrorMessage(isValid, dirty)}
+                  enableControls={schemaHasBeenRefreshed || dirty}
+                />
+              )}
             </Form>
           )}
         </Formik>

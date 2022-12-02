@@ -1,10 +1,10 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
 
 .connectorLink {
   cursor: pointer;
   text-decoration: none;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
 
   &:hover {
     background-color: colors.$grey-50;
@@ -17,6 +17,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: variables.$spacing-md;
 }
 
 .pathContainer,
@@ -30,11 +31,18 @@
   flex-wrap: wrap;
   padding: variables.$spacing-md variables.$spacing-xl;
   background-color: white;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
 }
 
 .enabledControlContainer {
   display: flex;
   justify-content: space-around;
-  padding: variables.$spacing-md;
+}
+
+.breaking {
+  background: colors.$red-50;
+}
+
+.nonBreaking {
+  background: colors.$yellow-50;
 }
