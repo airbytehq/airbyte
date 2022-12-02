@@ -35,8 +35,8 @@ import org.jooq.impl.DSL;
  * This class can be used to store DB queries for persisting configs that we may want to reuse
  * across this package.
  * <p>
- * Currently this class is used to move write queries out of {@link DatabaseConfigPersistence} so
- * that they can be reused/composed in {@link ConfigRepository}.
+ * Currently this class is used to move write queries out of {@link ConfigPersistence} so that they
+ * can be reused/composed in {@link ConfigRepository}.
  */
 @SuppressWarnings("PMD.CognitiveComplexity")
 public class ConfigWriter {
