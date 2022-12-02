@@ -20,7 +20,7 @@ Connector also has report streams including statistics about entities (e.g: how 
 
 Connector uses `start_date` config for initial reports sync and current date as an end date if this one is not explicitly set.
 
-At the moment, report streams are only set to the `DAILY` granularity (e.g: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`) and the API only allows 90 days of history for this granularity.
+At the moment, report streams are only set to the `DAILY` granularity (e.g: `campaigns_report_daily`, `adgroups_report_daily`, `keywords_report_daily`).
 
 
 See [this](https://docs.airbyte.io/integrations/sources/apple-search-ads) link for the nuances about the connector.
