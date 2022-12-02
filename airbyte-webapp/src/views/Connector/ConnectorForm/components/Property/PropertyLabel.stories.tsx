@@ -38,7 +38,7 @@ export const ConditionLabel = Template.bind({});
 ConditionLabel.args = {
   // a "form field" from the useBuildForm() hook
   property: {
-    isRequired: true,
+    isRequired: false,
     _type: "formCondition",
     fieldKey: "field_key",
     path: "section.Fieldname",
@@ -59,11 +59,18 @@ ConditionLabel.args = {
         fieldKey: "field_key",
         path: "section.Fieldname",
       },
+      three: {
+        isRequired: true,
+        type: "string",
+        _type: "formItem",
+        fieldKey: "field_key",
+        path: "section.Fieldname",
+        description:
+          "Sometimes the description can be a bit longer - in this case there is a lot of text in here and so on.",
+      },
     },
   },
   label: "Property name",
   description: "The description of the property, placed in the info tooltip",
-  // overrides the property.isRequired value if set
-  optional: true,
   children: <Input type="text" />,
 };

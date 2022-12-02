@@ -21,7 +21,7 @@ const Description: React.FC<Pick<LabelInfoProps, "label" | "description">> = ({ 
   return (
     <div>
       {/* don't use <Text as=h4> here, because we want the default parent styling for this header */}
-      <h4 className={styles.descriptionHeader}>{label}</h4>
+      <h3 className={styles.descriptionHeader}>{label}</h3>
       <TextWithHTML className={styles.description} text={description} />
     </div>
   );
@@ -34,9 +34,9 @@ const Options: React.FC<Pick<LabelInfoProps, "options">> = ({ options }) => {
 
   return (
     <div>
-      <h5 className={styles.optionsHeader}>
+      <h4 className={styles.optionsHeader}>
         <FormattedMessage id="connector.optionsHeader" />
-      </h5>
+      </h4>
       <ul className={styles.options}>
         {options.map((option) => (
           <li key={option.title}>
