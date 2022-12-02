@@ -7,12 +7,14 @@ from abc import ABC, abstractmethod
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
+import logging
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
+logger = logging.getLogger("airbyte")
 
 class PivotalTrackerStream(HttpStream, ABC):
 
@@ -53,6 +55,15 @@ class Projects(PivotalTrackerStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "projects"
+
+
+class Project(PivotalTrackerStream):
+    def __init__(self, project_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.project_id = project_id
+
+    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
+        return f"projects/{self.project_id}"
 
 
 class ProjectBasedStream(PivotalTrackerStream):
@@ -124,6 +135,16 @@ class SourcePivotalTracker(AbstractSource):
         return PivotalAuthenticator(token)
 
     @staticmethod
+    def _check_project_availability(auth: HttpAuthenticator, project_id) -> bool:
+        try:
+            project = Project(authenticator=auth, project_id=project_id)
+            next(project.read_records(SyncMode.full_refresh))
+        except Exception as err:
+            logger.error("Unable to fetch project info: %s", err)
+            return False
+        return True
+
+    @staticmethod
     def _generate_project_ids(auth: HttpAuthenticator) -> List[str]:
         """
         Args:
@@ -136,7 +157,10 @@ class SourcePivotalTracker(AbstractSource):
         records = projects.read_records(SyncMode.full_refresh)
         project_ids: List[str] = []
         for record in records:
-            project_ids.append(record["id"])
+            project_id = record["id"]
+            if SourcePivotalTracker._check_project_availability(auth, project_id):
+                project_ids.append(project_id)
+
         return project_ids
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:

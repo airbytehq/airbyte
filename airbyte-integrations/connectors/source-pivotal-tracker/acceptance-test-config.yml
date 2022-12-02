@@ -4,6 +4,7 @@ connector_image: airbyte/source-pivotal-tracker:dev
 tests:
   spec:
     - spec_path: "source_pivotal_tracker/spec.json"
+      timeout_seconds: 3600
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -13,8 +14,10 @@ tests:
     - config_path: "secrets/config.json"
   basic_read:
     - config_path: "secrets/config.json"
+      timeout_seconds: 3600
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: []
   full_refresh:
     - config_path: "secrets/config.json"
+      timeout_seconds: 3600
       configured_catalog_path: "integration_tests/configured_catalog.json"

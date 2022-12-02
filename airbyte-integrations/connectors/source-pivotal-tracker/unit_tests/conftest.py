@@ -23,6 +23,11 @@ def projects_response():
 
 
 @fixture
+def project_detail_response():
+    return json.loads(load_file("project.json"))
+
+
+@fixture
 def project_memberships_response():
     return json.loads(load_file("project_memberships.json"))
 
