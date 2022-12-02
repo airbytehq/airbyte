@@ -3832,7 +3832,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-faker:0.2.1"
+- dockerImage: "airbyte/source-faker:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
     connectionSpecification:
@@ -4638,7 +4638,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.7"
+- dockerImage: "airbyte/source-gitlab:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -6499,7 +6499,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-iterable:0.1.21"
+- dockerImage: "airbyte/source-iterable:0.1.22"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/iterable"
     connectionSpecification:
@@ -11313,7 +11313,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.28"
+- dockerImage: "airbyte/source-postgres:1.0.30"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -13331,7 +13331,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-slack:0.1.18"
+- dockerImage: "airbyte/source-slack:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/slack"
     connectionSpecification:
@@ -13386,52 +13386,37 @@
           - type: "object"
             title: "Sign in via Slack (OAuth)"
             required:
-            - "access_token"
+            - "option_title"
             - "client_id"
             - "client_secret"
-            - "option_title"
+            - "access_token"
             properties:
               option_title:
                 type: "string"
                 const: "Default OAuth2.0 authorization"
               client_id:
+                type: "string"
                 title: "Client ID"
                 description: "Slack client_id. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help finding this id."
-                type: "string"
-                examples:
-                - "slack-client-id-example"
-                airbyte_secret: true
               client_secret:
+                type: "string"
                 title: "Client Secret"
                 description: "Slack client_secret. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help finding this secret."
-                type: "string"
-                examples:
-                - "slack-client-secret-example"
                 airbyte_secret: true
               access_token:
+                type: "string"
                 title: "Access token"
                 description: "Slack access_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
                   >docs</a> if you need help generating the token."
-                type: "string"
-                examples:
-                - "slack-access-token-example"
-                airbyte_secret: true
-              refresh_token:
-                title: "Refresh token"
-                description: "Slack refresh_token. See our <a href=\"https://docs.airbyte.com/integrations/sources/slack\"\
-                  >docs</a> if you need help generating the token."
-                type: "string"
-                examples:
-                - "slack-refresh-token-example"
                 airbyte_secret: true
             order: 0
           - type: "object"
             title: "API Token"
             required:
-            - "api_token"
             - "option_title"
+            - "api_token"
             properties:
               option_title:
                 type: "string"
@@ -13446,18 +13431,44 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject:
-        - "credentials"
-        - "0"
-        oauthFlowInitParameters:
-        - - "client_id"
-        - - "client_secret"
-        oauthFlowOutputParameters:
-        - - "access_token"
-        - - "refresh_token"
+    advanced_auth:
+      auth_flow_type: "oauth2.0"
+      predicate_key:
+      - "credentials"
+      - "option_title"
+      predicate_value: "Default OAuth2.0 authorization"
+      oauth_config_specification:
+        complete_oauth_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            access_token:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "access_token"
+        complete_oauth_server_input_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+            client_secret:
+              type: "string"
+        complete_oauth_server_output_specification:
+          type: "object"
+          additionalProperties: false
+          properties:
+            client_id:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_id"
+            client_secret:
+              type: "string"
+              path_in_connector_config:
+              - "credentials"
+              - "client_secret"
 - dockerImage: "airbyte/source-smaily:0.1.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smaily"
@@ -13506,7 +13517,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-smartsheets:0.1.12"
+- dockerImage: "airbyte/source-smartsheets:0.1.13"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/smartsheets"
     connectionSpecification:
@@ -13550,31 +13561,6 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    advanced_auth:
-      auth_flow_type: "oauth2.0"
-      predicate_key: []
-      predicate_value: ""
-      oauth_config_specification:
-        complete_oauth_output_specification:
-          type: "object"
-          additionalProperties: false
-          properties:
-            access_token:
-              type: "string"
-              path_in_connector_config:
-              - "access_token"
-        complete_oauth_server_input_specification:
-          type: "object"
-          additionalProperties: false
-          properties:
-            client_id:
-              type: "string"
-            client_secret:
-              type: "string"
-        complete_oauth_server_output_specification:
-          type: "object"
-          additionalProperties: false
-          properties: {}
 - dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
@@ -17185,7 +17171,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-zoom:0.1.0"
+- dockerImage: "airbyte/source-zoom:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zoom"
     connectionSpecification:
