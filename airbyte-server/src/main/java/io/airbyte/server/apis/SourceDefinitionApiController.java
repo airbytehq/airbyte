@@ -17,6 +17,7 @@ import io.airbyte.api.model.generated.SourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
+import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 

@@ -8,6 +8,7 @@ import io.airbyte.api.generated.SourceDefinitionSpecificationApi;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
+import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 

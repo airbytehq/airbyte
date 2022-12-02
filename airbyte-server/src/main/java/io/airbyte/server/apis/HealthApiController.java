@@ -11,6 +11,7 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import jakarta.inject.Singleton;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/health")
 @Singleton

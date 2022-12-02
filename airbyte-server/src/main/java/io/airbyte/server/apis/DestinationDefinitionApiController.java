@@ -17,6 +17,7 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import javax.transaction.Transactional;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
