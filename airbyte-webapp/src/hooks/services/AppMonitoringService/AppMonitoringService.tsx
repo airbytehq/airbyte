@@ -10,7 +10,7 @@ const appMonitoringContext = createContext<AppMonitoringServiceProviderValue | n
  * These methods are particularly useful for tracking when unexpected or edge-case conditions
  * are encountered in production.
  */
-interface AppMonitoringServiceProviderValue {
+export interface AppMonitoringServiceProviderValue {
   /**
    * Log a custom action in datadog. Useful for tracking edge cases or unexpected application states.
    */

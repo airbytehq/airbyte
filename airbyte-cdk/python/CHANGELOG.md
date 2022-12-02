@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
 ## 0.11.1
 Low-code: Fix the component manifest schema to and validate check instead of checker
 

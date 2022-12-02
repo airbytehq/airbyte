@@ -261,7 +261,7 @@ class StandardSyncPersistenceE2ETest extends BaseConfigDatabaseTest {
   }
 
   private DestinationConnection createDestinationConnection(final UUID workspaceId, final StandardDestinationDefinition destDef)
-      throws JsonValidationException, IOException {
+      throws IOException {
     final UUID destinationId = UUID.randomUUID();
     final DestinationConnection dest = new DestinationConnection()
         .withName("source-" + destinationId)

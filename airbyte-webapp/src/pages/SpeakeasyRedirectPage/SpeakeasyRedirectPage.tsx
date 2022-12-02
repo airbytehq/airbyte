@@ -1,12 +1,12 @@
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 import { LoadingPage } from "components/LoadingPage";
 
-import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
-import { useSpeakeasyRedirect } from "packages/cloud/services/cloudApi/useSpeakeasyRedirect";
+import { AppMonitoringServiceProviderValue, useAppMonitoringService } from "hooks/services/AppMonitoringService";
+import { useSpeakeasyRedirect } from "packages/cloud/services/speakeasy";
 import { RoutePaths } from "pages/routePaths";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 
@@ -15,7 +15,9 @@ export const SpeakeasyRedirectPage = () => {
 
   return (
     <SpeakeasyErrorBoundary trackError={trackError}>
-      <SpeakeasyLoginRedirect />
+      <Suspense fallback={<LoadingPage />}>
+        <SpeakeasyLoginRedirect />
+      </Suspense>
     </SpeakeasyErrorBoundary>
   );
 };
@@ -23,11 +25,13 @@ export const SpeakeasyRedirectPage = () => {
 const SpeakeasyLoginRedirect = () => {
   const { redirectUrl } = useSpeakeasyRedirect();
 
-  return (
-    <Suspense fallback={<LoadingPage />}>
-      {redirectUrl ? <Navigate to={redirectUrl} /> : <CloudApiErrorView />}
-    </Suspense>
-  );
+  useEffect(() => {
+    if (redirectUrl) {
+      window.location.replace(redirectUrl);
+    }
+  }, [redirectUrl]);
+
+  return redirectUrl ? <LoadingPage /> : <CloudApiErrorView />;
 };
 
 const CloudApiErrorView = () => {
@@ -35,7 +39,7 @@ const CloudApiErrorView = () => {
   return (
     <ErrorOccurredView
       message={<FormattedMessage id="cloudApi.loginCallbackUrlError" />}
-      ctaButtonText={<FormattedMessage id="ui.goBack" />}
+      ctaButtonText={<FormattedMessage id="ui.goToHome" />}
       onCtaButtonClick={() => {
         navigate(RoutePaths.Root);
       }}
@@ -44,7 +48,7 @@ const CloudApiErrorView = () => {
 };
 
 interface SpeakeasyErrorBoundaryProps {
-  trackError: (e: Error, context?: Record<string, unknown>) => void;
+  trackError: AppMonitoringServiceProviderValue["trackError"];
 }
 
 export class SpeakeasyErrorBoundary extends React.Component<React.PropsWithChildren<SpeakeasyErrorBoundaryProps>> {
