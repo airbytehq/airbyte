@@ -865,6 +865,20 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
+  public List<StandardSync> listConnectionsBySource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
+        .from(CONNECTION)
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .where(CONNECTION.SOURCE_ID.eq(sourceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
+  }
+
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> connectionAndOperationIdsResult) {
     final List<StandardSync> standardSyncs = new ArrayList<>();
 

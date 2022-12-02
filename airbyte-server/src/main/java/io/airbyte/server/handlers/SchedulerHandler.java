@@ -16,6 +16,7 @@ import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
@@ -403,10 +404,32 @@ public class SchedulerHandler {
     } else {
       connectionStatus = connectionRead.getStatus();
     }
-    updateObject.status(connectionStatus);
-    connectionsHandler.updateConnection(updateObject);
-    discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
 
+    // final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog
+    // = connectionsHandler
+    // .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
+    //
+    // final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
+    // connectionRead.getSyncCatalog();
+    // CatalogDiff diff =
+    // connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog),
+    // discoveredSchema.getCatalog(),
+    // CatalogConverter.toProtocol(currentAirbyteCatalog));
+    // boolean containsBreakingChange = containsBreakingChange(diff);
+    // ConnectionUpdate updateObject =
+    // new
+    // ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
+    // ConnectionStatus connectionStatus;
+    // if (shouldDisableConnection(containsBreakingChange,
+    // connectionRead.getNonBreakingChangesPreference(), diff)) {
+    // connectionStatus = ConnectionStatus.INACTIVE;
+    // } else {
+    // connectionStatus = ConnectionStatus.ACTIVE;
+    // }
+    // updateObject.status(connectionStatus);
+    // connectionsHandler.updateConnection(updateObject);
+    // discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
+    //
   }
 
   private boolean shouldDisableConnection(final boolean containsBreakingChange,
