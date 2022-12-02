@@ -73,5 +73,9 @@
         }
       }]
     }
-  }
+  },
+  "required": [
+    "account_id",
+    "start_date"
+  ]
 }
