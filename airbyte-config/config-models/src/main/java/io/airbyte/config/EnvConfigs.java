@@ -202,6 +202,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -1048,6 +1049,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getWorkflowFailureRestartDelaySeconds() {
     return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public boolean getAutoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
   }
 
   @Override

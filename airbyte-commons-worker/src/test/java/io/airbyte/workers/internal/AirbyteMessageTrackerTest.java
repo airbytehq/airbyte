@@ -5,6 +5,8 @@
 package io.airbyte.workers.internal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +21,8 @@ import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -28,9 +32,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class AirbyteMessageTrackerTest {
 
-  private static final String STREAM_1 = "stream1";
-  private static final String STREAM_2 = "stream2";
-  private static final String STREAM_3 = "stream3";
+  private static final String NAMESPACE_1 = "avengers";
+  private static final String STREAM_1 = "iron man";
+  private static final String STREAM_2 = "black widow";
+  private static final String STREAM_3 = "hulk";
   private static final String INDUCED_EXCEPTION = "induced exception";
 
   private AirbyteMessageTracker messageTracker;
@@ -277,11 +282,11 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testGetFirstDestinationAndSourceMessages() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
+  void testGetFirstDestinationAndSourceMessages() {
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createErrorMessage("source trace 1", 123.0);
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createErrorMessage("source trace 2", 124.0);
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createErrorMessage("dest trace 2", 126.0);
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
@@ -292,39 +297,118 @@ class AirbyteMessageTrackerTest {
   }
 
   @Test
-  void testGetFirstDestinationAndSourceMessagesWithNulls() throws Exception {
-    assertEquals(messageTracker.getFirstDestinationErrorTraceMessage(), null);
-    assertEquals(messageTracker.getFirstSourceErrorTraceMessage(), null);
+  void testGetFirstDestinationAndSourceMessagesWithNulls() {
+    assertNull(messageTracker.getFirstDestinationErrorTraceMessage());
+    assertNull(messageTracker.getFirstSourceErrorTraceMessage());
   }
 
   @Test
-  void testErrorTraceMessageFailureWithMultipleTraceErrors() throws Exception {
-    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createTraceMessage("source trace 1", Double.valueOf(123));
-    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createTraceMessage("source trace 2", Double.valueOf(124));
-    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
-    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createTraceMessage("dest trace 2", Double.valueOf(126));
+  void testErrorTraceMessageFailureWithMultipleTraceErrors() {
+    final AirbyteMessage sourceMessage1 = AirbyteMessageUtils.createErrorMessage("source trace 1", 123.0);
+    final AirbyteMessage sourceMessage2 = AirbyteMessageUtils.createErrorMessage("source trace 2", 124.0);
+    final AirbyteMessage destMessage1 = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
+    final AirbyteMessage destMessage2 = AirbyteMessageUtils.createErrorMessage("dest trace 2", 126.0);
     messageTracker.acceptFromSource(sourceMessage1);
     messageTracker.acceptFromSource(sourceMessage2);
     messageTracker.acceptFromDestination(destMessage1);
     messageTracker.acceptFromDestination(destMessage2);
 
     final FailureReason failureReason = FailureHelper.sourceFailure(sourceMessage1.getTrace(), Long.valueOf(123), 1);
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1),
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1),
         failureReason);
   }
 
   @Test
-  void testErrorTraceMessageFailureWithOneTraceError() throws Exception {
-    final AirbyteMessage destMessage = AirbyteMessageUtils.createTraceMessage("dest trace 1", Double.valueOf(125));
+  void testErrorTraceMessageFailureWithOneTraceError() {
+    final AirbyteMessage destMessage = AirbyteMessageUtils.createErrorMessage("dest trace 1", 125.0);
     messageTracker.acceptFromDestination(destMessage);
 
     final FailureReason failureReason = FailureHelper.destinationFailure(destMessage.getTrace(), Long.valueOf(123), 1);
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), failureReason);
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1), failureReason);
   }
 
   @Test
-  void testErrorTraceMessageFailureWithNoTraceErrors() throws Exception {
-    assertEquals(messageTracker.errorTraceMessageFailure(Long.valueOf(123), 1), null);
+  void testErrorTraceMessageFailureWithNoTraceErrors() {
+    assertEquals(messageTracker.errorTraceMessageFailure(123L, 1), null);
+  }
+
+  @Nested
+  class Estimates {
+
+    // receiving an estimate for two streams should save
+    @Test
+    @DisplayName("when given stream estimates, should return correct per-stream estimates")
+    void streamShouldSaveAndReturnIndividualStreamCountsCorrectly() {
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      messageTracker.acceptFromSource(est2);
+
+      final var streamToEstBytes = messageTracker.getStreamToEstimatedBytes();
+      final var expStreamToEstBytes = Map.of(
+          new AirbyteStreamNameNamespacePair(STREAM_1, NAMESPACE_1), 100L,
+          new AirbyteStreamNameNamespacePair(STREAM_2, NAMESPACE_1), 200L);
+      assertEquals(expStreamToEstBytes, streamToEstBytes);
+
+      final var streamToEstRecs = messageTracker.getStreamToEstimatedRecords();
+      final var expStreamToEstRecs = Map.of(
+          new AirbyteStreamNameNamespacePair(STREAM_1, NAMESPACE_1), 10L,
+          new AirbyteStreamNameNamespacePair(STREAM_2, NAMESPACE_1), 10L);
+      assertEquals(expStreamToEstRecs, streamToEstRecs);
+    }
+
+    @Test
+    @DisplayName("when given stream estimates, should return correct total estimates")
+    void streamShouldSaveAndReturnTotalCountsCorrectly() {
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_2, NAMESPACE_1, 200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      messageTracker.acceptFromSource(est2);
+
+      final var totalEstBytes = messageTracker.getTotalBytesEstimated();
+      assertEquals(300L, totalEstBytes);
+
+      final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
+      assertEquals(20L, totalEstRecs);
+    }
+
+    @Test
+    @DisplayName("should error when given both Stream and Sync estimates")
+    void shouldErrorOnBothStreamAndSyncEstimates() {
+      final var est1 = AirbyteMessageUtils.createStreamEstimateMessage(STREAM_1, NAMESPACE_1, 100L, 10L);
+      final var est2 = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
+
+      messageTracker.acceptFromSource(est1);
+      assertThrows(IllegalArgumentException.class, () -> messageTracker.acceptFromSource(est2));
+    }
+
+    @Test
+    @DisplayName("when given sync estimates, should return correct total estimates")
+    void syncShouldSaveAndReturnTotalCountsCorrectly() {
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
+      messageTracker.acceptFromSource(est);
+
+      final var totalEstBytes = messageTracker.getTotalBytesEstimated();
+      assertEquals(200L, totalEstBytes);
+
+      final var totalEstRecs = messageTracker.getTotalRecordsEstimated();
+      assertEquals(10L, totalEstRecs);
+    }
+
+    @Test
+    @DisplayName("when given sync estimates, should not return any per-stream estimates")
+    void syncShouldNotHaveStreamEstimates() {
+      final var est = AirbyteMessageUtils.createSyncEstimateMessage(200L, 10L);
+      messageTracker.acceptFromSource(est);
+
+      final var streamToEstBytes = messageTracker.getStreamToEstimatedBytes();
+      assertTrue(streamToEstBytes.isEmpty());
+      final var streamToEstRecs = messageTracker.getStreamToEstimatedRecords();
+      assertTrue(streamToEstRecs.isEmpty());
+    }
+
   }
 
 }
