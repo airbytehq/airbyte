@@ -1,7 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
+import requests
 from abc import ABC, abstractmethod
 from requests import HTTPError
 from typing import Dict, List, Optional, Text, Tuple
@@ -49,21 +51,29 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
-            return self.handle_http_error(stream, error)
+            return self.handle_http_error(source, logger, stream, error)
         return True, None
 
-    def handle_http_error(self, stream: Stream, error: HTTPError):
+    def handle_http_error(self, source: Source, logger: logging.Logger, stream: Stream, error: HTTPError):
         """
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
 
+        :param source: source
+        :param logger: source logger
         :param stream: stream
         :param error: HTTPerror raised while checking stream's availability.
         :return: A tuple of (boolean, str). If boolean is true, then the stream
           is available. Otherwise, the stream is unavailable for some reason and
           the str should describe what went wrong.
         """
-        return False, repr(error)
+        if error.response.status_code == requests.codes.FORBIDDEN:
+            error_message = "This is most likely due to insufficient permissions on the credentials in use. "
+            error_message += self._visit_docs_message(source, logger)
+            return False, error_message
+
+        error_message = repr(error)
+        return False, error_message
 
     def _get_stream_slice(self, stream):
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
@@ -78,6 +88,25 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
             return next(slices)
         except StopIteration:
             return {}
+
+    def _visit_docs_message(self, source: Source, logger: logging.Logger) -> str:
+        """
+        :param source:
+        :return: A message telling the user where to go to learn more about the source.
+        """
+        try:
+            connector_spec = source.spec(logger)
+            docs_url = connector_spec.documentationUrl
+            if docs_url:
+                learn_more_message = f"Please visit {docs_url} to learn more. "
+            else:
+                learn_more_message = "Please visit the connector's documentation to learn more. "
+
+        except FileNotFoundError:  # If we are unit testing without implementing spec()
+            docs_url = "https://docs.airbyte.com/integrations/sources/test"
+            learn_more_message = f"Please visit {docs_url} to learn more."
+
+        return learn_more_message
 
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
@@ -99,19 +128,18 @@ class ScopedAvailabilityStrategy(AvailabilityStrategy):
             return True, None
         else:
             missing_scopes = [scope for scope in required_scopes_for_stream if scope not in granted_scopes]
-            return False, f"Missing required scopes: {missing_scopes} for stream {stream.name}. Granted scopes: {granted_scopes}"
+            error_message = f"Missing required scopes: {missing_scopes} for stream {stream.name}. Granted scopes: {granted_scopes}"
+            return False, error_message
 
     @abstractmethod
     def get_granted_scopes(self) -> List[Text]:
         """
-
         :return: A list of scopes granted to the user.
         """
 
     @abstractmethod
     def required_scopes(self) -> Dict[Text, List[Text]]:
         """
-
         :return: A dict of (stream name: list of required scopes). Should contain
         at minimum all streams defined in self.streams.
         """

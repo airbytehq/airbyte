@@ -114,7 +114,14 @@ def test_http_availability_strategy(mocker):
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
     assert source.availability_strategy.check_availability(source, logger, stream_1)[0] is False
-    assert "403 Client Error" in source.availability_strategy.check_availability(source, logger, stream_1)[1]
+
+    expected_messages = [
+        "This is most likely due to insufficient permissions on the credentials in use.",
+        "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
+    ]
+    actual_message = source.availability_strategy.check_availability(source, logger, stream_1)[1]
+    for message in expected_messages:
+        assert message in actual_message
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
