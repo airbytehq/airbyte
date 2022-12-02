@@ -6,7 +6,8 @@ import {
   SourceDefinitionRead,
   SourceRead,
   WebBackendConnectionListItem,
-} from "../../core/request/AirbyteClient";
+} from "core/request/AirbyteClient";
+
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
 const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
@@ -94,6 +95,7 @@ export const getConnectionTableData = (
         : getConnectorTypeName(connection[connectType]),
     lastSync: connection.latestSyncJobCreatedAt,
     enabled: connection.status === ConnectionStatus.active,
+    schemaChange: connection.schemaChange,
     scheduleData: connection.scheduleData,
     scheduleType: connection.scheduleType,
     status: connection.status,

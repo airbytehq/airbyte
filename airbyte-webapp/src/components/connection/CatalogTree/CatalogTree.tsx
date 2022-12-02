@@ -8,6 +8,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { naturalComparatorBy } from "utils/objects";
 
 import { BulkHeader } from "./BulkHeader";
+import styles from "./CatalogTree.module.scss";
 import { CatalogTreeBody } from "./CatalogTreeBody";
 import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
@@ -65,23 +66,25 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        {isNewStreamsTableEnabled ? (
-          <>
-            <StreamConnectionHeader />
-            <CatalogTreeTableHeader />
-          </>
-        ) : (
-          <>
-            <CatalogTreeHeader />
-            <CatalogTreeSubheader />
-            <BulkHeader />
-          </>
-        )}
-        <CatalogTreeBody
-          streams={filteredStreams}
-          changedStreams={changedStreams}
-          onStreamChanged={onSingleStreamChanged}
-        />
+        <div className={isNewStreamsTableEnabled ? undefined : styles.catalogTreeTable}>
+          {isNewStreamsTableEnabled ? (
+            <>
+              <StreamConnectionHeader />
+              <CatalogTreeTableHeader />
+            </>
+          ) : (
+            <>
+              <CatalogTreeHeader />
+              <CatalogTreeSubheader />
+              <BulkHeader />
+            </>
+          )}
+          <CatalogTreeBody
+            streams={filteredStreams}
+            changedStreams={changedStreams}
+            onStreamChanged={onSingleStreamChanged}
+          />
+        </div>
       </LoadingBackdrop>
       {isNewStreamsTableEnabled && <BulkEditPanel />}
     </BulkEditServiceProvider>
