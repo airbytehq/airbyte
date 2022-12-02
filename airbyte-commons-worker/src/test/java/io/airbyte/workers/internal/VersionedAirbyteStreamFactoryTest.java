@@ -11,7 +11,6 @@ import static org.mockito.Mockito.verify;
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
-import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
