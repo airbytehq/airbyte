@@ -1,0 +1,15 @@
+{
+  "properties": {
+    "contacts": {
+      "type": ["null", "array"],
+      "items": {
+        "type": null,
+        "oneOf": [{
+          "type": ["null", "integer"]
+        }, {
+          "type": ["null", "string"]
+        }]
+      }
+    }
+  }
+}
