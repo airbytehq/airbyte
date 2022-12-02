@@ -1,5 +1,13 @@
-{
-  "sat_basic_dataset": {
-    "id": 99999
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 99999
+      },
+      "stream_descriptor": {
+        "name": "sat_basic_dataset"
+      }
+    }
   }
-}
+]
