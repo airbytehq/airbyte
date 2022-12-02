@@ -16936,7 +16936,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-elasticsearch:0.1.0"
+- dockerImage: "airbyte/source-elasticsearch:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/source/elasticsearch"
     connectionSpecification:
@@ -16945,7 +16945,7 @@
       type: "object"
       required:
       - "endpoint"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         endpoint:
           title: "Server Endpoint"
@@ -16957,7 +16957,7 @@
           description: "The type of authentication to be used"
           oneOf:
           - title: "None"
-            additionalProperties: false
+            additionalProperties: true
             description: "No authentication will be used"
             required:
             - "method"
@@ -16966,7 +16966,7 @@
                 type: "string"
                 const: "none"
           - title: "Api Key/Secret"
-            additionalProperties: false
+            additionalProperties: true
             description: "Use a api key and secret combination to authenticate"
             required:
             - "method"
@@ -16987,7 +16987,7 @@
                 type: "string"
                 airbyte_secret: true
           - title: "Username/Password"
-            additionalProperties: false
+            additionalProperties: true
             description: "Basic auth header with a username and password"
             required:
             - "method"
