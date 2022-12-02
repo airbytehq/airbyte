@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables" as vars;
+@use "scss/z-indices";
 
 $toast-icon-size: 13px;
 $toast-icon-container-size: 34px;
@@ -41,7 +42,7 @@ $toast-icon-container-size: 34px;
   bottom: 49px;
   left: 50%;
   transform: translate(-50%, 0);
-  z-index: 20;
+  z-index: z-indices.$notification;
   padding: vars.$spacing-md;
   border-radius: vars.$border-radius-md;
   animation: slide-up-animations 0.25s ease-out;
