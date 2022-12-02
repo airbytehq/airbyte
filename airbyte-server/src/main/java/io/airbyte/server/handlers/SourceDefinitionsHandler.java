@@ -219,7 +219,11 @@ public class SourceDefinitionsHandler {
   private StandardSourceDefinition sourceDefinitionFromCreate(final SourceDefinitionCreate sourceDefinitionCreate)
       throws IOException {
     final ConnectorSpecification spec =
-        getSpecForImage(sourceDefinitionCreate.getDockerRepository(), sourceDefinitionCreate.getDockerImageTag(), true);
+        getSpecForImage(
+            sourceDefinitionCreate.getDockerRepository(),
+            sourceDefinitionCreate.getDockerImageTag(),
+            // Only custom connectors can be created via handlers.
+            true);
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 

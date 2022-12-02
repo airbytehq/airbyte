@@ -176,13 +176,17 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection();
 
+          // custom connectors run in an isolated node pool from airbyte-supported connectors
+          // to reduce the blast radius of any problems with custom connector code.
+          final var nodeSelectors = isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors()) : workerConfigs.getworkerKubeNodeSelectors();
+
           try {
             process.create(
                 allLabels,
                 resourceRequirements,
                 fileMap,
                 portMap,
-                isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors() : workerConfigs.getworkerKubeNodeSelectors());
+                nodeSelectors);
           } catch (final KubernetesClientException e) {
             ApmTraceUtils.addExceptionToTrace(e);
             throw new WorkerException(

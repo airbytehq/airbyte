@@ -9,6 +9,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -18,7 +19,7 @@ public class WorkerConfigs {
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
-  private final Map<String, String> workerIsolatedKubeNodeSelectors;
+  private final Optional<Map<String, String>> workerIsolatedKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
   private final String jobImagePullSecret;
   private final String jobImagePullPolicy;
@@ -42,7 +43,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
-        configs.getUseCustomKubeNodeSelector() ? configs.getIsolatedJobKubeNodeSelectors() : configs.getJobKubeNodeSelectors(),
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -74,7 +75,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
-        configs.getUseCustomKubeNodeSelector() ? configs.getIsolatedJobKubeNodeSelectors() : nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -106,7 +107,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
-        configs.getUseCustomKubeNodeSelector() ? configs.getIsolatedJobKubeNodeSelectors() : nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -138,7 +139,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
-        configs.getUseCustomKubeNodeSelector() ? configs.getIsolatedJobKubeNodeSelectors() : nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -159,7 +160,7 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
-        configs.getUseCustomKubeNodeSelector() ? configs.getIsolatedJobKubeNodeSelectors() : configs.getJobKubeNodeSelectors(),
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
@@ -186,7 +187,7 @@ public class WorkerConfigs {
     return workerKubeNodeSelectors;
   }
 
-  public Map<String, String> getWorkerIsolatedKubeNodeSelectors() {
+  public Optional<Map<String, String>> getWorkerIsolatedKubeNodeSelectors() {
     return workerIsolatedKubeNodeSelectors;
   }
 

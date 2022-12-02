@@ -101,6 +101,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
         SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
+    // At this moment, if either source or destination is from custom connector image, we will put all jobs into isolated pool to run.
+    boolean useIsolatedPool = sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector();
     log.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),
@@ -108,7 +110,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getSourceResourceRequirements(),
-        sourceLauncherConfig.getIsCustomConnector());
+        useIsolatedPool);
 
     log.info("Setting up destination launcher...");
     final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
@@ -117,7 +119,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         destinationLauncherConfig.getDockerImage(),
         processFactory,
         syncInput.getDestinationResourceRequirements(),
-        destinationLauncherConfig.getIsCustomConnector());
+        useIsolatedPool);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.

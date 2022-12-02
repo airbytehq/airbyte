@@ -246,7 +246,11 @@ public class SchedulerHandler {
     final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
     if (currentCatalog.isEmpty() || bustActorCatalogCache) {
       final SynchronousResponse<UUID> persistedCatalogId =
-          synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, connectorVersion, new Version(sourceDef.getProtocolVersion()),
+          synchronousSchedulerClient.createDiscoverSchemaJob(
+              source,
+              imageName,
+              connectorVersion,
+              new Version(sourceDef.getProtocolVersion()),
               isCustomConnector);
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
@@ -286,8 +290,13 @@ public class SchedulerHandler {
         .withSourceDefinitionId(sourceCreate.getSourceDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(sourceCreate.getWorkspaceId());
-    final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(source, imageName, sourceDef.getDockerImageTag(),
-        new Version(sourceDef.getProtocolVersion()), isCustomConnector);
+    final SynchronousResponse<UUID> response = synchronousSchedulerClient.createDiscoverSchemaJob(
+        source,
+        imageName,
+        sourceDef.getDockerImageTag(),
+        new Version(
+            sourceDef.getProtocolVersion()),
+            isCustomConnector);
     return retrieveDiscoveredSchema(response);
   }
 

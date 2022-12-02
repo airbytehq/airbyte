@@ -216,7 +216,9 @@ public class DestinationDefinitionsHandler {
   private StandardDestinationDefinition destinationDefinitionFromCreate(final DestinationDefinitionCreate destinationDefCreate) throws IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefCreate.getDockerRepository(),
-        destinationDefCreate.getDockerImageTag(), true);
+        destinationDefCreate.getDockerImageTag(),
+        // Only custom connectors can be created via handlers.
+        true);
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 

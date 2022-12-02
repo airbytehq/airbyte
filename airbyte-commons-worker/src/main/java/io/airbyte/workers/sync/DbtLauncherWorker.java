@@ -44,6 +44,8 @@ public class DbtLauncherWorker extends LauncherWorker<OperatorDbtInput, Void> {
         serverPort,
         temporalUtils,
         workerConfigs,
+        // Custom connector does not use Dbt at this moment, thus this flag for runnning job under
+        // isolated pool can be set to false.
         false);
   }
 

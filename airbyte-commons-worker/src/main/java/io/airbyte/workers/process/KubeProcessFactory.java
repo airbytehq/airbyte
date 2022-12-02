@@ -108,7 +108,8 @@ public class KubeProcessFactory implements ProcessFactory {
 
       final var allLabels = getLabels(jobId, attempt, customLabels);
 
-      final var nodeSelectors = usesIsolatedPool ? workerConfigs.getWorkerIsolatedKubeNodeSelectors() : workerConfigs.getworkerKubeNodeSelectors();
+      // If using isolated pool, check workerConfigs has isolated pool set. If not set, fall back to use regular node pool.
+      final var nodeSelectors = usesIsolatedPool ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors()) : workerConfigs.getworkerKubeNodeSelectors();
 
       return new KubePodProcess(
           isOrchestrator,

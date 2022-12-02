@@ -57,21 +57,26 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
   private final ResourceRequirements resourceRequirement;
   private final FeatureFlags featureFlags;
 
-  private final boolean useIsolatedNodePool;
+  /**
+   * If true, launcher will use a separated isolated pool to run the job.
+   * 
+   * At this moment, we put custom connector jobs into an isolated pool.
+   */
+  private final boolean useIsolatedPool;
 
   public AirbyteIntegrationLauncher(final String jobId,
                                     final int attempt,
                                     final String imageName,
                                     final ProcessFactory processFactory,
                                     final ResourceRequirements resourceRequirement,
-                                    final boolean useIsolatedNodePool) {
+                                    final boolean useIsolatedPool) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.imageName = imageName;
     this.processFactory = processFactory;
     this.resourceRequirement = resourceRequirement;
     this.featureFlags = new EnvVariableFeatureFlags();
-    this.useIsolatedNodePool = useIsolatedNodePool;
+    this.useIsolatedPool = useIsolatedPool;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -84,7 +89,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        useIsolatedNodePool,
+        useIsolatedPool,
         false,
         Collections.emptyMap(),
         null,
@@ -105,7 +110,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        useIsolatedNodePool,
+        useIsolatedPool,
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
@@ -127,7 +132,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        useIsolatedNodePool,
+        useIsolatedPool,
         false,
         ImmutableMap.of(configFilename, configContents),
         null,
@@ -173,7 +178,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        useIsolatedNodePool,
+        useIsolatedPool,
         false,
         files,
         null,
@@ -203,7 +208,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         attempt,
         jobRoot,
         imageName,
-        useIsolatedNodePool,
+        useIsolatedPool,
         true,
         files,
         null,
