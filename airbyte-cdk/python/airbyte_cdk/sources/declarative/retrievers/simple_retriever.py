@@ -364,9 +364,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            lambda req, res, state, _slice: self.parse_records_and_emit_request_and_responses(
-                req, res, stream_slice=_slice, stream_state=state
-            ),
+            self.parse_records_and_emit_request_and_responses,
             stream_slice,
             stream_state,
         )
@@ -411,13 +409,11 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
             yield self._create_trace_message_from_response(response)
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
-        yield from self._read_pages(
-            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
-        )
+        yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
     def _create_trace_message_from_request(self, request: requests.PreparedRequest):
         # FIXME: this should return some sort of trace message
-        request_dict = {"url": request.url, "headers": dict(request.headers), "body": request.body}
+        request_dict = {"url": request.url, "http_method": request.method, "headers": dict(request.headers), "body": request.body}
         log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 

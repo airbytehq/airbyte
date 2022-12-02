@@ -5,11 +5,11 @@
 package io.airbyte.integrations.destination.pulsar;
 
 import io.airbyte.commons.lang.Exceptions;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class PulsarRecordConsumer extends FailureTrackingAirbyteMessageConsumer 
 
   Map<AirbyteStreamNameNamespacePair, Producer<GenericRecord>> buildProducerMap() {
     return catalog.getStreams().stream()
-        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream.getStream()))
+        .map(stream -> AirbyteStreamNameNamespacePair.fromAirbyteStream(stream.getStream()))
         .collect(Collectors.toMap(Function.identity(), pair -> {
           String topic = nameTransformer.getIdentifier(config.getTopicPattern()
               .replaceAll("\\{namespace}", Optional.ofNullable(pair.getNamespace()).orElse(""))

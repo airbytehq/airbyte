@@ -116,13 +116,19 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section>
+        <Section className={styles.flush}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={refreshSchema} type="button" variant="secondary" disabled={isSubmitting}>
+              <Button
+                onClick={refreshSchema}
+                type="button"
+                variant="secondary"
+                data-testid="refresh-source-schema-btn"
+                disabled={isSubmitting}
+              >
                 <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>

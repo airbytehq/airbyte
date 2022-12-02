@@ -11,7 +11,7 @@ import {
   ConnectorSpecification,
   ConnectorT,
 } from "core/domain/connector";
-import { SynchronousJobRead } from "core/request/AirbyteClient";
+import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
@@ -28,6 +28,7 @@ import { useTestConnector } from "./useTestConnector";
 // https://github.com/airbytehq/airbyte/issues/18553
 interface ConnectorCardBaseProps {
   title?: React.ReactNode;
+  description?: React.ReactNode;
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
@@ -58,8 +59,13 @@ interface ConnectorCardEditProps extends ConnectorCardBaseProps {
   connector: ConnectorT;
 }
 
+const getConnectorId = (connectorRead: DestinationRead | SourceRead) => {
+  return "sourceId" in connectorRead ? connectorRead.sourceId : connectorRead.destinationId;
+};
+
 export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
+  description,
   full,
   jobInfo,
   onSubmit,
@@ -152,7 +158,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
 
   return (
-    <Card title={title} fullWidth={full}>
+    <Card title={title} description={description} fullWidth={full}>
       <div className={styles.cardForm}>
         <div className={styles.connectorSelectControl}>
           <ConnectorDefinitionTypeControl
@@ -168,6 +174,10 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         {additionalSelectorComponent}
         <div>
           <ConnectorForm
+            // Causes the whole ConnectorForm to be unmounted and a new instance mounted whenever the connector type changes.
+            // That way we carry less state around inside it, preventing any state from one connector type from affecting another
+            // connector type's form in any way.
+            key={selectedConnectorDefinition && Connector.id(selectedConnectorDefinition)}
             {...props}
             selectedConnectorDefinition={selectedConnectorDefinition}
             selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
@@ -180,6 +190,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             successMessage={
               props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
             }
+            connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
           />
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
           {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}

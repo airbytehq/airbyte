@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
+## 0.11.0
+Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
+
+## 0.10.0
+Low-code: Add `start_from_page` option to a PageIncrement class
+
+## 0.9.5
+Low-code: Add jinja macro `format_datetime`
+
+## 0.9.4
+Low-code: Fix reference resolution for connector builder
+
+## 0.9.3
+Low-code: Avoid duplicate HTTP query in `simple_retriever`
+
+## 0.9.2
+Low-code: Make `default_paginator.page_token_option` optional
+
 ## 0.9.1
 Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
 

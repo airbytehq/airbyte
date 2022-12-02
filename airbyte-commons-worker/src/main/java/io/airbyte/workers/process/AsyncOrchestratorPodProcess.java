@@ -260,7 +260,8 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   public void create(final Map<String, String> allLabels,
                      final ResourceRequirements resourceRequirements,
                      final Map<String, String> fileMap,
-                     final Map<Integer, Integer> portMap) {
+                     final Map<Integer, Integer> portMap,
+                     final Map<String, String> nodeSelectors) {
     final List<Volume> volumes = new ArrayList<>();
     final List<VolumeMount> volumeMounts = new ArrayList<>();
     final List<EnvVar> envVars = new ArrayList<>();
@@ -352,6 +353,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
         .withContainers(mainContainer)
         .withInitContainers(initContainer)
         .withVolumes(volumes)
+        .withNodeSelector(nodeSelectors)
         .endSpec()
         .build();
 
@@ -391,7 +393,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 
-  public static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed
