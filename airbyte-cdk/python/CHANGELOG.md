@@ -1,6 +1,9 @@
 # Changelog
 
 ## 0.11.2
+Low-code: Log response error message on failure
+
+## 0.11.2
 Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
 
 ## 0.11.1
