@@ -25,6 +25,7 @@ export const ChangesStatusIcon: React.FC<ChangesStatusIconProps> = ({ schemaChan
   });
   return (
     <Tooltip
+      placement="left"
       containerClassName={styles.tooltipContainer}
       control={<FontAwesomeIcon className={iconStyle} icon={faExclamationCircle} size="2x" />}
     >
