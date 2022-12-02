@@ -99,7 +99,6 @@ export const getConnectionTableData = (
     scheduleData: connection.scheduleData,
     scheduleType: connection.scheduleType,
     status: connection.status,
-    schemaChange: connection.schemaChange,
     isSyncing: connection.isSyncing,
     lastSyncStatus: getConnectionSyncStatus(connection.status, connection.latestSyncJobStatus),
     connectorIcon: type === "destination" ? connection.source.icon : connection.destination.icon,

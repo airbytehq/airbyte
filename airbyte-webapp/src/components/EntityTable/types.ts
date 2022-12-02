@@ -28,7 +28,6 @@ interface ITableDataItem {
   scheduleType?: ConnectionScheduleType;
   schemaChange: SchemaChange;
   lastSyncStatus: string | null;
-  schemaChange: SchemaChange;
   connectorIcon?: string;
   entityIcon?: string;
 }
