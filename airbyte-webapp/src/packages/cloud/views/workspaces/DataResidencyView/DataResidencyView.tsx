@@ -80,7 +80,7 @@ export const DataResidencyView: React.FC = () => {
                       label={<FormattedMessage id="settings.defaultGeography" />}
                       message={
                         <FormattedMessage
-                          id="connection.geographyDescription"
+                          id="settings.geographyDescription"
                           values={{
                             lnk: (node: React.ReactNode) => (
                               <a href={links.cloudAllowlistIPsLink} target="_blank" rel="noreferrer">
