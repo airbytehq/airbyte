@@ -55,6 +55,8 @@ $toast-icon-container-size: 34px;
 .iconContainer {
   width: $toast-icon-container-size;
   height: $toast-icon-container-size;
+  max-height: $toast-icon-container-size;
+  min-width: $toast-icon-container-size;
   padding: vars.$border-radius-md;
   border-radius: vars.$border-radius-md;
   box-sizing: border-box;
