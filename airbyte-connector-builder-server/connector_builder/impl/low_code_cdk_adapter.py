@@ -52,12 +52,17 @@ class LowCodeSourceAdapter:
             }
         )
         generator = self._source.read(logger=self._source.logger, config=config, catalog=configured_catalog)
+
+        # the generator can raise an exception
+        # iterate over the generated messages. if next raise an exception, catch it and yield it as an AirbyteLogMessage
         while True:
             try:
                 message = next(generator)
                 yield message
             except StopIteration:
+                # done iterating. return
                 return
             except Exception as e:
+                # catch the exception and yield it as an AirbyteLogMessage
                 yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=str(e)))
                 return
