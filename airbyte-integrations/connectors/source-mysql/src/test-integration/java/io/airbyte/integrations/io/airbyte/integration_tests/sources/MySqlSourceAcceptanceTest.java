@@ -4,7 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
