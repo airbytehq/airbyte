@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 
+import { CrossIcon } from "components/icons/CrossIcon";
 import { Text } from "components/ui/Text";
 
 import { Button } from "../Button";
@@ -51,17 +52,12 @@ export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, a
         )}
       </div>
       {onAction && (
-        <Button className={styles.actionButton} onClick={onAction}>
+        <Button variant="dark" className={styles.actionButton} onClick={onAction}>
           {actionBtnText}
         </Button>
       )}
       {onClose && (
-        <Button
-          className={styles.closeButton}
-          variant="clear"
-          onClick={onClose}
-          icon={<FontAwesomeIcon icon={faTimes} />}
-        />
+        <Button variant="clear" className={styles.closeButton} onClick={onClose} size="sm" icon={<CrossIcon />} />
       )}
     </div>
   );

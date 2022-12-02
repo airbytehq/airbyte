@@ -75,15 +75,8 @@ $toast-icon-container-size: 34px;
   text-align: center;
 }
 
-// style can be removed when Button Dark style will be implemented
-// https://github.com/airbytehq/airbyte/issues/19445
-.actionButton {
-  background-color: colors.$dark-blue-900 !important;
-}
-
 .closeButton {
   svg {
-    font-size: 20px;
     color: colors.$dark-blue-900;
   }
 }
