@@ -500,7 +500,7 @@ class PostgresSourceTest {
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
         assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
       } finally {
         db.stop();
       }
@@ -557,7 +557,7 @@ class PostgresSourceTest {
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
         assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
 
       } finally {
         db.stop();
@@ -598,7 +598,7 @@ class PostgresSourceTest {
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
         assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
 
       } finally {
         db.stop();
