@@ -204,8 +204,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_TOPIC_ID, topicId)
-        .put(CONFIG_BATCHING_ENABLED, false)
-        .put(CONFIG_ORDERING_ENABLED, false)
+        .put(CONFIG_BATCHING_ENABLED, true)
+        .put(CONFIG_ORDERING_ENABLED, true)
         .build());
 
     credentials =
