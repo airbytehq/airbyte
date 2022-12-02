@@ -418,7 +418,6 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # FIXME: this should return some sort of trace message
         request_dict = {"url": request.url, "http_method": request.method, "headers": dict(request.headers), "body": request.body}
         log_message = filter_secrets(f"request:{json.dumps(request_dict)}")
-        self.logger.info(f"creating logmessage from request: {request_dict}")
         return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
     def _create_trace_message_from_response(self, response: requests.Response):
