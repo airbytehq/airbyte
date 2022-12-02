@@ -5,8 +5,11 @@
 package io.airbyte.integrations.source.mysql.helpers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
+import io.airbyte.integrations.source.mysql.MySqlCdcTargetPosition;
+import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
@@ -38,10 +41,31 @@ public class CdcConfigurationHelper {
    * @return list of List<CheckedConsumer<JdbcDatabase, Exception>>
    */
   public static List<CheckedConsumer<JdbcDatabase, Exception>> getCheckOperations() {
-    return List.of(getCheckOperation(LOG_BIN, "ON"),
+    return List.of(getMasterStatusOperation(),
+        getCheckOperation(LOG_BIN, "ON"),
         getCheckOperation(BINLOG_FORMAT, "ROW"),
         getCheckOperation(BINLOG_ROW_IMAGE, "FULL"));
 
+  }
+
+  private static CheckedConsumer<JdbcDatabase, Exception> getMasterStatusOperation() {
+    return database -> {
+      try {
+        database.unsafeResultSetQuery(
+            connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
+            resultSet -> {
+              final String file = resultSet.getString("File");
+              final int position = resultSet.getInt("Position");
+              if (file == null || position == 0) {
+                return new MySqlCdcTargetPosition(null, null);
+              }
+              return new MySqlCdcTargetPosition(file, position);
+            });
+      } catch (final SQLException e) {
+        throw new ConfigErrorException("Please grant REPLICATION CLIENT privilege, so that binary log files are available"
+            + " for CDC mode.");
+      }
+    };
   }
 
   private static CheckedConsumer<JdbcDatabase, Exception> getCheckOperation(final String name, final String value) {
