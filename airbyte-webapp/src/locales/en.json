@@ -392,8 +392,6 @@
   "tables.name": "Name",
   "tables.connector": "Connector",
   "tables.connections": "Connections",
-  "tables.connections.changes.breaking": "Platform and Connector don’t use the same protocol version",
-  "tables.connections.changes.non_breaking": "We detected some non-breaking change on the source",
   "tables.sourceConnectWith": "Destination",
   "tables.destinationConnectWith": "Source",
   "tables.sources": "Sources",

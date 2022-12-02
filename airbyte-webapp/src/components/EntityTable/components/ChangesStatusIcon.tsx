@@ -22,7 +22,16 @@ export const ChangesStatusIcon: React.FC<ChangesStatusIconProps> = ({ schemaChan
     [styles.breaking]: schemaChange === "breaking",
     [styles.nonBreaking]: schemaChange === "non_breaking",
   });
-  const tooltipComponent = <FormattedMessage id={`tables.connections.changes.${schemaChange}`} />;
+  let schemaChangeLocalizationKey;
+  switch (schemaChange) {
+    case "breaking":
+      schemaChangeLocalizationKey = "breaking";
+      break;
+    case "non_breaking":
+      schemaChangeLocalizationKey = "nonBreaking";
+      break;
+  }
+  const tooltipComponent = <FormattedMessage id={`connection.schemaChange.${schemaChangeLocalizationKey}`} />;
   return (
     <Tooltip
       containerClassName={styles.tooltipContainer}
