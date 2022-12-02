@@ -1,6 +1,9 @@
 import { ToastProps } from "components/ui/Toast";
 
-export type Notification = ToastProps & { id: string | number; nonClosable?: boolean };
+export interface Notification extends ToastProps {
+  id: string | number;
+  nonClosable?: boolean;
+}
 
 export interface NotificationServiceApi {
   addNotification: (notification: Notification) => void;
