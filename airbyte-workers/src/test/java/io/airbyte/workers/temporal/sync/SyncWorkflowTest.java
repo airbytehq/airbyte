@@ -242,7 +242,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailure() {
+  void testReplicationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -251,6 +251,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -258,7 +260,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() {
+  void testReplicationFailedGracefully() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -272,6 +274,8 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -283,7 +287,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testNormalizationFailure() {
+  void testNormalizationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -297,6 +301,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -304,7 +310,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringReplication() {
+  void testCancelDuringReplication() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doAnswer(ignored -> {
       cancelWorkflow();
       return replicationSuccessOutput;
@@ -316,6 +322,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -323,7 +331,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringNormalization() {
+  void testCancelDuringNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -340,6 +348,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -348,7 +358,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() {
+  void testSkipNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
@@ -363,6 +373,8 @@ class SyncWorkflowTest {
 
     execute();
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
     verifyNoInteractions(normalizationActivity);
@@ -390,9 +402,11 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
     when(configFetchActivity.getStandardSync(any())).thenReturn(new StandardSync().withSourceId(UUID.randomUUID()).withStatus(Status.INACTIVE));
     StandardSyncOutput output = execute();
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyNoInteractions(replicationActivity);
     verifyNoInteractions(normalizationActivity);
     assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);

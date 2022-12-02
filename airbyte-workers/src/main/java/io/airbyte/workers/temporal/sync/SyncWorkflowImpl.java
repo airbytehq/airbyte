@@ -91,32 +91,22 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
     if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-      UUID sourceId = null;
       try {
-        sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
-      } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
-        LOGGER.error("An error occurred fetching the connection during schema refresh processing. Skipping schema refresh. ", e);
-      }
-      try {
-        if (sourceId != null && refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
+        final UUID sourceId = configFetchActivity.getStandardSync(connectionId).getSourceId();
+        if (refreshSchemaActivity.shouldRefreshSchema(sourceId)) {
           LOGGER.info("Refreshing source schema...");
           refreshSchemaActivity.refreshSchema(sourceId, connectionId);
         }
-      } catch (IOException | JsonValidationException | ConfigNotFoundException | ApiException e) {
-        LOGGER.error("An error occurred while refreshing the source schema. Skipping schema refresh. ", e);
-      }
-      Status status = null;
-      try {
-        status = configFetchActivity.getStandardSync(connectionId).getStatus();
-      } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
-        LOGGER.error("An error occurred while fetching the connection status. ", e);
-      }
-      if (Status.INACTIVE == status) {
-        LOGGER.info("Connection is disabled. Cancelling run.");
-        final StandardSyncOutput output =
-            new StandardSyncOutput()
-                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-        return output;
+        final Status status = configFetchActivity.getStandardSync(connectionId).getStatus();
+        if (Status.INACTIVE == status) {
+          LOGGER.info("Connection is disabled. Cancelling run.");
+          final StandardSyncOutput output =
+              new StandardSyncOutput()
+                  .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+          return output;
+        }
+      } catch (JsonValidationException | ConfigNotFoundException | IOException | ApiException e) {
+        LOGGER.error("An error occurred during schema refresh processing. Skipping schema refresh. ", e);
       }
     }
 
