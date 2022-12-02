@@ -78,10 +78,6 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         self._options = options
         self.name = InterpolatedString(self._name, options=options)
 
-    @classmethod
-    def create(cls, component_definitions: SimpleRetrieverConfig):
-        requester = requester.create
-
     @property
     def name(self) -> str:
         """
