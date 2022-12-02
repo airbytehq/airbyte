@@ -64,6 +64,7 @@ def nonempty_file(mock_config):
         file.flush()
         yield file
 
+
 @pytest.fixture
 def nonjson_file(mock_config):
     with tempfile.NamedTemporaryFile("w") as file:
