@@ -50,6 +50,12 @@ class InsightConfig(BaseModel):
         default=[],
     )
 
+    action_breakdowns_allow_empty: bool = Field(
+        description="Allows action_breakdowns be empty list",
+        default=True,
+        airbyte_hidden=True,
+    )
+
     time_increment: Optional[PositiveInt] = Field(
         title="Time Increment",
         description=(
