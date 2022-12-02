@@ -1,5 +1,5 @@
-import { setIn } from "formik";
-import React, { useContext, useMemo, useState } from "react";
+import { setIn, useFormikContext } from "formik";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useSet } from "react-use";
 
 import { SyncSchemaStream } from "core/domain/catalog";
@@ -34,8 +34,16 @@ export const BulkEditServiceProvider: React.FC<
     update: (streams: SyncSchemaStream[]) => void;
   }>
 > = ({ children, nodes, update }) => {
+  const { setStatus, status } = useFormikContext();
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
+
+  const isActive = selectedBatchNodes.size > 0;
+  useEffect(() => {
+    if (status && status.editControlsVisible !== !isActive) {
+      setStatus({ ...status, editControlsVisible: !isActive });
+    }
+  }, [setStatus, isActive, status]);
 
   const resetBulk = () => {
     reset();
@@ -55,8 +63,6 @@ export const BulkEditServiceProvider: React.FC<
     reset();
     resetBulk();
   };
-
-  const isActive = selectedBatchNodes.size > 0;
   const allChecked = selectedBatchNodes.size === nodes.length;
 
   const ctx: BulkEditServiceContext = {
