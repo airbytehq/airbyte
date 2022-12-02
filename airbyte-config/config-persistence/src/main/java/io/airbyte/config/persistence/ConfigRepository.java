@@ -908,7 +908,7 @@ public class ConfigRepository {
   }
 
   public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return listStandardSyncOperationQuery(Optional.empty())
+    return listStandardSyncOperationQuery(Optional.of(operationId))
         .findFirst()
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId));
   }
