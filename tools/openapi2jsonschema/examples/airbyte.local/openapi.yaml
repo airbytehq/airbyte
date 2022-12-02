@@ -2493,8 +2493,6 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
-        connectionStatus:
-          $ref: "#/components/schemas/ConnectionStatus"
       required:
         - jobInfo
       type: object
