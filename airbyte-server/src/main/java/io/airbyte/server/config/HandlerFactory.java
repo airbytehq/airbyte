@@ -9,7 +9,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
-import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 @Factory
@@ -17,7 +16,7 @@ public class HandlerFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public HealthCheckHandler healthCheckHandler(@Named("configRepository") final ConfigRepository configRepository) {
+  public HealthCheckHandler healthCheckHandler(final ConfigRepository configRepository) {
     return new HealthCheckHandler(configRepository);
   }
 

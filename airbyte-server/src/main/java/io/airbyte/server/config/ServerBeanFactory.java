@@ -25,6 +25,7 @@ import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseCheckException;
+import io.airbyte.persistence.job.DefaultJobPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.WorkspaceHelper;
@@ -145,13 +146,9 @@ public class ServerBeanFactory {
                                        final Configs configs,
                                        @Named("config") final DSLContext configsDslContext,
                                        @Named("configFlyway") final Flyway configsFlyway,
+                                       @Named("jobs") final DSLContext jobsDslContext,
                                        @Named("jobsFlyway") final Flyway jobsFlyway,
-                                       @Named("configRepository") final ConfigRepository configRepository,
-                                       final SecretsHydrator secretsHydrator,
-                                       @Named("longLivedSecretPersistence") final SecretPersistence longLivedSecretPersistence,
-                                       @Named("ephemeralSecretPersistence") final SecretPersistence ephemeralSecretPersistence,
-                                       @Named("configDatabase") final Database configsDatabase,
-                                       final JobPersistence jobPersistence,
+                                       final ConfigRepository configRepository,
                                        final HealthApiController healthApiController)
       throws DatabaseCheckException, IOException {
     final Set<Class<?>> componentClasses = Set.of(
@@ -204,17 +201,18 @@ public class ServerBeanFactory {
         configs.getLogConfigs(),
         LogClientSingleton.getInstance().getServerLogsRoot(configs.getWorkspaceRoot()));
 
-    ServerApp.assertDatabasesReady(configs, configsDslContext, configsFlyway, configsDslContext, jobsFlyway);
+    ServerApp.assertDatabasesReady(configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway);
 
-    /*
-     * final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext,
-     * configs); final Optional<SecretPersistence> secretPersistence =
-     * SecretPersistence.getLongLived(configsDslContext, configs); final Optional<SecretPersistence>
-     * ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
-     */
+    final Database configsDatabase = new Database(configsDslContext);
+    final SecretsHydrator secretsHydrator = SecretPersistence.getSecretsHydrator(configsDslContext, configs);
+    final Optional<SecretPersistence> secretPersistence = SecretPersistence.getLongLived(configsDslContext, configs);
+    final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
     final SecretsRepositoryWriter secretsRepositoryWriter =
-        new SecretsRepositoryWriter(configRepository, Optional.of(longLivedSecretPersistence), Optional.of(ephemeralSecretPersistence));
+        new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
+
+    final Database jobsDatabase = new Database(jobsDslContext);
+    final JobPersistence jobPersistence = new DefaultJobPersistence(jobsDatabase);
 
     TrackingClientSingleton.initialize(
         configs.getTrackingStrategy(),
@@ -304,7 +302,7 @@ public class ServerBeanFactory {
         connectionsHandler,
         featureFlags);
 
-    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, configsDatabase, jobsFlyway);
+    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
 
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);

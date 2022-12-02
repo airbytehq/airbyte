@@ -153,7 +153,7 @@ services:
       - AUTO_DETECT_SCHEMA=${AUTO_DETECT_SCHEMA}
     ports:
       - 8001
-      - 8080:8080
+      - 8080
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}
