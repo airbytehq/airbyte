@@ -10,6 +10,7 @@ import { useEnableConnection } from "hooks/services/useConnectionHook";
 
 interface IProps {
   allowSync?: boolean;
+  hasBreakingChange?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
@@ -21,7 +22,7 @@ const ProgressMessage = styled.div`
   padding: 7px 0;
 `;
 
-const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync, allowSync }) => {
+const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync, allowSync, hasBreakingChange }) => {
   const { mutateAsync: enableConnection, isLoading } = useEnableConnection();
 
   const [{ loading }, OnLaunch] = useAsyncFn(async (event: React.SyntheticEvent) => {
@@ -45,7 +46,13 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync
         onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
         onKeyPress={(event: React.SyntheticEvent) => event.stopPropagation()}
       >
-        <Switch checked={enabled} onChange={onSwitchChange} disabled={!allowSync} loading={isLoading} />
+        <Switch
+          checked={enabled}
+          onChange={onSwitchChange}
+          disabled={!allowSync || hasBreakingChange}
+          loading={isLoading}
+          data-testid="enable-connection-switch"
+        />
       </div>
     );
   }
@@ -59,7 +66,13 @@ const StatusCell: React.FC<IProps> = ({ enabled, isManual, id, isSyncing, onSync
   }
 
   return (
-    <Button size="xs" onClick={OnLaunch} isLoading={loading} disabled={!allowSync || !enabled}>
+    <Button
+      size="xs"
+      onClick={OnLaunch}
+      isLoading={loading}
+      disabled={!allowSync || !enabled || hasBreakingChange}
+      data-testid="manual-sync-button"
+    >
       <FormattedMessage id="tables.launch" />
     </Button>
   );
