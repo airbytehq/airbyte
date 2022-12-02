@@ -1,33 +1,30 @@
-@use "../../../../scss/variables";
+@use "scss/variables";
 @use "./DiffSection.module.scss";
 
-.accordionSubHeader {
+.header {
   @extend %sectionSubHeader;
 
-  & .padLeft {
-    padding-left: variables.$spacing-lg;
-  }
+  padding: 0 0 0 30px;
 
   & th {
     font-size: 10px;
     width: 228px;
-    padding-left: variables.$spacing-md;
   }
 }
 
 .table {
   width: 100%;
-  padding-left: variables.$spacing-xl;
+  border-spacing: 0;
 
   & tbody > tr:first-of-type > td:nth-of-type(2) {
-    border-radius: variables.$border-radius-sm variables.$border-radius-sm 0 0;
+    border-radius: variables.$border-radius-md variables.$border-radius-md 0 0;
   }
 
   & tbody > tr:last-of-type > td:nth-of-type(2) {
-    border-radius: 0 0 variables.$border-radius-sm variables.$border-radius-sm;
+    border-radius: 0 0 variables.$border-radius-md variables.$border-radius-md;
   }
 
   & tbody > tr:only-of-type > td:nth-of-type(2) {
-    border-radius: variables.$border-radius-sm;
+    border-radius: variables.$border-radius-md;
   }
 }

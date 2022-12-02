@@ -12,7 +12,7 @@ export const SchemaError = ({ schemaError }: { schemaError: SchemaErrorType }) =
   const { refreshSchema } = useConnectionFormService();
   return (
     <Card>
-      <TryAfterErrorBlock onClick={refreshSchema} />
+      <TryAfterErrorBlock onClick={refreshSchema} message={schemaError?.message} />
       {job && <JobItem job={job} />}
     </Card>
   );

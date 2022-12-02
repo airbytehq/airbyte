@@ -13,7 +13,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator, TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
 from pendulum import DateTime, Period
 
 
@@ -342,16 +342,6 @@ class SourceSlack(AbstractSource):
         credentials = config.get("credentials", {})
         credentials_title = credentials.get("option_title")
         if credentials_title == "Default OAuth2.0 authorization":
-            # We can get `refresh_token` only if the token rotation function is enabled for the Slack Oauth Application.
-            # If it is disabled, then we use the generated `access_token`, which acts without expiration.
-            # https://api.slack.com/authentication/rotation
-            if credentials.get("refresh_token", "").strip():
-                return Oauth2Authenticator(
-                    token_refresh_endpoint="https://slack.com/api/oauth.v2.access",
-                    client_id=credentials["client_id"],
-                    client_secret=credentials["client_secret"],
-                    refresh_token=credentials["refresh_token"],
-                )
             return TokenAuthenticator(credentials["access_token"])
         elif credentials_title == "API Token Credentials":
             return TokenAuthenticator(credentials["api_token"])

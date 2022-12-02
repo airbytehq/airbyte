@@ -5,7 +5,6 @@
     "title": "Airtable Source Spec",
     "type": "object",
     "required": ["api_key", "base_id", "tables"],
-    "additionalProperties": false,
     "properties": {
       "api_key": {
         "type": "string",

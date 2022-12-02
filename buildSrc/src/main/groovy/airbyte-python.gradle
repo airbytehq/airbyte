@@ -92,7 +92,7 @@ class AirbytePythonPlugin implements Plugin<Project> {
             pip 'black:22.3.0'
             pip 'mypy:0.930'
             pip 'isort:5.6.4'
-            pip 'pytest:6.1.2'
+            pip 'pytest:6.2.5'
             pip 'coverage[toml]:6.3.1'
         }
 

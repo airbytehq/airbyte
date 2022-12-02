@@ -1,11 +1,11 @@
 import React from "react";
 
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import styles from "./FormTitle.module.scss";
 
 export const FormTitle: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
-  <Text as="h1" size="xl" className={styles.title}>
+  <Heading as="h1" size="xl" className={styles.title}>
     {children}
-  </Text>
+  </Heading>
 );

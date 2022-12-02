@@ -300,7 +300,7 @@ cmd_publish() {
     docker manifest rm $versioned_image
 
     # delete the temporary image tags made with arch_versioned_image
-    sleep 5
+    sleep 10
     for arch in $(echo $build_arch | sed "s/,/ /g")
     do
       local arch_versioned_tag=`echo $arch | sed "s/\//-/g"`-$image_version

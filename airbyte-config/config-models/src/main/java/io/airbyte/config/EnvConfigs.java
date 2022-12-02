@@ -83,6 +83,7 @@ public class EnvConfigs implements Configs {
   public static final String MAX_CHECK_WORKERS = "MAX_CHECK_WORKERS";
   public static final String MAX_DISCOVER_WORKERS = "MAX_DISCOVER_WORKERS";
   public static final String MAX_SYNC_WORKERS = "MAX_SYNC_WORKERS";
+  public static final String MAX_NOTIFY_WORKERS = "MAX_NOTIFY_WORKERS";
   private static final String TEMPORAL_HOST = "TEMPORAL_HOST";
   private static final String TEMPORAL_WORKER_PORTS = "TEMPORAL_WORKER_PORTS";
   private static final String TEMPORAL_HISTORY_RETENTION_IN_DAYS = "TEMPORAL_HISTORY_RETENTION_IN_DAYS";
@@ -135,10 +136,10 @@ public class EnvConfigs implements Configs {
   private static final String SHOULD_RUN_DISCOVER_WORKFLOWS = "SHOULD_RUN_DISCOVER_WORKFLOWS";
   private static final String SHOULD_RUN_SYNC_WORKFLOWS = "SHOULD_RUN_SYNC_WORKFLOWS";
   private static final String SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS = "SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS";
+  private static final String SHOULD_RUN_NOTIFY_WORKFLOWS = "SHOULD_RUN_NOTIFY_WORKFLOWS";
 
   // Worker - Control plane configs
   private static final String DEFAULT_DATA_SYNC_TASK_QUEUES = "SYNC"; // should match TemporalJobType.SYNC.name()
-  private static final String CONNECTION_IDS_FOR_MVP_DATA_PLANE = "CONNECTION_IDS_FOR_MVP_DATA_PLANE";
 
   // Worker - Data Plane configs
   private static final String DATA_SYNC_TASK_QUEUES = "DATA_SYNC_TASK_QUEUES";
@@ -199,7 +200,9 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_CHECK_WORKERS = 5;
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
+  private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -919,7 +922,8 @@ public class EnvConfigs implements Configs {
         Math.toIntExact(getEnvOrDefault(MAX_SPEC_WORKERS, DEFAULT_MAX_SPEC_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_CHECK_WORKERS, DEFAULT_MAX_CHECK_WORKERS)),
         Math.toIntExact(getEnvOrDefault(MAX_DISCOVER_WORKERS, DEFAULT_MAX_DISCOVER_WORKERS)),
-        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)));
+        Math.toIntExact(getEnvOrDefault(MAX_SYNC_WORKERS, DEFAULT_MAX_SYNC_WORKERS)),
+        Math.toIntExact(getEnvOrDefault(MAX_NOTIFY_WORKERS, DEFAULT_MAX_NOTIFY_WORKERS)));
   }
 
   @Override
@@ -947,15 +951,9 @@ public class EnvConfigs implements Configs {
     return getEnvOrDefault(SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS, true);
   }
 
-  // Worker - Control plane
-
   @Override
-  public Set<String> connectionIdsForMvpDataPlane() {
-    final var connectionIds = getEnvOrDefault(CONNECTION_IDS_FOR_MVP_DATA_PLANE, "");
-    if (connectionIds.isEmpty()) {
-      return new HashSet<>();
-    }
-    return Arrays.stream(connectionIds.split(",")).collect(Collectors.toSet());
+  public boolean shouldRunNotifyWorkflows() {
+    return getEnvOrDefault(SHOULD_RUN_NOTIFY_WORKFLOWS, false);
   }
 
   // Worker - Data plane
@@ -1051,6 +1049,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getWorkflowFailureRestartDelaySeconds() {
     return Integer.parseInt(getEnvOrDefault(WORKFLOW_FAILURE_RESTART_DELAY_SECONDS, String.valueOf(10 * 60)));
+  }
+
+  @Override
+  public boolean getAutoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false);
   }
 
   @Override

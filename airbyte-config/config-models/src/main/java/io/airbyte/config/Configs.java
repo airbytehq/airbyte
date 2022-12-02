@@ -579,15 +579,10 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  // Worker - Control Plane configs
-
   /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
-   * should only be set on Control-plane workers, since those workers decide which Data Plane task
-   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
-   * future. Internal-use only.
+   * Define if the worker should run notification workflows. Defaults to true. Internal-use only.
    */
-  Set<String> connectionIdsForMvpDataPlane();
+  public boolean shouldRunNotifyWorkflows();
 
   // Worker - Data Plane configs
 
@@ -691,6 +686,8 @@ public interface Configs {
    * Get number of attempts of the non long running activities
    */
   int getActivityNumberOfAttempt();
+
+  boolean getAutoDetectSchema();
 
   enum TrackingStrategy {
     SEGMENT,

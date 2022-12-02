@@ -21,6 +21,7 @@ tests:
         extra_records: no
       empty_streams:
         [
+          "profiles",
           "sponsored_brands_ad_groups",
           "sponsored_brands_campaigns",
           "sponsored_brands_keywords",

@@ -10,11 +10,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.record_buffer.BufferStorage;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.InMemoryBuffer;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.Field;
@@ -53,7 +53,7 @@ public class AvroSerializedBufferTest {
   public void testSnappyAvroWriter() throws Exception {
     final S3AvroFormatConfig config = new S3AvroFormatConfig(Jsons.jsonNode(Map.of("compression_codec", Map.of(
         "codec", "snappy"))));
-    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 965L, 985L, config, getExpectedString());
+    runTest(new InMemoryBuffer(AvroSerializedBuffer.DEFAULT_SUFFIX), 964L, 985L, config, getExpectedString());
   }
 
   @Test
