@@ -1,0 +1,9 @@
+*
+!*.patch.json
+!*.map.json
+!streams
+!Dockerfile
+!main.py
+!source_freshdesk
+!setup.py
+!secrets

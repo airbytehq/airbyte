@@ -1,0 +1,7 @@
+{
+  "properties": {
+    "api_key": {
+      "description": "Freshdesk API Key. See the docs https://docs.airbyte.com/integrations/sources/freshdesk for more information on how to obtain this key."
+    }
+  }
+}

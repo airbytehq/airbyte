@@ -1,0 +1,45 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "note": {
+      "type": ["string", "null"]
+    },
+    "domains": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "created_at": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["string", "null"]
+    },
+    "custom_fields": {
+      "type": ["object", "null"]
+    },
+    "health_score": {
+      "type": ["string", "null"]
+    },
+    "account_tier": {
+      "type": ["string", "null"]
+    },
+    "renewal_date": {
+      "type": ["string", "null"]
+    },
+    "industry": {
+      "type": ["string", "null"]
+    }
+  }
+}
