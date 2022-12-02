@@ -164,18 +164,12 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   @Override
   protected Stream<AirbyteMessage> toAirbyteMessage(final JsonNode json) {
     try {
-      final io.airbyte.protocol.models.v0.AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
-      return Stream.of(convert(message));
+      final AirbyteMessage message = migrator.upgrade(deserializer.deserialize(json));
+      return Stream.of(message);
     } catch (final RuntimeException e) {
       logger.warn("Failed to upgrade a message from version {}: {}", protocolVersion, Jsons.serialize(json), e);
       return Stream.empty();
     }
-  }
-
-  // TODO remove this conversion once we migrated default AirbyteMessage to be from a versioned
-  // namespace
-  private AirbyteMessage convert(final io.airbyte.protocol.models.v0.AirbyteMessage message) {
-    return Jsons.object(Jsons.jsonNode(message), AirbyteMessage.class);
   }
 
 }

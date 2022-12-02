@@ -42,8 +42,6 @@ public class EnvConfigs implements Configs {
   // env variable names
   public static final String AIRBYTE_ROLE = "AIRBYTE_ROLE";
   public static final String AIRBYTE_VERSION = "AIRBYTE_VERSION";
-  public static final String AIRBYTE_PROTOCOL_VERSION_MAX = "AIRBYTE_PROTOCOL_VERSION_MAX";
-  public static final String AIRBYTE_PROTOCOL_VERSION_MIN = "AIRBYTE_PROTOCOL_VERSION_MIN";
   public static final String INTERNAL_API_HOST = "INTERNAL_API_HOST";
   public static final String AIRBYTE_API_AUTH_HEADER_NAME = "AIRBYTE_API_AUTH_HEADER_NAME";
   public static final String AIRBYTE_API_AUTH_HEADER_VALUE = "AIRBYTE_API_AUTH_HEADER_VALUE";
@@ -202,6 +200,8 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final long DEFAULT_MAX_NOTIFY_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX = new Version("1.0.0");
+  private static final Version DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN = new Version("0.0.0");
   private static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
@@ -296,12 +296,12 @@ public class EnvConfigs implements Configs {
 
   @Override
   public Version getAirbyteProtocolVersionMax() {
-    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MAX, "0.3.0"));
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MAX;
   }
 
   @Override
   public Version getAirbyteProtocolVersionMin() {
-    return new Version(getEnvOrDefault(AIRBYTE_PROTOCOL_VERSION_MIN, "0.0.0"));
+    return DEFAULT_AIRBYTE_PROTOCOL_VERSION_MIN;
   }
 
   @Override

@@ -5,7 +5,7 @@
 package io.airbyte.commons.protocol;
 
 import io.airbyte.commons.version.Version;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 
 /**
  * Wraps message migration from a fixed version to the most recent version
