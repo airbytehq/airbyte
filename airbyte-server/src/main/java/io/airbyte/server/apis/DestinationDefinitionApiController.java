@@ -6,7 +6,6 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.DestinationDefinitionApi;
 import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -28,13 +27,6 @@ public class DestinationDefinitionApiController implements DestinationDefinition
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
-  }
-
-  // TODO: Deprecate this route in favor of createCustomDestinationDefinition
-  // since all connector definitions created through the API are custom
-  @Override
-  public DestinationDefinitionRead createDestinationDefinition(final DestinationDefinitionCreate destinationDefinitionCreate) {
-    return ApiHelper.execute(() -> destinationDefinitionsHandler.createPrivateDestinationDefinition(destinationDefinitionCreate));
   }
 
   @Override

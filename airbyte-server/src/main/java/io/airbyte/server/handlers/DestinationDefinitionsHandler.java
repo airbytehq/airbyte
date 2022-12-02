@@ -183,20 +183,6 @@ public class DestinationDefinitionsHandler {
     return getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(definitionId));
   }
 
-  public DestinationDefinitionRead createPrivateDestinationDefinition(final DestinationDefinitionCreate destinationDefCreate)
-      throws JsonValidationException, IOException {
-    final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(destinationDefCreate)
-        .withPublic(false)
-        .withCustom(false);
-    if (!protocolVersionRange.isSupported(new Version(destinationDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersionException(destinationDefinition.getProtocolVersion(), protocolVersionRange.min(),
-          protocolVersionRange.max());
-    }
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-
-    return buildDestinationDefinitionRead(destinationDefinition);
-  }
-
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate)
       throws IOException {
     final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(

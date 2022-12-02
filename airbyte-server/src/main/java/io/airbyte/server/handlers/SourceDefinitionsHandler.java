@@ -189,19 +189,6 @@ public class SourceDefinitionsHandler {
     return getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
   }
 
-  public SourceDefinitionRead createPrivateSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate)
-      throws JsonValidationException, IOException {
-    final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(sourceDefinitionCreate)
-        .withPublic(false)
-        .withCustom(false);
-    if (!protocolVersionRange.isSupported(new Version(sourceDefinition.getProtocolVersion()))) {
-      throw new UnsupportedProtocolVersionException(sourceDefinition.getProtocolVersion(), protocolVersionRange.min(), protocolVersionRange.max());
-    }
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-
-    return buildSourceDefinitionRead(sourceDefinition);
-  }
-
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate)
       throws IOException {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())

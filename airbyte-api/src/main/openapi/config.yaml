@@ -277,26 +277,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/create:
-    post:
-      tags:
-        - source_definition
-      summary: Creates a sourceDefinition
-      operationId: createSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
+
   /v1/source_definitions/update:
     post:
       tags:
@@ -755,26 +736,6 @@ paths:
                 $ref: "#/components/schemas/SourceDiscoverSchemaRead"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/create:
-    post:
-      tags:
-        - destination_definition
-      summary: Creates a destinationsDefinition
-      operationId: createDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update:
