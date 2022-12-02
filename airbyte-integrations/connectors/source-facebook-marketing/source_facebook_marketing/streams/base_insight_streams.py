@@ -49,12 +49,9 @@ class AdsInsights(FBMarketingIncrementalStream):
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
-    action_breakdowns = ALL_ACTION_BREAKDOWNS
     level = "ad"
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
-
-    breakdowns = []
 
     def __init__(
         self,
@@ -70,8 +67,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        self.action_breakdowns = action_breakdowns or self.action_breakdowns
-        self.breakdowns = breakdowns or self.breakdowns
+        self.action_breakdowns = action_breakdowns or self.ALL_ACTION_BREAKDOWNS
+        self.breakdowns = breakdowns or []
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window
@@ -197,6 +194,18 @@ class AdsInsights(FBMarketingIncrementalStream):
             ts_end = ts_start + pendulum.duration(days=self.time_increment - 1)
             interval = pendulum.Period(ts_start, ts_end)
             yield InsightAsyncJob(api=self._api.api, edge_object=self._api.account, interval=interval, params=params)
+
+    def check_breakdowns(self):
+        """
+        Making call to check "action_breakdowns" and "breakdowns" combinations
+        https://developers.facebook.com/docs/marketing-api/insights/breakdowns#combiningbreakdowns
+        """
+        params = {
+            "action_breakdowns": self.action_breakdowns,
+            "breakdowns": self.breakdowns,
+            "fields": ["account_id"],
+        }
+        self._api.account.get_insights(params=params, is_async=False)
 
     def stream_slices(
         self, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

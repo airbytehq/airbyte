@@ -393,7 +393,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 
-  public static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed

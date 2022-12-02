@@ -89,6 +89,18 @@ module.exports = {
     "react/jsx-fragments": "warn",
     "react/jsx-no-useless-fragment": ["warn", { allowExpressions: true }],
     "react/self-closing-comp": "warn",
+    "no-restricted-imports": [
+      "error",
+      {
+        paths: [
+          {
+            name: "lodash",
+            message: 'Please use `import [function] from "lodash/[function]";` instead.',
+          },
+        ],
+        patterns: ["!lodash/*"],
+      },
+    ],
   },
   parser: "@typescript-eslint/parser",
   overrides: [

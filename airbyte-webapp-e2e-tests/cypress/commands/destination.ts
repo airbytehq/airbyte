@@ -1,8 +1,8 @@
 import { deleteEntity, openSettingForm, submitButtonClick, updateField } from "./common";
-import { fillLocalJsonForm } from "./connector";
+import { fillLocalJsonForm, fillPostgresForm } from "./connector";
 import { goToDestinationPage, openNewDestinationForm } from "pages/destinationPage";
 
-export const createLocalJsonDestination = (name: string, destinationPath: string) => {
+export const createLocalJsonDestination = (name: string, destinationPath: string = "/local") => {
   cy.intercept("/api/v1/scheduler/destinations/check_connection").as("checkDestinationConnection");
   cy.intercept("/api/v1/destinations/create").as("createDestination");
 
@@ -11,8 +11,28 @@ export const createLocalJsonDestination = (name: string, destinationPath: string
   fillLocalJsonForm(name, destinationPath);
   submitButtonClick();
 
-  cy.wait(3000);
-  cy.wait("@checkDestinationConnection");
+  cy.wait("@checkDestinationConnection", { requestTimeout: 8000 });
+  cy.wait("@createDestination");
+};
+
+export const createPostgresDestination = (
+  name: string,
+  host: string = "localhost",
+  port: string = "5434",
+  database: string = "airbyte_ci_destination",
+  username: string = "postgres",
+  password: string = "secret_password",
+  schema: string = ""
+) => {
+  cy.intercept("/api/v1/scheduler/destinations/check_connection").as("checkDestinationConnection");
+  cy.intercept("/api/v1/destinations/create").as("createDestination");
+
+  goToDestinationPage();
+  openNewDestinationForm();
+  fillPostgresForm(name, host, port, database, username, password, schema);
+  submitButtonClick();
+
+  cy.wait("@checkDestinationConnection", { requestTimeout: 8000 });
   cy.wait("@createDestination");
 };
 
