@@ -244,7 +244,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailure() {
+  void testReplicationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -262,7 +262,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() {
+  void testReplicationFailedGracefully() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -289,7 +289,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testNormalizationFailure() {
+  void testNormalizationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -312,7 +312,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringReplication() {
+  void testCancelDuringReplication() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doAnswer(ignored -> {
       cancelWorkflow();
       return replicationSuccessOutput;
@@ -333,7 +333,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringNormalization() {
+  void testCancelDuringNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -360,7 +360,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() {
+  void testSkipNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
