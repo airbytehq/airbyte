@@ -48,6 +48,8 @@ public class CdcConfigurationHelper {
 
   }
 
+  // Checks whether the user has REPLICATION CLIENT privilege needed to query status information about
+  // the binary log files, which are needed for CDC.
   private static CheckedConsumer<JdbcDatabase, Exception> getMasterStatusOperation() {
     return database -> {
       try {

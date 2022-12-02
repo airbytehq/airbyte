@@ -220,14 +220,13 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
   }
 
   @Test
-  protected void syncWithReplicationClientPrivilegeRevoked() throws Exception {
+  protected void syncWithReplicationClientPrivilegeRevokedFailsCheck() throws Exception {
     revokeReplicationClientPermission();
     final AirbyteConnectionStatus status = getSource().check(getConfig());
     final String expectedErrorMessage = "Please grant REPLICATION CLIENT privilege, so that binary log files are available"
         + " for CDC mode.";
     assertTrue(status.getStatus().equals(Status.FAILED));
     assertTrue(status.getMessage().contains(expectedErrorMessage));
-
   }
 
   @Test
@@ -243,7 +242,6 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
       writeModelRecord(record);
     }
 
-    revokeReplicationClientPermission();
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
         .read(getConfig(), CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
