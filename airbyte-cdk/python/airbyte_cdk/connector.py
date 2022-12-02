@@ -47,7 +47,7 @@ class BaseConnector(ABC, Generic[TConfig]):
         """
 
     @staticmethod
-    def read_json_file(config_path: str) -> TConfig:
+    def read_json_file(config_path: str) -> Mapping[str, Any]:
         with open(config_path, "r") as file:
             contents = file.read()
 
