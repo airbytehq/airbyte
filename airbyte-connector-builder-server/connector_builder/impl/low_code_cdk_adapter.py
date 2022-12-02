@@ -62,5 +62,5 @@ class LowCodeSourceAdapter:
                 return
             except Exception as e:
                 # catch the exception and yield it as an AirbyteLogMessage
-                yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=str(e)))
+                yield AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.ERROR, message=str(e)))
                 return

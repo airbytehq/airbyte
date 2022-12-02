@@ -268,7 +268,7 @@ def test_read_streams_with_error():
             type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="request:{'url': 'https://demonslayers.com/v1/hashiras'}")
         ),
         AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="response:{'status': 401}")),
-        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message="error_message")),
+        AirbyteMessage(type=Type.LOG, log=AirbyteLogMessage(level=Level.ERROR, message="error_message")),
     ]
     mock_source = MagicMock()
 
