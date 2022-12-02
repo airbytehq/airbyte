@@ -74,6 +74,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
@@ -122,18 +123,26 @@ public abstract class DestinationAcceptanceTest {
    */
   protected abstract String getImageName();
 
-  protected String getNormalizationImageName() {
+  private String getImageNameWithoutTag() {
+    return getImageName().contains(":") ? getImageName().split(":")[0] : getImageName();
+  }
+
+  private Optional<StandardDestinationDefinition> getOptionalDestinationDefinitionFromProvider(final String imageNameWithoutTag) {
     try {
       LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
-      Optional<StandardDestinationDefinition> optionalDefinition = provider.getDestinationDefinitions().stream()
-          .filter(definition -> getImageName().equalsIgnoreCase(definition.getDockerRepository()))
-          .findFirst();
-      return optionalDefinition
-          .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":" + standardDestinationDefinition.getDockerImageTag())
-          .orElse(null);
+      return provider.getDestinationDefinitions().stream()
+              .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+              .findFirst();
     } catch (IOException e) {
-      return null;
+      return Optional.empty();
     }
+  }
+
+  protected String getNormalizationImageName() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+      .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
+          + standardDestinationDefinition.getDockerImageTag())
+      .orElse(null);
   }
 
   /**
@@ -215,24 +224,16 @@ public abstract class DestinationAcceptanceTest {
     }
   }
 
-  protected boolean normalizationFromSpec() throws Exception {
-    final ConnectorSpecification spec = runSpec();
-    assertNotNull(spec);
-    if (spec.getSupportsNormalization() != null) {
-      return spec.getSupportsNormalization();
-    } else {
-      return false;
-    }
+  protected boolean normalizationFromDefinition() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationRepository()) && Objects.nonNull(standardDestinationDefinition.getNormalizationTag()))
+        .orElse(false);
   }
 
-  protected boolean dbtFromSpec() throws WorkerException {
-    final ConnectorSpecification spec = runSpec();
-    assertNotNull(spec);
-    if (spec.getSupportsDBT() != null) {
-      return spec.getSupportsDBT();
-    } else {
-      return false;
-    }
+  protected boolean dbtFromDefinition() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt()) && standardDestinationDefinition.getSupportsDbt())
+        .orElse(false);
   }
 
   /**
@@ -293,7 +294,7 @@ public abstract class DestinationAcceptanceTest {
    * Same idea as {@link #retrieveRecords(TestDestinationEnv, String, String, JsonNode)}. Except this
    * method should pull records from the table that contains the normalized records and convert them
    * back into the data as it would appear in an {@link AirbyteRecordMessage}. Only need to override
-   * this method if {@link #normalizationFromSpec} returns true.
+   * this method if {@link #normalizationFromDefinition} returns true.
    *
    * @param testEnv - information about the test environment.
    * @param streamName - name of the stream for which we are retrieving records.
@@ -552,9 +553,9 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
-    final boolean normalizationFromSpec = normalizationFromSpec();
-    assertEquals(normalizationFromSpec, supportsNormalization());
-    if (normalizationFromSpec) {
+    final boolean normalizationFromDefinition = normalizationFromDefinition();
+    assertEquals(normalizationFromDefinition, supportsNormalization());
+    if (normalizationFromDefinition) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
         new DefaultNormalizationRunner(
@@ -564,13 +565,13 @@ public abstract class DestinationAcceptanceTest {
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
       }
-      assertEquals(normalizationFromSpec, normalizationRunnerFactorySupportsDestinationImage);
+      assertEquals(normalizationFromDefinition, normalizationRunnerFactorySupportsDestinationImage);
     }
   }
 
   @Test
-  public void specDBTValueShouldBeCorrect() throws WorkerException {
-    assertEquals(dbtFromSpec(), supportsDBT());
+  public void specDBTValueShouldBeCorrect() {
+    assertEquals(dbtFromDefinition(), supportsDBT());
   }
 
   /**
@@ -639,7 +640,7 @@ public abstract class DestinationAcceptanceTest {
   @ArgumentsSource(DataArgumentsProvider.class)
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename)
       throws Exception {
-    if (!normalizationFromSpec()) {
+    if (!normalizationFromDefinition()) {
       return;
     }
 
@@ -846,7 +847,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   public void testCustomDbtTransformations() throws Exception {
-    if (!dbtFromSpec()) {
+    if (!dbtFromDefinition()) {
       return;
     }
 
@@ -927,7 +928,7 @@ public abstract class DestinationAcceptanceTest {
 
   @Test
   void testCustomDbtTransformationsFailure() throws Exception {
-    if (!normalizationFromSpec() || !dbtFromSpec()) {
+    if (!normalizationFromDefinition() || !dbtFromDefinition()) {
       // we require normalization implementation for this destination, because we make sure to install
       // required dbt dependency in the normalization docker image in order to run this test successfully
       // (we don't actually rely on normalization running anything here though)
