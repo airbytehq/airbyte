@@ -6,7 +6,6 @@ package io.airbyte.server.apis;
 
 import io.airbyte.api.generated.SourceDefinitionApi;
 import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
 import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
 import io.airbyte.api.model.generated.SourceDefinitionCreate;
@@ -36,14 +35,6 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
   @Override
   public SourceDefinitionRead createSourceDefinition(final SourceDefinitionCreate sourceDefinitionCreate) {
     return ApiHelper.execute(() -> sourceDefinitionsHandler.createPrivateSourceDefinition(sourceDefinitionCreate));
-  }
-
-  @Override
-  public void deleteCustomSourceDefinition(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId) {
-    ApiHelper.execute(() -> {
-      sourceDefinitionsHandler.deleteCustomSourceDefinition(sourceDefinitionIdWithWorkspaceId);
-      return null;
-    });
   }
 
   @Override
@@ -95,11 +86,6 @@ public class SourceDefinitionApiController implements SourceDefinitionApi {
       sourceDefinitionsHandler.revokeSourceDefinitionFromWorkspace(sourceDefinitionIdWithWorkspaceId);
       return null;
     });
-  }
-
-  @Override
-  public SourceDefinitionRead updateCustomSourceDefinition(final CustomSourceDefinitionUpdate customSourceDefinitionUpdate) {
-    return ApiHelper.execute(() -> sourceDefinitionsHandler.updateCustomSourceDefinition(customSourceDefinitionUpdate));
   }
 
   @Override
