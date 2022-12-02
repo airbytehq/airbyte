@@ -7,8 +7,8 @@ import { useConfig } from "../config";
 const SPEAKEASY_QUERY_KEY = "speakeasy-redirect";
 
 export const useSpeakeasyRedirect = () => {
-  const { cloudApiUrl } = useConfig();
-  const config = { apiUrl: cloudApiUrl };
+  const { cloudPublicApiUrl } = useConfig();
+  const config = { apiUrl: cloudPublicApiUrl };
   const middlewares = useDefaultRequestMiddlewares();
   const requestOptions = { config, middlewares };
 
