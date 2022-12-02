@@ -26,7 +26,7 @@ function isGoogleConnector(connectorDefinitionId: string): boolean {
       ConnectorIds.Sources.YouTubeAnalytics,
       ConnectorIds.Destinations.GoogleSheets,
       // TODO: revert me
-      ConnectorIds.Sources.YouTubeAnalyticsBusiness, // Youtube analytics Business
+      ConnectorIds.Sources.YouTubeAnalyticsBusiness,
       //
     ] as string[]
   ).includes(connectorDefinitionId);
