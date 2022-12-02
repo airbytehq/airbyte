@@ -143,6 +143,13 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+- name: Babelforce
+  sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
+  dockerRepository: airbyte/source-babelforce
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
+  sourceType: api
+  releaseStage: alpha
 - name: BambooHR
   sourceDefinitionId: 90916976-a132-4ce9-8bce-82a03dd58788
   dockerRepository: airbyte/source-bamboo-hr
