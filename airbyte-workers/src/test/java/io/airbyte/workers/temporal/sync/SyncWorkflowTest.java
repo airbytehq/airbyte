@@ -403,7 +403,7 @@ class SyncWorkflowTest {
 
   @Test
   void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
-    when(configFetchActivity.getStandardSync(any())).thenReturn(new StandardSync().withSourceId(UUID.randomUUID()).withStatus(Status.INACTIVE));
+    when(configFetchActivity.getStandardSync(any())).thenReturn(new StandardSync().withSourceId(SOURCE_ID).withStatus(Status.INACTIVE));
     StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
