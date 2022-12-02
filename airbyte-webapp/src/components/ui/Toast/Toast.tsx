@@ -8,7 +8,7 @@ import { Text } from "components/ui/Text";
 import { Button } from "../Button";
 import styles from "./Toast.module.scss";
 
-export enum ToastType {
+export const enum ToastType {
   WARNING = "warning",
   SUCCESS = "success",
   ERROR = "error",
