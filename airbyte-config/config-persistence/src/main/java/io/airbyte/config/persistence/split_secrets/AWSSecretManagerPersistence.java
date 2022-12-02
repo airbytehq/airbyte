@@ -66,7 +66,8 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
   @Override
   public Optional<String> read(final SecretCoordinate coordinate) {
     // fail fast, return an empty
-    if (coordinate == null) return Optional.empty();
+    if (coordinate == null)
+      return Optional.empty();
 
     String secretString = null;
     try {
