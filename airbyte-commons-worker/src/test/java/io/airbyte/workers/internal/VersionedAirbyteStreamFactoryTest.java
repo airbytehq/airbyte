@@ -12,8 +12,11 @@ import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
+import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV1Deserializer;
+import io.airbyte.commons.protocol.serde.AirbyteMessageV1Serializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
 import java.io.BufferedReader;
@@ -36,11 +39,11 @@ class VersionedAirbyteStreamFactoryTest {
   @BeforeEach
   void beforeEach() {
     serDeProvider = spy(new AirbyteMessageSerDeProvider(
-        List.of(new AirbyteMessageV0Deserializer()),
-        List.of(new AirbyteMessageV0Serializer())));
+        List.of(new AirbyteMessageV0Deserializer(), new AirbyteMessageV1Deserializer()),
+        List.of(new AirbyteMessageV0Serializer(), new AirbyteMessageV1Serializer())));
     serDeProvider.initialize();
     final AirbyteMessageMigrator migrator = new AirbyteMessageMigrator(
-        List.of(new AirbyteMessageMigrationV0()));
+        List.of(new AirbyteMessageMigrationV1()));
     migrator.initialize();
     migratorFactory = spy(new AirbyteMessageVersionedMigratorFactory(migrator));
   }
