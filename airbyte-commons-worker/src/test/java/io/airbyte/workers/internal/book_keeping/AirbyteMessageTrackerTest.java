@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.internal;
+package io.airbyte.workers.internal.book_keeping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -15,7 +15,7 @@ import io.airbyte.config.State;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.book_keeping.StateDeltaTracker.StateDeltaTrackerException;
 import io.airbyte.workers.internal.state_aggregator.StateAggregator;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.util.HashMap;
