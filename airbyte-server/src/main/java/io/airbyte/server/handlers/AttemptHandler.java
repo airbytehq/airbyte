@@ -21,8 +21,7 @@ public class AttemptHandler {
     this.jobPersistence = jobPersistence;
   }
 
-  public InternalOperationResult setWorkflowInAttempt(
-                                                      SetWorkflowInAttemptRequestBody requestBody) {
+  public InternalOperationResult setWorkflowInAttempt(SetWorkflowInAttemptRequestBody requestBody) {
     try {
       jobPersistence.setAttemptTemporalWorkflowInfo(requestBody.getJobId(),
           requestBody.getAttemptNumber(), requestBody.getWorkflowId().toString(), requestBody.getProcessingTaskQueue());
