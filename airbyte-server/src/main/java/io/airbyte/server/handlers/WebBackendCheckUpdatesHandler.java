@@ -22,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WebBackendCheckUpdatesHandler {
 
-  private static final int NO_CHANGES_FOUND = 0;
-
   final ConfigRepository configRepository;
   final AirbyteGithubStore githubStore;
 
@@ -48,7 +46,7 @@ public class WebBackendCheckUpdatesHandler {
           .toList();
     } catch (final IOException e) {
       log.error("Failed to get current list of standard destination definitions", e);
-      return NO_CHANGES_FOUND;
+      return 0;
     }
 
     try {
@@ -57,7 +55,7 @@ public class WebBackendCheckUpdatesHandler {
           .collect(Collectors.toMap(StandardDestinationDefinition::getDestinationDefinitionId, StandardDestinationDefinition::getDockerImageTag));
     } catch (final InterruptedException e) {
       log.error("Failed to get latest list of standard destination definitions", e);
-      return NO_CHANGES_FOUND;
+      return 0;
     }
 
     return getDiffCount(currentActorDefToDockerImageTag, newActorDefToDockerImageTag);
@@ -74,7 +72,7 @@ public class WebBackendCheckUpdatesHandler {
           .toList();
     } catch (final IOException e) {
       log.error("Failed to get current list of standard source definitions", e);
-      return NO_CHANGES_FOUND;
+      return 0;
     }
 
     try {
@@ -83,7 +81,7 @@ public class WebBackendCheckUpdatesHandler {
           .collect(Collectors.toMap(StandardSourceDefinition::getSourceDefinitionId, StandardSourceDefinition::getDockerImageTag));
     } catch (final InterruptedException e) {
       log.error("Failed to get latest list of standard source definitions", e);
-      return NO_CHANGES_FOUND;
+      return 0;
     }
 
     return getDiffCount(currentActorDefToDockerImageTag, newActorDefToDockerImageTag);
