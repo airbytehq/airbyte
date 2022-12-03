@@ -32,6 +32,7 @@ public class EventListener {
 
   @io.micronaut.runtime.event.annotation.EventListener
   @ExecuteOn(TaskExecutors.IO)
+  @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
   public void startEmitters(final ApplicationStartupEvent event) {
     try {
       final Configs configs = new EnvConfigs();
