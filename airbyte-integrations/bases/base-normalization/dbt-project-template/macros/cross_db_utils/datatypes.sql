@@ -86,6 +86,21 @@
     bytea
 {%- endmacro -%}
 
+{%- macro bigquery__type_binary() -%}
+    bytes
+{%- endmacro -%}
+
+{%- macro mssql__type_binary() -%}
+    VARBINARY(MAX)
+{%- endmacro -%}
+
+{%- macro snowflake__type_binary() -%}
+    VARBINARY
+{%- endmacro -%}
+
+{%- macro clickhouse__type_binary() -%}
+    VARBINARY
+{%- endmacro -%}
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}
