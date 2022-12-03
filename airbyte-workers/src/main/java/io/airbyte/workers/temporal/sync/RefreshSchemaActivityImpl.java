@@ -7,7 +7,7 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -26,14 +26,14 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private final Optional<ConfigRepository> configRepository;
 
-  private final AirbyteApiClient airbyteApiClient;
+  private final SourceApi sourceApi;
   private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository,
-                                   AirbyteApiClient airbyteApiClient,
+                                   SourceApi sourceApi,
                                    EnvVariableFeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
-    this.airbyteApiClient = airbyteApiClient;
+    this.sourceApi = sourceApi;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
@@ -58,7 +58,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
         new SourceDiscoverSchemaRequestBody().sourceId(sourceCatalogId).disableCache(true).connectionId(connectionId);
 
     try {
-      airbyteApiClient.getSourceApi().discoverSchemaForSource(requestBody);
+      sourceApi.discoverSchemaForSource(requestBody);
     } catch (final Exception e) {
       log.error("Attempted schema refresh, but failed with error: ", e);
     }

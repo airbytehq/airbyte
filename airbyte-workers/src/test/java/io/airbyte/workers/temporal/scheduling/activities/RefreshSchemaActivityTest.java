@@ -25,15 +25,12 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
-
-  static private AirbyteApiClient mApiClient;
   static private SourceApi mSourceApi;
   static private EnvVariableFeatureFlags mEnvVariableFeatureFlags;
 
@@ -47,9 +44,9 @@ class RefreshSchemaActivityTest {
     mSourceApi = mock(SourceApi.class);
     mConfigRepository = mock(ConfigRepository.class);
     mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
-    Mockito.lenient().when(mApiClient.getSourceApi()).thenReturn(mSourceApi);
+    mSourceApi = mock(SourceApi.class);
     when(mEnvVariableFeatureFlags.autoDetectSchema()).thenReturn(true);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mApiClient, mEnvVariableFeatureFlags);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi, mEnvVariableFeatureFlags);
   }
 
   @Test
