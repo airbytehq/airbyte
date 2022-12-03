@@ -71,6 +71,9 @@ def test_ads_insights_breakdowns():
         assert stream.breakdowns == stream_class.breakdowns
         assert stream.action_breakdowns == stream_class.action_breakdowns
 
+
+def test_custom_ads_insights_breakdowns():
+    kwargs = {"api": None, "start_date": pendulum.now(), "end_date": pendulum.now(), "insights_lookback_window": 1}
     stream = AdsInsights(breakdowns=["mmm"], action_breakdowns=["action_destination"], **kwargs)
     assert stream.breakdowns == ["mmm"]
     assert stream.action_breakdowns == ["action_destination"]
