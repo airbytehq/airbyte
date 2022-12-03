@@ -95,7 +95,6 @@ public class ConfigRepository {
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigRepository.class);
   private static final String OPERATION_IDS_AGG_FIELD = "operation_ids_agg";
   private static final String OPERATION_IDS_AGG_DELIMITER = ",";
-  public static final String PRIMARY_KEY = "id";
 
   private final ExceptionWrappingDatabase database;
   private final ActorDefinitionMigrator actorDefinitionMigrator;
@@ -616,7 +615,7 @@ public class ConfigRepository {
   }
 
   public boolean deleteSource(final UUID sourceId) throws JsonValidationException, ConfigNotFoundException, IOException {
-    return deleteById(ACTOR, sourceId);
+    return JooqQueryHelpers.deleteById(database, ACTOR, sourceId);
   }
 
   /**
@@ -1469,18 +1468,4 @@ public class ConfigRepository {
         .limit(1))
         .fetchOneInto(Geography.class);
   }
-
-  /**
-   * Deletes all records with given id. If it deletes anything, returns true. Otherwise, false.
-   *
-   * @param table - table from which to delete the record
-   * @param id - id of the record to delete
-   * @return true if anything was deleted, otherwise false.
-   * @throws IOException - you never know when you io
-   */
-  @SuppressWarnings("SameParameterValue")
-  private boolean deleteById(final Table<?> table, final UUID id) throws IOException {
-    return database.transaction(ctx -> ctx.deleteFrom(table)).where(DSL.field(DSL.name(PRIMARY_KEY)).eq(id)).execute() > 0;
-  }
-
 }
