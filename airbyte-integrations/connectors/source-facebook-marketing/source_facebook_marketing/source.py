@@ -190,6 +190,7 @@ class SourceFacebookMarketing(AbstractSource):
                 fields=list(set(insight.fields)),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
+                action_breakdowns_allow_empty=insight.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,
