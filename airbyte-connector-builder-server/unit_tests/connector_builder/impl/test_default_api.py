@@ -386,11 +386,18 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
     "log_message, expected_request",
     [
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(
-                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"}
+                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"},
+                http_method="PUT",
             ),
             id="test_create_request_with_all_fields",
+        ),
+        pytest.param(
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"},
+                        body={"key": "value"}),
+            id="test_create_request_with_no_http_method",
         ),
         pytest.param(
             'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}}',
