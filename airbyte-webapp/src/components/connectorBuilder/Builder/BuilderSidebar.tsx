@@ -3,7 +3,10 @@ import { useField, useFormikContext } from "formik";
 
 import { Heading } from "components/ui/Heading";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  DEFAULT_BUILDER_FORM_VALUES,
+  useConnectorBuilderState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
 import { AddStreamButton } from "./AddStreamButton";
@@ -39,12 +42,14 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   numStreams,
   onViewSelect,
 }) => {
-  const { yamlManifest, resetBuilderFormValues } = useConnectorBuilderState();
-  const { resetForm } = useFormikContext();
+  const { yamlManifest } = useConnectorBuilderState();
+  const { setValues } = useFormikContext();
   const handleResetForm = () => {
-    resetBuilderFormValues();
-    resetForm();
+    setValues(DEFAULT_BUILDER_FORM_VALUES);
+    onViewSelect("global");
   };
+
+  console.log("numStreams", numStreams);
 
   return (
     <div className={classnames(className, styles.container)}>
@@ -53,14 +58,14 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <Heading as="h2" size="sm" className={styles.connectorName}>
         Connector Name
       </Heading>
-
+      <button onClick={() => handleResetForm()}>Reset</button>
       <button onClick={() => onViewSelect("global")}>Global Configuration</button>
 
       <Heading as="h3" size="sm">
         Streams
       </Heading>
 
-      <AddStreamButton />
+      <AddStreamButton numStreams={numStreams} />
 
       {Array.from(Array(numStreams).keys()).map((streamNum) => {
         const streamPath = `streams[${streamNum}]`;
@@ -68,7 +73,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       })}
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
-      <button onClick={() => handleResetForm()}>Reset</button>
     </div>
   );
 };

@@ -1,0 +1,7 @@
+@use "scss/variables";
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}

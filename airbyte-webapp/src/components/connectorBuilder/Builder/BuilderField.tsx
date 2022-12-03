@@ -82,7 +82,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
   const [field, meta, helpers] = useField(fieldConfig);
   const hasError = !!meta.error && meta.touched;
 
-  console.log(`path: ${path}, value: ${field.value}`);
+  // console.log(`path: ${path}, value: ${field.value}, hasError: ${hasError}`);
 
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>

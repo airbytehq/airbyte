@@ -36,7 +36,6 @@ interface Context {
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  resetBuilderFormValues: () => void;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlManifest: (yamlValue: string) => void;
@@ -56,7 +55,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     DEFAULT_BUILDER_FORM_VALUES
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
-  const resetBuilderFormValues = () => setBuilderFormValues(DEFAULT_BUILDER_FORM_VALUES);
   console.log("formValues", formValues);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
@@ -135,7 +133,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     configString,
     configJson,
     setBuilderFormValues,
-    resetBuilderFormValues,
     setJsonManifest,
     setYamlManifest,
     setYamlIsValid,
