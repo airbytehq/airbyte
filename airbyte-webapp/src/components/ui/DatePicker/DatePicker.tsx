@@ -128,7 +128,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   const localDate = useMemo(() => toEquivalentLocalTime(value), [value]);
 
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const handleWrapperBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+  const handleWrapperBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     if (onBlur && !wrapperRef.current?.matches(":focus-within")) {
       onBlur(event);
     }
