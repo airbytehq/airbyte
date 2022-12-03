@@ -60,7 +60,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields: List[str] = None,
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
-        _action_breakdowns_allow_empty: bool = False,
+        action_breakdowns_allow_empty: bool = False,
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
         **kwargs,
@@ -69,7 +69,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        if _action_breakdowns_allow_empty:
+        if action_breakdowns_allow_empty:
             if action_breakdowns is not None:
                 self.action_breakdowns = action_breakdowns
         else:

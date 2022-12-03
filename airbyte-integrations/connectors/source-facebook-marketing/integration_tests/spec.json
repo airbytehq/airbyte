@@ -269,7 +269,7 @@
                 ]
               }
             },
-            "_action_breakdowns_allow_empty": {
+            "action_breakdowns_allow_empty": {
               "title": "Action Breakdowns Allow Empty",
               "description": "Allows action_breakdowns to be an empty list",
               "default": true,

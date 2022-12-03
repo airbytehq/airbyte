@@ -79,6 +79,6 @@ def test_ads_insights_breakdowns():
     assert stream.breakdowns == []
     assert stream.action_breakdowns == ["action_type", "action_target_id", "action_destination"]
 
-    stream = AdsInsights(breakdowns=[], action_breakdowns=[], _action_breakdowns_allow_empty=True, **kwargs)
+    stream = AdsInsights(breakdowns=[], action_breakdowns=[], action_breakdowns_allow_empty=True, **kwargs)
     assert stream.breakdowns == []
     assert stream.action_breakdowns == []
