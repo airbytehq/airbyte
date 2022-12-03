@@ -8,6 +8,14 @@
     string
 {% endmacro %}
 
+{%- macro type_binary() -%}
+  {{ adapter.dispatch('type_binary')() }}
+{%- endmacro -%}
+
+{%- macro default__type_binary() -%}
+    binary
+{%- endmacro -%}
+
 {%- macro redshift__type_json() -%}
   {%- if redshift_super_type() -%}
     super
@@ -71,6 +79,13 @@
 {%- macro tidb__type_string() -%}
     char(1000)
 {%- endmacro -%}
+
+{# binary data ------------------------------------------------- #}
+
+{%- macro postgres__type_binary() -%}
+    bytea
+{%- endmacro -%}
+
 
 {# float ------------------------------------------------- #}
 {% macro mysql__type_float() %}

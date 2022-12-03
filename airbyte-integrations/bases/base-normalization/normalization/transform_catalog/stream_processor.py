@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
+import base64
 import os
 import re
 from enum import Enum
@@ -31,6 +31,7 @@ from normalization.transform_catalog.utils import (
     is_object,
     is_simple_property,
     is_string,
+    is_binary_datatype,
     is_time,
     is_time_with_timezone,
     jinja_call,
@@ -586,6 +587,52 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition[data_type.REF_TYPE_VAR_NAME]))\
+                or (data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)):
+            if self.destination_type.value == DestinationType.POSTGRES.value:
+                sql_type = jinja_call("type_binary()")
+                # sql_type = "bytea"
+                return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
+            elif self.destination_type.value == DestinationType.BIGQUERY.value:
+                sql_type = "bytes"
+                return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
+            elif self.destination_type.value == DestinationType.MYSQL.value or self.destination_type.value == DestinationType.TIDB.value:
+                sql_type = "BINARY"
+                return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
+            elif self.destination_type.value == DestinationType.MSSQL.value:
+                sql_type = "VARBINARY(MAX)"
+                return f"CAST({column_name} as XML ).value('.','{sql_type}') as {column_name}"
+            elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
+                sql_type = "VARBINARY"
+                return f"cast(BASE64_DECODE_BINARY({column_name}) as {sql_type}) as {column_name}"
+                # return f"cast(to_binary(hex_encode(BASE64_DECODE_STRING('{column_name}')), 'HEX') as {sql_type}) as {column_name}"
+                # return f"cast(to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {sql_type}) as {column_name}"
+                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {column_name}"
+                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('{column_name}')), 'HEX') as {column_name}"
+                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {column_name}"
+                # return f"to_binary(BASE64_DECODE_STRING('dGVzdA=='), 'UTF-8')) as {column_name}"
+            elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
+                sql_type = "VARBINARY"
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
+                return f"cast(FROM_BASE64({trimmed_column_name}) as {sql_type}) as {column_name}"
+            # elif self.destination_type.value == DestinationType.ORACLE.value:
+            #     # TODO !!!!!!!!!  to fix !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            #     # sql_type = jinja_call("dbt_utils.type_string()")
+            #     # sql_type = "VARBINARY(MAX)"
+            #     sql_type = "BLOB"
+            #     return f"utl_encode.base64_decode(utl_raw.cast_to_raw('{column_name}')) AS {column_name}"
+            #     # return f"utl_encode.base64_decode(utl_raw.cast_to_raw('dGVzdA==')) AS {column_name}"
+            #     # return f"cast(UTL_ENCODE.BASE64_DECODE('{column_name}') as {sql_type}) as {column_name}"
+            # elif self.destination_type.value == DestinationType.REDSHIFT.value:
+            #     # TODO !!!!!!!!!  to fix !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            #     sql_type = "VARBINARY"
+            #     # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
+            #     # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
+            #     # return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
+            else:
+                sql_type = jinja_call("dbt_utils.type_string()")
+
         elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition[data_type.REF_TYPE_VAR_NAME]))\
                 or (data_type.ONE_OF_VAR_NAME in definition and is_string(definition)):
             sql_type = jinja_call("dbt_utils.type_string()")

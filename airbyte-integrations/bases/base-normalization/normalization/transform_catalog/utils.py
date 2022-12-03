@@ -33,6 +33,13 @@ def is_string(property_type) -> bool:
     else:
         return property_type == data_type.STRING_TYPE or data_type.STRING_TYPE in property_type
 
+def is_binary_datatype(property_type) -> bool:
+    if data_type.ONE_OF_VAR_NAME in property_type and data_type.ONE_OF_VAR_NAME in property_type:
+        plain_datatypes_list = get_plain_list_from_one_of_array(property_type)
+        return plain_datatypes_list == data_type.BINARY_DATA_TYPE or data_type.BINARY_DATA_TYPE in plain_datatypes_list
+    else:
+        return property_type == data_type.BINARY_DATA_TYPE or data_type.BINARY_DATA_TYPE in property_type
+
 
 def is_datetime(definition: dict) -> bool:
     return is_datetime_with_timezone(definition) or is_datetime_without_timezone(definition)
@@ -171,6 +178,7 @@ def is_simple_property(definition: dict) -> bool:
         property_type = definition[data_type.REF_TYPE_VAR_NAME]
     return (
             is_string(property_type)
+            or is_binary_datatype(property_type)
             or is_big_integer(definition)
             or is_long(property_type, definition)
             or is_number(property_type)

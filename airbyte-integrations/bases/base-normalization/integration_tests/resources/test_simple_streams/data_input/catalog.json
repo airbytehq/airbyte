@@ -44,6 +44,9 @@
             },
             "time_no_tz": {
               "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
+            },
+            "property_binary_data": {
+              "$ref": "WellKnownTypes.json#/definitions/BinaryData"
             }
           }
         },
