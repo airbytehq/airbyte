@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import base64
 import os
 import re
 from enum import Enum
@@ -363,8 +362,7 @@ class StreamProcessor(object):
                 pass
             elif is_combining_node(properties[field]):
                 # TODO: merge properties of all combinations
-                pass # todo  !!!!!!!!!!! add getting plain properties if onOf ????
-            # elif data_type.REF_TYPE_VAR_NAME not in properties[field] or is_object(properties[field][data_type.REF_TYPE_VAR_NAME]):       #TODO type seems to should be there als handle both ref and oneOf !!!!!!!!!!!!!!!!!!!!!!!!!!!
+                pass
             elif (data_type.TYPE_VAR_NAME not in properties[field] and data_type.REF_TYPE_VAR_NAME not in properties[field]
                   and data_type.ONE_OF_VAR_NAME not in properties[field])\
                     or (data_type.TYPE_VAR_NAME in properties[field] and is_object(properties[field][data_type.TYPE_VAR_NAME])):
@@ -373,7 +371,6 @@ class StreamProcessor(object):
                 is_nested_array = False
                 json_column_name = column_names[field][1]
             elif data_type.TYPE_VAR_NAME in properties[field] and is_array(properties[field][data_type.TYPE_VAR_NAME]) and "items" in properties[field]:
-            # elif is_array(properties[field][data_type.REF_TYPE_VAR_NAME]) and "items" in properties[field]:
                 quoted_field = column_names[field][1]
                 children_properties = find_properties_object([], field, properties[field]["items"])
                 is_nested_array = True
@@ -467,7 +464,7 @@ where 1 = 1
         if data_type.REF_TYPE_VAR_NAME in definition or data_type.TYPE_VAR_NAME in definition or data_type.ONE_OF_VAR_NAME in definition:
             if data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
                 json_extract = jinja_call(f"json_extract_array({json_column_name}, {json_path}, {normalized_json_path})")
-                if is_simple_property(definition.get("items", {data_type.TYPE_VAR_NAME: "object"})):  # TODO do we neen Type or ref here????
+                if is_simple_property(definition.get("items", {data_type.TYPE_VAR_NAME: "object"})):
                     json_extract = jinja_call(f"json_extract_string_array({json_column_name}, {json_path}, {normalized_json_path})")
             elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
                 json_extract = jinja_call(f"json_extract('{table_alias}', {json_column_name}, {json_path}, {normalized_json_path})")
@@ -590,46 +587,30 @@ where 1 = 1
         elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition[data_type.REF_TYPE_VAR_NAME]))\
                 or (data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)):
             if self.destination_type.value == DestinationType.POSTGRES.value:
-                sql_type = jinja_call("type_binary()")
                 # sql_type = "bytea"
+                sql_type = jinja_call("type_binary()")
                 return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
             elif self.destination_type.value == DestinationType.BIGQUERY.value:
-                sql_type = "bytes"
+                # sql_type = "bytes"
+                sql_type = jinja_call("type_binary()")
                 return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
             elif self.destination_type.value == DestinationType.MYSQL.value or self.destination_type.value == DestinationType.TIDB.value:
-                sql_type = "BINARY"
+                # sql_type = "BINARY"
+                sql_type = jinja_call("type_binary()")
                 return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
             elif self.destination_type.value == DestinationType.MSSQL.value:
-                sql_type = "VARBINARY(MAX)"
+                # sql_type = "VARBINARY(MAX)"
+                sql_type = jinja_call("type_binary()")
                 return f"CAST({column_name} as XML ).value('.','{sql_type}') as {column_name}"
             elif self.destination_type.value == DestinationType.SNOWFLAKE.value:
-                sql_type = "VARBINARY"
+                # sql_type = "VARBINARY"
+                sql_type = jinja_call("type_binary()")
                 return f"cast(BASE64_DECODE_BINARY({column_name}) as {sql_type}) as {column_name}"
-                # return f"cast(to_binary(hex_encode(BASE64_DECODE_STRING('{column_name}')), 'HEX') as {sql_type}) as {column_name}"
-                # return f"cast(to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {sql_type}) as {column_name}"
-                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {column_name}"
-                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('{column_name}')), 'HEX') as {column_name}"
-                # return f"to_binary(hex_encode(BASE64_DECODE_STRING('dGVzdA==')), 'HEX') as {column_name}"
-                # return f"to_binary(BASE64_DECODE_STRING('dGVzdA=='), 'UTF-8')) as {column_name}"
             elif self.destination_type.value == DestinationType.CLICKHOUSE.value:
-                sql_type = "VARBINARY"
+                # sql_type = "VARBINARY"
+                sql_type = jinja_call("type_binary()")
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
-                # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
                 return f"cast(FROM_BASE64({trimmed_column_name}) as {sql_type}) as {column_name}"
-            # elif self.destination_type.value == DestinationType.ORACLE.value:
-            #     # TODO !!!!!!!!!  to fix !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            #     # sql_type = jinja_call("dbt_utils.type_string()")
-            #     # sql_type = "VARBINARY(MAX)"
-            #     sql_type = "BLOB"
-            #     return f"utl_encode.base64_decode(utl_raw.cast_to_raw('{column_name}')) AS {column_name}"
-            #     # return f"utl_encode.base64_decode(utl_raw.cast_to_raw('dGVzdA==')) AS {column_name}"
-            #     # return f"cast(UTL_ENCODE.BASE64_DECODE('{column_name}') as {sql_type}) as {column_name}"
-            # elif self.destination_type.value == DestinationType.REDSHIFT.value:
-            #     # TODO !!!!!!!!!  to fix !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            #     sql_type = "VARBINARY"
-            #     # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
-            #     # return f"cast(decode({column_name}, 'base64') as {sql_type}) as {column_name}"
-            #     # return f"cast(FROM_BASE64({column_name}) as {sql_type}) as {column_name}"
             else:
                 sql_type = jinja_call("dbt_utils.type_string()")
 
@@ -869,7 +850,7 @@ where 1 = 1
         if (
             self.destination_type == DestinationType.BIGQUERY
             and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
-            and is_number(self.properties[self.get_cursor_field_property_name(column_names)][data_type.REF_TYPE_VAR_NAME]) # TODO does it take SQL type heer ?!?!?!??!?!?!?
+            and is_number(self.properties[self.get_cursor_field_property_name(column_names)][data_type.REF_TYPE_VAR_NAME])
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (
@@ -1566,7 +1547,7 @@ def find_properties_object(path: List[str], field: str, properties) -> Dict[str,
         elif "properties" in properties:
             # we found a properties object
             return {current: properties["properties"]}
-        elif data_type.REF_TYPE_VAR_NAME in properties and is_simple_property(properties):  # TODO keep TYPE_VAR_NAME otherwice get too much tables in list
+        elif data_type.REF_TYPE_VAR_NAME in properties and is_simple_property(properties):
             # we found a basic type
             return {current: {}}
         elif isinstance(properties, dict):
