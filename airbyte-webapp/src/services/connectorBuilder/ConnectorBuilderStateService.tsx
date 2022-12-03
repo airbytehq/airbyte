@@ -3,13 +3,30 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
+import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/Builder/types";
+
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
+export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
+  connectorName: "",
+  urlBase: "",
+  streams: [],
+};
+
+const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+  version: "0.1.0",
+  check: {
+    stream_names: [],
+  },
+  streams: [],
+};
+
 interface Context {
+  builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
@@ -19,6 +36,8 @@ interface Context {
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
+  resetBuilderFormValues: () => void;
+  setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlManifest: (yamlValue: string) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
@@ -32,19 +51,25 @@ export const ConnectorBuilderStateContext = React.createContext<Context | null>(
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
 
-  // json manifest
-  const defaultJsonManifest = {
-    version: "1.0.0",
-    check: {
-      stream_names: [],
-    },
-    streams: [],
-  };
-  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
-    "connectorBuilderManifest",
-    defaultJsonManifest
+  const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+    "connectorBuilderFormValues",
+    DEFAULT_BUILDER_FORM_VALUES
   );
-  const manifest = jsonManifest ?? defaultJsonManifest;
+  const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
+  const resetBuilderFormValues = () => setBuilderFormValues(DEFAULT_BUILDER_FORM_VALUES);
+  console.log("formValues", formValues);
+
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+    "connectorBuilderJsonManifest",
+    DEFAULT_JSON_MANIFEST_VALUES
+  );
+  const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+  console.log("manifest", manifest);
+
+  useEffect(() => {
+    setJsonManifest(convertToManifest(formValues));
+  }, [formValues, setJsonManifest]);
+
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
@@ -66,7 +91,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     }
   }, [configString]);
 
-  console.log("manifest", manifest);
+  // console.log("manifest", manifest);
 
   // streams
   const {
@@ -99,6 +124,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
 
   const ctx = {
+    builderFormValues: formValues,
     jsonManifest: manifest,
     yamlManifest,
     yamlEditorIsMounted,
@@ -108,6 +134,8 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     selectedStream,
     configString,
     configJson,
+    setBuilderFormValues,
+    resetBuilderFormValues,
     setJsonManifest,
     setYamlManifest,
     setYamlIsValid,

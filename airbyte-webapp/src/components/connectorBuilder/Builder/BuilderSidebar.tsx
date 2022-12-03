@@ -1,20 +1,50 @@
 import classnames from "classnames";
+import { useField, useFormikContext } from "formik";
 
 import { Heading } from "components/ui/Heading";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
+import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
+
+export type BuilderView = "global" | number;
+
+interface StreamSelectButtonProps {
+  streamPath: string;
+  onClick: () => void;
+}
+
+const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamPath, onClick }) => {
+  const streamNamePath = `${streamPath}.name`;
+  console.log("streamNamePath", streamNamePath);
+  const [field] = useField(streamNamePath);
+  console.log("field.value", field.value);
+
+  return <button onClick={onClick}>{field.value}</button>;
+};
 
 interface BuilderSidebarProps {
   className?: string;
   toggleYamlEditor: () => void;
+  numStreams: number;
+  onViewSelect: (selected: BuilderView) => void;
 }
 
-export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
-  const { yamlManifest } = useConnectorBuilderState();
+export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
+  className,
+  toggleYamlEditor,
+  numStreams,
+  onViewSelect,
+}) => {
+  const { yamlManifest, resetBuilderFormValues } = useConnectorBuilderState();
+  const { resetForm } = useFormikContext();
+  const handleResetForm = () => {
+    resetBuilderFormValues();
+    resetForm();
+  };
 
   return (
     <div className={classnames(className, styles.container)}>
@@ -23,7 +53,22 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       <Heading as="h2" size="sm" className={styles.connectorName}>
         Connector Name
       </Heading>
+
+      <button onClick={() => onViewSelect("global")}>Global Configuration</button>
+
+      <Heading as="h3" size="sm">
+        Streams
+      </Heading>
+
+      <AddStreamButton />
+
+      {Array.from(Array(numStreams).keys()).map((streamNum) => {
+        const streamPath = `streams[${streamNum}]`;
+        return <StreamSelectButton key={streamPath} streamPath={streamPath} onClick={() => onViewSelect(streamNum)} />;
+      })}
+
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
+      <button onClick={() => handleResetForm()}>Reset</button>
     </div>
   );
 };

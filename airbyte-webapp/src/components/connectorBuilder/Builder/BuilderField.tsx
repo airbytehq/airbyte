@@ -1,5 +1,4 @@
 import { useField } from "formik";
-import { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import * as yup from "yup";
 
@@ -36,9 +35,9 @@ interface BaseFieldProps {
 type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
-  useEffect(() => {
-    setValue(value);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // useEffect(() => {
+  //   setValue(value);
+  // }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <DropDown
@@ -54,9 +53,9 @@ const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, 
 };
 
 const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error }) => {
-  useEffect(() => {
-    setValue(value);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  // useEffect(() => {
+  //   setValue(value);
+  // }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
@@ -82,6 +81,8 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
   };
   const [field, meta, helpers] = useField(fieldConfig);
   const hasError = !!meta.error && meta.touched;
+
+  console.log(`path: ${path}, value: ${field.value}`);
 
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
