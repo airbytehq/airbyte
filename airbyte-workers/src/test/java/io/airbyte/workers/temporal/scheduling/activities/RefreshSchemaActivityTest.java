@@ -40,7 +40,6 @@ class RefreshSchemaActivityTest {
 
   @BeforeEach
   void setUp() {
-    mApiClient = mock(AirbyteApiClient.class);
     mSourceApi = mock(SourceApi.class);
     mConfigRepository = mock(ConfigRepository.class);
     mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
