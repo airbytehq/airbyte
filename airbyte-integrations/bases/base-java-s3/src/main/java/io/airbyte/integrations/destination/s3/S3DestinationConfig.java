@@ -406,5 +406,3 @@ public class S3DestinationConfig {
   }
 
 }
-
-389
