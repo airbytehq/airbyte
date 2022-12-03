@@ -2,9 +2,9 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.internal;
+package io.airbyte.workers.internal.book_keeping;
 
-import io.airbyte.workers.internal.StateDeltaTracker.StateDeltaTrackerException;
+import io.airbyte.workers.internal.book_keeping.StateDeltaTracker.StateDeltaTrackerException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
