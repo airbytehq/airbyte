@@ -3492,7 +3492,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.74"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.75"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -3747,10 +3747,7 @@
               action_breakdowns:
                 title: "Action Breakdowns"
                 description: "A list of chosen action_breakdowns for action_breakdowns"
-                default:
-                - "action_type"
-                - "action_target_id"
-                - "action_destination"
+                default: []
                 type: "array"
                 items:
                   title: "ValidActionBreakdowns"
@@ -3767,6 +3764,12 @@
                   - "action_type"
                   - "action_video_sound"
                   - "action_video_type"
+              action_breakdowns_allow_empty:
+                title: "Action Breakdowns Allow Empty"
+                description: "Allows action_breakdowns to be an empty list"
+                default: true
+                airbyte_hidden: true
+                type: "boolean"
               time_increment:
                 title: "Time Increment"
                 description: "Time window in days by which to aggregate statistics.\
