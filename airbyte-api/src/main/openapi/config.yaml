@@ -1922,6 +1922,19 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/web_backend/check_updates:
+    post:
+      tags:
+        - web_backend
+      summary: Returns a summary of source and destination definitions that could be updated.
+      operationId: webBackendCheckUpdates
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendCheckUpdatesRead"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -4773,6 +4786,17 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendCheckUpdatesRead:
+      type: object
+      description: Summary of source and destination definitions that could be updated
+      required:
+        - destinationDefinitions
+        - sourceDefinitions
+      properties:
+        destinationDefinitions:
+          type: integer
+        sourceDefinitions:
+          type: integer
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.

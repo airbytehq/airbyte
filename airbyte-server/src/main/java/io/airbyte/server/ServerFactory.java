@@ -91,6 +91,7 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
@@ -138,7 +139,8 @@ public interface ServerFactory {
                         final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler,
                         final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                        final WebBackendGeographiesHandler webBackendGeographiesHandler);
+                        final WebBackendGeographiesHandler webBackendGeographiesHandler,
+                        final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler);
 
   class Api implements ServerFactory {
 
@@ -176,7 +178,8 @@ public interface ServerFactory {
                                  final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                                 final WebBackendGeographiesHandler webBackendGeographiesHandler) {
+                                 final WebBackendGeographiesHandler webBackendGeographiesHandler,
+                                 final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       AttemptApiFactory.setValues(attemptHandler, mdc);
@@ -221,7 +224,7 @@ public interface ServerFactory {
 
       StateApiFactory.setValues(stateHandler);
 
-      WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
+      WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
       WorkspaceApiFactory.setValues(workspacesHandler);
 
