@@ -68,8 +68,9 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
 .arrowCell {
   @extend %bodyCell;
 
-  font-size: 16px;
-  color: colors.$grey-200;
+  svg {
+    color: colors.$grey-200;
+  }
 }
 
 .checkboxCell {

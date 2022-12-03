@@ -1,9 +1,8 @@
-import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createColumnHelper } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { CheckBox } from "components/ui/CheckBox";
 import { RadioButton } from "components/ui/RadioButton";
 
@@ -166,11 +165,11 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       }),
       columnHelper.group({
         id: "arrow",
-        header: () => <FontAwesomeIcon icon={faArrowRight} />,
+        header: () => <ArrowRightIcon />,
         columns: [
           {
             id: "_", // leave the column name empty
-            cell: () => <FontAwesomeIcon icon={faArrowRight} />,
+            cell: () => <ArrowRightIcon />,
             meta: {
               thClassName: styles.headerCell,
               tdClassName: styles.arrowCell,
