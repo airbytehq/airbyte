@@ -131,8 +131,8 @@ public abstract class DestinationAcceptanceTest {
     try {
       LocalDefinitionsProvider provider = new LocalDefinitionsProvider(LocalDefinitionsProvider.DEFAULT_SEED_DEFINITION_RESOURCE_CLASS);
       return provider.getDestinationDefinitions().stream()
-              .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
-              .findFirst();
+          .filter(definition -> imageNameWithoutTag.equalsIgnoreCase(definition.getDockerRepository()))
+          .findFirst();
     } catch (IOException e) {
       return Optional.empty();
     }
@@ -140,9 +140,9 @@ public abstract class DestinationAcceptanceTest {
 
   protected String getNormalizationImageName() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-      .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
-          + standardDestinationDefinition.getNormalizationTag())
-      .orElse(null);
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
+            + standardDestinationDefinition.getNormalizationTag())
+        .orElse(null);
   }
 
   /**
@@ -226,13 +226,15 @@ public abstract class DestinationAcceptanceTest {
 
   protected boolean normalizationFromDefinition() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationRepository()) && Objects.nonNull(standardDestinationDefinition.getNormalizationTag()))
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationRepository())
+            && Objects.nonNull(standardDestinationDefinition.getNormalizationTag()))
         .orElse(false);
   }
 
   protected boolean dbtFromDefinition() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt()) && standardDestinationDefinition.getSupportsDbt())
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getSupportsDbt())
+            && standardDestinationDefinition.getSupportsDbt())
         .orElse(false);
   }
 
