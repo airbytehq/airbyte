@@ -17,6 +17,7 @@ import {
   OperationRead,
   OperatorWebhookWebhookType,
   WebhookConfigRead,
+  WorkspaceRead,
 } from "core/request/AirbyteClient";
 import { useWebConnectionService } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -61,21 +62,26 @@ const isDbtCloudJob = (operation: OperationRead): boolean =>
 export const isSameJob = (remoteJob: DbtCloudJobInfo, savedJob: DbtCloudJob): boolean =>
   savedJob.accountId === remoteJob.accountId && savedJob.jobId === remoteJob.jobId;
 
+type ServiceToken = string;
+
 export const useSubmitDbtCloudIntegrationConfig = () => {
   const { workspaceId } = useCurrentWorkspace();
   const { mutateAsync: updateWorkspace } = useUpdateWorkspace();
 
-  return useMutation(async (authToken: string) => {
-    await updateWorkspace({
-      workspaceId,
-      webhookConfigs: [
-        {
-          name: webhookConfigName,
-          authToken,
-        },
-      ],
-    });
-  });
+  return useMutation<WorkspaceRead, Error, ServiceToken>(
+    ["submitWorkspaceDbtCloudToken", workspaceId],
+    async (authToken: string) => {
+      return await updateWorkspace({
+        workspaceId,
+        webhookConfigs: [
+          {
+            name: webhookConfigName,
+            authToken,
+          },
+        ],
+      });
+    }
+  );
 };
 
 export const useDbtIntegration = (connection: WebBackendConnectionRead) => {
