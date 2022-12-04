@@ -371,6 +371,10 @@
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
 
+  "connection.schemaChange.breaking": "Breaking schema updates detected.",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
+  "connection.schemaChange.reviewAction": "Review changes",
+
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
@@ -548,6 +552,7 @@
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
+  "ui.goToHome": "Go to homepage",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
@@ -588,5 +593,7 @@
   "connectorBuilder.unknownError": "An unknown error has occurred",
   "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
   "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
-  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>."
+  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>.",
+
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
