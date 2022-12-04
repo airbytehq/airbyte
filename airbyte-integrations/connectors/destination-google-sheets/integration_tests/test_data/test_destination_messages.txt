@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "stream_1", "emitted_at": 1602637589000, "data": {"id" : "1"}}}

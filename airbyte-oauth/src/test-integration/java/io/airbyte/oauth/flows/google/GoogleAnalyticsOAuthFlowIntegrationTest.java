@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.google;
@@ -21,6 +21,8 @@ import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -40,9 +42,10 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
   private static final Path CREDENTIALS_PATH = Path.of("secrets/google_analytics.json");
 
   private ConfigRepository configRepository;
-  private GoogleAnalyticsOAuthFlow googleAnalyticsOAuthFlow;
+  private GoogleAnalyticsViewIdOAuthFlow googleAnalyticsViewIdOAuthFlow;
   private HttpServer server;
   private ServerHandler serverHandler;
+  private HttpClient httpClient;
 
   @BeforeEach
   public void setup() throws IOException {
@@ -51,7 +54,8 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
           "Must provide path to a oauth credentials file.");
     }
     configRepository = mock(ConfigRepository.class);
-    googleAnalyticsOAuthFlow = new GoogleAnalyticsOAuthFlow(configRepository);
+    httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+    googleAnalyticsViewIdOAuthFlow = new GoogleAnalyticsViewIdOAuthFlow(configRepository, httpClient);
 
     server = HttpServer.create(new InetSocketAddress(80), 0);
     server.setExecutor(null); // creates a default executor
@@ -70,7 +74,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -80,7 +84,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build())))));
-    final String url = googleAnalyticsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleAnalyticsViewIdOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -89,7 +93,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
       limit -= 1;
     }
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");
-    final Map<String, Object> params = googleAnalyticsOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
+    final Map<String, Object> params = googleAnalyticsViewIdOAuthFlow.completeSourceOAuth(workspaceId, definitionId,
         Map.of("code", serverHandler.getParamValue()), REDIRECT_URL);
     LOGGER.info("Response from completing OAuth Flow is: {}", params.toString());
     assertTrue(params.containsKey("credentials"));
@@ -140,7 +144,7 @@ public class GoogleAnalyticsOAuthFlowIntegrationTest {
           t.sendResponseHeaders(500, response.length());
         }
         final OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write(response.getBytes(StandardCharsets.UTF_8));
         os.close();
       } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);

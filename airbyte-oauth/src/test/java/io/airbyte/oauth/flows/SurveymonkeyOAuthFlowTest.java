@@ -1,115 +1,112 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
+import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class SurveymonkeyOAuthFlowTest {
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class SurveymonkeyOAuthFlowTest extends BaseOAuthFlowTest {
 
-  private static final String REDIRECT_URL = "https://airbyte.io";
+  public static final String STRING = "string";
+  public static final String TYPE = "type";
 
-  private HttpClient httpClient;
-  private ConfigRepository configRepository;
-  private SurveymonkeyOAuthFlow surveymonkeyOAuthFlow;
-
-  private UUID workspaceId;
-  private UUID definitionId;
-
-  @BeforeEach
-  public void setup() throws JsonValidationException, IOException {
-    httpClient = mock(HttpClient.class);
-    configRepository = mock(ConfigRepository.class);
-    surveymonkeyOAuthFlow = new SurveymonkeyOAuthFlow(configRepository, httpClient, SurveymonkeyOAuthFlowTest::getConstantState);
-
-    workspaceId = UUID.randomUUID();
-    definitionId = UUID.randomUUID();
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
-    when(configRepository.listDestinationOAuthParam()).thenReturn(List.of(new DestinationOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withDestinationDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build()))));
+  @Override
+  protected BaseOAuthFlow getOAuthFlow() {
+    return new SurveymonkeyOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
-  private static String getConstantState() {
-    return "state";
+  @Override
+  protected String getExpectedConsentUrl() {
+    return "https://api.surveymonkey.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state";
   }
 
-  @Test
-  public void testGetSourceConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        surveymonkeyOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(
-        "https://api.surveymonkey.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state",
-        concentUrl);
+  @Override
+  protected List<String> getExpectedOutputPath() {
+    return List.of();
   }
 
-  @Test
-  public void testGetDestinationConcentUrl() throws IOException, InterruptedException, ConfigNotFoundException {
-    final String concentUrl =
-        surveymonkeyOAuthFlow.getDestinationConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals(
-        "https://api.surveymonkey.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state",
-        concentUrl);
+  @Override
+  protected Map<String, String> getExpectedOutput() {
+    return Map.of(
+        "access_token", "access_token_response",
+        "client_id", MoreOAuthParameters.SECRET_MASK,
+        "client_secret", MoreOAuthParameters.SECRET_MASK);
+  }
+
+  @Override
+  protected JsonNode getInputOAuthConfiguration() {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("origin", "USA")
+        .build());
+  }
+
+  @Override
+  protected JsonNode getUserInputFromConnectorConfigSpecification() {
+    return getJsonSchema(Map.of("origin", "USA"));
+  }
+
+  @Override
+  protected JsonNode getCompleteOAuthOutputSpecification() {
+    return getJsonSchema(Map.of("access_token", Map.of("type", "string")));
+  }
+
+  @Override
+  protected Map<String, String> getExpectedFilteredOutput() {
+    return Map.of(
+        "access_token", "access_token_response",
+        "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
   @Test
-  public void testCompleteSourceOAuth() throws IOException, InterruptedException, ConfigNotFoundException {
+  void testGetAccessTokenUrl() {
+    final SurveymonkeyOAuthFlow oauthFlow = (SurveymonkeyOAuthFlow) getOAuthFlow();
+    final String expectedAccessTokenUrl = "https://api.surveymonkey.com/oauth/token";
 
-    final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
-    final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
-    when(httpClient.send(any(), any())).thenReturn(response);
-    final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams =
-        surveymonkeyOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-
-    assertEquals(returnedCredentials, actualQueryParams);
+    final String accessTokenUrl = oauthFlow.getAccessTokenUrl(getInputOAuthConfiguration());
+    assertEquals(accessTokenUrl, expectedAccessTokenUrl);
   }
 
   @Test
-  public void testCompleteDestinationOAuth() throws IOException, ConfigNotFoundException, InterruptedException {
+  @Override
+  void testGetDestinationConsentUrlEmptyOAuthSpec() {}
 
-    final Map<String, String> returnedCredentials = Map.of("access_token", "access_token_response");
-    final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
-    when(httpClient.send(any(), any())).thenReturn(response);
-    final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams =
-        surveymonkeyOAuthFlow.completeDestinationOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
+  @Test
+  @Override
+  void testGetDestinationConsentUrl() {}
 
-    assertEquals(returnedCredentials, actualQueryParams);
-  }
+  @Test
+  @Override
+  void testGetSourceConsentUrlEmptyOAuthSpec() {}
+
+  @Test
+  @Override
+  void testGetSourceConsentUrl() {}
+
+  @Test
+  @Override
+  void testEmptyInputCompleteDestinationOAuth() {}
+
+  @Test
+  @Override
+  void testDeprecatedCompleteDestinationOAuth() {}
+
+  @Test
+  @Override
+  void testDeprecatedCompleteSourceOAuth() {}
+
+  @Test
+  @Override
+  void testEmptyInputCompleteSourceOAuth() {}
 
 }

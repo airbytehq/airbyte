@@ -1,0 +1,131 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/monday",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Monday Spec",
+    "type": "object",
+    "required": [],
+    "additionalProperties": true,
+    "properties": {
+      "credentials": {
+        "title": "Authorization Method",
+        "type": "object",
+        "oneOf": [
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "required": [
+              "auth_type",
+              "client_id",
+              "client_secret",
+              "access_token"
+            ],
+            "properties": {
+              "subdomain": {
+                "type": "string",
+                "title": "Subdomain/Slug",
+                "description": "Slug/subdomain of the account, or the first part of the URL that comes before .monday.com",
+                "default": "",
+                "order": 0
+              },
+              "auth_type": {
+                "type": "string",
+                "const": "oauth2.0",
+                "order": 1
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of your OAuth application.",
+                "airbyte_secret": true
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "Access Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "API Token",
+            "required": ["auth_type", "api_token"],
+            "properties": {
+              "auth_type": {
+                "type": "string",
+                "const": "api_token",
+                "order": 0
+              },
+              "api_token": {
+                "type": "string",
+                "title": "Personal API Token",
+                "description": "API Token for making authenticated requests.",
+                "airbyte_secret": true
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "advanced_auth": {
+    "auth_flow_type": "oauth2.0",
+    "predicate_key": ["credentials", "auth_type"],
+    "predicate_value": "oauth2.0",
+    "oauth_config_specification": {
+      "complete_oauth_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "access_token"]
+          }
+        }
+      },
+      "complete_oauth_server_input_specification": {
+        "type": "object",
+        "additionalProperties": true,
+        "properties": {
+          "client_id": {
+            "type": "string"
+          },
+          "client_secret": {
+            "type": "string"
+          }
+        }
+      },
+      "complete_oauth_server_output_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "client_id": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_id"]
+          },
+          "client_secret": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "client_secret"]
+          }
+        }
+      },
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "subdomain": {
+            "type": "string",
+            "path_in_connector_config": ["credentials", "subdomain"]
+          }
+        }
+      }
+    }
+  }
+}

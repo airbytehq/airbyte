@@ -1,18 +1,20 @@
+import { AuthErrorCodes } from "firebase/auth";
+import { Field, FieldProps, Formik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { Field, FieldProps, Formik } from "formik";
+import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { LabeledInput, Link, LoadingButton } from "components";
-import useRouterHook from "hooks/useRouter";
+import { LabeledInput, Link } from "components";
+import { Button } from "components/ui/Button";
 
-import { Routes } from "packages/cloud/routes";
+import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useQuery } from "hooks/useQuery";
+import { CloudRoutes } from "packages/cloud/cloudRoutes";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
-import { FormTitle } from "../components/FormTitle";
 
 import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
-import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { AuthErrorCodes } from "firebase/auth";
+import { FormTitle } from "../components/FormTitle";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   newPassword: yup.string().required("form.empty.error"),
@@ -21,12 +23,13 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordConfirmPage: React.FC = () => {
   const { confirmPasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const { push, query } = useRouterHook<{ oobCode: string }>();
-  const formatMessage = useIntl().formatMessage;
+  const navigate = useNavigate();
+  const query = useQuery<{ oobCode?: string }>();
+  const { formatMessage } = useIntl();
 
   return (
     <div>
-      <FormTitle bold>
+      <FormTitle>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
 
@@ -37,13 +40,16 @@ const ResetPasswordConfirmPage: React.FC = () => {
         validationSchema={ResetPasswordPageValidationSchema}
         onSubmit={async ({ newPassword }) => {
           try {
+            if (!query.oobCode) {
+              return;
+            }
             await confirmPasswordReset(query.oobCode, newPassword);
             registerNotification({
               id: "confirmResetPassword.success",
               title: formatMessage({ id: "confirmResetPassword.success" }),
               isError: false,
             });
-            push(Routes.Login);
+            navigate(CloudRoutes.Login);
           } catch (err) {
             // Error code reference:
             // https://firebase.google.com/docs/reference/js/v8/firebase.auth.Auth#confirmpasswordreset
@@ -86,7 +92,7 @@ const ResetPasswordConfirmPage: React.FC = () => {
             }
           }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (
@@ -96,27 +102,21 @@ const ResetPasswordConfirmPage: React.FC = () => {
                 {({ field, meta }: FieldProps<string>) => (
                   <LabeledInput
                     {...field}
-                    label={
-                      <FormattedMessage id="confirmResetPassword.newPassword" />
-                    }
+                    label={<FormattedMessage id="confirmResetPassword.newPassword" />}
                     type="password"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              </Button>
             </BottomBlock>
           </Form>
         )}

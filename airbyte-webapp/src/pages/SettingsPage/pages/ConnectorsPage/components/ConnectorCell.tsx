@@ -1,14 +1,20 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import Indicator from "components/Indicator";
+import { ReleaseStageBadge } from "components/ReleaseStageBadge";
+
+import { ReleaseStage } from "core/request/AirbyteClient";
 import { getIcon } from "utils/imageUtils";
 
-type IProps = {
+interface ConnectorCellProps {
   connectorName: string;
   img?: string;
   hasUpdate?: boolean;
-};
+  isDeprecated?: boolean;
+  releaseStage?: ReleaseStage;
+}
 
 const Content = styled.div<{ enabled?: boolean }>`
   display: flex;
@@ -17,12 +23,12 @@ const Content = styled.div<{ enabled?: boolean }>`
   position: relative;
   margin: -5px 0;
   min-width: 290px;
+  gap: 8px;
 `;
 
 const Image = styled.div`
   height: 25px;
   width: 17px;
-  margin-right: 9px;
 `;
 
 const Notification = styled(Indicator)`
@@ -30,12 +36,22 @@ const Notification = styled(Indicator)`
   left: 8px;
 `;
 
-const ConnectorCell: React.FC<IProps> = ({ connectorName, img, hasUpdate }) => {
+const CustomAnnotation = styled.span`
+  color: ${({ theme }) => theme.greyColor40};
+`;
+
+const ConnectorCell: React.FC<ConnectorCellProps> = ({ connectorName, img, hasUpdate, isDeprecated, releaseStage }) => {
   return (
     <Content>
       {hasUpdate && <Notification />}
       <Image>{getIcon(img)}</Image>
-      {connectorName}
+      <span>{connectorName}</span>
+      <ReleaseStageBadge small tooltip={false} stage={releaseStage} />
+      {isDeprecated && (
+        <CustomAnnotation>
+          (<FormattedMessage id="admin.customImage" />)
+        </CustomAnnotation>
+      )}
     </Content>
   );
 };

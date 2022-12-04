@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["integer"]
+    },
+    "prospect_id": {
+      "type": ["null", "integer"]
+    },
+    "visitor_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign_id": {
+      "type": ["null", "integer"]
+    },
+    "type": {
+      "type": ["null", "integer"]
+    },
+    "type_name": {
+      "type": ["null", "string"]
+    },
+    "details": {
+      "type": ["null", "string"]
+    },
+    "email_id": {
+      "type": ["null", "integer"]
+    },
+    "email_template_id": {
+      "type": ["null", "integer"]
+    },
+    "list_email_id": {
+      "type": ["null", "integer"]
+    },
+    "form_id": {
+      "type": ["null", "integer"]
+    },
+    "form_handler_id": {
+      "type": ["null", "integer"]
+    },
+    "site_search_query_id": {
+      "type": ["null", "integer"]
+    },
+    "landing_page_id": {
+      "type": ["null", "integer"]
+    },
+    "paid_search_id_id": {
+      "type": ["null", "integer"]
+    },
+    "multivariate_test_variation_id": {
+      "type": ["null", "integer"]
+    },
+    "visitor_page_view_id": {
+      "type": ["null", "integer"]
+    },
+    "file_id": {
+      "type": ["null", "integer"]
+    },
+    "campaign": {
+      "type": ["null", "object"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

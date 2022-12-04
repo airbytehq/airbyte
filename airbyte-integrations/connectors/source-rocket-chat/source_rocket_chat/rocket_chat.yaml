@@ -1,0 +1,110 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer:
+        - "{{ options['name'] }}"
+  update_selector:
+    extractor:
+      field_pointer:
+        - "update"
+  requester:
+    url_base: "{{ config['endpoint'] }}/api/v1"
+    http_method: "GET"
+    authenticator:
+      type: ApiKeyAuthenticator
+      header: "X-Auth-Token"
+      api_token: "{{ config['token'] }}"
+    request_options_provider:
+      request_headers:
+        X-User-Id: "{{ config['user_id'] }}"
+  offset_paginator:
+    type: DefaultPaginator
+    $options:
+      url_base: "*ref(definitions.requester.url_base)"
+      page_size: 1
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "count"
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "offset"
+    pagination_strategy:
+      type: "OffsetIncrement"
+  custom_retriever:
+    record_selector:
+      $ref: "*ref(definitions.update_selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.offset_paginator)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  teams_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "teams"
+      primary_key: "_id"
+      path: "/teams.list"
+  rooms_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.custom_retriever)"
+    $options:
+      name: "rooms"
+      primary_key: "_id"
+      path: "/rooms.get"
+  channels_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "channels"
+      primary_key: "_id"
+      path: "/channels.list"
+  roles_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+      paginator:
+        type: NoPagination
+      requester:
+        $ref: "*ref(definitions.requester)"
+    $options:
+      name: "roles"
+      primary_key: "_id"
+      path: "/roles.list"
+  subscriptions_stream:
+    $ref: "*ref(definitions.base_stream)"
+    retriever:
+      $ref: "*ref(definitions.custom_retriever)"
+    $options:
+      name: "subscriptions"
+      primary_key: "_id"
+      path: "/subscriptions.get"
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "_id"
+      path: "/users.list"
+
+streams:
+  - "*ref(definitions.teams_stream)"
+  - "*ref(definitions.rooms_stream)"
+  - "*ref(definitions.channels_stream)"
+  - "*ref(definitions.roles_stream)"
+  - "*ref(definitions.subscriptions_stream)"
+  - "*ref(definitions.users_stream)"
+
+check:
+  stream_names:
+    - "teams"

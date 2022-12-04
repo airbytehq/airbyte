@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /api/refs/object for this object.",
+      "pattern": "^/api/refs/object$"
+    },
+    "link": {
+      "type": "string",
+      "description": "API end point that points to a resource."
+    },
+    "ref_type": {
+      "type": "string",
+      "description": "The _object value of the object that the link points to."
+    },
+    "id": {
+      "type": ["integer", "string"],
+      "description": "The id value of the object that the link points to."
+    }
+  }
+}

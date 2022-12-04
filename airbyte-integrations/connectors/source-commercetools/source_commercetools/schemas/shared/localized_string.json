@@ -1,0 +1,8 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "^.*$": {
+      "type": ["null", "string"]
+    }
+  }
+}

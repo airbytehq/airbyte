@@ -1,17 +1,17 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useCallback, useRef, useState } from "react";
 import styled from "styled-components";
 
-import { JobItem as JobApiItem, Attempt } from "core/resources/Job";
-import Spinner from "../Spinner";
-import JobLogs from "./components/JobLogs";
-import ContentWrapper from "./components/ContentWrapper";
-import MainInfo from "./components/MainInfo";
-import Status from "core/statuses";
+import { Spinner } from "components/ui/Spinner";
 
-type IProps = {
-  job: JobApiItem;
-  attempts: Attempt[];
-};
+import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
+
+import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
+import { useAttemptLink } from "./attemptLinkUtils";
+import ContentWrapper from "./components/ContentWrapper";
+import ErrorDetails from "./components/ErrorDetails";
+import JobLogs from "./components/JobLogs";
+import MainInfo from "./components/MainInfo";
+import styles from "./JobItem.module.scss";
 
 const Item = styled.div<{ isFailed: boolean }>`
   border-bottom: 1px solid ${({ theme }) => theme.greyColor20};
@@ -19,47 +19,69 @@ const Item = styled.div<{ isFailed: boolean }>`
   line-height: 18px;
 
   &:hover {
-    background: ${({ theme, isFailed }) =>
-      isFailed ? theme.dangerTransparentColor : theme.greyColor0};
+    background: ${({ theme, isFailed }) => (isFailed ? theme.dangerTransparentColor : theme.greyColor0)};
   }
 `;
 
-const LoadLogs = styled.div`
-  background: ${({ theme }) => theme.whiteColor};
-  text-align: center;
-  padding: 6px 0;
-  min-height: 58px;
-`;
+interface JobItemProps {
+  job: SynchronousJobRead | JobsWithJobs;
+}
 
-const JobItem: React.FC<IProps> = ({ job, attempts }) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const onExpand = () => setIsOpen(!isOpen);
-  const isFailed = job.status === Status.FAILED;
+const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
+  "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
+
+export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
+  "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
+
+export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
+  "attempts" in job ? job.attempts : undefined;
+
+export const getJobId = (job: SynchronousJobRead | JobsWithJobs): string | number =>
+  "id" in job ? job.id : job.job.id;
+
+export const JobItem: React.FC<JobItemProps> = ({ job }) => {
+  const { jobId: linkedJobId } = useAttemptLink();
+  const alreadyScrolled = useRef(false);
+  const [isOpen, setIsOpen] = useState(() => linkedJobId === String(getJobId(job)));
+  const scrollAnchor = useRef<HTMLDivElement>(null);
+
+  const didSucceed = didJobSucceed(job);
+
+  const onExpand = () => {
+    setIsOpen((prevIsOpen) => !prevIsOpen);
+  };
+
+  const onDetailsToggled = useCallback(() => {
+    if (alreadyScrolled.current || linkedJobId !== String(getJobId(job))) {
+      return;
+    }
+    scrollAnchor.current?.scrollIntoView({
+      block: "start",
+    });
+    alreadyScrolled.current = true;
+  }, [job, linkedJobId]);
 
   return (
-    <Item isFailed={isFailed}>
-      <MainInfo
-        isOpen={isOpen}
-        isFailed={isFailed}
-        onExpand={onExpand}
-        job={job}
-        attempts={attempts}
-      />
-      <ContentWrapper isOpen={isOpen}>
+    <Item isFailed={!didSucceed} ref={scrollAnchor}>
+      <MainInfo isOpen={isOpen} isFailed={!didSucceed} onExpand={onExpand} job={job} attempts={getJobAttemps(job)} />
+      <ContentWrapper isOpen={isOpen} onToggled={onDetailsToggled}>
         <div>
           <Suspense
             fallback={
-              <LoadLogs>
-                <Spinner />
-              </LoadLogs>
+              <div className={styles.logsLoadingContainer}>
+                <Spinner small />
+              </div>
             }
           >
-            {isOpen && <JobLogs id={job.id} jobIsFailed={isFailed} />}
+            {isOpen && (
+              <>
+                <ErrorDetails attempts={getJobAttemps(job)} />
+                <JobLogs job={job} jobIsFailed={!didSucceed} />
+              </>
+            )}
           </Suspense>
         </div>
       </ContentWrapper>
     </Item>
   );
 };
-
-export default JobItem;

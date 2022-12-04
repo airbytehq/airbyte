@@ -1,7 +1,7 @@
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
 import { AirbyteJSONSchemaDefinition } from "./types";
 
-test("should reformat jsonSchema to internal widget representation", () => {
+it("should reformat jsonSchema to internal widget representation", () => {
   const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["host", "port", "user", "dbname"],
@@ -115,7 +115,7 @@ test("should reformat jsonSchema to internal widget representation", () => {
   expect(builtSchema).toEqual(expected);
 });
 
-test("should reformat jsonSchema to internal widget representation with parent schema", () => {
+it("should reformat jsonSchema to internal widget representation with parent schema", () => {
   const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     title: "Postgres Source Spec",
@@ -163,7 +163,7 @@ test("should reformat jsonSchema to internal widget representation with parent s
   expect(builtSchema).toEqual(expected);
 });
 
-test("should reformat jsonSchema to internal widget representation when has oneOf", () => {
+it("should reformat jsonSchema to internal widget representation when has oneOf", () => {
   const schema: AirbyteJSONSchemaDefinition = {
     type: "object",
     required: ["start_date", "credentials"],
@@ -175,6 +175,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         type: "object",
         title: "Credentials Condition",
         description: "Credentials Condition Description",
+        order: 0,
         oneOf: [
           {
             title: "api key",
@@ -215,6 +216,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
           type: "object",
           description: "Credentials Condition Description",
           title: "Credentials Condition",
+          order: 0,
           oneOf: [
             {
               title: "api key",
@@ -252,6 +254,7 @@ test("should reformat jsonSchema to internal widget representation when has oneO
         path: "key.credentials",
         description: "Credentials Condition Description",
         title: "Credentials Condition",
+        order: 0,
         fieldKey: "credentials",
         conditions: {
           "api key": {

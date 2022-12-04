@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.local_json;
@@ -26,6 +26,7 @@ import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -89,7 +90,7 @@ public class LocalJsonDestination extends BaseConnector implements Destination {
         Files.copy(finalPath, tmpPath, StandardCopyOption.REPLACE_EXISTING);
       }
 
-      final Writer writer = new FileWriter(tmpPath.toFile(), isAppendMode);
+      final Writer writer = new FileWriter(tmpPath.toFile(), Charset.defaultCharset(), isAppendMode);
       writeConfigs.put(stream.getStream().getName(), new WriteConfig(writer, tmpPath, finalPath));
     }
 

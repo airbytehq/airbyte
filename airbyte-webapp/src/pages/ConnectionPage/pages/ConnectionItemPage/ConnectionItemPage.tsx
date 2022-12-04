@@ -1,127 +1,29 @@
 import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import { Navigate, Route, Routes, useParams } from "react-router-dom";
 
-import PageTitle from "components/PageTitle";
-import HeadTitle from "components/HeadTitle";
-import useRouter from "hooks/useRouter";
-import StepsMenu from "components/StepsMenu";
-import StatusView from "./components/StatusView";
-import SettingsView from "./components/SettingsView";
-import ConnectionResource from "core/resources/Connection";
-import LoadingPage from "components/LoadingPage";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import FrequencyConfig from "config/FrequencyConfig.json";
-import Link from "components/Link";
-import { Routes } from "../../../routes";
-import DestinationDefinitionResource from "core/resources/DestinationDefinition";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import { equal } from "utils/objects";
-import { useAnalytics } from "hooks/useAnalytics";
+import { LoadingPage, MainPageWithScroll } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
 
-type ConnectionItemPageProps = {
-  currentStep: "status" | "settings";
-};
+import { ConnectionStatus } from "core/request/AirbyteClient";
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import {
+  ConnectionEditServiceProvider,
+  useConnectionEditService,
+} from "hooks/services/ConnectionEdit/ConnectionEditService";
 
-const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
-  currentStep,
-}) => {
-  const { query, push } = useRouter<{ id: string }>();
-  const analyticsService = useAnalytics();
-  const connection = useResource(ConnectionResource.detailShape(), {
-    connectionId: query.id,
-  });
+import { ConnectionPageTitle } from "./ConnectionPageTitle";
+import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
+import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
+import { ConnectionStatusTab } from "./ConnectionStatusTab";
+import { ConnectionTransformationTab } from "./ConnectionTransformationTab";
 
-  const frequency = FrequencyConfig.find((item) =>
-    equal(item.config, connection.schedule)
-  );
+export const ConnectionItemPageInner: React.FC = () => {
+  const { connection } = useConnectionEditService();
 
-  const { source, destination } = connection;
+  useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
 
-  const sourceDefinition = useResource(
-    SourceDefinitionResource.detailShape(),
-    source
-      ? {
-          sourceDefinitionId: source.sourceDefinitionId,
-        }
-      : null
-  );
-
-  const destinationDefinition = useResource(
-    DestinationDefinitionResource.detailShape(),
-    destination
-      ? {
-          destinationDefinitionId: destination.destinationDefinitionId,
-        }
-      : null
-  );
-
-  const steps = [
-    {
-      id: "status",
-      name: <FormattedMessage id={"sources.status"} />,
-    },
-    {
-      id: "settings",
-      name: <FormattedMessage id={"sources.settings"} />,
-    },
-  ];
-
-  const onSelectStep = (id: string) => {
-    if (id === "settings") {
-      push(
-        `${Routes.Connections}/${connection.connectionId}${Routes.Settings}`
-      );
-    } else {
-      push(`${Routes.Connections}/${connection.connectionId}`);
-    }
-  };
-
-  const onAfterSaveSchema = () => {
-    analyticsService.track("Source - Action", {
-      action: "Edit schema",
-      connector_source: source.sourceName,
-      connector_source_id: source.sourceDefinitionId,
-      connector_destination: destination.destinationName,
-      connector_destination_definition_id: destination.destinationDefinitionId,
-      frequency: frequency?.text,
-    });
-  };
-
-  const renderStep = () => {
-    if (currentStep === "status") {
-      return (
-        <StatusView
-          connection={connection}
-          frequencyText={frequency?.text}
-          sourceDefinition={sourceDefinition}
-          destinationDefinition={destinationDefinition}
-        />
-      );
-    }
-
-    return (
-      <SettingsView
-        onAfterSaveSchema={onAfterSaveSchema}
-        connectionId={connection.connectionId}
-        frequencyText={frequency?.text}
-        sourceDefinition={sourceDefinition}
-        destinationDefinition={destinationDefinition}
-      />
-    );
-  };
-
-  const linkToSource = () => (
-    <Link $clear to={`${Routes.Source}/${source.sourceId}`}>
-      {source.name}
-    </Link>
-  );
-
-  const linkToDestination = () => (
-    <Link $clear to={`${Routes.Destination}/${destination.destinationId}`}>
-      {destination.name}
-    </Link>
-  );
+  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   return (
     <MainPageWithScroll
@@ -132,39 +34,39 @@ const ConnectionItemPage: React.FC<ConnectionItemPageProps> = ({
             {
               id: "connection.fromTo",
               values: {
-                source: source.name,
-                destination: destination.name,
+                source: connection.source.name,
+                destination: connection.destination.name,
               },
             },
           ]}
         />
       }
-      pageTitle={
-        <PageTitle
-          withLine
-          title={
-            <FormattedMessage
-              id="connection.fromTo"
-              values={{
-                source: linkToSource(),
-                destination: linkToDestination(),
-              }}
-            />
-          }
-          middleComponent={
-            <StepsMenu
-              lightMode
-              data={steps}
-              onSelect={onSelectStep}
-              activeStep={currentStep}
-            />
-          }
-        />
-      }
+      pageTitle={<ConnectionPageTitle />}
     >
-      <Suspense fallback={<LoadingPage />}>{renderStep()}</Suspense>
+      <Suspense fallback={<LoadingPage />}>
+        <Routes>
+          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusTab />} />
+          <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplicationTab />} />
+          <Route path={ConnectionSettingsRoutes.TRANSFORMATION} element={<ConnectionTransformationTab />} />
+          <Route
+            path={ConnectionSettingsRoutes.SETTINGS}
+            element={isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsTab />}
+          />
+          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
+        </Routes>
+      </Suspense>
     </MainPageWithScroll>
   );
 };
 
-export default ConnectionItemPage;
+export const ConnectionItemPage = () => {
+  const params = useParams<{
+    connectionId: string;
+  }>();
+  const connectionId = params.connectionId || "";
+  return (
+    <ConnectionEditServiceProvider connectionId={connectionId}>
+      <ConnectionItemPageInner />
+    </ConnectionEditServiceProvider>
+  );
+};

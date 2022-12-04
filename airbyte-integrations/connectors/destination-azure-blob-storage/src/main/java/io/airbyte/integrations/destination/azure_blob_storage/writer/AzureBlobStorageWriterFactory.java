@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage.writer;
@@ -16,8 +16,7 @@ public interface AzureBlobStorageWriterFactory {
 
   AzureBlobStorageWriter create(AzureBlobStorageDestinationConfig config,
                                 AppendBlobClient appendBlobClient,
-                                ConfiguredAirbyteStream configuredStream,
-                                boolean isNewlyCreatedBlob)
+                                ConfiguredAirbyteStream configuredStream)
       throws Exception;
 
 }

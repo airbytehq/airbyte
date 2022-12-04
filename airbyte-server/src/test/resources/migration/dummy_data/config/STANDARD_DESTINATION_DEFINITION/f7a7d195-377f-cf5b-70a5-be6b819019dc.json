@@ -3,5 +3,10 @@
   "name": "Redshift",
   "dockerRepository": "airbyte/destination-redshift",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/destinations/redshift",
+    "connectionSpecification": {},
+    "supportsIncremental": true
+  }
 }

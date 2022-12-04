@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /hs_code for this object.",
+      "pattern": "^/hs_code$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of HS or HTS code classification."
+    },
+    "code": {
+      "type": "string",
+      "description": "6 digit (international HS) or 10 digit (US HTS) code."
+    },
+    "country_code": {
+      "type": "string",
+      "description": "The country code that the HS code belongs to."
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "integer",
+  "description": "0: none; 1: has_weight Prevents sending an ASN when total pkg weight or any individual packages weight is 0; 2: has_volume Prevents sending an ASN when total volume or any individual packages volume is 0; 4: has_packages Prevents sending an ASN when the number of packages is 0; 8: has_carrier Prevents sending an ASN when Carrier is not specified; 16: has_bill_of_lading Prevents sending an ASN when BillOfLading is not specified; 32: has_load_number Prevents sending an ASN when LoadNumber is not specified; 64: has_po_number Prevents sending an ASN when PO Number is not specified; 128: is_closed Prevents sending an ASN when the order is not closed"
+}

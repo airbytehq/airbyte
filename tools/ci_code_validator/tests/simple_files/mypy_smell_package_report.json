@@ -1,0 +1,36 @@
+{
+  "issues": [
+    {
+      "engineId": "mypy",
+      "primaryLocation": {
+        "filePath": "simple_smell_package/invalid_file.py",
+        "message": "Incompatible return value type (got \"int\", expected \"str\") . Code line: return 1000",
+        "textRange": {
+          "endColumn": 12,
+          "endLine": 11,
+          "startColumn": 11,
+          "startLine": 11
+        }
+      },
+      "ruleId": "python:mypy_return_value",
+      "severity": "MINOR",
+      "type": "CODE_SMELL"
+    },
+    {
+      "engineId": "mypy",
+      "primaryLocation": {
+        "filePath": "simple_smell_package/invalid_file.py",
+        "message": "Name \"fake_func\" already defined on line 10 . Code line: def fake_func(i):",
+        "textRange": {
+          "endColumn": 1,
+          "endLine": 14,
+          "startColumn": 0,
+          "startLine": 14
+        }
+      },
+      "ruleId": "python:mypy_no_redef",
+      "severity": "MINOR",
+      "type": "CODE_SMELL"
+    }
+  ]
+}

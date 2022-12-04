@@ -1,0 +1,38 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "biography": {
+      "type": ["string", "null"]
+    },
+    "followers_count": {
+      "type": ["integer", "null"]
+    },
+    "follows_count": {
+      "type": ["integer", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "ig_id": {
+      "type": ["integer", "null"]
+    },
+    "media_count": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "profile_picture_url": {
+      "type": ["string", "null"]
+    },
+    "shopping_review_status": {
+      "type": ["string", "null"]
+    },
+    "username": {
+      "type": ["string", "null"]
+    },
+    "website": {
+      "type": ["string", "null"]
+    }
+  }
+}

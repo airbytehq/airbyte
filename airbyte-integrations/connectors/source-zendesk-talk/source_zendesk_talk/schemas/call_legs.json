@@ -69,7 +69,8 @@
       "type": ["null", "string"]
     },
     "updated_at": {
-      "type": ["null", "string"]
+      "type": ["null", "string"],
+      "format": "date-time"
     },
     "user_id": {
       "type": ["null", "integer"]

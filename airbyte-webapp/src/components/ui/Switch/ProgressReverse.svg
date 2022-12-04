@@ -1,0 +1,31 @@
+<svg width="42" height="24" viewBox="0 0 42 24" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<style>
+.shape_64 {
+	animation: 5s linear 0s 1 normal forwards running shape_64;
+	transform: translateX(0px) translateY(0px);
+	animation-iteration-count: infinite;
+}
+@keyframes shape_64 {
+	0% {
+		transform: translateX(0px) translateY(0px);
+	}
+	100% {
+		transform: translateX(-162px) translateY(0px);
+	}
+}
+</style>
+<g clip-path="url(#clip_0_614)" width="42" height="24" data-name="progress_back">
+	<g transform="translate(-103.03 0)" class="shape_64" width="213" height="24" data-name="shape">
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 293"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 294" transform="translate(27 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 295" transform="translate(54 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 296" transform="translate(81 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 297" transform="translate(108 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 298" transform="translate(135 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 299" transform="translate(162 0)"/>
+		<path d="M9.75 0H24L14.25 24H0L9.75 0Z" fill="#9C9AFF" data-name="Rectangle 300" transform="translate(189 0)"/>
+	</g>
+</g>
+<defs><clipPath id="clip_0_614"><rect width="42" height="24"/></clipPath>
+</defs>
+</svg>

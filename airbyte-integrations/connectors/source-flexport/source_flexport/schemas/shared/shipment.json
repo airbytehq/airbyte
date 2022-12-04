@@ -1,0 +1,315 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "description": "Set of custom key-values specific to the object. The keys are strings and values are arrays of strings. The set of valid keys is always the consignee's list of keys, even if call was made by a different party."
+    },
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /shipment for this object.",
+      "pattern": "^/shipment$"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the shipment."
+    },
+    "booking": {
+      "description": "The booking associated with this shipment",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "api/refs/object.json"
+        }
+      ]
+    },
+    "transportation_mode": {
+      "type": "string",
+      "description": "Transportation mode of the main carriage of the shipment.",
+      "enum": [
+        "ocean",
+        "air",
+        "truck",
+        "rail",
+        "unknown_transportation",
+        "ocean_air",
+        "truck_intl",
+        "warehouse_storage"
+      ]
+    },
+    "freight_type": {
+      "type": "string",
+      "description": "The type of freight service provided. One of:",
+      "enum": ["port_to_door", "port_to_port", "door_to_door", "door_to_port"]
+    },
+    "archived_at": {
+      "type": ["null", "string"],
+      "description": "Date when the shipment was archived, if applicable. In ISO8601 UTC format with timezone denoted by Z.",
+      "format": "date-time"
+    },
+    "incoterm": {
+      "type": "string",
+      "description": "The Incoterm of your shipment.",
+      "enum": [
+        "EXW",
+        "FOB",
+        "FAS",
+        "FCA",
+        "CPT",
+        "CFR",
+        "CIF",
+        "CIP",
+        "DAT",
+        "DAP",
+        "DDP",
+        "DPU"
+      ]
+    },
+    "calculated_weight": {
+      "description": "Total weight (kg or lbs) of the shipment, calculated from individual pieces if package dimensions are known.",
+      "$ref": "quantity/weight.json"
+    },
+    "calculated_volume": {
+      "description": "Total volume (cbm or cft) of the shipment, calculated from individual pieces if package dimensions are known.",
+      "$ref": "quantity/volume.json"
+    },
+    "pieces": {
+      "type": ["null", "integer"],
+      "description": "Total number of pieces in the shipment."
+    },
+    "it_number": {
+      "type": ["null", "string"],
+      "description": "Inbond Transit number used for US Customs"
+    },
+    "created_date": {
+      "type": "string",
+      "description": "Date the user confirmed the Flexport quote for this Shipment.",
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "description": "Status of the shipment. One of:",
+      "enum": [
+        "seller_location",
+        "in_transit_to_departure_port",
+        "departure_port",
+        "in_transit_to_arrival_port",
+        "arrival_port",
+        "in_transit_to_final_destination",
+        "final_destination"
+      ]
+    },
+    "priority": {
+      "type": "string",
+      "description": "The level of attention Flexport should give to this shipment.",
+      "enum": ["standard", "high"]
+    },
+    "updated_at": {
+      "type": "string",
+      "description": "Date when the shipment object was last updated. In ISO8601 UTC format with timezone denoted by Z.",
+      "format": "date-time"
+    },
+    "estimated_departure_date": {
+      "type": ["null", "string"],
+      "description": "Estimated departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "actual_departure_date": {
+      "type": ["null", "string"],
+      "description": "Actual departure date from the first port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "estimated_arrival_date": {
+      "type": ["null", "string"],
+      "description": "Estimated arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "actual_arrival_date": {
+      "type": ["null", "string"],
+      "description": "Actual arrival date to the last port of the main voyage. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "cargo_ready_date": {
+      "type": "string",
+      "description": "Date when cargo is ready for pickup at the origin location. Calendar date only, no time.",
+      "format": "date"
+    },
+    "wants_freight_management_bco": {
+      "type": "boolean",
+      "description": "Determines if a shipment bypasses a freight forwarder and is booked directly with a steamship line."
+    },
+    "wants_flexport_freight": {
+      "type": "boolean",
+      "description": "Determines if a shipment is using Flexport services for a combination of import customs clearance or final leg delivery."
+    },
+    "wants_commercial_invoice_transcription": {
+      "type": "boolean"
+    },
+    "wants_flexport_insurance": {
+      "type": "boolean"
+    },
+    "wants_pickup_service": {
+      "type": "boolean"
+    },
+    "wants_trade_declaration_service": {
+      "type": ["null", "boolean"]
+    },
+    "visibility_only": {
+      "type": "boolean",
+      "description": "Indicates if a shipment was requested for tracking via the Flexport visibility-only service."
+    },
+    "wants_delivery_service": {
+      "type": "boolean",
+      "description": "Determines if Flexport is responsible for door delivery on a shipment."
+    },
+    "estimated_picked_up_in_full_date": {
+      "type": ["null", "string"],
+      "description": "Estimated pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "actual_picked_up_in_full_date": {
+      "type": ["null", "string"],
+      "description": "Actual pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "target_delivery_date": {
+      "type": ["null", "string"],
+      "description": "Target date for when the shipment will be fully delivered. This date is set when the shipment''s booking is confirmed. This value may be different from estimated_delivered_in_full_date, which is updated when there is new information about the progress of a shipment. Date only.",
+      "format": "date"
+    },
+    "estimated_delivered_in_full_date": {
+      "type": ["null", "string"],
+      "description": "Estimated delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "actual_delivered_in_full_date": {
+      "type": ["null", "string"],
+      "description": "Actual delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container. In ISO8601 format with timezone denoted by +/-HH:MM.",
+      "format": "date-time"
+    },
+    "wants_export_customs_service": {
+      "type": "boolean",
+      "description": "Determines if the shipment requires Flexport to provide export customs service."
+    },
+    "wants_import_customs_service": {
+      "type": "boolean",
+      "description": "Determines if the shipment requires Flexport to provide import customs service."
+    },
+    "ocean_shipment": {
+      "description": "Ocean-specific Shipment information. Available only if this is an ocean shipment. null otherwise.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "ocean/shipment.json"
+        }
+      ]
+    },
+    "air_shipment": {
+      "description": "Air-specific Shipment information. Available only if this is an air shipment. null otherwise.",
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "air/shipment.json"
+        }
+      ]
+    },
+    "dangerous_goods": {
+      "description": "",
+      "$ref": "shipment/dangerous_goods.json"
+    },
+    "shippers": {
+      "type": "array",
+      "description": "Array of shippers of the shipment, represented by the CompanyEntity objects.",
+      "items": {
+        "$ref": "company_entity.json"
+      }
+    },
+    "consignees": {
+      "type": "array",
+      "description": "Array of consignees of the shipment, represented by CompanyEntity objects.",
+      "items": {
+        "$ref": "company_entity.json"
+      }
+    },
+    "buyers": {
+      "type": "array",
+      "description": "Array of buyers of the shipment, represented by CompanyEntity objects.",
+      "items": {
+        "$ref": "company_entity.json"
+      }
+    },
+    "sellers": {
+      "type": "array",
+      "description": "Array of sellers of the shipment, represented by CompanyEntity objects.",
+      "items": {
+        "$ref": "company_entity.json"
+      }
+    },
+    "importers_of_record": {
+      "type": "array",
+      "description": "Array of importers of record of the shipment, represented by CompanyEntity objects.",
+      "items": {
+        "$ref": "company_entity.json"
+      }
+    },
+    "items": {
+      "type": "array",
+      "description": "Array of products and SKUs in the shipment, represented by ShipmentItem objects.",
+      "items": {
+        "$ref": "shipment_item.json"
+      }
+    },
+    "legs": {
+      "description": "Expandable API link to the legs of the shipment, represented by ShipmentLeg objects.",
+      "$ref": "api/refs/collection.json"
+    },
+    "customs_entries": {
+      "description": "Expandable API link to the customs entries for this shipment, represented by CustomsEntry objects.",
+      "$ref": "api/refs/collection.json"
+    },
+    "commercial_invoices": {
+      "description": "Expandable API link to the customs entries for this shipment, represented by CommercialInvoice objects.",
+      "$ref": "api/refs/collection.json"
+    },
+    "documents": {
+      "description": "Expandable API link to the documents for this shipment, represented by Document objects.",
+      "$ref": "api/refs/collection.json"
+    },
+    "departure_date": {
+      "$comment": "deprecated",
+      "type": ["null", "string"],
+      "description": "Departure date from the first port of the main voyage.",
+      "format": "date-time"
+    },
+    "arrival_date": {
+      "$comment": "deprecated",
+      "type": ["null", "string"],
+      "description": "Arrival date to the last port of the main voyage.",
+      "format": "date-time"
+    },
+    "picked_up_in_full_date": {
+      "$comment": "deprecated",
+      "type": ["null", "string"],
+      "description": "Pickup date from the origin location. For ocean shipments with multiple containers, this is the date of last picked up container.",
+      "format": "date-time"
+    },
+    "delivered_in_full_date": {
+      "$comment": "deprecated",
+      "type": ["null", "string"],
+      "description": "Delivery date to the destination location. For ocean shipments with multiple containers, this is the date of last delivered container.",
+      "format": "date-time"
+    }
+  }
+}

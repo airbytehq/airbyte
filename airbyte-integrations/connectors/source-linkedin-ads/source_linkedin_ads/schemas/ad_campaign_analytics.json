@@ -75,7 +75,7 @@
     "otherEngagements": {
       "type": ["null", "number"]
     },
-    "pivot": {
+    "_pivot": {
       "type": ["null", "string"]
     },
     "pivotValue": {

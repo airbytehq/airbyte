@@ -1,0 +1,69 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/zoho-crm",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Zoho Crm Configuration",
+    "type": "object",
+    "required": [
+      "client_id",
+      "client_secret",
+      "refresh_token",
+      "environment",
+      "dc_region",
+      "edition"
+    ],
+    "additionalProperties": false,
+    "properties": {
+      "client_id": {
+        "type": "string",
+        "title": "Client ID",
+        "description": "OAuth2.0 Client ID",
+        "airbyte_secret": true
+      },
+      "client_secret": {
+        "type": "string",
+        "title": "Client Secret",
+        "description": "OAuth2.0 Client Secret",
+        "airbyte_secret": true
+      },
+      "refresh_token": {
+        "type": "string",
+        "title": "Refresh Token",
+        "description": "OAuth2.0 Refresh Token",
+        "airbyte_secret": true
+      },
+      "dc_region": {
+        "title": "Data Center Location",
+        "type": "string",
+        "description": "Please choose the region of your Data Center location. More info by this <a href=\"https://www.zoho.com/crm/developer/docs/api/v2/multi-dc.html\">Link</a>",
+        "enum": ["US", "AU", "EU", "IN", "CN", "JP"]
+      },
+      "environment": {
+        "title": "Environment",
+        "type": "string",
+        "description": "Please choose the environment",
+        "enum": ["Production", "Developer", "Sandbox"]
+      },
+      "start_datetime": {
+        "title": "Start Date",
+        "type": ["null", "string"],
+        "examples": [
+          "2000-01-01",
+          "2000-01-01 13:00",
+          "2000-01-01 13:00:00",
+          "2000-01-01T13:00+00:00",
+          "2000-01-01T13:00:00-07:00"
+        ],
+        "description": "ISO 8601, for instance: `YYYY-MM-DD`, `YYYY-MM-DD HH:MM:SS+HH:MM`",
+        "format": "date-time"
+      },
+      "edition": {
+        "title": "Zoho CRM Edition",
+        "type": "string",
+        "description": "Choose your Edition of Zoho CRM to determine API Concurrency Limits",
+        "enum": ["Free", "Standard", "Professional", "Enterprise", "Ultimate"],
+        "default": "Free"
+      }
+    }
+  }
+}

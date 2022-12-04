@@ -1,35 +1,36 @@
-# On Oracle Cloud Infrastructure VM
+# Deploy Airbyte on Oracle Cloud
 
-Install Airbyte on Oracle Cloud Infrastructure VM running Oracle Linux 7
+This page guides you through deploying Airbyte Open Source on an Oracle Cloud Infrastructure (OCI) Virtual Machine (VM) Instance.
 
-## Create OCI Instance
+:::info
 
-Go to OCI Console &gt; Compute &gt; Instances &gt; Create Instance
+These instructions have been tested on an Oracle Linux 7 instance.
 
-![](../.gitbook/assets/OCIScreen1.png)
+:::
 
-![](../.gitbook/assets/OCIScreen2.png)
+## Prerequisites 
 
-## Whitelist Port 8000 for a CIDR range in Security List of OCI VM Subnet
+To deploy Airbyte Open Source on Oracle cloud:
 
-Go to OCI Console &gt; Networking &gt; Virtual Cloud Network
+* Create an [OCI VM compute instance](https://docs.oracle.com/en-us/iaas/Content/Compute/Tasks/launchinginstance.htm#Creating_an_Instance).
+* Allowlist a port for a CIDR range in the [security list of your OCI VM Instance subnet](https://docs.oracle.com/en-us/iaas/Content/Network/Concepts/securitylists.htm).
+* Connect to the instance using a [bastion port forwarding session](https://docs.oracle.com/en-us/iaas/Content/Bastion/Tasks/connectingtosessions.htm#connect-port-forwarding).
 
-Select the Subnet &gt; Security List &gt; Add Ingress Rules
+:::caution
 
-![](../.gitbook/assets/OCIScreen3.png)
+For security reasons, we strongly recommend not having a Public IP for the Instance where you are running Airbyte.
 
-## Login to the Instance/VM with the SSH key and 'opc' user
+:::
 
-```text
-chmod 600 private-key-file
+## Set up the environment
 
-ssh -i private-key-file opc@oci-private-instance-ip -p 2200
-```
+Install Docker and Docker Compose on the VM:
 
-## Install Airbyte Prerequisites on OCI VM
+### 1. Install Docker
 
-### Install Docker
+In the terminal connected to your OCI Instance for Airbyte, run the following commands:
 
+```bash
 sudo yum update -y
 
 sudo yum install -y docker
@@ -37,49 +38,63 @@ sudo yum install -y docker
 sudo service docker start
 
 sudo usermod -a -G docker $USER
+```
 
-### Install Docker Compose
+### 2. Install Docker Compose
 
-sudo wget [https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$\(uname](https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$%28uname) -s\)-$\(uname -m\) -O /usr/local/bin/docker-compose
+In the terminal connected to your OCI Instance for Airbyte, run the following commands:
+
+```bash
+sudo wget https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m) -O /usr/local/bin/docker-compose
 
 sudo chmod +x /usr/local/bin/docker-compose
 
-docker-compose --version
-
-### Install Airbyte
-
-mkdir airbyte && cd airbyte
-
-wget [https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}](https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml})
-
-which docker-compose
-
-sudo /usr/local/bin/docker-compose up -d
-
-## Create SSH Tunnel to Login to the Instance
-
-it is highly recommended to not have a Public IP for the Instance where you are running Airbyte\).
-
-### SSH Local Port Forward to Airbyte VM
-
-From your local workstation
-
-```text
-ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 2200:oci-private-instance-ip:22
-ssh opc@localhost -i <private-key-file.key> -p 2200
+sudo /usr/local/bin/docker-compose --version
 ```
 
-### Airbyte GUI Local Port Forward to Airbyte VM
+## Install and start Airbyte
 
-```text
-ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 8000:oci-private-instance-ip:8000
-```
+Download the Airbyte repository and deploy it on the VM:
 
-## Access Airbyte
+1. Run the following commands to clone the Airbyte repo:
 
-Open URL in Browser : [http://localhost:8000/](http://localhost:8000/)
+	```bash
+	mkdir airbyte && cd airbyte
 
-![](../.gitbook/assets/OCIScreen4.png)
+	wget https://raw.githubusercontent.com/airbytehq/airbyte/master/{.env,docker-compose.yaml}
+	```
 
-/ _Please note Airbyte currently does not support SSL/TLS certificates_ /
+2. Run the following commands to get Airbyte running on your OCI VM instance using Docker compose:
 
+    ```bash
+
+    which docker-compose
+
+    sudo /usr/local/bin/docker-compose up -d
+
+    ``` 
+
+3. Open up a Browser and visit port 8000 - [http://localhost:8000/](http://localhost:8000/)
+
+
+Alternatively, you can get Airbyte running on your OCI VM instance using a different approach.
+
+1. In the terminal connected to your OCI Instance for Airbyte, run the command: 
+
+	```bash
+	ssh opc@bastion-host-public-ip -i <private-key-file.key> -L 8000:oci-private-instance-ip:8000
+	```
+
+	Replace `<private-key-file.key>` with the path to your private key.
+
+2. On your browser, visit port 8000 [port 8000](http://localhost:8000/)
+
+:::info
+
+Please note that Airbyte currently does not support SSL/TLS certificates.
+
+:::
+
+## Troubleshooting
+
+If you encounter any issues, reach out to our community on [Slack](https://slack.airbyte.com/).

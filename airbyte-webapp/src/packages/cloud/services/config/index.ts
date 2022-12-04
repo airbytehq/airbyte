@@ -1,7 +1,5 @@
-import {
-  defaultConfig as coreDefaultConfig,
-  useConfig as useCoreConfig,
-} from "config";
+import { defaultConfig as coreDefaultConfig, useConfig as useCoreConfig } from "config";
+
 import { CloudConfig, CloudConfigExtension } from "./types";
 
 export function useConfig(): CloudConfig {
@@ -13,21 +11,17 @@ const cloudConfigExtensionDefault: CloudConfigExtension = {
   firebase: {
     apiKey: "",
     authDomain: "",
-  },
-  fullstory: {
-    orgId: "",
-    enabled: true,
+    authEmulatorHost: "",
   },
   intercom: {
     appId: "",
   },
 };
 
-export const defaultConfig: CloudConfig = Object.assign(
-  {},
-  coreDefaultConfig,
-  cloudConfigExtensionDefault
-);
+export const defaultConfig: CloudConfig = {
+  ...coreDefaultConfig,
+  ...cloudConfigExtensionDefault,
+};
 
 export * from "./configProviders";
 export * from "./types";

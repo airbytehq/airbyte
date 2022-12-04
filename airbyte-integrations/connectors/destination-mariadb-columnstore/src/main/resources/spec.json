@@ -1,0 +1,57 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "MariaDB Columnstore Destination Spec",
+    "type": "object",
+    "required": ["host", "port", "username", "database"],
+    "additionalProperties": true,
+    "properties": {
+      "host": {
+        "title": "Host",
+        "description": "The Hostname of the database.",
+        "type": "string",
+        "order": 0
+      },
+      "port": {
+        "title": "Port",
+        "description": "The Port of the database.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 3306,
+        "examples": ["3306"],
+        "order": 1
+      },
+      "database": {
+        "title": "Database",
+        "description": "Name of the database.",
+        "type": "string",
+        "order": 2
+      },
+      "username": {
+        "title": "Username",
+        "description": "The Username which is used to access the database.",
+        "type": "string",
+        "order": 3
+      },
+      "password": {
+        "title": "Password",
+        "description": "The Password associated with the username.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
+      }
+    }
+  }
+}

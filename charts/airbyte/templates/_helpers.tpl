@@ -50,6 +50,47 @@ app.kubernetes.io/name: {{ include "airbyte.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
+
+{{/*
+Common DB labels
+*/}}
+{{- define "airbyte.databaseLabels" -}}
+helm.sh/chart: {{ include "airbyte.chart" . }}
+{{ include "airbyte.databaseSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector DB labels
+*/}}
+{{- define "airbyte.databaseSelectorLabels" -}}
+app.kubernetes.io/name: {{ printf "%s-db" .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Common DB labels
+*/}}
+{{- define "airbyte.minioLabels" -}}
+helm.sh/chart: {{ include "airbyte.chart" . }}
+{{ include "airbyte.minioSelectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector DB labels
+*/}}
+{{- define "airbyte.minioSelectorLabels" -}}
+app.kubernetes.io/name: {{ printf "%s-minio" .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
 {{/*
 Create the name of the service account to use
 */}}
@@ -70,30 +111,26 @@ We truncate at 63 chars because some Kubernetes name fields are limited to this 
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
-
 {{/*
-Get the Postgresql credentials secret.
+Get the Postgresql credentials secret name.
 */}}
-{{- define "airbyte.postgresql.secretName" -}}
-{{- if and (.Values.postgresql.enabled) (not .Values.postgresql.existingSecret) -}}
-    {{- printf "%s" (include "airbyte.postgresql.fullname" .) -}}
-{{- else if and (.Values.postgresql.enabled) (.Values.postgresql.existingSecret) -}}
-    {{- printf "%s" .Values.postgresql.existingSecret -}}
+{{- define "airbyte.database.secret.name" -}}
+{{- if .Values.postgresql.enabled -}}
+    {{ template "postgresql.secretName" .Subcharts.postgresql }}
 {{- else }}
     {{- if .Values.externalDatabase.existingSecret -}}
         {{- printf "%s" .Values.externalDatabase.existingSecret -}}
     {{- else -}}
-        {{ printf "%s-%s" .Release.Name "externaldb" }}
+        {{ printf "%s-%s" (include "common.names.fullname" .) "secrets" }}
     {{- end -}}
 {{- end -}}
 {{- end -}}
-
 
 {{/*
 Add environment variables to configure database values
 */}}
 {{- define "airbyte.database.host" -}}
-{{- ternary (include "airbyte.postgresql.fullname" .) .Values.externalDatabase.host .Values.postgresql.enabled -}}
+{{- ternary "airbyte-db-svc" .Values.externalDatabase.host .Values.postgresql.enabled -}}
 {{- end -}}
 
 {{/*
@@ -111,9 +148,9 @@ Add environment variables to configure database values
 {{- end -}}
 
 {{/*
-Add environment variables to configure database values
+Get the Postgresql credentials secret password key
 */}}
-{{- define "airbyte.database.existingsecret.key" -}}
+{{- define "airbyte.database.secret.passwordKey" -}}
 {{- if .Values.postgresql.enabled -}}
     {{- printf "%s" "postgresql-password" -}}
 {{- else -}}
@@ -124,7 +161,7 @@ Add environment variables to configure database values
             {{- printf "%s" "postgresql-password" -}}
         {{- end -}}
     {{- else -}}
-        {{- printf "%s" "postgresql-password" -}}
+        {{- printf "%s" "DATABASE_PASSWORD" -}}
     {{- end -}}
 {{- end -}}
 {{- end -}}
@@ -151,28 +188,38 @@ Create a default fully qualified minio name.
 We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
 */}}
 {{- define "airbyte.minio.fullname" -}}
-{{- $name := default "minio" .Values.minio.nameOverride -}}
+{{- $name := default "minio" .Values.global.logs.minio.nameOverride -}}
 {{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
 Add environment variables to configure minio
 */}}
-{{- define "airbyte.minio.host" -}}
-{{- ternary (include "airbyte.minio.fullname" .) .Values.externalMinio.host .Values.minio.enabled -}}
+{{- define "airbyte.minio.endpoint" -}}
+{{- if .Values.global.logs.minio.enabled -}}
+    {{- printf "http://%s:%d" "airbyte-minio-svc" 9000 -}}
+{{- else if .Values.global.logs.externalMinio.endpoint -}}
+    {{- .Values.global.logs.externalMinio.endpoint -}}
+{{- else if .Values.global.logs.externalMinio.enabled -}}
+    {{- printf "http://%s:%g" .Values.global.logs.externalMinio.host .Values.global.logs.externalMinio.port -}}
+{{- else -}}
+    {{- printf "" -}}
+{{- end -}}
+{{- end -}}
+
+{{- define "airbyte.s3PathStyleAccess" -}}
+{{- ternary "true" "" (or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled) -}}
 {{- end -}}
 
 {{/*
-Add environment variables to configure minio
+Returns the GCP credentials path
 */}}
-{{- define "airbyte.minio.port" -}}
-{{- ternary "9000" .Values.externalMinio.port .Values.minio.enabled -}}
+{{- define "airbyte.gcpLogCredentialsPath" -}}
+{{- if .Values.global.logs.gcs.credentialsJson }}
+    {{- printf "%s" "/secrets/gcs-log-creds/gcp.json" -}}
+{{- else -}}
+    {{- printf "%s" .Values.global.logs.gcs.credentials -}}
 {{- end -}}
-
-{{- define "airbyte.minio.endpoint" -}}
-{{- $host := (include "airbyte.minio.host" .) -}}
-{{- $port := (include "airbyte.minio.port" .) -}}
-{{- printf "http://%s:%s" $host $port -}}
 {{- end -}}
 
 {{/*
@@ -211,8 +258,37 @@ Returns the Airbyte worker Image
 {{- end -}}
 
 {{/*
+Returns the Airbyte Bootloader Image
+*/}}
+{{- define "airbyte.bootloaderImage" -}}
+{{- include "common.images.image" (dict "imageRoot" .Values.bootloader.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
 Returns the Temporal Image. TODO: This will probably be replaced if we move to using temporal as a dependency, like minio and postgres.
 */}}
 {{- define "airbyte.temporalImage" -}}
 {{- include "common.images.image" (dict "imageRoot" .Values.temporal.image "global" .Values.global) -}}
+{{- end -}}
+
+{{/*
+Construct comma separated list of key/value pairs from object (useful for ENV var values)
+*/}}
+{{- define "airbyte.flattenMap" -}}
+{{- $kvList := list -}}
+{{- range $key, $value := . -}}
+{{- $kvList = printf "%s=%s" $key $value | mustAppend $kvList -}}
+{{- end -}}
+{{ join "," $kvList }}
+{{- end -}}
+
+{{/*
+Construct semi-colon delimited list of comma separated key/value pairs from array of objects (useful for ENV var values)
+*/}}
+{{- define "airbyte.flattenArrayMap" -}}
+{{- $mapList := list -}}
+{{- range $element := . -}}
+{{- $mapList = include "airbyte.flattenMap" $element | mustAppend $mapList -}}
+{{- end -}}
+{{ join ";" $mapList }}
 {{- end -}}

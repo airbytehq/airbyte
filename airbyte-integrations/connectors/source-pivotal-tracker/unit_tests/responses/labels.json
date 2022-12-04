@@ -1,0 +1,82 @@
+[
+  {
+    "kind": "label",
+    "id": 2015,
+    "project_id": 99,
+    "name": "diplomatic relations",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2013,
+    "project_id": 99,
+    "name": "fleet ops",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2011,
+    "project_id": 99,
+    "name": "mnt",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2012,
+    "project_id": 99,
+    "name": "personnel",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2009,
+    "project_id": 99,
+    "name": "plans",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2014,
+    "project_id": 99,
+    "name": "r&d",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2008,
+    "project_id": 99,
+    "name": "rebel bases",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2017,
+    "project_id": 99,
+    "name": "sanitation",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2016,
+    "project_id": 99,
+    "name": "security protocol",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  },
+  {
+    "kind": "label",
+    "id": 2010,
+    "project_id": 99,
+    "name": "turning luke",
+    "created_at": 1646740800000,
+    "updated_at": 1646740800000
+  }
+]

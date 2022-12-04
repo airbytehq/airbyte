@@ -1,0 +1,97 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "webinar_id": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "anonymous": {
+      "type": "boolean"
+    },
+    "poll_type": {
+      "type": "number"
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "answer_max_character": {
+            "type": "number"
+          },
+          "answer_min_character": {
+            "type": "number"
+          },
+          "answer_required": {
+            "type": "boolean"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "case_sensitive": {
+            "type": "boolean"
+          },
+          "name": {
+            "type": "string"
+          },
+          "prompts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "prompt_question": {
+                  "type": "string"
+                },
+                "prompt_right_answers": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": []
+            }
+          },
+          "rating_max_label": {
+            "type": "string"
+          },
+          "rating_max_value": {
+            "type": "number"
+          },
+          "rating_min_label": {
+            "type": "string"
+          },
+          "rating_min_value": {
+            "type": "number"
+          },
+          "right_answers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "show_as_dropdown": {
+            "type": "boolean"
+          },
+          "type": {
+            "type": "string"
+          }
+        },
+        "required": []
+      }
+    },
+    "title": {
+      "type": "string"
+    }
+  },
+  "required": []
+}

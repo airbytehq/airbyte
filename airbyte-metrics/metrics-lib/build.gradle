@@ -1,0 +1,29 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    implementation project(':airbyte-commons')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-db:jooq')
+    implementation project(':airbyte-db:db-lib')
+
+    implementation libs.otel.semconv
+    implementation libs.otel.sdk
+    implementation libs.otel.sdk.testing
+    implementation libs.micrometer.statsd
+    implementation platform(libs.otel.bom)
+    implementation("io.opentelemetry:opentelemetry-api")
+    implementation("io.opentelemetry:opentelemetry-sdk")
+    implementation("io.opentelemetry:opentelemetry-exporter-otlp")
+
+    implementation libs.java.dogstatsd.client
+    implementation libs.bundles.datadog
+
+    testImplementation project(':airbyte-config:config-persistence')
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.platform.testcontainers.postgresql
+    testImplementation "io.opentracing:opentracing-util:0.33.0:tests"
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

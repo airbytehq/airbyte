@@ -1,0 +1,135 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Coupon",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "max-length": 100
+    },
+    "name": {
+      "type": ["string", "null"],
+      "max-length": 50
+    },
+    "invoice_name": {
+      "type": ["string", "null"],
+      "max-length": 100
+    },
+    "discount_type": {
+      "type": ["string", "null"],
+      "enum": ["fixed_amount", "percentage"]
+    },
+    "discount_percentage": {
+      "type": ["number", "null"]
+    },
+    "discount_amount": {
+      "type": ["integer", "null"]
+    },
+    "currency_code": {
+      "type": ["string", "null"],
+      "max-length": 3
+    },
+    "duration_type": {
+      "type": ["string", "null"],
+      "enum": ["one_time", "forever", "limited_period"]
+    },
+    "valid_till": {
+      "type": ["integer", "null"]
+    },
+    "max_redemptions": {
+      "type": ["integer", "null"]
+    },
+    "status": {
+      "type": ["string", "null"],
+      "enum": ["active", "expired", "archived", "deleted"]
+    },
+    "apply_on": {
+      "type": ["string", "null"],
+      "enum": ["invoice_amount", "each_specified_item"]
+    },
+    "created_at": {
+      "type": ["integer", "null"]
+    },
+    "archived_at": {
+      "type": ["integer", "null"]
+    },
+    "resource_version": {
+      "type": ["integer", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
+    },
+    "period": {
+      "type": ["integer", "null"]
+    },
+    "period_unit": {
+      "type": ["string", "null"],
+      "enum": ["day", "week", "month", "year"]
+    },
+    "redemptions": {
+      "type": ["integer", "null"]
+    },
+    "invoice_notes": {
+      "type": ["string", "null"],
+      "max-length": 2000
+    },
+    "item_constraints": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_type": {
+            "type": ["string", "null"],
+            "enum": ["plan", "addon", "charge"]
+          },
+          "constraint": {
+            "type": ["string", "null"],
+            "enum": ["none", "all", "specific", "criteria"]
+          },
+          "item_price_ids": {
+            "type": ["array", "null"],
+            "items": {}
+          }
+        }
+      }
+    },
+    "item_constraint_criteria": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "item_type": {
+            "type": ["string", "null"],
+            "enum": ["plan", "addon", "charge"]
+          },
+          "currencies": {
+            "type": ["array", "null"],
+            "items": {}
+          },
+          "item_family_ids": {
+            "type": ["array", "null"],
+            "items": {}
+          },
+          "item_price_periods": {
+            "type": ["array", "null"],
+            "items": {}
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

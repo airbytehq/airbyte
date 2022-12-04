@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.base;
@@ -33,6 +33,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     try {
       startTracked();
     } catch (final Exception e) {
+      LOGGER.error("Exception while starting consumer", e);
       hasFailed = true;
       throw e;
     }
@@ -45,6 +46,7 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
     try {
       acceptTracked(msg);
     } catch (final Exception e) {
+      LOGGER.error("Exception while accepting message", e);
       hasFailed = true;
       throw e;
     }

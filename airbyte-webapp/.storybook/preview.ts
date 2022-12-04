@@ -1,9 +1,10 @@
 import { addDecorator } from "@storybook/react";
-import { withThemesProvider } from "storybook-addon-styled-component-theme";
 
-import WithProviders from "./withProvider";
-import { theme } from "../src/theme";
+import { withProviders } from "./withProvider";
 
-addDecorator(withThemesProvider([theme], WithProviders));
+import "!style-loader!css-loader!sass-loader!../public/index.css";
+import "../src/scss/global.scss";
+
+addDecorator(withProviders);
 
 export const parameters = {};

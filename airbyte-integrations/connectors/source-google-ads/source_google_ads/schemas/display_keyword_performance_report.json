@@ -137,10 +137,6 @@
     "metrics.ctr": {
       "type": ["null", "number"]
     },
-    "segments.date": {
-      "type": ["null", "string"],
-      "format": "date"
-    },
     "segments.day_of_week": {
       "type": ["null", "string"]
     },
@@ -210,6 +206,9 @@
     "ad_group_criterion.tracking_url_template": {
       "type": ["null", "string"]
     },
+    "ad_group_criterion.keyword.match_type": {
+      "type": ["null", "string"]
+    },
     "ad_group_criterion.url_custom_parameters": {
       "type": ["null", "array"],
       "items": {
@@ -248,6 +247,10 @@
     },
     "segments.year": {
       "type": ["null", "integer"]
+    },
+    "segments.date": {
+      "type": ["null", "string"],
+      "format": "date"
     }
   }
 }

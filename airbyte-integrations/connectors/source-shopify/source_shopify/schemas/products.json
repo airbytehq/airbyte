@@ -1,5 +1,6 @@
 {
   "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "published_at": {
       "type": ["null", "string"],
@@ -264,6 +265,9 @@
     },
     "id": {
       "type": ["null", "integer"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

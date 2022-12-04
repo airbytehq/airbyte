@@ -1,0 +1,16 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "inserted_at": "2099-08-18T08:35:49.540Z" },
+      "stream_descriptor": { "name": "answers" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "inserted_at": "2099-08-18T08:35:49.540Z" },
+      "stream_descriptor": { "name": "answers_survey_group" }
+    }
+  }
+]

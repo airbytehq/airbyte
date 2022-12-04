@@ -1,0 +1,48 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/qualaroo",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Qualaroo Spec",
+    "type": "object",
+    "required": ["token", "key", "start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "token": {
+        "type": "string",
+        "title": "API token",
+        "description": "A Qualaroo token. See the <a href=\"https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API\">docs</a> for instructions on how to generate it.",
+        "airbyte_secret": true
+      },
+      "key": {
+        "type": "string",
+        "title": "API key",
+        "description": "A Qualaroo token. See the <a href=\"https://help.qualaroo.com/hc/en-us/articles/201969438-The-REST-Reporting-API\">docs</a> for instructions on how to generate it.",
+        "airbyte_secret": true
+      },
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}.[0-9]{3}Z$",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
+        "examples": ["2021-03-01T00:00:00.000Z"]
+      },
+      "survey_ids": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "pattern": "^[0-9]{1,8}$"
+        },
+        "title": "Qualaroo survey IDs",
+        "description": "IDs of the surveys from which you'd like to replicate data. If left empty, data from all surveys to which you have access will be replicated."
+      }
+    }
+  },
+  "authSpecification": {
+    "auth_type": "oauth2.0",
+    "oauth2Specification": {
+      "rootObject": [],
+      "oauthFlowInitParameters": [],
+      "oauthFlowOutputParameters": [["token"], ["key"]]
+    }
+  }
+}

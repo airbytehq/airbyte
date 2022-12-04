@@ -1,0 +1,67 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/kinesis",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Kinesis Destination Spec",
+    "type": "object",
+    "required": [
+      "endpoint",
+      "region",
+      "shardCount",
+      "accessKey",
+      "privateKey",
+      "bufferSize"
+    ],
+    "additionalProperties": true,
+    "properties": {
+      "endpoint": {
+        "title": "Endpoint",
+        "description": "AWS Kinesis endpoint.",
+        "type": "string",
+        "examples": ["kinesis.us‑west‑1.amazonaws.com"],
+        "order": 0
+      },
+      "region": {
+        "title": "Region",
+        "description": "AWS region. Your account determines the Regions that are available to you.",
+        "type": "string",
+        "examples": ["us‑west‑1"],
+        "order": 1
+      },
+      "shardCount": {
+        "title": "Shard Count",
+        "description": "Number of shards to which the data should be streamed.",
+        "type": "integer",
+        "default": 5,
+        "order": 2
+      },
+      "accessKey": {
+        "title": "Access Key",
+        "description": "Generate the AWS Access Key for current user.",
+        "airbyte_secret": true,
+        "type": "string",
+        "order": 3
+      },
+      "privateKey": {
+        "title": "Private Key",
+        "description": "The AWS Private Key - a string of numbers and letters that are unique for each account, also known as a \"recovery phrase\".",
+        "airbyte_secret": true,
+        "type": "string",
+        "order": 4
+      },
+      "bufferSize": {
+        "title": "Buffer Size",
+        "description": "Buffer size for storing kinesis records before being batch streamed.",
+        "type": "integer",
+        "minimum": 1,
+        "maximum": 500,
+        "default": 100,
+        "order": 5
+      }
+    }
+  }
+}

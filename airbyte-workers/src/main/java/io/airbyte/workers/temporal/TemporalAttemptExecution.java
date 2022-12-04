@@ -1,25 +1,25 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.workers.temporal;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.db.Database;
-import io.airbyte.db.instance.jobs.JobsDatabaseInstance;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.DefaultJobPersistence;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
-import java.io.IOException;
+import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
-import java.time.Duration;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -30,31 +30,28 @@ import java.util.function.Supplier;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 
 /*
  * This class represents a single run of a worker. It handles making sure the correct inputs and
  * outputs are passed to the selected worker. It also makes sures that the outputs of the worker are
  * persisted to the db.
  */
+@SuppressWarnings({"PMD.UnusedFormalParameter", "PMD.AvoidCatchingThrowable"})
 public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TemporalAttemptExecution.class);
 
-  private static final Duration HEARTBEAT_INTERVAL = Duration.ofSeconds(10);
-
   private final JobRunConfig jobRunConfig;
-  private final WorkerEnvironment workerEnvironment;
-  private final LogConfigs logConfigs;
   private final Path jobRoot;
   private final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier;
   private final Supplier<INPUT> inputSupplier;
   private final Consumer<Path> mdcSetter;
   private final CancellationHandler cancellationHandler;
   private final Supplier<String> workflowIdProvider;
-  private final String databaseUser;
-  private final String databasePassword;
-  private final String databaseUrl;
+  private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
+  private final Optional<String> replicationTaskQueue;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
                                   final WorkerEnvironment workerEnvironment,
@@ -63,18 +60,44 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                                   final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
                                   final Supplier<INPUT> inputSupplier,
                                   final CancellationHandler cancellationHandler,
-                                  final String databaseUser,
-                                  final String databasePassword,
-                                  final String databaseUrl,
-                                  final String airbyteVersion) {
+                                  final AirbyteApiClient airbyteApiClient,
+                                  final String airbyteVersion,
+                                  final Supplier<ActivityExecutionContext> activityContext) {
     this(
         workspaceRoot, workerEnvironment, logConfigs,
         jobRunConfig,
         workerSupplier,
         inputSupplier,
         (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
-        cancellationHandler, databaseUser, databasePassword, databaseUrl,
-        () -> Activity.getExecutionContext().getInfo().getWorkflowId(), airbyteVersion);
+        cancellationHandler,
+        airbyteApiClient,
+        () -> activityContext.get().getInfo().getWorkflowId(),
+        airbyteVersion,
+        Optional.empty());
+  }
+
+  public TemporalAttemptExecution(final Path workspaceRoot,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final JobRunConfig jobRunConfig,
+                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                  final Supplier<INPUT> inputSupplier,
+                                  final CancellationHandler cancellationHandler,
+                                  final AirbyteApiClient airbyteApiClient,
+                                  final String airbyteVersion,
+                                  final Supplier<ActivityExecutionContext> activityContext,
+                                  final Optional<String> replicationTaskQueue) {
+    this(
+        workspaceRoot, workerEnvironment, logConfigs,
+        jobRunConfig,
+        workerSupplier,
+        inputSupplier,
+        (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
+        cancellationHandler,
+        airbyteApiClient,
+        () -> activityContext.get().getInfo().getWorkflowId(),
+        airbyteVersion,
+        replicationTaskQueue);
   }
 
   @VisibleForTesting
@@ -86,26 +109,22 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final Supplier<INPUT> inputSupplier,
                            final Consumer<Path> mdcSetter,
                            final CancellationHandler cancellationHandler,
-                           final String databaseUser,
-                           final String databasePassword,
-                           final String databaseUrl,
+                           final AirbyteApiClient airbyteApiClient,
                            final Supplier<String> workflowIdProvider,
-                           final String airbyteVersion) {
+                           final String airbyteVersion,
+                           final Optional<String> replicationTaskQueue) {
     this.jobRunConfig = jobRunConfig;
-    this.workerEnvironment = workerEnvironment;
-    this.logConfigs = logConfigs;
 
-    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    this.jobRoot = TemporalUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
     this.mdcSetter = mdcSetter;
     this.cancellationHandler = cancellationHandler;
     this.workflowIdProvider = workflowIdProvider;
 
-    this.databaseUser = databaseUser;
-    this.databasePassword = databasePassword;
-    this.databaseUrl = databaseUrl;
+    this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.replicationTaskQueue = replicationTaskQueue;
   }
 
   @Override
@@ -113,10 +132,17 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     try {
       mdcSetter.accept(jobRoot);
 
+      if (MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Docker volume job log path: " + MDC.get(LogClientSingleton.JOB_LOG_PATH_MDC_KEY));
+      } else if (MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY) != null) {
+        LOGGER.info("Cloud storage job log path: " + MDC.get(LogClientSingleton.CLOUD_JOB_LOG_PATH_MDC_KEY));
+      }
+
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
-      // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
-      saveWorkflowIdForCancellation(databaseUser, databasePassword, databaseUrl);
+      AirbyteApiClient.retryWithJitter(() -> {
+        saveWorkflowIdForCancellation(airbyteApiClient);
+        return null;
+      }, "save workflow id for cancellation");
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -128,7 +154,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       cancellationChecker.run();
 
       workerThread.start();
-      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
+      scheduledExecutor.scheduleAtFixedRate(cancellationChecker, 0, TemporalUtils.SEND_HEARTBEAT_INTERVAL.toSeconds(), TimeUnit.SECONDS);
 
       try {
         // block and wait for the output
@@ -142,20 +168,22 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     }
   }
 
-  private void saveWorkflowIdForCancellation(final String databaseUser, final String databasePassword, final String databaseUrl) throws IOException {
+  private void saveWorkflowIdForCancellation(final AirbyteApiClient airbyteApiClient) throws ApiException {
     // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
     // it, and it cannot be cancelled, so do not save the workflowId. See
-    // SynchronousSchedulerClient.java
-    // for info.
-    if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
-      final Database jobDatabase = new JobsDatabaseInstance(
-          databaseUser,
-          databasePassword,
-          databaseUrl)
-              .getInitialized();
-      final JobPersistence jobPersistence = new DefaultJobPersistence(jobDatabase);
+    // SynchronousSchedulerClient.java for info.
+    //
+    // At this moment(Nov 2022), we decide to save workflowId for cancellation purpose only at
+    // replication activity level. We know now the only async workflow is SyncWorkflow,
+    // and under the same workflow, the workflowId would stay the same,
+    // so it's not needed to save it for multiple times.
+    if (NumberUtils.isCreatable(jobRunConfig.getJobId()) && replicationTaskQueue.isPresent()) {
       final String workflowId = workflowIdProvider.get();
-      jobPersistence.setAttemptTemporalWorkflowId(Long.parseLong(jobRunConfig.getJobId()), jobRunConfig.getAttemptId().intValue(), workflowId);
+      airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
+          .jobId(Long.parseLong(jobRunConfig.getJobId()))
+          .attemptNumber(jobRunConfig.getAttemptId().intValue())
+          .processingTaskQueue(replicationTaskQueue.get())
+          .workflowId(workflowId));
     }
   }
 

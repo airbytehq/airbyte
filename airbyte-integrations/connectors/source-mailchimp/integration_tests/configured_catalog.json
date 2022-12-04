@@ -6,7 +6,8 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["create_time"]
+        "default_cursor_field": ["create_time"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["create_time"],
@@ -18,7 +19,8 @@
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
         "source_defined_cursor": true,
-        "default_cursor_field": ["date_created"]
+        "default_cursor_field": ["date_created"],
+        "source_defined_primary_key": [["id"]]
       },
       "sync_mode": "incremental",
       "cursor_field": ["date_created"],

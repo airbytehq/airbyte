@@ -1,4 +1,4 @@
-export type FormValues = {
+export interface FormValues {
   email: string;
   password: string;
-};
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "favorite": {
+      "type": ["null", "boolean"]
+    },
+    "project_color": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "wants_comment_notification_emails": {
+      "type": ["null", "boolean"]
+    },
+    "will_receive_mention_notifications_or_emails": {
+      "type": ["null", "boolean"]
+    },
+    "person": {
+      "$ref": "person.json"
+    }
+  }
+}

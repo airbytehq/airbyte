@@ -1,25 +1,28 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
+import logging
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from contextlib import suppress
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from urllib.parse import urljoin
 
 import requests
-import vcr
-import vcr.cassette as Cassette
+import requests_cache
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams.core import Stream
+from airbyte_cdk.sources.streams.core import Stream, StreamData
 from requests.auth import AuthBase
+from requests_cache.session import CachedSession
 
 from .auth.core import HttpAuthenticator, NoAuth
 from .exceptions import DefaultBackoffException, RequestBodyException, UserDefinedBackoffException
 from .rate_limiting import default_backoff_handler, user_defined_backoff_handler
 
 # list of all possible HTTP methods which can be used for sending of request bodies
-BODY_REQUEST_METHODS = ("POST", "PUT", "PATCH")
+BODY_REQUEST_METHODS = ("GET", "POST", "PUT", "PATCH")
 
 
 class HttpStream(Stream, ABC):
@@ -28,29 +31,27 @@ class HttpStream(Stream, ABC):
     """
 
     source_defined_cursor = True  # Most HTTP streams use a source defined cursor (i.e: the user can't configure it like on a SQL table)
-    page_size = None  # Use this variable to define page size for API http requests with pagination support
+    page_size: Optional[int] = None  # Use this variable to define page size for API http requests with pagination support
 
     # TODO: remove legacy HttpAuthenticator authenticator references
     def __init__(self, authenticator: Union[AuthBase, HttpAuthenticator] = None):
-        self._session = requests.Session()
+        if self.use_cache:
+            self._session = self.request_cache()
+        else:
+            self._session = requests.Session()
 
-        self._authenticator = NoAuth()
+        self._authenticator: HttpAuthenticator = NoAuth()
         if isinstance(authenticator, AuthBase):
             self._session.auth = authenticator
         elif authenticator:
             self._authenticator = authenticator
-
-        if self.use_cache:
-            self.cache_file = self.request_cache()
-            # we need this attr to get metadata about cassettes, such as record play count, all records played, etc.
-            self.cassete = None
 
     @property
     def cache_filename(self):
         """
         Override if needed. Return the name of cache file
         """
-        return f"{self.name}.yml"
+        return f"{self.name}.sqlite"
 
     @property
     def use_cache(self):
@@ -59,19 +60,19 @@ class HttpStream(Stream, ABC):
         """
         return False
 
-    def request_cache(self) -> Cassette:
-        """
-        Builds VCR instance.
-        It deletes file everytime we create it, normally should be called only once.
-        We can't use NamedTemporaryFile here because yaml serializer doesn't work well with empty files.
-        """
+    def request_cache(self) -> CachedSession:
+        self.clear_cache()
+        return requests_cache.CachedSession(self.cache_filename)
 
-        try:
-            os.remove(self.cache_filename)
-        except FileNotFoundError:
-            pass
-
-        return vcr.use_cassette(self.cache_filename, record_mode="new_episodes", serializer="yaml")
+    def clear_cache(self):
+        """
+        remove cache file only once
+        """
+        STREAM_CACHE_FILES = globals().setdefault("STREAM_CACHE_FILES", set())
+        if self.cache_filename not in STREAM_CACHE_FILES:
+            with suppress(FileNotFoundError):
+                os.remove(self.cache_filename)
+            STREAM_CACHE_FILES.add(self.cache_filename)
 
     @property
     @abstractmethod
@@ -102,7 +103,7 @@ class HttpStream(Stream, ABC):
         return 5
 
     @property
-    def retry_factor(self) -> int:
+    def retry_factor(self) -> float:
         """
         Override if needed. Specifies factor for backoff policy.
         """
@@ -125,6 +126,7 @@ class HttpStream(Stream, ABC):
     @abstractmethod
     def path(
         self,
+        *,
         stream_state: Mapping[str, Any] = None,
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -201,6 +203,7 @@ class HttpStream(Stream, ABC):
     def parse_response(
         self,
         response: requests.Response,
+        *,
         stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
@@ -209,6 +212,9 @@ class HttpStream(Stream, ABC):
         Parses the raw response object into a list of records.
         By default, this returns an iterable containing the input. Override to parse differently.
         :param response:
+        :param stream_state:
+        :param stream_slice:
+        :param next_page_token:
         :return: An iterable containing the parsed response
         """
 
@@ -231,15 +237,30 @@ class HttpStream(Stream, ABC):
 
         This method is called only if should_backoff() returns True for the input request.
 
+        :param response:
         :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
         to the default backoff behavior (e.g using an exponential algorithm).
         """
         return None
 
+    def error_message(self, response: requests.Response) -> str:
+        """
+        Override this method to specify a custom error message which can incorporate the HTTP response received
+
+        :param response: The incoming HTTP response from the partner API
+        :return:
+        """
+        return ""
+
     def _create_prepared_request(
-        self, path: str, headers: Mapping = None, params: Mapping = None, json: Any = None, data: Any = None
+        self,
+        path: str,
+        headers: Mapping = None,
+        params: Mapping = None,
+        json: Any = None,
+        data: Any = None,
     ) -> requests.PreparedRequest:
-        args = {"method": self.http_method, "url": self.url_base + path, "headers": headers, "params": params}
+        args = {"method": self.http_method, "url": urljoin(self.url_base, path), "headers": headers, "params": params}
         if self.http_method.upper() in BODY_REQUEST_METHODS:
             if json and data:
                 raise RequestBodyException(
@@ -271,18 +292,33 @@ class HttpStream(Stream, ABC):
         Unexpected transient exceptions use the default backoff parameters.
         Unexpected persistent exceptions are not handled and will cause the sync to fail.
         """
+        self.logger.debug(
+            "Making outbound API request", extra={"headers": request.headers, "url": request.url, "request_body": request.body}
+        )
         response: requests.Response = self._session.send(request, **request_kwargs)
 
+        # Evaluation of response.text can be heavy, for example, if streaming a large response
+        # Do it only in debug mode
+        if self.logger.isEnabledFor(logging.DEBUG):
+            self.logger.debug(
+                "Receiving response", extra={"headers": response.headers, "status": response.status_code, "body": response.text}
+            )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
+            error_message = self.error_message(response)
             if custom_backoff_time:
-                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                )
             else:
-                raise DefaultBackoffException(request=request, response=response)
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
-            response.raise_for_status()
-
+            try:
+                response.raise_for_status()
+            except requests.HTTPError as exc:
+                self.logger.error(response.text)
+                raise exc
         return response
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
@@ -303,11 +339,11 @@ class HttpStream(Stream, ABC):
             max_tries: The maximum number of attempts to make before giving
                 up ...The default value of None means there is no limit to
                 the number of tries.
-        This implies that if max_tries is excplicitly set to None there is no
+        This implies that if max_tries is explicitly set to None there is no
         limit to retry attempts, otherwise it is limited number of tries. But
         this is not true for current version of backoff packages (1.8.0). Setting
-        max_tries to 0 or negative number would result in endless retry atempts.
-        Add this condition to avoid an endless loop if it hasnt been set
+        max_tries to 0 or negative number would result in endless retry attempts.
+        Add this condition to avoid an endless loop if it hasn't been set
         explicitly (i.e. max_retries is not None).
         """
         if max_tries is not None:
@@ -317,40 +353,80 @@ class HttpStream(Stream, ABC):
         backoff_handler = default_backoff_handler(max_tries=max_tries, factor=self.retry_factor)
         return backoff_handler(user_backoff_handler)(request, request_kwargs)
 
+    @classmethod
+    def parse_response_error_message(cls, response: requests.Response) -> Optional[str]:
+        """
+        Parses the raw response object from a failed request into a user-friendly error message.
+        By default, this method tries to grab the error message from JSON responses by following common API patterns. Override to parse differently.
+
+        :param response:
+        :return: A user-friendly message that indicates the cause of the error
+        """
+
+        # default logic to grab error from common fields
+        def _try_get_error(value):
+            if isinstance(value, str):
+                return value
+            elif isinstance(value, list):
+                return ", ".join(_try_get_error(v) for v in value)
+            elif isinstance(value, dict):
+                new_value = (
+                    value.get("message")
+                    or value.get("messages")
+                    or value.get("error")
+                    or value.get("errors")
+                    or value.get("failures")
+                    or value.get("failure")
+                )
+                return _try_get_error(new_value)
+            return None
+
+        try:
+            body = response.json()
+            return _try_get_error(body)
+        except requests.exceptions.JSONDecodeError:
+            return None
+
+    def get_error_display_message(self, exception: BaseException) -> Optional[str]:
+        """
+        Retrieves the user-friendly display message that corresponds to an exception.
+        This will be called when encountering an exception while reading records from the stream, and used to build the AirbyteTraceMessage.
+
+        The default implementation of this method only handles HTTPErrors by passing the response to self.parse_response_error_message().
+        The method should be overriden as needed to handle any additional exception types.
+
+        :param exception: The exception that was raised
+        :return: A user-friendly message that indicates the cause of the error
+        """
+        if isinstance(exception, requests.HTTPError):
+            return self.parse_response_error_message(exception.response)
+        return None
+
     def read_records(
         self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    ) -> Iterable[StreamData]:
+        yield from self._read_pages(
+            lambda req, res, state, _slice: self.parse_response(res, stream_slice=_slice, stream_state=state), stream_slice, stream_state
+        )
+
+    def _read_pages(
+        self,
+        records_generator_fn: Callable[
+            [requests.PreparedRequest, requests.Response, Mapping[str, Any], Mapping[str, Any]], Iterable[StreamData]
+        ],
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
         stream_state = stream_state or {}
         pagination_complete = False
-
         next_page_token = None
         while not pagination_complete:
-            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-            request = self._create_prepared_request(
-                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                headers=dict(request_headers, **self.authenticator.get_auth_header()),
-                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
-            )
-            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-
-            if self.use_cache:
-                # use context manager to handle and store cassette metadata
-                with self.cache_file as cass:
-                    self.cassete = cass
-                    # vcr tries to find records based on the request, if such records exist, return from cache file
-                    # else make a request and save record in cache file
-                    response = self._send_request(request, request_kwargs)
-
-            else:
-                response = self._send_request(request, request_kwargs)
-
-            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+            request, response = self._fetch_next_page(stream_slice, stream_state, next_page_token)
+            yield from records_generator_fn(request, response, stream_state, stream_slice)
 
             next_page_token = self.next_page_token(response)
             if not next_page_token:
@@ -358,6 +434,22 @@ class HttpStream(Stream, ABC):
 
         # Always return an empty generator just in case no records were ever yielded
         yield from []
+
+    def _fetch_next_page(
+        self, stream_slice: Mapping[str, Any] = None, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Tuple[requests.PreparedRequest, requests.Response]:
+        request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        request = self._create_prepared_request(
+            path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            headers=dict(request_headers, **self.authenticator.get_auth_header()),
+            params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+        )
+        request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+        response = self._send_request(request, request_kwargs)
+        return request, response
 
 
 class HttpSubStream(HttpStream, ABC):

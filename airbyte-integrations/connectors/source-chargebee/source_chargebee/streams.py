@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
@@ -7,20 +7,26 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
 import pendulum
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from chargebee import APIError
 from chargebee.list_result import ListResult
 from chargebee.model import Model
 from chargebee.models import Addon as AddonModel
 from chargebee.models import AttachedItem as AttachedItemModel
+from chargebee.models import Coupon as CouponModel
+from chargebee.models import CreditNote as CreditNoteModel
 from chargebee.models import Customer as CustomerModel
+from chargebee.models import Event as EventModel
 from chargebee.models import Invoice as InvoiceModel
 from chargebee.models import Item as ItemModel
 from chargebee.models import ItemPrice as ItemPriceModel
 from chargebee.models import Order as OrderModel
 from chargebee.models import Plan as PlanModel
 from chargebee.models import Subscription as SubscriptionModel
+from chargebee.models import Transaction as TransactionModel
 
 from .rate_limiting import default_backoff_handler
+from .utils import transform_custom_fields
 
 # Backoff params below according to Chargebee's guidance on rate limit.
 # https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits
@@ -55,7 +61,7 @@ class ChargebeeStream(Stream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     @default_backoff_handler(max_tries=MAX_TRIES, factor=MAX_TIME)
     def _send_request(self, **kwargs) -> ListResult:
@@ -113,7 +119,7 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         # Convert `start_date` to timestamp(UTC).
         self._start_date = pendulum.parse(start_date).int_timestamp if start_date else None
 
-    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> str:
+    def get_starting_point(self, stream_state: Mapping[str, Any], item_id: str) -> int:
         start_point = self._start_date
 
         if stream_state and stream_state.get(item_id, {}).get(self.cursor_field):
@@ -129,13 +135,13 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
         for message in list_result:
             record = message._response[self.name]
             if record[self.cursor_field] > starting_point:
-                yield record
+                yield from transform_custom_fields(record)
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
         Override airbyte_cdk Stream's `get_updated_state` method to get the latest Chargebee stream state.
         """
-        item_id = latest_record["parent_item_id"]
+        item_id = latest_record.get("parent_item_id")
         latest_cursor_value = latest_record.get(self.cursor_field)
         current_stream_state = current_stream_state.copy()
         current_state = current_stream_state.get(item_id)
@@ -143,9 +149,10 @@ class SemiIncrementalChargebeeStream(ChargebeeStream):
             current_state = current_state.get(self.cursor_field)
 
         current_state_value = current_state or latest_cursor_value
-        max_value = max(current_state_value, latest_cursor_value)
-        current_stream_state[item_id] = {self.cursor_field: max_value}
-        return current_stream_state
+        if current_state_value:
+            max_value = max(current_state_value, latest_cursor_value)
+            current_stream_state[item_id] = {self.cursor_field: max_value}
+        return current_stream_state or {}
 
 
 class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
@@ -174,7 +181,7 @@ class IncrementalChargebeeStream(SemiIncrementalChargebeeStream):
 
     def parse_response(self, list_result: ListResult, **kwargs) -> Iterable[Mapping]:
         for message in list_result:
-            yield message._response[self.name]
+            yield from transform_custom_fields(message._response[self.name])
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         """
@@ -276,3 +283,59 @@ class AttachedItem(SemiIncrementalChargebeeStream):
         """
         params = self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         return self.api.list(id=stream_slice["item_id"], params=params)
+
+
+class Event(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/events?prod_cat_ver=2#list_events
+    """
+
+    cursor_field = "occurred_at"
+
+    api = EventModel
+
+
+class Transaction(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/transactions?lang=curl&prod_cat_ver=2
+    """
+
+    cursor_field = "updated_at"
+
+    api = TransactionModel
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "date"
+        return params
+
+
+class Coupon(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/coupons?prod_cat_ver=2#list_coupons
+    """
+
+    cursor_field = "updated_at"
+
+    api = CouponModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "created_at"
+        return params
+
+
+class CreditNote(IncrementalChargebeeStream):
+    """
+    API docs: https://apidocs.chargebee.com/docs/api/credit_notes?prod_cat_ver=2#list_credit_notes
+    """
+
+    cursor_field = "updated_at"
+
+    api = CreditNoteModel
+
+    def request_params(self, **kwargs) -> MutableMapping[str, Any]:
+        params = super().request_params(**kwargs)
+        params["sort_by[asc]"] = "date"
+        return params

@@ -9,7 +9,7 @@
       "readOnly": true
     },
     "id": {
-      "type": "string",
+      "type": "integer",
       "description": "The ID of the tempo Workload Scheme.",
       "readOnly": true
     },
@@ -24,12 +24,12 @@
       "readOnly": true
     },
     "defaultScheme": {
-      "type": "string",
+      "type": "boolean",
       "description": "The defaultScheme of the tempo Workload Scheme.",
       "readOnly": true
     },
     "memberCount": {
-      "type": "string",
+      "type": "integer",
       "description": "The memberCount of the tempo Workload Scheme.",
       "readOnly": true
     },
@@ -37,15 +37,17 @@
       "type": "array",
       "description": "The days of the tempo Workload Scheme.",
       "readOnly": true,
-      "properties": {
-        "day": {
-          "type": "string"
-        },
-        "requiredSeconds": {
-          "type": "string"
+      "items": {
+        "type": "object",
+        "properties": {
+          "day": {
+            "type": "string"
+          },
+          "requiredSeconds": {
+            "type": "integer"
+          }
         }
       }
     }
-  },
-  "additionalProperties": false
+  }
 }

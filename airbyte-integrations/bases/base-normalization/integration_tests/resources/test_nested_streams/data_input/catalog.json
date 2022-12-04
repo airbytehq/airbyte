@@ -37,16 +37,6 @@
                       }
                     }
                   }
-                },
-                "column`_'with\"_quotes": {
-                  "type": ["null", "array"],
-                  "items": {
-                    "properties": {
-                      "currency": {
-                        "type": ["null", "string"]
-                      }
-                    }
-                  }
                 }
               }
             }
@@ -82,6 +72,29 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "primary_key": []
+    },
+    {
+      "stream": {
+        "name": "some_stream_that_was_empty",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "number", "string"]
+            },
+            "date": {
+              "type": ["null", "string"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh", "incremental"],
+        "source_defined_cursor": false,
+        "default_cursor_field": []
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["date"],
+      "destination_sync_mode": "append_dedup",
+      "primary_key": [["id"]]
     },
     {
       "stream": {
@@ -234,6 +247,16 @@
                     "properties": {
                       "owner_id": {
                         "type": ["null", "integer"]
+                      },
+                      "column`_'with\"_quotes": {
+                        "type": ["null", "array"],
+                        "items": {
+                          "properties": {
+                            "currency": {
+                              "type": ["null", "string"]
+                            }
+                          }
+                        }
                       }
                     }
                   }
@@ -249,6 +272,40 @@
       "sync_mode": "incremental",
       "cursor_field": [],
       "destination_sync_mode": "overwrite"
+    },
+    {
+      "stream": {
+        "name": "arrays",
+        "json_schema": {
+          "type": ["null", "object"],
+          "properties": {
+            "array_of_strings": {
+              "type": ["null", "array"],
+              "items": {
+                "type": ["null", "string"]
+              }
+            },
+            "nested_array_parent": {
+              "type": ["null", "object"],
+              "properties": {
+                "nested_array": {
+                  "type": ["null", "array"],
+                  "items": {
+                    "type": ["null", "string"]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_cursor": true,
+        "default_cursor_field": []
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": [],
+      "destination_sync_mode": "overwrite",
+      "primary_key": []
     }
   ]
 }

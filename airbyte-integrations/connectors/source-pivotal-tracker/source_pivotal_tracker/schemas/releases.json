@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "current_state": {
+      "type": ["null", "string"]
+    },
+    "url": {
+      "type": ["null", "string"]
+    },
+    "deadline": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "$ref": "label.json"
+      }
+    },
+    "accepted_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

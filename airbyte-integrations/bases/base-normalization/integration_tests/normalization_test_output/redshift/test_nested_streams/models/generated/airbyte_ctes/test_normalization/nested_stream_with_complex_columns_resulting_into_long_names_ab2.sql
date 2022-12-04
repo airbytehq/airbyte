@@ -1,10 +1,11 @@
 {{ config(
     sort = "_airbyte_emitted_at",
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
-    schema = "_airbyte_test_normalization",
+    unique_key = '_airbyte_ab_id',
+    schema = "_airbyte_test_normalization_xjvlg",
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab1') }}
 select
     cast(id as {{ dbt_utils.type_string() }}) as id,
     cast(date as {{ dbt_utils.type_string() }}) as date,
@@ -15,5 +16,5 @@ select
 from {{ ref('nested_stream_with_complex_columns_resulting_into_long_names_ab1') }}
 -- nested_stream_with_complex_columns_resulting_into_long_names
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

@@ -1,0 +1,8 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "users": {
+      "$ref": "#/definitions/users_"
+    }
+  }
+}

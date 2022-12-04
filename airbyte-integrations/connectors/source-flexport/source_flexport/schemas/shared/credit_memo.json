@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /credit_memo for this object.",
+      "pattern": "^/credit_memo$"
+    },
+    "amount": {
+      "description": "Amount of the credit",
+      "$ref": "money.json"
+    },
+    "credited_at": {
+      "type": "string",
+      "description": "When the credit was applied. In ISO8601 UTC format with timezone denoted by Z.",
+      "format": "date-time"
+    },
+    "categories": {
+      "type": "array",
+      "description": "Category of the credit memo",
+      "items": {
+        "type": "string"
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "description": "Why the credit was applied to the invoice",
+      "items": {
+        "type": ["null", "string"]
+      }
+    }
+  }
+}

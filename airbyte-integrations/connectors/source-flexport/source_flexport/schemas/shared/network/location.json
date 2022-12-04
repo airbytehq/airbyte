@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /network/location for this object.",
+      "pattern": "^/network/location$"
+    },
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the location."
+    },
+    "name": {
+      "type": ["null", "string"],
+      "description": "Name of the location."
+    },
+    "address": {
+      "description": "Address of the location.",
+      "$ref": "../address.json"
+    },
+    "editable": {
+      "type": "boolean",
+      "description": "Whether or not you manage this location and can edit its attributes."
+    },
+    "contacts": {
+      "description": "Expandable API link to the contacts at this location.",
+      "$ref": "../api/refs/collection.json"
+    },
+    "company": {
+      "description": "Expandable API link to the company that this location belongs to.",
+      "$ref": "../api/refs/object.json"
+    },
+    "ref": {
+      "type": "string",
+      "description": "Your custom ref to this location."
+    },
+    "metadata": {
+      "type": "object",
+      "description": "User defined metadata attached to the location."
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox } from "components/base";
+import { CheckBox } from "components/ui/CheckBox";
 
 type IProps = {
   message?: React.ReactNode;
@@ -27,11 +27,8 @@ const BigCheckBox = styled(CheckBox)`
   height: 25px;
   width: 25px;
   min-width: 25px;
-  background: ${({ theme, checked }) =>
-    checked ? theme.primaryColor : theme.whiteColor};
-  border: ${({ theme, checked }) =>
-      checked ? theme.primaryColor : theme.textColor}
-    2px solid;
+  background: ${({ theme, checked }) => (checked ? theme.primaryColor : theme.whiteColor)};
+  border: ${({ theme, checked }) => (checked ? theme.primaryColor : theme.textColor)} 2px solid;
   color: ${({ theme }) => theme.whiteColor};
   font-size: 18px;
   line-height: 18px;

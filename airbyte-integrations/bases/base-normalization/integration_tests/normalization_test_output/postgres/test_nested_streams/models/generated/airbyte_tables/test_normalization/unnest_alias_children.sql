@@ -1,10 +1,10 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', '_airbyte_ab_id'),
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     schema = "test_normalization",
     tags = [ "nested" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('unnest_alias_children_ab3') }}
 select
     _airbyte_unnest_alias_hashid,
     ab_id,

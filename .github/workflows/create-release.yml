@@ -1,0 +1,73 @@
+# This is an action that runs when an Airbyte version bump is merged into master.
+# It fetches the changelog from the version bump PR and automatically creates a
+# Release for the version bump.
+
+name: Create Airbyte GH Release
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  create-release:
+    if: startsWith(github.event.head_commit.message, 'Bump Airbyte version')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Fetch Version Bump PR Body
+        id: fetch_pr_body
+        env:
+          COMMIT_ID: ${{ github.event.head_commit.id }}
+        shell: bash
+        run: |-
+          set -x
+          PR=$(curl \
+          -H "Accept: application/vnd.github.v3+json" \
+          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+          https://api.github.com/repos/${{ github.repository }}/commits/$COMMIT_ID/pulls)
+          # The printf helps escape characters so that jq can parse the output.
+          # The sed removes carriage returns so that the body is easier to parse later, and
+          #   escapes backticks so that they are not executed as commands.
+          PR_BODY=$(printf '%s' "$PR" | jq '.[0].body' | sed 's/\\r//g' | sed 's/`/\\`/g')
+          echo "pr_body<<EOF" >> $GITHUB_ENV
+          echo "$PR_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Extract Changelog
+        id: extract_changelog
+        shell: bash
+        run: |-
+          set -x
+          PR_BODY=${{ env.pr_body}}
+          if [[ $PR_BODY = "null" ]]; then
+            echo "No PR body exists for this commit, so a release cannot be generated."
+            exit 1
+          fi
+          # this regex extracts just the changelog contents
+          if [[ $PR_BODY =~ Changelog:(\\n)*(.*)\\n\\n ]]; then
+            CHANGELOG="${BASH_REMATCH[2]}"
+          else
+            echo "PR body does not match the changelog extraction regex"
+            exit 1
+          fi
+          # save CHANGELOG into a multiline env var on the action itself, since Github Actions do not support outputting multiline strings well
+          echo "CHANGELOG<<EOF" >> $GITHUB_ENV
+          echo -e "$CHANGELOG" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Get Version
+        id: get_version
+        shell: bash
+        run: |
+          VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
+          echo VERSION=${VERSION} >> $GITHUB_OUTPUT
+      - name: Create Release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ env.CHANGELOG }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: v${{ steps.get_version.outputs.VERSION }}

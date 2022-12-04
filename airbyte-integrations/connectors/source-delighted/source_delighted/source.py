@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -8,6 +8,7 @@ from abc import ABC
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -18,43 +19,43 @@ from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
 
 # Basic full refresh stream
 class DelightedStream(HttpStream, ABC):
-
     url_base = "https://api.delighted.com/v1/"
 
     # Page size
     limit = 100
+    page = 1
 
     # Define primary key to all streams as primary key
     primary_key = "id"
 
-    def __init__(self, since: int, **kwargs):
+    def __init__(self, since: pendulum.datetime, **kwargs):
         super().__init__(**kwargs)
         self.since = since
 
+    @property
+    def since_ts(self) -> int:
+        return int(self.since.timestamp())
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        # Getting next page link
-        next_page = response.links.get("next", None)
-        if next_page:
-            return dict(parse_qsl(urlparse(next_page.get("url")).query))
-        else:
-            return None
+        response_data = response.json()
+        if len(response_data) == self.limit:
+            self.page += 1
+            return {"page": self.page}
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
+        params = {"per_page": self.limit, "since": self.since_ts}
         if next_page_token:
-            params = {"per_page": self.limit, **next_page_token}
-        else:
-            params = {"per_page": self.limit, "since": self.since}
+            params.update(**next_page_token)
         return params
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        records = response.json()
-        yield from records
+        yield from response.json()
 
 
 class IncrementalDelightedStream(DelightedStream, ABC):
-    # Getting page size as 'limit' from parrent class
+    # Getting page size as 'limit' from parent class
     @property
     def limit(self):
         return super().limit
@@ -75,47 +76,71 @@ class IncrementalDelightedStream(DelightedStream, ABC):
             params["since"] = stream_state.get(self.cursor_field)
         return params
 
+    def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response=response, stream_state=stream_state, **kwargs):
+            if self.cursor_field not in stream_state or record[self.cursor_field] > stream_state[self.cursor_field]:
+                yield record
+
 
 class People(IncrementalDelightedStream):
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    """
+    API docs: https://app.delighted.com/docs/api/listing-people
+    """
+
+    def path(self, **kwargs) -> str:
         return "people.json"
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        # Getting next page link
+        next_page = response.links.get("next", None)
+        if next_page:
+            return {"page_info": dict(parse_qsl(urlparse(next_page.get("url")).query)).get("page_info")}
 
 
 class Unsubscribes(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-unsubscribed-people
+    """
+
     cursor_field = "unsubscribed_at"
     primary_key = "person_id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "unsubscribes.json"
 
 
 class Bounces(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-bounced-people
+    """
+
     cursor_field = "bounced_at"
     primary_key = "person_id"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "bounces.json"
 
 
 class SurveyResponses(IncrementalDelightedStream):
+    """
+    API docs: https://app.delighted.com/docs/api/listing-survey-responses
+    """
+
     cursor_field = "updated_at"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
+    def path(self, **kwargs) -> str:
         return "survey_responses.json"
 
     def request_params(self, stream_state=None, **kwargs):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, **kwargs)
+
+        if "since" in params:
+            params["updated_since"] = params.pop("since")
+
         if stream_state:
             params["updated_since"] = stream_state.get(self.cursor_field)
+
         return params
 
 
@@ -137,8 +162,7 @@ class SourceDelighted(AbstractSource):
 
         try:
             auth = self._get_authenticator(config)
-            args = {"authenticator": auth, "since": config["since"]}
-            stream = SurveyResponses(**args)
+            stream = SurveyResponses(authenticator=auth, since=pendulum.parse(config["since"]))
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -147,5 +171,10 @@ class SourceDelighted(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self._get_authenticator(config)
-        args = {"authenticator": auth, "since": config["since"]}
-        return [People(**args), Unsubscribes(**args), Bounces(**args), SurveyResponses(**args)]
+        stream_kwargs = {"authenticator": auth, "since": pendulum.parse(config["since"])}
+        return [
+            Bounces(**stream_kwargs),
+            People(**stream_kwargs),
+            SurveyResponses(**stream_kwargs),
+            Unsubscribes(**stream_kwargs),
+        ]

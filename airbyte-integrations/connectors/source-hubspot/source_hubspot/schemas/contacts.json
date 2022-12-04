@@ -15,6 +15,12 @@
     },
     "archived": {
       "type": ["null", "boolean"]
+    },
+    "companies": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

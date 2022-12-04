@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -11,8 +11,11 @@ from .api import API, GroupMembersAPI, GroupsAPI, UsersAPI
 
 
 class Client(BaseClient):
-    def __init__(self, credentials_json: str, email: str):
-        self._api = API(credentials_json, email)
+    def __init__(self, credentials: Mapping[str, Any] = None, credentials_json: str = None, email: str = None):
+        # supporting old config format
+        if not credentials:
+            credentials = {"credentials_json": credentials_json, "email": email}
+        self._api = API(credentials)
         self._apis = {"users": UsersAPI(self._api), "groups": GroupsAPI(self._api), "group_members": GroupMembersAPI(self._api)}
         super().__init__()
 

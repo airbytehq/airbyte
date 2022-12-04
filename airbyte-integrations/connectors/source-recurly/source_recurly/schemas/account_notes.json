@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "maxLength": 13,
+      "readOnly": true
+    },
+    "account_id": {
+      "type": "string",
+      "maxLength": 13
+    },
+    "user": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "readOnly": true,
+          "maxLength": 13
+        }
+      }
+    },
+    "message": {
+      "type": ["null", "string"],
+      "maxLength": 2048
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "readOnly": true
+    }
+  }
+}

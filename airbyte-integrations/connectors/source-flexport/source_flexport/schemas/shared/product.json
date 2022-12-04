@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /product for this object.",
+      "pattern": "^/product$"
+    },
+    "id": {
+      "type": "integer",
+      "description": "Unique identifier for the object."
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of product."
+    },
+    "description": {
+      "type": ["null", "string"],
+      "description": "Description of product."
+    },
+    "sku": {
+      "type": ["null", "string"],
+      "description": "SKU of product."
+    },
+    "product_category": {
+      "type": ["null", "string"],
+      "description": "The category of the product"
+    },
+    "country_of_origin": {
+      "type": ["null", "string"],
+      "description": "Nation in which the product is manufactured"
+    },
+    "client_verified": {
+      "type": "boolean",
+      "description": "Indicates whether Client has verified this Product."
+    },
+    "product_properties": {
+      "type": "array",
+      "description": "An array of product properties, represented by ProductProperty",
+      "items": {
+        "$ref": "product/property.json"
+      }
+    },
+    "hs_codes": {
+      "type": "array",
+      "description": "DEPRECATED - HS codes can be found in the classifications array",
+      "items": {
+        "$ref": "hs_code.json"
+      }
+    },
+    "classifications": {
+      "type": "array",
+      "description": "An array of product classifications, represented by Classification",
+      "items": {
+        "$ref": "product/classification.json"
+      }
+    },
+    "suppliers": {
+      "type": "array",
+      "description": "Array of suppliers.",
+      "items": {
+        "$ref": "product/supplier.json"
+      }
+    },
+    "archived_at": {
+      "type": ["null", "string"],
+      "description": "A date string representing when the product was archived. Will be null if product is not archived. In ISO8601 UTC format with timezone denoted by Z.",
+      "format": "date-time"
+    }
+  }
+}

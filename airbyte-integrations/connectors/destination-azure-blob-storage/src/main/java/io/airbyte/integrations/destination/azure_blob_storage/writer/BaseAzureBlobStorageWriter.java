@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage.writer;
@@ -15,9 +15,11 @@ import org.slf4j.LoggerFactory;
 
 /**
  * The base implementation takes care of the following:
+ * <ul>
  * <li>Create shared instance variables.</li>
  * <li>Create the bucket and prepare the bucket path.</li>
  * <li>Log and close the write.</li>
+ * </ul>
  */
 public abstract class BaseAzureBlobStorageWriter implements AzureBlobStorageWriter {
 

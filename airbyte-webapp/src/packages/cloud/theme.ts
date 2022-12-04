@@ -24,5 +24,3 @@ export const theme = {
     lineHeight: "28px",
   },
 };
-
-export type Theme = typeof theme;

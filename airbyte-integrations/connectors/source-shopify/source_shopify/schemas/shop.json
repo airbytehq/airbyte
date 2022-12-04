@@ -1,0 +1,176 @@
+{
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "address1": {
+      "type": ["null", "string"]
+    },
+    "address2": {
+      "type": ["null", "string"]
+    },
+    "auto_configure_tax_inclusivity": {
+      "type": ["null", "string"]
+    },
+    "checkout_api_supported": {
+      "type": ["null", "boolean"]
+    },
+    "city": {
+      "type": ["null", "string"]
+    },
+    "country": {
+      "type": ["null", "string"]
+    },
+    "country_code": {
+      "type": ["null", "string"]
+    },
+    "country_name": {
+      "type": ["null", "string"]
+    },
+    "county_taxes": {
+      "type": ["null", "boolean"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "customer_email": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "domain": {
+      "type": ["null", "string"]
+    },
+    "enabled_presentment_currencies": {
+      "items": {
+        "type": ["null", "string"]
+      },
+      "type": ["null", "array"]
+    },
+    "eligible_for_card_reader_giveaway": {
+      "type": ["null", "boolean"]
+    },
+    "eligible_for_payments": {
+      "type": ["null", "boolean"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "finances": {
+      "type": ["null", "boolean"]
+    },
+    "force_ssl": {
+      "type": ["null", "boolean"]
+    },
+    "google_apps_domain": {
+      "type": ["null", "string"]
+    },
+    "google_apps_login_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "has_discounts": {
+      "type": ["null", "boolean"]
+    },
+    "has_storefront": {
+      "type": ["null", "boolean"]
+    },
+    "iana_timezone": {
+      "type": ["null", "string"]
+    },
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "latitude": {
+      "type": ["null", "number"]
+    },
+    "longitude": {
+      "type": ["null", "number"]
+    },
+    "money_format": {
+      "type": ["null", "string"]
+    },
+    "money_in_emails_format": {
+      "type": ["null", "string"]
+    },
+    "money_with_currency_format": {
+      "type": ["null", "string"]
+    },
+    "money_with_currency_in_emails_format": {
+      "type": ["null", "string"]
+    },
+    "multi_location_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "myshopify_domain": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "password_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "plan_display_name": {
+      "type": ["null", "string"]
+    },
+    "pre_launch_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "cookie_consent_level": {
+      "type": ["null", "string"]
+    },
+    "plan_name": {
+      "type": ["null", "string"]
+    },
+    "primary_locale": {
+      "type": ["null", "string"]
+    },
+    "primary_location_id": {
+      "type": ["null", "integer"]
+    },
+    "province": {
+      "type": ["null", "string"]
+    },
+    "province_code": {
+      "type": ["null", "string"]
+    },
+    "requires_extra_payments_agreement": {
+      "type": ["null", "boolean"]
+    },
+    "setup_required": {
+      "type": ["null", "boolean"]
+    },
+    "shop_owner": {
+      "type": ["null", "string"]
+    },
+    "source": {
+      "type": ["null", "string"]
+    },
+    "taxes_included": {
+      "type": ["null", "boolean"]
+    },
+    "tax_shipping": {
+      "type": ["null", "boolean"]
+    },
+    "timezone": {
+      "type": ["null", "string"]
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "weight_unit": {
+      "type": ["null", "string"]
+    },
+    "zip": {
+      "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
+    }
+  }
+}

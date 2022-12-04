@@ -1,48 +1,57 @@
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import { useResource } from "rest-hooks";
+import { useNavigate } from "react-router-dom";
 
-import { Button, MainPageWithScroll, PageTitle, LoadingPage } from "components";
-import ConnectionResource from "core/resources/Connection";
+import { LoadingPage, MainPageWithScroll } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { ConnectionOnboarding } from "components/connection/ConnectionOnboarding";
+import { Button } from "components/ui/Button";
+import { PageHeader } from "components/ui/PageHeader";
+
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { useConnectionList } from "hooks/services/useConnectionHook";
+
+import { RoutePaths } from "../../../routePaths";
 import ConnectionsTable from "./components/ConnectionsTable";
-import { Routes } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import HeadTitle from "components/HeadTitle";
-import Placeholder, { ResourceTypes } from "components/Placeholder";
-import useWorkspace from "hooks/services/useWorkspace";
 
 const AllConnectionsPage: React.FC = () => {
-  const { push } = useRouter();
-  const { workspace } = useWorkspace();
+  const navigate = useNavigate();
 
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+  useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
+  const { connections } = useConnectionList();
 
-  const onClick = () => push(`${Routes.Connections}${Routes.ConnectionNew}`);
+  const onCreateClick = (sourceDefinitionId?: string) =>
+    navigate(`${RoutePaths.ConnectionNew}`, { state: { sourceDefinitionId } });
 
   return (
-    <MainPageWithScroll
-      headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
-      pageTitle={
-        <PageTitle
-          title={<FormattedMessage id="sidebar.connections" />}
-          endComponent={
-            <Button onClick={onClick}>
-              <FormattedMessage id="connection.newConnection" />
-            </Button>
+    <Suspense fallback={<LoadingPage />}>
+      {connections.length ? (
+        <MainPageWithScroll
+          headTitle={<HeadTitle titles={[{ id: "sidebar.connections" }]} />}
+          pageTitle={
+            <PageHeader
+              title={<FormattedMessage id="sidebar.connections" />}
+              endComponent={
+                <Button
+                  icon={<FontAwesomeIcon icon={faPlus} />}
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onCreateClick()}
+                >
+                  <FormattedMessage id="connection.newConnection" />
+                </Button>
+              }
+            />
           }
-        />
-      }
-    >
-      <Suspense fallback={<LoadingPage />}>
-        {connections.length ? (
+        >
           <ConnectionsTable connections={connections} />
-        ) : (
-          <Placeholder resource={ResourceTypes.Connections} />
-        )}
-      </Suspense>
-    </MainPageWithScroll>
+        </MainPageWithScroll>
+      ) : (
+        <ConnectionOnboarding onCreate={onCreateClick} />
+      )}
+    </Suspense>
   );
 };
 

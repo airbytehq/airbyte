@@ -1,133 +1,118 @@
-import React, { Suspense, useMemo } from "react";
-import {
-  BrowserRouter as Router,
-  Redirect,
-  Route,
-  Switch,
-} from "react-router-dom";
-import { useIntl } from "react-intl";
+import React, { useMemo } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { useEffectOnce } from "react-use";
 
-import { useConfig } from "config";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
-import SourcesPage from "./SourcesPage";
-import DestinationPage from "./DestinationPage";
-import PreferencesPage from "./PreferencesPage";
-import OnboardingPage from "./OnboardingPage";
-import ConnectionPage from "./ConnectionPage";
-import SettingsPage from "./SettingsPage";
-import LoadingPage from "components/LoadingPage";
+import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useApiHealthPoll } from "hooks/services/Health";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useListWorkspaces } from "services/workspaces/WorkspacesService";
+import { storeUtmFromQuery } from "utils/utmStorage";
+import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
-import { useWorkspace } from "hooks/services/useWorkspace";
-import { useNotificationService } from "hooks/services/Notification/NotificationService";
-import { useApiHealthPoll } from "hooks/services/Health";
-import { WithPageAnalytics } from "./withPageAnalytics";
-import { CompleteOauthRequest } from "./CompleteOauthRequest";
+import { WorkspaceRead } from "../core/request/AirbyteClient";
+import ConnectionPage from "./ConnectionPage";
+import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
+import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
+import { AllDestinationsPage } from "./destination/AllDestinationsPage";
+import CreateDestinationPage from "./destination/CreateDestinationPage";
+import { DestinationItemPage } from "./destination/DestinationItemPage";
+import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
+import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
+import PreferencesPage from "./PreferencesPage";
+import { RoutePaths, DestinationPaths } from "./routePaths";
+import SettingsPage from "./SettingsPage";
+import SourcesPage from "./SourcesPage";
 
-export enum Routes {
-  Preferences = "/preferences",
-  Onboarding = "/onboarding",
+const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
+  const analyticsContext = useMemo(
+    () => ({
+      workspace_id: workspace.workspaceId,
+      customer_id: workspace.customerId,
+    }),
+    [workspace.workspaceId, workspace.customerId]
+  );
+  useAnalyticsRegisterValues(analyticsContext);
+  useAnalyticsIdentifyUser(workspace.workspaceId);
+};
 
-  Connections = "/connections",
-  Destination = "/destination",
-  Source = "/source",
-  Connection = "/connection",
-  ConnectionNew = "/new-connection",
-  SourceNew = "/new-source",
-  DestinationNew = "/new-destination",
-  Settings = "/settings",
-  Configuration = "/configuration",
-  Notifications = "/notifications",
-  Metrics = "/metrics",
-  Account = "/account",
-  AuthFlow = "/auth_flow",
-  Root = "/",
-}
-
-const MainViewRoutes = () => {
-  const { workspace } = useWorkspace();
-  const mainRedirect = workspace.displaySetupWizard
-    ? Routes.Onboarding
-    : Routes.Connections;
-
+const MainViewRoutes: React.FC = () => {
   return (
     <MainView>
-      <Suspense fallback={<LoadingPage />}>
-        <Switch>
-          <Route path={Routes.AuthFlow}>
-            <CompleteOauthRequest />
-          </Route>
-          <Route path={Routes.Destination}>
-            <DestinationPage />
-          </Route>
-          <Route path={Routes.Source}>
-            <SourcesPage />
-          </Route>
-          <Route path={Routes.Connections}>
-            <ConnectionPage />
-          </Route>
-          <Route path={Routes.Settings}>
-            <SettingsPage />
-          </Route>
-          {workspace.displaySetupWizard && (
-            <Route path={Routes.Onboarding}>
-              <OnboardingPage />
+      <ApiErrorBoundary>
+        <Routes>
+          <Route path={RoutePaths.Destination}>
+            <Route index element={<AllDestinationsPage />} />
+            <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
+              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
+              <Route index element={<DestinationOverviewPage />} />
             </Route>
-          )}
-          <Route exact path={Routes.Source}>
-            <SourcesPage />
           </Route>
-          <Redirect to={mainRedirect} />
-        </Switch>
-      </Suspense>
+          <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
+
+          <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
+        </Routes>
+      </ApiErrorBoundary>
     </MainView>
   );
 };
 
 const PreferencesRoutes = () => (
-  <Switch>
-    <Route path={Routes.Preferences}>
-      <PreferencesPage />
-    </Route>
-    <Redirect to={Routes.Preferences} />
-  </Switch>
+  <Routes>
+    <Route path={RoutePaths.Preferences} element={<PreferencesPage />} />
+    <Route path="*" element={<Navigate to={RoutePaths.Preferences} />} />
+  </Routes>
 );
 
-function useDemo() {
-  const { formatMessage } = useIntl();
-  const config = useConfig();
-
-  const demoNotification = useMemo(
-    () => ({
-      id: "demo.message",
-      title: formatMessage({ id: "demo.message.title" }),
-      text: formatMessage({ id: "demo.message.body" }),
-      nonClosable: true,
-    }),
-    [formatMessage]
-  );
-
-  useNotificationService(config.isDemo ? demoNotification : undefined);
-}
-
-export const Routing: React.FC = () => {
-  useApiHealthPoll();
-  useDemo();
-
-  const { workspace } = useWorkspace();
+export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ includePath }) => {
+  const location = useLocation();
+  const workspaces = useListWorkspaces();
+  const currentWorkspace = workspaces[0];
 
   return (
-    <Router>
-      <Suspense fallback={<LoadingPage />}>
-        {!workspace.initialSetupComplete ? (
-          <PreferencesRoutes />
-        ) : (
-          <>
-            <WithPageAnalytics />
-            <MainViewRoutes />
-          </>
-        )}
-      </Suspense>
-    </Router>
+    <Navigate
+      to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
+      replace
+    />
+  );
+};
+
+const RoutingWithWorkspace: React.FC = () => {
+  const workspace = useCurrentWorkspace();
+  useAddAnalyticsContextForWorkspace(workspace);
+  useApiHealthPoll();
+
+  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
+};
+
+export const Routing: React.FC = () => {
+  const { search } = useLocation();
+
+  useEffectOnce(() => {
+    storeUtmFromQuery(search);
+  });
+
+  // TODO: Remove this after it is verified there are no problems with current routing
+  const OldRoutes = useMemo(
+    () =>
+      Object.values(RoutePaths).map((r) => (
+        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace includePath />} />
+      )),
+    []
+  );
+  return (
+    <Routes>
+      {OldRoutes}
+      <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
+      <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
+      <Route path="*" element={<AutoSelectFirstWorkspace />} />
+    </Routes>
   );
 };

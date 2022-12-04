@@ -1,0 +1,12 @@
+@use "../../../../../scss/colors";
+@use "../../../../../scss/variables";
+
+.groupLabel {
+  width: auto;
+  height: 100%;
+  padding-right: variables.$spacing-md;
+  display: flex;
+  align-items: center;
+  background-color: colors.$white;
+  white-space: nowrap;
+}

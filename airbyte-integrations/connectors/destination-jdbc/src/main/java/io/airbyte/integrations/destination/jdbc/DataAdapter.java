@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc;
@@ -8,12 +8,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class DataAdapter {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(DataAdapter.class);
 
   private final Predicate<JsonNode> filterValueNode;
   private final Function<JsonNode, JsonNode> valueNodeAdapter;

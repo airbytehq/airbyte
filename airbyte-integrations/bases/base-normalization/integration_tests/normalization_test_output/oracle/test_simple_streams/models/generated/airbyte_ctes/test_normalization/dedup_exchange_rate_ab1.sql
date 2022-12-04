@@ -1,9 +1,10 @@
 {{ config(
-    unique_key = env_var('AIRBYTE_DEFAULT_UNIQUE_KEY', quote('_AIRBYTE_AB_ID')),
+    unique_key = quote('_AIRBYTE_AB_ID'),
     schema = "test_normalization",
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ source('test_normalization', 'airbyte_raw_dedup_exchange_rate') }}
 select
     {{ json_extract_scalar(quote('_AIRBYTE_DATA'), ['id'], ['id']) }} as id,
     {{ json_extract_scalar(quote('_AIRBYTE_DATA'), ['currency'], ['currency']) }} as currency,
@@ -19,5 +20,5 @@ select
 from {{ source('test_normalization', 'airbyte_raw_dedup_exchange_rate') }} 
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause(quote('_AIRBYTE_EMITTED_AT')) }}
+{{ incremental_clause(quote('_AIRBYTE_EMITTED_AT'), this) }}
 

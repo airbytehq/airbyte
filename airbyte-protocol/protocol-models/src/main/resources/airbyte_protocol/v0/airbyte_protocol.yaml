@@ -1,0 +1,592 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+title: AirbyteProtocol
+type: object
+description: AirbyteProtocol structs
+version: 0.3.2
+properties:
+  airbyte_message:
+    "$ref": "#/definitions/AirbyteMessage"
+  configured_airbyte_catalog:
+    "$ref": "#/definitions/ConfiguredAirbyteCatalog"
+definitions:
+  AirbyteMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+    properties:
+      type:
+        description: "Message type"
+        type: string
+        enum:
+          - RECORD
+          - STATE
+          - LOG
+          - SPEC
+          - CONNECTION_STATUS
+          - CATALOG
+          - TRACE
+          - CONTROL
+      log:
+        description: "log message: any kind of logging you want the platform to know about."
+        "$ref": "#/definitions/AirbyteLogMessage"
+      spec:
+        "$ref": "#/definitions/ConnectorSpecification"
+      # todo (cgardens) - prefer snake case for field names.
+      connectionStatus:
+        "$ref": "#/definitions/AirbyteConnectionStatus"
+      catalog:
+        description: "catalog message: the catalog"
+        "$ref": "#/definitions/AirbyteCatalog"
+      record:
+        description: "record message: the record"
+        "$ref": "#/definitions/AirbyteRecordMessage"
+      state:
+        description: "schema message: the state. Must be the last message produced. The platform uses this information"
+        "$ref": "#/definitions/AirbyteStateMessage"
+      trace:
+        description: "trace message: a message to communicate information about the status and performance of a connector"
+        "$ref": "#/definitions/AirbyteTraceMessage"
+      control:
+        description: "connector config message: a message to communicate an updated configuration from a connector that should be persisted"
+        "$ref": "#/definitions/AirbyteControlMessage"
+  AirbyteRecordMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - stream
+      - data
+      - emitted_at
+    properties:
+      namespace:
+        description: "namespace the data is associated with"
+        type: string
+      stream:
+        description: "stream the data is associated with"
+        type: string
+      data:
+        description: "record data"
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      emitted_at:
+        description: "when the data was emitted from the source. epoch in millisecond."
+        type: integer
+  AirbyteStateMessage:
+    type: object
+    additionalProperties: true
+    properties:
+      type:
+        "$ref": "#/definitions/AirbyteStateType"
+      stream:
+        "$ref": "#/definitions/AirbyteStreamState"
+      global:
+        "$ref": "#/definitions/AirbyteGlobalState"
+      data:
+        description: "(Deprecated) the state data"
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  AirbyteStateType:
+    type: string
+    description: >
+      The type of state the other fields represent.
+      Is set to LEGACY, the state data should be read from the `data` field for backwards compatibility.
+      If not set, assume the state object is type LEGACY.
+      GLOBAL means that the state should be read from `global` and means that it represents the state for all the streams. It contains one shared
+      state and individual stream states.
+      PER_STREAM means that the state should be read from `stream`. The state present in this field correspond to the isolated state of the
+      associated stream description.
+    enum:
+      - GLOBAL
+      - STREAM
+      - LEGACY
+  AirbyteStreamState:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_descriptor
+    properties:
+      stream_descriptor:
+        "$ref": "#/definitions/StreamDescriptor"
+      stream_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+  AirbyteGlobalState:
+    type: object
+    additionalProperties: true
+    required:
+      - stream_states
+    properties:
+      shared_state:
+        "$ref": "#/definitions/AirbyteStateBlob"
+      stream_states:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStreamState"
+  StreamDescriptor:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+    properties:
+      name:
+        type: string
+      namespace:
+        type: string
+  AirbyteStateBlob:
+    type: object
+    additionalProperties: true
+    description: "the state data"
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  AirbyteLogMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - level
+      - message
+    properties:
+      level:
+        description: "log level"
+        type: string
+        enum:
+          - FATAL
+          - ERROR
+          - WARN
+          - INFO
+          - DEBUG
+          - TRACE
+      message:
+        description: "log message"
+        type: string
+      stack_trace:
+        description: "an optional stack trace if the log message corresponds to an exception"
+        type: string
+  AirbyteTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        title: "trace type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: "the type of trace message"
+        type: string
+        enum:
+          - ERROR
+          - ESTIMATE
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      error:
+        description: "error trace message: the error object"
+        "$ref": "#/definitions/AirbyteErrorTraceMessage"
+      estimate:
+        description: "Estimate trace message: a guess at how much data will be produced in this sync"
+        "$ref": "#/definitions/AirbyteEstimateTraceMessage"
+  AirbyteErrorTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - message
+    properties:
+      message:
+        description: A user-friendly message that indicates the cause of the error
+        type: string
+      internal_message:
+        description: The internal error that caused the failure
+        type: string
+      stack_trace:
+        description: The full stack trace of the error
+        type: string
+      failure_type:
+        description: The type of error
+        type: string
+        enum:
+          - system_error
+          - config_error
+  AirbyteEstimateTraceMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+      - type
+    properties:
+      name:
+        description: The name of the stream
+        type: string
+      type:
+        title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
+        description: The type of estimate
+        type: string
+        enum:
+          - STREAM
+          - SYNC
+      namespace:
+        description: The namespace of the stream
+        type: string
+      row_estimate:
+        description: The estimated number of rows to be emitted by this sync for this stream
+        type: integer
+      byte_estimate:
+        description: The estimated number of bytes to be emitted by this sync for this stream
+        type: integer
+  AirbyteControlMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - emitted_at
+    properties:
+      type:
+        title: orchestrator type
+        description: "the type of orchestrator message"
+        type: string
+        enum:
+          - CONNECTOR_CONFIG
+      emitted_at:
+        description: "the time in ms that the message was emitted"
+        type: number
+      connectorConfig:
+        description: "connector config orchestrator message: the updated config for the platform to store for this connector"
+        "$ref": "#/definitions/AirbyteControlConnectorConfigMessage"
+  AirbyteControlConnectorConfigMessage:
+    type: object
+    additionalProperties: true
+    required:
+      - config
+    properties:
+      config:
+        description: "the config items from this connector's spec to update"
+        type: object
+        additionalProperties: true
+  AirbyteConnectionStatus:
+    type: object
+    description: Airbyte connection status
+    additionalProperties: true
+    required:
+      - status
+    properties:
+      status:
+        type: string
+        enum:
+          - SUCCEEDED
+          - FAILED
+      message:
+        type: string
+  AirbyteCatalog:
+    type: object
+    additionalProperties: true
+    description: Airbyte stream schema catalog
+    required:
+      - streams
+    properties:
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/AirbyteStream"
+  AirbyteStream:
+    type: object
+    additionalProperties: true
+    required:
+      - name
+      - json_schema
+      - supported_sync_modes
+    properties:
+      name:
+        type: string
+        description: Stream's name.
+      json_schema:
+        description: Stream schema using Json Schema specs.
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      supported_sync_modes:
+        description: List of sync modes supported by this stream.
+        type: array
+        minItems: 1
+        items:
+          "$ref": "#/definitions/SyncMode"
+      source_defined_cursor:
+        description: If the source defines the cursor field, then any other cursor field inputs will be ignored. If it does not, either the user_provided one is used, or the default one is used as a backup.
+        type: boolean
+      default_cursor_field:
+        description: Path to the field that will be used to determine if a record is new or modified since the last sync. If not provided by the source, the end user will have to specify the comparable themselves.
+        type: array
+        items:
+          type: string
+      source_defined_primary_key:
+        description: If the source defines the primary key, paths to the fields that will be used as a primary key. If not provided by the source, the end user will have to specify the primary key themselves.
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+      namespace:
+        description: Optional Source-defined namespace. Currently only used by JDBC destinations to determine what schema to write to. Airbyte streams from the same sources should have the same namespace.
+        type: string
+  ConfiguredAirbyteCatalog:
+    type: object
+    additionalProperties: true
+    description: Airbyte stream schema catalog
+    required:
+      - streams
+    properties:
+      streams:
+        type: array
+        items:
+          "$ref": "#/definitions/ConfiguredAirbyteStream"
+  ConfiguredAirbyteStream:
+    type: object
+    additionalProperties: true
+    required:
+      - stream
+      - sync_mode
+      - destination_sync_mode
+    properties:
+      stream:
+        "$ref": "#/definitions/AirbyteStream"
+      sync_mode:
+        "$ref": "#/definitions/SyncMode"
+        default: full_refresh
+      cursor_field:
+        description: Path to the field that will be used to determine if a record is new or modified since the last sync. This field is REQUIRED if `sync_mode` is `incremental`. Otherwise it is ignored.
+        type: array
+        items:
+          type: string
+      destination_sync_mode:
+        "$ref": "#/definitions/DestinationSyncMode"
+        default: append
+      primary_key:
+        description: Paths to the fields that will be used as primary key. This field is REQUIRED if `destination_sync_mode` is `*_dedup`. Otherwise it is ignored.
+        type: array
+        items:
+          type: array
+          items:
+            type: string
+  SyncMode:
+    type: string
+    enum:
+      - full_refresh
+      - incremental
+  DestinationSyncMode:
+    type: string
+    enum:
+      - append
+      - overwrite
+      #- upsert_dedup # TODO chris: SCD Type 1 can be implemented later
+      - append_dedup # SCD Type 1 & 2
+  OAuth2Specification:
+    type: object
+    additionalProperties: true
+    description: An object containing any metadata needed to describe this connector's Oauth flow. Deprecated, switching to advanced_auth instead
+    properties:
+      rootObject:
+        description:
+          "A list of strings representing a pointer to the root object which contains any oauth parameters in the ConnectorSpecification.
+
+          Examples:
+
+          if oauth parameters were contained inside the top level, rootObject=[]
+          If they were nested inside another object {'credentials': {'app_id' etc...}, rootObject=['credentials']
+          If they were inside a oneOf {'switch': {oneOf: [{client_id...}, {non_oauth_param]}},  rootObject=['switch', 0]
+          "
+        type: array
+        items:
+          oneOf:
+            - type: string
+            - type: integer
+
+      oauthFlowInitParameters:
+        description:
+          "Pointers to the fields in the rootObject needed to obtain the initial refresh/access tokens for the OAuth flow.
+          Each inner array represents the path in the rootObject of the referenced field.
+          For example.
+          Assume the rootObject contains params 'app_secret', 'app_id' which are needed to get the initial refresh token.
+          If they are not nested in the rootObject, then the array would look like this [['app_secret'], ['app_id']]
+          If they are nested inside an object called 'auth_params' then this array would be [['auth_params', 'app_secret'], ['auth_params', 'app_id']]"
+        type: array
+        items:
+          description: A list of strings denoting a pointer into the rootObject for where to find this property
+          type: array
+          items:
+            type: string
+      oauthFlowOutputParameters:
+        description:
+          "Pointers to the fields in the rootObject which can be populated from successfully completing the oauth flow using the init parameters.
+          This is typically a refresh/access token.
+          Each inner array represents the path in the rootObject of the referenced field."
+        type: array
+        items:
+          description: A list of strings denoting a pointer into the rootObject for where to find this property
+          type: array
+          items:
+            type: string
+  ConnectorSpecification:
+    type: object
+    additionalProperties: true
+    description: Specification of a connector (source/destination)
+    required:
+      - connectionSpecification
+    properties:
+      # todo - split ConnectorSpecification into general vs connector type sections of properties
+      # General Properties (Common to all connectors)
+      # todo (cgardens) - prefer snake case for field names.
+      documentationUrl:
+        type: string
+        format: uri
+      # todo (cgardens) - prefer snake case for field names.
+      changelogUrl:
+        type: string
+        format: uri
+      # todo (cgardens) - prefer snake case for field names.
+      connectionSpecification:
+        description: ConnectorDefinition specific blob. Must be a valid JSON string.
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      # Connector Type Properties (Common to all connectors from same type)
+      # Source Connectors Properties
+      supportsIncremental:
+        description: (deprecated) If the connector supports incremental mode or not.
+        type: boolean
+      # Destination Connectors Properties
+      # Normalization is currently implemented using dbt, so it requires `supportsDBT` to be true for this to be true.
+      supportsNormalization:
+        description: If the connector supports normalization or not.
+        type: boolean
+        default: false
+      supportsDBT:
+        description: If the connector supports DBT or not.
+        type: boolean
+        default: false
+      supported_destination_sync_modes:
+        description: List of destination sync modes supported by the connector
+        type: array
+        items:
+          "$ref": "#/definitions/DestinationSyncMode"
+      authSpecification:
+        description: deprecated, switching to advanced_auth instead
+        type: object
+        properties:
+          auth_type:
+            type: string
+            enum: ["oauth2.0"] # Future auth types should be added here
+          oauth2Specification:
+            description: If the connector supports OAuth, this field should be non-null.
+            "$ref": "#/definitions/OAuth2Specification"
+      advanced_auth:
+        description: |-
+          Additional and optional specification object to describe what an 'advanced' Auth flow would need to function.
+            - A connector should be able to fully function with the configuration as described by the ConnectorSpecification in a 'basic' mode.
+            - The 'advanced' mode provides easier UX for the user with UI improvements and automations. However, this requires further setup on the
+            server side by instance or workspace admins beforehand. The trade-off is that the user does not have to provide as many technical
+            inputs anymore and the auth process is faster and easier to complete.
+        type: object
+        properties:
+          auth_flow_type:
+            type: string
+            enum: ["oauth2.0", "oauth1.0"] # Future auth types should be added here
+          predicate_key:
+            description: Json Path to a field in the connectorSpecification that should exist for the advanced auth to be applicable.
+            type: array
+            items:
+              type: string
+          predicate_value:
+            description: Value of the predicate_key fields for the advanced auth to be applicable.
+            type: string
+          oauth_config_specification:
+            "$ref": "#/definitions/OAuthConfigSpecification"
+      protocol_version:
+        description: "the Airbyte Protocol version supported by the connector. Protocol versioning uses SemVer. "
+        type: string
+  OAuthConfigSpecification:
+    type: object
+    additionalProperties: true
+    properties:
+      oauth_user_input_from_connector_config_specification:
+        description: |-
+          OAuth specific blob. This is a Json Schema used to validate Json configurations used as input to OAuth.
+          Must be a valid non-nested JSON that refers to properties from ConnectorSpecification.connectionSpecification
+          using special annotation 'path_in_connector_config'.
+          These are input values the user is entering through the UI to authenticate to the connector, that might also shared
+          as inputs for syncing data via the connector.
+
+          Examples:
+
+          if no connector values is shared during oauth flow, oauth_user_input_from_connector_config_specification=[]
+          if connector values such as 'app_id' inside the top level are used to generate the API url for the oauth flow,
+            oauth_user_input_from_connector_config_specification={
+              app_id: {
+                type: string
+                path_in_connector_config: ['app_id']
+              }
+            }
+          if connector values such as 'info.app_id' nested inside another object are used to generate the API url for the oauth flow,
+            oauth_user_input_from_connector_config_specification={
+              app_id: {
+                type: string
+                path_in_connector_config: ['info', 'app_id']
+              }
+            }
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_output_specification:
+        description: |-
+          OAuth specific blob. This is a Json Schema used to validate Json configurations produced by the OAuth flows as they are
+          returned by the distant OAuth APIs.
+          Must be a valid JSON describing the fields to merge back to `ConnectorSpecification.connectionSpecification`.
+          For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+
+          Examples:
+
+              complete_oauth_output_specification={
+                refresh_token: {
+                  type: string,
+                  path_in_connector_config: ['credentials', 'refresh_token']
+                }
+              }
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_server_input_specification:
+        description: |-
+          OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations.
+          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+          server when completing an OAuth flow (typically exchanging an auth code for refresh token).
+
+          Examples:
+
+              complete_oauth_server_input_specification={
+                client_id: {
+                  type: string
+                },
+                client_secret: {
+                  type: string
+                }
+              }
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode
+      complete_oauth_server_output_specification:
+        description: |-
+          OAuth specific blob. This is a Json Schema used to validate Json configurations persisted as Airbyte Server configurations that
+          also need to be merged back into the connector configuration at runtime.
+          This is a subset configuration of `complete_oauth_server_input_specification` that filters fields out to retain only the ones that
+          are necessary for the connector to function with OAuth. (some fields could be used during oauth flows but not needed afterwards, therefore
+          they would be listed in the `complete_oauth_server_input_specification` but not `complete_oauth_server_output_specification`)
+          Must be a valid non-nested JSON describing additional fields configured by the Airbyte Instance or Workspace Admins to be used by the
+          connector when using OAuth flow APIs.
+          These fields are to be merged back to `ConnectorSpecification.connectionSpecification`.
+          For each field, a special annotation `path_in_connector_config` can be specified to determine where to merge it,
+
+          Examples:
+
+                complete_oauth_server_output_specification={
+                  client_id: {
+                    type: string,
+                    path_in_connector_config: ['credentials', 'client_id']
+                  },
+                  client_secret: {
+                    type: string,
+                    path_in_connector_config: ['credentials', 'client_secret']
+                  }
+                }
+        type: object
+        existingJavaType: com.fasterxml.jackson.databind.JsonNode

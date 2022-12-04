@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 #
@@ -110,7 +110,7 @@ def get_api_token():
 
 def random_digits(digits):
     lower = 10 ** (digits - 1)
-    upper = 10 ** digits - 1
+    upper = 10**digits - 1
     return random.randint(lower, upper)
 
 

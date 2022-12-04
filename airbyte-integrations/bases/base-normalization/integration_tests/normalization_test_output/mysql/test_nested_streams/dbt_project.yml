@@ -1,0 +1,121 @@
+name: airbyte_utils
+version: '1.0'
+config-version: 2
+profile: normalize
+model-paths:
+- models
+docs-paths:
+- docs
+analysis-paths:
+- analysis
+test-paths:
+- tests
+seed-paths:
+- data
+macro-paths:
+- macros
+target-path: ../build
+log-path: ../logs
+packages-install-path: /dbt
+clean-targets:
+- build
+- dbt_modules
+quoting:
+  database: true
+  schema: false
+  identifier: true
+models:
+  airbyte_utils:
+    +materialized: table
+    generated:
+      airbyte_ctes:
+        +tags: airbyte_internal_cte
+        +materialized: ephemeral
+      airbyte_incremental:
+        +tags: incremental_tables
+        +materialized: table
+      airbyte_tables:
+        +tags: normalized_tables
+        +materialized: table
+      airbyte_views:
+        +tags: airbyte_internal_views
+        +materialized: view
+vars:
+  dbt_utils_dispatch_list:
+  - airbyte_utils
+  json_column: _airbyte_data
+  models_to_source:
+    nested_stream_with_co_1g_into_long_names_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_1g_into_long_names_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_1g_into_long_names_stg: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_1g_into_long_names_scd: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co__lting_into_long_names: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    non_nested_stream_wit_1g_into_long_names_ab1: test_normalization._airbyte_raw_non_nest__lting_into_long_names
+    non_nested_stream_wit_1g_into_long_names_ab2: test_normalization._airbyte_raw_non_nest__lting_into_long_names
+    non_nested_stream_wit_1g_into_long_names_ab3: test_normalization._airbyte_raw_non_nest__lting_into_long_names
+    non_nested_stream_wit__lting_into_long_names: test_normalization._airbyte_raw_non_nest__lting_into_long_names
+    some_stream_that_was_empty_ab1: test_normalization._airbyte_raw_some_stream_that_was_empty
+    some_stream_that_was_empty_ab2: test_normalization._airbyte_raw_some_stream_that_was_empty
+    some_stream_that_was_empty_stg: test_normalization._airbyte_raw_some_stream_that_was_empty
+    some_stream_that_was_empty_scd: test_normalization._airbyte_raw_some_stream_that_was_empty
+    some_stream_that_was_empty: test_normalization._airbyte_raw_some_stream_that_was_empty
+    simple_stream_with_na_1g_into_long_names_ab1: test_normalization_namespace._airbyte_raw_simple_s__lting_into_long_names
+    simple_stream_with_na_1g_into_long_names_ab2: test_normalization_namespace._airbyte_raw_simple_s__lting_into_long_names
+    simple_stream_with_na_1g_into_long_names_ab3: test_normalization_namespace._airbyte_raw_simple_s__lting_into_long_names
+    simple_stream_with_na__lting_into_long_names: test_normalization_namespace._airbyte_raw_simple_s__lting_into_long_names
+    conflict_stream_name_ab1: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name_ab2: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name_ab3: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_scalar_ab1: test_normalization._airbyte_raw_conflict_stream_scalar
+    conflict_stream_scalar_ab2: test_normalization._airbyte_raw_conflict_stream_scalar
+    conflict_stream_scalar_ab3: test_normalization._airbyte_raw_conflict_stream_scalar
+    conflict_stream_scalar: test_normalization._airbyte_raw_conflict_stream_scalar
+    conflict_stream_array_ab1: test_normalization._airbyte_raw_conflict_stream_array
+    conflict_stream_array_ab2: test_normalization._airbyte_raw_conflict_stream_array
+    conflict_stream_array_ab3: test_normalization._airbyte_raw_conflict_stream_array
+    conflict_stream_array: test_normalization._airbyte_raw_conflict_stream_array
+    unnest_alias_ab1: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_ab2: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_ab3: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias: test_normalization._airbyte_raw_unnest_alias
+    arrays_ab1: test_normalization._airbyte_raw_arrays
+    arrays_ab2: test_normalization._airbyte_raw_arrays
+    arrays_ab3: test_normalization._airbyte_raw_arrays
+    arrays: test_normalization._airbyte_raw_arrays
+    nested_stream_with_co_2g_names_partition_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_2g_names_partition_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_2g_names_partition_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co___long_names_partition: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    conflict_stream_name__2flict_stream_name_ab1: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name__2flict_stream_name_ab2: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name__2flict_stream_name_ab3: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name_conflict_stream_name: test_normalization._airbyte_raw_conflict_stream_name
+    unnest_alias_children_ab1: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_ab2: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_ab3: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children: test_normalization._airbyte_raw_unnest_alias
+    arrays_nested_array_parent_ab1: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab2: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent_ab3: test_normalization._airbyte_raw_arrays
+    arrays_nested_array_parent: test_normalization._airbyte_raw_arrays
+    nested_stream_with_co_3double_array_data_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_3double_array_data_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_3double_array_data_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co__ion_double_array_data: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_3es_partition_data_ab1: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_3es_partition_data_ab2: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co_3es_partition_data_ab3: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    nested_stream_with_co___names_partition_data: test_normalization._airbyte_raw_nested_s__lting_into_long_names
+    conflict_stream_name__3flict_stream_name_ab1: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name__3flict_stream_name_ab2: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name__3flict_stream_name_ab3: test_normalization._airbyte_raw_conflict_stream_name
+    conflict_stream_name____conflict_stream_name: test_normalization._airbyte_raw_conflict_stream_name
+    unnest_alias_children_owner_ab1: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_owner_ab2: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_owner_ab3: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_owner: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_4mn___with__quotes_ab1: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_4mn___with__quotes_ab2: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children_4mn___with__quotes_ab3: test_normalization._airbyte_raw_unnest_alias
+    unnest_alias_children__column___with__quotes: test_normalization._airbyte_raw_unnest_alias

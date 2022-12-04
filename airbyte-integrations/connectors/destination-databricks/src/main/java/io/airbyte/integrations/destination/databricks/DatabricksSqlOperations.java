@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -15,7 +15,12 @@ public class DatabricksSqlOperations extends JdbcSqlOperations {
   @Override
   public void executeTransaction(final JdbcDatabase database, final List<String> queries) throws Exception {
     for (final String query : queries) {
-      database.execute(query);
+      for (String q : query.split(";")) {
+        if (q.isBlank())
+          continue;
+
+        database.execute(q);
+      }
     }
   }
 

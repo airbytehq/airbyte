@@ -1,16 +1,19 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
 
+import com.azure.storage.blob.specialized.AppendBlobClient;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -73,10 +76,20 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
         case "boolean" -> json.put(key, Boolean.valueOf(value));
         case "integer" -> json.put(key, Integer.valueOf(value));
         case "number" -> json.put(key, Double.valueOf(value));
+        case "" -> addNoTypeValue(json, key, value);
         default -> json.put(key, value);
       }
     }
     return json;
+  }
+
+  private static void addNoTypeValue(ObjectNode json, String key, String value) {
+    if (value != null && (value.matches("^\\[.*\\]$")) || value.matches("^\\{.*\\}$")) {
+      var newNode = Jsons.deserialize(value);
+      json.set(key, newNode);
+    } else {
+      json.put(key, value);
+    }
   }
 
   @Override
@@ -101,6 +114,29 @@ public class AzureBlobStorageCsvDestinationAcceptanceTest extends
     }
 
     return jsonRecords;
+  }
+
+  @Override
+  protected String getAllSyncedObjects(String streamName) {
+    try {
+      final List<AppendBlobClient> appendBlobClients = getAppendBlobClient(streamName);
+      StringBuilder result = new StringBuilder();
+      for (AppendBlobClient appendBlobClient : appendBlobClients) {
+        final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        appendBlobClient.download(outputStream);
+        if (result.isEmpty()) {
+          result.append(outputStream.toString(StandardCharsets.UTF_8));
+        } else {
+          var stringStream = outputStream.toString(StandardCharsets.UTF_8);
+          result.append(stringStream.substring(stringStream.indexOf('\n') + 1));
+        }
+      }
+      LOGGER.info("All objects: " + result);
+      return result.toString();
+    } catch (Exception e) {
+      LOGGER.error("No blobs were found for stream with name {}.", streamName);
+      return "";
+    }
   }
 
 }

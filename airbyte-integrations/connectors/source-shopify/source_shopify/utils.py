@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -9,9 +9,45 @@ from typing import Dict
 
 import requests
 
+SCOPES_MAPPING = {
+    "read_customers": ["Customers", "MetafieldCustomers"],
+    "read_orders": [
+        "Orders",
+        "AbandonedCheckouts",
+        "TenderTransactions",
+        "Transactions",
+        "Fulfillments",
+        "OrderRefunds",
+        "OrderRisks",
+        "MetafieldOrders",
+    ],
+    "read_draft_orders": ["DraftOrders", "MetafieldDraftOrders"],
+    "read_products": [
+        "Products",
+        "MetafieldProducts",
+        "ProductImages",
+        "MetafieldProductImages",
+        "MetafieldProductVariants",
+        "CustomCollections",
+        "Collects",
+        "Collections",
+        "ProductVariants",
+        "MetafieldCollections",
+        "SmartCollections",
+        "MetafieldSmartCollections",
+    ],
+    "read_content": ["Pages", "MetafieldPages"],
+    "read_price_rules": ["PriceRules"],
+    "read_discounts": ["DiscountCodes"],
+    "read_locations": ["Locations", "MetafieldLocations"],
+    "read_inventory": ["InventoryItems", "InventoryLevels"],
+    "read_merchant_managed_fulfillment_orders": ["FulfillmentOrders"],
+    "read_shopify_payments_payouts": ["BalanceTransactions"],
+    "read_online_store_pages": ["Articles", "MetafieldArticles", "Blogs", "MetafieldBlogs"],
+}
+
 
 class ShopifyRateLimiter:
-
     """
     Define timings for RateLimits. Adjust timings if needed.
 
@@ -92,7 +128,6 @@ class ShopifyRateLimiter:
 
 
 class EagerlyCachedStreamState:
-
     """
     This is the placeholder for the tmp stream state for each incremental stream,
     It's empty, once the sync has started and is being updated while sync operation takes place,
@@ -127,6 +162,7 @@ class EagerlyCachedStreamState:
                 state_object[stream.name] = {
                     stream.cursor_field: min(current_stream_state.get(stream.cursor_field, ""), tmp_stream_state_value)
                 }
+
         return state_object
 
     def cache_stream_state(func):

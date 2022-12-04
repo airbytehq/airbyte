@@ -2,46 +2,236 @@ name: Publish Connector Image
 on:
   workflow_dispatch:
     inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
       connector:
         description: "Airbyte Connector"
         required: true
+      comment-id:
+        description: "The comment-id of the slash command. Used to update the comment with the status."
+        required: false
+      auto-bump-version:
+        description: "after publishing, the workflow will automatically bump the connector version in definitions and generate seed spec"
+        required: true
+        default: "true"
+      parallel:
+        description: "Switching this to true will spin up 5 build agents instead of 1 and allow multi connector publishes to run in parallel"
+        required: true
+        default: "false"
       run-tests:
         description: "Should run tests when publishing"
         required: true
         default: "true"
-      comment-id:
-        description: "The comment-id of the slash command. Used to update the comment with the status."
-        required: false
 
 jobs:
   ## Gradle Build
   # In case of self-hosted EC2 errors, remove this block.
-  start-publish-image-runner:
-    name: Start Build EC2 Runner
+  start-publish-image-runner-0:
+    name: Start Build EC2 Runner 0
     runs-on: ubuntu-latest
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          ec2-image-id: ami-0d648081937c75a73
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  start-publish-image-runner-1:
+    if: github.event.inputs.parallel == 'true' && success()
+    name: Start Build EC2 Runner 1
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  start-publish-image-runner-2:
+    if: github.event.inputs.parallel == 'true' && success()
+    name: Start Build EC2 Runner 2
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  start-publish-image-runner-3:
+    if: github.event.inputs.parallel == 'true' && success()
+    name: Start Build EC2 Runner 3
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  start-publish-image-runner-4:
+    if: github.event.inputs.parallel == 'true' && success()
+    name: Start Build EC2 Runner 4
+    runs-on: ubuntu-latest
+    outputs:
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+      - name: Start AWS Runner
+        id: start-ec2-runner
+        uses: ./.github/actions/start-aws-runner
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          github-token: ${{ env.PAT }}
+          label: ${{ github.run_id }}-publisher
+  preprocess-matrix:
+    needs: start-publish-image-runner-0
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    outputs:
+      connectorjson: ${{ steps.preprocess.outputs.connectorjson }}
+    steps:
+      # given a string input of a single connector or comma separated list of connectors e.g. connector1, connector2
+      # this step builds an array, by removing whitespace, add in quotation marks around connectors and braces [ ] at the start and end
+      # finally, it sets it as output from this job so we can use this array of connectors as our matrix strategy for publishing
+      - id: preprocess
+        run: |
+          start="[\""
+          replace="\",\""
+          end="\"]"
+          stripped_connector="$(echo "${{ github.event.inputs.connector }}" | tr -d ' ')"
+          middle=${stripped_connector//,/$replace}
+          full="$start$middle$end"
+          echo "connectorjson=$full" >> $GITHUB_OUTPUT
+  write-initial-output-to-comment:
+    name: Set up git comment
+    if: github.event.inputs.comment-id
+    needs: start-publish-image-runner-0
+    runs-on: ${{ needs.start-publish-image-runner-0.outputs.label }}
+    steps:
+      - name: Print start message
+        if: github.event.inputs.comment-id && success()
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            > :clock2: Publishing the following connectors:<br>${{ github.event.inputs.connector }}<br>https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
+      - name: Create table header
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            <br>
+
+            | Connector | Did it publish? | Were definitions generated? |
+      - name: Create table separator
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            | --- | --- | --- |
   publish-image:
-    needs: start-publish-image-runner
-    runs-on: ${{ needs.start-publish-image-runner.outputs.label }}
+    timeout-minutes: 240
+    needs:
+      - start-publish-image-runner-0
+      - preprocess-matrix
+      - write-initial-output-to-comment
+    strategy:
+      max-parallel: 5
+      fail-fast: false
+      matrix:
+        connector: ${{ fromJSON(needs.preprocess-matrix.outputs.connectorjson) }}
+    runs-on: runner-pool-${{ github.run_id }}
     environment: more-secrets
     steps:
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@master
+        uses: google-github-actions/setup-gcloud@v0
         with:
           service_account_key: ${{ secrets.SPEC_CACHE_SERVICE_ACCOUNT_KEY }}
           export_default_credentials: true
@@ -51,197 +241,182 @@ jobs:
         with:
           regex_pattern: "^(connectors|bases)/[a-zA-Z0-9-_]+$"
           regex_flags: "i" # required to be set for this plugin
-          search_string: ${{ github.event.inputs.connector }}
+          search_string: ${{ matrix.connector }}
       - name: Validate input workflow format
-        if: steps.regex.outputs.first_match != github.event.inputs.connector
+        if: steps.regex.outputs.first_match != matrix.connector
         run: echo "The connector provided has an invalid format!" && exit 1
-      - name: Link comment to workflow run
-        if: github.event.inputs.comment-id
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :clock2: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
-          repository: ${{github.event.pull_request.head.repo.full_name}} # always use the branch's repository
-      # Beside PyEnv, this does not set any runtimes up because it uses an AMI image that has everything pre-installed. See https://github.com/airbytehq/airbyte/issues/4559.
-      - name: Install Pyenv
-        run: python3 -m pip install virtualenv==16.7.9 --user
-      - name: Write Integration Test Credentials # TODO DRY this with test-command.yml
-        run: ./tools/bin/ci_credentials.sh
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+          token: ${{ secrets.OCTAVIA_PAT }}
+      - name: Install Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install Pyenv and Tox
+        run: |
+          python3 -m pip install --quiet virtualenv==16.7.9 --user
+          rm -r venv || echo "no pre-existing venv"
+          python3 -m virtualenv venv
+          source venv/bin/activate
+          pip install --quiet tox==3.24.4
+      - name: Install yq
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys CC86BB64
+          sudo add-apt-repository ppa:rmescandon/yq
+          sudo apt update
+          sudo apt install yq -y
+      - name: Test and install CI scripts
+        # all CI python packages have the prefix "ci_"
+        run: |
+          source venv/bin/activate
+          tox -r -c ./tools/tox_ci.ini
+          pip install --quiet -e ./tools/ci_*
+      - name: Write Integration Test Credentials for ${{ matrix.connector }}
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ matrix.connector }}
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery
+            ci_credentials destination-postgres
+            ci_credentials destination-snowflake
+          fi
         env:
-          AMAZON_SELLER_PARTNER_TEST_CREDS: ${{ secrets.AMAZON_SELLER_PARTNER_TEST_CREDS }}
-          AMAZON_ADS_TEST_CREDS: ${{ secrets.AMAZON_ADS_TEST_CREDS }}
-          AMPLITUDE_INTEGRATION_TEST_CREDS: ${{ secrets.AMPLITUDE_INTEGRATION_TEST_CREDS }}
-          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
-          AWS_REDSHIFT_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_REDSHIFT_INTEGRATION_TEST_CREDS }}
-          AWS_ORACLE_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_ORACLE_INTEGRATION_TEST_CREDS }}
-          SOURCE_AWS_CLOUDTRAIL_CREDS: ${{ secrets.SOURCE_AWS_CLOUDTRAIL_CREDS }}
-          AZURE_STORAGE_INTEGRATION_TEST_CREDS: ${{ secrets.AZURE_STORAGE_INTEGRATION_TEST_CREDS }}
-          BIGQUERY_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_INTEGRATION_TEST_CREDS }}
-          BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS: ${{ secrets.BIGQUERY_DENORMALIZED_INTEGRATION_TEST_CREDS }}
-          SOURCE_BING_ADS_CREDS: ${{ secrets.SOURCE_BING_ADS_CREDS }}
-          BIGQUERY_TEST_CREDS: ${{ secrets.BIGQUERY_TEST_CREDS }}
-          BRAINTREE_TEST_CREDS: ${{ secrets.BRAINTREE_TEST_CREDS }}
-          CART_TEST_CREDS: ${{ secrets.CART_TEST_CREDS }}
-          CHARGEBEE_INTEGRATION_TEST_CREDS: ${{ secrets.CHARGEBEE_INTEGRATION_TEST_CREDS }}
-          DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_KEY_TEST_CREDS }}
-          DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.DESTINATION_POSTGRES_SSH_PWD_TEST_CREDS }}
-          DESTINATION_PUBSUB_TEST_CREDS: ${{ secrets.DESTINATION_PUBSUB_TEST_CREDS }}
-          DESTINATION_KEEN_TEST_CREDS: ${{ secrets.DESTINATION_KEEN_TEST_CREDS }}
-          DESTINATION_KVDB_TEST_CREDS: ${{ secrets.DESTINATION_KVDB_TEST_CREDS }}
-          DRIFT_INTEGRATION_TEST_CREDS: ${{ secrets.DRIFT_INTEGRATION_TEST_CREDS }}
-          SOURCE_DIXA_TEST_CREDS: ${{ secrets.SOURCE_DIXA_TEST_CREDS }}
-          EXCHANGE_RATES_TEST_CREDS: ${{ secrets.EXCHANGE_RATES_TEST_CREDS }}
-          FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS: ${{ secrets.FACEBOOK_MARKETING_TEST_INTEGRATION_CREDS }}
-          FACEBOOK_PAGES_INTEGRATION_TEST_CREDS: ${{ secrets.FACEBOOK_PAGES_INTEGRATION_TEST_CREDS }}
-          FILE_SECURE_HTTPS_TEST_CREDS: ${{ secrets.FILE_SECURE_HTTPS_TEST_CREDS }}
-          FRESHDESK_TEST_CREDS: ${{ secrets.FRESHDESK_TEST_CREDS }}
-          GITLAB_INTEGRATION_TEST_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_CREDS }}
-          GITLAB_INTEGRATION_TEST_OAUTH_CREDS: ${{ secrets.GITLAB_INTEGRATION_TEST_OAUTH_CREDS }}
-          GH_NATIVE_INTEGRATION_TEST_CREDS: ${{ secrets.GH_NATIVE_INTEGRATION_TEST_CREDS }}
-          GOOGLE_ADS_TEST_CREDS: ${{ secrets.GOOGLE_ADS_TEST_CREDS }}
-          GOOGLE_ANALYTICS_V4_TEST_CREDS: ${{ secrets.GOOGLE_ANALYTICS_V4_TEST_CREDS }}
-          GOOGLE_ANALYTICS_V4_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_ANALYTICS_V4_TEST_CREDS_SRV_ACC }}
-          GOOGLE_ANALYTICS_V4_TEST_CREDS_OLD: ${{ secrets.GOOGLE_ANALYTICS_V4_TEST_CREDS_OLD }}
-          GOOGLE_CLOUD_STORAGE_TEST_CREDS: ${{ secrets.GOOGLE_CLOUD_STORAGE_TEST_CREDS }}
-          GOOGLE_DIRECTORY_TEST_CREDS: ${{ secrets.GOOGLE_DIRECTORY_TEST_CREDS }}
-          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS }}
-          GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SEARCH_CONSOLE_CDK_TEST_CREDS_SRV_ACC }}
-          GOOGLE_SHEETS_TESTS_CREDS: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS }}
-          GOOGLE_SHEETS_TESTS_CREDS_SRV_ACC: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS_SRV_ACC }}
-          GOOGLE_SHEETS_TESTS_CREDS_OLD: ${{ secrets.GOOGLE_SHEETS_TESTS_CREDS_OLD }}
-          GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS: ${{ secrets.GOOGLE_WORKSPACE_ADMIN_REPORTS_TEST_CREDS }}
-          GREENHOUSE_TEST_CREDS: ${{ secrets.GREENHOUSE_TEST_CREDS }}
-          GREENHOUSE_TEST_CREDS_LIMITED: ${{ secrets.GREENHOUSE_TEST_CREDS_LIMITED }}
-          HARVEST_INTEGRATION_TESTS_CREDS: ${{ secrets.HARVEST_INTEGRATION_TESTS_CREDS }}
-          HUBSPOT_INTEGRATION_TESTS_CREDS: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS }}
-          HUBSPOT_INTEGRATION_TESTS_CREDS_OAUTH: ${{ secrets.HUBSPOT_INTEGRATION_TESTS_CREDS_OAUTH }}
-          INSTAGRAM_INTEGRATION_TESTS_CREDS: ${{ secrets.INSTAGRAM_INTEGRATION_TESTS_CREDS }}
-          INTERCOM_INTEGRATION_TEST_CREDS: ${{ secrets.INTERCOM_INTEGRATION_TEST_CREDS }}
-          ITERABLE_INTEGRATION_TEST_CREDS: ${{ secrets.ITERABLE_INTEGRATION_TEST_CREDS }}
-          JIRA_INTEGRATION_TEST_CREDS: ${{ secrets.JIRA_INTEGRATION_TEST_CREDS }}
-          KLAVIYO_TEST_CREDS: ${{ secrets.KLAVIYO_TEST_CREDS }}
-          LEVER_HIRING_INTEGRATION_TEST_CREDS: ${{ secrets.LEVER_HIRING_INTEGRATION_TEST_CREDS }}
-          LOOKER_INTEGRATION_TEST_CREDS: ${{ secrets.LOOKER_INTEGRATION_TEST_CREDS }}
-          MAILCHIMP_TEST_CREDS: ${{ secrets.MAILCHIMP_TEST_CREDS }}
-          MICROSOFT_TEAMS_TEST_CREDS: ${{ secrets.MICROSOFT_TEAMS_TEST_CREDS }}
-          MIXPANEL_INTEGRATION_TEST_CREDS: ${{ secrets.MIXPANEL_INTEGRATION_TEST_CREDS }}
-          MSSQL_RDS_TEST_CREDS: ${{ secrets.MSSQL_RDS_TEST_CREDS }}
-          PAYPAL_TRANSACTION_CREDS: ${{ secrets.SOURCE_PAYPAL_TRANSACTION_CREDS }}
-          POSTGRES_SSH_KEY_TEST_CREDS: ${{ secrets.POSTGRES_SSH_KEY_TEST_CREDS }}
-          POSTGRES_SSH_PWD_TEST_CREDS: ${{ secrets.POSTGRES_SSH_PWD_TEST_CREDS }}
-          MYSQL_SSH_KEY_TEST_CREDS: ${{ secrets.MYSQL_SSH_KEY_TEST_CREDS }}
-          MYSQL_SSH_PWD_TEST_CREDS: ${{ secrets.MYSQL_SSH_PWD_TEST_CREDS }}
-          POSTHOG_TEST_CREDS: ${{ secrets.POSTHOG_TEST_CREDS }}
-          PIPEDRIVE_INTEGRATION_TESTS_CREDS: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS }}
-          PIPEDRIVE_INTEGRATION_TESTS_CREDS_OAUTH: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS_OAUTH }}
-          PIPEDRIVE_INTEGRATION_TESTS_CREDS_OLD: ${{ secrets.PIPEDRIVE_INTEGRATION_TESTS_CREDS_OLD }}
-          RECHARGE_INTEGRATION_TEST_CREDS: ${{ secrets.RECHARGE_INTEGRATION_TEST_CREDS }}
-          QUICKBOOKS_TEST_CREDS: ${{ secrets.QUICKBOOKS_TEST_CREDS }}
-          SALESFORCE_BULK_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_BULK_INTEGRATION_TESTS_CREDS }}
-          SALESFORCE_INTEGRATION_TESTS_CREDS: ${{ secrets.SALESFORCE_INTEGRATION_TESTS_CREDS }}
-          SENDGRID_INTEGRATION_TEST_CREDS: ${{ secrets.SENDGRID_INTEGRATION_TEST_CREDS }}
-          SHOPIFY_INTEGRATION_TEST_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_CREDS }}
-          SHOPIFY_INTEGRATION_TEST_OAUTH_CREDS: ${{ secrets.SHOPIFY_INTEGRATION_TEST_OAUTH_CREDS }}
-          SOURCE_ASANA_TEST_CREDS: ${{ secrets.SOURCE_ASANA_TEST_CREDS }}
-          SOURCE_OKTA_TEST_CREDS: ${{ secrets.SOURCE_OKTA_TEST_CREDS }}
-          SOURCE_SLACK_TEST_CREDS: ${{ secrets.SOURCE_SLACK_TEST_CREDS }}
-          SOURCE_SLACK_OAUTH_TEST_CREDS: ${{ secrets.SOURCE_SLACK_OAUTH_TEST_CREDS }}
-          SOURCE_US_CENSUS_TEST_CREDS: ${{ secrets.SOURCE_US_CENSUS_TEST_CREDS }}
-          SMARTSHEETS_TEST_CREDS: ${{ secrets.SMARTSHEETS_TEST_CREDS }}
-          SOURCE_SNAPCHAT_MARKETING_CREDS: ${{ secrets.SOURCE_SNAPCHAT_MARKETING_CREDS }}
-          SNOWFLAKE_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_INTEGRATION_TEST_CREDS }}
-          SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_S3_COPY_INTEGRATION_TEST_CREDS }}
-          SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS: ${{ secrets.SNOWFLAKE_GCS_COPY_INTEGRATION_TEST_CREDS }}
-          SOURCE_SQUARE_CREDS: ${{ secrets.SOURCE_SQUARE_CREDS }}
-          SOURCE_MARKETO_TEST_CREDS: ${{ secrets.SOURCE_MARKETO_TEST_CREDS }}
-          SOURCE_RECURLY_INTEGRATION_TEST_CREDS: ${{ secrets.SOURCE_RECURLY_INTEGRATION_TEST_CREDS }}
-          SOURCE_S3_TEST_CREDS: ${{ secrets.SOURCE_S3_TEST_CREDS }}
-          SOURCE_S3_PARQUET_CREDS: ${{ secrets.SOURCE_S3_PARQUET_CREDS }}
-          SOURCE_SHORTIO_TEST_CREDS: ${{ secrets.SOURCE_SHORTIO_TEST_CREDS }}
-          SOURCE_STRIPE_CREDS: ${{ secrets.SOURCE_STRIPE_CREDS }}
-          STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS: ${{ secrets.STRIPE_INTEGRATION_CONNECTED_ACCOUNT_TEST_CREDS }}
-          SURVEYMONKEY_TEST_CREDS: ${{ secrets.SURVEYMONKEY_TEST_CREDS }}
-          TEMPO_INTEGRATION_TEST_CREDS: ${{ secrets.TEMPO_INTEGRATION_TEST_CREDS }}
-          TRELLO_TEST_CREDS: ${{ secrets.TRELLO_TEST_CREDS }}
-          TWILIO_TEST_CREDS: ${{ secrets.TWILIO_TEST_CREDS }}
-          SOURCE_TYPEFORM_CREDS: ${{ secrets.SOURCE_TYPEFORM_CREDS }}
-          ZENDESK_CHAT_INTEGRATION_TEST_CREDS: ${{ secrets.ZENDESK_CHAT_INTEGRATION_TEST_CREDS }}
-          ZENDESK_SUNSHINE_TEST_CREDS: ${{ secrets.ZENDESK_SUNSHINE_TEST_CREDS }}
-          ZENDESK_TALK_TEST_CREDS: ${{ secrets.ZENDESK_TALK_TEST_CREDS }}
-          ZENDESK_SUPPORT_TEST_CREDS: ${{ secrets.ZENDESK_SUPPORT_TEST_CREDS }}
-          ZENDESK_SUPPORT_OAUTH_TEST_CREDS: ${{ secrets.ZENDESK_SUPPORT_OAUTH_TEST_CREDS }}
-          ZOOM_INTEGRATION_TEST_CREDS: ${{ secrets.ZOOM_INTEGRATION_TEST_CREDS }}
-          PLAID_INTEGRATION_TEST_CREDS: ${{ secrets.PLAID_INTEGRATION_TEST_CREDS }}
-          DESTINATION_S3_INTEGRATION_TEST_CREDS: ${{ secrets.DESTINATION_S3_INTEGRATION_TEST_CREDS }}
-          DESTINATION_AZURE_BLOB_CREDS: ${{ secrets.DESTINATION_AZURE_BLOB_CREDS }}
-          DESTINATION_GCS_CREDS: ${{ secrets.DESTINATION_GCS_CREDS }}
-          APIFY_INTEGRATION_TEST_CREDS: ${{ secrets.APIFY_INTEGRATION_TEST_CREDS }}
-          DESTINATION_DYNAMODB_TEST_CREDS: ${{ secrets.DESTINATION_DYNAMODB_TEST_CREDS }}
-          SOURCE_ZUORA_TEST_CREDS: ${{ secrets.SOURCE_ZUORA_TEST_CREDS }}
-          SOURCE_CLOSE_COM_CREDS: ${{ secrets.SOURCE_CLOSE_COM_CREDS }}
-          SOURCE_BAMBOO_HR_CREDS: ${{ secrets.SOURCE_BAMBOO_HR_CREDS }}
-          SOURCE_LINKEDIN_ADS_TEST_CREDS: ${{ secrets.SOURCE_LINKEDIN_ADS_TEST_CREDS }}
-          SOURCE_BIGCOMMERCE_CREDS: ${{ secrets.SOURCE_BIGCOMMERCE_CREDS }}
-          SOURCE_TIKTOK_MARKETING_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_TEST_CREDS }}
-          SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS: ${{ secrets.SOURCE_TIKTOK_MARKETING_PROD_TEST_CREDS }}
-          DESTINATION_DATABRICKS_CREDS: ${{ secrets.DESTINATION_DATABRICKS_CREDS }}
-          MONGODB_TEST_CREDS: ${{ secrets.MONGODB_TEST_CREDS }}
-          SOURCE_ONESIGNAL_TEST_CREDS: ${{ secrets.SOURCE_ONESIGNAL_TEST_CREDS }}
-          SOURCE_SALESLOFT_TEST_CREDS: ${{ secrets.SOURCE_SALESLOFT_TEST_CREDS }}
-          SOURCE_AMAZON_SQS_TEST_CREDS: ${{ secrets.SOURCE_AMAZON_SQS_TEST_CREDS }}
-          SOURCE_FRESHSERVICE_TEST_CREDS: ${{ secrets.SOURCE_FRESHSERVICE_TEST_CREDS }}
-          SOURCE_LEMLIST_TEST_CREDS: ${{ secrets.SOURCE_LEMLIST_TEST_CREDS }}
-          SOURCE_STRAVA_TEST_CREDS: ${{ secrets.SOURCE_STRAVA_TEST_CREDS }}
-          SOURCE_PAYSTACK_TEST_CREDS: ${{ secrets.SOURCE_PAYSTACK_TEST_CREDS }}
-          SOURCE_DELIGHTED_TEST_CREDS: ${{ secrets.SOURCE_DELIGHTED_TEST_CREDS }}
-          SOURCE_RETENTLY_TEST_CREDS: ${{ secrets.SOURCE_RETENTLY_TEST_CREDS }}
-          SOURCE_SENTRY_TEST_CREDS: ${{ secrets.SOURCE_SENTRY_TEST_CREDS }}
-          SOURCE_FRESHSALES_TEST_CREDS: ${{ secrets.SOURCE_FRESHSALES_TEST_CREDS }}
-      - run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u airbytebot -p ${DOCKER_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ github.event.inputs.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
-        name: publish ${{ github.event.inputs.connector }}
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
+      - name: Set Name and Version Environment Vars
+        if: startsWith(matrix.connector, 'connectors')
+        run: |
+          source tools/lib/lib.sh
+          DOCKERFILE=airbyte-integrations/${{ matrix.connector }}/Dockerfile
+          echo "IMAGE_NAME=$(echo ${{ matrix.connector }} | cut -d"/" -f2)" >> $GITHUB_ENV
+          echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
+      - name: Prepare Sentry
+        if: startsWith(matrix.connector, 'connectors')
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+      - name: Publish ${{ matrix.connector }}
         id: publish
         env:
-          DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+          DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
+          DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
-      - name: Add Success Comment
-        if: github.event.inputs.comment-id && success()
-        uses: peter-evans/create-or-update-comment@v1
+        uses: Wandalen/wretry.action@master
         with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :white_check_mark: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Add Failure Comment
-        if: github.event.inputs.comment-id && !success()
-        uses: peter-evans/create-or-update-comment@v1
-        with:
-          comment-id: ${{ github.event.inputs.comment-id }}
-          body: |
-            > :x: ${{github.event.inputs.connector}} https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}
-      - name: Slack Notification - Failure
-        if: failure()
-        uses: rtCamp/action-slack-notify@master
+          command: |
+            echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
+      - name: Create Sentry Release
+        if: startsWith(matrix.connector, 'connectors') && success()
+        run: |
+          SENTRY_RELEASE_NAME="airbyte-${{ env.IMAGE_NAME }}@${{ env.IMAGE_VERSION }}"
+          sentry-cli releases set-commits "$SENTRY_RELEASE_NAME" --auto --ignore-missing &&
+          sentry-cli releases finalize "$SENTRY_RELEASE_NAME"
         env:
-          SLACK_WEBHOOK: ${{ secrets.BUILD_SLACK_WEBHOOK }}
-          SLACK_USERNAME: Buildozer
-          SLACK_ICON: https://avatars.slack-edge.com/temp/2020-09-01/1342729352468_209b10acd6ff13a649a1.jpg
-          SLACK_COLOR: DC143C
-          SLACK_TITLE: "Failed to publish connector ${{ github.event.inputs.connector }} from branch ${{ github.ref	 }}"
-          SLACK_FOOTER: ""
-  # In case of self-hosted EC2 errors, remove this block.
-  stop-publish-image-runner:
-    name: Stop Build EC2 Runner
+          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_CONNECTOR_RELEASE_AUTH_TOKEN }}
+          SENTRY_ORG: airbytehq
+          SENTRY_PROJECT: connector-incident-management
+      - name: Check if connector in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          connector="airbyte/${{ env.IMAGE_NAME }}"
+          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          sourcecheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"source_definitions.yaml)
+          destcheck=$(yq e ".. | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\")" "$definitionpath"destination_definitions.yaml)
+          if [[ (-z "$sourcecheck" && -z "$destcheck") ]]
+          then exit 1
+          fi
+      - name: Bump version in definitions yaml
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          connector="airbyte/${{ env.IMAGE_NAME }}"
+          definitionpath=./airbyte-config/init/src/main/resources/seed/
+          sourcename=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"source_definitions.yaml)
+          destname=$(yq e ".[] | select(has(\"dockerRepository\")) | select(.dockerRepository == \"$connector\") | .name" "$definitionpath"destination_definitions.yaml)
+          if [ -z "$sourcename" ]
+          then yq e "(.[] | select(.name == \"$destname\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"destination_definitions.yaml
+          else yq e "(.[] | select(.name == \"$sourcename\").dockerImageTag)|=\"${{ env.IMAGE_VERSION }}\"" -i "$definitionpath"source_definitions.yaml
+          fi
+      - name: Run gradle process changes
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-config:init:processResources
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+      - name: git config
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          git config user.name 'Octavia Squidington III'
+          git config user.email 'octavia-squidington-iii@users.noreply.github.com'
+      - name: git commit and push
+        if: github.event.inputs.auto-bump-version == 'true' && success()
+        run: |
+          git add -u
+          git commit -m "auto-bump connector version"
+          git pull origin ${{ github.event.inputs.gitref }}
+          git push origin ${{ github.event.inputs.gitref }}
+        id: auto-bump
+      - name: Process outcomes into emojis
+        if: ${{ always() && github.event.inputs.comment-id }}
+        run: |
+          if [[ ${{ steps.publish.outcome }} = "success" ]]; then
+            echo "PUBLISH_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
+          else
+            echo "PUBLISH_OUTCOME=:x:" >> $GITHUB_ENV
+          fi
+          if [[ ${{ steps.auto-bump.outcome }} = "success" ]]; then
+            echo "AUTO_BUMP_OUTCOME=:white_check_mark:" >> $GITHUB_ENV
+          else
+            echo "AUTO_BUMP_OUTCOME=:x:" >> $GITHUB_ENV
+          fi
+      - name: Add connector outcome line to table
+        if: ${{ always() && github.event.inputs.comment-id }}
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            | ${{ matrix.connector }} | ${{ env.PUBLISH_OUTCOME }} | ${{ env.AUTO_BUMP_OUTCOME }} |
+  add-helpful-info-to-git-comment:
+    if: ${{ always() && github.event.inputs.comment-id }}
+    name: Add extra info to git comment
     needs:
-      - start-publish-image-runner # required to get output from the start-runner job
+      - start-publish-image-runner-0 # required to get output from the start-runner job
       - publish-image # required to wait when the main job is done
     runs-on: ubuntu-latest
+    steps:
+      - name: Add hint for manual seed definition update
+        uses: peter-evans/create-or-update-comment@v1
+        with:
+          comment-id: ${{ github.event.inputs.comment-id }}
+          body: |
+            <br>
+
+            if you have connectors that successfully published but failed definition generation, follow [step 4 here ▶️](https://docs.airbyte.com/connector-development/#publishing-a-connector)
+  # In case of self-hosted EC2 errors, remove this block.
+  stop-publish-image-runner-0:
     if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    name: Stop Build EC2 Runner
+    needs:
+      - start-publish-image-runner-0 # required to get output from the start-runner job
+      - preprocess-matrix
+      - publish-image # required to wait when the main job is done
+      - add-helpful-info-to-git-comment
+    runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -249,10 +424,76 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
-        uses: machulav/ec2-github-runner@v2
+        uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
           mode: stop
-          github-token: ${{ secrets.SELF_RUNNER_GITHUB_ACCESS_TOKEN }}
-          label: ${{ needs.start-publish-image-runner.outputs.label }}
-          ec2-instance-id: ${{ needs.start-publish-image-runner.outputs.ec2-instance-id }}
+          github-token: ${{ env.PAT }}
+          label: ${{ needs.start-publish-image-runner-0.outputs.label }}
+          ec2-instance-id: ${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}
+  stop-publish-image-runner-multi:
+    if: ${{ always() && github.event.inputs.parallel == 'true' }}
+    name: Stop Build EC2 Runner
+    needs:
+      - start-publish-image-runner-0
+      - start-publish-image-runner-1
+      - start-publish-image-runner-2
+      - start-publish-image-runner-3
+      - start-publish-image-runner-4
+      - preprocess-matrix
+      - publish-image # required to wait when the main job is done
+    strategy:
+      fail-fast: false
+      matrix:
+        ec2-instance:
+          [
+            {
+              "label": "${{ needs.start-publish-image-runner-1.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-1.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-2.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-2.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-3.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-3.outputs.ec2-instance-id }}",
+            },
+            {
+              "label": "${{ needs.start-publish-image-runner-4.outputs.label }}",
+              "id": "${{ needs.start-publish-image-runner-4.outputs.ec2-instance-id }}",
+            },
+          ]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
+      - name: Stop EC2 runner
+        uses: airbytehq/ec2-github-runner@base64v1.1.0
+        with:
+          mode: stop
+          github-token: ${{ env.PAT }}
+          label: ${{ matrix.ec2-instance.label }}
+          ec2-instance-id: ${{ matrix.ec2-instance.id }}

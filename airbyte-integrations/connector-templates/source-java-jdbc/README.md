@@ -1,6 +1,6 @@
-# Source {{titleCase name}}
+# Source {{capitalCase name}}
 
-This is the repository for the {{titleCase name}} source connector in Java.
+This is the repository for the {{capitalCase name}} source connector in Java.
 For information about how to use this connector within Airbyte, see [the User Documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}}).
 
 ## Local development

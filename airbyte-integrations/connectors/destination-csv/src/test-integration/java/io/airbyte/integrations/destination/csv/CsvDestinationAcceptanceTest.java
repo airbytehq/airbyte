@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.csv;
@@ -13,6 +13,7 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import java.io.FileReader;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -68,7 +69,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
     assertTrue(streamOutput.isPresent(), "could not find output file for stream: " + streamName);
 
-    final FileReader in = new FileReader(streamOutput.get().toFile());
+    final FileReader in = new FileReader(streamOutput.get().toFile(), Charset.defaultCharset());
     final Iterable<CSVRecord> records = CSVFormat.DEFAULT
         .withHeader(JavaBaseConstants.COLUMN_NAME_DATA)
         .withFirstRecordAsHeader()

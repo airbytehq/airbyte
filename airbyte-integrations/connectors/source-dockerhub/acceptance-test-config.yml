@@ -1,0 +1,24 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-dockerhub:dev
+tests:
+  spec:
+    - spec_path: "source_dockerhub/spec.yaml"
+  connection:
+    - config_path: "sample_files/config.json"
+      status: "succeed"
+    # even with an incorrect username the api still returns 200 so just ignoring the invalid config check for now
+  #    - config_path: "integration_tests/invalid_config.json"
+  #      status: "failed"
+  discovery:
+    - config_path: "sample_files/config.json"
+  basic_read:
+    - config_path: "sample_files/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: []
+  full_refresh:
+    - config_path: "sample_files/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      # testing sequentially for same results can fail because of pull counts increasing for an image between runs
+      ignored_fields:
+        "docker_hub": ["pull_count", "last_updated"]

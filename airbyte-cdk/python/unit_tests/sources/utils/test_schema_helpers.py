@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -13,8 +13,9 @@ from pathlib import Path
 
 import jsonref
 from airbyte_cdk.logger import AirbyteLogger
-from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification
+from airbyte_cdk.models.airbyte_protocol import ConnectorSpecification, FailureType
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader, check_config_against_spec_or_exit
+from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
 
@@ -57,17 +58,20 @@ def spec_object():
 
 def test_check_config_against_spec_or_exit_does_not_print_schema(capsys, spec_object):
     config = {"super_secret_token": "really_a_secret"}
-    with pytest_raises(Exception) as ex_info:
-        check_config_against_spec_or_exit(config, spec_object, logger)
-        exc = ex_info.value
-        traceback.print_exception(type(exc), exc, exc.__traceback__)
-        out, err = capsys.readouterr()
-        assert "really_a_secret" not in out + err
+
+    with pytest_raises(AirbyteTracedException) as ex_info:
+        check_config_against_spec_or_exit(config, spec_object)
+
+    exc = ex_info.value
+    traceback.print_exception(type(exc), exc, exc.__traceback__)
+    out, err = capsys.readouterr()
+    assert "really_a_secret" not in out + err
+    assert exc.failure_type == FailureType.config_error, "failure_type should be config_error"
 
 
 def test_should_not_fail_validation_for_valid_config(spec_object):
     config = {"api_token": "something"}
-    check_config_against_spec_or_exit(config, spec_object, logger)
+    check_config_against_spec_or_exit(config, spec_object)
     assert True, "should pass validation with valid config"
 
 
@@ -80,7 +84,10 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
         }
 
@@ -96,17 +103,26 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "obj": {"$ref": "#/definitions/shared_schema_"},
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
-            "definitions": {"shared_schema_": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
 
         partial_schema = {
             "type": ["null", "object"],
-            "properties": {"str": {"type": "string"}, "int": {"type": "integer"}, "obj": {"$ref": "shared_schema.json"}},
+            "properties": {
+                "str": {"type": "string"},
+                "int": {"type": "integer"},
+                "obj": {"$ref": "shared_schema.json"},
+            },
         }
 
-        referenced_schema = {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}
+        referenced_schema = {
+            "type": ["null", "object"],
+            "properties": {"k1": {"type": "string"}},
+        }
 
         create_schema("complex_schema", partial_schema)
         create_schema("shared/shared_schema", referenced_schema)
@@ -123,17 +139,32 @@ class TestResourceSchemaLoader:
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "#/definitions/shared_schema_type_one"}]},
-                "obj": {"$ref": "#/definitions/shared_schema_type_one"},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {
+                            "type": ["null", "object"],
+                            "properties": {"k1": {"type": "string"}},
+                        },
+                    ]
+                },
+                "obj": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             },
-            "definitions": {"shared_schema_type_one": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}}},
         }
         partial_schema = {
             "type": ["null", "object"],
             "properties": {
                 "str": {"type": "string"},
                 "int": {"type": "integer"},
-                "one_of": {"oneOf": [{"type": "string"}, {"$ref": "shared_schema.json#/definitions/type_one"}]},
+                "one_of": {
+                    "oneOf": [
+                        {"type": "string"},
+                        {"$ref": "shared_schema.json#/definitions/type_one"},
+                    ]
+                },
                 "obj": {"$ref": "shared_schema.json#/definitions/type_one"},
             },
         }
@@ -141,7 +172,10 @@ class TestResourceSchemaLoader:
         referenced_schema = {
             "definitions": {
                 "type_one": {"$ref": "shared_schema.json#/definitions/type_nested"},
-                "type_nested": {"type": ["null", "object"], "properties": {"k1": {"type": "string"}}},
+                "type_nested": {
+                    "type": ["null", "object"],
+                    "properties": {"k1": {"type": "string"}},
+                },
             }
         }
 

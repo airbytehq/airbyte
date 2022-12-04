@@ -1,0 +1,324 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "aam_rules": {
+      "type": ["string", "null"]
+    },
+    "an_ad_space_limit": {
+      "type": ["integer", "null"]
+    },
+    "an_platforms": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "android_key_hash": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "app_domains": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "app_events_config": {
+      "type": ["string", "null"]
+    },
+    "app_events_feature_bitmask": {
+      "type": ["integer", "null"]
+    },
+    "app_events_session_timeout": {
+      "type": ["integer", "null"]
+    },
+    "app_install_tracked": {
+      "type": ["boolean", "null"]
+    },
+    "app_name": {
+      "type": ["string", "null"]
+    },
+    "app_type": {
+      "type": ["integer", "null"]
+    },
+    "auth_dialog_data_help_url": {
+      "type": ["string", "null"]
+    },
+    "auth_dialog_headline": {
+      "type": ["string", "null"]
+    },
+    "auth_dialog_perms_explanation": {
+      "type": ["string", "null"]
+    },
+    "auth_referral_default_activity_privacy": {
+      "type": ["string", "null"]
+    },
+    "auth_referral_enabled": {
+      "type": ["integer", "null"]
+    },
+    "auth_referral_extended_perms": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "auth_referral_friend_perms": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "auth_referral_response_type": {
+      "type": ["string", "null"]
+    },
+    "auth_referral_user_perms": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "auto_event_setup_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "canvas_fluid_height": {
+      "type": ["boolean", "null"]
+    },
+    "canvas_fluid_width": {
+      "type": ["integer", "null"]
+    },
+    "canvas_url": {
+      "type": ["string", "null"]
+    },
+    "category": {
+      "type": ["string", "null"]
+    },
+    "client_config": {
+      "type": ["string", "null"]
+    },
+    "company": {
+      "type": ["string", "null"]
+    },
+    "configured_ios_sso": {
+      "type": ["boolean", "null"]
+    },
+    "contact_email": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "creator_uid": {
+      "type": ["string", "null"]
+    },
+    "daily_active_users": {
+      "type": ["string", "null"]
+    },
+    "daily_active_users_rank": {
+      "type": ["integer", "null"]
+    },
+    "deauth_callback_url": {
+      "type": ["string", "null"]
+    },
+    "default_share_mode": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "financial_id": {
+      "type": ["string", "null"]
+    },
+    "gdpv4_chrome_custom_tabs_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "gdpv4_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "gdpv4_nux_content": {
+      "type": ["string", "null"]
+    },
+    "gdpv4_nux_enabled": {
+      "type": ["boolean", "null"]
+    },
+    "has_messenger_product": {
+      "type": ["boolean", "null"]
+    },
+    "hosting_url": {
+      "type": ["string", "null"]
+    },
+    "icon_url": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "ios_bundle_id": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "ios_sdk_dialog_flows": {
+      "type": ["string", "null"]
+    },
+    "ios_sfvc_attr": {
+      "type": ["boolean", "null"]
+    },
+    "ios_supports_native_proxy_auth_flow": {
+      "type": ["boolean", "null"]
+    },
+    "ios_supports_system_auth": {
+      "type": ["boolean", "null"]
+    },
+    "ipad_app_store_id": {
+      "type": ["string", "null"]
+    },
+    "iphone_app_store_id": {
+      "type": ["string", "null"]
+    },
+    "latest_sdk_version": {
+      "type": ["string", "null"]
+    },
+    "link": {
+      "type": ["string", "null"]
+    },
+    "logging_token": {
+      "type": ["string", "null"]
+    },
+    "login_secret": {
+      "type": ["string", "null"]
+    },
+    "logo_url": {
+      "type": ["string", "null"]
+    },
+    "migrations": {
+      "type": ["string", "null"]
+    },
+    "mobile_profile_section_url": {
+      "type": ["string", "null"]
+    },
+    "mobile_web_url": {
+      "type": ["string", "null"]
+    },
+    "monthly_active_users": {
+      "type": ["string", "null"]
+    },
+    "monthly_active_users_rank": {
+      "type": ["integer", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "namespace": {
+      "type": ["string", "null"]
+    },
+    "object_store_urls": {
+      "type": ["string", "null"]
+    },
+    "page_tab_default_name": {
+      "type": ["string", "null"]
+    },
+    "page_tab_url": {
+      "type": ["string", "null"]
+    },
+    "photo_url": {
+      "type": ["string", "null"]
+    },
+    "privacy_policy_url": {
+      "type": ["string", "null"]
+    },
+    "profile_section_url": {
+      "type": ["string", "null"]
+    },
+    "property_id": {
+      "type": ["string", "null"]
+    },
+    "real_time_mode_devices": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "restrictions": {
+      "type": ["string", "null"]
+    },
+    "restrictive_data_filter_params": {
+      "type": ["string", "null"]
+    },
+    "restrictive_data_filter_rules": {
+      "type": ["string", "null"]
+    },
+    "sdk_update_message": {
+      "type": ["string", "null"]
+    },
+    "seamless_login": {
+      "type": ["integer", "null"]
+    },
+    "secure_canvas_url": {
+      "type": ["string", "null"]
+    },
+    "secure_page_tab_url": {
+      "type": ["string", "null"]
+    },
+    "server_ip_whitelist": {
+      "type": ["string", "null"]
+    },
+    "smart_login_bookmark_icon_url": {
+      "type": ["string", "null"]
+    },
+    "smart_login_menu_icon_url": {
+      "type": ["string", "null"]
+    },
+    "social_discovery": {
+      "type": ["integer", "null"]
+    },
+    "subcategory": {
+      "type": ["string", "null"]
+    },
+    "suggested_events_setting": {
+      "type": ["string", "null"]
+    },
+    "supported_platforms": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["array", "null"],
+        "items": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "supports_apprequests_fast_app_switch": {
+      "type": ["string", "null"]
+    },
+    "supports_attribution": {
+      "type": ["boolean", "null"]
+    },
+    "supports_implicit_sdk_logging": {
+      "type": ["boolean", "null"]
+    },
+    "suppress_native_ios_gdp": {
+      "type": ["boolean", "null"]
+    },
+    "terms_of_service_url": {
+      "type": ["string", "null"]
+    },
+    "url_scheme_suffix": {
+      "type": ["string", "null"]
+    },
+    "user_support_email": {
+      "type": ["string", "null"]
+    },
+    "user_support_url": {
+      "type": ["string", "null"]
+    },
+    "website_url": {
+      "type": ["string", "null"]
+    },
+    "weekly_active_users": {
+      "type": ["string", "null"]
+    }
+  }
+}

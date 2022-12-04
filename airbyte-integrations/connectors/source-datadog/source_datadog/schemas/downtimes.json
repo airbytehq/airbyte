@@ -1,0 +1,103 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": ["boolean", "null"],
+      "description": "If a scheduled downtime currently exists.",
+      "readOnly": true
+    },
+    "active_child": {
+      "type": ["object", "null"],
+      "description": "The downtime object definition of the active child for the original parent recurring downtime.",
+      "additionalProperties": true
+    },
+    "canceled": {
+      "type": ["integer", "null"],
+      "description": "If a scheduled downtime is canceled.",
+      "readOnly": true
+    },
+    "creator_id": {
+      "type": ["integer", "null"],
+      "description": "User ID of the downtime creator.",
+      "readOnly": true
+    },
+    "disabled": {
+      "type": ["boolean", "null"],
+      "description": "If a downtime has been disabled.",
+      "readOnly": true
+    },
+    "downtime_type": {
+      "type": ["integer", "null"],
+      "description": "0 for a downtime applied on * or all, 1 when the downtime is only scoped to hosts, or 2 when the downtime is scoped to anything but hosts.",
+      "readOnly": true
+    },
+    "end": {
+      "type": ["integer", "null"],
+      "description": "POSIX timestamp to end the downtime. If not provided, the downtime is in effect indefinitely until you cancel it.",
+      "readOnly": true
+    },
+    "id": {
+      "type": ["integer", "null"],
+      "description": "The downtime ID.",
+      "readOnly": true
+    },
+    "message": {
+      "type": ["string", "null"],
+      "description": "A message to include with notifications for this downtime.",
+      "readOnly": true
+    },
+    "monitor_id": {
+      "type": ["integer", "null"],
+      "description": "A single monitor to which the downtime applies. If not provided, the downtime applies to all monitors.",
+      "readOnly": true
+    },
+    "monitor_tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      },
+      "description": "A comma-separated list of monitor tags.",
+      "readOnly": true
+    },
+    "mute_first_recovery_notification": {
+      "type": ["boolean", "null"],
+      "description": "If the first recovery notification during a downtime should be muted.",
+      "readOnly": true
+    },
+    "parent_id": {
+      "type": ["integer", "null"],
+      "description": "ID of the parent Downtime.",
+      "readOnly": true
+    },
+    "recurrence": {
+      "type": ["object", "null"],
+      "description": "An object defining the recurrence of the downtime.",
+      "additionalProperties": true
+    },
+    "scope": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "string"
+      },
+      "description": "The scope(s) to which the downtime applies.",
+      "readOnly": true
+    },
+    "start": {
+      "type": ["integer", "null"],
+      "description": "POSIX timestamp to start the downtime. If not provided, the downtime starts the moment it is created.",
+      "readOnly": true
+    },
+    "timezone": {
+      "type": ["string", "null"],
+      "description": "The timezone in which to display the downtime's start and end times in Datadog applications.",
+      "readOnly": true
+    },
+    "updater_id": {
+      "type": ["integer", "null"],
+      "description": "ID of the last user that updated the downtime.",
+      "readOnly": true
+    }
+  },
+  "additionalProperties": true
+}

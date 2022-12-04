@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 import hashlib
@@ -41,7 +41,7 @@ class AWSSignature(AuthBase):
 
     @staticmethod
     def _sign_msg(key: bytes, msg: str) -> bytes:
-        """ Sign message using key """
+        """Sign message using key"""
         return hmac.new(key, msg.encode("utf-8"), hashlib.sha256).digest()
 
     def _get_authorization_header(self, prepared_request: requests.PreparedRequest) -> str:

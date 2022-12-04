@@ -1,54 +1,28 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.s3;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.integrations.BaseConnector;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.Destination;
+import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.integrations.base.IntegrationRunner;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3Config;
-import io.airbyte.integrations.destination.jdbc.copy.s3.S3StreamCopier;
-import io.airbyte.integrations.destination.s3.writer.ProductionWriterFactory;
-import io.airbyte.integrations.destination.s3.writer.S3WriterFactory;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import java.util.function.Consumer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-public class S3Destination extends BaseConnector implements Destination {
+public class S3Destination extends BaseS3Destination {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(S3Destination.class);
+  public S3Destination() {}
+
+  @VisibleForTesting
+  protected S3Destination(final S3DestinationConfigFactory s3DestinationConfigFactory) {
+    super(s3DestinationConfigFactory);
+  }
 
   public static void main(final String[] args) throws Exception {
     new IntegrationRunner(new S3Destination()).run(args);
   }
 
   @Override
-  public AirbyteConnectionStatus check(final JsonNode config) {
-    try {
-      S3StreamCopier.attemptS3WriteAndDelete(S3Config.getS3Config(config), config.get("s3_bucket_path").asText());
-      return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
-    } catch (final Exception e) {
-      LOGGER.error("Exception attempting to access the S3 bucket: ", e);
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could not connect to the S3 bucket with the provided configuration. \n" + e
-              .getMessage());
-    }
-  }
-
-  @Override
-  public AirbyteMessageConsumer getConsumer(final JsonNode config,
-                                            final ConfiguredAirbyteCatalog configuredCatalog,
-                                            final Consumer<AirbyteMessage> outputRecordCollector) {
-    final S3WriterFactory formatterFactory = new ProductionWriterFactory();
-    return new S3Consumer(S3DestinationConfig.getS3DestinationConfig(config), configuredCatalog, formatterFactory, outputRecordCollector);
+  public StorageProvider storageProvider() {
+    return StorageProvider.AWS_S3;
   }
 
 }

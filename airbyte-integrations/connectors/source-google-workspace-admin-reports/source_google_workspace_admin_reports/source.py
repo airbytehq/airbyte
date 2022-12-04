@@ -1,9 +1,9 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
-from base_python import BaseSource
+from airbyte_cdk.sources.deprecated.base_source import BaseSource
 
 from .client import Client
 

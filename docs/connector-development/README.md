@@ -1,14 +1,22 @@
 # Connector Development
 
-Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-specification.md).
+Airbyte supports two types of connectors: Sources and Destinations. A connector takes the form of a Docker image which follows the [Airbyte specification](../understanding-airbyte/airbyte-protocol.md).
 
 To build a new connector in Java or Python, we provide templates so you don't need to start everything from scratch.
 
 **Note: you are not required to maintain the connectors you create.** The goal is that the Airbyte core team and the community help maintain the connector.
 
+## Low-code Connector-Development Framework
+
+You can use the [low-code framework](config-based/low-code-cdk-overview.md) to build source connectors for REST APIs via a [connector builder UI](config-based/connector-builder-ui.md) or by modifying boilerplate YAML files.
+
 ## Python Connector-Development Kit \(CDK\)
 
 You can build a connector very quickly in Python with the [Airbyte CDK](cdk-python/), which generates 75% of the code required for you.
+
+## C#/.NET Connector-Development Kit \(CDK\)
+
+You can build a connector very quickly in C# .NET with the [Airbyte Dotnet CDK](cdk-dotnet/), which generates 75% of the code required for you.
 
 ## TS/JS Connector-Development Kit \(Faros AI Airbyte CDK\)
 
@@ -16,7 +24,7 @@ You can build a connector in TypeScript/JavaScript with the [Faros AI CDK](https
 
 ## The Airbyte specification
 
-Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-specification.md).
+Before building a new connector, review [Airbyte's data protocol specification](../understanding-airbyte/airbyte-protocol.md).
 
 ## Adding a new connector
 
@@ -60,7 +68,7 @@ and choose the relevant template by using the arrow keys. This will generate a n
 Search the generated directory for "TODO"s and follow them to implement your connector. For more detailed walkthroughs and instructions, follow the relevant tutorial:
 
 * [Speedrun: Building a HTTP source with the CDK](tutorials/cdk-speedrun.md)
-* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/)
+* [Building a HTTP source with the CDK](tutorials/cdk-tutorial-python-http/getting-started.md)
 * [Building a Python source](tutorials/building-a-python-source.md) 
 * [Building a Python destination](tutorials/building-a-python-destination.md)
 * [Building a Java destination](tutorials/building-a-java-destination.md)
@@ -107,34 +115,55 @@ The steps for updating an existing connector are the same as for building a new 
 Once you've finished iterating on the changes to a connector as specified in its `README.md`, follow these instructions to ship the new version of the connector with Airbyte out of the box.
 
 1. Bump the version in the `Dockerfile` of the connector \(`LABEL io.airbyte.version=X.X.X`\). 
-2. Update the connector definition in the Airbyte connector index to use the new version:
-   * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
-   * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
-3. Update the connector JSON definition. To find the appropriate JSON file to update, find a JSON file `<uuid>.json` where the UUID portion is the ID specified in the YAML file you modified in step 2. The relevant directories are: 
-   * `airbyte-config/init/src/main/resources/config/STANDARD_SOURCE_DEFINITION/<uuid>.json` for sources
-   * `airbyte-config/init/src/main/resources/config/STANDARD_DESTINATION_DEFINITION/<uuid>.json` for destinations
-4. Submit a PR containing the changes you made.
-5. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
+2. Submit a PR containing the changes you made.
+3. One of Airbyte maintainers will review the change and publish the new version of the connector to Docker hub. Triggering tests and publishing connectors can be done by leaving a comment on the PR with the following format \(the PR must be from the Airbyte repo, not a fork\):
 
    ```text
    # to run integration tests for the connector
    # Example: /test connector=connectors/source-hubspot
    /test connector=(connectors|bases)/<connector_name> 
 
-   # to run integration tests and publish the connector
+   # to run integration tests, publish the connector, and use the updated connector version in our config/metadata files
    # Example: /publish connector=connectors/source-hubspot
    /publish connector=(connectors|bases)/<connector_name>
    ```
-
+   
+4. OPTIONAL: Necessary if this is a new connector, or the automated connector version bump fails
+   * Update/Add the connector definition in the Airbyte connector index to use the new version:
+        * `airbyte-config/init/src/main/resources/seed/source_definitions.yaml` if it is a source
+        * `airbyte-config/init/src/main/resources/seed/destination_definitions.yaml` if it is a destination.
+   
+   * Then run the command `./gradlew :airbyte-config:init:processResources` to generate the seed spec yaml files, and commit the changes to the PR. See [this readme](https://github.com/airbytehq/airbyte/tree/a534bb2a8f29b20e3cc7c52fef1bc3c34783695d/airbyte-config/specs) for more information.
+   
+5. If the `README.md` file of the connector contains a `Changelog` section, add the new version and relevant release information to the table in the section.
 6. The new version of the connector is now available for everyone who uses it. Thank you!
+
+### The /publish command
+
+Publishing a connector can be done using the `/publish` command as outlined in the above section. The command runs a [github workflow](https://github.com/airbytehq/airbyte/actions/workflows/publish-command.yml), and has the following configurable parameters:
+* **connector** - Required. This tells the workflow which connector to publish. e.g. `connector=connectors/source-amazon-ads`. This can also be a comma-separated list of many connectors, e.g. `connector=connectors/source-s3,connectors/destination-postgres,connectors/source-facebook-marketing`. See the parallel flag below if publishing multiple connectors.
+* **repo** - Defaults to the main airbyte repo. Set this when building connectors from forked repos. e.g. `repo=userfork/airbyte`
+* **gitref** - Defaults to the branch of the PR where the /publish command is run as a comment. If running manually, set this to your branch where you made changes e.g. `gitref=george/s3-update`
+* **comment-id** - This is automatically filled if you run /publish from a comment and enables the workflow to write back success/fail logs to the git comment.
+* **auto-bump-version** - Defaults to true, automates the post-publish process of bumping the connector's version in the yaml seed definitions and generating spec.
+* **parallel** - Defaults to false. If set to true, a pool of runner agents will be spun up to allow publishing multiple connectors in parallel. Only switch this to true if publishing multiple connectors at once to avoid wasting $$$.
 
 ## Using credentials in CI
 
 In order to run integration tests in CI, you'll often need to inject credentials into CI. There are a few steps for doing this:
+1. **Place the credentials into Google Secret Manager(GSM)**: Airbyte uses a project 'Google Secret Manager' service as the source of truth for all CI secrets. Place the credentials **exactly as they should be used by the connector** into a GSM secret [here](https://console.cloud.google.com/security/secret-manager?referrer=search&orgonly=true&project=dataline-integration-testing&supportedpurview=organizationId) i.e.: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `SECRET_<capital source OR destination name>_CREDS` e.g: `SECRET_SOURCE-S3_CREDS` or `SECRET_DESTINATION-SNOWFLAKE_CREDS`.
+2. **Add the GSM secret's labels**:
+    * `connector` (required) -- unique connector's name or set of connectors' names with '_' as delimiter i.e.: `connector=source-s3`, `connector=destination-snowflake`
+    * `filename` (optional) -- custom target secret file. Unfortunately Google doesn't use '.' into labels' values and so Airbyte CI scripts will add '.json' to the end automatically. By default secrets will be saved to `./secrets/config.json` i.e: `filename=config_auth` => `secrets/config_auth.json`
+3. **Save a necessary JSON value** [Example](https://user-images.githubusercontent.com/11213273/146040653-4a76c371-a00e-41fe-8300-cbd411f10b2e.png).
+4. That should be it.
 
-1. **Place the credentials into Lastpass**: Airbyte uses a shared Lastpass account as the source of truth for all secrets. Place the credentials **exactly as they should be used by the connector** into a secure note i.e: it should basically be a copy paste of the `config.json` passed into a connector via the `--config` flag. We use the following naming pattern: `<source OR destination> <name> creds` e.g: `source google adwords creds` or `destination snowflake creds`.
-2. **Add the credentials to Github Secrets**: To inject credentials into a CI workflow, the first step is to add it to Github Secrets, specifically within the ["more-secrets" environment](https://github.com/airbytehq/airbyte/settings/environments/276695501/edit). Admin access to the Airbyte repo is required to do this. All Airbyte engineers have admin access and should be able to do this themselves. External contributors or contractors will need to request this from their team lead or project manager who should have admin access. Follow the same naming pattern as all the other secrets e.g: if you are placing credentials for source google adwords, name the secret `SOURCE_GOOGLE_ADWORDS_CREDS`. After doing this step, the secret will be available in the relevant Github workflows using the workflow secrets syntax. 
-3. **Inject the credentials into test and publish CI workflows**: edit the files `.github/workflows/publish-command.yml` and `.github/workflows/test-command.yml` to inject the secret into the CI run. This will make these secrets available to the `/test` and `/publish` commands.
-4. **During CI, write the secret from env variables to the connector directory**: edit `tools/bin/ci_credentials.sh` to write the secret into the `secrets/` directory of the relevant connector.  
-5. That should be it.
+#### Access CI secrets on GSM
+Access to GSM storage is limited to Airbyte employees. To give an employee permissions to the project:
+1. Go to the permissions' [page](https://console.cloud.google.com/iam-admin/iam?project=dataline-integration-testing)
+2. Add a new principal to `dataline-integration-testing`:
+- input their login email
+- select the role `Development_CI_Secrets`
+3. Save
+
 

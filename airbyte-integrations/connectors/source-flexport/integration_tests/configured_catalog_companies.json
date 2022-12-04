@@ -1,0 +1,191 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "companies",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "_object": {
+              "type": "string",
+              "description": "String representing the object's type. Always /network/company for this object.",
+              "pattern": "^/network/company$"
+            },
+            "id": {
+              "type": "string",
+              "description": "Unique identifier for the object."
+            },
+            "name": {
+              "type": "string",
+              "description": "Name of the company."
+            },
+            "ref": {
+              "type": "string",
+              "description": "Your ref for this company entity, as set in the Network tab."
+            },
+            "editable": {
+              "type": "boolean",
+              "description": "Whether or not you manage this company and can edit its attributes."
+            },
+            "entities": {
+              "type": "array",
+              "description": "Array of company entities that belong to this company.",
+              "items": {
+                "$schema": "http://json-schema.org/draft-07/schema#",
+                "type": "object",
+                "properties": {
+                  "_object": {
+                    "type": "string",
+                    "description": "String representing the object's type. Always /company_entity for this object.",
+                    "pattern": "^/company_entity$"
+                  },
+                  "id": {
+                    "type": "integer",
+                    "description": "Unique identifier for the object."
+                  },
+                  "name": {
+                    "type": "string",
+                    "description": "Name of the company entity."
+                  },
+                  "ref": {
+                    "type": "string",
+                    "description": "Your reference for this company entity, as set in the Network tab."
+                  },
+                  "mailing_address": {
+                    "description": "Address of the company entity.",
+                    "oneOf": [
+                      {
+                        "type": "null"
+                      },
+                      {
+                        "$schema": "http://json-schema.org/draft-07/schema#",
+                        "type": "object",
+                        "properties": {
+                          "_object": {
+                            "type": "string",
+                            "description": "String representing the object's type. Always /address for this object.",
+                            "pattern": "^/address$"
+                          },
+                          "street_address": {
+                            "type": "string",
+                            "description": "Address line 1 (Street address/PO Box)."
+                          },
+                          "street_address2": {
+                            "type": ["null", "string"],
+                            "description": "Address line 2 (Apartment/Suite/Unit/Building)."
+                          },
+                          "city": {
+                            "type": "string",
+                            "description": "City/Town."
+                          },
+                          "state": {
+                            "type": ["null", "string"],
+                            "description": "State/County/Province/Region."
+                          },
+                          "country": {
+                            "type": ["null", "string"],
+                            "description": "Country."
+                          },
+                          "country_code": {
+                            "type": ["null", "string"],
+                            "description": "Two-letter country code (ISO 3166-1 Alpha-2)."
+                          },
+                          "zip": {
+                            "type": ["null", "string"],
+                            "description": "ZIP or postal code."
+                          },
+                          "timezone": {
+                            "type": ["null", "string"],
+                            "description": "Timezone for this address"
+                          },
+                          "ref": {
+                            "type": ["null", "string"],
+                            "description": "Your reference for the address, as set in your network tab"
+                          },
+                          "unlocode": {
+                            "type": ["null", "string"],
+                            "description": "If port, then UN/LOCODE (United Nations Code for Trade and Transport Locations)."
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "vat_numbers": {
+                    "type": "array",
+                    "description": "Array of VAT numbers of the company entity.",
+                    "items": {
+                      "$schema": "http://json-schema.org/draft-07/schema#",
+                      "type": "object",
+                      "properties": {
+                        "_object": {
+                          "type": "string",
+                          "description": "String representing the object's type. Always /company_entity/vat_number for this object.",
+                          "pattern": "^/company_entity/vat_number$"
+                        },
+                        "country_code": {
+                          "type": "string",
+                          "description": "ISO 3166 two-letter country code of the VAT number's country"
+                        },
+                        "number": {
+                          "type": "string",
+                          "description": "Full VAT number, including the country code"
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "locations": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /api/refs/collection for this object.",
+                  "pattern": "^/api/refs/collection$"
+                },
+                "link": {
+                  "type": "string",
+                  "description": "API end point that points to a list of resources"
+                },
+                "ref_type": {
+                  "type": "string",
+                  "description": "The _object value of each individual element of the list that link points to."
+                }
+              }
+            },
+            "contacts": {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "_object": {
+                  "type": "string",
+                  "description": "String representing the object's type. Always /api/refs/collection for this object.",
+                  "pattern": "^/api/refs/collection$"
+                },
+                "link": {
+                  "type": "string",
+                  "description": "API end point that points to a list of resources"
+                },
+                "ref_type": {
+                  "type": "string",
+                  "description": "The _object value of each individual element of the list that link points to."
+                }
+              }
+            },
+            "metadata": {
+              "type": "object",
+              "description": "User defined metadata attached to the company."
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"],
+        "source_defined_primary_key": [["id"]]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

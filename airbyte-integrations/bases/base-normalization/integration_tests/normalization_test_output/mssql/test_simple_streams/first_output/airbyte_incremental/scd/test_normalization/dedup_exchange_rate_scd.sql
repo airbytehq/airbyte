@@ -20,11 +20,12 @@
    USE [test_normalization];
    EXEC('create view test_normalization."dedup_exchange_rate_scd_temp_view" as
     
+-- depends_on: ref(''dedup_exchange_rate_stg'')
 with
 
 input_data as (
     select *
-    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_ab3"
+    from "test_normalization"._airbyte_test_normalization."dedup_exchange_rate_stg"
     -- dedup_exchange_rate from "test_normalization".test_normalization._airbyte_raw_dedup_exchange_rate
 ),
 
@@ -36,35 +37,33 @@ scd_data as (
     
 
     concat(concat(coalesce(cast(id as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_unique_key,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(currency as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(nzd as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_unique_key,
+      id,
+      currency,
+      "date",
+      timestamp_col,
+      "HKD@spéçiäl & characters",
+      hkd_special___characters,
+      nzd,
+      usd,
       "date" as _airbyte_start_at,
       lag("date") over (
         partition by id, currency, cast(nzd as 
-    VARCHAR(max))
+    NVARCHAR(max))
         order by
-            "date" desc,
             "date" desc,
             _airbyte_emitted_at desc
       ) as _airbyte_end_at,
-      case when lag("date") over (
+      case when row_number() over (
         partition by id, currency, cast(nzd as 
-    VARCHAR(max))
+    NVARCHAR(max))
         order by
             "date" desc,
-            "date" desc,
             _airbyte_emitted_at desc
-      ) is null  then 1 else 0 end as _airbyte_active_row,
+      ) = 1 then 1 else 0 end as _airbyte_active_row,
       _airbyte_ab_id,
       _airbyte_emitted_at,
       _airbyte_dedup_exchange_rate_hashid
@@ -75,32 +74,35 @@ dedup_data as (
         -- we need to ensure de-duplicated rows for merge/update queries
         -- additionally, we generate a unique key for the scd table
         row_number() over (
-            partition by _airbyte_unique_key, _airbyte_start_at, _airbyte_emitted_at
-            order by _airbyte_ab_id
+            partition by
+                _airbyte_unique_key,
+                _airbyte_start_at,
+                _airbyte_emitted_at
+            order by _airbyte_active_row desc, _airbyte_ab_id
         ) as _airbyte_row_num,
         convert(varchar(32), HashBytes(''md5'',  coalesce(cast(
     
     
 
     concat(concat(coalesce(cast(_airbyte_unique_key as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_start_at as 
-    VARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_emitted_at as 
-    VARCHAR(max)), ''''),''''), '''') as 
-    VARCHAR(max)), '''')), 2) as _airbyte_unique_key_scd,
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_start_at as 
+    NVARCHAR(max)), ''''), ''-'', coalesce(cast(_airbyte_emitted_at as 
+    NVARCHAR(max)), ''''),''''), '''') as 
+    NVARCHAR(max)), '''')), 2) as _airbyte_unique_key_scd,
         scd_data.*
     from scd_data
 )
 select
     _airbyte_unique_key,
     _airbyte_unique_key_scd,
-        id,
-        currency,
-        "date",
-        timestamp_col,
-        "HKD@spéçiäl & characters",
-        hkd_special___characters,
-        nzd,
-        usd,
+    id,
+    currency,
+    "date",
+    timestamp_col,
+    "HKD@spéçiäl & characters",
+    hkd_special___characters,
+    nzd,
+    usd,
     _airbyte_start_at,
     _airbyte_end_at,
     _airbyte_active_row,

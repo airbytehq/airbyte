@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "idempotencyKey": {
+      "type": "string"
+    },
+    "listId": {
+      "type": "string"
+    },
+    "listMessageId": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "CLICKED",
+        "DELIVERED",
+        "ENQUEUED",
+        "OPENED",
+        "SENT",
+        "UNDELIVERABLE",
+        "UNMAPPED",
+        "UNROUTABLE"
+      ]
+    },
+    "enqueued": {
+      "type": "number"
+    },
+    "sent": {
+      "type": "number"
+    },
+    "delivered": {
+      "type": "number"
+    },
+    "opened": {
+      "type": "number"
+    },
+    "clicked": {
+      "type": "number"
+    },
+    "recipient": {
+      "type": "string"
+    },
+    "event": {
+      "type": "string"
+    },
+    "notification": {
+      "type": "string"
+    },
+    "error": {
+      "type": "string"
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "FILTERED",
+        "NO_CHANNELS",
+        "NO_PROVIDERS",
+        "PROVIDER_ERROR",
+        "UNPUBLISHED",
+        "UNDELIVERABLE",
+        "UNSUBSCRIBED"
+      ]
+    },
+    "reasonCode": {
+      "type": "string",
+      "enum": ["HARD", "SOFT"]
+    },
+    "reasonDetails": {
+      "type": "string"
+    },
+    "runId": {
+      "type": "string"
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "channel": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "template": {
+                "type": "string"
+              }
+            }
+          },
+          "clicked": {
+            "type": "number"
+          },
+          "delivered": {
+            "type": "number"
+          },
+          "error": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string"
+          },
+          "reference": {
+            "type": "object",
+            "properties": {},
+            "additionalProperties": true
+          },
+          "sent": {
+            "type": "number"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "CLICKED",
+              "DELIVERED",
+              "ENQUEUED",
+              "FILTERED",
+              "OPENED",
+              "SENT",
+              "SIMULATED",
+              "UNDELIVERABLE",
+              "UNMAPPED",
+              "UNROUTABLE"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

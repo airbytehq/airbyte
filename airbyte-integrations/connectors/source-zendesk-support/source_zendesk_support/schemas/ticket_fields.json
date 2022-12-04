@@ -92,8 +92,7 @@
       "type": ["null", "boolean"]
     },
     "system_field_options": {
-      "type": ["null", "array"],
-      "items": {}
+      "type": ["null", "array"]
     },
     "sub_type_id": {
       "type": ["null", "integer"]

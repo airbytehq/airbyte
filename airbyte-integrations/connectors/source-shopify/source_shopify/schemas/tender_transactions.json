@@ -1,0 +1,45 @@
+{
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "order_id": {
+      "type": ["null", "integer"]
+    },
+    "amount": {
+      "type": ["null", "string"]
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "user_id": {
+      "type": ["null", "integer"]
+    },
+    "test": {
+      "type": ["null", "boolean"]
+    },
+    "processed_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "remote_reference": {
+      "type": ["null", "string"]
+    },
+    "payment_details": {
+      "type": ["null", "object"],
+      "properties": {
+        "credit_card_number": {
+          "type": ["null", "string"]
+        },
+        "credit_card_company": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "payment_method": {
+      "type": ["null", "string"]
+    }
+  }
+}

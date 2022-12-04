@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.kafka;
@@ -86,8 +86,8 @@ public class KafkaDestinationConfig {
     switch (protocol) {
       case PLAINTEXT -> {}
       case SASL_SSL, SASL_PLAINTEXT -> {
-        builder.put(SaslConfigs.SASL_JAAS_CONFIG, config.get("sasl_jaas_config").asText());
-        builder.put(SaslConfigs.SASL_MECHANISM, config.get("sasl_mechanism").asText());
+        builder.put(SaslConfigs.SASL_JAAS_CONFIG, protocolConfig.get("sasl_jaas_config").asText());
+        builder.put(SaslConfigs.SASL_MECHANISM, protocolConfig.get("sasl_mechanism").asText());
       }
       default -> throw new RuntimeException("Unexpected Kafka protocol: " + Jsons.serialize(protocol));
     }

@@ -52,7 +52,11 @@
     },
     "template_suffix": {
       "type": ["null", "string"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   },
-  "type": "object"
+  "additionalProperties": true,
+  "type": ["null", "object"]
 }

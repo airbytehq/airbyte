@@ -1,0 +1,42 @@
+name: "Cache Build Artifacts"
+description: "Cache Java, Javascript and Python build artifacts to reduce build time"
+inputs:
+  cache-key:
+    description: "Key to use for caching"
+    required: true
+  cache-python:
+    description: "Whether to cache Python dependencies. Only relevant if building connector modules. true or false"
+    default: "true"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Pip Caching
+      if: ${{ inputs.cache_python }} == 'true'
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.cache/pip
+        key: ${{ inputs.cache-key }}-pip-${{ runner.os }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ inputs.cache-key }}-pip-${{ runner.os }}-
+
+    - name: Npm Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.npm
+        key: ${{ inputs.cache-key }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ inputs.cache-key }}-npm-${{ runner.os }}-
+
+    # this intentionally does not use restore-keys so we don't mess with gradle caching
+    - name: Gradle and Python Caching
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+          **/.venv
+        key: ${{ inputs.cache-key }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/setup.py') }}-${{ hashFiles('**/requirements.txt') }}

@@ -1,205 +1,52 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { FieldProps, setIn } from "formik";
+import { FieldProps } from "formik";
+import React, { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
-import type { DestinationSyncMode } from "core/domain/catalog";
+import { CatalogTree } from "components/connection/CatalogTree";
+import { Heading } from "components/ui/Heading";
+
 import { SyncSchemaStream } from "core/domain/catalog";
+import { DestinationSyncMode } from "core/request/AirbyteClient";
+import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
-import { CheckBox, LabeledRadioButton } from "components";
-import { Cell, Header } from "components/SimpleTableComponents";
-import CatalogTree from "views/Connection/CatalogTree";
-import Search from "./Search";
-import SectionTitle from "./SectionTitle";
-import { naturalComparatorBy } from "utils/objects";
-import { SyncCatalogFilters } from "./SyncCatalogFilters";
+import styles from "./SyncCatalogField.module.scss";
 
-const TreeViewContainer = styled.div`
-  width: 100%;
-  background: ${({ theme }) => theme.greyColor0};
-  margin-bottom: 29px;
-  border-radius: 4px;
-  max-height: 600px;
-  overflow-y: auto;
-  -webkit-overlay: true;
-`;
-
-const SchemaHeader = styled(Header)`
-  min-height: 28px;
-  margin-bottom: 5px;
-`;
-
-const SchemaTitle = styled(SectionTitle)`
-  display: inline-block;
-  margin: 0 11px 13px 0;
-`;
-
-const SelectAll = styled.div`
-  margin: 0 9px 0 30px;
-`;
-
-const NamespaceTitleCell = styled(Cell).attrs(() => ({ lighter: true }))`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const SearchContent = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const RadioButtonControl = styled(LabeledRadioButton)`
-  margin: 0 0 0 5px;
-`;
-
-type SchemaViewProps = {
+interface SchemaViewProps extends FieldProps<SyncSchemaStream[]> {
   additionalControl?: React.ReactNode;
   destinationSupportedSyncModes: DestinationSyncMode[];
-} & FieldProps<SyncSchemaStream[]>;
+  isSubmitting: boolean;
+}
 
-const SyncCatalogField: React.FC<SchemaViewProps> = ({
-  destinationSupportedSyncModes,
+const SyncCatalogFieldComponent: React.FC<React.PropsWithChildren<SchemaViewProps>> = ({
   additionalControl,
   field,
   form,
+  isSubmitting,
 }) => {
-  const { value: streams, name: fieldName } = field;
+  const { mode } = useConnectionFormService();
 
-  const [searchString, setSearchString] = useState("");
-  const [filterMode, setFilterMode] = useState(SyncCatalogFilters.All);
+  const { value: streams, name: fieldName } = field;
 
   const setField = form.setFieldValue;
 
-  const onChangeSchema = useCallback(
-    (newValue: SyncSchemaStream[]) => setField(fieldName, newValue),
+  const onStreamsUpdated = useCallback(
+    (newValue: SyncSchemaStream[]) => {
+      setField(fieldName, newValue);
+    },
     [fieldName, setField]
   );
 
-  const onChangeStream = useCallback(
-    (newValue: SyncSchemaStream) =>
-      onChangeSchema(
-        streams.map((str) => (str.id === newValue.id ? newValue : str))
-      ),
-    [streams, onChangeSchema]
-  );
-
-  const sortedSchema = useMemo(
-    () =>
-      streams.sort(naturalComparatorBy((syncStream) => syncStream.stream.name)),
-    [streams]
-  );
-
-  const filteredStreams = useMemo(() => {
-    const filters: Array<(s: SyncSchemaStream) => boolean> = [
-      (_: SyncSchemaStream) => true,
-      searchString
-        ? (stream: SyncSchemaStream) =>
-            stream.stream.name
-              .toLowerCase()
-              .includes(searchString.toLowerCase())
-        : null,
-      filterMode !== SyncCatalogFilters.All
-        ? (stream: SyncSchemaStream) =>
-            (filterMode === SyncCatalogFilters.Selected &&
-              stream.config.selected) ||
-            (filterMode === SyncCatalogFilters.NotSelected &&
-              !stream.config.selected)
-        : null,
-    ].filter(Boolean) as Array<(s: SyncSchemaStream) => boolean>;
-
-    return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
-  }, [searchString, filterMode, sortedSchema]);
-
-  const hasSelectedItem = useMemo(
-    () => filteredStreams.some((streamNode) => streamNode.config.selected),
-    [filteredStreams]
-  );
-
-  const onCheckAll = useCallback(() => {
-    const allSelectedValues = !hasSelectedItem;
-
-    const newSchema = filteredStreams.map((streamNode) =>
-      setIn(streamNode, "config.selected", allSelectedValues)
-    );
-
-    onChangeSchema(newSchema);
-  }, [hasSelectedItem, onChangeSchema, filteredStreams]);
-
   return (
     <>
-      <div>
-        <SchemaTitle>
-          <FormattedMessage id="form.dataSync" />
-        </SchemaTitle>
-        {additionalControl}
+      <div className={styles.header}>
+        <Heading as="h2" size="sm">
+          <FormattedMessage id={mode === "readonly" ? "form.dataSync.readonly" : "form.dataSync"} />
+        </Heading>
+        {mode !== "readonly" && additionalControl}
       </div>
-      <SearchContent>
-        <Search onSearch={setSearchString} />
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterAll"
-          value={SyncCatalogFilters.All}
-          checked={filterMode === SyncCatalogFilters.All}
-          label={<FormattedMessage id="form.all" />}
-        />
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterSelected"
-          value={SyncCatalogFilters.Selected}
-          checked={filterMode === SyncCatalogFilters.Selected}
-          label={<FormattedMessage id="form.selected" />}
-        />
-        <RadioButtonControl
-          onChange={(value) => {
-            setFilterMode(value.target.value as SyncCatalogFilters);
-          }}
-          name="FilterNotSelected"
-          value={SyncCatalogFilters.NotSelected}
-          checked={filterMode === SyncCatalogFilters.NotSelected}
-          label={<FormattedMessage id="form.notSelected" />}
-        />
-      </SearchContent>
-      <SchemaHeader>
-        <NamespaceTitleCell flex={1.5}>
-          <SelectAll>
-            <CheckBox onChange={onCheckAll} checked={hasSelectedItem} />
-          </SelectAll>
-          <FormattedMessage id="form.sourceStreamName" />
-        </NamespaceTitleCell>
-        <Cell lighter>
-          <FormattedMessage id="form.sourceNamespace" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.destinationNamespace" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.destinationStreamName" />
-        </Cell>
-        <Cell lighter flex={1.5}>
-          <FormattedMessage id="form.syncMode" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.primaryKey" />
-        </Cell>
-        <Cell lighter>
-          <FormattedMessage id="form.cursorField" />
-        </Cell>
-      </SchemaHeader>
-      <TreeViewContainer>
-        <CatalogTree
-          streams={filteredStreams}
-          onChangeStream={onChangeStream}
-          destinationSupportedSyncModes={destinationSupportedSyncModes}
-        />
-      </TreeViewContainer>
+      <CatalogTree streams={streams} onStreamsChanged={onStreamsUpdated} isLoading={isSubmitting} />
     </>
   );
 };
 
-export default React.memo(SyncCatalogField);
+export const SyncCatalogField = React.memo(SyncCatalogFieldComponent);

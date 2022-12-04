@@ -1,0 +1,52 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "name": {
+      "$ref": "localized_string.json"
+    },
+    "categories": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "reference.json"
+      }
+    },
+    "categoryOrderHints": {
+      "type": ["null", "object"]
+    },
+    "description": {
+      "$ref": "localized_string.json"
+    },
+    "slug": {
+      "$ref": "localized_string.json"
+    },
+    "metaTitle": {
+      "$ref": "localized_string.json"
+    },
+    "metaDescription": {
+      "$ref": "localized_string.json"
+    },
+    "metaKeywords": {
+      "$ref": "localized_string.json"
+    },
+    "masterVariant": {
+      "$ref": "product_variant.json"
+    },
+    "variants": {
+      "type": ["null", "array"],
+      "items": {
+        "$ref": "product_variant.json"
+      }
+    },
+    "searchKeywords": {
+      "type": ["null", "object"],
+      "properties": {
+        "text": {
+          "type": ["null", "string"]
+        },
+        "suggestTokenizer": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

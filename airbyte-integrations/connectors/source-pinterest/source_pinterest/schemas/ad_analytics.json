@@ -1,0 +1,277 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "DATE": {
+      "type": ["null", "string"],
+      "format": "date"
+    },
+    "AD_ACCOUNT_ID": {
+      "type": ["null", "integer"]
+    },
+    "AD_ID": {
+      "type": ["null", "string"]
+    },
+    "AD_GROUP_ENTITY_STATUS": {
+      "type": ["null", "number"]
+    },
+    "AD_GROUP_ID": {
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_DAILY_SPEND_CAP": {
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_ENTITY_STATUS": {
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_ID": {
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_LIFETIME_SPEND_CAP": {
+      "type": ["null", "number"]
+    },
+    "CAMPAIGN_NAME": {
+      "type": ["null", "string"]
+    },
+    "CHECKOUT_ROAS": {
+      "type": ["null", "number"]
+    },
+    "CPC_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "CPM_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "CPM_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "CTR": {
+      "type": ["null", "number"]
+    },
+    "CTR_2": {
+      "type": ["null", "number"]
+    },
+    "ECPCV_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPCV_P95_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPC_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPC_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPE_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPM_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECPV_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "ECTR": {
+      "type": ["null", "number"]
+    },
+    "EENGAGEMENT_RATE": {
+      "type": ["null", "number"]
+    },
+    "ENGAGEMENT_RATE": {
+      "type": ["null", "number"]
+    },
+    "IDEA_PIN_PRODUCT_TAG_VISIT_1": {
+      "type": ["null", "number"]
+    },
+    "IDEA_PIN_PRODUCT_TAG_VISIT_2": {
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_1": {
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_1_GROSS": {
+      "type": ["null", "number"]
+    },
+    "IMPRESSION_2": {
+      "type": ["null", "number"]
+    },
+    "INAPP_CHECKOUT_COST_PER_ACTION": {
+      "type": ["null", "number"]
+    },
+    "OUTBOUND_CLICK_1": {
+      "type": ["null", "number"]
+    },
+    "OUTBOUND_CLICK_2": {
+      "type": ["null", "number"]
+    },
+    "PAGE_VISIT_COST_PER_ACTION": {
+      "type": ["null", "number"]
+    },
+    "PAGE_VISIT_ROAS": {
+      "type": ["null", "number"]
+    },
+    "PAID_IMPRESSION": {
+      "type": ["null", "number"]
+    },
+    "REPIN_RATE": {
+      "type": ["null", "number"]
+    },
+    "SPEND_IN_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "SPEND_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICKTHROUGH": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_SIGNUP": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CLICK_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_CONVERSIONS": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_SIGNUP": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_ENGAGEMENT_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_IDEA_PIN_PRODUCT_TAG_VISIT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_IMPRESSION_FREQUENCY": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_IMPRESSION_USER": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_PAGE_VISIT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_REPIN_RATE": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_SIGNUP": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_3SEC_VIEWS": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_AVG_WATCHTIME_IN_SECOND": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_MRC_VIEWS": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P0_COMBINED": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P100_COMPLETE": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P25_COMBINED": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P50_COMBINED": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P75_COMBINED": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIDEO_P95_COMBINED": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_SIGNUP": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_VIEW_SIGNUP_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CLICK_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_CLICK_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_ENGAGEMENT_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_ENGAGEMENT_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_VIEW_CHECKOUT": {
+      "type": ["null", "number"]
+    },
+    "TOTAL_WEB_VIEW_CHECKOUT_VALUE_IN_MICRO_DOLLAR": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_3SEC_VIEWS_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_MRC_VIEWS_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P0_COMBINED_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P100_COMPLETE_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P25_COMBINED_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P50_COMBINED_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P75_COMBINED_2": {
+      "type": ["null", "number"]
+    },
+    "VIDEO_P95_COMBINED_2": {
+      "type": ["null", "number"]
+    },
+    "WEB_CHECKOUT_COST_PER_ACTION": {
+      "type": ["null", "number"]
+    },
+    "WEB_CHECKOUT_ROAS": {
+      "type": ["null", "number"]
+    }
+  }
+}

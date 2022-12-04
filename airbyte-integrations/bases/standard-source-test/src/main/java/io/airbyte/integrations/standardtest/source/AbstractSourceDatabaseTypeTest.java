@@ -1,30 +1,36 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.standardtest.source;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -39,7 +45,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
   private static final Logger LOGGER = LoggerFactory.getLogger(AbstractSourceDatabaseTypeTest.class);
 
-  private final List<TestDataHolder> testDataHolders = new ArrayList<>();
+  protected final List<TestDataHolder> testDataHolders = new ArrayList<>();
 
   /**
    * The column name will be used for a PK column in the test tables. Override it if default name is
@@ -88,28 +94,48 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
   protected abstract String getNameSpace();
 
   /**
+   * Test the discover command. TODO (liren): This is a new unit test. Some existing databases may
+   * fail it, so it is turned off by default. It should be enabled for all databases eventually.
+   */
+  protected boolean testCatalog() {
+    return false;
+  }
+
+  /**
    * The test checks that connector can fetch prepared data without failure.
    */
   @Test
+  @SuppressWarnings("unchecked")
   public void testDataTypes() throws Exception {
     final ConfiguredAirbyteCatalog catalog = getConfiguredCatalog();
     final List<AirbyteMessage> allMessages = runRead(catalog);
-    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).collect(Collectors.toList());
+    final UUID catalogId = runDiscover();
+    final Map<String, AirbyteStream> streams = getLastPersistedCatalog().getStreams().stream()
+        .collect(Collectors.toMap(AirbyteStream::getName, s -> s));
+    final List<AirbyteMessage> recordMessages = allMessages.stream().filter(m -> m.getType() == Type.RECORD).toList();
     final Map<String, List<String>> expectedValues = new HashMap<>();
     testDataHolders.forEach(testDataHolder -> {
-      if (!testDataHolder.getExpectedValues().isEmpty())
+      if (testCatalog()) {
+        final AirbyteStream airbyteStream = streams.get(testDataHolder.getNameWithTestPrefix());
+        final Map<String, Object> jsonSchemaTypeMap = (Map<String, Object>) Jsons.deserialize(
+            airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).toString(), Map.class);
+        assertEquals(testDataHolder.getAirbyteType().getJsonSchemaTypeMap(), jsonSchemaTypeMap,
+            "Expected column type for " + testDataHolder.getNameWithTestPrefix());
+      }
+
+      if (!testDataHolder.getExpectedValues().isEmpty()) {
         expectedValues.put(testDataHolder.getNameWithTestPrefix(), testDataHolder.getExpectedValues());
+      }
     });
 
     for (final AirbyteMessage msg : recordMessages) {
       final String streamName = msg.getRecord().getStream();
       final List<String> expectedValuesForStream = expectedValues.get(streamName);
       if (expectedValuesForStream != null) {
-        final var a = msg.getRecord().getData().get(getTestColumnName());
         final String value = getValueFromJsonNode(msg.getRecord().getData().get(getTestColumnName()));
         assertTrue(expectedValuesForStream.contains(value),
-            "Returned value '" + value + "' by streamer " + streamName
-                + " should be in the expected list: " + expectedValuesForStream);
+            String.format("Returned value '%s' from stream %s is not in the expected list: %s",
+                value, streamName, expectedValuesForStream));
         expectedValuesForStream.remove(value);
       }
     }
@@ -150,8 +176,6 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
         return null;
       });
     }
-
-    database.close();
   }
 
   /**
@@ -159,7 +183,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
    *
    * @return configured catalog
    */
-  private ConfiguredAirbyteCatalog getConfiguredCatalog() throws Exception {
+  protected ConfiguredAirbyteCatalog getConfiguredCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(
         testDataHolders
             .stream()
@@ -170,7 +194,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
                 .withStream(CatalogHelpers.createAirbyteStream(
                     String.format("%s", test.getNameWithTestPrefix()),
                     String.format("%s", getNameSpace()),
-                    Field.of(getIdColumnName(), JsonSchemaPrimitive.NUMBER),
+                    Field.of(getIdColumnName(), JsonSchemaType.INTEGER),
                     Field.of(getTestColumnName(), test.getAirbyteType()))
                     .withSourceDefinedCursor(true)
                     .withSourceDefinedPrimaryKey(List.of(List.of(getIdColumnName())))
@@ -220,6 +244,32 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
 
   protected void printMarkdownTestTable() {
     LOGGER.info(getMarkdownTestTable());
+  }
+
+  protected ConfiguredAirbyteStream createDummyTableWithData(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE " + getNameSpace() + ".random_dummy_table(id INTEGER PRIMARY KEY, test_column VARCHAR(63));");
+      ctx.fetch("INSERT INTO " + getNameSpace() + ".random_dummy_table VALUES (2, 'Random Data');");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withStream(CatalogHelpers.createAirbyteStream(
+            "random_dummy_table",
+            getNameSpace(),
+            Field.of("id", JsonSchemaType.INTEGER),
+            Field.of("test_column", JsonSchemaType.STRING))
+            .withSourceDefinedCursor(true)
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  protected List<AirbyteStateMessage> extractStateMessages(final List<AirbyteMessage> messages) {
+    return messages.stream().filter(r -> r.getType() == Type.STATE).map(AirbyteMessage::getState)
+        .collect(Collectors.toList());
   }
 
 }

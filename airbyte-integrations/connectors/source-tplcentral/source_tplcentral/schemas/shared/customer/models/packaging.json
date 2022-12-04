@@ -1,0 +1,67 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "SmallParcelUsps3rdParty": {
+      "type": "string"
+    },
+    "Ucc128ManufacturersId": {
+      "type": "integer"
+    },
+    "UseVendorIdOnBol": {
+      "type": "boolean"
+    },
+    "SpsCloseOnUpdate": {
+      "type": "boolean"
+    },
+    "SmallParcelReturnShippingCost": {
+      "type": "boolean"
+    },
+    "SmallParcelReturnFedExService": {
+      "type": "string"
+    },
+    "SmallParcelUspsReturnType": {
+      "type": "string"
+    },
+    "SmallParcelReturnUpsService": {
+      "type": "string"
+    },
+    "SmallParcelReturnDefaultChecked": {
+      "type": "boolean"
+    },
+    "SmallParcelHighVolumeDefaultChecked": {
+      "type": "boolean"
+    },
+    "SmallParcelHighVolumeZplBatched": {
+      "type": "boolean"
+    },
+    "SmallParcelReferences": {
+      "type": "string"
+    },
+    "SmallParcelIntlDutyBillType": {
+      "type": "string"
+    },
+    "SmallParcelCustomizeDuties": {
+      "type": "boolean"
+    },
+    "SmallParcelDutiesAndTaxes": {
+      "type": "string"
+    },
+    "SmallParcelCreatePackagesOnFind": {
+      "type": "boolean"
+    },
+    "SmallParcelRateShoppingCarrierIds": {
+      "type": "string"
+    },
+    "SmallParcelRateShoppingLogic": {
+      "type": "string"
+    },
+    "SmallParcelZplPrintDefault": {
+      "type": "boolean"
+    },
+    "SmallParcelAutoRateShopOnShip": {
+      "type": "boolean"
+    }
+  }
+}

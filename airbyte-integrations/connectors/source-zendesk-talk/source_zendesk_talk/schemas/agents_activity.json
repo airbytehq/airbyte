@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "agent_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "agent_state": {
       "type": ["null", "string"]

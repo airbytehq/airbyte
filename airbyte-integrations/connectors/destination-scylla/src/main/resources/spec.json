@@ -1,0 +1,57 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/scylla",
+  "supportsIncremental": true,
+  "supportsNormalization": false,
+  "supportsDBT": false,
+  "supported_destination_sync_modes": ["overwrite", "append"],
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Scylla Destination Spec",
+    "type": "object",
+    "required": ["keyspace", "username", "password", "address", "port"],
+    "additionalProperties": true,
+    "properties": {
+      "keyspace": {
+        "title": "Keyspace",
+        "description": "Default Scylla keyspace to create data in.",
+        "type": "string",
+        "order": 0
+      },
+      "username": {
+        "title": "Username",
+        "description": "Username to use to access Scylla.",
+        "type": "string",
+        "order": 1
+      },
+      "password": {
+        "title": "Password",
+        "description": "Password associated with Scylla.",
+        "type": "string",
+        "airbyte_secret": true,
+        "order": 2
+      },
+      "address": {
+        "title": "Address",
+        "description": "Address to connect to.",
+        "type": "string",
+        "order": 3
+      },
+      "port": {
+        "title": "Port",
+        "description": "Port of Scylla.",
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 65536,
+        "default": 9042,
+        "order": 4
+      },
+      "replication": {
+        "title": "Replication factor",
+        "type": "integer",
+        "description": "Indicates to how many nodes the data should be replicated to.",
+        "default": 1,
+        "order": 5
+      }
+    }
+  }
+}

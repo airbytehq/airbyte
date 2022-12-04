@@ -1,0 +1,14 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "lot": {
+      "type": ["integer", "null"]
+    },
+    "street": {
+      "type": ["integer", "null"]
+    },
+    "valet": {
+      "type": ["integer", "null"]
+    }
+  }
+}

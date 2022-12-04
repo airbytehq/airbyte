@@ -79,5 +79,32 @@
     {
       "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
     }
+  ],
+  "tidb": [
+    {
+      "_airbyte_raw_nested_stream_with_complex_columns_resulting_into_long_names": "_airbyte_raw_nested_s__lting_into_long_names"
+    },
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition_double_array_data": "nested_stream_with_co__ion_double_array_data"
+    },
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition_data": "nested_stream_with_co___names_partition_data"
+    },
+    {
+      "nested_stream_with_complex_columns_resulting_into_long_names_partition": "nested_stream_with_co___long_names_partition"
+    },
+    {
+      "'nested_stream_with_complex_columns_resulting_into_long_names'": "'nested_stream_with_co__lting_into_long_names'"
+    },
+    {
+      "non_nested_stream_without_namespace_resulting_into_long_names": "non_nested_stream_wit__lting_into_long_names"
+    },
+    {
+      "double_array_data is not null": "coalesce(json_length(double_array_data), 0) > 0"
+    },
+    { "DATA is not null": "coalesce(json_length(DATA), 0) > 0" },
+    {
+      "\\\"column`_'with\\\"\\\"_quotes\\\" is not null": "coalesce(json_length(`column__'with\\\"_quotes`), 0) > 0"
+    }
   ]
 }

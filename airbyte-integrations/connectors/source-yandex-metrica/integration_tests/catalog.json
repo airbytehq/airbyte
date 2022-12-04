@@ -1,0 +1,60 @@
+{
+  "streams": [
+    {
+      "name": "views",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "dateTime",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "watchID": {
+            "type": "string"
+          },
+          "counterID": {
+            "type": "string"
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "title": {
+            "type": "string"
+          },
+          "URL": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "name": "sessions",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "dateTime",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "visitID": {
+            "type": "string"
+          },
+          "dateTime": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "startURL": {
+            "type": "string"
+          },
+          "endURL": {
+            "type": "string"
+          },
+          "pageViews": {
+            "type": "integer"
+          }
+        }
+      }
+    }
+  ]
+}

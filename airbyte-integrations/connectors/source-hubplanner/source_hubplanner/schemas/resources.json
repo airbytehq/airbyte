@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "_id": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "metadata": {
+      "type": ["null", "string"]
+    },
+    "createdDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updatedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "string"]
+    },
+    "role": {
+      "type": ["null", "string"]
+    },
+    "links": {
+      "properties": {},
+      "type": ["null", "object"]
+    },
+    "billing": {
+      "properties": {
+        "useDefault": {
+          "type": ["null", "boolean"]
+        },
+        "rate": {
+          "type": ["null", "number"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "useCustomAvailability": {
+      "type": ["null", "boolean"]
+    },
+    "customFields": {
+      "items": {
+        "properties": {
+          "_id": {
+            "type": "string"
+          },
+          "templateId": {
+            "type": "string"
+          },
+          "templateType": {
+            "type": "string"
+          },
+          "templateLabel": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "choices": {
+            "items": {
+              "properties": {
+                "_id": {
+                  "type": "string"
+                },
+                "choiceId": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": ["null", "string"]
+                }
+              },
+              "type": ["null", "object"]
+            },
+            "type": ["null", "array"]
+          }
+        },
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    },
+    "resourceRates": {
+      "properties": {
+        "external": {
+          "items": {
+            "properties": {},
+            "type": ["null", "object"]
+          },
+          "type": ["null", "array"]
+        },
+        "internal": {
+          "items": {
+            "properties": {},
+            "type": ["null", "object"]
+          },
+          "type": ["null", "array"]
+        }
+      },
+      "type": ["null", "object"]
+    },
+    "isProjectManager": {
+      "type": ["null", "boolean"]
+    },
+    "tags": {
+      "items": {
+        "type": ["null", "object"]
+      },
+      "type": ["null", "array"]
+    }
+  }
+}

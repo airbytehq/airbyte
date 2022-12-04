@@ -1,0 +1,33 @@
+{
+  "type": "object",
+  "title": "SurveyMonkey Segment",
+  "description": "Segment by interaction with a SurveyMonkey survey.",
+  "required": ["field", "op", "value"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "SurveyMonkey",
+      "enum": ["SurveyMonkey"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["survey_monkey"],
+      "title": "Segment Field",
+      "description": "Segment by interaction with a SurveyMonkey survey.",
+      "example": "survey_monkey"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["started", "completed", "not_started", "not_completed"],
+      "title": "Segment Operator",
+      "description": "The status of the member with regard to the survey. One of the following: has started the survey, has completed the survey, has not started the survey, or has not completed the survey.",
+      "example": "started"
+    },
+    "value": {
+      "type": "string",
+      "title": "Survey ID",
+      "description": "The unique ID of the SurveyMonkey survey.",
+      "example": "32179586"
+    }
+  }
+}

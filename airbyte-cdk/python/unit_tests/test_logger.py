@@ -1,18 +1,18 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-
 import json
+import logging
 from typing import Dict
 
 import pytest
-from airbyte_cdk.logger import AirbyteLogFormatter, init_logger
+from airbyte_cdk.logger import AirbyteLogFormatter
 
 
 @pytest.fixture(scope="session")
 def logger():
-    logger = init_logger("Test logger")
+    logger = logging.getLogger("airbyte.Testlogger")
     return logger
 
 
@@ -49,18 +49,19 @@ def test_level_transform(logger, caplog):
     assert level_critical == "FATAL"
 
 
-def test_trace(logger, caplog):
-    logger.trace("Test trace 1")
-    record = caplog.records[0]
-    assert record.levelname == "TRACE"
-    assert record.message == "Test trace 1"
-
-
 def test_debug(logger, caplog):
-    logger.debug("Test debug 1")
+    # Test debug logger in isolation since the default logger is initialized to TRACE (15) instead of DEBUG (10).
+    debug_logger = logging.getLogger("airbyte.Debuglogger")
+    debug_logger.setLevel(logging.DEBUG)
+    debug_logger.debug("Test debug 1")
     record = caplog.records[0]
     assert record.levelname == "DEBUG"
     assert record.message == "Test debug 1"
+
+
+def test_default_debug_is_ignored(logger, caplog):
+    logger.debug("Test debug that is ignored since log level is TRACE")
+    assert len(caplog.records) == 0
 
 
 def test_info(logger, caplog):

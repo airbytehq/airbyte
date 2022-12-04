@@ -1,0 +1,35 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.redis.RedisDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+def redisDriver = '3.7.0'
+def assertVersion = '3.21.0'
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+
+
+    // https://mvnrepository.com/artifact/redis.clients/jedis
+    implementation "redis.clients:jedis:${redisDriver}"
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.13.0'
+
+
+    // https://mvnrepository.com/artifact/org.assertj/assertj-core
+    testImplementation "org.assertj:assertj-core:${assertVersion}"
+    // https://mvnrepository.com/artifact/org.testcontainers/testcontainers
+    testImplementation libs.connectors.testcontainers
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-redis')
+}

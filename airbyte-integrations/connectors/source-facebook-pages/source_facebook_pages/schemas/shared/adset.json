@@ -1,0 +1,150 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "account_id": {
+      "type": ["string", "null"]
+    },
+    "asset_feed_id": {
+      "type": ["string", "null"]
+    },
+    "bid_amount": {
+      "type": ["integer", "null"]
+    },
+    "bid_info": {
+      "type": ["string", "null"]
+    },
+    "bid_strategy": {
+      "type": ["string", "null"]
+    },
+    "billing_event": {
+      "type": ["string", "null"]
+    },
+    "budget_remaining": {
+      "type": ["string", "null"]
+    },
+    "campaign_id": {
+      "type": ["string", "null"]
+    },
+    "configured_status": {
+      "type": ["string", "null"]
+    },
+    "created_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "creative_sequence": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "daily_budget": {
+      "type": ["string", "null"]
+    },
+    "daily_min_spend_target": {
+      "type": ["string", "null"]
+    },
+    "daily_spend_cap": {
+      "type": ["string", "null"]
+    },
+    "destination_type": {
+      "type": ["string", "null"]
+    },
+    "effective_status": {
+      "type": ["string", "null"]
+    },
+    "end_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "existing_customer_budget_percentage": {
+      "type": ["integer", "null"]
+    },
+    "full_funnel_exploration_mode": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "instagram_actor_id": {
+      "type": ["string", "null"]
+    },
+    "is_dynamic_creative": {
+      "type": ["boolean", "null"]
+    },
+    "lifetime_budget": {
+      "type": ["string", "null"]
+    },
+    "lifetime_imps": {
+      "type": ["integer", "null"]
+    },
+    "lifetime_min_spend_target": {
+      "type": ["string", "null"]
+    },
+    "lifetime_spend_cap": {
+      "type": ["string", "null"]
+    },
+    "multi_optimization_goal_weight": {
+      "type": ["string", "null"]
+    },
+    "name": {
+      "type": ["string", "null"]
+    },
+    "optimization_goal": {
+      "type": ["string", "null"]
+    },
+    "optimization_sub_event": {
+      "type": ["string", "null"]
+    },
+    "pacing_type": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "recurring_budget_semantics": {
+      "type": ["boolean", "null"]
+    },
+    "review_feedback": {
+      "type": ["string", "null"]
+    },
+    "rf_prediction_id": {
+      "type": ["string", "null"]
+    },
+    "source_adset_id": {
+      "type": ["string", "null"]
+    },
+    "start_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "targeting_optimization_types": {
+      "type": ["string", "null"]
+    },
+    "time_based_ad_rotation_id_blocks": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["array", "null"],
+        "items": {
+          "type": ["integer", "null"]
+        }
+      }
+    },
+    "time_based_ad_rotation_intervals": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["integer", "null"]
+      }
+    },
+    "updated_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "use_new_app_click": {
+      "type": ["boolean", "null"]
+    }
+  }
+}

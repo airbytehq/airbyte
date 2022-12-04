@@ -1,47 +1,30 @@
 import React from "react";
-import { useResource } from "rest-hooks";
+import { useNavigate } from "react-router-dom";
 
 import { ImplementationTable } from "components/EntityTable";
-import { Routes } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import { Source } from "core/resources/Source";
-import ConnectionResource from "core/resources/Connection";
-import { getEntityTableData } from "components/EntityTable/utils";
 import { EntityTableDataItem } from "components/EntityTable/types";
-import SourceDefinitionResource from "core/resources/SourceDefinition";
-import useWorkspace from "hooks/services/useWorkspace";
+import { getEntityTableData } from "components/EntityTable/utils";
 
-type IProps = {
-  sources: Source[];
-};
+import { SourceRead } from "core/request/AirbyteClient";
+import { useConnectionList } from "hooks/services/useConnectionHook";
 
-const SourcesTable: React.FC<IProps> = ({ sources }) => {
-  const { push } = useRouter();
-  const { workspace } = useWorkspace();
-  const { connections } = useResource(ConnectionResource.listShape(), {
-    workspaceId: workspace.workspaceId,
-  });
+import { useSourceDefinitionList } from "../../../../../services/connector/SourceDefinitionService";
 
-  const { sourceDefinitions } = useResource(
-    SourceDefinitionResource.listShape(),
-    {
-      workspaceId: workspace.workspaceId,
-    }
-  );
+interface SourcesTableProps {
+  sources: SourceRead[];
+}
 
-  const data = getEntityTableData(
-    sources,
-    connections,
-    sourceDefinitions,
-    "source"
-  );
+const SourcesTable: React.FC<SourcesTableProps> = ({ sources }) => {
+  const navigate = useNavigate();
 
-  const clickRow = (source: EntityTableDataItem) =>
-    push(`${Routes.Source}/${source.entityId}`);
+  const { connections } = useConnectionList();
+  const { sourceDefinitions } = useSourceDefinitionList();
 
-  return (
-    <ImplementationTable data={data} onClickRow={clickRow} entity="source" />
-  );
+  const data = getEntityTableData(sources, connections, sourceDefinitions, "source");
+
+  const clickRow = (source: EntityTableDataItem) => navigate(`${source.entityId}`);
+
+  return <ImplementationTable data={data} onClickRow={clickRow} entity="source" />;
 };
 
 export default SourcesTable;

@@ -1,0 +1,27 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "aws_s3_sample",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "first_name": { "type": "string" },
+            "last_name": { "type": "string" },
+            "gender": { "type": "string" },
+            "ip_address": { "type": "string" },
+            "primary_email": { "type": "string" },
+            "dob": { "type": "string", "format": "date" },
+            "modifiedAt": { "type": "string", "format": "date-time" }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "cursor_field": null,
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

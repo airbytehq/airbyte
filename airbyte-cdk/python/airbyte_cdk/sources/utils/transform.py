@@ -1,15 +1,19 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from distutils.util import strtobool
 from enum import Flag, auto
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Mapping, Optional
 
-from airbyte_cdk.logger import AirbyteLogger
-from jsonschema import Draft7Validator, validators
+from jsonschema import Draft7Validator, ValidationError, validators
 
-logger = AirbyteLogger()
+json_to_python_simple = {"string": str, "number": float, "integer": int, "boolean": bool, "null": type(None)}
+json_to_python = json_to_python_simple | {"object": dict, "array": list}
+python_to_json = {v: k for k, v in json_to_python.items()}
+
+logger = logging.getLogger("airbyte")
 
 
 class TransformConfig(Flag):
@@ -36,7 +40,7 @@ class TypeTransformer:
     Class for transforming object before output.
     """
 
-    _custom_normalizer: Callable[[Any, Dict[str, Any]], Any] = None
+    _custom_normalizer: Optional[Callable[[Any, Dict[str, Any]], Any]] = None
 
     def __init__(self, config: TransformConfig):
         """
@@ -90,7 +94,7 @@ class TypeTransformer:
         :param subschema part of the jsonschema containing field type/format data.
         :return transformed field value.
         """
-        target_type = subschema.get("type")
+        target_type = subschema.get("type", [])
         if original_item is None and "null" in target_type:
             return None
         if isinstance(target_type, list):
@@ -114,7 +118,11 @@ class TypeTransformer:
                 if isinstance(original_item, str):
                     return strtobool(original_item) == 1
                 return bool(original_item)
-        except ValueError:
+            elif target_type == "array":
+                item_types = set(subschema.get("items", {}).get("type", set()))
+                if item_types.issubset(json_to_python_simple) and type(original_item) in json_to_python_simple.values():
+                    return [original_item]
+        except (ValueError, TypeError):
             return original_item
         return original_item
 
@@ -125,7 +133,7 @@ class TypeTransformer:
         :original_validator: native jsonschema validator callback.
         """
 
-        def normalizator(validator_instance: Callable, val: Any, instance: Any, schema: Dict[str, Any]):
+        def normalizator(validator_instance: Callable, property_value: Any, instance: Any, schema: Dict[str, Any]):
             """
             Jsonschema validator callable it uses for validating instance. We
             override default Draft7Validator to perform value transformation
@@ -144,27 +152,31 @@ class TypeTransformer:
                     return resolved
                 return subschema
 
-            if schema_key == "type" and instance is not None:
-                if "object" in val and isinstance(instance, dict):
-                    for k, subschema in schema.get("properties", {}).items():
-                        if k in instance:
-                            subschema = resolve(subschema)
-                            instance[k] = self.__normalize(instance[k], subschema)
-                elif "array" in val and isinstance(instance, list):
-                    subschema = schema.get("items", {})
-                    subschema = resolve(subschema)
-                    for index, item in enumerate(instance):
-                        instance[index] = self.__normalize(item, subschema)
+            # Transform object and array values before running json schema type checking for each element.
+            # Recursively normalize every value of the "instance" sub-object,
+            # if "instance" is an incorrect type - skip recursive normalization of "instance"
+            if schema_key == "properties" and isinstance(instance, dict):
+                for k, subschema in property_value.items():
+                    if k in instance:
+                        subschema = resolve(subschema)
+                        instance[k] = self.__normalize(instance[k], subschema)
+            # Recursively normalize every item of the "instance" sub-array,
+            # if "instance" is an incorrect type - skip recursive normalization of "instance"
+            elif schema_key == "items" and isinstance(instance, list):
+                subschema = resolve(property_value)
+                for index, item in enumerate(instance):
+                    instance[index] = self.__normalize(item, subschema)
+
             # Running native jsonschema traverse algorithm after field normalization is done.
-            yield from original_validator(validator_instance, val, instance, schema)
+            yield from original_validator(validator_instance, property_value, instance, schema)
 
         return normalizator
 
-    def transform(self, record: Dict[str, Any], schema: Dict[str, Any]):
+    def transform(self, record: Dict[str, Any], schema: Mapping[str, Any]):
         """
         Normalize and validate according to config.
-        :param record record instance for normalization/transformation. All modification are done by modifing existent object.
-        :schema object's jsonschema for normalization.
+        :param record: record instance for normalization/transformation. All modification are done by modifying existent object.
+        :param schema: object's jsonschema for normalization.
         """
         if TransformConfig.NoTransform in self._config:
             return
@@ -174,4 +186,11 @@ class TypeTransformer:
             just calling normalizer.validate() would throw an exception on
             first validation occurences and stop processing rest of schema.
             """
-            logger.warn(e.message)
+            logger.warning(self.get_error_message(e))
+
+    def get_error_message(self, e: ValidationError) -> str:
+        instance_json_type = python_to_json[type(e.instance)]
+        key_path = "." + ".".join(map(str, e.path))
+        return (
+            f"Failed to transform value {repr(e.instance)} of type '{instance_json_type}' to '{e.validator_value}', key path: '{key_path}'"
+        )

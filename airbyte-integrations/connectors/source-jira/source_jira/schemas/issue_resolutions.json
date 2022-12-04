@@ -20,6 +20,6 @@
       "description": "The name of the issue resolution."
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of an issue resolution."
 }

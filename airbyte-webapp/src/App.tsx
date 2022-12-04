@@ -1,117 +1,85 @@
 import React, { Suspense } from "react";
+import { HelmetProvider } from "react-helmet-async";
+import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
-import { IntlProvider } from "react-intl";
-import { CacheProvider } from "rest-hooks";
 
-import en from "./locales/en.json";
-import GlobalStyle from "./global-styles";
-import { theme } from "./theme";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
-import { Routing } from "./pages/routes";
-import LoadingPage from "./components/LoadingPage";
-import ApiErrorBoundary from "./components/ApiErrorBoundary";
-import NotificationService from "hooks/services/Notification";
-import { AnalyticsInitializer } from "views/common/AnalyticsInitializer";
-import {
-  useCurrentWorkspace,
-  usePickFirstWorkspace,
-} from "hooks/services/useWorkspace";
-import { Feature, FeatureItem, FeatureService } from "hooks/services/Feature";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
+import { ApiServices } from "core/ApiServices";
+import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
-import { useApiServices } from "core/defaultServices";
-import { envConfigProvider, windowConfigProvider } from "./config";
+import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
+import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
+import { defaultFeatures, FeatureService } from "hooks/services/Feature";
+import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
+import { ModalServiceProvider } from "hooks/services/Modal";
+import NotificationService from "hooks/services/Notification";
+import { AnalyticsProvider } from "views/common/AnalyticsProvider";
+import { StoreProvider } from "views/common/StoreProvider";
+
+import LoadingPage from "./components/LoadingPage";
 import {
   Config,
   ConfigServiceProvider,
   defaultConfig,
-  ValueProvider,
-} from "./config";
-
-function useCustomerIdProvider() {
-  const workspace = useCurrentWorkspace();
-
-  return workspace.customerId;
-}
-
-const Features: Feature[] = [
-  {
-    id: FeatureItem.AllowUploadCustomImage,
-  },
-  {
-    id: FeatureItem.AllowCustomDBT,
-  },
-  {
-    id: FeatureItem.AllowUpdateConnectors,
-  },
-];
-
-const StyleProvider: React.FC = ({ children }) => (
-  <ThemeProvider theme={theme}>
-    <GlobalStyle />
-    {children}
-  </ThemeProvider>
-);
-
-const I18NProvider: React.FC = ({ children }) => (
-  <IntlProvider locale="en" messages={en}>
-    {children}
-  </IntlProvider>
-);
-
-const StoreProvider: React.FC = ({ children }) => (
-  <CacheProvider>{children}</CacheProvider>
-);
-
-const configProviders: ValueProvider<Config> = [
   envConfigProvider,
+  ValueProvider,
   windowConfigProvider,
-];
+} from "./config";
+import en from "./locales/en.json";
+import { Routing } from "./pages/routes";
+import { WorkspaceServiceProvider } from "./services/workspaces/WorkspacesService";
+import { theme } from "./theme";
 
-const services = {
-  currentWorkspaceProvider: usePickFirstWorkspace,
-  useCustomerIdProvider: useCustomerIdProvider,
-};
-
-const AppServices: React.FC = ({ children }) => (
-  <ServicesProvider inject={services}>
-    <ConfigServiceProvider
-      defaultConfig={defaultConfig}
-      providers={configProviders}
-    >
-      <ServiceOverrides>{children}</ServiceOverrides>
-    </ConfigServiceProvider>
-  </ServicesProvider>
+const StyleProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
+  <ThemeProvider theme={theme}>{children}</ThemeProvider>
 );
 
-const ServiceOverrides: React.FC = React.memo(({ children }) => {
-  useApiServices();
-  return <>{children}</>;
-});
+const configProviders: ValueProvider<Config> = [envConfigProvider, windowConfigProvider];
+
+const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
+  <AnalyticsProvider>
+    <AppMonitoringServiceProvider>
+      <ApiErrorBoundary>
+        <WorkspaceServiceProvider>
+          <FeatureService features={defaultFeatures}>
+            <NotificationService>
+              <ConfirmationModalService>
+                <ModalServiceProvider>
+                  <FormChangeTrackerService>
+                    <HelmetProvider>
+                      <ApiServices>{children}</ApiServices>
+                    </HelmetProvider>
+                  </FormChangeTrackerService>
+                </ModalServiceProvider>
+              </ConfirmationModalService>
+            </NotificationService>
+          </FeatureService>
+        </WorkspaceServiceProvider>
+      </ApiErrorBoundary>
+    </AppMonitoringServiceProvider>
+  </AnalyticsProvider>
+);
 
 const App: React.FC = () => {
   return (
     <React.StrictMode>
       <StyleProvider>
-        <I18NProvider>
+        <I18nProvider locale="en" messages={en}>
           <StoreProvider>
-            <Suspense fallback={<LoadingPage />}>
-              <ApiErrorBoundary>
-                <FeatureService features={Features}>
-                  <NotificationService>
-                    <AppServices>
-                      <AnalyticsInitializer>
-                        <OnboardingServiceProvider>
-                          <Routing />
-                        </OnboardingServiceProvider>
-                      </AnalyticsInitializer>
-                    </AppServices>
-                  </NotificationService>
-                </FeatureService>
-              </ApiErrorBoundary>
-            </Suspense>
+            <ServicesProvider>
+              <Suspense fallback={<LoadingPage />}>
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+                  <Router>
+                    <Services>
+                      <Routing />
+                    </Services>
+                  </Router>
+                </ConfigServiceProvider>
+              </Suspense>
+            </ServicesProvider>
           </StoreProvider>
-        </I18NProvider>
+        </I18nProvider>
       </StyleProvider>
     </React.StrictMode>
   );

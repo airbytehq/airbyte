@@ -1,0 +1,51 @@
+# We would prefer to use Pod instead of Job here for exactly-once execution guarantee, however
+# Pods have a problem of sticking around after completion, causing errors upon upgrade if they
+# are not manually deleted first.
+# Using generateName would solve this by giving each bootloader pod a unique name, but Kustomize
+# does not currently support generateName.
+# Therefore, using Job here with a ttl is required in order to have a smooth upgrade process for kube.
+# See discussion about this on the PR: https://github.com/airbytehq/airbyte/pull/13397#discussion_r887600449
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: airbyte-bootloader
+spec:
+  # This ttl is necessary to prevent errors when upgrading airbyte
+  ttlSecondsAfterFinished: 5
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: airbyte-bootloader-container
+          image: airbyte/bootloader
+          env:
+            - name: AIRBYTE_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
+            - name: DATABASE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_HOST
+            - name: DATABASE_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_PORT
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_PASSWORD
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: DATABASE_URL
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_USER
