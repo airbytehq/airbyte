@@ -32,6 +32,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
     [styles.typeLight]: variant === "light",
     [styles.typePrimary]: variant === "primary",
     [styles.typeSecondary]: variant === "secondary",
+    [styles.typeDark]: variant === "dark",
   };
   const widthStyle: { width?: string } = {};
   if (width) {
