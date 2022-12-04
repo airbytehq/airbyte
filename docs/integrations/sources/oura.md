@@ -51,6 +51,7 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2022-10-20 | [18224](https://github.com/airbytehq/airbyte/pull/18224) | New source |
+| Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                              |
+|:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.1.0   | 2022-10-20 | [18224](https://github.com/airbytehq/airbyte/pull/18224) | New source                                                                                                                                                                                                           |
+| 0.1.1   | 2022-12-04 | [20049](https://github.com/airbytehq/airbyte/pull/20049) | Fix bug where connector would fail to sync heart rate data over more than a 30 period. This was also causing the connector check to fail.<br>Fix bug where daily streams would only return data for the current day. |
