@@ -37,7 +37,8 @@ class AdsInsights(FBMarketingIncrementalStream):
         "28d_view",
     ]
 
-    ALL_ACTION_BREAKDOWNS = [
+    breakdowns = []
+    action_breakdowns = [
         "action_type",
         "action_target_id",
         "action_destination",
@@ -59,6 +60,7 @@ class AdsInsights(FBMarketingIncrementalStream):
         fields: List[str] = None,
         breakdowns: List[str] = None,
         action_breakdowns: List[str] = None,
+        action_breakdowns_allow_empty: bool = False,
         time_increment: Optional[int] = None,
         insights_lookback_window: int = None,
         **kwargs,
@@ -67,8 +69,14 @@ class AdsInsights(FBMarketingIncrementalStream):
         self._start_date = self._start_date.date()
         self._end_date = self._end_date.date()
         self._fields = fields
-        self.action_breakdowns = action_breakdowns or self.ALL_ACTION_BREAKDOWNS
-        self.breakdowns = breakdowns or []
+        if action_breakdowns_allow_empty:
+            if action_breakdowns is not None:
+                self.action_breakdowns = action_breakdowns
+        else:
+            if action_breakdowns:
+                self.action_breakdowns = action_breakdowns
+        if breakdowns is not None:
+            self.breakdowns = breakdowns
         self.time_increment = time_increment or self.time_increment
         self._new_class_name = name
         self._insights_lookback_window = insights_lookback_window

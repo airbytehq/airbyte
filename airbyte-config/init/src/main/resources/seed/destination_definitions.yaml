@@ -154,7 +154,7 @@
 - name: Google PubSub
   destinationDefinitionId: 356668e2-7e34-47f3-a3b0-67a8a481b692
   dockerRepository: airbyte/destination-pubsub
-  dockerImageTag: 0.1.6
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/pubsub
   icon: googlepubsub.svg
   releaseStage: alpha
