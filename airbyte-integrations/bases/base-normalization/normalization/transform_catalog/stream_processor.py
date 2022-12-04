@@ -7,18 +7,19 @@ import re
 from enum import Enum
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-from normalization import data_type
-
 from airbyte_cdk.models.airbyte_protocol import DestinationSyncMode, SyncMode
 from jinja2 import Template
+from normalization import data_type
 from normalization.destination_type import DestinationType
 from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
+    get_plain_list_from_one_of_array,
     is_airbyte_column,
     is_array,
     is_big_integer,
+    is_binary_datatype,
     is_boolean,
     is_combining_node,
     is_date,
@@ -30,12 +31,10 @@ from normalization.transform_catalog.utils import (
     is_object,
     is_simple_property,
     is_string,
-    is_binary_datatype,
     is_time,
     is_time_with_timezone,
     jinja_call,
     remove_jinja,
-    get_plain_list_from_one_of_array,
 )
 
 # using too many columns breaks ephemeral materialization (somewhere between 480 and 490 columns)
@@ -363,14 +362,20 @@ class StreamProcessor(object):
             elif is_combining_node(properties[field]):
                 # TODO: merge properties of all combinations
                 pass
-            elif (data_type.TYPE_VAR_NAME not in properties[field] and data_type.REF_TYPE_VAR_NAME not in properties[field]
-                  and data_type.ONE_OF_VAR_NAME not in properties[field])\
-                    or (data_type.TYPE_VAR_NAME in properties[field] and is_object(properties[field][data_type.TYPE_VAR_NAME])):
+            elif (
+                data_type.TYPE_VAR_NAME not in properties[field]
+                and data_type.REF_TYPE_VAR_NAME not in properties[field]
+                and data_type.ONE_OF_VAR_NAME not in properties[field]
+            ) or (data_type.TYPE_VAR_NAME in properties[field] and is_object(properties[field][data_type.TYPE_VAR_NAME])):
                 # properties without 'type' field are treated like properties with 'type' = 'object'
                 children_properties = find_properties_object([], field, properties[field])
                 is_nested_array = False
                 json_column_name = column_names[field][1]
-            elif data_type.TYPE_VAR_NAME in properties[field] and is_array(properties[field][data_type.TYPE_VAR_NAME]) and "items" in properties[field]:
+            elif (
+                data_type.TYPE_VAR_NAME in properties[field]
+                and is_array(properties[field][data_type.TYPE_VAR_NAME])
+                and "items" in properties[field]
+            ):
                 quoted_field = column_names[field][1]
                 children_properties = find_properties_object([], field, properties[field]["items"])
                 is_nested_array = True
@@ -511,7 +516,11 @@ where 1 = 1
 
     def cast_property_type(self, property_name: str, column_name: str, jinja_column: str) -> Any:  # noqa: C901
         definition = self.properties[property_name]
-        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition and data_type.ONE_OF_VAR_NAME not in definition :
+        if (
+            data_type.TYPE_VAR_NAME not in definition
+            and data_type.REF_TYPE_VAR_NAME not in definition
+            and data_type.ONE_OF_VAR_NAME not in definition
+        ):
             print(f"WARN: Unknown type for column {property_name} at {self.current_json_path()}")
             return column_name
         elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
@@ -519,17 +528,20 @@ where 1 = 1
         elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition))\
-                or (data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition, definition)):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition, definition)
+        ):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_big_integer(definition):
             sql_type = jinja_call("type_very_large_integer()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition[data_type.REF_TYPE_VAR_NAME], definition))\
-                or (data_type.ONE_OF_VAR_NAME in definition and is_long(definition, definition)):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition[data_type.REF_TYPE_VAR_NAME], definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_long(definition, definition)
+        ):
             sql_type = jinja_call("dbt_utils.type_bigint()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition[data_type.REF_TYPE_VAR_NAME]))\
-                or (data_type.ONE_OF_VAR_NAME in definition and is_number(definition)):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition[data_type.REF_TYPE_VAR_NAME])) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_number(definition)
+        ):
             sql_type = jinja_call("dbt_utils.type_float()")
         elif is_datetime(definition):
             if self.destination_type == DestinationType.SNOWFLAKE:
@@ -584,8 +596,9 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition[data_type.REF_TYPE_VAR_NAME]))\
-                or (data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition[data_type.REF_TYPE_VAR_NAME])) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)
+        ):
             if self.destination_type.value == DestinationType.POSTGRES.value:
                 # sql_type = "bytea"
                 sql_type = jinja_call("type_binary()")
@@ -614,8 +627,9 @@ where 1 = 1
             else:
                 sql_type = jinja_call("dbt_utils.type_string()")
 
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition[data_type.REF_TYPE_VAR_NAME]))\
-                or (data_type.ONE_OF_VAR_NAME in definition and is_string(definition)):
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition[data_type.REF_TYPE_VAR_NAME])) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_string(definition)
+        ):
             sql_type = jinja_call("dbt_utils.type_string()")
             if self.destination_type == DestinationType.CLICKHOUSE:
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
@@ -626,16 +640,22 @@ where 1 = 1
                 sql_type = f"{sql_type}(1024)"
         else:
             if data_type.REF_TYPE_VAR_NAME in definition:
-                print(f"WARN: Unknown ref type {definition[data_type.REF_TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
+                print(
+                    f"WARN: Unknown ref type {definition[data_type.REF_TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}"
+                )
             elif data_type.ONE_OF_VAR_NAME in definition:
-                print(f"WARN: Unknown onOf simple type {definition[data_type.ONE_OF_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
+                print(
+                    f"WARN: Unknown onOf simple type {definition[data_type.ONE_OF_VAR_NAME]} for column {property_name} at {self.current_json_path()}"
+                )
             else:
                 print(f"WARN: Unknown type {definition[data_type.TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
             return column_name
 
         if self.destination_type == DestinationType.CLICKHOUSE:
-            if data_type.REF_TYPE_VAR_NAME in definition and (data_type.NUMBER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
-                                                              or data_type.INTEGER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]):
+            if data_type.REF_TYPE_VAR_NAME in definition and (
+                data_type.NUMBER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
+                or data_type.INTEGER_TYPE in definition[data_type.REF_TYPE_VAR_NAME]
+            ):
                 trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
                 return f"accurateCastOrNull({trimmed_column_name}, '{sql_type}') as {column_name}"
             else:
@@ -765,7 +785,11 @@ where 1 = 1
         the curly brackets.
         """
 
-        if data_type.TYPE_VAR_NAME not in definition and data_type.REF_TYPE_VAR_NAME not in definition and data_type.ONE_OF_VAR_NAME not in definition:
+        if (
+            data_type.TYPE_VAR_NAME not in definition
+            and data_type.REF_TYPE_VAR_NAME not in definition
+            and data_type.ONE_OF_VAR_NAME not in definition
+        ):
             col = column_name
         elif data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
             col = f"boolean_to_string({column_name})"
