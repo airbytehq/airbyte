@@ -77,7 +77,7 @@ const useCreateSourceDefinition = () => {
   const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<SourceDefinitionRead, Error, SourceDefinitionCreate>(
-    (sourceDefinition) => service.create({ workspaceId, sourceDefinition }),
+    (sourceDefinition) => service.createCustom({ workspaceId, sourceDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
@@ -94,7 +94,6 @@ const useCreateSourceDefinition = () => {
 const useUpdateSourceDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
-  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<
     SourceDefinitionRead,
@@ -103,7 +102,7 @@ const useUpdateSourceDefinition = () => {
       sourceDefinitionId: string;
       dockerImageTag: string;
     }
-  >((sourceDefinition) => service.update({ workspaceId, sourceDefinition }), {
+  >((sourceDefinition) => service.update(sourceDefinition), {
     onSuccess: (data) => {
       queryClient.setQueryData(sourceDefinitionKeys.detail(data.sourceDefinitionId), data);
 

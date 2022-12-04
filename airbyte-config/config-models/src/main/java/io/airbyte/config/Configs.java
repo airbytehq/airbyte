@@ -687,6 +687,8 @@ public interface Configs {
    */
   int getActivityNumberOfAttempt();
 
+  boolean getAutoDetectSchema();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING
