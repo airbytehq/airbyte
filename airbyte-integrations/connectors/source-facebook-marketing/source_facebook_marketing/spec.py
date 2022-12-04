@@ -47,7 +47,13 @@ class InsightConfig(BaseModel):
     action_breakdowns: Optional[List[ValidActionBreakdowns]] = Field(
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
-        default=["action_type", "action_target_id", "action_destination"],
+        default=[],
+    )
+
+    action_breakdowns_allow_empty: bool = Field(
+        description="Allows action_breakdowns to be an empty list",
+        default=True,
+        airbyte_hidden=True,
     )
 
     time_increment: Optional[PositiveInt] = Field(
