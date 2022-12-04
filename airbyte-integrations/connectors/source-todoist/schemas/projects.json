@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "properties": {
+    "color": {
+      "type": "string"
+    },
+    "comment_count": {
+      "type": "integer"
+    },
+    "id": {
+      "type": "string"
+    },
+    "is_favorite": {
+      "type": "boolean"
+    },
+    "is_inbox_project": {
+      "type": "boolean"
+    },
+    "is_shared": {
+      "type": "boolean"
+    },
+    "is_team_inbox": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "order": {
+      "type": "integer"
+    },
+    "parent_id": {
+      "type": "null"
+    },
+    "url": {
+      "type": "string"
+    },
+    "view_style": {
+      "type": "string"
+    }
+  },
+  "type": "object"
+}
