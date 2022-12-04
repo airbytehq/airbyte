@@ -141,7 +141,7 @@ public abstract class DestinationAcceptanceTest {
   protected String getNormalizationImageName() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
       .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
-          + standardDestinationDefinition.getDockerImageTag())
+          + standardDestinationDefinition.getNormalizationTag())
       .orElse(null);
   }
 

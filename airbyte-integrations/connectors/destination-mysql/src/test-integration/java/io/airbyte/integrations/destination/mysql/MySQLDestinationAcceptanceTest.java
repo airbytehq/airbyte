@@ -50,10 +50,6 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     return "airbyte/destination-mysql:dev";
   }
 
-  @Override
-  protected String getNormalizationImageName() {
-    return "airbyte/normalization-mysql:0.2.24";
-  }
 
   @Override
   protected boolean supportsDBT() {
