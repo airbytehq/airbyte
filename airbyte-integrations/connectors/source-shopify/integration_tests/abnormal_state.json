@@ -26,6 +26,9 @@
   "products": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
+  "products_graph_ql": {
+    "updatedAt": "2025-07-08T05:40:38-07:00"
+  },
   "abandoned_checkouts": {
     "updated_at": "2025-07-08T05:40:38-07:00"
   },
