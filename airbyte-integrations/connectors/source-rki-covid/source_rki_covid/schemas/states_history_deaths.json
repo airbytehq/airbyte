@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "cases": {
+    "deaths": {
       "type": ["integer", "null"]
     },
     "date": {
@@ -15,5 +15,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": ["abbreviation", "cases", "date", "name"]
+  "required": ["abbreviation", "date", "deaths", "name"]
 }

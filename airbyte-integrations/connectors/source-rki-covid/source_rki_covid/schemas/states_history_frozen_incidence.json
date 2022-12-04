@@ -2,10 +2,13 @@
   "$schema": "http://json-schema.org/schema#",
   "type": "object",
   "properties": {
-    "cases": {
-      "type": ["integer", "null"]
+    "weekIncidence": {
+      "type": ["number", "null"]
     },
     "date": {
+      "type": ["string", "null"]
+    },
+    "dataSource": {
       "type": ["string", "null"]
     },
     "name": {
@@ -15,5 +18,5 @@
       "type": ["string", "null"]
     }
   },
-  "required": ["abbreviation", "cases", "date", "name"]
+  "required": ["abbreviation", "dataSource", "date", "name", "weekIncidence"]
 }
