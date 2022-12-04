@@ -14,14 +14,36 @@ definitions:
     $ref: "*ref(definitions.base_requester)"
     request_options_provider:
       request_parameters:
-        start_date: "{{ config['start_date'].split('T')[0] }}"
-        end_date: "{{ config['end_date'].split('T')[0] }}"
+        start_date: "{{ config['start_datetime'].split('T')[0] }}"
+        end_date: "{{ config['end_datetime'].split('T')[0] }}"
   datetime_requester:
+    # This requester is not strictly necessary, but is kept for clarity.
     $ref: "*ref(definitions.base_requester)"
-    request_options_provider:
-      request_parameters:
-        start_datetime: "{{ config['start_datetime'] }}"
-        end_datetime: "{{ config['end_datetime'] }}"
+  datetime_stream_slicer:
+    type: DatetimeStreamSlicer
+    # Start datetime defaults to day before end_datetime, or yesterday if end_datetime is not set.
+    start_datetime: "{{ 
+        format_datetime(
+            as_timezone(
+                config.get(
+                    'start_datetime',
+                    day_delta(-1, config.get('end_datetime', now_utc())),
+                ),
+                'UTC',
+            ),
+        '%Y-%m-%dT%H:%M:%S',
+        )
+    }}"
+    end_datetime: "{{ format_datetime(as_timezone(config.get('end_datetime', now_utc()), 'UTC'), '%Y-%m-%dT%H:%M:%S') }}"
+    step: 30d
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
+    cursor_field: "timestamp"
+    start_time_option:
+      field_name: "start_datetime"
+      inject_into: "request_parameter"
+    end_time_option:
+      field_name: "end_datetime"
+      inject_into: "request_parameter"
   paginator:
     type: DefaultPaginator
     pagination_strategy:
@@ -48,6 +70,8 @@ definitions:
     $ref: "*ref(definitions.base_retriever)"
     requester:
       $ref: "*ref(definitions.datetime_requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.datetime_stream_slicer)"
   date_stream:
     retriever:
       $ref: "*ref(definitions.date_retriever)"
@@ -115,4 +139,5 @@ streams:
 
 check:
   stream_names:
-    - "heart_rate"
+#    - "heart_rate"
+    - "daily_activity"

@@ -8,6 +8,7 @@ import numbers
 from typing import Union
 
 from dateutil import parser
+from dateutil import tz as dateutil_tz
 
 """
 This file contains macros that can be evaluated by a `JinjaInterpolation` object
@@ -83,17 +84,23 @@ def max(*args):
     return builtins.max(*args)
 
 
-def day_delta(num_days: int) -> str:
+def day_delta(num_days: int, from_date: Union[str, datetime.datetime] = None) -> str:
     """
-    Returns datetime of now() + num_days
+    Returns datetime of now() + num_days if not from_date is provided, otherwise returns datetime of from_date + num_days
 
     Usage:
     `"{{ day_delta(25) }}"`
+    `"{{ day_delta(25, '2021-01-01') }}"`
 
     :param num_days: number of days to add to current date time
+    :param from_date: date time to add num_days to
     :return: datetime formatted as RFC3339
     """
-    return (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
+    if from_date is None:
+        from_date = datetime.datetime.now(datetime.timezone.utc)
+    elif isinstance(from_date, str):
+        from_date = parser.parse(from_date)
+    return (from_date + datetime.timedelta(days=num_days)).strftime("%Y-%m-%dT%H:%M:%S.%f%z")
 
 
 def format_datetime(dt: Union[str, datetime.datetime], format: str):
@@ -108,5 +115,17 @@ def format_datetime(dt: Union[str, datetime.datetime], format: str):
     return parser.parse(dt).strftime(format)
 
 
-_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime]
+def as_timezone(dt: Union[str, datetime.datetime], timezone: str):
+    """
+    Converts datetime to another timezone
+
+    Usage:
+    `"{{ as_timezone(config.start_date, 'America/New_York') }}"`
+    """
+    if isinstance(dt, datetime.datetime):
+        return dt.astimezone(dateutil_tz.gettz(timezone))
+    return parser.parse(dt).astimezone(dateutil_tz.gettz(timezone))
+
+
+_macros_list = [now_local, now_utc, today_utc, timestamp, max, day_delta, format_datetime, as_timezone]
 macros = {f.__name__: f for f in _macros_list}
