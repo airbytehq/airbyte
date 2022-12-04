@@ -71,6 +71,7 @@ GitLab source is working with GitLab API v4. It can also work with self-hosted G
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
 | 0.1.9   | 2022-12-05 | [7506](https://github.com/airbytehq/airbyte/pull/7506)   | Add `OAuth2.0` authentication option                                                       |
+| 0.1.8   | 2022-12-02 | [20023](https://github.com/airbytehq/airbyte/pull/20023) | Fix duplicated records issue for `Projects` stream                                         |
 | 0.1.7   | 2022-12-01 | [19986](https://github.com/airbytehq/airbyte/pull/19986) | Fix `GroupMilestones` stream schema                                                        |
 | 0.1.6   | 2022-06-23 | [13252](https://github.com/airbytehq/airbyte/pull/13252) | Add GroupIssueBoards stream                                                                |
 | 0.1.5   | 2022-05-02 | [11907](https://github.com/airbytehq/airbyte/pull/11907) | Fix null projects param and `container_expiration_policy`                                  |
