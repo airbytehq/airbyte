@@ -5,13 +5,7 @@
 
 import pytest
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import (
-    AirbyteStream,
-    ConfiguredAirbyteCatalog,
-    ConfiguredAirbyteStream,
-    DestinationSyncMode,
-    SyncMode,
-)
+from airbyte_cdk.models import AirbyteStream, ConfiguredAirbyteCatalog, ConfiguredAirbyteStream, DestinationSyncMode, SyncMode
 
 
 @pytest.fixture

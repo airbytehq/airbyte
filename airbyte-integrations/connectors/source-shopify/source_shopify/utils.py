@@ -3,13 +3,12 @@
 #
 
 
+import enum
 from functools import wraps
 from time import sleep
-from typing import Dict, Optional, List
-import enum
+from typing import Dict, List, Optional
 
 import requests
-
 
 SCOPES_MAPPING = {
     "read_customers": ["Customers", "MetafieldCustomers"],
@@ -201,18 +200,12 @@ class ShopifyRateLimiter:
             def wrapper_balance_rate_limit(*args, **kwargs):
                 if api_type == ApiTypeEnum.rest.value:
                     ShopifyRateLimiter.wait_time(
-                        ShopifyRateLimiter.get_rest_api_wait_time(
-                            *args, threshold=threshold, rate_limit_header=rate_limit_header
-                        )
+                        ShopifyRateLimiter.get_rest_api_wait_time(*args, threshold=threshold, rate_limit_header=rate_limit_header)
                     )
                 elif api_type == ApiTypeEnum.graphql.value:
-                    ShopifyRateLimiter.wait_time(
-                        ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold)
-                    )
+                    ShopifyRateLimiter.wait_time(ShopifyRateLimiter.get_graphql_api_wait_time(*args, threshold=threshold))
                 else:
-                    raise UnrecognisedApiType(
-                        f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}"
-                    )
+                    raise UnrecognisedApiType(f"unrecognised api type: {api_type}. valid values are: {ApiTypeEnum.api_types()}")
                 return func(*args, **kwargs)
 
             return wrapper_balance_rate_limit

@@ -14,11 +14,11 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 
 from .auth import ShopifyAuthenticator
+from .graphql import get_query_products
 from .transform import DataTypeEnforcer
 from .utils import SCOPES_MAPPING, ApiTypeEnum
 from .utils import EagerlyCachedStreamState as stream_state_cache
 from .utils import ShopifyRateLimiter as limiter
-from .graphql import get_query_products
 
 
 class ShopifyStream(HttpStream, ABC):
@@ -115,9 +115,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         # but many other use `str` values for this, we determine what to use based on `cursor_field` value
         return 0 if self.cursor_field == "id" else ""
 
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         return {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, self.default_state_comparison_value),
@@ -126,9 +124,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
         }
 
     @stream_state_cache.cache_stream_state
-    def request_params(
-        self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
-    ):
+    def request_params(self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs):
         params = super().request_params(stream_state=stream_state, next_page_token=next_page_token, **kwargs)
         # If there is a next page token then we should only send pagination-related parameters.
         if not next_page_token:
@@ -140,9 +136,7 @@ class IncrementalShopifyStream(ShopifyStream, ABC):
     # Parse the `stream_slice` with respect to `stream_state` for `Incremental refresh`
     # cases where we slice the stream, the endpoints for those classes don't accept any other filtering,
     # but they provide us with the updated_at field in most cases, so we used that as incremental filtering during the order slicing.
-    def filter_records_newer_than_state(
-        self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None
-    ) -> Iterable:
+    def filter_records_newer_than_state(self, stream_state: Mapping[str, Any] = None, records_slice: Iterable[Mapping] = None) -> Iterable:
         # Getting records >= state
         if stream_state:
             state_value = stream_state.get(self.cursor_field)
@@ -198,9 +192,7 @@ class ShopifySubstream(IncrementalShopifyStream):
         """
         return self.parent_stream_class(self.config) if self.parent_stream_class else None
 
-    def get_updated_state(
-        self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]
-    ) -> Mapping[str, Any]:
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """UPDATING THE STATE OBJECT:
         Stream: Transactions
         Parent Stream: Orders
@@ -271,9 +263,7 @@ class ShopifySubstream(IncrementalShopifyStream):
                     sorted_substream_slices.append(
                         {
                             self.slice_key: record[self.nested_record],
-                            self.cursor_field: record[self.nested_substream][0].get(
-                                self.cursor_field, self.default_state_comparison_value
-                            ),
+                            self.cursor_field: record[self.nested_substream][0].get(self.cursor_field, self.default_state_comparison_value),
                         }
                     )
             else:
@@ -700,9 +690,7 @@ class InventoryLevels(ShopifySubstream):
         records_stream = super().parse_response(response, **kwargs)
 
         def generate_key(record):
-            record.update(
-                {"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))}
-            )
+            record.update({"id": "|".join((str(record.get("location_id", "")), str(record.get("inventory_item_id", ""))))})
             return record
 
         # associate the surrogate key
@@ -831,19 +819,13 @@ class SourceShopify(AbstractSource):
             Transactions(config),
         ]
 
-        return [
-            stream_instance
-            for stream_instance in stream_instances
-            if self.format_name(stream_instance.name) in permitted_streams
-        ]
+        return [stream_instance for stream_instance in stream_instances if self.format_name(stream_instance.name) in permitted_streams]
 
     @staticmethod
     def get_user_scopes(config):
         session = requests.Session()
         headers = config["authenticator"].get_auth_header()
-        response = session.get(
-            f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers
-        ).json()
+        response = session.get(f"https://{config['shop']}.myshopify.com/admin/oauth/access_scopes.json", headers=headers).json()
         return response["access_scopes"]
 
     @staticmethod

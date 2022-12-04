@@ -1,20 +1,26 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
+from typing import Optional
+
 import sgqlc.operation
 
 from . import shopify_schema
-from typing import Optional
 
 _schema = shopify_schema
 _schema_root = _schema.shopify_schema
+
 
 # the graphql api requires the query filter to be snake case even though the column returned is camel case
 def _camel_to_snake(camel_case: str):
     snake_case = []
     for char in camel_case:
         if char.isupper():
-            snake_case.append('_' + char.lower())
+            snake_case.append("_" + char.lower())
         else:
             snake_case.append(char)
-    return ''.join(snake_case).lstrip('_')
+    return "".join(snake_case).lstrip("_")
 
 
 def get_query_products(first: int, filter_field: str, filter_value: str, next_page_token: Optional[str]):
