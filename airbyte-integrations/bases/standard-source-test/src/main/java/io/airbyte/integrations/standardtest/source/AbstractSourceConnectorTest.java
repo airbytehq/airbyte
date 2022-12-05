@@ -134,6 +134,14 @@ public abstract class AbstractSourceConnectorTest {
         workspaceRoot.toString(),
         localRoot.toString(),
         "host");
+
+    postSetup();
+  }
+
+  /**
+   * Override this method if you want to do any per-test setup that depends on being able to e.g. {@link #runRead(ConfiguredAirbyteCatalog)}.
+   */
+  protected void postSetup() throws Exception {
   }
 
   @AfterEach
