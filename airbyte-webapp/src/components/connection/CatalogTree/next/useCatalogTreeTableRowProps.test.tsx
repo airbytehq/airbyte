@@ -53,7 +53,7 @@ const testSetup = (initialValues: Partial<FormikConnectionFormValues>, isBulkEdi
     return { initialValues: initialValues } as any;
   });
   jest.spyOn(formik, "useField").mockImplementationOnce(() => {
-    // eslint-disable-next-line
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return [{}, { error: error }] as any; // no error
   });
 };
