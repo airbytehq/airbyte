@@ -44,16 +44,6 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
 }) => {
   const { formatMessage } = useIntl();
 
-  const getInfo = (namespaceDefinition: NamespaceDefinitionType): React.ReactNode => {
-    switch (namespaceDefinition) {
-      case NamespaceDefinitionType.source:
-        return <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source.description" />;
-      case NamespaceDefinitionType.destination:
-      case NamespaceDefinitionType.customformat:
-        return <FormattedMessage id="connectionForm.modal.destinationNamespace.option.destination.description" />;
-    }
-  };
-
   return (
     <Formik
       initialValues={{
@@ -142,7 +132,13 @@ export const DestinationNamespaceModal: React.FC<DestinationNamespaceModalProps>
               </div>
             </div>
             <div className={styles.description}>
-              <Text>{getInfo(values.namespaceDefinition)}</Text>
+              {values.namespaceDefinition === NamespaceDefinitionType.source && (
+                <FormattedMessage id="connectionForm.modal.destinationNamespace.option.source.description" />
+              )}
+              {(values.namespaceDefinition === NamespaceDefinitionType.destination ||
+                values.namespaceDefinition === NamespaceDefinitionType.customformat) && (
+                <FormattedMessage id="connectionForm.modal.destinationNamespace.option.destination.description" />
+              )}
               <Text className={styles.generalInfo}>
                 <FormattedMessage id="connectionForm.modal.destinationNamespace.description" />
               </Text>
