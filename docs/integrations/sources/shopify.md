@@ -9,13 +9,13 @@ description: >-
 
 The Shopify source supports both Full Refresh and Incremental syncs. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run.
 
-This source can sync data for the [Shopify API](https://help.shopify.com/en/api/reference).
+This source can sync data for the [Shopify REST API](https://shopify.dev/api/admin-rest) and the [Shopify GraphQl API](https://shopify.dev/api/admin-graphql).
 
 This Source Connector is based on a [Airbyte CDK](https://docs.airbyte.io/connector-development/cdk-python).
 
 ## Troubleshooting
 
-Check out common troubleshooting issues for the BigQuery destination connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
+Check out common troubleshooting issues for the Shopify source connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-shopify).
 
 ### Output schema
 
@@ -32,6 +32,7 @@ This Source is capable of syncing the following core Streams:
 * [Orders Refunds](https://shopify.dev/api/admin/rest/reference/orders/refund)
 * [Orders Risks](https://shopify.dev/api/admin/rest/reference/orders/order-risk)
 * [Products](https://help.shopify.com/en/api/reference/products)
+* [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
 * [Transactions](https://help.shopify.com/en/api/reference/orders/transaction)
 * [Balance Transactions](https://shopify.dev/api/admin-rest/2021-07/resources/transactions)
 * [Pages](https://help.shopify.com/en/api/reference/online-store/page)
@@ -109,6 +110,7 @@ This Source is capable of syncing the following core Streams:
 * [Orders Refunds](https://shopify.dev/api/admin-rest/2022-01/resources/refund#top)
 * [Orders Risks](https://shopify.dev/api/admin-rest/2022-01/resources/order-risk#top)
 * [Products](https://shopify.dev/api/admin-rest/2022-01/resources/product#top)
+* [Products (GraphQL)](https://shopify.dev/api/admin-graphql/2022-10/queries/products)
 * [Product Images](https://shopify.dev/api/admin-rest/2022-01/resources/product-image)
 * [Product Variants](https://shopify.dev/api/admin-rest/2022-01/resources/product-variant)
 * [Transactions](https://shopify.dev/api/admin-rest/2022-01/resources/transaction#top)
@@ -145,7 +147,8 @@ This is expected when the connector hits the 429 - Rate Limit Exceeded HTTP Erro
 
 | Version | Date       | Pull Request                                              | Subject                                                                                                   |
 |:--------|:-----------|:----------------------------------------------------------|:----------------------------------------------------------------------------------------------------------|
-| 0.2.0   | 2022-10-21 | [18298](https://github.com/airbytehq/airbyte/pull/18298)  | Updated API version to the `2022-10`, make stream schemas backward cpmpatible                                                                                 |
+| 0.3.0   | 2022-11-16 | [19492](https://github.com/airbytehq/airbyte/pull/19492)  | Add support for graphql and add a graphql products stream                                                 |
+| 0.2.0   | 2022-10-21 | [18298](https://github.com/airbytehq/airbyte/pull/18298)  | Updated API version to the `2022-10`, make stream schemas backward cpmpatible                             |
 | 0.1.39  | 2022-10-13 | [17962](https://github.com/airbytehq/airbyte/pull/17962)  | Add metafield streams; support for nested list streams                                                    |
 | 0.1.38  | 2022-10-10 | [17777](https://github.com/airbytehq/airbyte/pull/17777)  | Fixed `404` for configured streams, fix missing `cursor` error for old records                            |
 | 0.1.37  | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500)  | Improve input configuration copy                                                                          |
