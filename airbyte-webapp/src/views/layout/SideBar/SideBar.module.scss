@@ -14,7 +14,7 @@
   background-color: colors.$white;
   padding: 23px 4px 15px;
   text-align: center;
-  box-shadow: 0 2px 4px 0 rgba(colors.$dark-blue, 5%);
+  box-shadow: variables.$box-shadow-sidebar;
 }
 
 .text {
