@@ -93,14 +93,40 @@ RUN set -eux; \
 RUN rustup set profile default \
     && rustup component add clippy rustfmt rust-docs
 
-# Add `flow` user with sudo access.
-RUN useradd flow --create-home --shell /bin/bash \
-    && echo flow ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/flow \
-    && chmod 0440 /etc/sudoers.d/flow
+ARG USERNAME=flow
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
 
-# Adapted from: https://github.com/microsoft/vscode-dev-containers/tree/main/containers/docker-from-docker#adding-the-user-to-a-docker-group
-COPY docker-debian.sh /tmp
-RUN bash /tmp/docker-debian.sh true /var/run/docker-host.sock /var/run/docker.sock flow false
+# Add `flow` user with sudo access.
+RUN useradd $USERNAME --create-home --shell /bin/bash \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+# Adapted from https://github.com/microsoft/vscode-dev-containers/blob/main/containers/docker-in-docker/.devcontainer/Dockerfile
+# [Option] Install zsh
+ARG INSTALL_ZSH="true"
+# [Option] Upgrade OS packages to their latest versions
+ARG UPGRADE_PACKAGES="false"
+# [Option] Enable non-root Docker access in container
+ARG ENABLE_NONROOT_DOCKER="true"
+# [Option] Use the OSS Moby Engine instead of the licensed Docker Engine
+ARG USE_MOBY="false"
+# [Option] Engine/CLI Version
+ARG DOCKER_VERSION="latest"
+
+# Enable new "BUILDKIT" mode for Docker CLI
+ENV DOCKER_BUILDKIT=1
+
+COPY common-debian.sh /tmp/library-scripts/
+COPY docker-in-docker-debian.sh /tmp/library-scripts/
+RUN apt-get update \
+    && /bin/bash /tmp/library-scripts/common-debian.sh "${INSTALL_ZSH}" "${USERNAME}" "${USER_UID}" "${USER_GID}" "${UPGRADE_PACKAGES}" "true" "true" \
+    # Use Docker script from script library to set things up
+    && /bin/bash /tmp/library-scripts/docker-in-docker-debian.sh "${ENABLE_NONROOT_DOCKER}" "${USERNAME}" "${USE_MOBY}" "${DOCKER_VERSION}" \
+    # Clean up
+    && apt-get autoremove -y && apt-get clean -y && rm -rf /var/lib/apt/lists/* /tmp/library-scripts/
+
+VOLUME [ "/var/lib/docker" ]
 
 # VS Code overrides ENTRYPOINT and CMD when executing `docker run` by default.
 # Setting the ENTRYPOINT to docker-init.sh will configure non-root access to

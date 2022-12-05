@@ -5,11 +5,8 @@ services:
     build:
       context: .
       dockerfile: github-ubuntu-2004.Dockerfile
-
     volumes:
       - ..:/workspace:cached
-      # Map the host docker socket into the container.
-      - /var/run/docker.sock:/var/run/docker-host.sock
       # Map /var/tmp of the host into the container, such that files staged into
       # /var/tmp are accessible on the host, and from there through started docker
       # invocations which pass files via bind-mounts.
@@ -22,6 +19,7 @@ services:
       # Use /var/tmp as the default temporary directory, rather than /tmp.
       TMPDIR: /var/tmp
 
+    privileged: true
     # Wrap in an init process that reaps defunct child processes.
     init: true
     # Required for ptrace-based debuggers like C++, Go, and Rust.
