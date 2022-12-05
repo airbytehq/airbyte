@@ -125,6 +125,7 @@ public abstract class AbstractSourceConnectorTest {
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
+    setupEnvironment(environment);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     mConfigRepository = mock(ConfigRepository.class);
     processFactory = new DockerProcessFactory(
@@ -133,8 +134,6 @@ public abstract class AbstractSourceConnectorTest {
         workspaceRoot.toString(),
         localRoot.toString(),
         "host");
-
-    setupEnvironment(environment);
   }
 
   @AfterEach

@@ -9,6 +9,7 @@ import static io.airbyte.db.PostgresUtils.getCertificate;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.Database;
@@ -59,6 +60,7 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
     environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new PostgreSQLContainer<>(DockerImageName.parse("postgres:bullseye")
         .asCompatibleSubstituteFor("postgres"));
     container.start();
