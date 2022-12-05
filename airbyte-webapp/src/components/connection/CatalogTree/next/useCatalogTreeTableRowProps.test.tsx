@@ -49,7 +49,7 @@ const testSetup = (initialValues: Partial<FormikConnectionFormValues>, isBulkEdi
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [isBulkEdit, () => null] as any); // not selected for bulk edit
   jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-    // eslint-disable-next-line
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
     return { initialValues: initialValues } as any;
   });
   jest.spyOn(formik, "useField").mockImplementationOnce(() => {
