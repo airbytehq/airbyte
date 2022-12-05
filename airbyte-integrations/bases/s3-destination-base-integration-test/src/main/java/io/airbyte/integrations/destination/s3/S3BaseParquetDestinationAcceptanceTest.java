@@ -78,7 +78,7 @@ public abstract class S3BaseParquetDestinationAcceptanceTest extends S3AvroParqu
 
   @Override
   protected TestDataComparator getTestDataComparator() {
-    return new S3AvroParquetTestDataComparator();
+    return new S3BaseAvroParquetTestDataComparator();
   }
 
   @Override

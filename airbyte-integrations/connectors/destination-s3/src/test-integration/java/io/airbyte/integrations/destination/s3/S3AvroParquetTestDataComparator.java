@@ -1,13 +1,10 @@
-/*
- * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
- */
-
 package io.airbyte.integrations.destination.s3;
 
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -17,7 +14,7 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
   @Override
   protected boolean compareDateValues(String airbyteMessageValue, String destinationValue) {
     var destinationDate = LocalDate.ofEpochDay(Long.parseLong(destinationValue));
-    var expectedDate = LocalDate.parse(airbyteMessageValue, DateTimeFormatter.ofPattern(AdvancedTestDataComparator.AIRBYTE_DATE_FORMAT));
+    var expectedDate = LocalDate.parse(airbyteMessageValue, DateTimeFormatter.ISO_LOCAL_DATE);
     return expectedDate.equals(destinationDate);
   }
 
@@ -32,9 +29,14 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
 
   @Override
   protected boolean compareDateTimeValues(String airbyteMessageValue, String destinationValue) {
-    var format = DateTimeFormatter.ofPattern(AdvancedTestDataComparator.AIRBYTE_DATETIME_FORMAT);
-    LocalDateTime dateTime = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
-    return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
+    LocalDateTime destinationDate = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+    return super.compareDateTimeValues(airbyteMessageValue, destinationDate.toString());
   }
 
+  @Override
+  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
+    var destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+    var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
+    return expectedDate.equals(destinationDate);
+  }
 }

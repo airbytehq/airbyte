@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +29,19 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   public static final String AIRBYTE_DATETIME_FORMAT = "yyyy-MM-dd'T'HH:mm:ss";
   public static final String AIRBYTE_DATETIME_PARSED_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
   public static final String AIRBYTE_DATETIME_PARSED_FORMAT_TZ = "yyyy-MM-dd HH:mm:ss XXX";
-  public static final String AIRBYTE_DATETIME_WITH_TZ_FORMAT = "yyyy-MM-dd'T'HH:mm:ssXXX";
+  public static final String AIRBYTE_DATETIME_WITH_TZ_FORMAT = "[yyyy][yy]['-']['/']['.'][' '][MMM][MM][M]['-']['/']['.'][' '][dd][d]"
+      + "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][' '][G]]]";
+
+  // TODO revisit dataset which used date as string: exchange_rate_catalog.json
+  // tried to change it to date time type but not some connectors failed to store it e.i. bigquery-denormalized
+  private static final Set<String> TEST_DATASET_IGNORE_LIST =
+      Set.of(
+          "2020-08-29T00:00:00Z",
+          "2020-08-30T00:00:00Z",
+          "2020-08-31T00:00:00Z",
+          "2020-09-01T00:00:00Z",
+          "2020-09-15T16:58:52.000000Z",
+          "2020-03-31T00:00:00Z");
 
   @Override
   public void assertSameData(List<JsonNode> expected, List<JsonNode> actual) {
@@ -81,8 +95,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   protected boolean compareJsonNodes(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue == null || actualValue == null) {
       return expectedValue == null && actualValue == null;
-    } else if (expectedValue.isNumber() || expectedValue.isDouble() || expectedValue.isFloat()) {
-      return compareNumericValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isBoolean()) {
       return compareBooleanValues(expectedValue.asText(), actualValue.asText());
     } else if (isDateTimeWithTzValue(expectedValue.asText())) {
@@ -91,6 +103,10 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateTimeValues(expectedValue.asText(), actualValue.asText());
     } else if (isDateValue(expectedValue.asText())) {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
+    } else if (isTimeWithTimezone(expectedValue.asText()) || isTimeWithoutTimezone(expectedValue.asText())) {
+      return compareTime(expectedValue.asText(), actualValue.asText());
+    } else if (StringUtils.isNumeric(expectedValue.asText())) {
+      return compareNumericValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
     } else if (expectedValue.isObject()) {
@@ -151,7 +167,8 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean isDateTimeWithTzValue(final String value) {
-    return value.matches(".+[+-]\\d{2}:\\d{2}");
+    return !TEST_DATASET_IGNORE_LIST.contains(value) &&
+        value.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})( BC)?$");
   }
 
   protected ZonedDateTime parseDestinationDateWithTz(final String destinationValue) {
@@ -171,7 +188,15 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean isDateTimeValue(final String value) {
-    return value.matches("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
+    return value.matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?( BC)?$");
+  }
+
+  protected boolean isTimeWithTimezone(final String value) {
+    return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|[+\\-]\\d{1,2}:\\d{2})$");
+  }
+
+  protected boolean isTimeWithoutTimezone(final String value) {
+    return value.matches("^\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?$");
   }
 
   protected boolean compareDateTimeValues(final String airbyteMessageValue, final String destinationValue) {
@@ -179,10 +204,14 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   }
 
   protected boolean isDateValue(final String value) {
-    return value.matches("\\d{4}-\\d{2}-\\d{2}");
+    return value.matches("^\\d{4}-\\d{2}-\\d{2}( BC)?$");
   }
 
   protected boolean compareDateValues(final String airbyteMessageValue, final String destinationValue) {
+    return compareTextValues(airbyteMessageValue, destinationValue);
+  }
+
+  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
     return compareTextValues(airbyteMessageValue, destinationValue);
   }
 

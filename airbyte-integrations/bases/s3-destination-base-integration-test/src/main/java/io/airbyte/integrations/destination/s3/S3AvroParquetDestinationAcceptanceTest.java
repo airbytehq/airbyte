@@ -84,7 +84,7 @@ public abstract class S3AvroParquetDestinationAcceptanceTest extends S3Destinati
   }
 
   private Set<Type> getExpectedSchemaType(JsonNode fieldDefinition) {
-    final JsonNode typeProperty = fieldDefinition.get("type");
+    final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
     return Arrays.stream(JsonSchemaType.values())

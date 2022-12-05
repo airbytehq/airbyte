@@ -39,7 +39,7 @@
           "array_big_number": {
             "type": ["array"],
             "items": {
-              "$ref": "WellKnownTypes.json#/definitions/Number"
+              "$ref": "WellKnownTypes.json#/definitions/String"
             }
           },
           "array_integer": {
