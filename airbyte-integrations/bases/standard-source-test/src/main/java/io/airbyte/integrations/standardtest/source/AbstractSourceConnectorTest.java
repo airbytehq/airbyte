@@ -139,10 +139,10 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   /**
-   * Override this method if you want to do any per-test setup that depends on being able to e.g. {@link #runRead(ConfiguredAirbyteCatalog)}.
+   * Override this method if you want to do any per-test setup that depends on being able to e.g.
+   * {@link #runRead(ConfiguredAirbyteCatalog)}.
    */
-  protected void postSetup() throws Exception {
-  }
+  protected void postSetup() throws Exception {}
 
   @AfterEach
   public void tearDownInternal() throws Exception {
