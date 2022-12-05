@@ -141,7 +141,7 @@ class DefaultDiscoverCatalogWorkerTest {
   @Test
   void testDiscoverSchemaProcessFailWithTraceMessage() throws Exception {
     final AirbyteStreamFactory traceStreamFactory = noop -> Lists.newArrayList(
-        AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0)).stream();
+        AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0)).stream();
 
     when(process.exitValue()).thenReturn(1);
 

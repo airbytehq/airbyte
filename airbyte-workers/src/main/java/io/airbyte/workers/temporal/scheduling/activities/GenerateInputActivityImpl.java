@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -17,7 +18,9 @@ import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobResetConnectionConfig;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.ResetSourceConfiguration;
+import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -28,15 +31,19 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
 public class GenerateInputActivityImpl implements GenerateInputActivity {
 
   private final JobPersistence jobPersistence;
+  private final ConfigRepository configRepository;
 
-  public GenerateInputActivityImpl(final JobPersistence jobPersistence) {
+  public GenerateInputActivityImpl(final JobPersistence jobPersistence,
+                                   final ConfigRepository configRepository) {
     this.jobPersistence = jobPersistence;
+    this.configRepository = configRepository;
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -80,6 +87,16 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
 
       final JobRunConfig jobRunConfig = TemporalWorkflowUtils.createJobRunConfig(jobId, attempt);
 
+      List<StandardDestinationDefinition> destinationDefinitionList = configRepository.listStandardDestinationDefinitions(true);
+      Optional<StandardDestinationDefinition> optionalDestinationDefinition = destinationDefinitionList.stream()
+          .filter(destinationDefinition -> config.getDestinationDockerImage()
+              .equalsIgnoreCase(
+                  DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag())))
+          .findFirst();
+      final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
+          standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
+      final boolean supportDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
+
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
@@ -90,7 +107,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withJobId(String.valueOf(jobId))
           .withAttemptId((long) attempt)
           .withDockerImage(config.getDestinationDockerImage())
-          .withProtocolVersion(config.getDestinationProtocolVersion());
+          .withProtocolVersion(config.getDestinationProtocolVersion())
+          .withNormalizationDockerImage(destinationNormalizationDockerImage)
+          .withSupportsDbt(supportDbt);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())
