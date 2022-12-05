@@ -2,6 +2,7 @@ import { fireEvent, render, waitFor } from "@testing-library/react";
 import { IntlProvider } from "react-intl";
 
 import en from "locales/en.json";
+import { ConnectorIds } from "utils/connectors";
 
 import { mockData } from "../../../../../test-utils/mock-data/mockStartWithDestination";
 import { StartWithDestinationCard, StartWithDestinationProps } from "./StartWithDestinationCard";
@@ -27,7 +28,7 @@ describe("<StartWithDestinationCard />", () => {
     fireEvent.click(getByText("Start with MongoDB"));
     await waitFor(() => {
       expect(handler).toHaveBeenCalledTimes(1);
-      expect(handler).toHaveBeenCalledWith("8b746512-8c2e-6ac1-4adc-b59faafd473c");
+      expect(handler).toHaveBeenCalledWith(ConnectorIds.Destinations.MongoDb);
     });
   });
 });

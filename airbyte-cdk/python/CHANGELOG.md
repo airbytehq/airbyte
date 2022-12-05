@@ -3,6 +3,9 @@
 ## 0.12.0
 Improve error readability when reading JSON config files
 
+## 0.11.3
+Low-code: Log response error message on failure
+
 ## 0.11.2
 Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
 
