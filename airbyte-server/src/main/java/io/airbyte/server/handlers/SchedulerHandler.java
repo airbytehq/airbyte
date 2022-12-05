@@ -352,7 +352,8 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
+  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
+      throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
@@ -365,15 +366,17 @@ public class SchedulerHandler {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
-  private void discoveredSchemaWithCatalogDiff(final SourceDiscoverSchemaRead discoveredSchema, final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  private void discoveredSchemaWithCatalogDiff(final SourceDiscoverSchemaRead discoveredSchema,
+                                               final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
         .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
     final ConnectionRead connectionRead = connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId());
     final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
         connectionRead.getSyncCatalog();
-    final CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-        CatalogConverter.toProtocol(currentAirbyteCatalog));
+    final CatalogDiff diff =
+        connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+            CatalogConverter.toProtocol(currentAirbyteCatalog));
     final boolean containsBreakingChange = containsBreakingChange(diff);
     final ConnectionUpdate updateObject =
         new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
@@ -389,7 +392,9 @@ public class SchedulerHandler {
 
   }
 
-  private boolean shouldDisableConnection(final boolean containsBreakingChange, final NonBreakingChangesPreference preference, final CatalogDiff diff) {
+  private boolean shouldDisableConnection(final boolean containsBreakingChange,
+                                          final NonBreakingChangesPreference preference,
+                                          final CatalogDiff diff) {
     if (!envVariableFeatureFlags.autoDetectSchema()) {
       return false;
     }
@@ -438,7 +443,8 @@ public class SchedulerHandler {
     return jobConverter.getJobInfoRead(jobPersistence.getJob(jobId));
   }
 
-  private JobInfoRead submitManualSyncToWorker(final UUID connectionId) throws IOException, IllegalStateException, JsonValidationException, ConfigNotFoundException {
+  private JobInfoRead submitManualSyncToWorker(final UUID connectionId)
+      throws IOException, IllegalStateException, JsonValidationException, ConfigNotFoundException {
     // get standard sync to validate connection id before submitting sync to temporal
     configRepository.getStandardSync(connectionId);
     final ManualOperationResult manualSyncResult = eventRunner.startNewManualSync(connectionId);
