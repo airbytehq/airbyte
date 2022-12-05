@@ -38,6 +38,7 @@ const customStyles: StylesConfig<Tag, true, GroupBase<Tag>> = {
       boxShadow: "none",
       borderColor: state.isFocused ? styles.focusedBorderColor : regularBorderColor,
       ":hover": {
+        cursor: "text",
         borderColor: state.isFocused ? styles.focusedBorderColor : hoveredBorderColor,
       },
     };
@@ -124,8 +125,19 @@ export const TagInput: React.FC<TagInputProps> = ({ onChange, fieldValue, name, 
     }
   };
 
+  /**
+   * Add current input value as new tag when leaving the control.
+   * This needs to be implemented outside of the onBlur prop of react-select because it's not default behavior.
+   */
+  const onBlurControl = () => {
+    if (inputValue) {
+      onChange([...fieldValue, inputValue]);
+      setInputValue("");
+    }
+  };
+
   return (
-    <div data-testid="tag-input">
+    <div data-testid="tag-input" onBlur={onBlurControl}>
       <CreatableSelect
         inputId={id}
         name={name}
