@@ -337,52 +337,6 @@ class DestinationDefinitionsHandlerTest {
   }
 
   @Test
-  @DisplayName("createDestinationDefinition should correctly create a destinationDefinition")
-  void testCreateDestinationDefinition() throws URISyntaxException, IOException, JsonValidationException {
-    final StandardDestinationDefinition destination = generateDestinationDefinition();
-    final String imageName = DockerUtils.getTaggedImageName(destination.getDockerRepository(), destination.getDockerImageTag());
-
-    when(uuidSupplier.get()).thenReturn(destination.getDestinationDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
-        destination.getSpec(),
-        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
-
-    final DestinationDefinitionCreate create = new DestinationDefinitionCreate()
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .icon(destination.getIcon())
-        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest()))
-            .jobSpecific(Collections.emptyList()));
-
-    final DestinationDefinitionRead expectedRead = new DestinationDefinitionRead()
-        .name(destination.getName())
-        .dockerRepository(destination.getDockerRepository())
-        .dockerImageTag(destination.getDockerImageTag())
-        .documentationUrl(new URI(destination.getDocumentationUrl()))
-        .destinationDefinitionId(destination.getDestinationDefinitionId())
-        .icon(DestinationDefinitionsHandler.loadIcon(destination.getIcon()))
-        .protocolVersion(DEFAULT_PROTOCOL_VERSION)
-        .releaseStage(ReleaseStage.CUSTOM)
-        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest()))
-            .jobSpecific(Collections.emptyList()));
-
-    final DestinationDefinitionRead actualRead = destinationDefinitionsHandler.createPrivateDestinationDefinition(create);
-
-    assertEquals(expectedRead, actualRead);
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
-    verify(configRepository).writeStandardDestinationDefinition(destination
-        .withProtocolVersion(DEFAULT_PROTOCOL_VERSION)
-        .withReleaseDate(null)
-        .withReleaseStage(StandardDestinationDefinition.ReleaseStage.CUSTOM));
-  }
-
-  @Test
   @DisplayName("createDestinationDefinition should not create a destinationDefinition with unsupported protocol version")
   void testCreateDestinationDefinitionShouldCheckProtocolVersion() throws URISyntaxException, IOException, JsonValidationException {
     final String invalidProtocolVersion = "121.5.6";
@@ -406,7 +360,11 @@ class DestinationDefinitionsHandlerTest {
                 .cpuRequest(destination.getResourceRequirements().getDefault().getCpuRequest()))
             .jobSpecific(Collections.emptyList()));
 
-    assertThrows(UnsupportedProtocolVersionException.class, () -> destinationDefinitionsHandler.createPrivateDestinationDefinition(create));
+    final CustomDestinationDefinitionCreate customCreate = new CustomDestinationDefinitionCreate()
+        .destinationDefinition(create)
+        .workspaceId(workspaceId);
+
+    assertThrows(UnsupportedProtocolVersionException.class, () -> destinationDefinitionsHandler.createCustomDestinationDefinition(customCreate));
 
     verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository, never()).writeStandardDestinationDefinition(destination

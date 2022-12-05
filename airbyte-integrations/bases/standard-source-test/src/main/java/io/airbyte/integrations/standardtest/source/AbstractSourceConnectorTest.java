@@ -125,6 +125,7 @@ public abstract class AbstractSourceConnectorTest {
     jobRoot = Files.createDirectories(Path.of(workspaceRoot.toString(), "job"));
     localRoot = Files.createTempDirectory(testDir, "output");
     environment = new TestDestinationEnv(localRoot);
+    setupEnvironment(environment);
     workerConfigs = new WorkerConfigs(new EnvConfigs());
     mConfigRepository = mock(ConfigRepository.class);
     processFactory = new DockerProcessFactory(
@@ -134,8 +135,14 @@ public abstract class AbstractSourceConnectorTest {
         localRoot.toString(),
         "host");
 
-    setupEnvironment(environment);
+    postSetup();
   }
+
+  /**
+   * Override this method if you want to do any per-test setup that depends on being able to e.g.
+   * {@link #runRead(ConfiguredAirbyteCatalog)}.
+   */
+  protected void postSetup() throws Exception {}
 
   @AfterEach
   public void tearDownInternal() throws Exception {

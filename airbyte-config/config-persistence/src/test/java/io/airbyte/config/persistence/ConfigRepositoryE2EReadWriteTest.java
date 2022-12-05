@@ -9,6 +9,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION_WORKSPACE_GRANT;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION_OPERATION;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.jooq.impl.DSL.select;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -17,7 +18,6 @@ import static org.mockito.Mockito.spy;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.Geography;
@@ -31,8 +31,8 @@ import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
 import io.airbyte.config.persistence.ConfigRepository.SourceAndDefinition;
+import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.Field;
@@ -42,6 +42,7 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,22 +51,30 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.jooq.DSLContext;
+import org.jooq.JSONB;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+/**
+ * The tests in this class should be moved into separate test suites grouped by resource. Do NOT add
+ * new tests here. Add them to resource based test suites (e.g. WorkspacePersistenceTest). If one
+ * does not exist yet for that resource yet, create one and follow the pattern.
+ */
+@Deprecated
 @SuppressWarnings({"PMD.CyclomaticComplexity", "PMD.NPathComplexity"})
 class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
-  private ConfigRepository configRepository;
-  private DatabaseConfigPersistence configPersistence;
   private final static String DOCKER_IMAGE_TAG = "1.2.0";
   private final static String CONFIG_HASH = "ConfigHash";
 
+  private ConfigRepository configRepository;
+
   @BeforeEach
-  void setup() throws IOException, JsonValidationException, SQLException, DatabaseInitializationException, InterruptedException {
-    configPersistence = spy(new DatabaseConfigPersistence(database));
-    configRepository = spy(new ConfigRepository(configPersistence, database, new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+  void setup() throws IOException, JsonValidationException, SQLException {
+    configRepository = spy(new ConfigRepository(
+        database,
+        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
         new StandardSyncPersistence(database)));
     for (final StandardWorkspace workspace : MockData.standardWorkspaces()) {
       configRepository.writeStandardWorkspaceNoSecrets(workspace);
@@ -101,7 +110,6 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
   @Test
   void testWorkspaceCountConnections() throws IOException {
-
     final UUID workspaceId = MockData.standardWorkspaces().get(0).getWorkspaceId();
     assertEquals(3, configRepository.countConnectionsForWorkspace(workspaceId));
     assertEquals(2, configRepository.countDestinationsForWorkspace(workspaceId));
@@ -132,7 +140,6 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
 
   @Test
   void testSimpleInsertActorCatalog() throws IOException, JsonValidationException, SQLException {
-
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
 
     final StandardSourceDefinition sourceDefinition = new StandardSourceDefinition()
@@ -195,9 +202,7 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   }
 
   @Test
-  void testGetWorkspaceBySlug()
-      throws IOException {
-
+  void testGetWorkspaceBySlug() throws IOException {
     final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
     final StandardWorkspace tombstonedWorkspace = MockData.standardWorkspaces().get(2);
     final Optional<StandardWorkspace> retrievedWorkspace = configRepository.getWorkspaceBySlugOptional(workspace.getSlug(), false);
@@ -495,14 +500,15 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     assertEquals(expected, actual);
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
-  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException, JsonValidationException {
+  void testGetMostRecentActorCatalogFetchEventForSource() throws SQLException, IOException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
-      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
     }
 
     final OffsetDateTime now = OffsetDateTime.now();
-    final OffsetDateTime yesterday = now.minusDays(1l);
+    final OffsetDateTime yesterday = now.minusDays(1L);
 
     final List<ActorCatalogFetchEvent> fetchEvents = MockData.actorCatalogFetchEventsSameSource();
     final ActorCatalogFetchEvent fetchEvent1 = fetchEvents.get(0);
@@ -530,9 +536,9 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
   }
 
   @Test
-  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException, JsonValidationException {
+  void testGetMostRecentActorCatalogFetchEventForSources() throws SQLException, IOException {
     for (final ActorCatalog actorCatalog : MockData.actorCatalogs()) {
-      configPersistence.writeConfig(ConfigSchema.ACTOR_CATALOG, actorCatalog.getId().toString(), actorCatalog);
+      writeActorCatalog(database, Collections.singletonList(actorCatalog));
     }
 
     database.transaction(ctx -> {
@@ -553,6 +559,14 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
     assertEquals(MockData.ACTOR_CATALOG_ID_3, result.get(MockData.SOURCE_ID_2).getActorCatalogId());
   }
 
+  @Test
+  void testGetActorDefinitionsInUseToProtocolVersion() throws IOException {
+    final Set<UUID> actorDefinitionIds = new HashSet<>();
+    actorDefinitionIds.addAll(MockData.sourceConnections().stream().map(SourceConnection::getSourceDefinitionId).toList());
+    actorDefinitionIds.addAll(MockData.destinationConnections().stream().map(DestinationConnection::getDestinationDefinitionId).toList());
+    assertEquals(actorDefinitionIds, configRepository.getActorDefinitionToProtocolVersionMap().keySet());
+  }
+
   private void insertCatalogFetchEvent(final DSLContext ctx, final UUID sourceId, final UUID catalogId, final OffsetDateTime creationDate) {
     ctx.insertInto(ACTOR_CATALOG_FETCH_EVENT)
         .columns(
@@ -565,6 +579,39 @@ class ConfigRepositoryE2EReadWriteTest extends BaseConfigDatabaseTest {
             ACTOR_CATALOG_FETCH_EVENT.MODIFIED_AT)
         .values(UUID.randomUUID(), sourceId, catalogId, "", "", creationDate, creationDate)
         .execute();
+  }
+
+  private static void writeActorCatalog(final Database database, final List<ActorCatalog> configs) throws SQLException {
+    database.transaction(ctx -> {
+      writeActorCatalog(configs, ctx);
+      return null;
+    });
+  }
+
+  private static void writeActorCatalog(final List<ActorCatalog> configs, final DSLContext ctx) {
+    final OffsetDateTime timestamp = OffsetDateTime.now();
+    configs.forEach((actorCatalog) -> {
+      final boolean isExistingConfig = ctx.fetchExists(select()
+          .from(ACTOR_CATALOG)
+          .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId())));
+
+      if (isExistingConfig) {
+        ctx.update(ACTOR_CATALOG)
+            .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
+            .set(ACTOR_CATALOG.CATALOG_HASH, actorCatalog.getCatalogHash())
+            .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)
+            .where(ACTOR_CATALOG.ID.eq(actorCatalog.getId()))
+            .execute();
+      } else {
+        ctx.insertInto(ACTOR_CATALOG)
+            .set(ACTOR_CATALOG.ID, actorCatalog.getId())
+            .set(ACTOR_CATALOG.CATALOG, JSONB.valueOf(Jsons.serialize(actorCatalog.getCatalog())))
+            .set(ACTOR_CATALOG.CATALOG_HASH, actorCatalog.getCatalogHash())
+            .set(ACTOR_CATALOG.CREATED_AT, timestamp)
+            .set(ACTOR_CATALOG.MODIFIED_AT, timestamp)
+            .execute();
+      }
+    });
   }
 
 }
