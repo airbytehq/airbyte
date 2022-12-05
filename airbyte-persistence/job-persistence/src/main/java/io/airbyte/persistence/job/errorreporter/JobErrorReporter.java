@@ -6,6 +6,7 @@ package io.airbyte.persistence.job.errorreporter;
 
 import com.google.common.collect.ImmutableSet;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.config.AttemptFailureSummary;
@@ -116,7 +117,7 @@ public class JobErrorReporter {
               getNormalizationMetadata(destinationDefinition.getNormalizationRepository()),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
-          final String dockerImage = String.format("%s:%s", destinationDefinition.getNormalizationRepository(),
+          final String dockerImage = DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationRepository(),
               destinationDefinition.getNormalizationTag());
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
