@@ -33,7 +33,7 @@ class APIKeyAuthenticator(HttpAuthenticator):
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
-    url_base = "http://api.exchangeratesapi.io/v1"
+    url_base = "https://api.apilayer.com/exchangerates_data/"
 
     cursor_field = "date"
     primary_key = "timestamp"
