@@ -57,7 +57,7 @@ export const ListBox = <T,>({
                   <div
                     className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
                   >
-                    {icon ? <FontAwesomeIcon icon={icon} /> : null}
+                    {icon ? <FontAwesomeIcon className={styles.icon} icon={icon} /> : null}
                     {label}
                   </div>
                 )}

@@ -29,6 +29,10 @@
   list-style-type: none;
 }
 
+.icon {
+  padding-right: variables.$spacing-md;
+}
+
 .optionValue {
   padding: variables.$spacing-lg variables.$spacing-md;
   border-radius: variables.$border-radius-md;
