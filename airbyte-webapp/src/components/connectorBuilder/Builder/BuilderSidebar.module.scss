@@ -30,6 +30,11 @@
 
 .downloadButton {
   margin-top: auto;
+  width: 85%;
+}
+
+.resetButton {
+  margin-top: variables.$spacing-sm;
   margin-bottom: variables.$spacing-md;
   width: 85%;
 }

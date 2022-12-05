@@ -1,6 +1,9 @@
+import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useField, useFormikContext } from "formik";
 
+import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 
 import {
@@ -58,14 +61,13 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <Heading as="h2" size="sm" className={styles.connectorName}>
         Connector Name
       </Heading>
-      <button onClick={() => handleResetForm()}>Reset</button>
       <button onClick={() => onViewSelect("global")}>Global Configuration</button>
 
       <Heading as="h3" size="sm">
         Streams
       </Heading>
 
-      <AddStreamButton numStreams={numStreams} />
+      <AddStreamButton numStreams={numStreams} onAddStream={(addedStreamNum) => onViewSelect(addedStreamNum)} />
 
       {Array.from(Array(numStreams).keys()).map((streamNum) => {
         const streamPath = `streams[${streamNum}]`;
@@ -73,6 +75,14 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       })}
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
+      <Button
+        className={styles.resetButton}
+        variant="danger"
+        onClick={() => handleResetForm()}
+        icon={<FontAwesomeIcon icon={faRotateLeft} />}
+      >
+        Reset Builder
+      </Button>
     </div>
   );
 };

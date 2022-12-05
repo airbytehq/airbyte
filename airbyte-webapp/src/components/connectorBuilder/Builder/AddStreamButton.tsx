@@ -17,9 +17,10 @@ interface AddStreamValues {
 
 interface AddStreamButtonProps {
   numStreams: number;
+  onAddStream: (addedStreamNum: number) => void;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ numStreams }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ numStreams, onAddStream }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { setFieldValue } = useFormikContext();
 
@@ -43,6 +44,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ numStreams }) 
               httpMethod: "GET",
             });
             setIsOpen(false);
+            onAddStream(numStreams);
           }}
         >
           <>
