@@ -102,7 +102,7 @@ spec:
         {{- toYaml .Values.extraVolumeMounts | nindent 8 }}
       {{- end }}
       {{- if .Values.containerSecurityContext }}
-        securityContext: {{- toYaml .Values.containerSecurityContext | nindent 8 }}
+      securityContext: {{- toYaml .Values.containerSecurityContext | nindent 8 }}
       {{- end }}
     {{- if .Values.extraContainers }}
     {{ toYaml .Values.extraContainers | nindent 4 }}

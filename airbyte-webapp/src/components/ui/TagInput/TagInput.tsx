@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import uniqueId from "lodash/uniqueId";
 import { KeyboardEventHandler, useMemo, useState } from "react";
 import { ActionMeta, MultiValue, OnChangeValue } from "react-select";
 import CreatableSelect from "react-select/creatable";
