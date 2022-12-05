@@ -57,7 +57,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
-  // todo: the primary key and cursor dropdowns should be full width of the cell
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (

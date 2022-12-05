@@ -71,6 +71,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
         props.onPathChange(finalValues);
       }}
       variant={props.variant}
+      className={styles.streamPathSelect}
     />
   );
 };
