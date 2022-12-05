@@ -81,6 +81,7 @@
     "yup": "^0.32.11"
   },
   "devDependencies": {
+    "@airbyte/eslint-plugin": "file:./packages/eslint-plugin",
     "@craco/craco": "^7.0.0-alpha.7",
     "@storybook/addon-essentials": "^6.5.7",
     "@storybook/builder-webpack5": "^6.5.7",
