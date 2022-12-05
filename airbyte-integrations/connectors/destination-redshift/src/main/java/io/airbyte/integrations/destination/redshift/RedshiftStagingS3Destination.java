@@ -48,6 +48,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedshiftStagingS3Destination.class);
 
+  public static final String CONFIG_KEY_FILE_BUFFER_COUNT = "file_buffer_count";
+  public static final String CONFIG_KEY_PURGE_STAGING_DATA = "purge_staging_data";
+  public static final String CONFIG_KEY_SCHEMA = "schema";
+  public static final String CONFIG_KEY_UPLOADING_METHOD = "uploading_method";
+
   public RedshiftStagingS3Destination() {
     super(RedshiftInsertDestination.DRIVER_CLASS, new RedshiftSQLNameTransformer(), new RedshiftSqlOperations());
   }
@@ -60,7 +65,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   public AirbyteConnectionStatus check(final JsonNode config) {
     final S3DestinationConfig s3Config = getS3DestinationConfig(findS3Options(config));
     final EncryptionConfig encryptionConfig =
-        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(CONFIG_KEY_UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(CONFIG_KEY_UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     if (isEphemeralKeysAndPurgingStagingData(config, encryptionConfig)) {
       return new AirbyteConnectionStatus()
           .withStatus(Status.FAILED)
@@ -76,7 +81,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final DataSource dataSource = getDataSource(config);
     try {
       final JdbcDatabase database = new DefaultJdbcDatabase(dataSource);
-      final String outputSchema = super.getNamingResolver().getIdentifier(config.get("schema").asText());
+      final String outputSchema = super.getNamingResolver().getIdentifier(config.get(CONFIG_KEY_SCHEMA).asText());
       attemptSQLCreateAndDropTableOperations(outputSchema, database, nameTransformer, redshiftS3StagingSqlOperations);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final ConnectionErrorException e) {
@@ -131,11 +136,11 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
                                             final ConfiguredAirbyteCatalog catalog,
                                             final Consumer<AirbyteMessage> outputRecordCollector) {
     final EncryptionConfig encryptionConfig =
-        config.has("uploading_method") ? EncryptionConfig.fromJson(config.get("uploading_method").get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
+        config.has(CONFIG_KEY_UPLOADING_METHOD) ? EncryptionConfig.fromJson(config.get(CONFIG_KEY_UPLOADING_METHOD).get(JdbcUtils.ENCRYPTION_KEY)) : new NoEncryption();
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
 
-    final int numFileBuffers = s3Options.has("file_buffer_count") ? s3Options.get("file_buffer_count").intValue() : 10;
+    final int numFileBuffers = s3Options.has(CONFIG_KEY_FILE_BUFFER_COUNT) ? s3Options.get(CONFIG_KEY_FILE_BUFFER_COUNT).intValue() : 10;
     if (numFileBuffers < catalog.getStreams().size()) {
       LOGGER.warn(
           "Potential performance issue: catalog contains {} streams, destination configuration "
@@ -157,7 +162,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {
-    return !config.has("purge_staging_data") || config.get("purge_staging_data").asBoolean();
+    return !config.has(CONFIG_KEY_PURGE_STAGING_DATA) || config.get(CONFIG_KEY_PURGE_STAGING_DATA).asBoolean();
   }
 
 }
