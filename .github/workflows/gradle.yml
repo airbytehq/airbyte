@@ -1174,7 +1174,7 @@ jobs:
           secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
       
       - name: "Display logs of k3s"
-        if: always()
+        if: failure()
         shell: bash
         run: |
           journalctl -xeu k3s.service
