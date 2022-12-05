@@ -89,7 +89,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
   value = "",
   withTime = false,
 }) => {
-  const { locale } = useIntl();
+  const { locale, formatMessage } = useIntl();
   const datepickerRef = useRef<ReactDatePicker>(null);
 
   // Additional locales can be registered here as necessary
@@ -156,6 +156,7 @@ export const DatePicker: React.FC<DatePickerProps> = ({
           onChange={handleDatepickerChange}
           customInput={<DatepickerButton />}
           popperClassName={styles.popup}
+          timeCaption={formatMessage({ id: "form.datepickerTimeCaption" })}
         />
       </div>
     </div>
