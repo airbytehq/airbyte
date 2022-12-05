@@ -4,21 +4,22 @@
 
 package io.airbyte.protocol.models;
 
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
+
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.BINARY_DATA_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.BOOLEAN_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.DATE_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.INTEGER_REFERENCE;
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.JSONB_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.NUMBER_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.STRING_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TIMESTAMP_WITH_TIMEZONE_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TIME_WITHOUT_TIMEZONE_REFERENCE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TIME_WITH_TIMEZONE_REFERENCE;
-
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.ImmutableSet;
-import java.util.Set;
 
 public class JsonSchemaPrimitiveUtil {
 
@@ -40,7 +41,8 @@ public class JsonSchemaPrimitiveUtil {
     TIME_WITHOUT_TIMEZONE_V1,
     NUMBER_V1,
     INTEGER_V1,
-    BOOLEAN_V1;
+    BOOLEAN_V1,
+    JSONB_V1;
   }
 
   public static final Set<JsonSchemaPrimitive> VO_JSON_SCHEMA_PRIMITIVE_SET =
@@ -63,6 +65,7 @@ public class JsonSchemaPrimitiveUtil {
           .put(JsonSchemaPrimitive.NUMBER_V1, NUMBER_REFERENCE)
           .put(JsonSchemaPrimitive.INTEGER_V1, INTEGER_REFERENCE)
           .put(JsonSchemaPrimitive.BOOLEAN_V1, BOOLEAN_REFERENCE)
+          .put(JsonSchemaPrimitive.JSONB_V1, JSONB_REFERENCE)
           .build();
 
 }

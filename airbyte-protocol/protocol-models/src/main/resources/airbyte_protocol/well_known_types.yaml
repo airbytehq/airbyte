@@ -73,3 +73,6 @@ definitions:
   Boolean:
     type: boolean
     description: Note the direct usage of a primitive boolean rather than string. Unlike Numbers and Integers, we don't expect unusual values  here.
+  ArbitraryJson:
+    type: object
+    description: It is a decomposed binary format to store JSON. JSONB supports indexing the JSON data, and is very efficient at parsing and querying the JSON data. Also can store array, integer, boolean and other values

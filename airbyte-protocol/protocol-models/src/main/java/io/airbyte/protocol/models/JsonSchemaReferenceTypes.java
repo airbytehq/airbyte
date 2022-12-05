@@ -27,6 +27,7 @@ public class JsonSchemaReferenceTypes {
   public static final String TIMESTAMP_WITHOUT_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimestampWithoutTimezone";
   public static final String TIME_WITH_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimeWithTimezone";
   public static final String TIME_WITHOUT_TIMEZONE_REFERENCE = "WellKnownTypes.json#/definitions/TimeWithoutTimezone";
+  public static final String JSONB_REFERENCE = "WellKnownTypes.json#/definitions/ArbitraryJson";
 
   /**
    * This is primarily useful for migrating from protocol v0 to v1. It provides a mapping from the old
