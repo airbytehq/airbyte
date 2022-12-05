@@ -7,6 +7,7 @@ package io.airbyte.server.converters;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -23,7 +24,9 @@ class CatalogConverterTest {
 
   @Test
   void testConvertToAPI() {
-    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
+    final AirbyteCatalog expectedCatalog = ConnectionHelpers.generateBasicApiCatalog();
+    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(),
+        CatalogConverter.getFieldSelectionEnabledStreams(expectedCatalog)));
   }
 
   @Test

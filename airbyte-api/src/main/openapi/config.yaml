@@ -3927,11 +3927,20 @@ components:
         selected:
           description: If this is true, the stream is selected with all of its properties.
           type: boolean
+        fieldSelectionEnabled:
+          description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
+          type: boolean
         selectedFields:
-          description: List of properties to include. This cannot be set at the same time as `selected`.
+          description: List of properties to include. This must be set if `fieldSelectedEnabled` is set. An empty list indicates that no properties will be included.
           type: array
           items:
-            type: string
+            $ref: "#/components/schemas/SelectedFieldInfo"
+    SelectedFieldInfo:
+      type: object
+      description: Identifier for a field/column/property in a stream to be selected.
+      properties:
+        fieldName:
+          type: string
     DataType:
       type: string
       enum:
