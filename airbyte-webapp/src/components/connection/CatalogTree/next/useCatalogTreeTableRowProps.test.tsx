@@ -1,5 +1,4 @@
 import { renderHook } from "@testing-library/react-hooks";
-import classNames from "classnames";
 import * as formik from "formik";
 
 import { AirbyteStreamAndConfiguration } from "core/request/AirbyteClient";
@@ -8,7 +7,6 @@ import * as connectionFormService from "hooks/services/ConnectionForm/Connection
 import { FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
 
 // eslint-disable-next-line css-modules/no-unused-class
-import styles from "./CatalogTreeTableRow.module.scss";
 import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
 
 const mockStream: Partial<AirbyteStreamAndConfiguration> = {
@@ -49,12 +47,12 @@ const testSetup = (initialValues: Partial<FormikConnectionFormValues>, isBulkEdi
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   jest.spyOn(bulkEditService, "useBulkEditSelect").mockImplementation(() => [isBulkEdit, () => null] as any); // not selected for bulk edit
   jest.spyOn(connectionFormService, "useConnectionFormService").mockImplementation(() => {
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return { initialValues: initialValues } as any;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return { initialValues } as any;
   });
   jest.spyOn(formik, "useField").mockImplementationOnce(() => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return [{}, { error: error }] as any; // no error
+    return [{}, { error }] as any; // no error
   });
 };
 
@@ -64,7 +62,7 @@ describe("useCatalogTreeTableRowProps", () => {
 
     const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent");
     expect(result.current.pillButtonVariant).toEqual("grey");
   });
   it("should return disabled styles for a row that starts disabled", () => {
@@ -78,7 +76,7 @@ describe("useCatalogTreeTableRowProps", () => {
       })
     );
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.disabled));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent disabled");
     expect(result.current.pillButtonVariant).toEqual("grey");
   });
   it("should return added styles for a row that is added", () => {
@@ -86,7 +84,7 @@ describe("useCatalogTreeTableRowProps", () => {
 
     const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.added));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent added");
     expect(result.current.pillButtonVariant).toEqual("green");
   });
   it("should return removed styles for a row that is removed", () => {
@@ -100,7 +98,7 @@ describe("useCatalogTreeTableRowProps", () => {
       })
     );
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.removed));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent removed");
     expect(result.current.pillButtonVariant).toEqual("red");
   });
   it("should return updated styles for a row that is updated", () => {
@@ -115,7 +113,7 @@ describe("useCatalogTreeTableRowProps", () => {
       })
     );
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.changed));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent changed");
     expect(result.current.pillButtonVariant).toEqual("blue");
   });
 
@@ -129,7 +127,7 @@ describe("useCatalogTreeTableRowProps", () => {
       })
     );
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.added));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent added");
     expect(result.current.pillButtonVariant).toEqual("green");
   });
   it("should return change background color if selected for bulk edit", () => {
@@ -142,7 +140,7 @@ describe("useCatalogTreeTableRowProps", () => {
         config: { ...mockStream.config!, selected: true }, // selected true, new sync, mode and destination sync mode
       })
     );
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.changed));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent changed");
     expect(result.current.pillButtonVariant).toEqual("blue");
   });
   it("should return error styles for a row that has an error", () => {
@@ -150,6 +148,6 @@ describe("useCatalogTreeTableRowProps", () => {
 
     const { result } = renderHook(() => useCatalogTreeTableRowProps(mockStream));
 
-    expect(result.current.streamHeaderContentStyle).toEqual(classNames(styles.streamHeaderContent, styles.error));
+    expect(result.current.streamHeaderContentStyle).toEqual("streamHeaderContent error");
   });
 });
