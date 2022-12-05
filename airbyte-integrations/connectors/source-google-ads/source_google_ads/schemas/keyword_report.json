@@ -58,9 +58,6 @@
       "type": ["null", "string"],
       "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
     },
-    "metrics.historical_quality_score": {
-      "type": ["null", "integer"]
-    },
     "metrics.ctr": {
       "type": ["null", "number"]
     },
