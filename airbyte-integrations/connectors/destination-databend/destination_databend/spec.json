@@ -53,7 +53,7 @@
         "type" : "string",
         "order" : 3
       },
-      "schema" : {
+      "table" : {
         "title" : "Default Table",
         "description" : "The default  table was written to.",
         "type" : "string",
