@@ -63,7 +63,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private String getDestinationTypeFromNormalizationImage(final String normalizationImage) {
     String imageNameWithoutTag = normalizationImage.contains(":") ? normalizationImage.split(":")[0] : normalizationImage;
-    return "airbyte/normalization".equalsIgnoreCase(imageNameWithoutTag) ? "normalization"
+    return "airbyte/normalization".equalsIgnoreCase(imageNameWithoutTag) ? "bigquery"
         : imageNameWithoutTag.replace("airbyte/normalization-", "");
   }
 

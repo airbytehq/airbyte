@@ -112,7 +112,7 @@ class DefaultNormalizationRunnerTest {
 
   @Test
   void test() throws Exception {
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
 
     when(process.exitValue()).thenReturn(0);
 
@@ -122,7 +122,7 @@ class DefaultNormalizationRunnerTest {
   @Test
   void testLog() throws Exception {
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
 
     when(process.exitValue()).thenReturn(0);
 
@@ -143,7 +143,7 @@ class DefaultNormalizationRunnerTest {
   void testClose() throws Exception {
     when(process.isAlive()).thenReturn(true).thenReturn(false);
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
     runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements());
     runner.close();
 
@@ -154,7 +154,7 @@ class DefaultNormalizationRunnerTest {
   void testFailure() throws Exception {
     when(process.exitValue()).thenReturn(1);
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     verify(process).waitFor();
@@ -174,7 +174,7 @@ class DefaultNormalizationRunnerTest {
                                     """.replace("\n", "");
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(errorTraceString.getBytes(StandardCharsets.UTF_8)));
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
@@ -199,7 +199,7 @@ class DefaultNormalizationRunnerTest {
                                   """;
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
@@ -219,7 +219,7 @@ class DefaultNormalizationRunnerTest {
         """;
     when(process.getInputStream()).thenReturn(new ByteArrayInputStream(dbtErrorString.getBytes(StandardCharsets.UTF_8)));
 
-    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.buildImage(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
+    final NormalizationRunner runner = new DefaultNormalizationRunner(processFactory, DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG));
     assertFalse(runner.normalize(JOB_ID, JOB_ATTEMPT, jobRoot, config, catalog, workerConfigs.getResourceRequirements()));
 
     assertEquals(1, runner.getTraceMessages().count());
