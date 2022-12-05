@@ -28,6 +28,7 @@ import { useTestConnector } from "./useTestConnector";
 // https://github.com/airbytehq/airbyte/issues/18553
 interface ConnectorCardBaseProps {
   title?: React.ReactNode;
+  description?: React.ReactNode;
   full?: boolean;
   jobInfo?: SynchronousJobRead | null;
   additionalSelectorComponent?: React.ReactNode;
@@ -64,6 +65,7 @@ const getConnectorId = (connectorRead: DestinationRead | SourceRead) => {
 
 export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEditProps> = ({
   title,
+  description,
   full,
   jobInfo,
   onSubmit,
@@ -156,7 +158,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const formValues = isEditMode ? props.connector : { name: selectedConnectorDefinition?.name };
 
   return (
-    <Card title={title} fullWidth={full}>
+    <Card title={title} description={description} fullWidth={full}>
       <div className={styles.cardForm}>
         <div className={styles.connectorSelectControl}>
           <ConnectorDefinitionTypeControl
@@ -172,6 +174,10 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         {additionalSelectorComponent}
         <div>
           <ConnectorForm
+            // Causes the whole ConnectorForm to be unmounted and a new instance mounted whenever the connector type changes.
+            // That way we carry less state around inside it, preventing any state from one connector type from affecting another
+            // connector type's form in any way.
+            key={selectedConnectorDefinition && Connector.id(selectedConnectorDefinition)}
             {...props}
             selectedConnectorDefinition={selectedConnectorDefinition}
             selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}

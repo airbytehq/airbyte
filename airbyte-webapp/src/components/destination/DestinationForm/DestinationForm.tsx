@@ -7,6 +7,7 @@ import { DestinationDefinitionRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useExperiment } from "hooks/services/Experiment";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
+import { ConnectorIds } from "utils/connectors";
 import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
@@ -65,8 +66,8 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
   const errorMessage = error ? generateMessageFromError(error) : null;
 
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
-    "22f6c74f-5699-40ff-833c-4a879ea40133",
-    "424892c4-daac-4491-b35d-c6688ba547ba",
+    ConnectorIds.Destinations.BigQuery,
+    ConnectorIds.Destinations.Snowflake,
   ]);
   const frequentlyUsedDestinationsComponent = !isLoading && !destinationDefinitionId && (
     <FrequentlyUsedConnectors
@@ -87,6 +88,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       <ConnectorCard
         formType="destination"
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
+        description={<FormattedMessage id="destinations.description" />}
         isLoading={isLoading}
         hasSuccess={hasSuccess}
         errorMessage={errorMessage}
