@@ -1,7 +1,7 @@
 /* eslint-disable css-modules/no-unused-class */
 import classNames from "classnames";
 import { useField } from "formik";
-import { isEqual } from "lodash";
+import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
 
 import { PillButtonVariant } from "components/ui/PillSelect/PillButton";
