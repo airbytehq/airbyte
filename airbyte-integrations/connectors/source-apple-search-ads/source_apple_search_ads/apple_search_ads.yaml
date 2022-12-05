@@ -1,25 +1,27 @@
 version: "0.1.0"
 
 definitions:
-  requester:
-    url_base: "https://api.searchads.apple.com/api/v4"
-    http_method: "GET"
-    authenticator:
-      type: "OAuthAuthenticator"
-      token_refresh_endpoint: "https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg"
-      client_id: "{{ config['client_id'] }}"
-      client_secret: "{{ config['client_secret'] }}"
-      refresh_token: ""
-    request_options_provider:
-      request_headers:
-        X-AP-Context: "orgId={{ config['org_id'] }}"
   retriever:
     requester:
-      $ref: "*ref(definitions.requester)"
+      url_base: "https://api.searchads.apple.com/api/v4"
+      http_method: "GET"
+      authenticator:
+        type: "OAuthAuthenticator"
+        token_refresh_endpoint: "https://appleid.apple.com/auth/oauth2/token?grant_type=client_credentials&scope=searchadsorg"
+        client_id: "{{ config['client_id'] }}"
+        client_secret: "{{ config['client_secret'] }}"
+        refresh_token: ""
+      request_options_provider:
+        request_headers:
+          X-AP-Context: "orgId={{ config['org_id'] }}"
       error_handler:
         response_filters:
           - http_codes: [ 500 ]
             action: RETRY
+          - http_codes: [ 429 ]
+            action: RETRY
+        backoff_strategies:
+          - type: "ExponentialBackoffStrategy"
 
   base_stream:
     selector:
@@ -40,7 +42,7 @@ definitions:
         page_token_option:
           field_name: offset
           inject_into: request_parameter
-        url_base: "*ref(definitions.requester.url_base)"
+        url_base: "*ref(definitions.retriever.requester.url_base)"
 
   campaigns_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -64,7 +66,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "*ref(definitions.retriever.requester)"
         path: "/campaigns/{{ stream_slice.campaign_id }}/adgroups"
       stream_slicer:
         type: CartesianProductStreamSlicer
@@ -86,7 +88,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "*ref(definitions.retriever.requester)"
         path: "/campaigns/{{ stream_slice.parent_slice.campaign_id }}/adgroups/{{ stream_slice.adgroup_id }}/targetingkeywords"
       stream_slicer:
         type: CartesianProductStreamSlicer
@@ -120,7 +122,7 @@ definitions:
         stream_slicers:
           - "*ref(definitions.stream_slicer_date)"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "*ref(definitions.retriever.requester)"
         http_method: "POST"
         request_options_provider:
           request_headers:
@@ -203,6 +205,7 @@ definitions:
         $ref: "*ref(definitions.report_stream.retriever.requester)"
         path: "/reports/campaigns/{{ stream_slice.campaign_id }}/keywords"
         error_handler:
+          $ref: "*ref(definitions.retriever.requester.error_handler)"
           response_filters:
             - predicate: "{{ 'CAMPAIGN DOES NOT CONTAIN KEYWORD' in response.error.errors[0].message }}"
               action: IGNORE
