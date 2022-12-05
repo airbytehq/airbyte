@@ -569,13 +569,9 @@ class Connection(BaseResource):
 
     resource_type = "connection"
 
-    local_root_level_keys_to_remove_during_create = [
-        "skip_reset"
-    ]  # Remove these keys when sending a create request
+    local_root_level_keys_to_remove_during_create = ["skip_reset"]  # Remove these keys when sending a create request
 
-    local_root_level_keys_to_filter_out_for_comparison = [
-        "skip_reset"
-    ]  # Remote do not have these keys
+    local_root_level_keys_to_filter_out_for_comparison = ["skip_reset"]  # Remote do not have these keys
 
     remote_root_level_keys_to_filter_out_for_comparison = [
         "name",
@@ -806,7 +802,9 @@ class Connection(BaseResource):
 
     def _get_local_comparable_configuration(self) -> dict:
         comparable = {
-            k: v for k, v in self.raw_configuration["configuration"].items() if k not in self.local_root_level_keys_to_filter_out_for_comparison
+            k: v
+            for k, v in self.raw_configuration["configuration"].items()
+            if k not in self.local_root_level_keys_to_filter_out_for_comparison
         }
         return comparable
 
