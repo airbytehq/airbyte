@@ -212,8 +212,8 @@
                 "type": "integer",
                 "minimum": 10,
                 "maximum": 10000,
-                "default": 100,
-                "examples": ["100"],
+                "default": 10,
+                "examples": ["10"],
                 "title": "File Buffer Count"
               }
             }

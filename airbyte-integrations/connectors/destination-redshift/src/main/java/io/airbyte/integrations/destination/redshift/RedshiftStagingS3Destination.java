@@ -135,7 +135,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
     final JsonNode s3Options = findS3Options(config);
     final S3DestinationConfig s3Config = getS3DestinationConfig(s3Options);
 
-    final int numFileBuffers = s3Options.has("file_buffer_count") ? s3Options.get("file_buffer_count").intValue() : 100;
+    final int numFileBuffers = s3Options.has("file_buffer_count") ? s3Options.get("file_buffer_count").intValue() : 10;
     if (numFileBuffers < catalog.getStreams().size()) {
       LOGGER.warn(
           "Potential performance issue: catalog contains {} streams, destination configuration "
