@@ -1,11 +1,11 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["requests", "ci_common_utils"]
+MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "click~=8.1.3"]
 
 TEST_REQUIREMENTS = ["requests-mock"]
 
