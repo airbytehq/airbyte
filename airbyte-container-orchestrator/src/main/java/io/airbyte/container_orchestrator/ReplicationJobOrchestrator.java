@@ -101,7 +101,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
         SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
-    // At this moment, if either source or destination is from custom connector image, we will put all jobs into isolated pool to run.
+    // At this moment, if either source or destination is from custom connector image, we will put all
+    // jobs into isolated pool to run.
     boolean useIsolatedPool = sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector();
     log.info("Setting up source launcher...");
     final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(

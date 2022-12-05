@@ -296,7 +296,7 @@ public class SchedulerHandler {
         sourceDef.getDockerImageTag(),
         new Version(
             sourceDef.getProtocolVersion()),
-            isCustomConnector);
+        isCustomConnector);
     return retrieveDiscoveredSchema(response);
   }
 

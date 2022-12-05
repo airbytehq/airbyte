@@ -59,7 +59,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
   /**
    * If true, launcher will use a separated isolated pool to run the job.
-   * 
+   *
    * At this moment, we put custom connector jobs into an isolated pool.
    */
   private final boolean useIsolatedPool;
