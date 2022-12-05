@@ -25,6 +25,8 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
+import io.airbyte.api.client.model.generated.CustomDestinationDefinitionCreate;
+import io.airbyte.api.client.model.generated.CustomSourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -644,20 +646,24 @@ public class AirbyteAcceptanceTestHarness {
     return dbConfig;
   }
 
-  public SourceDefinitionRead createE2eSourceDefinition() throws ApiException {
-    return apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+  public SourceDefinitionRead createE2eSourceDefinition(final UUID workspaceId) throws ApiException {
+    return apiClient.getSourceDefinitionApi().createCustomSourceDefinition(new CustomSourceDefinitionCreate()
+        .workspaceId(workspaceId)
+        .sourceDefinition(new SourceDefinitionCreate()
+            .name("E2E Test Source")
+            .dockerRepository("airbyte/source-e2e-test")
+            .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com"))));
   }
 
-  public DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().createDestinationDefinition(new DestinationDefinitionCreate()
-        .name("E2E Test Destination")
-        .dockerRepository("airbyte/destination-e2e-test")
-        .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+  public DestinationDefinitionRead createE2eDestinationDefinition(final UUID workspaceId) throws ApiException {
+    return apiClient.getDestinationDefinitionApi().createCustomDestinationDefinition(new CustomDestinationDefinitionCreate()
+        .workspaceId(workspaceId)
+        .destinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com"))));
   }
 
   public SourceRead createPostgresSource(final boolean isLegacy) throws ApiException {

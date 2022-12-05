@@ -27,7 +27,7 @@
   padding: 3px 10px;
   gap: variables.$spacing-sm;
   border: none;
-  border-radius: 20px;
+  border-radius: variables.$border-radius-pill;
   cursor: pointer;
   transition: background-color variables.$transition-out, color variables.$transition-out;
 
