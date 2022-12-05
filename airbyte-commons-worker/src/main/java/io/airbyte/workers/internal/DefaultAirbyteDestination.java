@@ -82,7 +82,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
     stdOut = new File("/pipes/dst-out");
     LineGobbler.gobble(new FileInputStream(stdErr), LOGGER::error, "airbyte-destination", CONTAINER_LOG_MDC_BUILDER);
 
-    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(System.out)));
+    writer = messageWriterFactory.createWriter(new BufferedWriter(new OutputStreamWriter(System.out, "UTF-8")));
     // writer = messageWriterFactory.createWriter(new BufferedWriter(new
     // OutputStreamWriter(destinationProcess.getOutputStream(), Charsets.UTF_8)));
 
