@@ -11,6 +11,7 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import styles from "./CatalogTreeTableRow.module.scss";
+type StatusToDisplay = "disabled" | "added" | "removed" | "changed" | "unchanged";
 
 export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
   const { initialValues } = useConnectionFormService();
