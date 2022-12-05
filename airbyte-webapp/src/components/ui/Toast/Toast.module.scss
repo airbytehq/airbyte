@@ -39,6 +39,7 @@ $toast-bottom-margin: 27px;
   flex-direction: row;
   align-items: flex-start;
   gap: vars.$spacing-md;
+  max-width: vars.$width-max-notification;
   position: fixed;
   box-sizing: border-box;
   bottom: $toast-bottom-margin;
