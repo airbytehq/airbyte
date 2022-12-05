@@ -882,7 +882,7 @@
 - name: Mailchimp
   sourceDefinitionId: b03a9f3e-22a5-11eb-adc1-0242ac120002
   dockerRepository: airbyte/source-mailchimp
-  dockerImageTag: 0.2.15
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/mailchimp
   icon: mailchimp.svg
   sourceType: api
@@ -1378,14 +1378,14 @@
 - name: RD Station Marketing
   sourceDefinitionId: fb141f29-be2a-450b-a4f2-2cd203a00f84
   dockerRepository: airbyte/source-rd-station-marketing
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/rd-station-marketing
   sourceType: api
   releaseStage: alpha
 - name: RKI Covid
   sourceDefinitionId: d78e5de0-aa44-4744-aa4f-74c818ccfe19
   dockerRepository: airbyte/source-rki-covid
-  dockerImageTag: 0.1.1
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
   sourceType: api
   releaseStage: alpha
