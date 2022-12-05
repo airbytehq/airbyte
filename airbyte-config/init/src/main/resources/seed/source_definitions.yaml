@@ -451,7 +451,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.75
+  dockerImageTag: 0.2.76
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -1475,7 +1475,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -1952,7 +1952,7 @@
 - name: Elasticsearch
   sourceDefinitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
   dockerRepository: airbyte/source-elasticsearch
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
