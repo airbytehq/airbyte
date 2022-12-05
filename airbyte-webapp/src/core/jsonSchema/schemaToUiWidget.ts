@@ -108,7 +108,7 @@ function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchemaDefinition):
   return isRequired;
 }
 
-const defaultFields: Array<keyof AirbyteJSONSchema> = [
+const defaultFields = [
   "default",
   "examples",
   "description",
@@ -119,11 +119,11 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
 
   // airbyte specific fields
   "airbyte_hidden",
-];
+] as const;
 
-const pickDefaultFields = (schema: AirbyteJSONSchema): Partial<AirbyteJSONSchema> => {
+const pickDefaultFields = (schema: AirbyteJSONSchema): Pick<AirbyteJSONSchema, typeof defaultFields[number]> => {
   const partialSchema: Partial<AirbyteJSONSchema> = {
-    ...Object.fromEntries(Object.entries(schema).filter(([k]) => defaultFields.includes(k as keyof AirbyteJSONSchema))),
+    ...Object.fromEntries(Object.entries(schema).filter(([k]) => (defaultFields as readonly string[]).includes(k))),
   };
 
   if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
