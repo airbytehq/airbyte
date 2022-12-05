@@ -4,6 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { CheckBox } from "components/ui/CheckBox";
+import { NextTable } from "components/ui/NextTable";
 import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -15,7 +16,6 @@ import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
 import { pathDisplayName } from "../../PathPopout";
-import { NextTable } from "../NextTable";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import styles from "./StreamFieldsTable.module.scss";
 

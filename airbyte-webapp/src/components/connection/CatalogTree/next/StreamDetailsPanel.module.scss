@@ -17,7 +17,7 @@ $container-right-space: vars.$spacing-xl * 2;
   z-index: 1000;
   height: calc(100vh - 100px);
   background: colors.$white;
-  border-radius: variables.$border-radius-2xl variables.$border-radius-2xl 0 0;
+  border-radius: vars.$border-radius-2xl vars.$border-radius-2xl 0 0;
   box-shadow: 0 0 22px rgba(colors.$dark-blue-900, 12%);
 }
 
