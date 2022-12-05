@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
@@ -59,6 +58,7 @@ import io.temporal.worker.Worker;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -116,14 +116,13 @@ class SyncWorkflowTest {
   private StandardSyncSummary standardSyncSummary;
   private StandardSyncSummary failedSyncSummary;
   private SyncStats syncStats;
-  private StandardSync standardSync;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
-  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
     syncWorker = testEnv.newWorker(SYNC_QUEUE);
     client = testEnv.getWorkflowClient();
@@ -139,8 +138,6 @@ class SyncWorkflowTest {
     replicationFailOutput = new StandardSyncOutput().withOutputCatalog(syncInput.getCatalog()).withStandardSyncSummary(failedSyncSummary);
 
     normalizationSummary = new NormalizationSummary();
-
-    standardSync = new StandardSync().withSourceId(SOURCE_ID).withStatus(Status.ACTIVE);
 
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
@@ -163,8 +160,9 @@ class SyncWorkflowTest {
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
     when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
 
-    when(configFetchActivity.getStandardSync(sync.getConnectionId())).thenReturn(standardSync);
+    when(configFetchActivity.getSourceId(sync.getConnectionId())).thenReturn(Optional.of(SOURCE_ID));
     when(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID)).thenReturn(true);
+    when(configFetchActivity.getStatus(sync.getConnectionId())).thenReturn(Optional.of(Status.ACTIVE));
 
     longActivityOptions = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
@@ -215,7 +213,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSuccess() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testSuccess() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -242,7 +240,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testReplicationFailure() {
     doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -260,7 +258,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testReplicationFailedGracefully() {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -287,7 +285,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testNormalizationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testNormalizationFailure() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -310,7 +308,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringReplication() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testCancelDuringReplication() {
     doAnswer(ignored -> {
       cancelWorkflow();
       return replicationSuccessOutput;
@@ -331,7 +329,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testCancelDuringNormalization() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -358,7 +356,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testSkipNormalization() {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
@@ -402,8 +400,8 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
-    when(configFetchActivity.getStandardSync(any())).thenReturn(new StandardSync().withSourceId(SOURCE_ID).withStatus(Status.INACTIVE));
+  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
     StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
@@ -464,12 +462,11 @@ class SyncWorkflowTest {
         operatorDbtInput);
   }
 
-  private static void verifyShouldRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity) throws IOException {
+  private static void verifyShouldRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity) {
     verify(refreshSchemaActivity).shouldRefreshSchema(SOURCE_ID);
   }
 
-  private static void verifyRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity, final StandardSync sync)
-      throws JsonValidationException, ConfigNotFoundException, IOException, ApiException {
+  private static void verifyRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity, final StandardSync sync) {
     verify(refreshSchemaActivity).refreshSchema(SOURCE_ID, sync.getConnectionId());
   }
 

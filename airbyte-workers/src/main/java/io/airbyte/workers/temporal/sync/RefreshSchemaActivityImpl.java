@@ -8,7 +8,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -39,7 +38,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   @Override
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
-  public boolean shouldRefreshSchema(UUID sourceCatalogId) throws IOException {
+  public boolean shouldRefreshSchema(UUID sourceCatalogId) {
     // if job persistence is unavailable, default to skipping the schema refresh
     if (configRepository.isEmpty() || !envVariableFeatureFlags.autoDetectSchema()) {
       return false;
@@ -49,7 +48,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   }
 
   @Override
-  public void refreshSchema(UUID sourceCatalogId, UUID connectionId) throws ApiException {
+  public void refreshSchema(UUID sourceCatalogId, UUID connectionId) {
     if (!envVariableFeatureFlags.autoDetectSchema()) {
       return;
     }
@@ -64,14 +63,17 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
     }
   }
 
-  private boolean schemaRefreshRanRecently(UUID sourceCatalogId) throws IOException {
-    Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = configRepository.get().getMostRecentActorCatalogFetchEventForSource(sourceCatalogId);
-
-    if (mostRecentFetchEvent.isEmpty()) {
-      return false;
+  private boolean schemaRefreshRanRecently(UUID sourceCatalogId) {
+    try {
+      Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = configRepository.get().getMostRecentActorCatalogFetchEventForSource(sourceCatalogId);
+      if (mostRecentFetchEvent.isEmpty()) {
+        return false;
+      }
+      return mostRecentFetchEvent.get().getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
+    } catch (IOException e) {
+      log.info("Encountered an error fetching most recent actor catalog fetch event: ", e);
+      return true;
     }
-
-    return mostRecentFetchEvent.get().getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
   }
 
 }
