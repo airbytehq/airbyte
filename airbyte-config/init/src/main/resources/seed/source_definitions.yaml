@@ -143,6 +143,13 @@
   icon: azureblobstorage.svg
   sourceType: database
   releaseStage: alpha
+- name: Babelforce
+  sourceDefinitionId: 971c3e1e-78a5-411e-ad56-c4052b50876b
+  dockerRepository: airbyte/source-babelforce
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/babelforce
+  sourceType: api
+  releaseStage: alpha
 - name: BambooHR
   sourceDefinitionId: 90916976-a132-4ce9-8bce-82a03dd58788
   dockerRepository: airbyte/source-bamboo-hr
@@ -444,7 +451,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.74
+  dockerImageTag: 0.2.76
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -554,7 +561,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.7
+  dockerImageTag: 0.1.8
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -1242,7 +1249,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.28
+  dockerImageTag: 1.0.30
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1468,7 +1475,7 @@
 - name: Shopify
   sourceDefinitionId: 9da77001-af33-4bcd-be46-6252bf9342b9
   dockerRepository: airbyte/source-shopify
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/shopify
   icon: shopify.svg
   sourceType: api
@@ -1484,7 +1491,7 @@
 - name: Slack
   sourceDefinitionId: c2281cee-86f9-4a86-bb48-d23286b4c7bd
   dockerRepository: airbyte/source-slack
-  dockerImageTag: 0.1.18
+  dockerImageTag: 0.1.19
   documentationUrl: https://docs.airbyte.com/integrations/sources/slack
   icon: slack.svg
   sourceType: api
@@ -1506,7 +1513,7 @@
 - name: Smartsheets
   sourceDefinitionId: 374ebc65-6636-4ea0-925c-7d35999a8ffc
   dockerRepository: airbyte/source-smartsheets
-  dockerImageTag: 0.1.12
+  dockerImageTag: 0.1.13
   documentationUrl: https://docs.airbyte.com/integrations/sources/smartsheets
   icon: smartsheet.svg
   sourceType: api
@@ -1945,7 +1952,7 @@
 - name: Elasticsearch
   sourceDefinitionId: 7cf88806-25f5-4e1a-b422-b2fa9e1b0090
   dockerRepository: airbyte/source-elasticsearch
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
   sourceType: api
   releaseStage: alpha
@@ -1987,7 +1994,7 @@
 - name: Zoom
   sourceDefinitionId: cbfd9856-1322-44fb-bcf1-0b39b7a8e92e
   dockerRepository: airbyte/source-zoom
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.io/integrations/sources/zoom
   sourceType: api
   icon: zoom.svg
