@@ -185,17 +185,39 @@ class SecretsManager:
         return 0
 
     def _create_new_secret_version(self, new_secret: Secret, old_secret: RemoteSecret) -> RemoteSecret:
+        """Create a new secret version from a new secret instance. Disable the previous secret version.
+
+        Args:
+            new_secret (Secret): The new secret instance
+            old_secret (RemoteSecret): The old secret instance
+
+        Returns:
+            RemoteSecret: The newly created remote secret instance
+        """
         secret_url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets/{new_secret.name}:addVersion"
         body = {"payload": {"data": base64.b64encode(new_secret.value.encode()).decode("utf-8")}}
         new_version_response = self.api.post(secret_url, json=body)
         self._disable_version(old_secret.enabled_version)
         return RemoteSecret.from_secret(new_secret, enabled_version=new_version_response["name"])
 
-    def _disable_version(self, version_name: str):
+    def _disable_version(self, version_name: str) -> dict:
+        """Disable a GSM secret version
+
+        Args:
+            version_name (str): Full name of the version (containing project id and secret name)
+
+        Returns:
+            dict: API response
+        """
         disable_version_url = f"https://secretmanager.googleapis.com/v1/{version_name}:disable"
         return self.api.post(disable_version_url)
 
     def _get_updated_secrets(self) -> List[Secret]:
+        """Find locally updated configurations files and return the most recent instance for each configuration file name.
+
+        Returns:
+            List[Secret]: List of Secret instances parsed from local updated configuration files
+        """
         updated_configurations_glob = glob(f"airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json")
         updated_configuration_files_versions = {}
         for updated_configuration_path in updated_configurations_glob:
@@ -219,7 +241,15 @@ class SecretsManager:
             for configuration_file_name, versions_by_creation_time in updated_configuration_files_versions.items()
         ]
 
-    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> List[RemoteSecret]:
+    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> int:
+        """Update existing secrets if an updated version was found locally.
+
+        Args:
+            existing_secrets (List[RemoteSecret]): List of existing secrets for the current connector on GSM.
+
+        Returns:
+            int: Status code
+        """
         existing_secrets = {secret.name: secret for secret in existing_secrets}
         updated_secrets = {secret.name: secret for secret in self._get_updated_secrets()}
         new_remote_secrets = []
@@ -232,4 +262,4 @@ class SecretsManager:
                 new_remote_secret = self._create_new_secret_version(new_secret, old_secret)
                 new_remote_secrets.append(new_remote_secret)
                 self.logger.info(f"Updated {new_remote_secret.name} with new value")
-        return new_remote_secrets
+        return 0
