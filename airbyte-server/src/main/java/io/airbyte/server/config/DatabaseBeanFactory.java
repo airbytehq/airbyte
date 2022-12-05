@@ -35,19 +35,12 @@ public class DatabaseBeanFactory {
 
   private static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
   private static final Boolean BASELINE_ON_MIGRATION = true;
-  private static final String INSTALLED_BY = "WorkerApp";
+  private static final String INSTALLED_BY = "ServerApp";
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("configDatabase")
   public Database configDatabase(@Named("config") final DSLContext dslContext) throws IOException {
-    return new Database(dslContext);
-  }
-
-  @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  @Named("jobsDatabase")
-  public Database jobsDatabase(@Named("jobs") final DSLContext dslContext) throws IOException {
     return new Database(dslContext);
   }
 
@@ -71,7 +64,7 @@ public class DatabaseBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobsFlyway")
   public Flyway jobsFlyway(@Named("jobs") final FlywayConfigurationProperties jobsFlywayConfigurationProperties,
-                           @Named("jobs") final DataSource jobsDataSource,
+                           @Named("config") final DataSource jobsDataSource,
                            @Value("${airbyte.flyway.jobs.minimum-migration-version}") final String baselineVersion) {
     return jobsFlywayConfigurationProperties.getFluentConfiguration()
         .dataSource(jobsDataSource)
@@ -91,7 +84,7 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public JobPersistence jobPersistence(@Named("jobsDatabase") final Database jobDatabase) {
+  public JobPersistence jobPersistence(@Named("configDatabase") final Database jobDatabase) {
     return new DefaultJobPersistence(jobDatabase);
   }
 
@@ -111,7 +104,7 @@ public class DatabaseBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobsDatabaseMigrationCheck")
-  public DatabaseMigrationCheck jobsDatabaseMigrationCheck(@Named("jobs") final DSLContext dslContext,
+  public DatabaseMigrationCheck jobsDatabaseMigrationCheck(@Named("config") final DSLContext dslContext,
                                                            @Named("jobsFlyway") final Flyway jobsFlyway,
                                                            @Value("${airbyte.flyway.jobs.minimum-migration-version}") final String jobsDatabaseMinimumFlywayMigrationVersion,
                                                            @Value("${airbyte.flyway.jobs.initialization-timeout-ms}") final Long jobsDatabaseInitializationTimeoutMs) {
@@ -123,7 +116,7 @@ public class DatabaseBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("jobsDatabaseAvailabilityCheck")
-  public JobsDatabaseAvailabilityCheck jobsDatabaseAvailabilityCheck(@Named("jobs") final DSLContext dslContext) {
+  public JobsDatabaseAvailabilityCheck jobsDatabaseAvailabilityCheck(@Named("config") final DSLContext dslContext) {
     return new JobsDatabaseAvailabilityCheck(dslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
   }
 
