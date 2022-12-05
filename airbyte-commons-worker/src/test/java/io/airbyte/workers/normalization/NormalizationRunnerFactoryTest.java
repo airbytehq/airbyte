@@ -30,12 +30,11 @@ class NormalizationRunnerFactoryTest {
     for (final Entry<String, ImmutablePair<String, DestinationType>> entry : NormalizationRunnerFactory.NORMALIZATION_MAPPING.entrySet()) {
       assertEquals(entry.getValue().getValue(),
           ((DefaultNormalizationRunner) NormalizationRunnerFactory.create(
-              String.format("%s:0.1.0", entry.getKey()), processFactory, NORMALIZATION_VERSION, String.format("%s:0.1.0", entry.getKey())))
-                  .getDestinationType());
+              String.format("%s:0.1.0", entry.getKey()), processFactory, NORMALIZATION_VERSION)).getDestinationType());
     }
     assertThrows(IllegalStateException.class,
         () -> NormalizationRunnerFactory.create("airbyte/destination-csv:0.1.0", processFactory,
-            NORMALIZATION_VERSION, "airbyte/destination-csv:0.1.0"));
+            NORMALIZATION_VERSION));
   }
 
 }
