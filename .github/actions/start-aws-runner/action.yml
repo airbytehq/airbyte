@@ -8,8 +8,8 @@ inputs:
   github-token:
     required: true
   ec2-image-id:
-    # github-self-hosted-runner-ubuntu-20-100g-disk-with-cypress-deps
-    default: "ami-005924fb76f7477ce"
+    # https://internal-docs.airbyte.io/Things-To-Know/Build-Runner-Images#ami-017f6fe645968f7e0
+    default: "ami-017f6fe645968f7e0"
     required: true
   ec2-instance-type:
     default: "c5.2xlarge"
