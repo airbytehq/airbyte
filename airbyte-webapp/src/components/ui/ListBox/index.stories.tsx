@@ -1,3 +1,4 @@
+import { faEdit } from "@fortawesome/free-solid-svg-icons";
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 
 import { ListBox } from "./ListBox";
@@ -6,6 +7,7 @@ const listOptions = [
   {
     label: "one",
     value: "value",
+    icon: faEdit,
   },
   {
     label: "two",
