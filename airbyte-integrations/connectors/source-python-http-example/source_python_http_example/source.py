@@ -33,7 +33,7 @@ class APIKeyAuthenticator(HttpAuthenticator):
 
 
 class ExchangeRates(HttpStream, IncrementalMixin):
-    url_base = "https://api.apilayer.com/exchangerates_data/"
+    url_base = "https://api.apilayer.com"
 
     cursor_field = "date"
     primary_key = "timestamp"
@@ -51,7 +51,7 @@ class ExchangeRates(HttpStream, IncrementalMixin):
         return None
 
     def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
-        return stream_slice['date']
+        return 'exchangerates_data/' + stream_slice['date']
 
     def request_params(
             self,
