@@ -9,9 +9,11 @@ import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.SyncMode;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 import org.codehaus.plexus.util.StringUtils;
 
 public class DebeziumPropertiesManager {
@@ -83,13 +85,23 @@ public class DebeziumPropertiesManager {
     props.setProperty("decimal.handling.mode", "string");
 
     // table selection
-    final String tableWhitelist = getTableWhitelist(catalog);
+    final String tableWhitelist = getTableIncludelist(catalog);
     props.setProperty("table.include.list", tableWhitelist);
 
+    props.setProperty("column.include.list", getColumnIncludeList(catalog));
     return props;
   }
 
-  public static String getTableWhitelist(final ConfiguredAirbyteCatalog catalog) {
+  public static String getTableIncludelist(final ConfiguredAirbyteCatalog catalog) {
+    // Turn  "stream": {
+    //          "namespace": "schema1"
+    //          "name": "table1
+    //        },
+    //        "stream": {
+    //          "namespace": "schema2"
+    //          "name": "table2
+    //        } -------> info "schema1.table1, schema2.table2"
+
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
@@ -97,6 +109,40 @@ public class DebeziumPropertiesManager {
         // debezium needs commas escaped to split properly
         .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
         .collect(Collectors.joining(","));
+  }
+
+  public static String getColumnIncludeList(final ConfiguredAirbyteCatalog catalog) {
+    // Turn  "stream": {
+    //          "namespace": "schema1"
+    //          "name": "table1"
+    //          "jsonSchema": {
+    //            "properties": {
+    //              "column1": {
+    //              },
+    //              "column2": {
+    //              }
+    //            }
+    //          }
+    //        }     -------> info "schema1.table1.(column1 | column2)"
+
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(s -> {
+          final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
+              return s.getNamespace() + "." + s.getName() + (StringUtils.isNotBlank(fields) ? "." + fields : "");
+            })
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .collect(Collectors.joining(","));
+  }
+
+  private static String parseFields(final Iterator<String> fieldNames) {
+    if (fieldNames == null || !fieldNames.hasNext()) {
+      return "";
+    }
+    final Iterable<String> iter = () -> fieldNames;
+    return StreamSupport.stream(iter.spliterator(), false)
+        .collect(Collectors.joining("|", "(", ")"));
   }
 
 }
