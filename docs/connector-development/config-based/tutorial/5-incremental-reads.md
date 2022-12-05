@@ -181,7 +181,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
     step: "1d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
