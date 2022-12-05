@@ -1,3 +1,4 @@
+import { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { CrossIcon } from "components/icons/CrossIcon";
@@ -18,7 +19,7 @@ interface StreamPanelHeaderProps {
 
 interface SomethingProps {
   messageId: string;
-  value?: string;
+  value?: string | ReactNode;
 }
 
 export const StreamProperty: React.FC<SomethingProps> = ({ messageId, value }) => {
@@ -45,7 +46,10 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
         <Switch small checked={config?.selected} onChange={onSelectedChange} disabled={disabled} />
       </div>
       <div className={styles.properties}>
-        <StreamProperty messageId="form.namespace" value={stream?.namespace} />
+        <StreamProperty
+          messageId="form.namespace"
+          value={stream?.namespace ?? <FormattedMessage id="form.noNamespace" />}
+        />
         <StreamProperty messageId="form.streamName" value={stream?.name} />
         <StreamProperty messageId="form.syncMode" value={config?.syncMode} />
       </div>
