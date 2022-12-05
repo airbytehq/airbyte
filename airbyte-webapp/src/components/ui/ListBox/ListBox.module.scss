@@ -15,18 +15,26 @@
   background-color: colors.$white;
   border-radius: variables.$border-radius-md;
   box-shadow: 0 7px 15px -5px colors.$grey;
-  padding: variables.$spacing-md;
   margin-top: 0;
   margin-bottom: 0;
-  position: absolute;
-  right: 0;
-  left: 0;
-  width: 100%;
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  padding-inline-start: 0;
+}
+
+.footer {
+  list-style: none;
+  padding: variables.$spacing-lg variables.$spacing-md;
+  cursor: pointer;
+  border-top: 1px solid colors.$grey;
+  margin-top: variables.$spacing-md;
+  padding-left: variables.$spacing-xl;
 }
 
 .option {
   list-style-type: none;
+  padding: 0 variables.$border-radius-md;
 }
 
 .optionValue {

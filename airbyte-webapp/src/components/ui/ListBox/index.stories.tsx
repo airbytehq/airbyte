@@ -17,6 +17,12 @@ const listOptions = [
   },
 ];
 
+const Footer = {
+  label: "Request a new geography",
+  value: "new geography",
+  link: "/geography",
+};
+
 export default {
   title: "Ui/ListBox",
   component: ListBox,
@@ -30,4 +36,5 @@ const Template: ComponentStory<typeof ListBox> = (args) => <ListBox {...args} />
 export const Primary = Template.bind({});
 Primary.args = {
   options: listOptions,
+  footer: Footer,
 };

@@ -17,9 +17,16 @@ export interface Option<T> {
   value: T;
 }
 
+export interface Footer<T> {
+  label: string;
+  value: T;
+  link: string;
+}
+
 interface ListBoxProps<T> {
   className?: string;
   options: Array<Option<T>>;
+  footer?: Footer<T>;
   selectedValue: T;
   onSelect: (selectedValue: T) => void;
   buttonClassName?: string;
@@ -29,6 +36,7 @@ interface ListBoxProps<T> {
 export const ListBox = <T,>({
   className,
   options,
+  footer,
   selectedValue,
   onSelect,
   buttonClassName,
@@ -59,6 +67,11 @@ export const ListBox = <T,>({
                 )}
               </Listbox.Option>
             ))}
+            {footer ? (
+              <Listbox.Option key={footer.label} value={footer.value} className={styles.footer}>
+                {footer.label}
+              </Listbox.Option>
+            ) : null}
           </Listbox.Options>
         </div>
       </Listbox>
