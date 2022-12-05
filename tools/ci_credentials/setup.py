@@ -23,7 +23,7 @@ setup(
     },
     entry_points={
         "console_scripts": [
-            "ci_credentials = ci_credentials.main:main",
+            "ci_credentials = ci_credentials.main:ci_credentials",
         ],
     },
 )
