@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.db.jdbc.JdbcDatabase;
-import io.airbyte.integrations.source.mysql.MySqlCdcTargetPosition;
 import java.sql.SQLException;
 import java.time.ZoneId;
 import java.util.List;
@@ -55,14 +54,7 @@ public class CdcConfigurationHelper {
       try {
         database.unsafeResultSetQuery(
             connection -> connection.createStatement().executeQuery("SHOW MASTER STATUS"),
-            resultSet -> {
-              final String file = resultSet.getString("File");
-              final int position = resultSet.getInt("Position");
-              if (file == null || position == 0) {
-                return new MySqlCdcTargetPosition(null, null);
-              }
-              return new MySqlCdcTargetPosition(file, position);
-            });
+            resultSet -> resultSet);
       } catch (final SQLException e) {
         throw new ConfigErrorException("Please grant REPLICATION CLIENT privilege, so that binary log files are available"
             + " for CDC mode.");
