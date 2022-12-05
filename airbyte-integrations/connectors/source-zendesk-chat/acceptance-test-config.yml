@@ -30,6 +30,8 @@ tests:
         bans: [ "id" ]
         agent_timeline: [ "start_time" ]
         chats: [ "update_timestamp" ]
+        conversions: ["timestamp"]
+        department_events: ["timestamp"]
   full_refresh:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
