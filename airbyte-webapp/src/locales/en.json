@@ -149,7 +149,7 @@
   "connectionForm.bulkEdit.cancel": "Cancel",
   "connectionForm.bulkEdit.apply": "Apply",
   "connectionForm.nonBreakingChangesPreference.label": "Non-breaking schema updates detected*",
-  "connectionForm.nonBreakingChangesPreference.message": "When Airbyte detects that the schema of the source has changed, what would you like to do?",
+  "connectionForm.nonBreakingChangesPreference.message": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
   "connectionForm.nonBreakingChangesPreference.ignore": "Ignore",
   "connectionForm.nonBreakingChangesPreference.disable": "Pause sync",
 
