@@ -67,7 +67,6 @@ def setup_teardown(config: Mapping):
     )
 
     retries = 3
-    client = None
     while retries > 0:
         try:
             Client(config)
