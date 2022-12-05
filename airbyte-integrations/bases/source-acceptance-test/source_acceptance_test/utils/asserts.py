@@ -9,7 +9,7 @@ from typing import List, Mapping
 
 import pendulum
 from airbyte_cdk.models import AirbyteRecordMessage, ConfiguredAirbyteCatalog
-from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError
+from jsonschema import Draft7Validator, FormatChecker, FormatError, ValidationError, validators
 
 # fmt: off
 timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
@@ -17,6 +17,11 @@ timestamp_regex = re.compile((r"^\d{4}-\d?\d-\d?\d"  # date
                               r"\d?\d:\d?\d:\d?\d(.\d+)?"  # time
                               r".*$"))  # timezone
 # fmt: on
+
+# In Json schema, numbers with a zero fractional part are considered integers. E.G. 1.0 is considered a valid integer
+# For stricter type validation we don't want to keep this behavior. We want to consider integers in the Pythonic way.
+strict_integer_type_checker = Draft7Validator.TYPE_CHECKER.redefine("integer", lambda _, value: isinstance(value, int))
+Draft7ValidatorWithStrictInteger = validators.extend(Draft7Validator, type_checker=strict_integer_type_checker)
 
 
 class CustomFormatChecker(FormatChecker):
@@ -45,14 +50,14 @@ def verify_records_schema(
     """Check records against their schemas from the catalog, yield error messages.
     Only first record with error will be yielded for each stream.
     """
-    validators = {}
+    stream_validators = {}
     for stream in catalog.streams:
-        validators[stream.stream.name] = Draft7Validator(stream.stream.json_schema, format_checker=CustomFormatChecker())
-
+        stream_validators[stream.stream.name] = Draft7ValidatorWithStrictInteger(
+            stream.stream.json_schema, format_checker=CustomFormatChecker()
+        )
     stream_errors = defaultdict(dict)
-
     for record in records:
-        validator = validators.get(record.stream)
+        validator = stream_validators.get(record.stream)
         if not validator:
             logging.error(f"Record from the {record.stream} stream that is not in the catalog.")
             continue

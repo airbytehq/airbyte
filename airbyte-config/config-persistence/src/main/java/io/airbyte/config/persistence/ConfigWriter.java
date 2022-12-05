@@ -35,8 +35,8 @@ import org.jooq.impl.DSL;
  * This class can be used to store DB queries for persisting configs that we may want to reuse
  * across this package.
  * <p>
- * Currently this class is used to move write queries out of {@link DatabaseConfigPersistence} so
- * that they can be reused/composed in {@link ConfigRepository}.
+ * Currently this class is used to move write queries out of {@link ConfigPersistence} so that they
+ * can be reused/composed in {@link ConfigRepository}.
  */
 @SuppressWarnings("PMD.CognitiveComplexity")
 public class ConfigWriter {
@@ -62,7 +62,9 @@ public class ConfigWriter {
         .collect(Collectors.toMap(r -> r.get(ACTOR_DEFINITION.ID),
             r -> Map.entry(
                 r.get(ACTOR_DEFINITION.ACTOR_TYPE) == ActorType.source ? io.airbyte.config.ActorType.SOURCE : io.airbyte.config.ActorType.DESTINATION,
-                AirbyteProtocolVersion.getWithDefault(r.get(ACTOR_DEFINITION.PROTOCOL_VERSION)))));
+                AirbyteProtocolVersion.getWithDefault(r.get(ACTOR_DEFINITION.PROTOCOL_VERSION))),
+            // We may have duplicated entries from the data. We can pick any values in the merge function
+            (lhs, rhs) -> lhs));
   }
 
   private static Stream<Record4<UUID, String, ActorType, String>> getActorDefinitionsInUse(final DSLContext ctx) {
