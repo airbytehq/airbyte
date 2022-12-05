@@ -317,7 +317,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       final Worker syncWorker = factory.newWorker(taskQueue,
           getWorkerOptions(maxWorkersConfig.getMaxSyncWorkers()));
       final WorkflowImplementationOptions options = WorkflowImplementationOptions.newBuilder()
-          .setFailWorkflowExceptionTypes(NonDeterministicException.class).build();
+          .setFailWorkflowExceptionTypes(NonDeterministicException.class, RuntimeException.class).build();
       syncWorker.registerWorkflowImplementationTypes(options,
           temporalProxyHelper.proxyWorkflowClass(SyncWorkflowImpl.class));
       syncWorker.registerActivitiesImplementations(
