@@ -124,7 +124,7 @@ You should be able to build your connector with
 ./gradlew build :airbyte-integrations:connectors:<connector-directory>
 ```
 and the installation should use your local CDK. Note that the local CDK is injected at build time, so if you make changes, you will have to run the build command again to see them reflected.
-
+**Note:** if your connector uses a `.dockerignore` file, it cannot have `exclude-all` or `exclude-except` patterns, i.e. the `.dockerignore` must specifically say which files to ignore without using any regex. 
 #### Publishing a new version to PyPi
 
 1. Bump the package version in `setup.py`
