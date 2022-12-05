@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { CrossIcon } from "components/icons/CrossIcon";
@@ -40,6 +40,13 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
   onSelectedChange,
   stream,
 }) => {
+  const syncMode = (
+    <>
+      <FormattedMessage id={`syncMode.${config?.syncMode}`} />
+      {` | `}
+      <FormattedMessage id={`destinationSyncMode.${config?.destinationSyncMode}`} />
+    </>
+  );
   return (
     <div className={styles.container}>
       <div>
@@ -51,7 +58,7 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
           value={stream?.namespace ?? <FormattedMessage id="form.noNamespace" />}
         />
         <StreamProperty messageId="form.streamName" value={stream?.name} />
-        <StreamProperty messageId="form.syncMode" value={config?.syncMode} />
+        <StreamProperty messageId="form.syncMode" value={syncMode} />
       </div>
       <Button variant="clear" onClick={onClose} icon={<CrossIcon />} />
     </div>
