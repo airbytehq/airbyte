@@ -1,4 +1,5 @@
 *
+!streams
 !*.patch.json
 !*.map.json
 !source_facebook_marketing
