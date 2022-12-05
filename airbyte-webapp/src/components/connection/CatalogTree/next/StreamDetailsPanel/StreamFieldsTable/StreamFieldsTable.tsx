@@ -15,7 +15,7 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
-import { pathDisplayName } from "../../PathPopout";
+import { pathDisplayName } from "../../../PathPopout";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import styles from "./StreamFieldsTable.module.scss";
 

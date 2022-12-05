@@ -1,6 +1,6 @@
 import React from "react";
 
-import { getIcon } from "../../../../../utils/imageUtils";
+import { getIcon } from "../../../../../../utils/imageUtils";
 import styles from "./ConnectorHeaderGroupIcon.module.scss";
 
 interface StreamHeaderGroupIconProps {

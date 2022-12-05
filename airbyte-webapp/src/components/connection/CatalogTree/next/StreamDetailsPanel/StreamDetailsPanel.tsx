@@ -5,9 +5,9 @@ import { Overlay } from "components/ui/Overlay";
 
 import { AirbyteStream } from "core/request/AirbyteClient";
 
-import { StreamFieldsTable, StreamFieldsTableProps } from "../StreamFieldsTable/StreamFieldsTable";
-import { StreamPanelHeader } from "../StreamPanelHeader/StreamPanelHeader";
 import styles from "./StreamDetailsPanel.module.scss";
+import { StreamFieldsTable, StreamFieldsTableProps } from "./StreamFieldsTable/StreamFieldsTable";
+import { StreamPanelHeader } from "./StreamPanelHeader/StreamPanelHeader";
 
 interface StreamDetailsPanelProps extends StreamFieldsTableProps {
   disabled?: boolean;
