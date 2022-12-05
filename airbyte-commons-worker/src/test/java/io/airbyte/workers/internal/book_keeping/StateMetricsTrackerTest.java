@@ -2,15 +2,15 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.workers.internal;
+package io.airbyte.workers.internal.book_keeping;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
-import io.airbyte.workers.internal.StateMetricsTracker.StateMetricsTrackerOomException;
+import io.airbyte.workers.internal.book_keeping.StateMetricsTracker.StateMetricsTrackerNoStateMatchException;
+import io.airbyte.workers.internal.book_keeping.StateMetricsTracker.StateMetricsTrackerOomException;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
