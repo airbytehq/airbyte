@@ -85,9 +85,8 @@ public class DebeziumPropertiesManager {
     props.setProperty("decimal.handling.mode", "string");
 
     // table selection
-    final String tableWhitelist = getTableIncludelist(catalog);
-    props.setProperty("table.include.list", tableWhitelist);
-
+    props.setProperty("table.include.list", getTableIncludelist(catalog));
+    // column selection
     props.setProperty("column.include.list", getColumnIncludeList(catalog));
     return props;
   }
