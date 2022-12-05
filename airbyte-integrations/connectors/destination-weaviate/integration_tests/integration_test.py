@@ -3,10 +3,11 @@
 #
 
 import json
-from typing import Any, Dict, List, Mapping
-import time
 import logging
+import time
+from typing import Any, Dict, List, Mapping
 
+import docker
 import pytest
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import (
@@ -21,7 +22,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-import docker
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client
 
@@ -70,7 +70,7 @@ def setup_teardown(config: Mapping):
     client = None
     while retries > 0:
         try:
-            client = Client(config)
+            Client(config)
             break
         except Exception as e:
             logging.info(f"error connecting to weaviate with client. Retrying in 1 second. Exception: {e}")

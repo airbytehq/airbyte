@@ -9,13 +9,12 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
-
 from .client import Client
 
 
 class DestinationWeaviate(Destination):
     def write(
-            self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -35,7 +34,7 @@ class DestinationWeaviate(Destination):
         """
         client = Client(config)
         # TODO add support for overwrite mode
-        #for configured_stream in configured_catalog.streams:
+        # for configured_stream in configured_catalog.streams:
         #    if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
         #        client.delete_stream_entries(configured_stream.stream.name)
 
@@ -71,8 +70,7 @@ class DestinationWeaviate(Destination):
             client = Client.get_weaviate_client(config)
             ready = client.is_ready()
             if not ready:
-                return AirbyteConnectionStatus(status=Status.FAILED,
-                                              message=f"Weaviate server {config.get('url')} not ready")
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"Weaviate server {config.get('url')} not ready")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

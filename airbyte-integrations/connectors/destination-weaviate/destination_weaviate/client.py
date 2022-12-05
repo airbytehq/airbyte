@@ -1,7 +1,11 @@
-import weaviate
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
-from typing import Any, Mapping
 import uuid
+from typing import Any, Mapping
+
+import weaviate
 
 
 class Client:
@@ -13,7 +17,7 @@ class Client:
     def queue_write_operation(self, stream_name: str, record: Mapping):
         # TODO need to handle case where original DB ID is not a UUID
         id = ""
-        if record.get('id'):
+        if record.get("id"):
             id = record.get("id")
             del record["id"]
         else:
