@@ -101,7 +101,7 @@ class ContainerOrchestratorAcceptanceTests {
   void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
-  // This test is flaky.  It is commented out until that condition us understood
+  // This test is flaky.  Warnings are suppressed until that condition us understood
   // See: https://github.com/airbytehq/airbyte/issues/19948
   @Test
   @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
