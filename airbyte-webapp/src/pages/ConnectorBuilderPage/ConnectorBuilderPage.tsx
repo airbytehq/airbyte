@@ -1,8 +1,8 @@
 import { useIntl } from "react-intl";
 
-import { StreamTestingPanel } from "components/StreamTestingPanel";
+import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
+import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
-import { YamlEditor } from "components/YamlEditor";
 
 import { ConnectorBuilderStateProvider } from "services/connectorBuilder/ConnectorBuilderStateService";
 

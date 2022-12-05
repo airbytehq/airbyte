@@ -15,7 +15,7 @@ dependencies {
     implementation libs.flyway.core
 
     testImplementation libs.platform.testcontainers.postgresql
-    testImplementation 'uk.org.webcompere:system-stubs-jupiter:1.2.0'
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
 }
 
 application {
