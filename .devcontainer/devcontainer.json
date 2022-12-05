@@ -4,6 +4,9 @@
   "service": "develop",
   "workspaceFolder": "/workspace",
   "postCreateCommand": "bash tools/bin/setup_base_venv.sh python3.9 && bash fetch-flow.sh",
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
+  },
   // Set default container specific settings.json values on container create.
   "settings": {
   },
