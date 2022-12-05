@@ -24,7 +24,7 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
 
   const isStreamEnabled = stream.config?.selected;
 
-  const statusToDisplay = useMemo(() => {
+  const statusToDisplay = useMemo<StatusToDisplay>(() => {
     const rowStatusChanged =
       initialValues.syncCatalog.streams.find(
         (item) => item.stream?.name === stream.stream?.name && item.stream?.namespace === stream.stream?.namespace
