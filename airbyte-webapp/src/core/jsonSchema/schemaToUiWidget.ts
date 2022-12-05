@@ -1,3 +1,5 @@
+import pick from "lodash/pick";
+
 import { FormBlock } from "core/form/types";
 import { isDefined } from "utils/common";
 
@@ -121,10 +123,10 @@ const defaultFields = [
   "airbyte_hidden",
 ] as const;
 
-const pickDefaultFields = (schema: AirbyteJSONSchema): Pick<AirbyteJSONSchema, typeof defaultFields[number]> => {
-  const partialSchema: Partial<AirbyteJSONSchema> = {
-    ...Object.fromEntries(Object.entries(schema).filter(([k]) => (defaultFields as readonly string[]).includes(k))),
-  };
+type DefaultFields = Pick<AirbyteJSONSchema, typeof defaultFields[number] | "enum">;
+
+const pickDefaultFields = (schema: AirbyteJSONSchema): DefaultFields => {
+  const partialSchema: DefaultFields = pick(schema, defaultFields);
 
   if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
     partialSchema.enum = schema.items.enum;
