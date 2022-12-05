@@ -51,7 +51,7 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
     return "unchanged";
   }, [initialValues.syncCatalog.streams, isStreamEnabled, stream.config, stream.stream]);
 
-  const pillButtonVariant: PillButtonVariant = useMemo(() => {
+  const pillButtonVariant = useMemo<PillButtonVariant>(() => {
     if (statusToDisplay === "added" && !isSelected) {
       return "green";
     } else if (statusToDisplay === "removed" && !isSelected) {
