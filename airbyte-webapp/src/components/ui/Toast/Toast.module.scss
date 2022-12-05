@@ -37,7 +37,7 @@ $toast-bottom-margin: 27px;
 .toastContainer {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: vars.$spacing-md;
   position: fixed;
   box-sizing: border-box;
@@ -79,7 +79,7 @@ $toast-bottom-margin: 27px;
 
 .text {
   line-height: 17px;
-  text-align: center;
+  text-align: left;
 }
 
 .closeButton {
