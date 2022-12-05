@@ -8,6 +8,7 @@ export function useConfig(): CloudConfig {
 
 const cloudConfigExtensionDefault: CloudConfigExtension = {
   cloudApiUrl: "",
+  cloudPublicApiUrl: "/cloud_api",
   firebase: {
     apiKey: "",
     authDomain: "",
