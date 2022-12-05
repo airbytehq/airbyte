@@ -213,6 +213,21 @@
     }
   }
 
+  &.typeDark {
+    background-color: colors.$dark-blue;
+    color: colors.$white;
+
+    &:hover {
+      background-color: colors.$dark-blue-800;
+      color: colors.$white;
+    }
+
+    &:active {
+      background-color: colors.$dark-blue-1000;
+      color: colors.$white;
+    }
+  }
+
   &.isLoading {
     position: relative;
     align-content: center;
