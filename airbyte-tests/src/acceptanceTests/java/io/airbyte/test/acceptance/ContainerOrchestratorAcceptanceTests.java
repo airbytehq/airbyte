@@ -101,6 +101,8 @@ class ContainerOrchestratorAcceptanceTests {
     testHarness.setup();
   }
 
+  // This test is flaky. Warnings are suppressed until that condition us understood
+  // See: https://github.com/airbytehq/airbyte/issues/19948
   @Test
   @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
   void testDowntimeDuringSync() throws Exception {
