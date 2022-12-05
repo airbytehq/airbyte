@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/**'
+      - "docs/**"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -23,10 +23,10 @@ jobs:
 
       # Node.js is needed for Yarn
       - name: Setup Yarn
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16.14.0'
-          cache: 'yarn'
+          node-version: "16.14.0"
+          cache: "yarn"
           cache-dependency-path: docusaurus
 
       - name: Run Docusaurus
@@ -40,7 +40,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
-          # 'C03BEADRPNY' channel => '#oss-master-build-failure'
+          # 'C032Y32T065' channel => '#docs'
           args: >-
             {\"channel\":\"C03BEADRPNY\", \"blocks\":[
             {\"type\":\"divider\"},
@@ -48,4 +48,3 @@ jobs:
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}* \n\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\" :octavia-shocked: <https://github.com/${{github.repository}}/actions/runs/${{github.run_id}}|View Action Run> :octavia-shocked: \n\"}},
             {\"type\":\"divider\"}]}
-

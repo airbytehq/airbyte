@@ -22,7 +22,9 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.Source;
+import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshHelpers;
+import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.mysql.MySqlSource;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
@@ -39,10 +41,7 @@ import io.airbyte.protocol.models.SyncMode;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
@@ -50,13 +49,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import org.testcontainers.containers.Network;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   protected static final String TEST_USER = "test";
   protected static final String TEST_PASSWORD = "test";
   protected static MySQLContainer<?> container;
+  private static final SshBastionContainer bastion = new SshBastionContainer();
+  private static final Network network = Network.newNetwork();
 
   protected Database database;
   protected DSLContext dslContext;
@@ -69,13 +79,13 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
         .withEnv("MYSQL_ROOT_HOST", "%")
         .withEnv("MYSQL_ROOT_PASSWORD", TEST_PASSWORD);
     container.start();
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final Connection connection = DriverManager.getConnection(container.getJdbcUrl(), "root", container.getPassword());
     connection.createStatement().execute("GRANT ALL PRIVILEGES ON *.* TO '" + TEST_USER + "'@'%';\n");
   }
 
   @BeforeEach
   public void setup() throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -326,6 +336,32 @@ class MySqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTes
     final AirbyteConnectionStatus actual = source.check(config);
     assertEquals(Status.FAILED, actual.getStatus());
     assertTrue(actual.getMessage().contains("Could not connect with provided SSH configuration."));
+  }
+
+  @Test
+  void testCheckWithSSlModeDisabled() throws Exception {
+    try (final MySQLContainer<?> db = new MySQLContainer<>("mysql:8.0").withNetwork(network)) {
+      bastion.initAndStartBastion(network);
+      db.start();
+      final JsonNode configWithSSLModeDisabled = bastion.getTunnelConfig(SshTunnel.TunnelMethod.SSH_PASSWORD_AUTH, ImmutableMap.builder()
+          .put(JdbcUtils.HOST_KEY, Objects.requireNonNull(db.getContainerInfo()
+              .getNetworkSettings()
+              .getNetworks()
+              .entrySet().stream()
+              .findFirst()
+              .get().getValue().getIpAddress()))
+          .put(JdbcUtils.PORT_KEY, db.getExposedPorts().get(0))
+          .put(JdbcUtils.DATABASE_KEY, db.getDatabaseName())
+          .put(JdbcUtils.SCHEMAS_KEY, List.of("public"))
+          .put(JdbcUtils.USERNAME_KEY, db.getUsername())
+          .put(JdbcUtils.PASSWORD_KEY, db.getPassword())
+          .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, "disable")));
+
+      final AirbyteConnectionStatus actual = source.check(configWithSSLModeDisabled);
+      assertEquals(AirbyteConnectionStatus.Status.SUCCEEDED, actual.getStatus());
+    } finally {
+      bastion.stopAndClose();
+    }
   }
 
   @Override

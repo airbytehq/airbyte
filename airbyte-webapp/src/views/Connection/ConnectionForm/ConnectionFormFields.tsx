@@ -7,7 +7,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
 import { ControlLabels } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
@@ -116,13 +116,19 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             )}
           </Field>
         </Section>
-        <Section>
+        <Section className={styles.flush}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={refreshSchema} type="button" variant="secondary" disabled={isSubmitting}>
+              <Button
+                onClick={refreshSchema}
+                type="button"
+                variant="secondary"
+                data-testid="refresh-source-schema-btn"
+                disabled={isSubmitting}
+              >
                 <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>

@@ -13,6 +13,8 @@ import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Modal } from "components/ui/Modal";
 
+import { Action, Namespace } from "core/analytics";
+import { useAnalyticsService } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useUserHook } from "packages/cloud/services/users/UseUserHook";
@@ -56,6 +58,7 @@ const ROLE_OPTIONS = [
 
 export const InviteUsersModal: React.FC<{
   onClose: () => void;
+  invitedFrom: "source" | "destination" | "user.settings";
 }> = (props) => {
   const { formatMessage } = useIntl();
   const { workspaceId } = useCurrentWorkspace();
@@ -64,7 +67,7 @@ export const InviteUsersModal: React.FC<{
   const { mutateAsync: invite } = inviteUserLogic;
 
   const isRoleVisible = false; // Temporarily hiding roles because there's only 'Admin' in cloud.
-
+  const analyticsService = useAnalyticsService();
   return (
     <Modal title={<FormattedMessage id="modals.addUser.title" />} onClose={props.onClose}>
       <Formik
@@ -92,6 +95,9 @@ export const InviteUsersModal: React.FC<{
               },
             }
           );
+          analyticsService.track(Namespace.USER, Action.INVITE, {
+            invited_from: props.invitedFrom,
+          });
         }}
       >
         {({ values, isValid, isSubmitting, dirty, setFieldValue }) => {

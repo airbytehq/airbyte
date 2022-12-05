@@ -2,6 +2,7 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-source-acceptance-test'
     id "java-library"
     // https://docs.gradle.org/current/userguide/java_testing.html#sec:java_test_fixtures
     id "java-test-fixtures"
@@ -29,6 +30,8 @@ dependencies {
 
     testImplementation libs.postgresql
     testImplementation libs.connectors.testcontainers.postgresql
+
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     integrationTestJavaImplementation libs.connectors.testcontainers.postgresql

@@ -21,6 +21,18 @@ set +o xtrace  # +x easier human reading here
 
 . tools/lib/lib.sh
 
+function check_compose_image_exist() {
+  local compose_file=$1
+  local tag=$2
+  for img in `grep "image:" ${compose_file} | tr -d ' ' | cut -d ':' -f2`; do
+    printf "\t${img}: ${tag}\n"
+    if docker_tag_exists $img $tag; then
+      printf "\tSTATUS: found\n\n"
+    else
+      printf "\tERROR: not found!\n\n" && exit 1
+    fi
+  done
+}
 
 function docker_tag_exists() {
   # Is true for images stored in the Github Container Registry
@@ -32,12 +44,12 @@ function docker_tag_exists() {
     TOKEN_URL=https://ghcr.io/token\?scope\="repository:$1:pull"
     token=$(curl $TOKEN_URL | jq -r '.token' > /dev/null)
     URL=https://ghcr.io/v2/$1/manifests/$2
-    echo -e "$blue_text""\n\n\tURL: $URL""$default_text"
+    echo -e "$blue_text""\tURL: $URL""$default_text"
     curl -H "Authorization: Bearer $token" --location --silent --show-error --dump-header header.txt "$URL" > /dev/null
     curl_success=$?
   else
     URL=https://hub.docker.com/v2/repositories/"$1"/tags/"$2"
-    echo -e "$blue_text""\n\n\tURL: $URL""$default_text"
+    echo -e "$blue_text""\tURL: $URL""$default_text"
     curl --silent --show-error --location --dump-header header.txt "$URL" > /dev/null
     curl_success=$?
     # some bullshit to get the number out of a header that looks like this
@@ -64,21 +76,8 @@ function docker_tag_exists() {
 
 checkPlatformImages() {
   echo -e "$blue_text""Checking platform images exist...""$default_text"
-  #Pull without printing progress information and send error stream because that where image names are
-  docker-compose pull --quiet 2> compose_output
-  docker_compose_success=$?
-  # quiet output is just SHAs ie: f8a3d002a8a6
-  images_pulled_count=$(docker images --quiet | wc -l)
-  if test $images_pulled_count -eq 0; then
-    echo -e "$red_text""Nothing was pulled!  This script may be broken! We expect to pull something""$default_text"
-    exit 1
-  elif test $docker_compose_success -eq 0; then
-    echo -e "$blue_text""Docker successfully pulled all images""$default_text"
-  else
-    echo -e "$red_text""docker-compose failed to pull all images""$default_text"
-    cat compose_output
-    exit 1
-  fi
+  # Check dockerhub to see if the images exist
+  check_compose_image_exist docker-compose.yaml $VERSION
 }
 
 checkNormalizationImages() {
@@ -92,14 +91,8 @@ checkNormalizationImages() {
   fi
   image_version=$(cat $factory_path | grep 'NORMALIZATION_VERSION =' | cut -d"=" -f2 | sed 's:;::' | sed -e 's:"::g' | sed -e 's:[[:space:]]::g')
   echo -e "$blue_text""Checking normalization images with version $image_version exist...""$default_text"
-  VERSION=$image_version docker-compose --file airbyte-integrations/bases/base-normalization/docker-compose.yaml pull --quiet
-  docker_compose_success=$?
-  if test $docker_compose_success -eq 0; then
-    echo -e "$blue_text""Docker successfully pulled all images for normalization""$default_text"
-  else
-    echo -e "$red_text""docker-compose failed to pull all images for normalization""$default_text"
-    exit 1
-  fi
+  VERSION=$image_version 
+  check_compose_image_exist airbyte-integrations/bases/base-normalization/docker-compose.yaml $VERSION
 }
 
 checkConnectorImages() {
@@ -111,9 +104,9 @@ checkConnectorImages() {
       IFS=":" read -r _ TAG
       printf "\t${REPO}: ${TAG}\n"
       if docker_tag_exists "$REPO" "$TAG"; then
-          printf "\tSTATUS: found\n"
+          printf "\tSTATUS: found\n\n"
       else
-          printf "\tERROR: not found!\n" && exit 1
+          printf "\tERROR: not found!\n\n" && exit 1
       fi
   done <<< "${CONNECTOR_DEFINITIONS}"
   echo -e "$blue_text""Success! All connector images exist!""$default_text"
@@ -131,7 +124,6 @@ main() {
   [[ "$SUBSET" =~ ^(all|connectors)$ ]] && checkConnectorImages
   echo -e "$blue_text""Image check complete.""$default_text"
   test -f header.txt     && rm header.txt
-  test -f compose_output && rm compose_output
 }
 
 main "$@"

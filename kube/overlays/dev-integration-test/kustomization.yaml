@@ -21,6 +21,8 @@ images:
     newTag: 1.13.0
   - name: airbyte/cron
     newTag: dev
+  - name: airbyte/connector-builder-server
+    newTag: dev
 
 configMapGenerator:
   - name: airbyte-env

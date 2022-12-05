@@ -274,6 +274,8 @@ webapp:
   ##  webapp.api.url The webapp API url.
   api:
     url: /api/v1/
+  connectorBuilderServer:
+    url: /connector-builder-api
 
   ##  webapp.fullstory.enabled Whether or not to enable fullstory
   fullstory:
@@ -669,7 +671,6 @@ worker:
   image:
     repository: airbyte/worker
     pullPolicy: IfNotPresent
-    tag: 0.40.9
 
   ##  worker.podAnnotations [object] Add extra annotations to the worker pod(s)
   ##
@@ -1212,3 +1213,190 @@ minio:
   auth:
     rootUser: minio
     rootPassword: minio123
+
+cron:
+  enabled: true
+  ##  cron.replicaCount Number of cron replicas
+  replicaCount: 1
+
+  ##  cron.image.repository The repository to use for the airbyte cron image.
+  ##  cron.image.pullPolicy the pull policy to use for the airbyte cron image
+  ##  cron.image.tag The airbyte cron image tag. Defaults to the chart's AppVersion
+  image:
+    repository: airbyte/cron
+    pullPolicy: IfNotPresent
+
+  ##  cron.podAnnotations [object] Add extra annotations to the cron pod(s)
+  ##
+  podAnnotations: {}
+
+  ##  cron.containerSecurityContext Security context for the container
+  ## Examples:
+  ## containerSecurityContext:
+  ##    runAsNonRoot: true
+  ##    runAsUser: 1000
+  ##    readOnlyRootFilesystem: true
+  containerSecurityContext: {}
+
+  ## Configure extra options for the cron containers' liveness and readiness probes
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-probes/#configure-probes
+  ##  cron.livenessProbe.enabled Enable livenessProbe on the cron
+  ##  cron.livenessProbe.initialDelaySeconds Initial delay seconds for livenessProbe
+  ##  cron.livenessProbe.periodSeconds Period seconds for livenessProbe
+  ##  cron.livenessProbe.timeoutSeconds Timeout seconds for livenessProbe
+  ##  cron.livenessProbe.failureThreshold Failure threshold for livenessProbe
+  ##  cron.livenessProbe.successThreshold Success threshold for livenessProbe
+  ##
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ##  cron.readinessProbe.enabled Enable readinessProbe on the cron
+  ##  cron.readinessProbe.initialDelaySeconds Initial delay seconds for readinessProbe
+  ##  cron.readinessProbe.periodSeconds Period seconds for readinessProbe
+  ##  cron.readinessProbe.timeoutSeconds Timeout seconds for readinessProbe
+  ##  cron.readinessProbe.failureThreshold Failure threshold for readinessProbe
+  ##  cron.readinessProbe.successThreshold Success threshold for readinessProbe
+  ##
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+
+  ## cron resource requests and limits
+  ## ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ## We usually recommend not to specify default resources and to leave this as a conscious
+  ## choice for the user. This also increases chances charts run on environments with little
+  ## resources, such as Minikube. If you do want to specify resources, uncomment the following
+  ## lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  ##  cron.resources.limits [object] The resources limits for the cron container
+  ##  cron.resources.requests [object] The requested resources for the cron container
+  resources:
+    ## Example:
+    ## limits:
+    ##    cpu: 200m
+    ##    memory: 1Gi
+    limits: {}
+    ## Examples:
+    ## requests:
+    ##    memory: 256Mi
+    ##    cpu: 250m
+    requests: {}
+
+  ##  cron.nodeSelector [object] Node labels for pod assignment
+  ## Ref: https://kubernetes.io/docs/user-guide/node-selection/
+  ##
+  nodeSelector: {}
+
+  ##  cron.tolerations [array] Tolerations for cron pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration/
+  ##
+  tolerations: []
+
+  ##  cron.affinity [object] Affinity and anti-affinity for cron pod assignment.
+  ## ref: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#affinity-and-anti-affinity
+  ##
+  affinity: {}
+
+  ##  cron.log.level The log level to log at.
+  log:
+    level: "INFO"
+
+
+
+  ##  cron.extraVolumeMounts [array] Additional volumeMounts for cron container(s).
+  ## Examples (when using `cron.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumeMounts:
+  ##   - name: tmpdir
+  ##     mountPath: /tmp
+  ##
+  extraVolumeMounts: []
+
+  ##  cron.extraVolumes [array] Additional volumes for cron pod(s).
+  ## Examples (when using `cron.containerSecurityContext.readOnlyRootFilesystem=true`):
+  ## extraVolumes:
+  ##   - name: tmpdir
+  ##     emptyDir: {}
+  ##
+  extraVolumes: []
+
+  ##  extraContainer [array] Additional container for cron pod(s)
+  ## Example:
+  # extraContainers:
+  #   - name: otel_collector
+  #     image: somerepo/someimage:sometag
+  #     args: [
+  #         "--important-args"
+  #     ]
+  #     ports:
+  #       - containerPort: 443
+  #     volumeMounts:
+  #       - name: volumeMountCool
+  #         mountPath: /some/path
+  #         readOnly: true
+  extraContainers: []
+
+  ##  extraInitContainers [array] Additional init containers for cron pod(s)
+  ## Example:
+  # extraInitContainers:
+  #   - name: sleepy
+  #     image: alpine
+  #     command: ['sleep', '60']
+
+  extraInitContainers: []
+
+  ##  extraEnv [array] Supply extra env variables to main container using full notation
+  ## Example: (With default env vars and values taken from generated config map)
+  # extraEnv:
+  #   - name: AIRBYTE_VERSION
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: AIRBYTE_VERSION
+  #   - name: API_URL
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: API_URL
+  #   - name: TRACKING_STRATEGY
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: TRACKING_STRATEGY
+  #   - name: FULLSTORY
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: FULLSTORY
+  #   - name: INTERNAL_API_HOST
+  #     valueFrom:
+  #       configMapKeyRef:
+  #         name: airbyte-env
+  #         key: INTERNAL_API_HOST
+  ##
+  extraEnv: []
+  ##  secrets [object] Supply additional secrets to container
+  ## Example:
+  ## secrets:
+  ##   DATABASE_PASSWORD: strong-password
+  ##   DATABASE_USER: my-db-user
+  secrets: {}
+
+  ##  env_vars [object] Supply extra env variables to main container using simplified notation
+  ## Example:
+  ## env_vars:
+  ##   DATABASE_HOST: airbyte-db
+  ##   DATABASE_PORT: 5432
+  env_vars: {}
+
+connectorBuilderServer:
+  enabled: true
+  service:
+    port: 8003

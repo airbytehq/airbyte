@@ -26,13 +26,13 @@ describe("AnalyticsService", () => {
   });
 
   it("should send events to segment", () => {
-    const service = new AnalyticsService({});
+    const service = new AnalyticsService();
     service.track(Namespace.CONNECTION, Action.CREATE, {});
     expect(window.analytics.track).toHaveBeenCalledWith("Airbyte.UI.Connection.Create", expect.anything());
   });
 
   it("should send version and environment for prod", () => {
-    const service = new AnalyticsService({}, "0.42.13");
+    const service = new AnalyticsService("0.42.13");
     service.track(Namespace.CONNECTION, Action.CREATE, {});
     expect(window.analytics.track).toHaveBeenCalledWith(
       expect.anything(),
@@ -41,7 +41,7 @@ describe("AnalyticsService", () => {
   });
 
   it("should send version and environment for dev", () => {
-    const service = new AnalyticsService({}, "dev");
+    const service = new AnalyticsService("dev");
     service.track(Namespace.CONNECTION, Action.CREATE, {});
     expect(window.analytics.track).toHaveBeenCalledWith(
       expect.anything(),
@@ -50,7 +50,7 @@ describe("AnalyticsService", () => {
   });
 
   it("should pass parameters to segment event", () => {
-    const service = new AnalyticsService({});
+    const service = new AnalyticsService();
     service.track(Namespace.CONNECTION, Action.CREATE, { actionDescription: "Created new connection" });
     expect(window.analytics.track).toHaveBeenCalledWith(
       expect.anything(),
@@ -59,7 +59,8 @@ describe("AnalyticsService", () => {
   });
 
   it("should pass context parameters to segment event", () => {
-    const service = new AnalyticsService({ context: 42 });
+    const service = new AnalyticsService();
+    service.setContext({ context: 42 });
     service.track(Namespace.CONNECTION, Action.CREATE, { actionDescription: "Created new connection" });
     expect(window.analytics.track).toHaveBeenCalledWith(
       expect.anything(),

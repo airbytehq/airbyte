@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
 import { Table } from "components/ui/Table";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
@@ -48,7 +48,10 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
   const workspace = useCurrentWorkspace();
-  const availableConnectorDefinitions = useAvailableConnectorDefinitions(connectorsDefinitions, workspace);
+  const availableConnectorDefinitions = useAvailableConnectorDefinitions<ConnectorDefinition>(
+    connectorsDefinitions,
+    workspace
+  );
 
   const columns = React.useMemo(
     () => [

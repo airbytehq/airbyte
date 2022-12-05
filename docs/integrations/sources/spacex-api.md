@@ -1,0 +1,75 @@
+# SpaceX-API
+
+This page contains the setup guide and reference information for the [SpaceX-API](https://github.com/r-spacex/SpaceX-API) source connector.
+
+## Prerequisites
+
+No prerequisites, but a dummy api_key is required as it enhances security in future build. Please check the available routes at [SpaceX Routes](https://github.com/r-spacex/SpaceX-API/tree/master/routes).
+
+## Setup guide
+
+### Step 1: Set up SpaceX connection
+
+- Have a dummy API key (Example: 12345)
+- A specific id (If specific info is needed)
+
+## Step 2: Set up the SpaceX-API connector in Airbyte
+
+### For Airbyte Cloud:
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
+3. On the Set up the source page, enter the name for the SpaceX-API connector and select **Spacex-API** from the Source type dropdown.
+4. Enter your `api_key`.
+5. Enter your `id` if needed. (Optional)
+6. Click **Set up source**.
+
+### For Airbyte OSS:
+
+1. Navigate to the Airbyte Open Source dashboard.
+2. Set the name for your source.
+3. Enter your `api_key`.
+5. Enter your `id` if needed. (Optional)
+6. Click **Set up source**.
+
+## Supported sync modes
+
+The SpaceX-API source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental Sync              | No         |
+| Replicate Incremental Deletes | No         |
+| SSL connection                | Yes        |
+| Namespaces                    | No         |
+
+## Supported Streams
+
+- Launches
+- Capsules
+- Company
+- Crew
+- Cores
+- Dragons
+- History
+- Landpads
+- Payloads
+- Roadster
+- Rockets
+- Ships
+- Starlink
+
+## API method example
+
+GET https://api.spacexdata.com/v5/launches/latest
+
+## Performance considerations
+
+SpaceX's [API reference](https://api.spacexdata.com/v5/) has both v4 an v5 for launches. The connector as default uses V4 as it has minimal bugs.
+
+## Changelog
+
+| Version | Date       | Pull Request                                           | Subject        |
+| :------ | :--------- | :----------------------------------------------------- | :------------- |
+| 0.1.0   | 2022-10-22 | [Init](https://github.com/airbytehq/airbyte/pull/18311) | Initial commit |
