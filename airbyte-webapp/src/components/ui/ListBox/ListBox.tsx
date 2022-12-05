@@ -67,11 +67,11 @@ export const ListBox = <T,>({
                 )}
               </Listbox.Option>
             ))}
-            {footer ? (
+            {footer && (
               <Listbox.Option key={footer.label} value={footer.value} className={styles.footer}>
                 {footer.label}
               </Listbox.Option>
-            ) : null}
+            )}
           </Listbox.Options>
         </div>
       </Listbox>
