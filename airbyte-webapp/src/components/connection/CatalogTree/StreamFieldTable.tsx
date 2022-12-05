@@ -16,9 +16,18 @@ interface StreamFieldTableProps {
   shouldDefineCursor: boolean;
   onCursorSelect: (cursorPath: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
+  onSelectedFieldsUpdate: (selectedFields: string[]) => void;
 }
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
+  const handleFieldToggle = (fieldName: string, isSelected: boolean) => {
+    if (isSelected) {
+      props.onSelectedFieldsUpdate([...(props.config?.selectedFields || []), fieldName]);
+    } else {
+      props.onSelectedFieldsUpdate(props.config?.selectedFields?.filter((f) => f !== fieldName) || []);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <TreeRowWrapper noBorder>
@@ -34,6 +43,8 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
               isCursorEnabled={props.shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
               onPrimaryKeyChange={props.onPkSelect}
               onCursorChange={props.onCursorSelect}
+              onToggleFieldSelected={handleFieldToggle}
+              isSelected={!!props.config?.selectedFields?.includes(field.cleanedName)}
             />
           </TreeRowWrapper>
         ))}

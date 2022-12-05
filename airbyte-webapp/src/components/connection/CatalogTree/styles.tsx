@@ -20,3 +20,11 @@ export const ArrowCell = styled(HeaderCell)`
 export const NameContainer = styled.span`
   padding-left: 30px;
 `;
+
+export const SyncHeaderContainer = styled.span`
+  padding-left: 30px;
+`;
+
+export const SyncCheckboxContainer = styled.div`
+  padding-left: 24px;
+`;

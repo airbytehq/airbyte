@@ -96,6 +96,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [updateStreamWithConfig]
   );
 
+  const onSelectedFieldsUpdate = useCallback(
+    (selectedFields: string[]) => updateStreamWithConfig({ selectedFields }),
+    [updateStreamWithConfig]
+  );
+
   const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
   const cursorRequired = config?.syncMode === SyncMode.incremental;
   const shouldDefinePk = stream?.sourceDefinedPrimaryKey?.length === 0 && pkRequired;
@@ -184,6 +189,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
               syncSchemaFields={flattenedFields}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
+              onSelectedFieldsUpdate={onSelectedFieldsUpdate}
               shouldDefinePk={shouldDefinePk}
               shouldDefineCursor={shouldDefineCursor}
             />
