@@ -85,7 +85,7 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
-        "airbyte/normalization", false, files, null,
+        NORMALIZATION_IMAGE, false, files, null,
         workerConfigs.getResourceRequirements(),
         Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
             AirbyteIntegrationLauncher.NORMALIZE_STEP),

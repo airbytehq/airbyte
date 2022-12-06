@@ -99,6 +99,7 @@ import org.slf4j.LoggerFactory;
 public abstract class DestinationAcceptanceTest {
 
   private static final Random RANDOM = new Random();
+  private static final String NORMALIZATION_VERSION = "dev";
 
   private static final String JOB_ID = "0";
   private static final int JOB_ATTEMPT = 0;
@@ -141,7 +142,7 @@ public abstract class DestinationAcceptanceTest {
   protected String getNormalizationImageName() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
         .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
-            + standardDestinationDefinition.getNormalizationTag())
+            + NORMALIZATION_VERSION)
         .orElse(null);
   }
 
