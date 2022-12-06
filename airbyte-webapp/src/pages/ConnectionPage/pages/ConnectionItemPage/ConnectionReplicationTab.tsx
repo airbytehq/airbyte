@@ -9,6 +9,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
+import { useConfirmCatalogDiff } from "hooks/connection/useConfirmCatalogDiff";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import {
@@ -20,7 +21,6 @@ import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal } from "utils/objects";
-import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import {
