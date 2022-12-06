@@ -372,6 +372,10 @@
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
 
+  "connection.schemaChange.breaking": "Breaking schema updates detected",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected",
+  "connection.schemaChange.reviewAction": "Review changes",
+
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
   "form.cronExpression.placeholder": "Cron expression",
@@ -524,6 +528,7 @@
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
+  "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
 
@@ -549,6 +554,7 @@
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
+  "ui.goToHome": "Go to homepage",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
@@ -595,5 +601,7 @@
   "connectorBuilder.resetModal.title": "Reset Connector Builder",
   "connectorBuilder.resetModal.submitButton": "Reset",
   "connectorBuilder.streamsHeading": "STREAMS ({number})",
-  "connectorBuilder.globalConfiguration": "Global Configuration"
+  "connectorBuilder.globalConfiguration": "Global Configuration",
+
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
