@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "account_name": {
+      "type": ["null", "string"]
+    },
+    "account_code": {
+      "type": ["null", "string"]
+    },
+    "level": {
+      "type": ["null", "string"]
+    },
+    "location": {
+      "type": ["null", "string"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "position": {
+      "type": ["null", "string"]
+    },
+    "personel_input_type": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "string"]
+    },
+    "headcount": {
+      "type": "number"
+    }
+  }
+}
