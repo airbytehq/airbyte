@@ -549,10 +549,8 @@ describe("Connection main actions with database", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
 
-    const collectionNames = new Array();
-    collectionNames.push("Field name", "col1", "id");
-    const collectionTypes = new Array();
-    collectionTypes.push("Data type", "String", "Integer");
+    const collectionNames = ["Field name", "col1", "id"];
+    const collectionTypes = ["Data type", "String", "Integer"];
 
     createTestConnection(sourceName, destName);
 
