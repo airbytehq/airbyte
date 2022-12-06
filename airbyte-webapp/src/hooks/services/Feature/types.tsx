@@ -1,6 +1,6 @@
 /**
  * FeatureItems are for permanent flags to differentiate features between environments (e.g. Cloud vs. OSS),
- * workspaces, specific user groups, etc. The corresponding flag should be added to LaunchDarkly.
+ * workspaces, specific user groups, etc.
  */
 
 export enum FeatureItem {
