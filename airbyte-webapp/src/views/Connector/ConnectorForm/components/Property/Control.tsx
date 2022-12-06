@@ -30,7 +30,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
             name={name}
             fieldValue={field.value || []}
             onChange={(tagLabels) => helpers.setValue(tagLabels)}
-            // error={!!meta.error}
+            error={!!meta.error}
             disabled={disabled}
           />
         )}
