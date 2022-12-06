@@ -39,7 +39,7 @@ export default {
     formValues: {
       serviceType: TempConnector.sourceDefinitionId,
     },
-    onSubmit: (v) => console.log(v),
+    onSubmit: async (v) => console.log(v),
     availableServices: [TempConnector],
   },
   decorators: [withMock],
