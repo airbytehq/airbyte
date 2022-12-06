@@ -448,94 +448,51 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   @Override
   public JsonSchemaType getJsonType(final PostgresType jdbcType) {
     return switch (jdbcType) {
-      case BOOLEAN -> JsonSchemaType.BOOLEAN;
-      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;
-      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER;
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.STRING_BASE_64;
+      case BOOLEAN -> JsonSchemaType.BOOLEAN_V1;
+      case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER_V1;
+      case FLOAT, DOUBLE, REAL, NUMERIC, DECIMAL -> JsonSchemaType.NUMBER_V1;
+      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> JsonSchemaType.BINARY_DATA_V1;
       case ARRAY -> JsonSchemaType.ARRAY;
-      case BIT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-              .build())
-          .build();
-      case BOOL_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN)
-              .build())
-          .build();
-      case BYTEA_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case NAME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case VARCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case CHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case BPCHAR_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case TEXT_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING)
-              .build())
-          .build();
-      case INT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case INT2_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case INT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.INTEGER)
-          .build();
-      case MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case OID_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case NUMERIC_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case FLOAT4_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
-              .build())
-          .build();
-      case FLOAT8_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER)
+      case BIT_ARRAY, BOOL_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.BOOLEAN_V1)
+                  .build())
+              .build();
+      case BYTEA_ARRAY, NAME_ARRAY, VARCHAR_ARRAY, CHAR_ARRAY, BPCHAR_ARRAY, TEXT_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.STRING_V1)
+                  .build())
+              .build();
+      case INT4_ARRAY, INT2_ARRAY, INT8_ARRAY ->
+          JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+              .withItems(JsonSchemaType.INTEGER_V1)
+              .build();
+      case OID_ARRAY, NUMERIC_ARRAY, FLOAT4_ARRAY, FLOAT8_ARRAY, MONEY_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
+          .withItems(JsonSchemaType.builder(JsonSchemaPrimitive.NUMBER_V1)
               .build())
           .build();
       case TIMESTAMPTZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE)
+          .withItems(JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1)
           .build();
       case TIMESTAMP_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+          .withItems(JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1)
           .build();
       case TIMETZ_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIME_WITH_TIMEZONE)
+          .withItems(JsonSchemaType.TIME_WITH_TIMEZONE_V1)
           .build();
       case TIME_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
+          .withItems(JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1)
           .build();
       case DATE_ARRAY -> JsonSchemaType.builder(JsonSchemaPrimitive.ARRAY)
-          .withItems(JsonSchemaType.STRING_DATE)
+          .withItems(JsonSchemaType.DATE_V1)
           .build();
 
-      case DATE -> JsonSchemaType.STRING_DATE;
-      case TIME -> JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE;
-      case TIME_WITH_TIMEZONE -> JsonSchemaType.STRING_TIME_WITH_TIMEZONE;
-      case TIMESTAMP -> JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE;
-      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE;
-      default -> JsonSchemaType.STRING;
+      case DATE -> JsonSchemaType.DATE_V1;
+      case TIME -> JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1;
+      case TIME_WITH_TIMEZONE -> JsonSchemaType.TIME_WITH_TIMEZONE_V1;
+      case TIMESTAMP -> JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1;
+      case TIMESTAMP_WITH_TIMEZONE -> JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1;
+      default -> JsonSchemaType.STRING_V1;
     };
   }
 
