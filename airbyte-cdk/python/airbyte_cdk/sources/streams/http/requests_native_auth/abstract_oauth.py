@@ -64,6 +64,11 @@ class AbstractOauth2Authenticator(AuthBase):
 
         return payload
 
+    def _get_refresh_access_token_response(self):
+        response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
+        response.raise_for_status()
+        return response.json()
+
     def refresh_access_token(self) -> Tuple[str, int]:
         """
         Returns the refresh token and its lifespan in seconds
@@ -71,9 +76,7 @@ class AbstractOauth2Authenticator(AuthBase):
         :return: a tuple of (access_token, token_lifespan_in_seconds)
         """
         try:
-            response = requests.request(method="POST", url=self.get_token_refresh_endpoint(), data=self.build_refresh_request_body())
-            response.raise_for_status()
-            response_json = response.json()
+            response_json = self._get_refresh_access_token_response()
             return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
