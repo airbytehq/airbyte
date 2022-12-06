@@ -14,11 +14,18 @@
   border-radius: variables.$border-radius-md;
   border: none;
   display: flex;
-  justify-content: center;
+
+  // justify-content: center;
+}
+
+.label {
+  margin-left: auto;
+  overflow: auto;
 }
 
 .arrow {
   margin-left: variables.$spacing-md;
   margin-top: -1px;
+  margin-right: auto;
   color: colors.$blue;
 }

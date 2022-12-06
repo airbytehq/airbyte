@@ -20,7 +20,7 @@ interface StreamSelectorProps {
 const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOption }) => {
   return (
     <>
-      <Heading as="h1" size="sm">
+      <Heading className={styles.label} as="h1" size="sm">
         {selectedOption.label}
       </Heading>
       <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
