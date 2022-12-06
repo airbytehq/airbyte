@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   public static final String USE_STREAM_CAPABLE_STATE = "USE_STREAM_CAPABLE_STATE";
+  public static final String AUTO_DETECT_SCHEMA = "AUTO_DETECT_SCHEMA";
   public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
   public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
 
@@ -29,6 +30,11 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   @Override
   public boolean useStreamCapableState() {
     return getEnvOrDefault(USE_STREAM_CAPABLE_STATE, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public boolean autoDetectSchema() {
+    return getEnvOrDefault(AUTO_DETECT_SCHEMA, false, Boolean::parseBoolean);
   }
 
   @Override
