@@ -97,6 +97,25 @@ COPY streams/* ./streams/
    `jobs.build_connectors.strategy.matrix.connector` is the place to add the new
    connector.
 
+Finally, make sure you build and run the connector once to make sure the spec is
+valid.
+
+## Updating an existing connector
+
+The `pull-connector.sh` script can update existing connectors as well. You can
+just run:
+
+```
+./pull-connector.sh source-hubspot
+```
+
+The script will take you through a diff of the latest version from airbyte and
+our local version, and will ask you about each file whether we should keep the
+local file or take the file from upstream. A rule of thumb is that we want to
+pull in code changes, but we usually keep our local version of `Dockerfile` and
+`.dockerignore`. Don't forget to bump the version in `Dockerfile` if the changes
+we are pulling from upstream are backward-incompatible.
+
 ## airbyte-to-flow
 
 See the README file in `airbyte-to-flow` directory.
