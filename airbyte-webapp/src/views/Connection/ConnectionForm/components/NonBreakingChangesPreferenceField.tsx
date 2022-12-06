@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { FieldProps } from "formik";
+import { FieldProps, useField } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -11,7 +11,9 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./NonBreakingChangesPreferenceField.module.scss";
 
-export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form, meta }) => {
+export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form }) => {
+  const [, meta] = useField(field.name);
+
   const { formatMessage } = useIntl();
 
   const preferenceOptions = useMemo(() => {
