@@ -188,7 +188,13 @@ class Subscriptions(ExactStream):
 
 # Source
 class SourceExact(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, config) -> Tuple[bool, any]:
+        access_token = config.get("access_token")
+        refresh_token = config.get("refresh_token")
+
+        if not access_token or not refresh_token:
+            return False, "Missing access or refresh token"
+
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
