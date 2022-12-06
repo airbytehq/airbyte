@@ -245,7 +245,7 @@ class Channels(IncrementalBigcommerceStream):
         return f"{self.data_field}"
 
 
-class Store(IncrementalBigcommerceStream):
+class Store(BigcommerceStream):
     data_field = "store"
     cursor_field = "store_id"
     api_version = "v2"
