@@ -2,10 +2,10 @@ import { FormattedMessage } from "react-intl";
 
 import { FieldTransform } from "core/request/AirbyteClient";
 
-import { DiffVerb } from "../types";
 import styles from "./DiffFieldTable.module.scss";
 import { DiffHeader } from "./DiffHeader";
 import { FieldRow } from "./FieldRow";
+import { DiffVerb } from "./types";
 
 interface DiffFieldTableProps {
   fieldTransforms: FieldTransform[];
