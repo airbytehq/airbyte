@@ -89,7 +89,7 @@ export interface ConnectorFormProps {
   formId?: string;
   selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
+  onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;

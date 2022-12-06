@@ -151,6 +151,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     } catch (e) {
       setErrorStatusRequest(e);
       setIsFormSubmitting(false);
+      // keep throwing the exception to inform the component the submit did not go through
+      throw e;
     }
   };
 
