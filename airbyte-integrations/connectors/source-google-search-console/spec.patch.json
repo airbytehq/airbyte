@@ -20,6 +20,7 @@
             "client_secret",
             "refresh_token"
           ],
+          "x-oauth2-provider": "google",
           "properties": {
             "auth_type": {
               "type": "string",

@@ -3,7 +3,71 @@
     "credentials": {
       "discriminator": {
         "propertyName": "auth_type"
-      }
+      },
+      "oneOf": [
+        {
+          "title": "Authenticate via Google (Oauth)",
+          "type": "object",
+          "required": ["client_id", "client_secret", "refresh_token"],
+          "x-oauth2-provider": "google",
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "Client",
+              "order": 0
+            },
+            "client_id": {
+              "title": "Client ID",
+              "type": "string",
+              "description": "The Client ID of your Google Analytics developer application.",
+              "airbyte_secret": true,
+              "order": 1
+            },
+            "client_secret": {
+              "title": "Client Secret",
+              "type": "string",
+              "description": "The Client Secret of your Google Analytics developer application.",
+              "airbyte_secret": true,
+              "order": 2
+            },
+            "refresh_token": {
+              "title": "Refresh Token",
+              "type": "string",
+              "description": "The token for obtaining a new access token.",
+              "airbyte_secret": true,
+              "order": 3
+            },
+            "access_token": {
+              "title": "Access Token",
+              "type": "string",
+              "description": "Access Token for making authenticated requests.",
+              "airbyte_secret": true,
+              "order": 4
+            }
+          }
+        },
+        {
+          "type": "object",
+          "title": "Service Account Key Authentication",
+          "required": ["credentials_json"],
+          "properties": {
+            "auth_type": {
+              "type": "string",
+              "const": "Service",
+              "order": 0
+            },
+            "credentials_json": {
+              "title": "Service Account JSON Key",
+              "type": "string",
+              "description": "The JSON key of the service account to use for authorization",
+              "examples": [
+                "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
+              ],
+              "airbyte_secret": true
+            }
+          }
+        }
+      ]
     },
     "view_id": {
       "description": "The ID for the Google Analytics View you want to fetch data from. This can be found in Google Analytics: https://go.estuary.dev/6utILS"
