@@ -59,6 +59,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
     try {
       sourceApi.discoverSchemaForSource(requestBody);
     } catch (final Exception e) {
+      // catching this exception because we don't want to block replication due to a failed schema refresh
       log.error("Attempted schema refresh, but failed with error: ", e);
     }
   }
@@ -71,6 +72,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
       }
       return mostRecentFetchEvent.get().getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
     } catch (IOException e) {
+      // catching this exception because we don't want to block replication due to a failed schema refresh
       log.info("Encountered an error fetching most recent actor catalog fetch event: ", e);
       return true;
     }
