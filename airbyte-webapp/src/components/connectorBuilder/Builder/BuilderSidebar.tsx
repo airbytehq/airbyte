@@ -81,7 +81,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
   return (
     <div className={classnames(className, styles.container)}>
-      <UiYamlToggleButton className={styles.yamlToggle} yamlSelected={false} onClick={toggleYamlEditor} />
+      <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />
       <img className={styles.connectorImg} src="/logo.png" alt="Connector Logo" />
       <div className={styles.connectorName}>
         <Heading as="h2" size="sm" className={styles.connectorNameText}>

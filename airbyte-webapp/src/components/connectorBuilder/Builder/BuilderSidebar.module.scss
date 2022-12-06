@@ -6,10 +6,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.yamlToggle {
-  margin-top: variables.$spacing-lg;
+  position: relative;
 }
 
 .connectorImg {
@@ -17,7 +14,7 @@
   box-shadow: 0 2px 4px rgba(26, 25, 77, 12%);
   border-radius: 25px;
   padding: variables.$spacing-xl;
-  margin-top: variables.$spacing-xl;
+  margin-top: 50px;
 }
 
 .connectorName {

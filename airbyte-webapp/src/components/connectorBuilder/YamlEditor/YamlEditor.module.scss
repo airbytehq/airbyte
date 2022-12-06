@@ -5,6 +5,7 @@
   display: flex;
   flex-flow: column;
   height: 100%;
+  position: relative;
 }
 
 .control {
@@ -20,11 +21,6 @@
 .editorContainer {
   padding-top: variables.$spacing-xl;
   flex: 1 1 0;
-}
-
-.yamlToggle {
-  margin-left: 42px;
-  margin-top: 5px;
 }
 
 .downloadButton {

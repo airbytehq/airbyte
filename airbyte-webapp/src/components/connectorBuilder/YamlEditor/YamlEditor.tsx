@@ -67,7 +67,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <UiYamlToggleButton className={styles.yamlToggle} yamlSelected onClick={toggleYamlEditor} />
+        <UiYamlToggleButton yamlSelected onClick={toggleYamlEditor} />
         <DownloadYamlButton className={styles.downloadButton} yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>
