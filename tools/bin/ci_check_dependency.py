@@ -126,7 +126,7 @@ def get_connector_version_status(connector, version):
         return f"❌ `{version}`<br/>(mismatch: `{base_variant_version}`)"
 
 
-def get_connector_changelog_status(connector: str, version):
+def get_connector_changelog_status(connector: str, version) -> str:
     type, name = connector.replace("-strict-encrypt", "").split("-", 1)
     doc_path = f"{DOC_PATH}{type}s/{name}.md"
     if not os.path.exists(doc_path):
@@ -152,7 +152,7 @@ def as_bulleted_markdown_list(items):
     return text
 
 
-def as_markdown_table_rows(connectors: List[str], definitions):
+def as_markdown_table_rows(connectors: List[str], definitions) -> str:
     text = ""
     for connector in connectors:
         version = get_connector_version(connector)
@@ -171,7 +171,7 @@ def as_markdown_table_rows(connectors: List[str], definitions):
     return text
 
 
-def get_status_summary(rows: str):
+def get_status_summary(rows: str) -> str:
     if "❌" in rows:
         return "❌"
     elif "⚠" in rows:
