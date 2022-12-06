@@ -517,7 +517,8 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
-            .withCatalog(expectedPersistedCatalog);
+            .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionEnabledStreams(catalogForUpdate));
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
@@ -554,7 +555,8 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate);
 
         final StandardSync expectedPersistedSync = Jsons.clone(standardSync)
-            .withCatalog(expectedPersistedCatalog);
+            .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionEnabledStreams(catalogForUpdate));
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
@@ -604,6 +606,7 @@ class ConnectionsHandlerTest {
             .withSchedule(null)
             .withManual(true)
             .withCatalog(expectedPersistedCatalog)
+            .withFieldSelectionData(CatalogConverter.getFieldSelectionEnabledStreams(catalogForUpdate))
             .withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(resourceRequirements))
             .withSourceCatalogId(newSourceCatalogId)
             .withOperationIds(List.of(operationId, otherOperationId))

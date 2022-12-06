@@ -314,6 +314,7 @@ public class ConnectionsHandler {
 
     if (patch.getSyncCatalog() != null) {
       sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+      sync.withFieldSelectionData(CatalogConverter.getFieldSelectionEnabledStreams(patch.getSyncCatalog()));
     }
 
     if (patch.getName() != null) {
