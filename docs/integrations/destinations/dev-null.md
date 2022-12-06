@@ -1,4 +1,4 @@
-# Azure Blob Storage
+# Dev Null Destination
 
 The Airbyte `dev-null` Destination. This destination is for testing and debugging only.
 
