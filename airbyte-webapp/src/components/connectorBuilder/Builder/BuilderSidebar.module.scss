@@ -22,10 +22,16 @@
 
 .connectorName {
   margin-top: variables.$spacing-md;
-  height: 28px;
+  min-height: 28px;
+  width: 100%;
   display: flex;
   align-items: center;
-  justify-content: center;
+  overflow-x: auto;
+}
+
+.connectorNameText {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .streamsHeader {
@@ -33,7 +39,7 @@
   align-items: center;
   width: 100%;
   padding: 0;
-  margin-top: 30px;
+  margin-top: variables.$spacing-xl;
 }
 
 .streamsHeading {
@@ -63,10 +69,10 @@
   height: 34px;
   cursor: pointer;
   border-radius: variables.$border-radius-md;
-  padding: 9px 10px;
+  padding: variables.$spacing-md;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: variables.$spacing-sm;
 }
 
 .unselectedViewButton {
@@ -84,13 +90,12 @@
 }
 
 .globalConfigButton {
-  margin-top: 20px;
+  margin-top: variables.$spacing-xl;
 }
 
 .streamList {
   width: 100%;
-  margin-top: 10px;
-  margin-bottom: 10px;
+  margin: variables.$spacing-md 0;
   display: flex;
   flex-direction: column;
   overflow-y: auto;

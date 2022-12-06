@@ -75,15 +75,20 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
     });
   };
 
+  const [field] = useField("connectorName");
+
   console.log("numStreams", numStreams);
 
   return (
     <div className={classnames(className, styles.container)}>
       <UiYamlToggleButton className={styles.yamlToggle} yamlSelected={false} onClick={toggleYamlEditor} />
       <img className={styles.connectorImg} src="/logo.png" alt="Connector Logo" />
-      <Heading as="h2" size="sm" className={styles.connectorName}>
-        Connector Name
-      </Heading>
+      <div className={styles.connectorName}>
+        <Heading as="h2" size="sm" className={styles.connectorNameText}>
+          {field.value}
+        </Heading>
+      </div>
+
       <button
         className={classnames(styles.globalConfigButton, styles.viewButton, {
           [styles.selectedViewButton]: selectedView === "global",

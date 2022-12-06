@@ -7,7 +7,8 @@
 }
 
 .sidebar {
-  flex: 0 0 200px;
+  width: 200px;
+  flex: 0 0 auto;
   background-color: colors.$white;
   box-shadow: 2px 0 10px rgba(26, 25, 77, 10%);
 }
