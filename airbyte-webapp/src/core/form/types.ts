@@ -1,4 +1,4 @@
-import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+import { JSONSchema7TypeName } from "json-schema";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
@@ -15,10 +15,6 @@ interface FormItem extends FormRelevantJSONSchema {
   fieldKey: string;
   path: string;
   isRequired: boolean;
-  order?: number;
-  title?: string;
-  description?: string;
-  airbyte_hidden?: boolean;
 }
 
 export interface FormBaseItem extends FormItem {
@@ -26,14 +22,12 @@ export interface FormBaseItem extends FormItem {
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
-  default?: JSONSchema7Type;
 }
 
 export interface FormGroupItem extends FormItem {
   _type: "formGroup";
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
-  examples?: JSONSchema7Type;
 }
 
 export interface FormConditionItem extends FormItem {

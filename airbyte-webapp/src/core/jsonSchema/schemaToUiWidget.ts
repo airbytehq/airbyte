@@ -118,24 +118,21 @@ const defaultFields = [
   "order",
   "const",
   "title",
+  "enum",
 
   // airbyte specific fields
   "airbyte_hidden",
 ] as const;
 
-type DefaultFields = Pick<AirbyteJSONSchema, typeof defaultFields[number] | "enum">;
-
-const pickDefaultFields = (schema: AirbyteJSONSchema): DefaultFields => {
-  const partialSchema: DefaultFields = pick(schema, defaultFields);
+const pickDefaultFields = (schema: AirbyteJSONSchema) => {
+  const partialSchema = pick(schema, defaultFields);
 
   if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
     partialSchema.enum = schema.items.enum;
-  } else if (schema.enum) {
-    if (schema.enum?.length === 1 && isDefined(schema.default)) {
-      partialSchema.const = schema.default;
-    } else {
-      partialSchema.enum = schema.enum;
-    }
+  } else if (schema.enum && schema.enum?.length === 1 && isDefined(schema.default)) {
+    partialSchema.const = schema.default;
+    // remove enum key as it has been "picked" already above
+    delete partialSchema.enum;
   }
 
   return partialSchema;
