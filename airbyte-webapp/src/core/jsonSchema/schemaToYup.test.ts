@@ -73,6 +73,9 @@ it("should build schema for conditional case", () => {
         start_date: {
           type: "string",
         },
+        max_objects: {
+          type: "number",
+        },
         credentials: {
           type: "object",
           oneOf: [
@@ -104,6 +107,7 @@ it("should build schema for conditional case", () => {
 
   const expectedSchema = yup.object().shape({
     start_date: yup.string().trim().required("form.empty.error").transform(String),
+    max_objects: yup.number().transform((x) => x),
     credentials: yup.object().shape({
       api_key: yup.string().trim().required("form.empty.error").transform(String),
     }),
