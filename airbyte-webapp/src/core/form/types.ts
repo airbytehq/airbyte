@@ -33,6 +33,7 @@ export interface FormGroupItem extends FormItem {
 export interface FormConditionItem extends FormItem {
   _type: "formCondition";
   conditions: Record<string, FormGroupItem | FormBaseItem>;
+  selectionPath: string;
 }
 
 export interface FormObjectArrayItem extends FormItem {

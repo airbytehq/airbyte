@@ -1,6 +1,6 @@
 import pick from "lodash/pick";
 
-import { FormBlock } from "core/form/types";
+import { FormBaseItem, FormBlock, FormGroupItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
@@ -37,20 +37,42 @@ export const jsonSchemaToUiWidget = (
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
-    const conditions = Object.fromEntries(
+    let possibleConditionSelectionKeys: Set<string> | null = null as Set<string> | null;
+    const conditions: Record<string, FormGroupItem | FormBaseItem> = Object.fromEntries(
       jsonSchema.oneOf.map((condition) => {
         if (typeof condition === "boolean") {
           return [];
         }
-        return [condition.title, jsonSchemaToUiWidget({ ...condition, type: jsonSchema.type }, key, path)];
+        const uiWidget = jsonSchemaToUiWidget({ ...condition, type: jsonSchema.type }, key, path);
+        if (uiWidget._type === "formGroup") {
+          const constProperties = new Set(
+            uiWidget.properties.filter((property) => property.const).map((property) => property.fieldKey)
+          );
+          if (!possibleConditionSelectionKeys) {
+            // if this is the first condition, all const properties are candidates
+            possibleConditionSelectionKeys = constProperties;
+          } else {
+            // if there are candidates already, intersect with the const properties of the current condition
+            possibleConditionSelectionKeys = new Set(
+              Array.from(possibleConditionSelectionKeys.values()).filter((x) => constProperties.has(x))
+            );
+          }
+        }
+        return [condition.title, uiWidget];
       })
     );
+
+    if (!possibleConditionSelectionKeys || possibleConditionSelectionKeys.size === 0) {
+      // no shared const property in oneOf. This should never happen per specification, fail hard
+      throw new Error("Spec uses oneOf without a shared const property");
+    }
 
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formCondition",
       path: path || key,
       fieldKey: key,
+      selectionPath: `${path}.${possibleConditionSelectionKeys.values().next().value}`,
       conditions,
       isRequired,
     };

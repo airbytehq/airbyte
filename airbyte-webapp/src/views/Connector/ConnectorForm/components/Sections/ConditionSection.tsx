@@ -1,4 +1,5 @@
 import { useFormikContext, setIn, useField } from "formik";
+import get from "lodash/get";
 import React, { useCallback, useMemo } from "react";
 
 import GroupControls from "components/GroupControls";
@@ -28,7 +29,26 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
 
   const [, meta] = useField(path);
 
-  const currentlySelectedCondition = widgetsInfo[formField.path]?.selectedItem;
+  // the value at selectionPath determines which condition is selected
+  const currentSelectionValue = get(values, formField.selectionPath);
+  // in order to find the right condition key, we need to check for which condition
+  // the "const" value matches the current value at selectionPath
+  const currentlySelectedCondition = useMemo(() => {
+    const possibleConditions = Object.entries(formField.conditions);
+    const matchingCondition = possibleConditions.find(([, condition]) => {
+      if (condition._type !== "formGroup") {
+        return false;
+      }
+      return (
+        condition.properties.find((property) => property.path === formField.selectionPath)?.const ===
+        currentSelectionValue
+      );
+    });
+    // there should always be a matching condition, but in some edge cases
+    // (e.g. breaking changes in specs) it's possible to have no matching value.
+    // In this case, default to the first condition
+    return (matchingCondition || possibleConditions[0])[0];
+  }, [currentSelectionValue, formField.conditions, formField.selectionPath]);
 
   const onOptionChange = useCallback(
     (selectedItem: DropDownOptionDataItem) => {
