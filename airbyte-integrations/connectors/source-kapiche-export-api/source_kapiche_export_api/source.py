@@ -51,6 +51,8 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         url: str = "",
         name: str = None,
         site_name: str = "",
+        vertical_themes: bool = False,
+        theme_level_separator: str = '',
     ):
 
         self._session = requests.Session()
@@ -60,6 +62,8 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         self._url_base = url
         self._name = name
         self.site_name = site_name
+        self.vertical_themes = vertical_themes
+        self.theme_level_separator = theme_level_separator
 
     # needed to instantiate the class
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, str]]:
@@ -129,11 +133,14 @@ class ExportDataGet(KapicheExportApiStream, ABC):
         docs_count: int = 50000,
         export_format: str = 'parquet',
     ) -> MutableMapping[str, Any]:
-
-        params = {}
-        params['start_document_id'] = start_document_id
-        params['docs_count'] = docs_count
-        params['export_format'] = export_format
+        """ Request Parameters to configure export. """
+        params = {
+            'start_document_id': start_document_id,
+            'docs_count': docs_count,
+            'export_format': export_format,
+            'vertical-themes': self.vertical_themes,
+            'theme-level-separator': self.theme_level_separator,
+        }
 
         return params
     
@@ -359,7 +366,9 @@ class SourceKapicheExportApi(AbstractSource):
                 auth,
                 export['export_url'],
                 f"{export['project_name']}-{export['analysis_name']}",
-                config['site_name']
+                config['site_name'],
+                config['vertical_themes'],
+                config['theme_level_separator'],
             )
             for export in data if export.get('enabled')
         ]
