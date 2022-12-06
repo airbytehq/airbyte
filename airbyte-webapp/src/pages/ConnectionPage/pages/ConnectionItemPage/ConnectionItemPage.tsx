@@ -46,6 +46,7 @@ const ConnectionItemPage: React.FC = () => {
 
   return (
     <MainPageWithScroll
+      withPadding
       headTitle={
         <HeadTitle
           titles={[

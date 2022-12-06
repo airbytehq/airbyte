@@ -1,51 +1,26 @@
 import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Card } from "components";
-
 import { NumberNaming } from "core/functions/numberFormatter";
+import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
 
-import Slider from "./components/Slider";
-import { PlanDataRowItem } from "./components/Slider";
+import { PaymentRoute } from "../../PaymentPage";
+import FeaturesCard from "./components/FeaturesCard";
+import { IDataRow } from "./components/Range";
+import RangeCard from "./components/RangeCard";
 
 const CardSeperator = styled.div`
   width: 100%;
   height: 30px;
 `;
 
-const Title = styled.div`
-  font-weight: 500;
-  font-size: 18px;
-  line-height: 30px;
-  color: ${({ theme }) => theme.black300};
-  user-select: none;
-`;
-
-const CardContainer = styled.div`
-  padding: 10px 20px;
-`;
-
-const SliderContainer = styled.div`
-  padding: 60px;
-`;
-
-const NoteContainer = styled.div`
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 30px;
-  color: #999999;
-`;
-
 const SelectPlanPage: React.FC = () => {
-  const [selectedDataRow, setDataRow] = useState<PlanDataRowItem | undefined>();
+  const { push } = useRouter();
 
-  const dataRows: PlanDataRowItem[] = [
+  const [selectedDataRow, setDataRow] = useState<IDataRow | undefined>();
+
+  const dataRows: IDataRow[] = [
     { id: "1", numberOfRows: 1 * NumberNaming.M },
     { id: "2", numberOfRows: 2 * NumberNaming.M },
     { id: "3", numberOfRows: 3 * NumberNaming.M },
@@ -56,31 +31,15 @@ const SelectPlanPage: React.FC = () => {
     { id: "8", numberOfRows: 100 * NumberNaming.M },
   ];
 
+  const onSelectPlan = () => {
+    push(`/${RoutePaths.Payment}/${PaymentRoute.BillingPayment}`);
+  };
+
   return (
     <>
-      <Card withPadding roundedBottom>
-        <CardContainer>
-          <Title>
-            <FormattedMessage id="plan.rows.card.title" />
-          </Title>
-          <SliderContainer>
-            <Slider
-              min={0}
-              max={100 * NumberNaming.M}
-              marks={dataRows}
-              selectedMark={selectedDataRow}
-              onSelect={setDataRow}
-            />
-          </SliderContainer>
-          <NoteContainer>
-            <FormattedMessage id="plan.rows.card.note" />
-          </NoteContainer>
-        </CardContainer>
-      </Card>
+      <RangeCard dataRows={dataRows} selectedDataRow={selectedDataRow} setDataRow={setDataRow} />
       <CardSeperator />
-      <Card withPadding roundedBottom>
-        <CardContainer />
-      </Card>
+      <FeaturesCard onSelectPlan={onSelectPlan} />
     </>
   );
 };

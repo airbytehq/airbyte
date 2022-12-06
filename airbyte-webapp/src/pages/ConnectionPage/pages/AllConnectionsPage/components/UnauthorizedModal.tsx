@@ -26,7 +26,7 @@ const UnauthorizedText = styled.div`
 
 export const UnauthorizedModal: React.FC<IProps> = ({ onClose }) => {
   return (
-    <Modal size="md">
+    <Modal size="md" onClose={onClose}>
       <ModalBody>
         <ModalBodyContainer>
           <UnauthorizedText>

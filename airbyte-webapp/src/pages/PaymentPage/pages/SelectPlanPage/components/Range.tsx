@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import { numberNamingFormatter } from "core/functions/numberFormatter";
 
-import SliderMark from "./SliderMark";
+import RangeMark from "./RangeMark";
 
-export interface PlanDataRowItem {
+export interface IDataRow {
   id: string;
   numberOfRows: number;
 }
@@ -16,9 +16,9 @@ interface IRange {
 }
 
 interface IProps extends IRange {
-  marks: PlanDataRowItem[];
-  selectedMark?: PlanDataRowItem;
-  onSelect: (item: PlanDataRowItem) => void;
+  marks: IDataRow[];
+  selectedMark?: IDataRow;
+  onSelect: (item: IDataRow) => void;
 }
 
 const SliderContainer = styled.div<IRange>`
@@ -37,12 +37,10 @@ const Slider: React.FC<IProps> = ({ min = 0, max = 100, marks, selectedMark, onS
   return (
     <SliderContainer min={min} max={max}>
       {marks.map((mark) => (
-        <SliderMark
+        <RangeMark
           label={numberNamingFormatter({ num: mark.numberOfRows })}
           isActive={selectedMark?.id === mark.id}
-          onSelect={() => {
-            onSelect(mark);
-          }}
+          onSelect={() => onSelect(mark)}
         />
       ))}
     </SliderContainer>
