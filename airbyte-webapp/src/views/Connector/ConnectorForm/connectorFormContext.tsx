@@ -18,7 +18,6 @@ interface ConnectorFormContext {
   resetConnectorForm: () => void;
   selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  isLoadingSchema?: boolean;
   isEditMode?: boolean;
   validationSchema: AnySchema;
   connectorId?: string;
@@ -40,7 +39,6 @@ interface ConnectorFormContextProviderProps {
   setUiWidgetsInfo: (path: string, value: Record<string, unknown>) => void;
   resetUiWidgetsInfo: () => void;
   formType: "source" | "destination";
-  isLoadingSchema?: boolean;
   isEditMode?: boolean;
   getValues: <T = unknown>(values: ConnectorFormValues<T>) => ConnectorFormValues<T>;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
@@ -57,7 +55,6 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
   selectedConnectorDefinitionSpecification,
   getValues,
   formType,
-  isLoadingSchema,
   validationSchema,
   isEditMode,
   connectorId,
@@ -73,7 +70,6 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
       selectedConnectorDefinition,
       selectedConnectorDefinitionSpecification,
       formType,
-      isLoadingSchema,
       validationSchema,
       isEditMode,
       connectorId,
@@ -101,7 +97,6 @@ export const ConnectorFormContextProvider: React.FC<React.PropsWithChildren<Conn
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     formType,
-    isLoadingSchema,
     validationSchema,
     isEditMode,
     connectorId,

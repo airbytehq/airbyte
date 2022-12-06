@@ -34,7 +34,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
@@ -62,7 +62,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
             isSubmitting={isSubmitting || isTestConnectionInProgress}
             errorMessage={errorMessage}
             formType={formType}
-            isLoadSchema={isLoadingSchema}
             fetchingConnectorError={fetchingConnectorError}
             hasSuccess={hasSuccess}
           />

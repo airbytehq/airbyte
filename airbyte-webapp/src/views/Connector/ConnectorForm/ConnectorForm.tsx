@@ -90,7 +90,6 @@ export interface ConnectorFormProps {
   selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
-  isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
   hasSuccess?: boolean;
@@ -112,7 +111,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formType,
     formValues,
     onSubmit,
-    isLoading,
     isEditMode,
     isTestConnectionInProgress,
     onStopTesting,
@@ -132,13 +130,13 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
         ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
-            connectionConfiguration: isLoading ? null : specifications,
+            connectionConfiguration: specifications,
           }).filter(([, v]) => !!v)
         ),
       },
       required: ["name"],
     }),
-    [isLoading, selectedConnectorDefinitionSpecification, specifications]
+    [selectedConnectorDefinitionSpecification, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -199,7 +197,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
-          isLoadingSchema={isLoading}
           validationSchema={validationSchema}
           connectorId={connectorId}
         >

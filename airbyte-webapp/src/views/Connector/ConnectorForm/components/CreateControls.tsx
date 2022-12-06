@@ -14,7 +14,6 @@ interface CreateControlProps {
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
   hasSuccess?: boolean;
-  isLoadSchema?: boolean;
   fetchingConnectorError?: Error | null;
 
   isTestConnectionInProgress: boolean;
@@ -35,7 +34,6 @@ const CreateControls: React.FC<CreateControlProps> = ({
   hasSuccess,
   errorMessage,
   fetchingConnectorError,
-  isLoadSchema,
   onCancelTesting,
 }) => {
   if (isSubmitting) {
@@ -50,7 +48,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
     <ButtonContainer>
       {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
       {fetchingConnectorError && <FetchingConnectorError />}
-      <Button className={styles.submitButton} type="submit" disabled={isLoadSchema}>
+      <Button className={styles.submitButton} type="submit">
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </Button>
     </ButtonContainer>
