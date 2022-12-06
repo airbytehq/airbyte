@@ -44,7 +44,7 @@ interface ConnectorCardBaseProps {
   /**
    * id of the selected connector definition id - might be available even if the specification is not loaded yet
    * */
-  selectedConnectorDefinitionId?: string | null;
+  selectedConnectorDefinitionId: string | null;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
 
