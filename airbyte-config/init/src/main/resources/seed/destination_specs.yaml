@@ -2909,9 +2909,9 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-mysql:0.1.20"
+- dockerImage: "yuanrui2014/destination-mysql:0.0.1"
   spec:
-    documentationUrl: "https://docs.airbyte.io/integrations/destinations/mysql"
+    documentationUrl: "https://docs.daspire.com/setup-guide/destinations/mysql"
     connectionSpecification:
       $schema: "http://json-schema.org/draft-07/schema#"
       title: "MySQL Destination Spec"
