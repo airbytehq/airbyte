@@ -63,6 +63,7 @@ const SourceSettings: React.FC<SourceSettingsProps> = ({ currentSource, connecti
         formId={formId}
         availableConnectorDefinitions={[sourceDefinition]}
         selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+        selectedConnectorDefinitionId={sourceDefinitionSpecification.sourceDefinitionId}
         connector={currentSource}
         onSubmit={onSubmit}
       />
