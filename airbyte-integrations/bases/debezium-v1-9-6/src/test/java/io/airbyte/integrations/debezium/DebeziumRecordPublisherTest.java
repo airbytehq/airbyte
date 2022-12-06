@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.debezium;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import io.airbyte.integrations.debezium.internals.DebeziumPropertiesManager;
@@ -14,7 +16,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.regex.Pattern;
-import org.codehaus.plexus.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
 class DebeziumRecordPublisherTest {
