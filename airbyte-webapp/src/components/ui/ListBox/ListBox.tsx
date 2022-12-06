@@ -1,5 +1,3 @@
-import { IconProp } from "@fortawesome/fontawesome-svg-core";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
@@ -17,7 +15,7 @@ const DefaultControlButton = <T,>({ selectedOption }: ListBoxControlButtonProps<
 export interface Option<T> {
   label: string;
   value: T;
-  icon?: IconProp;
+  icon?: React.ReactNode;
 }
 
 interface ListBoxProps<T> {
@@ -57,8 +55,8 @@ export const ListBox = <T,>({
                   <div
                     className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
                   >
-                    {icon ? <FontAwesomeIcon className={styles.icon} icon={icon} /> : null}
-                    {label}
+                    {icon && <span className={styles.icon}>{icon}</span>}
+                    <span className={styles.label}>{label}</span>
                   </div>
                 )}
               </Listbox.Option>
