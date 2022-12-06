@@ -34,7 +34,7 @@ public class JsonSchemaTypeTest {
           Arguments.of("WellKnownTypes.json#/definitions/Boolean", null, JsonSchemaType.BOOLEAN_V1),
           Arguments.of("WellKnownTypes.json#/definitions/BinaryData", null, JsonSchemaType.BINARY_DATA_V1),
           Arguments.of("WellKnownTypes.json#/definitions/Date", null, JsonSchemaType.DATE_V1),
-          Arguments.of("WellKnownTypes.json#/definitions/TimestampWithTimezone", null,JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+          Arguments.of("WellKnownTypes.json#/definitions/TimestampWithTimezone", null, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
           Arguments.of("WellKnownTypes.json#/definitions/TimestampWithoutTimezone", null, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1),
           Arguments.of("WellKnownTypes.json#/definitions/TimeWithTimezone", null, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
           Arguments.of("WellKnownTypes.json#/definitions/TimeWithoutTimezone", null, JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1),

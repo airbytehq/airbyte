@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.s3;
 
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
@@ -39,4 +43,5 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
     var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);
   }
+
 }

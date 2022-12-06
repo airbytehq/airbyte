@@ -33,7 +33,8 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       + "[[' ']['T']HH:mm[':'ss[.][SSSSSS][SSSSS][SSSS][SSS][' '][z][zzz][Z][O][x][XXX][XX][X][' '][G]]]";
 
   // TODO revisit dataset which used date as string: exchange_rate_catalog.json
-  // tried to change it to date time type but some connectors failed to store it e.i. bigquery-denormalized
+  // tried to change it to date time type but some connectors failed to store it e.i.
+  // bigquery-denormalized
   private static final Set<String> TEST_DATASET_IGNORE_LIST =
       Set.of(
           "2020-08-29T00:00:00Z",

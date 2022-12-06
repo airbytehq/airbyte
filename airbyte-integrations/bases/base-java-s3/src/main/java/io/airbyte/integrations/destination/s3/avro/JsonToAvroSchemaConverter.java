@@ -230,7 +230,8 @@ public class JsonToAvroSchemaConverter {
       case TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timestampMicros()
           .addToSchema(Schema.create(Schema.Type.LONG));
       case TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1 -> fieldSchema = LogicalTypes.timeMicros().addToSchema(Schema.create(Schema.Type.LONG));
-      case INTEGER_V0, NUMBER_V0, NUMBER_INT_V0, NUMBER_BIGINT_V0, NUMBER_FLOAT_V0, BOOLEAN_V0 -> fieldSchema = Schema.create(fieldType.getAvroType());
+      case INTEGER_V0, NUMBER_V0, NUMBER_INT_V0, NUMBER_BIGINT_V0, NUMBER_FLOAT_V0, BOOLEAN_V0 -> fieldSchema =
+          Schema.create(fieldType.getAvroType());
       case STRING_V0 -> {
         if (fieldDefinition.has("format")) {
           final String format = fieldDefinition.get("format").asText();
