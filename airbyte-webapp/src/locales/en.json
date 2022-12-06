@@ -34,8 +34,6 @@
   "form.searchName": "search by name...",
   "form.noResult": "No result",
   "form.noConnectorFound": "No matching connector found",
-  "form.sourceName.placeholder": "Your source name",
-  "form.destinationName.placeholder": "Your destination name",
   "form.connectionName": "Connection name*",
   "form.connectionName.placeholder": "Name",
   "form.sourceName": "Source name",

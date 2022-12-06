@@ -1,27 +1,19 @@
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDeepCompareEffect } from "react-use";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 
-import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import {
-  useBuildForm,
-  useBuildInitialSchema,
-  useBuildUiWidgetsContext,
-  useConstructValidationSchema,
-  usePatchFormik,
-} from "./useBuildForm";
+import { useBuildForm, useBuildUiWidgetsContext, useConstructValidationSchema, usePatchFormik } from "./useBuildForm";
 
 const FormikPatch: React.FC = () => {
   usePatchFormik();
@@ -120,42 +112,13 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     connectorId,
   } = props;
 
-  const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
-
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
-      type: "object",
-      properties: {
-        ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
-        ...Object.fromEntries(
-          Object.entries({
-            connectionConfiguration: specifications,
-          }).filter(([, v]) => !!v)
-        ),
-      },
-      required: ["name"],
-    }),
-    [selectedConnectorDefinitionSpecification, specifications]
+  const { formFields, initialValues, jsonSchema } = useBuildForm(
+    formType,
+    selectedConnectorDefinitionSpecification,
+    formValues
   );
 
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
-
-  // Overrides default field label(i.e "Source name", "Destination name")
-  const uiOverrides = useMemo(() => {
-    return {
-      name: {
-        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
-          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
-        ),
-      },
-    };
-  }, [formType]);
-
-  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
-    formFields,
-    initialValues,
-    uiOverrides
-  );
+  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues);
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
