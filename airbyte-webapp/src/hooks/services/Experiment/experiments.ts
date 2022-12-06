@@ -1,5 +1,8 @@
 /* eslint sort-keys: "error" */
 /**
+ * Experiments are short-term flags for A/B testing or staged rollouts of features.
+ * They are only available in Airbyte Cloud.
+ *
  * When adding a new feature flag in LaunchDarkly to consume in code you'll need to make
  * sure to update the typing here.
  */
