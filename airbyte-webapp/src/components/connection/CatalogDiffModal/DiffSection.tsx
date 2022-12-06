@@ -2,10 +2,10 @@ import { FormattedMessage } from "react-intl";
 
 import { AirbyteCatalog, StreamDescriptor, StreamTransform } from "core/request/AirbyteClient";
 
-import { DiffVerb } from "../types";
 import { DiffHeader } from "./DiffHeader";
 import styles from "./DiffSection.module.scss";
 import { StreamRow } from "./StreamRow";
+import { DiffVerb } from "./types";
 
 interface DiffSectionProps {
   streams: StreamTransform[];
