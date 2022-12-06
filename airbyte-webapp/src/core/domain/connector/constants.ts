@@ -13,5 +13,4 @@ export const DEV_IMAGE_TAG = "dev";
  * @param {string} workspaceId The workspace Id
  * @returns {array} List of connectorIds that should be filtered out
  */
-export const getExcludedConnectorIds = (_workspaceId?: string): string[] =>
-  [];
+export const getExcludedConnectorIds = (_workspaceId?: string): string[] => [];
