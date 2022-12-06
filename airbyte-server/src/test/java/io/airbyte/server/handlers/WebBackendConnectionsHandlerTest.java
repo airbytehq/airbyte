@@ -418,7 +418,7 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
-    SourceDiscoverSchemaRead schemaRead =
+    final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
@@ -435,7 +435,7 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
-    SourceDiscoverSchemaRead schemaRead =
+    final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(true).connectionStatus(ConnectionStatus.INACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
@@ -1163,13 +1163,13 @@ class WebBackendConnectionsHandlerTest {
     final List<StreamDescriptor> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "added_stream"));
+            streamDescriptor -> "added_stream".equalsIgnoreCase(streamDescriptor.getName())));
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "removed_stream"));
+            streamDescriptor -> "removed_stream".equalsIgnoreCase(streamDescriptor.getName())));
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "updated_stream"));
+            streamDescriptor -> "updated_stream".equalsIgnoreCase(streamDescriptor.getName())));
   }
 
   @Test
