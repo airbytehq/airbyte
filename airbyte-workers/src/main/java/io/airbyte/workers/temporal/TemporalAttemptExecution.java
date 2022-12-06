@@ -179,14 +179,11 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
     // so it's not needed to save it for multiple times.
     if (NumberUtils.isCreatable(jobRunConfig.getJobId()) && replicationTaskQueue.isPresent()) {
       final String workflowId = workflowIdProvider.get();
-      final SetWorkflowInAttemptRequestBody setWorkflowInAttemptRequestBody = new SetWorkflowInAttemptRequestBody()
+      airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
           .jobId(Long.parseLong(jobRunConfig.getJobId()))
           .attemptNumber(jobRunConfig.getAttemptId().intValue())
           .processingTaskQueue(replicationTaskQueue.get())
-          .workflowId(workflowId);
-      LOGGER.error("________________________________");
-      LOGGER.error(setWorkflowInAttemptRequestBody.toString());
-      airbyteApiClient.getAttemptApi().setWorkflowInAttempt(setWorkflowInAttemptRequestBody);
+          .workflowId(workflowId));
     }
   }
 

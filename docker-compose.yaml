@@ -154,7 +154,6 @@ services:
     ports:
       - 8001
       - 8080:8080
-      - 5005:5005
     volumes:
       - workspace:${WORKSPACE_ROOT}
       - data:${CONFIG_ROOT}

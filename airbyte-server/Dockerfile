@@ -7,7 +7,6 @@ ARG VERSION=0.40.23
 
 ENV APPLICATION airbyte-server
 ENV VERSION ${VERSION}
-ENV JAVA_TOOL_OPTIONS -agentlib:jdwp=transport=dt_socket,address=*:5005,server=y,suspend=n
 
 WORKDIR /app
 
