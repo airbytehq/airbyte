@@ -11,6 +11,7 @@ import {
   DestinationSyncMode,
   NamespaceDefinitionType,
   SyncMode,
+  SelectedFieldInfo,
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -97,7 +98,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const onSelectedFieldsUpdate = useCallback(
-    (selectedFields: string[]) => updateStreamWithConfig({ selectedFields }),
+    (selectedFields: SelectedFieldInfo[]) => updateStreamWithConfig({ selectedFields, fieldSelectionEnabled: true }),
     [updateStreamWithConfig]
   );
 
