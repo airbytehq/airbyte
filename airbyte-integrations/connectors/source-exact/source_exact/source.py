@@ -59,24 +59,27 @@ class ExactStream(HttpStream, IncrementalMixin):
     _cursor_value = None
 
     @property
-    def state(self) -> MutableMapping[str, Any]:
-        auth: SingleRefreshOauth2Authenticator = self._session.auth
+    def auth(self) -> SingleRefreshOauth2Authenticator:
+        """Helper property to return the Authenticator in the right type."""
 
+        return self._session.auth
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
         return {
             self.cursor_field: self._cursor_value,
-            "auth": auth.get_auth_fields(),
+            "auth": self.auth.get_auth_fields(),
         }
 
     @state.setter
     def state(self, value: MutableMapping[str, Any]):
-        auth: SingleRefreshOauth2Authenticator = self._session.auth
         if not value:
             return
 
         if self.cursor_field in value:
             self._cursor_value = value[self.cursor_field]
         if "auth" in value:
-            auth.set_auth_fields(value["auth"])
+            self.auth.set_auth_fields(value["auth"])
 
     def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
         for record in super().read_records(*args, **kwargs):
