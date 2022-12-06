@@ -261,8 +261,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           if (messageOptional.isPresent()) {
             final AirbyteMessage message = messageOptional.get();
             LOGGER.info("State in DefaultReplicationWorker from destination: {}", message);
+
             messageTracker.acceptFromDestination(message);
-            acceptAndUpdateDstConfig(jobId, message, updateConnectorConfigHelper);
+
+            if(message.getType() == Type.CONTROL) {
+              acceptDstControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
+            }
           }
         }
         timeHolder.trackDestinationWriteEndTime();
@@ -319,7 +323,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
-            acceptAndUpdateSrcConfig(jobId, message, updateConnectorConfigHelper);
+
+            if(message.getType() == Type.CONTROL) {
+              acceptSrcControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
+            }
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -379,33 +386,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static boolean isControlConfigMsg(final AirbyteMessage message) {
-    return message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG;
-  }
-
-  private static void acceptAndUpdateSrcConfig(final Long jobId,
-                                               final AirbyteMessage message,
+  private static void acceptSrcControlMessage(final Long jobId,
+                                               final AirbyteControlMessage controlMessage,
                                                final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
-    if (isControlConfigMsg(message)) {
-      try {
-        updateConnectorConfigHelper.updateSource(jobId, message.getControl().getConnectorConfig().getConfig());
-      } catch (final Exception e) {
-        LOGGER.error("Error trying to save updated source config", e);
-        throw new RuntimeException(e);
-      }
+    if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+      updateConnectorConfigHelper.updateSource(jobId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
-  private static void acceptAndUpdateDstConfig(final Long jobId,
-                                               final AirbyteMessage message,
+  private static void acceptDstControlMessage(final Long jobId,
+      final AirbyteControlMessage controlMessage,
                                                final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
-    try {
-      if (isControlConfigMsg(message)) {
-        updateConnectorConfigHelper.updateDestination(jobId, message.getControl().getConnectorConfig().getConfig());
-      }
-    } catch (final Exception e) {
-      LOGGER.error("Error trying to save updated destination config", e);
-      throw new RuntimeException(e);
+    if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
+      updateConnectorConfigHelper.updateDestination(jobId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
