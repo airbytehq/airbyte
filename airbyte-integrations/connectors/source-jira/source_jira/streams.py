@@ -12,6 +12,7 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
+from requests.exceptions import HTTPError
 
 API_VERSION = 3
 
@@ -480,7 +481,13 @@ class IssueCustomFieldContexts(JiraStream):
         fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         for field in fields_stream.read_records(sync_mode=SyncMode.full_refresh):
             if field.get("custom", False):
-                yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
+                try:
+                    yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
+                except HTTPError as e:
+                    # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
+                    # /rest/api/2/field/{fieldId}/context - can return 404 if project style is not "classic"
+                    if e.response.status_code != requests.codes.NOT_FOUND:
+                        raise e
 
 
 class IssueLinkTypes(JiraStream):
