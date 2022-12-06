@@ -1,10 +1,12 @@
-import { faRotateLeft } from "@fortawesome/free-solid-svg-icons";
+import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useField, useFormikContext } from "formik";
+import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
+import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
@@ -22,13 +24,24 @@ export type BuilderView = "global" | number;
 interface StreamSelectButtonProps {
   streamNum: number;
   onSelectStream: (streamNum: number, streamName: string) => void;
+  selected: boolean;
 }
 
-const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamNum, onSelectStream }) => {
+const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamNum, onSelectStream, selected }) => {
   const streamNamePath = `streams[${streamNum}].name`;
   const [field] = useField(streamNamePath);
 
-  return <button onClick={() => onSelectStream(streamNum, field.value)}>{field.value}</button>;
+  return (
+    <button
+      className={classnames(styles.viewButton, {
+        [styles.selectedViewButton]: selected,
+        [styles.unselectedViewButton]: !selected,
+      })}
+      onClick={() => onSelectStream(streamNum, field.value)}
+    >
+      {field.value}
+    </button>
+  );
 };
 
 interface BuilderSidebarProps {
@@ -36,6 +49,7 @@ interface BuilderSidebarProps {
   toggleYamlEditor: () => void;
   numStreams: number;
   onViewSelect: (selected: BuilderView, streamName?: string) => void;
+  selectedView: BuilderView;
 }
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
@@ -43,6 +57,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   toggleYamlEditor,
   numStreams,
   onViewSelect,
+  selectedView,
 }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest } = useConnectorBuilderState();
@@ -69,25 +84,46 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <Heading as="h2" size="sm" className={styles.connectorName}>
         Connector Name
       </Heading>
-      <button onClick={() => onViewSelect("global")}>Global Configuration</button>
+      <button
+        className={classnames(styles.globalConfigButton, styles.viewButton, {
+          [styles.selectedViewButton]: selectedView === "global",
+          [styles.unselectedViewButton]: selectedView !== "global",
+        })}
+        onClick={() => onViewSelect("global")}
+      >
+        <FontAwesomeIcon icon={faSliders} />
+        <FormattedMessage id="connectorBuilder.globalConfiguration" />
+      </button>
 
-      <Heading as="h3" size="sm">
-        Streams
-      </Heading>
+      <div className={styles.streamsHeader}>
+        <Text className={styles.streamsHeading} size="xs" bold>
+          <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: numStreams }} />
+        </Text>
 
-      <AddStreamButton
-        numStreams={numStreams}
-        onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
-      />
+        <AddStreamButton
+          className={styles.addStreamButton}
+          numStreams={numStreams}
+          onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
+        />
+      </div>
 
-      {Array.from(Array(numStreams).keys()).map((streamNum) => {
-        return <StreamSelectButton key={streamNum} streamNum={streamNum} onSelectStream={onViewSelect} />;
-      })}
+      <div className={styles.streamList}>
+        {Array.from(Array(numStreams).keys()).map((streamNum) => {
+          return (
+            <StreamSelectButton
+              key={streamNum}
+              streamNum={streamNum}
+              onSelectStream={onViewSelect}
+              selected={selectedView === streamNum}
+            />
+          );
+        })}
+      </div>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
       <Button
         className={styles.resetButton}
-        variant="danger"
+        variant="secondary"
         onClick={() => handleResetForm()}
         icon={<FontAwesomeIcon icon={faRotateLeft} />}
       >

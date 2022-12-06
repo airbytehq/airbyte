@@ -593,5 +593,7 @@
   "connectorBuilder.newStream": "New stream",
   "connectorBuilder.resetModal.text": "This will erase all streams and values that are currently set. Are you sure you want to continue?",
   "connectorBuilder.resetModal.title": "Reset Connector Builder",
-  "connectorBuilder.resetModal.submitButton": "Reset"
+  "connectorBuilder.resetModal.submitButton": "Reset",
+  "connectorBuilder.streamsHeading": "STREAMS ({number})",
+  "connectorBuilder.globalConfiguration": "Global Configuration"
 }

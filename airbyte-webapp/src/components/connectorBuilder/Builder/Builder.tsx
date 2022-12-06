@@ -46,6 +46,7 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) =>
           toggleYamlEditor={toggleYamlEditor}
           numStreams={values.streams.length}
           onViewSelect={handleViewSelect}
+          selectedView={selectedView}
         />
         <Form className={styles.form}>
           {selectedView === "global" ? <GlobalConfigView /> : <StreamConfigView streamNum={selectedView} />}

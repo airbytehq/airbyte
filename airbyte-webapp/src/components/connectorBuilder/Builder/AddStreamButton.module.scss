@@ -1,7 +1,23 @@
 @use "scss/variables";
+@use "scss/colors";
 
 .body {
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-xl;
+}
+
+.addButton {
+  width: 26px;
+  height: 26px !important;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px !important;
+}
+
+.plus {
+  height: 30px;
+  width: 30px;
 }

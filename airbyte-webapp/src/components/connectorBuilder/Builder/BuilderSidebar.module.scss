@@ -2,7 +2,7 @@
 @use "scss/colors";
 
 .container {
-  // padding: variables.$spacing-sm;
+  padding: variables.$spacing-sm;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -28,13 +28,70 @@
   justify-content: center;
 }
 
+.streamsHeader {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  margin-top: 30px;
+}
+
+.streamsHeading {
+  margin-left: variables.$spacing-md;
+  color: colors.$blue;
+}
+
+.addStreamButton {
+  margin-left: auto;
+  margin-right: variables.$spacing-sm;
+}
+
 .downloadButton {
   margin-top: auto;
-  width: 85%;
+  width: 90%;
 }
 
 .resetButton {
   margin-top: variables.$spacing-sm;
   margin-bottom: variables.$spacing-md;
-  width: 85%;
+  width: 90%;
+}
+
+.viewButton {
+  border: none;
+  width: 100%;
+  height: 34px;
+  cursor: pointer;
+  border-radius: variables.$border-radius-md;
+  padding: 9px 10px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.unselectedViewButton {
+  background-color: transparent;
+  color: colors.$dark-blue;
+
+  &:hover {
+    background-color: colors.$grey-50;
+  }
+}
+
+.selectedViewButton {
+  background-color: colors.$dark-blue;
+  color: colors.$white;
+}
+
+.globalConfigButton {
+  margin-top: 20px;
+}
+
+.streamList {
+  width: 100%;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
 }
