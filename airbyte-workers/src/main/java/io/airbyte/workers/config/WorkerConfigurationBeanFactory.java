@@ -210,6 +210,12 @@ public class WorkerConfigurationBeanFactory {
         .withMemoryLimit(memoryLimit);
   }
 
+  void validateIsolatedPoolConfigInitialization(boolean useIsolatedNodeSelector, Map<String, String> isolatedNodeSelectors) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
+    }
+  }
+
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("checkWorkerConfigs")
@@ -228,9 +234,7 @@ public class WorkerConfigurationBeanFactory {
                                           @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                           @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                           @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
-    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
-      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
-    }
+    validateIsolatedPoolConfigInitialization(useIsolatedNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -264,9 +268,7 @@ public class WorkerConfigurationBeanFactory {
                                             @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                             @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                             @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
-    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
-      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
-    }
+    validateIsolatedPoolConfigInitialization(useIsolatedNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -301,9 +303,7 @@ public class WorkerConfigurationBeanFactory {
                                              @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                              @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                              @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
-    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
-      throw new RuntimeException("Isolated Node selectors is empty while indicating useIsolatedNodeSelector");
-    }
+    validateIsolatedPoolConfigInitialization(useIsolatedNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -337,9 +337,7 @@ public class WorkerConfigurationBeanFactory {
                                                 @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                                 @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                                 @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
-    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
-      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
-    }
+    validateIsolatedPoolConfigInitialization(useIsolatedNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -374,9 +372,7 @@ public class WorkerConfigurationBeanFactory {
                                          @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                          @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                          @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
-    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
-      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
-    }
+    validateIsolatedPoolConfigInitialization(useIsolatedNodeSelector, isolatedNodeSelectors);
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
