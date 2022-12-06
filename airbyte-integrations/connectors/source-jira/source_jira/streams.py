@@ -485,7 +485,7 @@ class IssueCustomFieldContexts(JiraStream):
                     yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
                 except HTTPError as e:
                     # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
-                    # /rest/api/2/field/{fieldId}/context - can return 404 if project style is not "classic"
+                    # /rest/api/3/field/{fieldId}/context - can return 404 if project style is not "classic"
                     if e.response.status_code != requests.codes.NOT_FOUND:
                         raise e
 
