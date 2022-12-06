@@ -2,7 +2,7 @@ import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
 
-import CaretDownIcon from "./CaretDownIcon";
+import { ReactComponent as CaretDownIcon } from "./CaretDownIcon.svg";
 import styles from "./ListBox.module.scss";
 
 export interface ListBoxControlButtonProps<T> {
