@@ -262,16 +262,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = messageOptional.get();
             LOGGER.info("State in DefaultReplicationWorker from destination: {}", message);
             messageTracker.acceptFromDestination(message);
-
-            try {
-              if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-                persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
-              }
-            } catch (final ApiException e) {
-              LOGGER.error("Error trying to save updated destination config", e);
-              throw new RuntimeException(e);
-            }
-
+            acceptAndUpdateDstConfig(jobId, message, persistConfigHelper);
           }
         }
         timeHolder.trackDestinationWriteEndTime();
@@ -328,15 +319,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
-
-            if (message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-              try {
-                persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
-              } catch (final ApiException e) {
-                LOGGER.error("Error trying to save updated source config", e);
-                throw new RuntimeException(e);
-              }
-            }
+            acceptAndUpdateSrcConfig(jobId, message, persistConfigHelper);
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -394,6 +377,32 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       }
     };
+  }
+
+  private static boolean isControlConfigMsg(final AirbyteMessage message) {
+    return message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG;
+  }
+
+  private static void acceptAndUpdateSrcConfig(final Long jobId, final AirbyteMessage message, final PersistConfigHelper persistConfigHelper) {
+    if (isControlConfigMsg(message)) {
+      try {
+        persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+      } catch (final ApiException e) {
+        LOGGER.error("Error trying to save updated source config", e);
+        throw new RuntimeException(e);
+      }
+    }
+  }
+
+  private static void acceptAndUpdateDstConfig(final Long jobId, final AirbyteMessage message, final PersistConfigHelper persistConfigHelper) {
+    try {
+      if (isControlConfigMsg(message)) {
+        persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+      }
+    } catch (final ApiException e) {
+      LOGGER.error("Error trying to save updated destination config", e);
+      throw new RuntimeException(e);
+    }
   }
 
   private ReplicationOutput getReplicationOutput(final StandardSyncInput syncInput,
