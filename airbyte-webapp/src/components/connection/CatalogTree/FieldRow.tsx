@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField } from "core/domain/catalog";

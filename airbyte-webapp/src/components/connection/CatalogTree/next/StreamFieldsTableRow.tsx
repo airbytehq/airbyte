@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 import { Cell } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField } from "core/domain/catalog";

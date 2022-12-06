@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 

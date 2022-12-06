@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 

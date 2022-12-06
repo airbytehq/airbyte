@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
 

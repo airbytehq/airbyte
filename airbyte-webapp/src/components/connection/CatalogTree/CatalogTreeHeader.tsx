@@ -3,7 +3,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox/CheckBox";
+import { CheckBox } from "components/ui/CheckBox";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
 import { useBulkEditService } from "hooks/services/BulkEdit/BulkEditService";
