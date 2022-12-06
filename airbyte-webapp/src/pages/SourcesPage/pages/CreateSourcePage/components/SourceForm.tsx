@@ -16,7 +16,7 @@ interface SourceFormProps {
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
+  }) => Promise<void>;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
   error?: FormError | null;
