@@ -15,7 +15,6 @@ interface FormRootProps {
   hasSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
@@ -28,7 +27,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
   formFields,
   successMessage,
   errorMessage,
-  fetchingConnectorError,
   hasSuccess,
   onStopTestingConnector,
   selectedConnector,
@@ -62,7 +60,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
             isSubmitting={isSubmitting || isTestConnectionInProgress}
             errorMessage={errorMessage}
             formType={formType}
-            fetchingConnectorError={fetchingConnectorError}
             hasSuccess={hasSuccess}
           />
         )

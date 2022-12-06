@@ -20,6 +20,7 @@ import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/C
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
+import { FetchingConnectorError } from "../ConnectorForm/components/TestingConnectionError";
 import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import styles from "./ConnectorCard.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
@@ -50,8 +51,6 @@ interface ConnectorCardBaseProps {
   // used in ConnectorForm
   formId?: string;
   fetchingConnectorError?: Error | null;
-  errorMessage?: React.ReactNode;
-  successMessage?: React.ReactNode;
   hasSuccess?: boolean;
   isLoading?: boolean;
 }
@@ -77,6 +76,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   onSubmit,
   additionalSelectorComponent,
   selectedConnectorDefinitionId,
+  fetchingConnectorError,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
@@ -183,14 +183,16 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         </div>
         {additionalSelectorComponent}
         <div>
-          {props.isLoading ? (
+          {props.isLoading && (
             <div className={styles.loaderContainer}>
               <Spinner />
               <div className={styles.loadingMessage}>
                 <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
               </div>
             </div>
-          ) : (
+          )}
+          {fetchingConnectorError && <FetchingConnectorError />}
+          {selectedConnectorDefinition && selectedConnectorDefinitionSpecification && (
             <ConnectorForm
               // Causes the whole ConnectorForm to be unmounted and a new instance mounted whenever the connector type changes.
               // That way we carry less state around inside it, preventing any state from one connector type from affecting another
@@ -204,10 +206,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               testConnector={testConnector}
               onSubmit={onHandleSubmit}
               formValues={formValues}
-              errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
-              successMessage={
-                props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-              }
+              errorMessage={error && generateMessageFromError(error)}
+              successMessage={saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />}
               connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
             />
           )}

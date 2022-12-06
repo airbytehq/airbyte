@@ -87,13 +87,12 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
   hasSuccess?: boolean;
-  fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
