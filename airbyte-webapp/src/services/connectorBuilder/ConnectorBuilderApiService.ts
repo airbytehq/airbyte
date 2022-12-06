@@ -3,10 +3,10 @@ import { useQuery } from "react-query";
 import { useConfig } from "config";
 import { ConnectorBuilderRequestService } from "core/domain/connectorBuilder/ConnectorBuilderRequestService";
 import {
+  ConnectorManifest,
   StreamReadRequestBody,
   StreamsListRequestBody,
   StreamsListRequestBodyConfig,
-  StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useInitService } from "services/useInitService";
@@ -14,7 +14,7 @@ import { useInitService } from "services/useInitService";
 const connectorBuilderKeys = {
   all: ["connectorBuilder"] as const,
   read: (streamName: string) => [...connectorBuilderKeys.all, "read", { streamName }] as const,
-  list: (manifest: StreamsListRequestBodyManifest, config: StreamsListRequestBodyConfig) =>
+  list: (manifest: ConnectorManifest, config: StreamsListRequestBodyConfig) =>
     [...connectorBuilderKeys.all, "list", { manifest, config }] as const,
   template: ["template"] as const,
 };

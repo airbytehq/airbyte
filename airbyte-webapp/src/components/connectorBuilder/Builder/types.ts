@@ -1,4 +1,8 @@
-import { ConnectorManifest, DeclarativeStream, HttpRequesterAllOfAuthenticator } from "core/request/ConnectorManifest";
+import {
+  ConnectorManifest,
+  DeclarativeStream,
+  HttpRequesterAllOfAuthenticator,
+} from "core/request/ConnectorBuilderClient";
 
 export interface BuilderFormValues {
   connectorName: string;

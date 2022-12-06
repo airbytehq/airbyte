@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
-import { ConnectorManifest } from "core/request/ConnectorManifest";
+import { ConnectorManifest } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";

@@ -5,8 +5,11 @@ import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/Builder/types";
 
-import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
-import { ConnectorManifest } from "core/request/ConnectorManifest";
+import {
+  ConnectorManifest,
+  StreamReadRequestBodyConfig,
+  StreamsListReadStreamsItem,
+} from "core/request/ConnectorBuilderClient";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";

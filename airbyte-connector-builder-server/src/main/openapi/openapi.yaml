@@ -131,9 +131,7 @@ components:
         - config
       properties:
         manifest:
-          type: object
-          description: The config-based connector manifest contents
-          # $ref: "#/components/schemas/ConnectorManifest"
+          $ref: "#/components/schemas/ConnectorManifest"
         stream:
           type: string
           description: Name of the stream to read
@@ -181,8 +179,8 @@ components:
           type: object
           description: The headers of the HTTP response, if any
     # --- Commenting out for now since they do not work with our orval openapi client generator ---
-    # ConnectorManifest:
-    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    ConnectorManifest:
+      $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
     # AirbyteProtocol:
     #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
@@ -192,9 +190,7 @@ components:
         - config
       properties:
         manifest:
-          type: object
-          description: The config-based connector manifest contents
-          # $ref: "#/components/schemas/ConnectorManifest"
+          $ref: "#/components/schemas/ConnectorManifest"
         config:
           type: object
           description: The config blob containing the user inputs for testing
