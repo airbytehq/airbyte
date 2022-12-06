@@ -19,10 +19,10 @@ import java.util.function.Supplier;
  * during a sync, so a single instance of this manager is sufficient for a destination to track
  * state during a sync.
  *
- * Strategy: Delegates state messages of each type to a StateManager that is appropriate to that
- * state type.
+ * <p>Strategy: Delegates state messages of each type to a StateManager that is appropriate to that
+ * state type.</p>
  *
- * Per the protocol, if state type is not set, assumes the LEGACY state type.
+ * <p>Per the protocol, if state type is not set, assumes the LEGACY state type.</p>
  */
 public class DefaultDestStateLifecycleManager implements DestStateLifecycleManager {
 

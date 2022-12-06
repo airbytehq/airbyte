@@ -37,6 +37,9 @@ import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Uses both Factory and Consumer design pattern to create a single point of creation for consuming {@link AirbyteMessage} for processing
+ */
 public class StagingConsumerFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(StagingConsumerFactory.class);
@@ -73,6 +76,15 @@ public class StagingConsumerFactory {
         stagingOperations::isValidData);
   }
 
+  /**
+   * Creates a list of all {@link WriteConfig} for each stream within a {@link ConfiguredAirbyteCatalog}. Each write config represents the configuration
+   * settings for writing to a destination connector
+   *
+   * @param namingResolver {@link NamingConventionTransformer} used to transform names that are acceptable by each destination connector
+   * @param config destination connector configuration parameters
+   * @param catalog {@link ConfiguredAirbyteCatalog} collection of configured {@link ConfiguredAirbyteStream}
+   * @return list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
+   */
   private static List<WriteConfig> createWriteConfigs(final NamingConventionTransformer namingResolver,
                                                       final JsonNode config,
                                                       final ConfiguredAirbyteCatalog catalog) {
@@ -139,6 +151,15 @@ public class StagingConsumerFactory {
     return new AirbyteStreamNameNamespacePair(config.getStreamName(), config.getNamespace());
   }
 
+  /**
+   * Logic handling how destinations with staging areas (aka bucket storages) will flush their buffer
+   *
+   * @param database database used for syncing
+   * @param stagingOperations collection of SQL queries necessary for writing data into a staging area
+   * @param writeConfigs configuration settings for all destination connectors needed to write
+   * @param catalog collection of configured streams (e.g. API endpoints or database tables)
+   * @return
+   */
   private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(
                                                                                                                final JdbcDatabase database,
                                                                                                                final StagingOperations stagingOperations,
@@ -171,6 +192,18 @@ public class StagingConsumerFactory {
     };
   }
 
+  /**
+   * Upon processing all {@link AirbyteMessage} wrap up lingering logic. This logic includes:
+   * <li>Migrating data stored in staging area to temporary tables</li>
+   * <li>Creates a final table (if one does not already exist)</li>
+   * <li>Copies all data from the temporary table into the final table</li>
+   *
+   * @param database database used for syncing
+   * @param stagingOperations SQL queries used to write and delete data from the staging folder
+   * @param writeConfigs list of all write configs for each stream in a {@link ConfiguredAirbyteCatalog}
+   * @param purgeStagingData purges staging data if true otherwise data retained
+   * @return
+   */
   private OnCloseFunction onCloseFunction(final JdbcDatabase database,
                                           final StagingOperations stagingOperations,
                                           final List<WriteConfig> writeConfigs,
@@ -191,6 +224,7 @@ public class StagingConsumerFactory {
               streamName, schemaName, srcTableName, dstTableName, stagingPath, writeConfig.getStagedFiles().size(),
               String.join(",", writeConfig.getStagedFiles()));
 
+          // Copies all the data stored in the staging files into a temporary table and creates final table if nonexistent
           try {
             stagingOperations.copyIntoTmpTableFromStage(database, stageName, stagingPath, writeConfig.getStagedFiles(), srcTableName, schemaName);
           } catch (final Exception e) {
@@ -205,13 +239,15 @@ public class StagingConsumerFactory {
             case APPEND, APPEND_DEDUP -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }
-          queryList.add(stagingOperations.copyTableQuery(database, schemaName, srcTableName, dstTableName));
+          queryList.add(stagingOperations.insertTableQuery(database, schemaName, srcTableName, dstTableName));
         }
         stagingOperations.onDestinationCloseOperations(database, writeConfigs);
         LOGGER.info("Executing finalization of tables.");
+        // copies data from temporary table into final table (airbyte_raw)
         stagingOperations.executeTransaction(database, queryList);
         LOGGER.info("Finalizing tables in destination completed.");
       }
+      // After moving data from staging area to the finalized table (airybte_raw) clean up temporary tables and the staging area (if user configured)
       LOGGER.info("Cleaning up destination started for {} streams", writeConfigs.size());
       for (final WriteConfig writeConfig : writeConfigs) {
         final String schemaName = writeConfig.getOutputSchemaName();

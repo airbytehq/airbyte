@@ -30,6 +30,13 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private long totalBufferSizeInBytes;
   private final ConfiguredAirbyteCatalog catalog;
 
+  /**
+   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer with an associated buffer type
+   *
+   * @param onCreateBuffer type of buffer used upon creation
+   * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
+   * @param onStreamFlush buffer flush logic used throughout the streaming of messages
+   */
   public SerializedBufferingStrategy(final CheckedBiFunction<AirbyteStreamNameNamespacePair, ConfiguredAirbyteCatalog, SerializableBuffer, Exception> onCreateBuffer,
                                      final ConfiguredAirbyteCatalog catalog,
                                      final CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> onStreamFlush) {
@@ -39,6 +46,15 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     this.totalBufferSizeInBytes = 0;
   }
 
+  /**
+   * Handles both adding records and when buffer is full to also flush
+   * TODO: (ryankfu) when buffer is filled up to write to bucket storage or airbyte_raw table
+   *
+   * @param stream - stream associated with record
+   * @param message - {@link AirbyteMessage} to buffer
+   * @return true if this {@link io.airbyte.protocol.models.AirbyteRecordMessage} causes buffer to flush all messages, otherwise false
+   * @throws Exception
+   */
   @Override
   public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
     boolean didFlush = false;
@@ -69,7 +85,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
       flushWriter(stream, streamBuffer);
       /*
        * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because
-       * this branch flushes individual streams, there is no guaranteee that it will flush records in the
+       * this branch flushes individual streams, there is no guarantee that it will flush records in the
        * same order that state messages were received. The outcome here is that records get flushed but
        * our updating of which state messages have been flushed falls behind.
        *
