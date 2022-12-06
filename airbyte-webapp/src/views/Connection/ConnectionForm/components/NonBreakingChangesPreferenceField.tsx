@@ -1,4 +1,5 @@
-import { FieldProps, useField } from "formik";
+import classNames from "classnames";
+import { FieldProps } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -10,7 +11,7 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 
 import styles from "./NonBreakingChangesPreferenceField.module.scss";
 
-export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form }) => {
+export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form, meta }) => {
   const { formatMessage } = useIntl();
 
   const preferenceOptions = useMemo(() => {
@@ -23,7 +24,6 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
   }, [formatMessage]);
 
   const { mode } = useConnectionFormService();
-  const [, meta] = useField(field.name);
 
   return (
     <div className={styles.flexRow}>
@@ -39,7 +39,7 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
           })}
         />
       </div>
-      <div className={styles.rightFieldCol} style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}>
+      <div className={classNames(styles.rightFieldCol, { [styles.disabled]: mode === "readonly" })}>
         <DropDown
           {...field}
           options={preferenceOptions}

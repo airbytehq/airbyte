@@ -6,12 +6,12 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
-  gap: 10px;
+  gap: spacing.$spacing-md;
 }
 
 .connectorLabel {
   max-width: 328px;
-  margin-right: 20px;
+  margin-right: spacing.$spacing-xl;
   vertical-align: top;
 }
 
@@ -24,4 +24,8 @@
 .rightFieldCol {
   flex: 1;
   max-width: 300px;
+}
+
+.disabled {
+  pointer-events: none;
 }

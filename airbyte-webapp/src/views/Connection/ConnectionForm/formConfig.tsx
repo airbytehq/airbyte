@@ -128,10 +128,11 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
-      nonBreakingChangesPreference: yup
-        .string()
-        .oneOf([NonBreakingChangesPreference.disable, NonBreakingChangesPreference.ignore])
-        .required("form.empty.error"),
+      nonBreakingChangesPreference:
+        process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true"
+          ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference))
+          : yup.mixed().notRequired(),
+
       namespaceDefinition: yup
         .string()
         .oneOf([
