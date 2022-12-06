@@ -483,6 +483,7 @@
   "plan.type.heading": "Plan type",
   "plan.endsOn.heading": "Ends on",
   "plan.details.heading": "Plan details",
+  "plan.cancel.btn": "Cancel subscription",
   "plan.upgrade.btn": "Upgrade Plan",
   "plan.select.plan": "Select a Plan",
   "plan.billing.payment": "Billing & Payment",
@@ -629,5 +630,7 @@
   "upgrade.plan.btn": "Upgrade Now",
   "unauthorized.modal.text1": "You’re not authorized to make the change.",
   "unauthorized.modal.text2": "Please contact an admin of your account to upgrade.",
-  "unauthorized.modal.btn": "OK"
+  "unauthorized.modal.btn": "OK",
+  "cancelSubscription.modal.btn.confirm": "Confirm",
+  "cancelSubscription.modal.btn.notNow": "Not Now"
 }

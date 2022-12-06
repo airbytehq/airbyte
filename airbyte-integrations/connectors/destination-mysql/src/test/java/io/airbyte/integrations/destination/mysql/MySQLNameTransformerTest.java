@@ -25,14 +25,14 @@ class MySQLNameTransformerTest {
     final String tmpTableName = NAME_TRANSFORMER.getTmpTableName(LONG_NAME);
     assertEquals(MySQLNameTransformer.TRUNCATION_MAX_NAME_LENGTH, tmpTableName.length());
     // temp table name: _airbyte_tmp_xxx_very__mysql_identifier_size
-    assertTrue(tmpTableName.startsWith("_airbyte_tmp_"));
+    assertTrue(tmpTableName.startsWith("_daspire_tmp_"));
     assertTrue(tmpTableName.endsWith("_very__mysql_identifier_size"));
   }
 
   @Test
   public void testGetRawTableName() {
     assertEquals(
-        "_airbyte_raw_very_ver__mysql_identifier_size",
+        "_daspire_raw_very_ver__mysql_identifier_size",
         NAME_TRANSFORMER.getRawTableName(LONG_NAME));
   }
 
