@@ -33,7 +33,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class PersistConfigHelperTest {
+class UpdateConnectorConfigHelperTest {
 
   private static final Long JOB_ID = 123L;
   private static final UUID CONNECTION_ID = UUID.randomUUID();
@@ -48,7 +48,7 @@ class PersistConfigHelperTest {
   private final SourceApi mSourceApi = mock(SourceApi.class);
   private final DestinationApi mDestinationApi = mock(DestinationApi.class);
 
-  private PersistConfigHelper persistConfigHelper;
+  private UpdateConnectorConfigHelper updateConnectorConfigHelper;
 
   @BeforeEach
   void setUp() throws ApiException {
@@ -77,7 +77,7 @@ class PersistConfigHelperTest {
             .destinationId(DESTINATION_ID)
             .name(DESTINATION_NAME));
 
-    persistConfigHelper = new PersistConfigHelper(airbyteApiClient);
+    updateConnectorConfigHelper = new UpdateConnectorConfigHelper(airbyteApiClient);
   }
 
   @Test
@@ -92,7 +92,7 @@ class PersistConfigHelperTest {
 
     when(mSourceApi.updateSource(Mockito.any())).thenReturn(new SourceRead().connectionConfiguration(configJson));
 
-    persistConfigHelper.persistSourceConfig(JOB_ID, newConfiguration);
+    updateConnectorConfigHelper.updateSource(JOB_ID, newConfiguration);
     verify(mSourceApi).updateSource(expectedSourceUpdate);
   }
 
@@ -108,7 +108,7 @@ class PersistConfigHelperTest {
 
     when(mDestinationApi.updateDestination(Mockito.any())).thenReturn(new DestinationRead().connectionConfiguration(configJson));
 
-    persistConfigHelper.persistDestinationConfig(JOB_ID, newConfiguration);
+    updateConnectorConfigHelper.updateDestination(JOB_ID, newConfiguration);
     verify(mDestinationApi).updateDestination(expectedDestinationUpdate);
   }
 

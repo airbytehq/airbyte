@@ -35,8 +35,8 @@ import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
-import io.airbyte.workers.helper.PersistConfigHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
+import io.airbyte.workers.helper.UpdateConnectorConfigHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -96,7 +96,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
-  private final PersistConfigHelper persistConfigHelper;
+  private final UpdateConnectorConfigHelper updateConnectorConfigHelper;
 
   public DefaultReplicationWorker(final String jobId,
                                   final int attempt,
@@ -106,7 +106,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
-                                  final PersistConfigHelper persistConfigHelper) {
+                                  final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -116,7 +116,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
-    this.persistConfigHelper = persistConfigHelper;
+    this.updateConnectorConfigHelper = updateConnectorConfigHelper;
 
     this.cancelled = new AtomicBoolean(false);
     this.hasFailed = new AtomicBoolean(false);
@@ -189,7 +189,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, persistConfigHelper, mdc, timeTracker, Long.valueOf(jobId)),
+          readFromDstRunnable(destination, cancelled, messageTracker, updateConnectorConfigHelper, mdc, timeTracker, Long.valueOf(jobId)),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -203,7 +203,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, persistConfigHelper, mdc, recordSchemaValidator,
+          readFromSrcAndWriteToDstRunnable(source, destination, cancelled, mapper, messageTracker, updateConnectorConfigHelper, mdc,
+              recordSchemaValidator,
               metricReporter,
               timeTracker, Long.valueOf(jobId)),
           executors)
@@ -242,7 +243,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static Runnable readFromDstRunnable(final AirbyteDestination destination,
                                               final AtomicBoolean cancelled,
                                               final MessageTracker messageTracker,
-                                              final PersistConfigHelper persistConfigHelper,
+                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper,
                                               final Map<String, String> mdc,
                                               final ThreadedTimeTracker timeHolder,
                                               final Long jobId) {
@@ -261,7 +262,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = messageOptional.get();
             LOGGER.info("State in DefaultReplicationWorker from destination: {}", message);
             messageTracker.acceptFromDestination(message);
-            acceptAndUpdateDstConfig(jobId, message, persistConfigHelper);
+            acceptAndUpdateDstConfig(jobId, message, updateConnectorConfigHelper);
           }
         }
         timeHolder.trackDestinationWriteEndTime();
@@ -292,7 +293,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final AtomicBoolean cancelled,
                                                            final AirbyteMapper mapper,
                                                            final MessageTracker messageTracker,
-                                                           final PersistConfigHelper persistConfigHelper,
+                                                           final UpdateConnectorConfigHelper updateConnectorConfigHelper,
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
@@ -318,7 +319,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
             messageTracker.acceptFromSource(message);
-            acceptAndUpdateSrcConfig(jobId, message, persistConfigHelper);
+            acceptAndUpdateSrcConfig(jobId, message, updateConnectorConfigHelper);
 
             try {
               if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
@@ -382,10 +383,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return message.getType() == Type.CONTROL && message.getControl().getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG;
   }
 
-  private static void acceptAndUpdateSrcConfig(final Long jobId, final AirbyteMessage message, final PersistConfigHelper persistConfigHelper) {
+  private static void acceptAndUpdateSrcConfig(final Long jobId,
+                                               final AirbyteMessage message,
+                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (isControlConfigMsg(message)) {
       try {
-        persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+        updateConnectorConfigHelper.updateSource(jobId, message.getControl().getConnectorConfig().getConfig());
       } catch (final Exception e) {
         LOGGER.error("Error trying to save updated source config", e);
         throw new RuntimeException(e);
@@ -393,10 +396,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void acceptAndUpdateDstConfig(final Long jobId, final AirbyteMessage message, final PersistConfigHelper persistConfigHelper) {
+  private static void acceptAndUpdateDstConfig(final Long jobId,
+                                               final AirbyteMessage message,
+                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     try {
       if (isControlConfigMsg(message)) {
-        persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
+        updateConnectorConfigHelper.updateDestination(jobId, message.getControl().getConnectorConfig().getConfig());
       }
     } catch (final Exception e) {
       LOGGER.error("Error trying to save updated destination config", e);

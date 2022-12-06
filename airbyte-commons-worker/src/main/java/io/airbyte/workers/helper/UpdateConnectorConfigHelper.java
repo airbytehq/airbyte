@@ -29,14 +29,18 @@ import org.slf4j.LoggerFactory;
 /**
  * Helper class for workers to persist updates to Source/Destination configs emitted from
  * AirbyteControlMessages.
+ *
+ * This is in order to support connectors updating configs when running commands, which is specially
+ * useful for migrating configuration to a new version or for enabling connectors that require
+ * single-use or short-lived OAuth tokens.
  */
-public class PersistConfigHelper {
+public class UpdateConnectorConfigHelper {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(PersistConfigHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateConnectorConfigHelper.class);
 
   private final AirbyteApiClient apiClient;
 
-  public PersistConfigHelper(final AirbyteApiClient apiClient) {
+  public UpdateConnectorConfigHelper(final AirbyteApiClient apiClient) {
     this.apiClient = apiClient;
   }
 
@@ -49,7 +53,11 @@ public class PersistConfigHelper {
     return UUID.fromString(jobInfo.getJob().getConfigId());
   }
 
-  public void persistSourceConfig(final Long jobId, final Config config) {
+  /**
+   * Updates the Source from a sync job ID with the provided Configuration. Secrets and OAuth
+   * parameters will be masked when saving.
+   */
+  public void updateSource(final Long jobId, final Config config) {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
     final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
@@ -75,7 +83,11 @@ public class PersistConfigHelper {
 
   }
 
-  public void persistDestinationConfig(final Long jobId, final Config config) {
+  /**
+   * Updates the Destination from a sync job ID with the provided Configuration. Secrets and OAuth
+   * parameters will be masked when saving.
+   */
+  public void updateDestination(final Long jobId, final Config config) {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
     final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
