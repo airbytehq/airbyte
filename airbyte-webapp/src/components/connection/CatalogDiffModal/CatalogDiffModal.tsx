@@ -9,8 +9,8 @@ import { AirbyteCatalog, CatalogDiff } from "core/request/AirbyteClient";
 import { useModalService } from "hooks/services/Modal";
 
 import styles from "./CatalogDiffModal.module.scss";
-import { DiffSection } from "./components/DiffSection";
-import { FieldSection } from "./components/FieldSection";
+import { DiffSection } from "./DiffSection";
+import { FieldSection } from "./FieldSection";
 import { getSortedDiff } from "./utils";
 
 interface CatalogDiffModalProps {
