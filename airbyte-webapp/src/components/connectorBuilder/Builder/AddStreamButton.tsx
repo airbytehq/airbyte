@@ -17,7 +17,7 @@ interface AddStreamValues {
 
 interface AddStreamButtonProps {
   numStreams: number;
-  onAddStream: (addedStreamNum: number) => void;
+  onAddStream: (addedStreamNum: number, addedStreamName: string) => void;
 }
 
 export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ numStreams, onAddStream }) => {
@@ -44,7 +44,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ numStreams, on
               httpMethod: "GET",
             });
             setIsOpen(false);
-            onAddStream(numStreams);
+            onAddStream(numStreams, values.streamName);
           }}
         >
           <>

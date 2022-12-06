@@ -590,5 +590,8 @@
   "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
   "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
   "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>.",
-  "connectorBuilder.newStream": "New stream"
+  "connectorBuilder.newStream": "New stream",
+  "connectorBuilder.resetModal.text": "This will erase all streams and values that are currently set. Are you sure you want to continue?",
+  "connectorBuilder.resetModal.title": "Reset Connector Builder",
+  "connectorBuilder.resetModal.submitButton": "Reset"
 }
