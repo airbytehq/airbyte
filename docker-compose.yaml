@@ -9,7 +9,7 @@ services:
   # hook in case we need to add init behavior
   # every root service (no depends_on) should depend on init
   init:
-    image: airbyte/init:${VERSION}
+    image: yuanrui2014/init:${VERSION}
     logging: *default-logging
     container_name: init
     command: /bin/sh -c "./scripts/create_mount_directories.sh /local_parent ${HACK_LOCAL_ROOT_PARENT} ${LOCAL_ROOT}"
@@ -19,9 +19,9 @@ services:
     volumes:
       - ${HACK_LOCAL_ROOT_PARENT}:/local_parent
   bootloader:
-    image: airbyte/bootloader:${VERSION}
+    image: yuanrui2014/bootloader:${VERSION}
     logging: *default-logging
-    container_name: airbyte-bootloader
+    container_name: daspire-bootloader
     environment:
       - AIRBYTE_VERSION=${VERSION}
       - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
@@ -33,9 +33,9 @@ services:
       - LOG_LEVEL=${LOG_LEVEL}
       - RUN_DATABASE_MIGRATION_ON_STARTUP=${RUN_DATABASE_MIGRATION_ON_STARTUP}
   db:
-    image: airbyte/db:${VERSION}
+    image: yuanrui2014/db:${VERSION}
     logging: *default-logging
-    container_name: airbyte-db
+    container_name: daspire-db
     restart: unless-stopped
     environment:
       - CONFIG_DATABASE_PASSWORD=${CONFIG_DATABASE_PASSWORD:-}
@@ -49,9 +49,9 @@ services:
     volumes:
       - db:/var/lib/postgresql/data
   worker:
-    image: airbyte/worker:${VERSION}
+    image: yuanrui2014/worker:${VERSION}
     logging: *default-logging
-    container_name: airbyte-worker
+    container_name: daspire-worker
     restart: unless-stopped
     environment:
       - AIRBYTE_VERSION=${VERSION}
@@ -106,9 +106,9 @@ services:
       - workspace:${WORKSPACE_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
   server:
-    image: airbyte/server:${VERSION}
+    image: yuanrui2014/server:${VERSION}
     logging: *default-logging
-    container_name: airbyte-server
+    container_name: daspire-server
     restart: unless-stopped
     environment:
       - AIRBYTE_ROLE=${AIRBYTE_ROLE:-}
@@ -143,9 +143,9 @@ services:
       - data:${CONFIG_ROOT}
       - ${LOCAL_ROOT}:${LOCAL_ROOT}
   webapp:
-    image: airbyte/webapp:${VERSION}
+    image: yuanrui2014/webapp:${VERSION}
     logging: *default-logging
-    container_name: airbyte-webapp
+    container_name: daspire-webapp
     restart: unless-stopped
     ports:
       - 8000:80
@@ -157,10 +157,10 @@ services:
       - OPENREPLAY=${OPENREPLAY:-}
       - PAPERCUPS_STORYTIME=${PAPERCUPS_STORYTIME:-}
       - TRACKING_STRATEGY=${TRACKING_STRATEGY}
-  airbyte-temporal:
-    image: airbyte/temporal:${VERSION}
+  daspire-temporal:
+    image: yuanrui2014/temporal:${VERSION}
     logging: *default-logging
-    container_name: airbyte-temporal
+    container_name: daspire-temporal
     restart: unless-stopped
     ports:
       - 7233:7233
@@ -174,10 +174,10 @@ services:
       - POSTGRES_USER=${DATABASE_USER}
     volumes:
       - ./temporal/dynamicconfig:/etc/temporal/config/dynamicconfig
-  airbyte-cron:
-    image: airbyte/cron:${VERSION}
+  daspire-cron:
+    image: yuanrui2014/cron:${VERSION}
     logging: *default-logging
-    container_name: airbyte-cron
+    container_name: daspire-cron
     restart: unless-stopped
     environment:
       - DB=postgresql
