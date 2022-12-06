@@ -184,114 +184,6 @@ exports[`CreateConnectionForm should render 1`] = `
                   </div>
                 </div>
               </div>
-              <div
-                class="<removed-for-snapshot-test>"
-              >
-                <div
-                  class="<removed-for-snapshot-test>"
-                >
-                  <div
-                    class="<removed-for-snapshot-test>"
-                  >
-                    <label
-                      class="<removed-for-snapshot-test>"
-                    >
-                      Non-breaking schema updates detected*
-                      <span>
-                        <br />
-                        <span
-                          class="<removed-for-snapshot-test>"
-                        >
-                          When Airbyte detects that the schema of the source has changed, what would you like to do?
-                        </span>
-                      </span>
-                    </label>
-                  </div>
-                </div>
-                <div
-                  class="<removed-for-snapshot-test>"
-                  style="pointer-events: auto;"
-                >
-                  <div
-                    class="<removed-for-snapshot-test>"
-                    data-testid="nonBreakingChangesPreference"
-                    role="combobox"
-                  >
-                    <span
-                      class="<removed-for-snapshot-test>"
-                      id="react-select-3-live-region"
-                    />
-                    <span
-                      aria-atomic="false"
-                      aria-live="polite"
-                      aria-relevant="additions text"
-                      class="<removed-for-snapshot-test>"
-                    />
-                    <div
-                      class="<removed-for-snapshot-test>"
-                    >
-                      <div
-                        class="<removed-for-snapshot-test>"
-                      >
-                        <div
-                          class="<removed-for-snapshot-test>"
-                        >
-                          <div
-                            class="<removed-for-snapshot-test>"
-                          >
-                            <div
-                              class="<removed-for-snapshot-test>"
-                            >
-                              Ignore
-                            </div>
-                          </div>
-                        </div>
-                        <input
-                          aria-autocomplete="list"
-                          aria-expanded="false"
-                          aria-haspopup="true"
-                          aria-readonly="true"
-                          class="<removed-for-snapshot-test>"
-                          id="react-select-3-input"
-                          inputmode="none"
-                          role="combobox"
-                          tabindex="0"
-                          value=""
-                        />
-                      </div>
-                      <div
-                        class="<removed-for-snapshot-test>"
-                      >
-                        <div
-                          aria-hidden="true"
-                          class="<removed-for-snapshot-test>"
-                        >
-                          <svg
-                            aria-hidden="true"
-                            class="<removed-for-snapshot-test>"
-                            data-icon="sort-down"
-                            data-prefix="fas"
-                            focusable="false"
-                            role="img"
-                            viewBox="0 0 320 512"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M311.9 335.1l-132.4 136.8C174.1 477.3 167.1 480 160 480c-7.055 0-14.12-2.702-19.47-8.109l-132.4-136.8C-9.229 317.8 3.055 288 27.66 288h264.7C316.9 288 329.2 317.8 311.9 335.1z"
-                              fill="currentColor"
-                            />
-                          </svg>
-                        </div>
-                      </div>
-                    </div>
-                    <input
-                      name="nonBreakingChangesPreference"
-                      type="hidden"
-                      value="ignore"
-                    />
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
           <div
@@ -342,7 +234,7 @@ exports[`CreateConnectionForm should render 1`] = `
                     >
                       <span
                         class="<removed-for-snapshot-test>"
-                        id="react-select-4-live-region"
+                        id="react-select-3-live-region"
                       />
                       <span
                         aria-atomic="false"
@@ -375,7 +267,7 @@ exports[`CreateConnectionForm should render 1`] = `
                             aria-haspopup="true"
                             aria-readonly="true"
                             class="<removed-for-snapshot-test>"
-                            id="react-select-4-input"
+                            id="react-select-3-input"
                             inputmode="none"
                             role="combobox"
                             tabindex="0"
@@ -821,7 +713,7 @@ exports[`CreateConnectionForm should render 1`] = `
                             >
                               <span
                                 class="<removed-for-snapshot-test>"
-                                id="react-select-5-live-region"
+                                id="react-select-4-live-region"
                               />
                               <span
                                 aria-atomic="false"
@@ -860,7 +752,7 @@ exports[`CreateConnectionForm should render 1`] = `
                                     aria-haspopup="true"
                                     aria-readonly="true"
                                     class="<removed-for-snapshot-test>"
-                                    id="react-select-5-input"
+                                    id="react-select-4-input"
                                     inputmode="none"
                                     role="combobox"
                                     tabindex="0"
