@@ -1,4 +1,3 @@
-import { isCloudApp } from "utils/app";
 import { ConnectorIds } from "utils/connectors";
 
 export const DEV_IMAGE_TAG = "dev";
