@@ -1,6 +1,6 @@
 import { useIntl } from "react-intl";
 
-import { DiffVerb } from "../types";
+import { DiffVerb } from "./types";
 
 export type DiffType = "field" | "stream";
 
