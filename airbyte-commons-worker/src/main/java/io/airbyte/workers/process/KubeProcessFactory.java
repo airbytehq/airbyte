@@ -85,7 +85,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
-                        final boolean usesIsolatedPool,
+                        final boolean isCustomConnector,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
@@ -111,7 +111,7 @@ public class KubeProcessFactory implements ProcessFactory {
       // If using isolated pool, check workerConfigs has isolated pool set. If not set, fall back to use
       // regular node pool.
       final var nodeSelectors =
-          usesIsolatedPool ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
+          isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
               : workerConfigs.getworkerKubeNodeSelectors();
 
       return new KubePodProcess(
