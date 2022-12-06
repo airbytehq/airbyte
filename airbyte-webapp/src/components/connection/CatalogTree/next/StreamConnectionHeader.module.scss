@@ -22,6 +22,9 @@ $icon-size: 15px;
 }
 
 .source {
+  // A hard-coded px is bad, but it works.
+  // Ideally this table will be converted away from div's and
+  // flexbox into react-table and this will go away.
   flex: 0 0 807px;
 }
 
