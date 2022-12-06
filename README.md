@@ -77,10 +77,8 @@ and copied in Dockerfile. The following files are supported:
 
 3. To add these patches to the Dockerfile, use the snippets below:
 ```
-COPY documentation_url.patch.json ./
-COPY spec.patch.json ./
-COPY spec.map.json ./
-COPY oauth2.patch.json ./
+COPY *.patch.json ./
+COPY *.map.json ./
 COPY streams/* ./streams/
 ```
 
