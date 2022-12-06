@@ -1252,17 +1252,4 @@ public abstract class JdbcSourceAcceptanceTest {
     }
   }
 
-  public static void setEnv(final String key, final String value) {
-    try {
-      final Map<String, String> env = System.getenv();
-      final Class<?> cl = env.getClass();
-      final java.lang.reflect.Field field = cl.getDeclaredField("m");
-      field.setAccessible(true);
-      final Map<String, String> writableEnv = (Map<String, String>) field.get(env);
-      writableEnv.put(key, value);
-    } catch (final Exception e) {
-      throw new IllegalStateException("Failed to set environment variable", e);
-    }
-  }
-
 }

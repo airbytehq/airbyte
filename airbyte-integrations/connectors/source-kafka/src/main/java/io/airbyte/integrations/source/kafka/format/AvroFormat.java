@@ -145,6 +145,12 @@ public class AvroFormat extends AbstractFormat {
     getTopicsToSubscribe().forEach(topic -> poll_lookup.put(topic, 0));
     while (true) {
       final ConsumerRecords<String, GenericRecord> consumerRecords = consumer.poll(Duration.of(polling_time, ChronoUnit.MILLIS));
+      consumerRecords.forEach(record -> {
+        record_count.getAndIncrement();
+        recordsList.add(record);
+      });
+      consumer.commitAsync();
+
       if (consumerRecords.count() == 0) {
         consumer.assignment().stream().map(record -> record.topic()).distinct().forEach(
             topic -> {
@@ -160,12 +166,6 @@ public class AvroFormat extends AbstractFormat {
         LOGGER.info("Max record count is reached !!");
         break;
       }
-
-      consumerRecords.forEach(record -> {
-        record_count.getAndIncrement();
-        recordsList.add(record);
-      });
-      consumer.commitAsync();
     }
     consumer.close();
     final Iterator<ConsumerRecord<String, GenericRecord>> iterator = recordsList.iterator();

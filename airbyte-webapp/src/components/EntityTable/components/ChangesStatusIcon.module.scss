@@ -1,0 +1,21 @@
+@use "scss/colors";
+
+.tooltipContainer {
+  display: flex !important;
+  align-items: center !important;
+}
+
+.changesIcon {
+  width: 15px;
+  height: 15px;
+  display: flex;
+  align-items: center;
+
+  &.breaking {
+    color: colors.$red;
+  }
+
+  &.nonBreaking {
+    color: colors.$yellow;
+  }
+}
