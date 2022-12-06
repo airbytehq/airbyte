@@ -277,26 +277,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/create:
-    post:
-      tags:
-        - source_definition
-      summary: Creates a sourceDefinition
-      operationId: createSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
+
   /v1/source_definitions/update:
     post:
       tags:
@@ -465,47 +446,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/update_custom:
-    post:
-      tags:
-        - source_definition
-      summary: Update a custom sourceDefinition for the given workspace
-      operationId: updateCustomSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CustomSourceDefinitionUpdate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/delete_custom:
-    post:
-      tags:
-        - source_definition
-      summary: Delete a custom source definition for the given workspace
-      operationId: deleteCustomSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
-        required: true
-      responses:
-        "204":
-          description: The resource was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -798,26 +738,6 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/create:
-    post:
-      tags:
-        - destination_definition
-      summary: Creates a destinationsDefinition
-      operationId: createDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -987,47 +907,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/update_custom:
-    post:
-      tags:
-        - destination_definition
-      summary: Update a custom destinationDefinition for the given workspace
-      operationId: updateCustomDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CustomDestinationDefinitionUpdate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/delete_custom:
-    post:
-      tags:
-        - destination_definition
-      summary: Delete a custom destination definition for the given workspace
-      operationId: deleteCustomDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
-        required: true
-      responses:
-        "204":
-          description: The destination was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -2680,16 +2559,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceDefinition:
           $ref: "#/components/schemas/SourceDefinitionCreate"
-    CustomSourceDefinitionUpdate:
-      type: object
-      required:
-        - workspaceId
-        - sourceDefinition
-      properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        sourceDefinition:
-          $ref: "#/components/schemas/SourceDefinitionUpdate"
     SourceDefinitionIdWithWorkspaceId:
       type: object
       required:
@@ -2935,6 +2804,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
     SourceSearch:
       type: object
       properties:
@@ -3048,16 +2919,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionCreate"
-    CustomDestinationDefinitionUpdate:
-      type: object
-      required:
-        - workspaceId
-        - destinationDefinition
-      properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        destinationDefinition:
-          $ref: "#/components/schemas/DestinationDefinitionUpdate"
     DestinationDefinitionIdWithWorkspaceId:
       type: object
       required:
@@ -3371,6 +3232,8 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3778,19 +3641,35 @@ components:
           type: string
     OperatorWebhook:
       type: object
-      required:
-        - executionUrl
       properties:
-        executionUrl:
-          type: string
-          description: The URL to call to execute the webhook operation via POST request.
-        executionBody:
-          type: string
-          description: If populated, this will be sent with the POST request.
         webhookConfigId:
           type: string
           format: uuid
           description: The id of the webhook configs to use from the workspace.
+        webhookType:
+          type: string
+          enum:
+            - dbtCloud
+        dbtCloud:
+          type: object
+          required:
+            - accountId
+            - jobId
+          properties:
+            accountId:
+              type: integer
+              description: The account id associated with the job
+            jobId:
+              type: integer
+              description: The job id associated with the job
+        executionUrl:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
+        executionBody:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
     CheckOperationRead:
       type: object
       required:
@@ -4159,6 +4038,7 @@ components:
         - normalization
         - dbt
         - airbyte_platform
+        - unknown
     AttemptFailureType:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
@@ -4704,6 +4584,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -4723,6 +4605,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance

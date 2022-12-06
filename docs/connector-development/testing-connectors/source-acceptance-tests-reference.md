@@ -351,3 +351,7 @@ acceptance_tests:
             - name: my_missing_stream
               bypass_reason: "Please fill a good reason"
 ```
+
+## Caching
+We cache discovered catalogs by default for performance and reuse the same discovered catalog through all tests.
+You can disable this behavior by setting `cached_discovered_catalog: False` at the root of the configuration.

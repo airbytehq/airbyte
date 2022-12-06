@@ -66,6 +66,8 @@ import io.airbyte.api.client.model.generated.OperationRead;
 import io.airbyte.api.client.model.generated.OperatorConfiguration;
 import io.airbyte.api.client.model.generated.OperatorType;
 import io.airbyte.api.client.model.generated.OperatorWebhook;
+import io.airbyte.api.client.model.generated.OperatorWebhook.WebhookTypeEnum;
+import io.airbyte.api.client.model.generated.OperatorWebhookDbtCloud;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
@@ -369,7 +371,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(7)
   void testCancelSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -465,10 +467,9 @@ class BasicAcceptanceTests {
             .operatorType(OperatorType.WEBHOOK)
             .webhook(new OperatorWebhook()
                 .webhookConfigId(workspaceRead.getWebhookConfigs().get(0).getId())
-                // NOTE: reqres.in is free service that hosts a REST API intended for testing frontend/client code.
-                // We use it here as an endpoint that will accept an HTTP POST.
-                .executionUrl("https://reqres.in/api/users")
-                .executionBody("{\"name\": \"morpheus\", \"job\": \"leader\"}"))));
+                // NOTE: this dbt Cloud config won't actually work, but the sync should still succeed.
+                .webhookType(WebhookTypeEnum.DBTCLOUD)
+                .dbtCloud(new OperatorWebhookDbtCloud().accountId(123).jobId(456)))));
     // create a connection with the new operation.
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
@@ -762,7 +763,7 @@ class BasicAcceptanceTests {
   void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
@@ -836,7 +837,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(18)
   void testResetCancelsRunningSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -1475,8 +1476,8 @@ class BasicAcceptanceTests {
   @Test
   @Disabled
   void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),

@@ -377,6 +377,7 @@ class HttpStream(Stream, ABC):
                     or value.get("errors")
                     or value.get("failures")
                     or value.get("failure")
+                    or value.get("detail")
                 )
                 return _try_get_error(new_value)
             return None
