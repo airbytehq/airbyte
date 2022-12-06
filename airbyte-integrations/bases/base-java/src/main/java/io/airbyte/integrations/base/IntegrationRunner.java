@@ -89,6 +89,7 @@ public class IntegrationRunner {
                     final Source source,
                     final JsonSchemaValidator jsonSchemaValidator) {
     this(cliParser, outputRecordCollector, destination, source);
+    LOGGER.info("***");
     validator = jsonSchemaValidator;
   }
 
