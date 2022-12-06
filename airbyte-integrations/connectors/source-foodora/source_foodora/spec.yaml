@@ -11,7 +11,7 @@ connectionSpecification:
     endpoint:
       type: string
       description: URL endpoint of the Foodora API
-      airbyte_secret: true
+      airbyte_secret: false
 
     username:
       type: string
