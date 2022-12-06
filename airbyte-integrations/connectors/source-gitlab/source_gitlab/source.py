@@ -3,13 +3,16 @@
 #
 
 
-from typing import Any, Dict, List, Mapping, Tuple
+from typing import Any, List, MutableMapping, Tuple
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.oauth import SingleUseRefreshTokenOauth2Authenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth.token import TokenAuthenticator
+from requests.auth import AuthBase
 
 from .streams import (
     Branches,
@@ -39,24 +42,37 @@ from .streams import (
 )
 
 
-class GitlabAuthenticator(TokenAuthenticator):
-    def __init__(self, config: Dict):
-        self.config = config
+class GitlabOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+    def __init__(self, connector_config, *args, **kwargs):
+        super().__init__(connector_config, *args, **kwargs)
+        access_token = connector_config["credentials"].get("access_token")
+        if not access_token:
+            return
+        api_url = self._connector_config["api_url"]
+        token_valid, access_token_info = self.get_access_token_info(api_url, access_token)
+        if not token_valid:
+            return
+        t0 = pendulum.now()
+        self.access_token = access_token
+        self.set_token_expiry_date(t0.add(seconds=access_token_info["expires_in"]))
 
-    def get_auth(self) -> TokenAuthenticator:
-        private_token = self.config.get("private_token")
-        oauth_token = self.config.get("credentials")
-        if private_token:
-            # support of old config
-            return TokenAuthenticator(token=private_token)
-        if oauth_token:
-            # support of new config with oauth2.0
-            return TokenAuthenticator(token=oauth_token["access_token"])
+    @staticmethod
+    def get_access_token_info(api_url: str, access_token: str) -> Tuple[bool, MutableMapping]:
+        response = requests.get(f"https://{api_url}/oauth/token/info?access_token={access_token}")
+        if response.status_code == 200:
+            return True, response.json()
+        return False, {}
+
+
+def get_authenticator(config: MutableMapping) -> AuthBase:
+    if config["credentials"]["auth_type"] == "access_token":
+        return TokenAuthenticator(token=config["credentials"]["access_token"])
+    return GitlabOauth2Authenticator(config, token_refresh_endpoint=f"https://{config['api_url']}/oauth/token")
 
 
 class SourceGitlab(AbstractSource):
-    def _generate_main_streams(self, config: Mapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
-        auth = GitlabAuthenticator(config).get_auth()
+    def _generate_main_streams(self, config: MutableMapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
+        auth = get_authenticator(config)
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
         pids = list(filter(None, config.get("projects", "").split(" ")))
@@ -105,8 +121,8 @@ class SourceGitlab(AbstractSource):
         except Exception as error:
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = GitlabAuthenticator(config).get_auth()
+    def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
+        auth = get_authenticator(config)
         auth_params = dict(authenticator=auth, api_url=config["api_url"])
 
         groups, projects = self._generate_main_streams(config)

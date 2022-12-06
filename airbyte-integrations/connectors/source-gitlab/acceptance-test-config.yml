@@ -2,6 +2,8 @@ connector_image: airbyte/source-gitlab:dev
 tests:
   spec:
     - spec_path: "source_gitlab/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.8"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -11,12 +13,17 @@ tests:
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.8"
     - config_path: "secrets/config_oauth.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.8"
   basic_read:
     # test read with old config
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-    # test read with OAuth2.0
+      empty_streams: ["group_issue_boards"]
+#     test read with OAuth2.0
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["group_issue_boards"]
@@ -24,8 +31,8 @@ tests:
 # and the Acceptance Tests at this stage do not support this functionality.
 # Therefore, we hardcode the cursor_paths for our config.
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    - config_path: "secrets/config_with_ids.json"
+      configured_catalog_path: "integration_tests/incremental_catalog.json"
       future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
         commits: ["25157276", "created_at"]
