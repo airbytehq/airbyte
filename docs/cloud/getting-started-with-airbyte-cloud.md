@@ -20,8 +20,6 @@ To use Airbyte Cloud:
    A workspace lets you collaborate with team members and share resources across your team under a shared billing account.
    :::
 
-You will be greeted with an onboarding tutorial to help you set up your first connection. If you haven’t set up a connection on Airbyte Cloud before, we highly recommend following the tutorial. If you are familiar with the connection setup process, click **Skip Onboarding** and follow this guide to set up your next connection.
-
 ## Set up a source
 
 :::info
