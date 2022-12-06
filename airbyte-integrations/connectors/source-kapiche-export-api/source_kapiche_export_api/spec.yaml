@@ -33,3 +33,4 @@ connectionSpecification:
         Theme separator to make subgroups of the queries in a vertical analysis.
         Has effect only if vertical themes is true.
         Most common separator in Kapiche - //
+      default: ""
