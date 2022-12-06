@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { FieldProps, useField } from "formik";
+import { FieldProps } from "formik";
 import { useMemo } from "react";
 import { useIntl } from "react-intl";
 
@@ -12,8 +12,6 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import styles from "./NonBreakingChangesPreferenceField.module.scss";
 
 export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = ({ field, form }) => {
-  const [, meta] = useField(field.name);
-
   const { formatMessage } = useIntl();
 
   const preferenceOptions = useMemo(() => {
@@ -45,7 +43,7 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
         <DropDown
           {...field}
           options={preferenceOptions}
-          error={!!meta.error && meta.touched}
+          error={form.touched[field.name] && !!form.errors[field.name]}
           data-testid="nonBreakingChangesPreference"
           value={field.value}
           onChange={({ value }) => form.setFieldValue(field.name, value)}
