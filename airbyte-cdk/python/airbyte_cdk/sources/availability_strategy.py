@@ -3,6 +3,8 @@
 #
 
 import logging
+import typing
+
 import requests
 from abc import ABC, abstractmethod
 from requests import HTTPError
@@ -10,7 +12,9 @@ from typing import Dict, List, Optional, Text, Tuple
 
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources import Source
+
+if typing.TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
 
 
 class AvailabilityStrategy(ABC):
@@ -19,7 +23,7 @@ class AvailabilityStrategy(ABC):
     """
 
     @abstractmethod
-    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
+    def check_availability(self, source: "Source", logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
         """
         Checks stream availability.
 
@@ -33,7 +37,7 @@ class AvailabilityStrategy(ABC):
 
 
 class HTTPAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
+    def check_availability(self, source: "Source", logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -54,7 +58,7 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
             return self.handle_http_error(source, logger, stream, error)
         return True, None
 
-    def handle_http_error(self, source: Source, logger: logging.Logger, stream: Stream, error: HTTPError):
+    def handle_http_error(self, source: "Source", logger: logging.Logger, stream: Stream, error: HTTPError):
         """
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
@@ -89,7 +93,7 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
         except StopIteration:
             return {}
 
-    def _visit_docs_message(self, source: Source, logger: logging.Logger) -> str:
+    def _visit_docs_message(self, source: "Source", logger: logging.Logger) -> str:
         """
         :param source:
         :return: A message telling the user where to go to learn more about the source.
@@ -110,7 +114,7 @@ class HTTPAvailabilityStrategy(AvailabilityStrategy):
 
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, source: Source, logger: logging.Logger, stream: Stream) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, source: "Source", logger: logging.Logger, stream: Stream) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability based on required scopes for streams and
         the scopes granted to the source.
