@@ -32,36 +32,36 @@ export const CatalogTreeHeader: React.FC = () => {
         </Cell>
       )}
       {mode !== "readonly" && <Cell flex={0.1} />}
-      <Cell lighter flex={0.4}>
+      <Cell light flex={0.4}>
         <FormattedMessage id="sources.sync" />
       </Cell>
-      <Cell lighter>
+      <Cell light>
         <FormattedMessage id="sources.source" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.source.info" />
         </InfoTooltip>
       </Cell>
       <Cell />
-      <Cell lighter flex={1.5}>
+      <Cell light flex={1.5}>
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
       </Cell>
-      <Cell lighter>
+      <Cell light>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
       </Cell>
-      <Cell lighter>
+      <Cell light>
         <FormattedMessage id="form.primaryKey" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.primaryKey.info" />
         </InfoTooltip>
       </Cell>
-      <Cell lighter>
+      <Cell light>
         <FormattedMessage id="connector.destination" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.destinationName.info" />
