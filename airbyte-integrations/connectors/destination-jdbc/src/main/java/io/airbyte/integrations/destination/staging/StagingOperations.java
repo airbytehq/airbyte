@@ -69,7 +69,7 @@ public interface StagingOperations extends SqlOperations {
    *
    * @param database database used for syncing
    * @param stageName name of staging area folder
-   * @param stagedFiles collection of the staging files
+   * @param stagedFiles collection of the staging files to remove
    */
   void cleanUpStage(JdbcDatabase database, String stageName, List<String> stagedFiles) throws Exception;
 

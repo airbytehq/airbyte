@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
  *   <li>Create - overloaded function but primarily to create tables if they don't exist (e.g. tmp tables to "stage" records before finalizing
  *   to final table</li>
  *   <li>Drop - removes a table from the schema</li>
- *   <li>Copy - move data from one table to another table - usually used for copying data from tmp to final table (aka airbyte_raw)</li>
+ *   <li>Insert - move data from one table to another table - usually used for inserting data from tmp to final table (aka airbyte_raw)</li>
  * </ul>
  */
 public interface SqlOperations {

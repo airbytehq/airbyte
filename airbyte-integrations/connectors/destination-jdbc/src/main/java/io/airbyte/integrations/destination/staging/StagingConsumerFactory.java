@@ -196,7 +196,7 @@ public class StagingConsumerFactory {
    * Upon processing all {@link AirbyteMessage} wrap up lingering logic. This logic includes:
    * <li>Migrating data stored in staging area to temporary tables</li>
    * <li>Creates a final table (if one does not already exist)</li>
-   * <li>Copies all data from the temporary table into the final table</li>
+   * <li>Inserts all data from the temporary table into the final table</li>
    *
    * @param database database used for syncing
    * @param stagingOperations SQL queries used to write and delete data from the staging folder
