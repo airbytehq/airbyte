@@ -5,6 +5,7 @@
 
 import inspect
 import logging
+import typing
 from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
@@ -16,6 +17,9 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMes
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
+
+if typing.TYPE_CHECKING:
+    from airbyte_cdk.sources.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage
@@ -169,6 +173,13 @@ class Stream(ABC):
         Return False if the cursor can be configured by the user.
         """
         return True
+
+    @property
+    def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
+        """
+        :return: The AvailabilityStrategy used to check whether this stream is available for reading.
+        """
+        return None
 
     @property
     @abstractmethod
