@@ -14,7 +14,7 @@ import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Names;
-import io.airbyte.config.FieldSelectionEnabledStreams;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.validation.json.JsonValidationException;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class CatalogConverter {
   }
 
   public static io.airbyte.api.model.generated.AirbyteCatalog toApi(final ConfiguredAirbyteCatalog catalog,
-                                                                    FieldSelectionEnabledStreams fieldSelectionEnabledStreams) {
+                                                                    FieldSelectionData fieldSelectionEnabledStreams) {
     final List<io.airbyte.api.model.generated.AirbyteStreamAndConfiguration> streams = catalog.getStreams()
         .stream()
         .map(configuredStream -> {
@@ -118,7 +118,7 @@ public class CatalogConverter {
     return new io.airbyte.api.model.generated.AirbyteCatalog().streams(streams);
   }
 
-  private static Boolean getStreamHasFieldSelectionEnabled(FieldSelectionEnabledStreams fieldSelectionEnabledStreams, final String name) {
+  private static Boolean getStreamHasFieldSelectionEnabled(FieldSelectionData fieldSelectionEnabledStreams, final String name) {
     if (fieldSelectionEnabledStreams == null || fieldSelectionEnabledStreams.getAdditionalProperties().get(name) == null) {
       return false;
     }
@@ -183,11 +183,11 @@ public class CatalogConverter {
     return s.getConfig().getSelected() || (s.getConfig().getSelectedFields() != null && !s.getConfig().getSelectedFields().isEmpty());
   }
 
-  public static FieldSelectionEnabledStreams getFieldSelectionEnabledStreams(final AirbyteCatalog syncCatalog) {
+  public static FieldSelectionData getFieldSelectionEnabledStreams(final AirbyteCatalog syncCatalog) {
     if (syncCatalog == null) {
       return null;
     }
-    final FieldSelectionEnabledStreams fieldSelectionEnabledStreams = new FieldSelectionEnabledStreams();
+    final var fieldSelectionEnabledStreams = new FieldSelectionData();
     syncCatalog.getStreams().stream().forEach((streamAndConfig) -> {
       fieldSelectionEnabledStreams.withAdditionalProperty(streamAndConfig.getStream().getName(),
           streamAndConfig.getConfig().getFieldSelectionEnabled() != null ? streamAndConfig.getConfig().getFieldSelectionEnabled() : false);

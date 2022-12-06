@@ -237,7 +237,7 @@ public class ConnectionHelpers {
     ApiPojoConverters.populateConnectionReadSchedule(standardSync, connectionRead);
 
     if (standardSync.getCatalog() != null) {
-      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionEnabledStreams()));
+      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()));
     }
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()

@@ -42,7 +42,7 @@ properties:
     type: string
   catalog:
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
-  fieldSelectionEnabledStreams:
+  fieldSelectionData:
     type: object
     description: A map of stream name to an indicator of whether field/column selection is enabled for that stream.
     additionalProperties:

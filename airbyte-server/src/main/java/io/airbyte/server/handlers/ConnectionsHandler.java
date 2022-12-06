@@ -157,7 +157,7 @@ public class ConnectionsHandler {
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
       standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
-      standardSync.withFieldSelectionEnabledStreams(CatalogConverter.getFieldSelectionEnabledStreams(connectionCreate.getSyncCatalog()));
+      standardSync.withFieldSelectionData(CatalogConverter.getFieldSelectionEnabledStreams(connectionCreate.getSyncCatalog()));
     } else {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
     }

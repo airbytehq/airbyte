@@ -45,7 +45,7 @@ import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Cron;
 import io.airbyte.config.DataType;
 import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.FieldSelectionEnabledStreams;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.Schedule;
@@ -144,7 +144,7 @@ class ConnectionsHandlerTest {
         .withPrefix(PRESTO_TO_HUDI_PREFIX)
         .withStatus(StandardSync.Status.ACTIVE)
         .withCatalog(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog())
-        .withFieldSelectionEnabledStreams(new FieldSelectionEnabledStreams().withAdditionalProperty("users-data0", false))
+        .withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("users-data0", false))
         .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(operationId))
@@ -644,7 +644,7 @@ class ConnectionsHandlerTest {
         final ConnectionUpdate connectionUpdate = new ConnectionUpdate()
             .connectionId(standardSync.getConnectionId())
             .operationIds(Collections.singletonList(operationId))
-            .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionEnabledStreams()));
+            .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()));
 
         assertThrows(IllegalArgumentException.class, () -> connectionsHandler.updateConnection(connectionUpdate));
       }
