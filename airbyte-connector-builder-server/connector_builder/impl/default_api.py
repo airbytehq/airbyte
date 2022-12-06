@@ -179,7 +179,7 @@ spec:
             parameters = parse_qs(url.query) or None
             return HttpRequest(
                 url=full_path,
-                http_method=request.get("http_method"),
+                http_method=request.get("http_method", ""),
                 headers=request.get("headers"),
                 parameters=parameters,
                 body=request.get("body"),

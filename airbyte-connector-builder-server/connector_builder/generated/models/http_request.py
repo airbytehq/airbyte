@@ -20,13 +20,13 @@ class HttpRequest(BaseModel):
         parameters: The parameters of this HttpRequest [Optional].
         body: The body of this HttpRequest [Optional].
         headers: The headers of this HttpRequest [Optional].
-        http_method: The http_method of this HttpRequest [Optional].
+        http_method: The http_method of this HttpRequest.
     """
 
     url: str
     parameters: Optional[Dict[str, Any]] = None
     body: Optional[Dict[str, Any]] = None
     headers: Optional[Dict[str, Any]] = None
-    http_method: Optional[str] = None
+    http_method: str
 
 HttpRequest.update_forward_refs()
