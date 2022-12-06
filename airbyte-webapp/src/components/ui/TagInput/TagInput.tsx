@@ -27,6 +27,11 @@ const customStyles: StylesConfig<Tag, true, GroupBase<Tag>> = {
   multiValueRemove: (provided) => ({
     ...provided,
     borderRadius: `${styles.borderRadius}`,
+    cursor: "pointer",
+  }),
+  clearIndicator: (provided) => ({
+    ...provided,
+    cursor: "pointer",
   }),
   control: (provided, state) => {
     const isInvalid = state.selectProps["aria-invalid"];
