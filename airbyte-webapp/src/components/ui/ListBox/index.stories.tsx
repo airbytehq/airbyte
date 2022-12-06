@@ -1,19 +1,20 @@
-import { ComponentStory, ComponentMeta } from "@storybook/react";
+import { ComponentMeta } from "@storybook/react";
+import { useState } from "react";
 
 import { ListBox } from "./ListBox";
 
 const listOptions = [
   {
     label: "one",
-    value: "value",
+    value: 1,
   },
   {
     label: "two",
-    value: "value",
+    value: 2,
   },
   {
     label: "three",
-    value: "value",
+    value: 3,
   },
 ];
 
@@ -25,9 +26,8 @@ export default {
   },
 } as ComponentMeta<typeof ListBox>;
 
-const Template: ComponentStory<typeof ListBox> = (args) => <ListBox {...args} />;
+export const Primary = () => {
+  const [selectedOption, setSelectedOption] = useState(1);
 
-export const Primary = Template.bind({});
-Primary.args = {
-  options: listOptions,
+  return <ListBox options={listOptions} selectedValue={selectedOption} onSelect={setSelectedOption} />;
 };
