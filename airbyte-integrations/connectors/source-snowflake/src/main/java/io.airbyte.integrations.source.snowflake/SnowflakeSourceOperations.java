@@ -95,11 +95,9 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
 
   @Override
   public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
-    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
     // TIMESTAMPLTZ data type detected as JDBCType.TIMESTAMP which is not correct
     if ("TIMESTAMPLTZ".equalsIgnoreCase(columnTypeName)) {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
