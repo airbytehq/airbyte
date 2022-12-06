@@ -2,11 +2,12 @@ import { faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 
+import { ModificationIcon } from "components/icons/ModificationIcon";
+
 import { StreamTransform } from "core/request/AirbyteClient";
 
-import { ModificationIcon } from "../../../../components/icons/ModificationIcon";
-import { DiffVerb } from "../types";
 import styles from "./StreamRow.module.scss";
+import { DiffVerb } from "./types";
 
 interface StreamRowProps {
   streamTransform: StreamTransform;
