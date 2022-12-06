@@ -53,7 +53,7 @@ class Source(
         :return: The complete stream state based on the connector's previous sync
         """
         if state_path:
-            state_obj = self.read_json_file(state_path)
+            state_obj = self._read_json_file(state_path)
             if not state_obj:
                 return self._emit_legacy_state_format({})
             is_per_stream_state = isinstance(state_obj, List)
@@ -86,4 +86,4 @@ class Source(
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(self.read_json_file(catalog_path))
+        return ConfiguredAirbyteCatalog.parse_obj(self._read_json_file(catalog_path))

@@ -19,7 +19,7 @@ def test_transform_backslash_t_to_tab(tmp_path):
     with open(config_file, "w") as fp:
         json.dump({"format": {"delimiter": "\\t"}}, fp)
     source = SourceS3()
-    config = source.read_json_file(config_file)
+    config = source.read_config(config_file)
     assert config["format"]["delimiter"] == "\t"
 
 

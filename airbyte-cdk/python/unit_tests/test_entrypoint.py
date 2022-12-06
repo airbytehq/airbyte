@@ -130,7 +130,7 @@ def test_run_spec(entrypoint: AirbyteEntrypoint, mocker):
 @pytest.fixture
 def config_mock(mocker, request):
     config = request.param if hasattr(request, "param") else {"username": "fake"}
-    mocker.patch.object(MockSource, "read_json_file", return_value=config)
+    mocker.patch.object(MockSource, "read_config", return_value=config)
     mocker.patch.object(MockSource, "configure", return_value=config)
     return config
 

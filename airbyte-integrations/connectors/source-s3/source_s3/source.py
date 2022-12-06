@@ -57,8 +57,8 @@ class SourceS3(SourceFilesAbstract):
     spec_class = SourceS3Spec
     documentation_url = "https://docs.airbyte.com/integrations/sources/s3"
 
-    def read_json_file(self, config_path: str) -> Mapping[str, Any]:
-        config: Mapping[str, Any] = super().read_json_file(config_path)
+    def read_config(self, config_path: str) -> Mapping[str, Any]:
+        config: Mapping[str, Any] = super().read_config(config_path)
         if config.get("format", {}).get("delimiter") == r"\t":
             config["format"]["delimiter"] = "\t"
         return config

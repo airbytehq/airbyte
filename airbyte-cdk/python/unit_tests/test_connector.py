@@ -78,14 +78,14 @@ def integration():
     return MockConnector()
 
 
-def test_read_json_file(nonempty_file, integration: Connector, mock_config):
-    actual = integration.read_json_file(nonempty_file.name)
+def test_read_config(nonempty_file, integration: Connector, mock_config):
+    actual = integration.read_config(nonempty_file.name)
     assert mock_config == actual
 
 
-def test_read_non_json_file(nonjson_file, integration: Connector):
+def test_read_non_json_config(nonjson_file, integration: Connector):
     with pytest.raises(ValueError, match="Could not read json file"):
-        integration.read_json_file(nonjson_file.name)
+        integration.read_config(nonjson_file.name)
 
 
 def test_write_config(integration, mock_config):
