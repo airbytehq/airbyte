@@ -29,7 +29,7 @@ We believe that only an open-source solution to data movement can cover the long
 
 Airbyte comes with a built-in scheduler and Temporal to orchestrate workers. Airbyte normalizes extracted data with dbt models and can trigger custom transformation in SQL and dbt. You can also orchestrate Airbyte syncs with Airflow, Prefect and Dagster.
 
-[TODO: Add teaser screenshot of Airbyte UI]
+![Airbyte OSS Connections UI](https://user-images.githubusercontent.com/2302748/205949986-5207ca24-f1f0-41b1-97e1-a0745a0de55a.png)
 
 Check [300+ connectors](https://docs.airbyte.com/integrations/) for APIs, databases, warehouses and lakes.
 
@@ -54,15 +54,11 @@ BASIC_AUTH_PASSWORD=password
 
 Follow the instructions on the web app UI to setup a source, destination and connection to replicate data. Connections support the most popular sync modes: full refresh, incremental and change data capture for databases.
 
-[TODO: Add screenshot of add source, destination, connection (modes and normalization), and run sync]
-
 Read the [Airbyte docs](https://docs.airbyte.com).
 
 ### Manage Airbyte configurations with code
 
 You can also programmatically manage sources, destinations and connections with YAML files, [Octavia CLI](https://github.com/airbytehq/airbyte/tree/master/octavia-cli), and API.
-
-[TODO: Add screenshot / animation of Octavia CLI (commands (init, generate) -> file -> folder -> appy -> UI)]
 
 ### Deploy Airbyte to production
 
@@ -94,7 +90,6 @@ Read the [Contributing guide](docs/contributing-to-airbyte/README.md).
 - [Docs](https://docs.airbyte.com/) for Airbyte features
 
 ## Reporting vulnerabilities
-[TODO: ask security team to clarify what is the user and dev lists? and simplify this copy]
 
 ⚠️ Please do not file GitHub issues or post on our public forum for security vulnerabilities as they are public! ⚠️
 
