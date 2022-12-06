@@ -86,27 +86,23 @@ class ExactStream(HttpStream, IncrementalMixin):
 
             yield record
 
-
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         """
-        If response contains the __next property, there are more pages. This property contains the full url to 
+        If response contains the __next property, there are more pages. This property contains the full url to
         call next including endpoint and all query parameters.
         """
 
         response_json = response.json()
         next_url = response_json.get("d", {}).get("__next")
 
-        return { "next_url": next_url } if next_url else None
-        
+        return {"next_url": next_url} if next_url else None
 
     def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
         """
         Default response type is XML, this is overriden to return JSON.
         """
 
-        return {
-            "Accept": "application/json"
-        }
+        return {"Accept": "application/json"}
 
     def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
         """
@@ -128,14 +124,13 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return params
 
-
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
         response_json = response.json()
         results = response_json.get("d", {}).get("results")
 
         return [self._parse_timestamps(x) for x in results]
-    
+
     def path(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> str:
         """
         Returns the URL to call. On first call uses the property `endpoint` of subclass. For subsequent
@@ -179,11 +174,9 @@ class ExactStream(HttpStream, IncrementalMixin):
         return {k: parse_value(v) for k, v in obj.items()}
 
 
-
 class Subscriptions(ExactStream):
     primary_key = "EntryID"
     endpoint = "sync/subscription/Subscriptions"
-
 
 
 # Source
@@ -205,7 +198,6 @@ class SourceExact(AbstractSource):
             client_id=config["client_id"],
             client_secret=config["client_secret"],
             refresh_token=config["refresh_token"],
-
             # We don't know when the token is expired in this context. We just set it to a future time,
             # upon 401 we will trigger refresh manually.
             token_expiry_date=pendulum.now().add(minutes=2),
