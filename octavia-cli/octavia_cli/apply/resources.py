@@ -569,6 +569,10 @@ class Connection(BaseResource):
 
     resource_type = "connection"
 
+    local_root_level_keys_to_remove_during_create = ["skip_reset"]  # Remove these keys when sending a create request
+
+    local_root_level_keys_to_filter_out_for_comparison = ["skip_reset"]  # Remote do not have these keys
+
     remote_root_level_keys_to_filter_out_for_comparison = [
         "name",
         "source",
@@ -667,6 +671,8 @@ class Connection(BaseResource):
             self.configuration["operations"] = self._deserialize_operations(
                 self.raw_configuration["configuration"]["operations"], OperationCreate
             )
+        for k in self.local_root_level_keys_to_remove_during_create:
+            self.configuration.pop(k, None)
         return WebBackendConnectionCreate(
             name=self.resource_name, source_id=self.source_id, destination_id=self.destination_id, **self.configuration
         )
@@ -793,6 +799,14 @@ class Connection(BaseResource):
             {"source_id", "destination_id"},
             "These keys changed to source_configuration_path and destination_configuration_path in version > 0.39.18, please update your connection configuration to give path to source and destination configuration files or regenerate the connection",
         )
+
+    def _get_local_comparable_configuration(self) -> dict:
+        comparable = {
+            k: v
+            for k, v in self.raw_configuration["configuration"].items()
+            if k not in self.local_root_level_keys_to_filter_out_for_comparison
+        }
+        return comparable
 
     def _get_remote_comparable_configuration(self) -> dict:
 
