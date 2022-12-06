@@ -218,9 +218,11 @@ class SecretsManager:
         Returns:
             List[Secret]: List of Secret instances parsed from local updated configuration files
         """
-        updated_configurations_glob = glob(f"airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json")
+        updated_configurations_glob = (
+            f"{str(self.base_folder)}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
+        )
         updated_configuration_files_versions = {}
-        for updated_configuration_path in updated_configurations_glob:
+        for updated_configuration_path in glob(updated_configurations_glob):
             updated_configuration_path = Path(updated_configuration_path)
             with open(updated_configuration_path, "r") as updated_configuration:
                 updated_configuration_value = json.load(updated_configuration)
@@ -252,7 +254,6 @@ class SecretsManager:
         """
         existing_secrets = {secret.name: secret for secret in existing_secrets}
         updated_secrets = {secret.name: secret for secret in self._get_updated_secrets()}
-        new_remote_secrets = []
         for existing_secret_name in existing_secrets:
             if existing_secret_name in updated_secrets and json.loads(updated_secrets[existing_secret_name].value) != json.loads(
                 existing_secrets[existing_secret_name].value
@@ -260,6 +261,5 @@ class SecretsManager:
                 new_secret = updated_secrets[existing_secret_name]
                 old_secret = existing_secrets[existing_secret_name]
                 new_remote_secret = self._create_new_secret_version(new_secret, old_secret)
-                new_remote_secrets.append(new_remote_secret)
                 self.logger.info(f"Updated {new_remote_secret.name} with new value")
         return 0
