@@ -25,6 +25,9 @@ public enum JsonSchemaType {
   TIMESTAMP_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimestampWithoutTimezone", Schema.Type.LONG),
   TIME_WITH_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithTimezone", Schema.Type.LONG),
   TIME_WITHOUT_TIMEZONE_V1("WellKnownTypes.json#/definitions/TimeWithoutTimezone", Schema.Type.LONG),
+  OBJECT("object", Schema.Type.RECORD),
+  ARRAY("array", Schema.Type.ARRAY),
+  COMBINED("combined", Schema.Type.UNION),
   @Deprecated
   STRING_V0("string", null, Schema.Type.STRING),
   @Deprecated
@@ -40,11 +43,7 @@ public enum JsonSchemaType {
   @Deprecated
   BOOLEAN_V0("boolean", null, Schema.Type.BOOLEAN),
   @Deprecated
-  NULL("null", null, Schema.Type.NULL),
-
-  OBJECT("object", Schema.Type.RECORD),
-  ARRAY("array", Schema.Type.ARRAY),
-  COMBINED("combined", Schema.Type.UNION);
+  NULL("null", null, Schema.Type.NULL);
 
   private final String jsonSchemaType;
   private final Schema.Type avroType;
