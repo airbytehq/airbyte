@@ -2,7 +2,7 @@ import React, { memo } from "react";
 import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox";
+import { Checkbox } from "components/ui/Checkbox";
 import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField } from "core/domain/catalog";
@@ -54,7 +54,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
       <DataTypeCell>{dataType}</DataTypeCell>
       <Cell>{isCursorEnabled && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}</Cell>
       <Cell>
-        {isPrimaryKeyEnabled && <CheckBox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
+        {isPrimaryKeyEnabled && <Checkbox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
       </Cell>
       <LastCell ellipsis title={field.cleanedName} flex={1.5}>
         {field.cleanedName}

@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 
 import { Cell } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox";
+import { Checkbox } from "components/ui/Checkbox";
 import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField } from "core/domain/catalog";
@@ -47,7 +47,7 @@ const StreamFieldsTableRowComponent: React.FC<StreamFieldsTableRowProps> = ({
       <DataTypeCell>{dataType}</DataTypeCell>
       <Cell>{isCursorEnabled && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}</Cell>
       <Cell>
-        {isPrimaryKeyEnabled && <CheckBox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
+        {isPrimaryKeyEnabled && <Checkbox checked={isPrimaryKey} onChange={() => onPrimaryKeyChange(field.path)} />}
       </Cell>
       <Cell>
         <FontAwesomeIcon icon={faArrowRight} />

@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components/SimpleTableComponents";
-import { CheckBox } from "components/ui/CheckBox";
+import { Checkbox } from "components/ui/Checkbox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
 
@@ -62,7 +62,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
           <CatalogTreeTableRowIcon stream={stream} />
-          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+          <Checkbox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
       <Cell flex={0.5} flush>

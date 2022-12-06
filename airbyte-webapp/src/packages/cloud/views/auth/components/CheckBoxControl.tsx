@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox } from "components/ui/CheckBox";
+import { Checkbox } from "components/ui/Checkbox";
 
 type IProps = {
   message?: React.ReactNode;
@@ -23,7 +23,7 @@ const Label = styled.label<{ disabled?: boolean }>`
   cursor: pointer;
 `;
 
-const BigCheckBox = styled(CheckBox)`
+const BigCheckBox = styled(Checkbox)`
   height: 25px;
   width: 25px;
   min-width: 25px;
