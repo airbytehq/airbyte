@@ -39,7 +39,7 @@ import {
 import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
 import { update, ceil } from "cypress/types/lodash";
 
-describe("Connection main actions", () => {
+describe("Connection - main actions", () => {
   beforeEach(() => {
     initialSetupCompleted();
   });
@@ -362,7 +362,41 @@ describe("Connection main actions", () => {
   });
 });
 
-describe("Connection main actions with database", () => {
+describe("Connection - stream view", () => {
+  beforeEach(() => {
+    initialSetupCompleted();
+    populateDBSource();
+  });
+
+  afterEach(() => {
+    cleanDBSource();
+  });
+
+  it("Stream view", () => {
+    const sourceName = appendRandomString("Test connection Postgres source cypress");
+    const destName = appendRandomString("Test connection Postgres destination cypress");
+
+    const collectionNames = ["Field name", "col1", "id"];
+    const collectionTypes = ["Data type", "String", "Integer"];
+
+    createTestConnection(sourceName, destName);
+
+    goToSourcePage();
+    openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    goToReplicationTab();
+
+    searchStream("users");
+    clickArrowStream();
+    checkStreamFields(collectionNames, collectionTypes);
+
+    deleteSource(sourceName);
+    deleteDestination(destName);
+  });
+});
+
+describe("Connection sync modes", () => {
   beforeEach(() => {
     initialSetupCompleted();
     populateDBSource();
@@ -498,6 +532,17 @@ describe("Connection main actions with database", () => {
     deleteSource(sourceName);
     deleteDestination(destName);
   });
+});
+
+describe("Connection - detect changes in source", () => {
+  beforeEach(() => {
+    initialSetupCompleted();
+    populateDBSource();
+  });
+
+  afterEach(() => {
+    cleanDBSource();
+  });
 
   it("Create a connection, update data in source, show diff modal, reset streams", () => {
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
@@ -540,29 +585,6 @@ describe("Connection main actions with database", () => {
     });
 
     checkSuccessResult();
-
-    deleteSource(sourceName);
-    deleteDestination(destName);
-  });
-
-  it("Stream view", () => {
-    const sourceName = appendRandomString("Test connection Postgres source cypress");
-    const destName = appendRandomString("Test connection Postgres destination cypress");
-
-    const collectionNames = ["Field name", "col1", "id"];
-    const collectionTypes = ["Data type", "String", "Integer"];
-
-    createTestConnection(sourceName, destName);
-
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    goToReplicationTab();
-
-    searchStream("users");
-    clickArrowStream();
-    checkStreamFields(collectionNames, collectionTypes);
 
     deleteSource(sourceName);
     deleteDestination(destName);
