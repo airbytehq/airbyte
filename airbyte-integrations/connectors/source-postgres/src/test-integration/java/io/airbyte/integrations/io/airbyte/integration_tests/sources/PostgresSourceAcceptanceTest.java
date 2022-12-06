@@ -65,9 +65,9 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-    String username = container.getUsername();
-    String password = container.getPassword();
-    List<String> schemas = List.of("public");
+    final String username = container.getUsername();
+    final String password = container.getPassword();
+    final List<String> schemas = List.of("public");
     config = getConfig(username, password, schemas);
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -92,7 +92,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     }
   }
 
-  private JsonNode getConfig(String username, String password, List<String> schemas) {
+  private JsonNode getConfig(final String username, final String password, final List<String> schemas) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -169,19 +169,19 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     config = getConfig(LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD, List.of(LIMIT_PERMISSION_SCHEMA));
 
     runDiscover();
-    AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
+    final AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
     final String assertionMessageWithoutPermission = "Expected no streams after discover for user without schema permissions";
     assertTrue(lastPersistedCatalogSecond.getStreams().isEmpty(), assertionMessageWithoutPermission);
   }
 
-  private void revokeSchemaPermissions(Database database) throws SQLException {
+  private void revokeSchemaPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("REVOKE USAGE ON schema %s FROM %s;", LIMIT_PERMISSION_SCHEMA, LIMIT_PERMISSION_ROLE));
       return null;
     });
   }
 
-  private void prepareEnvForUserWithoutPermissions(Database database) throws SQLException {
+  private void prepareEnvForUserWithoutPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE ROLE %s WITH LOGIN PASSWORD '%s';", LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD));
       ctx.fetch(String.format("CREATE SCHEMA %s;", LIMIT_PERMISSION_SCHEMA));
@@ -235,7 +235,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
+                "id_and_name", LIMIT_PERMISSION_SCHEMA,
                 Field.of("id", JsonSchemaType.NUMBER),
                 Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
