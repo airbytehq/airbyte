@@ -110,6 +110,11 @@ public class KubeProcessFactory implements ProcessFactory {
 
       // If using isolated pool, check workerConfigs has isolated pool set. If not set, fall back to use
       // regular node pool.
+
+      if (usesIsolatedPool && workerConfigs.getWorkerIsolatedKubeNodeSelectors().isEmpty()) {
+        throw new WorkerException("Invalid configuration on isolated pool. Isolated kube node "
+            + "selectors cannot be empty if we want to uses isolated pool");
+      }
       final var nodeSelectors =
           usesIsolatedPool ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
               : workerConfigs.getworkerKubeNodeSelectors();

@@ -228,6 +228,9 @@ public class WorkerConfigurationBeanFactory {
                                           @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                           @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                           @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
+    }
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -261,6 +264,9 @@ public class WorkerConfigurationBeanFactory {
                                             @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                             @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                             @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
+    }
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -295,6 +301,9 @@ public class WorkerConfigurationBeanFactory {
                                              @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                              @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                              @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while indicating useIsolatedNodeSelector");
+    }
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -328,6 +337,9 @@ public class WorkerConfigurationBeanFactory {
                                                 @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                                 @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                                 @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
+    }
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
@@ -362,6 +374,9 @@ public class WorkerConfigurationBeanFactory {
                                          @Value("${airbyte.worker.job.kube.images.busybox}") final String busyboxImage,
                                          @Value("${airbyte.worker.job.kube.images.curl}") final String curlImage,
                                          @Named("jobDefaultEnvMap") final Map<String, String> jobDefaultEnvMap) {
+    if (useIsolatedNodeSelector && isolatedNodeSelectors.isEmpty()) {
+      throw new RuntimeException("Isolated Node selectors is empty while useIsolatedNodeSelector is set to true.");
+    }
     return new WorkerConfigs(
         workerEnvironment,
         resourceRequirements,
