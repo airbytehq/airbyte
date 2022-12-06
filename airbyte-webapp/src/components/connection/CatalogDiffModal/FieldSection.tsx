@@ -2,10 +2,10 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
-import { DiffVerb } from "../types";
 import { DiffAccordion } from "./DiffAccordion";
 import { DiffHeader } from "./DiffHeader";
 import styles from "./FieldSection.module.scss";
+import { DiffVerb } from "./types";
 
 interface FieldSectionProps {
   streams: StreamTransform[];

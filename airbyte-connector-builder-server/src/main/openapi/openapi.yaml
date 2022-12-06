@@ -153,6 +153,7 @@ components:
       type: object
       required:
         - url
+        - http_method
       properties:
         url:
           type: string
@@ -166,6 +167,10 @@ components:
         headers:
           type: object
           description: The headers of the HTTP request, if any
+        http_method:
+          type: string
+          enum: ["GET", "POST", "PUT", "PATCH"]
+          description: The http method of the request ("GET", "POST", "PUT", or "PATCH")
     HttpResponse:
       type: object
       required:

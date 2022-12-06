@@ -3,10 +3,10 @@ import { useMemo } from "react";
 
 import { StreamTransform } from "core/request/AirbyteClient";
 
-import { getSortedDiff } from "../utils";
 import styles from "./DiffAccordion.module.scss";
 import { DiffAccordionHeader } from "./DiffAccordionHeader";
 import { DiffFieldTable } from "./DiffFieldTable";
+import { getSortedDiff } from "./utils";
 
 interface DiffAccordionProps {
   streamTransform: StreamTransform;
