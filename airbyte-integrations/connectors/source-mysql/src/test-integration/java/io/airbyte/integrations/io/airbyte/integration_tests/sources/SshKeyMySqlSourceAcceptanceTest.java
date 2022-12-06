@@ -20,7 +20,6 @@ public class SshKeyMySqlSourceAcceptanceTest extends AbstractSshMySqlSourceAccep
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
-    environmentVariables.set("DEPLOYMENT_MODE", "CLOUD");
     environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     super.setupEnvironment(environment);
   }
