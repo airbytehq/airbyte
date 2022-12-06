@@ -4,13 +4,14 @@ connectionSpecification:
   title: Exact Spec
   type: object
   required:
-    # - refresh_token
+    - access_token
+    - refresh_token
     - client_id
     - client_secret
   properties:
-    code:
+    access_token:
       type: string
-      description: Code returned on the return UIR.
+      description: The latest refresh token from Exact.
     refresh_token:
       type: string
       description: The latest refresh token from Exact.
