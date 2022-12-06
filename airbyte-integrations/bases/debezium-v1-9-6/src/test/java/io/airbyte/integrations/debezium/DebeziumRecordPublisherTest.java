@@ -56,7 +56,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH),
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
-    final String expectedWhitelist = "\\Qpublic.id_and_name.(fld2|fld1)\\E,\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
+    final String expectedWhitelist = "\\Qpublic.id_and_name\\E\\.(\\Qfld2\\E|\\Qfld1\\E),\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
     final String actualWhitelist = DebeziumPropertiesManager.getColumnIncludeList(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
