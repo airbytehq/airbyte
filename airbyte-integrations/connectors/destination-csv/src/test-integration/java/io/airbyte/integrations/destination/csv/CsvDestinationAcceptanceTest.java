@@ -12,6 +12,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
+import io.airbyte.integrations.standardtest.destination.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 
 import java.io.FileReader;
@@ -22,6 +23,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -30,12 +32,16 @@ import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
+import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Path RELATIVE_PATH = Path.of("integration_test/test");
+  private JsonNode config;
 
   @Override
   protected String getImageName() {
@@ -43,14 +49,13 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   @Override
-  protected JsonNode getConfig(String delimiter) throws Exception {
-    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
+  protected JsonNode getConfig() {
+    return Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString()));
   }
 
-  @ParameterizedTest
-  @ValueSource(chars = {',',';','.',' ','\t'})
-  void detectDelimiter(char input) throws IOException {
-
+    protected JsonNode getConfigWithDelimiter(String delimiter) {
+    config = Jsons.jsonNode(ImmutableMap.of("destination_path", Path.of("/local").resolve(RELATIVE_PATH).toString(), "delimiter", delimiter));
+    return config;
   }
 
   // todo (cgardens) - it would be great if we could find a configuration here that failed. the
@@ -72,7 +77,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
 
   @ParameterizedTest
-  @ValueSource(strings = {",",";","."," ","\t"})
+  @ArgumentsSource(CSVDataArgumentsProvider.class)
   public void testSyncWithDelimiter(final String messagesFilename, final String catalogFilename, String delimiter)
       throws Exception {
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
@@ -83,7 +88,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
-    final JsonNode config = getConfig(delimiter);
+    final JsonNode config = getConfigWithDelimiter(delimiter);
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, messages, defaultSchema);
@@ -123,6 +128,18 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     // no op
+  }
+
+  public static class CSVDataArgumentsProvider extends DataArgumentsProvider {
+
+    public CSVDataArgumentsProvider(){};
+    @Override
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
+      return Stream.of(
+              Arguments.of(EXCHANGE_RATE_CONFIG.messageFile, EXCHANGE_RATE_CONFIG.catalogFile, ","),
+              Arguments.of(EDGE_CASE_CONFIG.messageFile, EDGE_CASE_CONFIG.catalogFile, "|")
+      );
+    }
   }
 
 }
