@@ -20,7 +20,7 @@ interface DestinationFormProps {
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
+  }) => Promise<void>;
   destinationDefinitions: DestinationDefinitionRead[];
   hasSuccess?: boolean;
   error?: FormError | null;
