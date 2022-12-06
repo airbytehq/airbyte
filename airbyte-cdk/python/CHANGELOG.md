@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.12.1
+## 0.12.2
 Revert breaking change on `read_config` while keeping the improvement on the error message
 
 ## 0.12.0
