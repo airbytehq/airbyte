@@ -22,13 +22,11 @@ $icon-size: 15px;
 }
 
 .source {
-  flex: 7.3 0 0;
-  min-width: 0;
+  flex: 0 0 807px;
 }
 
 .destination {
-  flex: 2 0 0;
-  min-width: 0;
+  flex: 0 0 auto;
 }
 
 .icon {
@@ -37,5 +35,5 @@ $icon-size: 15px;
 }
 
 .arrowContainer {
-  width: 20px;
+  flex: 0 0 20px;
 }
