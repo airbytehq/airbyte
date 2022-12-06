@@ -17,9 +17,19 @@ connectionSpecification:
       title: Export URL
       type: string
       description: Export url that is consumed to get all the export metadata.
-      airbyte_secret: false
     site_name:
       title: Site Name
       type: string
       description: Site Name as identified in Kapiche.
-      airbyte_secret: false
+    vertical_themes:
+      title: Vertical Themes
+      type: boolean
+      default: false
+      description: Request parameter (bool) that governs the queries output format in the export.
+    theme_level_separator:
+      title: theme_level_separator
+      type: string
+      description: >-
+        Theme separator to make subgroups of the queries in a vertical analysis.
+        Has effect only if vertical themes is true.
+        Most common separator in Kapiche - //
