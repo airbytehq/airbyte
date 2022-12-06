@@ -38,7 +38,7 @@ class InsightConfig(BaseModel):
         title="Level",
         description="Chosen level for API",
         default="ad",
-        pattern=LEVEL_PATTERN
+        enum=["ad", "adset", "campaign", "account"]
     )
 
     fields: Optional[List[ValidFields]] = Field(

@@ -69,7 +69,7 @@
               "title": "Level",
               "description": "Chosen level for API",
               "default": "ad",
-              "pattern": "^(ad|adset|campaign|account)$",
+              "enum": ["ad", "adset", "campaign", "account"],
               "type": "string"
             },
             "fields": {
