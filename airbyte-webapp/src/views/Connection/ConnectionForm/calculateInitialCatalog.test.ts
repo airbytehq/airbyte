@@ -79,11 +79,8 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
-              supportedSyncModes: [SyncMode.incremental],
-              sourceDefinedPrimaryKey: [
-                ["primary", "field1"],
-                ["primary", "field2"],
-              ],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: undefined,
             },
             config: {
               ...config,
@@ -98,7 +95,7 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
               sourceDefinedPrimaryKey: [],
             },
             config: {
@@ -109,7 +106,7 @@ describe("calculateInitialCatalog", () => {
           },
         ],
       },
-      [DestinationSyncMode.append_dedup],
+      [DestinationSyncMode.append_dedup, DestinationSyncMode.overwrite],
       false
     );
 
@@ -132,7 +129,7 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
               sourceDefinedPrimaryKey: [
                 ["primary", "field1"],
                 ["primary", "field2"],
@@ -151,7 +148,7 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
               sourceDefinedPrimaryKey: [
                 ["primary", "field1"],
                 ["primary", "field2"],
