@@ -1,5 +1,5 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
-# for more information about how to configure these tests
+# for more information about how to configure these tests.
 connector_image: airbyte/source-scaffold-java-jdbc:dev
 acceptance_tests:
   spec:
