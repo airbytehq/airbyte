@@ -1,10 +1,10 @@
 import { useEffect } from "react";
 import { useIntl } from "react-intl";
 
+import { CatalogDiffModal } from "components/connection/CatalogDiffModal/CatalogDiffModal";
+
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { useModalService } from "hooks/services/Modal";
-
-import { CatalogDiffModal } from "./CatalogDiffModal";
 
 export const useConfirmCatalogDiff = () => {
   const { formatMessage } = useIntl();
