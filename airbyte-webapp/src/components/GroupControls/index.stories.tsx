@@ -54,16 +54,16 @@ const conditionFormField: FormConditionItem = {
   path: "section.conditional",
 };
 
-const title = <GroupLabel formField={conditionFormField} />;
+const label = <GroupLabel formField={conditionFormField} />;
 
 export const Empty = Template.bind({});
 Empty.args = {
-  title,
+  label,
 };
 
 export const WithContent = Template.bind({});
 WithContent.args = {
-  title,
+  label,
   children: (
     <>
       <SectionContainer>Content part 1</SectionContainer>
