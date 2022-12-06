@@ -3,6 +3,7 @@ import { FormattedMessage } from "react-intl";
 
 import { JobItem } from "components/JobItem/JobItem";
 import { Card } from "components/ui/Card";
+import { Spinner } from "components/ui/Spinner";
 
 import {
   Connector,
@@ -19,6 +20,7 @@ import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/C
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
+import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import styles from "./ConnectorCard.module.scss";
 import { useAnalyticsTrackFunctions } from "./useAnalyticsTrackFunctions";
 import { useTestConnector } from "./useTestConnector";
@@ -173,25 +175,34 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
         </div>
         {additionalSelectorComponent}
         <div>
-          <ConnectorForm
-            // Causes the whole ConnectorForm to be unmounted and a new instance mounted whenever the connector type changes.
-            // That way we carry less state around inside it, preventing any state from one connector type from affecting another
-            // connector type's form in any way.
-            key={selectedConnectorDefinition && Connector.id(selectedConnectorDefinition)}
-            {...props}
-            selectedConnectorDefinition={selectedConnectorDefinition}
-            selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onStopTesting={onStopTesting}
-            testConnector={testConnector}
-            onSubmit={onHandleSubmit}
-            formValues={formValues}
-            errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
-            successMessage={
-              props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
-            }
-            connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
-          />
+          {props.isLoading ? (
+            <div className={styles.loaderContainer}>
+              <Spinner />
+              <div className={styles.loadingMessage}>
+                <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
+              </div>
+            </div>
+          ) : (
+            <ConnectorForm
+              // Causes the whole ConnectorForm to be unmounted and a new instance mounted whenever the connector type changes.
+              // That way we carry less state around inside it, preventing any state from one connector type from affecting another
+              // connector type's form in any way.
+              key={selectedConnectorDefinition && Connector.id(selectedConnectorDefinition)}
+              {...props}
+              selectedConnectorDefinition={selectedConnectorDefinition}
+              selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
+              isTestConnectionInProgress={isTestConnectionInProgress}
+              onStopTesting={onStopTesting}
+              testConnector={testConnector}
+              onSubmit={onHandleSubmit}
+              formValues={formValues}
+              errorMessage={props.errorMessage || (error && generateMessageFromError(error))}
+              successMessage={
+                props.successMessage || (saved && props.isEditMode && <FormattedMessage id="form.changesSaved" />)
+              }
+              connectorId={isEditMode ? getConnectorId(props.connector) : undefined}
+            />
+          )}
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
           {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
         </div>

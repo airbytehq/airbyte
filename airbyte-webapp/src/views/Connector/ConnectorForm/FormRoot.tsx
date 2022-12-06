@@ -1,17 +1,13 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
-import { Spinner } from "components/ui/Spinner";
-
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
-import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import { useConnectorForm } from "./connectorFormContext";
-import styles from "./FormRoot.module.scss";
 import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
@@ -38,20 +34,11 @@ export const FormRoot: React.FC<FormRootProps> = ({
   selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedConnectorDefinition, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isLoadingSchema, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
-          <Spinner />
-          <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
-          </div>
-        </div>
-      )}
-
       {isEditMode ? (
         <EditControls
           isTestConnectionInProgress={isTestConnectionInProgress}
