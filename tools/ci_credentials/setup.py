@@ -7,12 +7,12 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "click~=8.1.3"]
 
-TEST_REQUIREMENTS = ["requests-mock"]
+TEST_REQUIREMENTS = ["requests-mock", "pytest"]
 
 setup(
     version="1.0.0",
     name="ci_credentials",
-    description="Load and extract CI secrets for test suites",
+    description="CLI tooling to read and manage GSM secrets",
     author="Airbyte",
     author_email="contact@airbyte.io",
     packages=find_packages(),
