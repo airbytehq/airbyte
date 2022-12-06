@@ -1,5 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 /*
 * This eliminates flickering scrollbars when resizing using the reflex splitter.
@@ -75,4 +76,8 @@
   // !important is necessary to override the default reflex styles
   border: 0 !important;
   background-color: transparent !important;
+}
+
+.secondPanel {
+  @include mixins.left-shadow;
 }
