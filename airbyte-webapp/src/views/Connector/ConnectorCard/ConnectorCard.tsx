@@ -40,6 +40,10 @@ interface ConnectorCardBaseProps {
 
   // used in ConnectorCard and ConnectorForm
   formType: "source" | "destination";
+  /**
+   * id of the selected connector definition id - might be available even if the specification is not loaded yet
+   * */
+  selectedConnectorDefinitionId?: string | null;
   selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
   isEditMode?: boolean;
 
@@ -72,6 +76,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   jobInfo,
   onSubmit,
   additionalSelectorComponent,
+  selectedConnectorDefinitionId,
   ...props
 }) => {
   const [saved, setSaved] = useState(false);
@@ -98,7 +103,8 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   } = props;
 
   const selectedConnectorDefinitionSpecificationId =
-    selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification);
+    selectedConnectorDefinitionId ||
+    (selectedConnectorDefinitionSpecification && ConnectorSpecification.id(selectedConnectorDefinitionSpecification));
 
   const selectedConnectorDefinition = useMemo(
     () => availableConnectorDefinitions.find((s) => Connector.id(s) === selectedConnectorDefinitionSpecificationId),

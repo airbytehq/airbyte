@@ -96,6 +96,7 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
         availableConnectorDefinitions={destinationDefinitions}
         onConnectorDefinitionSelect={onDropDownSelect}
         selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        selectedConnectorDefinitionId={destinationDefinitionId}
         onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
         additionalSelectorComponent={frequentlyUsedDestinationsComponent}

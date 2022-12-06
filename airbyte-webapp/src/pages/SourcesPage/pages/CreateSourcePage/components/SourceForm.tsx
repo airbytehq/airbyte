@@ -68,6 +68,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
       availableConnectorDefinitions={sourceDefinitions}
       onConnectorDefinitionSelect={onDropDownSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      selectedConnectorDefinitionId={sourceDefinitionId}
       onSubmit={onSubmitForm}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
