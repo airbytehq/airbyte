@@ -6,7 +6,7 @@
 }
 
 .headerContainer {
-  margin: variables.$spacing-md variables.$spacing-md variables.$spacing-sm variables.$spacing-md;
+  margin: variables.$spacing-md 0 variables.$spacing-sm variables.$spacing-md;
   gap: variables.$spacing-sm;
   overflow: hidden;
   scrollbar-gutter: stable;
@@ -25,5 +25,5 @@
 }
 
 .arrowPlaceholder {
-  width: 20px;
+  flex: 0 0 20px;
 }

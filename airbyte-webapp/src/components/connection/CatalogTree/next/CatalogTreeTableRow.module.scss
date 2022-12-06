@@ -23,7 +23,6 @@
   min-height: 50px;
   height: 50px;
   align-items: center;
-  overflow-y: auto;
   scrollbar-gutter: stable;
 
   &:hover {
@@ -65,16 +64,11 @@
 }
 
 .arrowCell {
-  width: 20px;
+  flex: 0 0 20px;
 }
 
 .cellText {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.syncModeCell {
-  width: variables.$width-wide-menu;
-  min-width: variables.$width-wide-menu;
 }

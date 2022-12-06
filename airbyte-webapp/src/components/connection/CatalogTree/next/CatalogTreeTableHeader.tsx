@@ -12,7 +12,7 @@ import { links } from "utils/links";
 
 import styles from "./CatalogTreeTableHeader.module.scss";
 
-const TextCell: React.FC<React.PropsWithChildren<{ flex?: number }>> = ({ flex, children }) => {
+const TextCell: React.FC<React.PropsWithChildren<{ flex?: string }>> = ({ flex = "0 0 120px", children }) => {
   return (
     <Cell flex={flex}>
       <Text size="sm" className={styles.cellText}>
@@ -37,39 +37,39 @@ export const CatalogTreeTableHeader: React.FC = () => {
           />
         )}
       </div>
-      <TextCell flex={0.5}>
+      <TextCell flex="0 0 60px">
         <FormattedMessage id="sources.sync" />
       </TextCell>
       {/* <TextCell>
         <FormattedMessage id="form.fields" />
       </TextCell> */}
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.namespace" />
       </TextCell>
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.streamName" />
       </TextCell>
-      <TextCell flex={2}>
+      <TextCell flex="0 0 200px">
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
       </TextCell>
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
       </TextCell>
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.primaryKey" />
       </TextCell>
       <div className={styles.arrowPlaceholder} />
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.namespace" />
       </TextCell>
-      <TextCell flex={1}>
+      <TextCell>
         <FormattedMessage id="form.streamName" />
       </TextCell>
     </Header>

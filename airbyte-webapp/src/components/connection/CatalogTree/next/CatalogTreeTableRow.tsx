@@ -15,6 +15,7 @@ import { StreamHeaderProps } from "../StreamHeader";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
+
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
   destName,
@@ -57,6 +58,17 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     [styles.minus]: !isStreamEnabled,
   });
 
+  const TableCell: React.FC<{ flex?: string; title?: string; className?: string }> = ({
+    flex = "0 0 120px",
+    title,
+    className,
+    children,
+  }) => (
+    <Cell flex={flex} title={title} className={className}>
+      {children}
+    </Cell>
+  );
+
   const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
     [styles.enabledChange]: changedSelected && isStreamEnabled,
     [styles.disabledChange]: changedSelected && !isStreamEnabled,
@@ -81,21 +93,21 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell flex={0.5} flush>
+      <TableCell flex="0 0 60px">
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
-      </Cell>
+      </TableCell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <Cell flex={1} title={stream.stream?.namespace || ""}>
+      <TableCell title={stream.stream?.namespace || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
-      </Cell>
-      <Cell flex={1} title={stream.stream?.name || ""}>
+      </TableCell>
+      <TableCell title={stream.stream?.name || ""}>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
-      </Cell>
-      <div className={styles.syncModeCell}>
+      </TableCell>
+      <TableCell flex="0 0 200px">
         {disabled ? (
           <Cell title={syncSchema.syncMode}>
             <Text size="md" className={styles.cellText}>
@@ -106,8 +118,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
         )}
-      </div>
-      <Cell flex={1}>
+      </TableCell>
+      <TableCell>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -116,8 +128,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             onPathChange={onCursorChange}
           />
         )}
-      </Cell>
-      <Cell flex={1}>
+      </TableCell>
+      <TableCell>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -127,18 +139,18 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             onPathChange={onPrimaryKeyChange}
           />
         )}
-      </Cell>
+      </TableCell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <Cell flex={1} title={destNamespace}>
+      <TableCell title={destNamespace}>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
-      </Cell>
-      <Cell flex={1} title={destName}>
+      </TableCell>
+      <TableCell title={destName}>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>
-      </Cell>
+      </TableCell>
     </Row>
   );
 };
