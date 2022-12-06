@@ -2,7 +2,7 @@ import React from "react";
 import { components, OptionProps } from "react-select";
 import styled from "styled-components";
 
-import { Checkbox } from "components/ui/Checkbox";
+import { CheckBox } from "components/ui/CheckBox/CheckBox";
 
 import { OptionType } from "../DropDown";
 import { DropDownText } from "./DropDownText";
@@ -70,7 +70,7 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
           {props.isMulti && (
             <>
-              <Checkbox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
+              <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
             </>
           )}
           {props.label}

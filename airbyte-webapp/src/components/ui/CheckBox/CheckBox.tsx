@@ -3,9 +3,9 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import React from "react";
 
-import styles from "./Checkbox.module.scss";
+import styles from "./CheckBox.module.scss";
 
-export const Checkbox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
+export const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
   indeterminate,
   className,
   checked,

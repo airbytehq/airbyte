@@ -1,17 +1,17 @@
 import { ComponentStory, ComponentMeta } from "@storybook/react";
 import { useState } from "react";
 
-import { Checkbox } from "./Checkbox";
+import { CheckBox } from ".";
 
 export default {
   title: "UI/Checkbox",
-  component: Checkbox,
+  component: CheckBox,
   argTypes: {},
-} as ComponentMeta<typeof Checkbox>;
+} as ComponentMeta<typeof CheckBox>;
 
-const Template: ComponentStory<typeof Checkbox> = (args) => {
+const Template: ComponentStory<typeof CheckBox> = (args) => {
   const [checked, setChecked] = useState(false);
-  return <Checkbox {...args} checked={checked} onClick={() => setChecked((s) => !s)} />;
+  return <CheckBox {...args} checked={checked} onClick={() => setChecked((s) => !s)} />;
 };
 export const Primary = Template.bind({});
 Primary.args = {

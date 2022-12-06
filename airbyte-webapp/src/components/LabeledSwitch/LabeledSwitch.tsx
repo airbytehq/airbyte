@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import React from "react";
 
-import { Checkbox } from "components/ui/Checkbox";
+import { CheckBox } from "components/ui/CheckBox/CheckBox";
 import { Switch } from "components/ui/Switch";
 
 import styles from "./LabeledSwitch.module.scss";
@@ -19,7 +19,7 @@ export const LabeledSwitch: React.FC<LabeledSwitchProps> = (props) => {
 
   return (
     <div className={classNames(styles.labeledSwitch, props.className)}>
-      <span>{props.checkbox ? <Checkbox {...props} id={switchId} /> : <Switch {...props} id={switchId} />}</span>
+      <span>{props.checkbox ? <CheckBox {...props} id={switchId} /> : <Switch {...props} id={switchId} />}</span>
 
       <label
         className={classNames(styles.label, {

@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Header } from "components/SimpleTableComponents";
-import { Checkbox } from "components/ui/Checkbox";
+import { CheckBox } from "components/ui/CheckBox/CheckBox";
 import { Text } from "components/ui/Text";
 import { InfoTooltip, TooltipLearnMoreLink } from "components/ui/Tooltip";
 
@@ -30,7 +30,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
     <Header className={styles.headerContainer}>
       <div className={styles.checkboxCell}>
         {mode !== "readonly" && (
-          <Checkbox
+          <CheckBox
             onChange={onCheckAll}
             indeterminate={selectedBatchNodeIds.length > 0 && !allChecked}
             checked={allChecked}

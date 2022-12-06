@@ -5,7 +5,7 @@ import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Cell, Row } from "components";
-import { Checkbox } from "components/ui/Checkbox";
+import { CheckBox } from "components/ui/CheckBox/CheckBox";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 import { Switch } from "components/ui/Switch";
 
@@ -109,7 +109,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               )}
             </div>
           )}
-          <Checkbox checked={isSelected} onChange={selectForBulkEdit} />
+          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
       <ArrowCell>
