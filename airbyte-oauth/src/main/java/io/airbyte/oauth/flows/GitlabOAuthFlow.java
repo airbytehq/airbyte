@@ -9,7 +9,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
@@ -22,24 +22,24 @@ import org.apache.http.client.utils.URIBuilder;
 /**
  * Following docs from https://docs.gitlab.com/ee/api/oauth2.html#authorization-code-flow
  */
-public class GitlabOAuthFlow extends BaseOAuthFlow {
+public class GitlabOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String ACCESS_TOKEN_URL = "https://gitlab.com/oauth/token";
+  private static final String ACCESS_TOKEN_URL = "https://%s/oauth/token";
 
-  public GitlabOAuthFlow(ConfigRepository configRepository) {
-    super(configRepository);
+  public GitlabOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
+    super(configRepository, httpClient);
   }
 
-  @VisibleForTesting
-  GitlabOAuthFlow(ConfigRepository configRepository, HttpClient httpClient, Supplier<String> stateSupplier) {
+  public GitlabOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient, final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration) throws IOException {
+    final var domain = inputOAuthConfiguration.get("domain");
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
-        .setHost("gitlab.com")
+        .setHost(domain == null ? "gitlab.com" : domain.asText())
         .setPath("oauth/authorize")
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
@@ -54,35 +54,27 @@ public class GitlabOAuthFlow extends BaseOAuthFlow {
   }
 
   @Override
-  protected String extractCodeParameter(Map<String, Object> queryParams) throws IOException {
-    if (queryParams.containsKey("code")) {
-      return (String) queryParams.get("code");
-    } else {
-      throw new IOException("Undefined 'code' from consent redirected url.");
-    }
-  }
-
-  @Override
-  protected String getClientIdUnsafe(JsonNode config) {
+  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
     // the config object containing client ID is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(config.get("credentials"));
+    Preconditions.checkArgument(oauthConfig.hasNonNull("credentials"));
+    return super.getClientIdUnsafe(oauthConfig.get("credentials"));
   }
 
   @Override
-  protected String getClientSecretUnsafe(JsonNode config) {
+  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
     // the config object containing client SECRET is nested inside the "credentials" object
-    Preconditions.checkArgument(config.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(config.get("credentials"));
+    Preconditions.checkArgument(oauthConfig.hasNonNull("credentials"));
+    return super.getClientSecretUnsafe(oauthConfig.get("credentials"));
   }
 
   @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    final var domain = inputOAuthConfiguration.get("domain");
+    return String.format(ACCESS_TOKEN_URL, domain == null ? "gitlab.com" : domain.asText());
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(String clientId, String clientSecret, String authCode, String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
@@ -90,25 +82,6 @@ public class GitlabOAuthFlow extends BaseOAuthFlow {
         .put("grant_type", "authorization_code")
         .put("redirect_uri", redirectUrl)
         .build();
-  }
-
-  @Override
-  protected Map<String, Object> extractRefreshToken(final JsonNode data, String accessTokenUrl) throws IOException {
-    final Map<String, Object> result = new HashMap<>();
-    // check for refresh_token after successful authentication
-    if (data.has("refresh_token")) {
-      result.put("refresh_token", data.get("refresh_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
-    }
-    // check for access_token after successful authentication
-    if (data.has("access_token")) {
-      result.put("access_token", data.get("access_token").asText());
-    } else {
-      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
-    }
-    // return result as mapping
-    return Map.of("credentials", result);
   }
 
 }

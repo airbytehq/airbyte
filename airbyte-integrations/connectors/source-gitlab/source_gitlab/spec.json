@@ -94,6 +94,15 @@
     "predicate_key": ["credentials", "auth_type"],
     "predicate_value": "oauth2.0",
     "oauth_config_specification": {
+      "oauth_user_input_from_connector_config_specification": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "path_in_connector_config": ["api_url"]
+          }
+        }
+      },
       "complete_oauth_output_specification": {
         "type": "object",
         "properties": {
