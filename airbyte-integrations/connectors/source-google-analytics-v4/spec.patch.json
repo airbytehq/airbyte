@@ -76,7 +76,7 @@
       "description": "A JSON array describing the custom reports you want to sync from GA. Check out the docs to get more information about this field: https://go.estuary.dev/6PgxMK"
     },
     "window_in_days": {
-      "description": "The amount of days each stream slice would consist of beginning from start_date. Bigger the value - faster the fetch. (Min=1, as for a Day; Max=364, as for a Year)."
+      "description": "Number of days each read will cover, beginning at the start date. Choose a value between 1 (one day) and 364 (one year)."
     }
   }
 }

@@ -58,7 +58,7 @@
             },
             "token": {
               "title": "Access Token",
-              "description": "Notion API access token, see the docs for more information https://developers.notion.com/docs/authorization",
+              "description": "Notion API access token, see the docs for more information: https://go.estuary.dev/u5BKFR",
               "type": "string",
               "airbyte_secret": true
             }

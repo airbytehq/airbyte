@@ -62,7 +62,7 @@
             "service_account_info": {
               "title": "Service Account JSON Key",
               "type": "string",
-              "description": "The JSON key of the service account to use for authorization. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">here</a>.",
+              "description": "The JSON key of the service account to use for authorization. Read more in the docs: https://go.estuary.dev/MdCBX1",
               "examples": [
                 "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
               ],

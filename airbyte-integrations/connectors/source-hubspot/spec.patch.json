@@ -74,7 +74,7 @@
                     },
                     "api_key": {
                         "title": "API key",
-                        "description": "HubSpot API Key. See the Hubspot docs if you need help finding this key: https://knowledge.hubspot.com/integrations/how-do-i-get-my-hubspot-api-key",
+                        "description": "HubSpot API Key. See the Hubspot docs if you need help finding this key: https://go.estuary.dev/Sg8JDC",
                         "type": "string",
                         "airbyte_secret": true
                     }
@@ -97,7 +97,7 @@
                     },
                     "access_token": {
                         "title": "Access token",
-                        "description": "HubSpot Access token. See the <a href=\"https://developers.hubspot.com/docs/api/private-apps\">Hubspot docs</a> if you need help finding this token.",
+                        "description": "HubSpot Access token. See the docs if you need help finding this token: https://go.estuary.dev/XSVhJy.",
                         "type": "string",
                         "airbyte_secret": true
                     }

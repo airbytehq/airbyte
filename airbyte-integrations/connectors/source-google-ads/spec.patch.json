@@ -39,18 +39,18 @@
         "required": ["query", "table_name"],
         "properties": {
           "query": {
-            "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression because it is used by incremental streams. See Google's query builder for more informa tion: https://developers.google.com/google-ads/api/fields/v11/overview_query_builder"
+            "description": "A custom defined GAQL query for building the report. Should not contain segments.date expression. See Google's documentation for more information: https://go.estuary.dev/bhYgzb"
           }
         }
       }
     },
     "login_customer_id": {
       "title": "Login Customer ID for Managed Accounts (Optional)",
-      "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). Moreinformation about this field you can see here: https://developers.google.com/google-ads/api/docs/concepts/call-structure#cid"
+      "description": "If your access to the customer account is through a manager account, this field is required and must be set to the customer ID of the manager account (10-digit number without dashes). See the docs for more information: https://go.estuary.dev/q3rQAD"
     },
     "conversion_window_days": {
       "title": "Conversion Window (Optional)",
-      "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads. For more information, see Google's docs: https://support.google.com/google-ads/answer/3123169?hl=en"
+      "description": "A conversion window is the period of time after an ad interaction (such as an ad click or video view) during which a conversion, such as a purchase, is recorded in Google Ads. For more information, see Google's docs: https://go.estuary.dev/TSbFyk"
     }
   }
 }

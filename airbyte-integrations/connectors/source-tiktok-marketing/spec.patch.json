@@ -58,7 +58,7 @@
                     },
                     "advertiser_id": {
                         "title": "Advertiser ID",
-                        "description": "The Advertiser ID which generated for the developer's Sandbox application.",
+                        "description": "The Advertiser ID generated for your Sandbox application.",
                         "type": "string"
                     },
                     "access_token": {

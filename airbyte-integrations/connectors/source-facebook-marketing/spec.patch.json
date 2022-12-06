@@ -17,7 +17,7 @@
     },
     "credentials": {
       "title": "Authentication",
-      "description": "Choose how to authenticate to Facebook",
+      "description": "Choose how to authenticate to Facebook.",
       "type": "object",
       "discriminator": {
         "propertyName": "auth_type"
@@ -33,7 +33,7 @@
           "auth_type": {
               "type": "string",
               "title": "Credentials",
-              "description": "Name of the credentials",
+              "description": "Authentication Method",
               "const": "OAuth Credentials",
               "default": "OAuth Credentials",
               "order": 0
@@ -57,7 +57,7 @@
           "auth_type": {
               "type": "string",
               "title": "Credentials",
-              "description": "Name of the credentials",
+              "description": "Authentication Method",
               "const": "Access Token",
               "default": "Access Token",
               "order": 0
