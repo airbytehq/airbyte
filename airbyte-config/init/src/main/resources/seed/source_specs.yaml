@@ -6733,7 +6733,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.2.2"
+- dockerImage: "airbyte/source-kafka:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
@@ -6744,7 +6744,7 @@
       - "bootstrap_servers"
       - "subscription"
       - "protocol"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         MessageFormat:
           title: "MessageFormat"
@@ -6755,16 +6755,11 @@
             properties:
               deserialization_type:
                 type: "string"
-                enum:
-                - "JSON"
-                default: "JSON"
+                const: "JSON"
           - title: "AVRO"
             properties:
               deserialization_type:
-                type: "string"
-                enum:
-                - "AVRO"
-                default: "AVRO"
+                const: "AVRO"
               deserialization_strategy:
                 type: "string"
                 enum:
@@ -6815,9 +6810,6 @@
                   \ list of topic partitions is empty, it is treated the same as unsubscribe()."
                 type: "string"
                 const: "assign"
-                enum:
-                - "assign"
-                default: "assign"
               topic_partitions:
                 title: "List of topic:partition Pairs"
                 type: "string"
@@ -6832,9 +6824,6 @@
                 description: "The Topic pattern from which the records will be read."
                 type: "string"
                 const: "subscribe"
-                enum:
-                - "subscribe"
-                default: "subscribe"
               topic_pattern:
                 title: "Topic Pattern"
                 type: "string"
@@ -6876,9 +6865,7 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "PLAINTEXT"
-                default: "PLAINTEXT"
+                const: "PLAINTEXT"
           - title: "SASL PLAINTEXT"
             required:
             - "security_protocol"
@@ -6887,17 +6874,13 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "SASL_PLAINTEXT"
-                default: "SASL_PLAINTEXT"
+                const: "SASL_PLAINTEXT"
               sasl_mechanism:
                 title: "SASL Mechanism"
                 description: "The SASL mechanism used for client connections. This\
                   \ may be any mechanism for which a security provider is available."
                 type: "string"
-                default: "PLAIN"
-                enum:
-                - "PLAIN"
+                const: "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
@@ -6913,9 +6896,7 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "SASL_SSL"
-                default: "SASL_SSL"
+                const: "SASL_SSL"
               sasl_mechanism:
                 title: "SASL Mechanism"
                 description: "The SASL mechanism used for client connections. This\
