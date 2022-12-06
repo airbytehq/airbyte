@@ -316,7 +316,8 @@
                 },
                 {
                   "type": ["null", "string"]
-                }]
+                }
+              ]
             },
             "billing_address": {
               "type": ["null", "object"],
