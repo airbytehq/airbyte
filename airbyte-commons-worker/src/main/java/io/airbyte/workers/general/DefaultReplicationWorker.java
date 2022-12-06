@@ -264,7 +264,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromDestination(message);
 
-            if(message.getType() == Type.CONTROL) {
+            if (message.getType() == Type.CONTROL) {
               acceptDstControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
             }
           }
@@ -324,7 +324,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromSource(message);
 
-            if(message.getType() == Type.CONTROL) {
+            if (message.getType() == Type.CONTROL) {
               acceptSrcControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
             }
 
@@ -387,16 +387,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   }
 
   private static void acceptSrcControlMessage(final Long jobId,
-                                               final AirbyteControlMessage controlMessage,
-                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
+                                              final AirbyteControlMessage controlMessage,
+                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
       updateConnectorConfigHelper.updateSource(jobId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
   private static void acceptDstControlMessage(final Long jobId,
-      final AirbyteControlMessage controlMessage,
-                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
+                                              final AirbyteControlMessage controlMessage,
+                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
       updateConnectorConfigHelper.updateDestination(jobId, controlMessage.getConnectorConfig().getConfig());
     }
