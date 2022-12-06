@@ -6,12 +6,12 @@
   flex-direction: row;
   justify-content: flex-start;
   align-items: flex-start;
-  gap: spacing.$spacing-md;
+  gap: variables.$spacing-md;
 }
 
 .connectorLabel {
   max-width: 328px;
-  margin-right: spacing.$spacing-xl;
+  margin-right: variables.$spacing-xl;
   vertical-align: top;
 }
 
