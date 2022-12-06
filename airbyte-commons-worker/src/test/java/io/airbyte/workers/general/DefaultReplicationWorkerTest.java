@@ -278,7 +278,7 @@ class DefaultReplicationWorkerTest {
     when(source.isFinished()).thenReturn(false, true);
 
     final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
-    doThrow(new ApiException(PERSIST_ERROR_MESSAGE)).when(updateConnectorConfigHelper).updateSource(Mockito.any(), Mockito.any());
+    doThrow(new RuntimeException(PERSIST_ERROR_MESSAGE)).when(updateConnectorConfigHelper).updateSource(Mockito.any(), Mockito.any());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -327,7 +327,7 @@ class DefaultReplicationWorkerTest {
     when(destination.isFinished()).thenReturn(false, true);
 
     final String PERSIST_ERROR_MESSAGE = "there was a problem persisting the new config";
-    doThrow(new ApiException(PERSIST_ERROR_MESSAGE)).when(updateConnectorConfigHelper).updateDestination(Mockito.any(), Mockito.any());
+    doThrow(new RuntimeException(PERSIST_ERROR_MESSAGE)).when(updateConnectorConfigHelper).updateDestination(Mockito.any(), Mockito.any());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
