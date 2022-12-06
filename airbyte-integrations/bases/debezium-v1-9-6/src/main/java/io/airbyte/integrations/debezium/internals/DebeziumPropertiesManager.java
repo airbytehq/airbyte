@@ -12,12 +12,15 @@ import io.airbyte.protocol.models.SyncMode;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.codehaus.plexus.util.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DebeziumPropertiesManager {
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
   private final Optional<AirbyteSchemaHistoryStorage> schemaHistoryManager;
@@ -106,7 +109,7 @@ public class DebeziumPropertiesManager {
         .map(ConfiguredAirbyteStream::getStream)
         .map(stream -> stream.getNamespace() + "." + stream.getName())
         // debezium needs commas escaped to split properly
-        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .map(x -> StringUtils.escape(Pattern.quote(x), ",".toCharArray(), "\\,"))
         .collect(Collectors.joining(","));
   }
 
@@ -128,10 +131,11 @@ public class DebeziumPropertiesManager {
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
         .map(s -> {
-          final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
-              return s.getNamespace() + "." + s.getName() + (StringUtils.isNotBlank(fields) ? "." + fields : "");
+              final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
+              // schema.table.(col1|col2)
+              return Pattern.quote(s.getNamespace() + "." + s.getName()) + (StringUtils.isNotBlank(fields) ? "\\." + fields : "");
             })
-        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .map(x -> StringUtils.escape(x, ",".toCharArray(), "\\,"))
         .collect(Collectors.joining(","));
   }
 
@@ -141,6 +145,7 @@ public class DebeziumPropertiesManager {
     }
     final Iterable<String> iter = () -> fieldNames;
     return StreamSupport.stream(iter.spliterator(), false)
+        .map(f -> Pattern.quote(f))
         .collect(Collectors.joining("|", "(", ")"));
   }
 

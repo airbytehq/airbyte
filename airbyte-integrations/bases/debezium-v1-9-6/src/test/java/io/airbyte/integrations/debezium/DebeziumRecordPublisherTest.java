@@ -14,6 +14,7 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.regex.Pattern;
+import org.codehaus.plexus.util.StringUtils;
 import org.junit.jupiter.api.Test;
 
 class DebeziumRecordPublisherTest {
@@ -25,7 +26,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_,something", "public").withSyncMode(SyncMode.INCREMENTAL),
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
-    final String expectedWhitelist = "public.id_and_name,public.id_\\,something,public.n\"aMéS";
+    final String expectedWhitelist = "\\Qpublic.id_and_name\\E,\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
     final String actualWhitelist = DebeziumPropertiesManager.getTableIncludelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
@@ -37,7 +38,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name", "public").withSyncMode(SyncMode.INCREMENTAL),
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH)));
 
-    final String expectedWhitelist = "public.id_and_name";
+    final String expectedWhitelist = "\\Qpublic.id_and_name\\E";
     final String actualWhitelist = DebeziumPropertiesManager.getTableIncludelist(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
@@ -54,7 +55,7 @@ class DebeziumRecordPublisherTest {
         CatalogHelpers.createConfiguredAirbyteStream("id_and_name2", "public").withSyncMode(SyncMode.FULL_REFRESH),
         CatalogHelpers.createConfiguredAirbyteStream("n\"aMéS", "public").withSyncMode(SyncMode.INCREMENTAL)));
 
-    final String expectedWhitelist = "public.id_and_name.(fld2|fld1),public.id_\\,something,public.n\"aMéS";
+    final String expectedWhitelist = "\\Qpublic.id_and_name.(fld2|fld1)\\E,\\Qpublic.id_\\,something\\E,\\Qpublic.n\"aMéS\\E";
     final String actualWhitelist = DebeziumPropertiesManager.getColumnIncludeList(catalog);
 
     assertEquals(expectedWhitelist, actualWhitelist);
@@ -62,6 +63,12 @@ class DebeziumRecordPublisherTest {
 
   @Test
   public void testColumnIncludeListEscaping() {
+//    final String a = "public\\.products\\*\\^\\$\\+-\\\\";
+//    final String b = "public.products*^$+-\\";
+//    final Pattern p = Pattern.compile(a, Pattern.UNIX_LINES);
+//    assertTrue(p.matcher(b).find());
+//    assertTrue(Pattern.compile(Pattern.quote(b)).matcher(b).find());
+
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(ImmutableList.of(
         CatalogHelpers.createConfiguredAirbyteStream(
         "id_and_name",
@@ -69,12 +76,12 @@ class DebeziumRecordPublisherTest {
         Field.of("fld1", JsonSchemaType.NUMBER), Field.of("fld2", JsonSchemaType.STRING)).withSyncMode(SyncMode.INCREMENTAL)));
 
     final String anchored = "^" + DebeziumPropertiesManager.getColumnIncludeList(catalog) + "$";
-    final Pattern pattern = Pattern.compile(anchored, Pattern.UNIX_LINES);
+    final Pattern pattern = Pattern.compile(anchored);
 
     assertTrue(pattern.matcher("public.id_and_name.fld1").find());
     assertTrue(pattern.matcher("public.id_and_name.fld2").find());
     assertFalse(pattern.matcher("ic.id_and_name.fl").find());
-    assertFalse(pattern.matcher("public.id_and_name.fld2333").find());
+    assertFalse(pattern.matcher("ppppublic.id_and_name.fld2333").find());
     assertFalse(pattern.matcher("public.id_and_name.fld_wrong_wrong").find());
   }
 }
