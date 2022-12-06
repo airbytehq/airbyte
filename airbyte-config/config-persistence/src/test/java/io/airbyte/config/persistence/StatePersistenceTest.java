@@ -17,35 +17,28 @@ import io.airbyte.config.State;
 import io.airbyte.config.StateType;
 import io.airbyte.config.StateWrapper;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.db.factory.DSLContextFactory;
-import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
-import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
-import io.airbyte.db.instance.configs.ConfigsDatabaseTestProvider;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.StreamDescriptor;
-import io.airbyte.test.utils.DatabaseConnectionHelper;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jooq.JSONB;
-import org.jooq.SQLDialect;
 import org.jooq.impl.DSL;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
+class StatePersistenceTest extends BaseConfigDatabaseTest {
 
-  private ConfigRepository configRepository;
   private StatePersistence statePersistence;
   private UUID connectionId;
   private static final String STATE_ONE = "\"state1\"";
@@ -54,6 +47,38 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   private static final String STREAM_STATE_2 = "\"state s2\"";
   private static final String GLOBAL_STATE = "\"my global state\"";
   private static final String STATE = "state";
+
+  @BeforeEach
+  void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException, SQLException {
+    truncateAllTables();
+
+    setupTestData();
+    statePersistence = new StatePersistence(database);
+  }
+
+  private void setupTestData() throws JsonValidationException, IOException {
+    final ConfigRepository configRepository = new ConfigRepository(
+        database,
+        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
+        new StandardSyncPersistence(database));
+
+    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
+    final StandardSourceDefinition sourceDefinition = MockData.publicSourceDefinition();
+    final SourceConnection sourceConnection = MockData.sourceConnections().get(0);
+    final StandardDestinationDefinition destinationDefinition = MockData.publicDestinationDefinition();
+    final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
+    // we don't need sync operations in this test suite, zero them out.
+    final StandardSync sync = Jsons.clone(MockData.standardSyncs().get(0)).withOperationIds(Collections.emptyList());
+
+    configRepository.writeStandardWorkspaceNoSecrets(workspace);
+    configRepository.writeStandardSourceDefinition(sourceDefinition);
+    configRepository.writeSourceConnectionNoSecrets(sourceConnection);
+    configRepository.writeStandardDestinationDefinition(destinationDefinition);
+    configRepository.writeDestinationConnectionNoSecrets(destinationConnection);
+    configRepository.writeStandardSync(sync);
+
+    connectionId = sync.getConnectionId();
+  }
 
   @Test
   void testReadingNonExistingState() throws IOException {
@@ -212,7 +237,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
             .withType(AirbyteStateType.GLOBAL)
             .withGlobal(new AirbyteGlobalState()
                 .withSharedState(Jsons.deserialize(GLOBAL_STATE))
-                .withStreamStates(Arrays.asList(
+                .withStreamStates(List.of(
                     new AirbyteStreamState()
                         .withStreamDescriptor(new StreamDescriptor().withName("s1"))
                         .withStreamState(Jsons.deserialize(STATE_TWO))))));
@@ -397,7 +422,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
     assertEquals(
         new StateWrapper()
             .withStateType(StateType.STREAM)
-            .withStateMessages(Arrays.asList(
+            .withStateMessages(List.of(
                 new AirbyteStateMessage()
                     .withType(AirbyteStateType.STREAM)
                     .withStream(new AirbyteStreamState()
@@ -444,7 +469,7 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  void testInconsistentTypeUpdates() throws IOException {
+  void testInconsistentTypeUpdates() throws IOException, SQLException {
     final StateWrapper streamState = new StateWrapper()
         .withStateType(StateType.STREAM)
         .withStateMessages(Arrays.asList(
@@ -479,10 +504,13 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
 
     // We should be guarded against those cases let's make sure we don't make things worse if we're in
     // an inconsistent state
-    dslContext.insertInto(DSL.table(STATE))
-        .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field(STATE))
-        .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
-        .execute();
+    database.transaction(ctx -> {
+      ctx.insertInto(DSL.table(STATE))
+          .columns(DSL.field("id"), DSL.field("connection_id"), DSL.field("type"), DSL.field(STATE))
+          .values(UUID.randomUUID(), connectionId, io.airbyte.db.instance.configs.jooq.generated.enums.StateType.GLOBAL, JSONB.valueOf("{}"))
+          .execute();
+      return null;
+    });
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.updateOrCreateState(connectionId, streamState));
     Assertions.assertThrows(IllegalStateException.class, () -> statePersistence.getCurrentState(connectionId));
   }
@@ -497,77 +525,20 @@ class StatePersistenceTest extends BaseDatabaseConfigPersistenceTest {
   }
 
   @Test
-  void testStatePersistenceLegacyReadConsistency() throws IOException {
-    final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
-    final State state = new State().withState(jsonState);
-    configRepository.updateConnectionState(connectionId, state);
-
-    final StateWrapper readStateWrapper = statePersistence.getCurrentState(connectionId).orElseThrow();
-    Assertions.assertEquals(StateType.LEGACY, readStateWrapper.getStateType());
-    Assertions.assertEquals(state.getState(), readStateWrapper.getLegacyState());
-  }
-
-  @Test
-  void testStatePersistenceLegacyWriteConsistency() throws IOException {
+  void testStatePersistenceLegacyWriteConsistency() throws IOException, SQLException {
     final JsonNode jsonState = Jsons.deserialize("{\"my\": \"state\"}");
     final StateWrapper stateWrapper = new StateWrapper().withStateType(StateType.LEGACY).withLegacyState(jsonState);
     statePersistence.updateOrCreateState(connectionId, stateWrapper);
 
     // Making sure we still follow the legacy format
-    final List<State> readStates = dslContext
-        .selectFrom(STATE)
+    final List<State> readStates = database.transaction(ctx -> ctx.selectFrom(STATE)
         .where(DSL.field("connection_id").eq(connectionId))
         .fetch().map(r -> Jsons.deserialize(r.get(DSL.field(STATE, JSONB.class)).data(), State.class))
-        .stream().toList();
+        .stream()
+        .toList());
     Assertions.assertEquals(1, readStates.size());
 
     Assertions.assertEquals(readStates.get(0).getState(), stateWrapper.getLegacyState());
-  }
-
-  @BeforeEach
-  void beforeEach() throws DatabaseInitializationException, IOException, JsonValidationException {
-    dataSource = DatabaseConnectionHelper.createDataSource(container);
-    dslContext = DSLContextFactory.create(dataSource, SQLDialect.POSTGRES);
-    flyway = FlywayFactory.create(dataSource, StatePersistenceTest.class.getName(),
-        ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-    database = new ConfigsDatabaseTestProvider(dslContext, flyway).create(true);
-    setupTestData();
-
-    statePersistence = new StatePersistence(database);
-  }
-
-  @AfterEach
-  void afterEach() {
-    // Making sure we reset between tests
-    dslContext.dropSchemaIfExists("public").cascade().execute();
-    dslContext.createSchema("public").execute();
-    dslContext.setSchema("public").execute();
-  }
-
-  private void setupTestData() throws JsonValidationException, IOException {
-    configRepository = new ConfigRepository(
-        new DatabaseConfigPersistence(database),
-        database,
-        new ActorDefinitionMigrator(new ExceptionWrappingDatabase(database)),
-        new StandardSyncPersistence(database));
-
-    final StandardWorkspace workspace = MockData.standardWorkspaces().get(0);
-    final StandardSourceDefinition sourceDefinition = MockData.publicSourceDefinition();
-    final SourceConnection sourceConnection = MockData.sourceConnections().get(0);
-    final StandardDestinationDefinition destinationDefinition = MockData.publicDestinationDefinition();
-    final DestinationConnection destinationConnection = MockData.destinationConnections().get(0);
-    final StandardSync sync = MockData.standardSyncs().get(0);
-
-    configRepository.writeStandardWorkspaceNoSecrets(workspace);
-    configRepository.writeStandardSourceDefinition(sourceDefinition);
-    configRepository.writeSourceConnectionNoSecrets(sourceConnection);
-    configRepository.writeStandardDestinationDefinition(destinationDefinition);
-    configRepository.writeDestinationConnectionNoSecrets(destinationConnection);
-    configRepository.writeStandardSyncOperation(MockData.standardSyncOperations().get(0));
-    configRepository.writeStandardSyncOperation(MockData.standardSyncOperations().get(1));
-    configRepository.writeStandardSync(sync);
-
-    connectionId = sync.getConnectionId();
   }
 
   private StateWrapper clone(final StateWrapper state) {

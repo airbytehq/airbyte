@@ -219,7 +219,6 @@
   "sources.frequentlyUsed": "Suggested sources",
   "sources.incremental": "Incremental - based on...",
   "sources.newSource": "New source",
-  "sources.createFirst": "Connect your first source",
   "sources.newSourceTitle": "New Source",
   "sources.selectSource": "Select a source",
   "sources.status": "Status",
@@ -283,7 +282,6 @@
 
   "destination.destinationSettings": "Destination Settings",
   "destinations.newDestination": "New destination",
-  "destinations.createFirst": "Connect your first destination",
   "destinations.description": "<b>Destinations</b> are where you <b>send</b> or <b>push</b> your data to.",
   "destinations.noDestinations": "Destination list is empty",
   "destinations.noSources": "No sources yet",
@@ -346,7 +344,7 @@
 
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
-  "connection.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
+  "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink>Learn more</docLink>.",
   "connection.geography.auto": "Airbyte Default",
   "connection.geography.us": "United States",
   "connection.geography.eu": "European Union",
@@ -372,6 +370,10 @@
   "connection.canceling": "Canceling...",
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
+
+  "connection.schemaChange.breaking": "Breaking schema updates detected.",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
+  "connection.schemaChange.reviewAction": "Review changes",
 
   "form.frequency": "Replication frequency*",
   "form.cronExpression": "Cron expression*",
@@ -496,6 +498,7 @@
   "settings.cookiePreferences": "Cookie Preferences",
   "settings.dataResidency": "Data Residency",
   "settings.defaultDataResidency": "Default Data Residency",
+  "settings.geographyDescription": "Depending on your network configuration, you may need to <lnk>add IP addresses</lnk> to your allowlist.",
   "settings.defaultGeography": "Geography",
   "settings.defaultDataResidencyDescription": "Choose the default preferred data processing location for all of your connections. The default data residency setting only affects new connections. Existing connections will retain their data residency setting. <lnk>Learn more</lnk>.",
   "settings.defaultDataResidencyUpdateError": "There was an error updating the default data residency for this workspace.",
@@ -524,6 +527,7 @@
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
+  "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
 
@@ -549,6 +553,7 @@
   "frequency.hours": "{value, plural, one {# hour} other {# hours}}",
 
   "ui.goBack": "Go back",
+  "ui.goToHome": "Go to homepage",
   "ui.input.showPassword": "Show password",
   "ui.input.hidePassword": "Hide password",
   "ui.keyValuePair": "{key}: {value}",
@@ -589,5 +594,7 @@
   "connectorBuilder.unknownError": "An unknown error has occurred",
   "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
   "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
-  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>."
+  "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>.",
+
+  "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

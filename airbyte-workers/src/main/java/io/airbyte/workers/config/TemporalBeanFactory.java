@@ -45,11 +45,11 @@ public class TemporalBeanFactory {
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public TrackingClient trackingClient(final Optional<TrackingStrategy> trackingStrategy,
                                        final DeploymentMode deploymentMode,
-                                       Optional<JobPersistence> jobPersistence,
-                                       WorkerEnvironment workerEnvironment,
-                                       @Value("${airbyte.role}") String airbyteRole,
-                                       AirbyteVersion airbyteVersion,
-                                       Optional<ConfigRepository> configRepository)
+                                       final Optional<JobPersistence> jobPersistence,
+                                       final WorkerEnvironment workerEnvironment,
+                                       @Value("${airbyte.role}") final String airbyteRole,
+                                       final AirbyteVersion airbyteVersion,
+                                       final Optional<ConfigRepository> configRepository)
       throws IOException {
 
     TrackingClientSingleton.initialize(
@@ -65,18 +65,24 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
+  public OAuthConfigSupplier oAuthConfigSupplier(final ConfigRepository configRepository, final TrackingClient trackingClient) {
+    return new OAuthConfigSupplier(configRepository, trackingClient);
+  }
+
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public SyncJobFactory jobFactory(
                                    final ConfigRepository configRepository,
                                    final JobPersistence jobPersistence,
                                    @Property(name = "airbyte.connector.specific-resource-defaults-enabled",
                                              defaultValue = "false") final boolean connectorSpecificResourceDefaultsEnabled,
                                    final DefaultJobCreator jobCreator,
-                                   final TrackingClient trackingClient) {
+                                   final OAuthConfigSupplier oAuthConfigSupplier) {
     return new DefaultSyncJobFactory(
         connectorSpecificResourceDefaultsEnabled,
         jobCreator,
         configRepository,
-        new OAuthConfigSupplier(configRepository, trackingClient),
+        oAuthConfigSupplier,
         new WorkspaceHelper(configRepository, jobPersistence));
   }
 
