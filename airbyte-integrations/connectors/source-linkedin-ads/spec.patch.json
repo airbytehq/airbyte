@@ -3,6 +3,9 @@
     "credentials": {
       "title": "Authentication",
       "type": "object",
+      "discriminator": {
+        "propertyName": "auth_method"
+      },
       "oneOf": [
         {
           "type": "object",

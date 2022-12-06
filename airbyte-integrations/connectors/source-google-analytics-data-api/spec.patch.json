@@ -6,6 +6,9 @@
       "type": "object",
       "title": "Credentials",
       "description": "Credentials for the service",
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [
         {
           "title": "Authenticate via Google (Oauth)",

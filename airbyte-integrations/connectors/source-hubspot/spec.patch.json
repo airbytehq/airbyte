@@ -4,6 +4,9 @@
         "title": "Authentication",
         "description": "Choose how to authenticate to HubSpot.",
         "type": "object",
+        "discriminator": {
+          "propertyName": "credentials_title"
+        },
         "oneOf": [
             {
                 "type": "object",

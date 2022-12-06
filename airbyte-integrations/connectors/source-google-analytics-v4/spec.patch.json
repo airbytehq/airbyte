@@ -1,5 +1,10 @@
 {
   "properties": {
+    "credentials": {
+      "discriminator": {
+        "propertyName": "auth_type"
+      }
+    },
     "view_id": {
       "description": "The ID for the Google Analytics View you want to fetch data from. This can be found in Google Analytics: https://go.estuary.dev/6utILS"
     },

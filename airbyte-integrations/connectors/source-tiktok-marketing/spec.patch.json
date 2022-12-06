@@ -5,6 +5,9 @@
         "description": "Authentication method",
         "order": 0,
         "type": "object",
+        "discriminator": {
+          "propertyName": "auth_type"
+        },
         "oneOf": [
             {
                 "title": "OAuth2.0",

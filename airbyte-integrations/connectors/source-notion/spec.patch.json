@@ -6,6 +6,9 @@
       "description": "Pick an authentication method.",
       "type": "object",
       "order": 1,
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [
         {
           "type": "object",

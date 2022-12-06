@@ -6,6 +6,9 @@
       "type": "object",
       "title": "Credentials",
       "description": "Credentials for the service",
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [{
         "x-oauth2-provider": "surveymonkey",
         "required": ["auth_type", "access_token", "client_id", "client_secret"],

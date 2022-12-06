@@ -7,6 +7,9 @@
       "title": "Authentication Type",
       "description": "",
       "order": 3,
+      "discriminator": {
+        "propertyName": "auth_type"
+      },
       "oneOf": [
         {
           "title": "OAuth",
