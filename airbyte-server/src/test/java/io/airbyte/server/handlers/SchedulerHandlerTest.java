@@ -927,7 +927,7 @@ class SchedulerHandlerTest {
   }
 
   @Test
-  void testSyncConnection() throws IOException {
+  void testSyncConnection() throws IOException, JsonValidationException, ConfigNotFoundException {
     final UUID connectionId = UUID.randomUUID();
 
     final long jobId = 123L;
