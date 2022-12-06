@@ -9,7 +9,6 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
@@ -41,47 +40,61 @@ public class PersistConfigHelper {
     this.apiClient = apiClient;
   }
 
-  private UUID getConnectionIdFromJobId(final Long jobId) throws ApiException {
+  private UUID getConnectionIdFromJobId(final Long jobId) {
     final JobsApi jobsApi = apiClient.getJobsApi();
     final JobIdRequestBody body = new JobIdRequestBody().id(jobId);
-    final JobInfoLightRead jobInfo = jobsApi.getJobInfoLight(body);
+    final JobInfoLightRead jobInfo = AirbyteApiClient.retryWithJitter(
+        () -> jobsApi.getJobInfoLight(body),
+        "get job info");
     return UUID.fromString(jobInfo.getJob().getConfigId());
   }
 
-  public void persistSourceConfig(final Long jobId, final Config config) throws ApiException {
+  public void persistSourceConfig(final Long jobId, final Config config) {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
+        () -> apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)),
+        "get connection");
     final UUID sourceId = connection.getSourceId();
 
     final SourceApi sourceApi = apiClient.getSourceApi();
-    final SourceRead source = sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId));
+    final SourceRead source = AirbyteApiClient.retryWithJitter(
+        () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId)),
+        "get source");
 
-    final SourceRead updatedSource = sourceApi
-        .updateSource(new SourceUpdate()
-            .sourceId(sourceId)
-            .name(source.getName())
-            .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties())));
+    final SourceRead updatedSource = AirbyteApiClient.retryWithJitter(
+        () -> sourceApi
+            .updateSource(new SourceUpdate()
+                .sourceId(sourceId)
+                .name(source.getName())
+                .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
+        "update source");
 
     LOGGER.info("Persisted updated configuration for source {}. New config hash: {}.", sourceId,
         Hashing.sha256().hashString(updatedSource.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));
 
   }
 
-  public void persistDestinationConfig(final Long jobId, final Config config) throws ApiException {
+  public void persistDestinationConfig(final Long jobId, final Config config) {
     final UUID connectionId = getConnectionIdFromJobId(jobId);
 
-    final ConnectionRead connection = apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId));
+    final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
+        () -> apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)),
+        "get connection");
     final UUID destinationId = connection.getDestinationId();
 
     final DestinationApi destinationApi = apiClient.getDestinationApi();
-    final DestinationRead destination = destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId));
+    final DestinationRead destination = AirbyteApiClient.retryWithJitter(
+        () -> destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId)),
+        "get destination");
 
-    final DestinationRead updatedDestination = destinationApi
-        .updateDestination(new DestinationUpdate()
-            .destinationId(destinationId)
-            .name(destination.getName())
-            .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties())));
+    final DestinationRead updatedDestination = AirbyteApiClient.retryWithJitter(
+        () -> destinationApi
+            .updateDestination(new DestinationUpdate()
+                .destinationId(destinationId)
+                .name(destination.getName())
+                .connectionConfiguration(Jsons.jsonNode(config.getAdditionalProperties()))),
+        "update destination");
 
     LOGGER.info("Persisted updated configuration for destination {}. New config hash: {}.", destinationId,
         Hashing.sha256().hashString(updatedDestination.getConnectionConfiguration().asText(), StandardCharsets.UTF_8));

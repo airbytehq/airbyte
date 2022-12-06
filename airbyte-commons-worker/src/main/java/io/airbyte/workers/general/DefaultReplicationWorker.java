@@ -12,7 +12,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.ReplicationAttemptSummary;
@@ -387,7 +386,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (isControlConfigMsg(message)) {
       try {
         persistConfigHelper.persistSourceConfig(jobId, message.getControl().getConnectorConfig().getConfig());
-      } catch (final ApiException e) {
+      } catch (final Exception e) {
         LOGGER.error("Error trying to save updated source config", e);
         throw new RuntimeException(e);
       }
@@ -399,7 +398,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       if (isControlConfigMsg(message)) {
         persistConfigHelper.persistDestinationConfig(jobId, message.getControl().getConnectorConfig().getConfig());
       }
-    } catch (final ApiException e) {
+    } catch (final Exception e) {
       LOGGER.error("Error trying to save updated destination config", e);
       throw new RuntimeException(e);
     }
