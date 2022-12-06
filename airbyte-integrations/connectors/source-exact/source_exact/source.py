@@ -3,6 +3,7 @@
 #
 
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import unquote
 
 import requests
 import pendulum
@@ -127,6 +128,22 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return params
 
+    def should_retry(self, response: requests.Response) -> bool:
+        # Test whether token is expired -> refresh and then retry
+        if response.status_code == 401:
+            error_reason = response.headers.get("WWW-Authenticate", "")
+            error_reason = unquote(error_reason)
+            
+            if "message expired" in error_reason:
+                self.auth.refresh_access_token()
+                return True
+
+            raise RuntimeError(f"Unexpected forbidden error: {error_reason}")
+
+        # TODO: handle the rate limiting?
+        return super().should_retry(response)
+
+
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
         response_json = response.json()
@@ -203,7 +220,7 @@ class SourceExact(AbstractSource):
             refresh_token=config["refresh_token"],
             # We don't know when the token is expired in this context. We just set it to a future time,
             # upon 401 we will trigger refresh manually.
-            token_expiry_date=pendulum.now().add(minutes=2),
+            token_expiry_date=pendulum.now().add(minutes=10),
         )
 
         auth._access_token = config["access_token"]
