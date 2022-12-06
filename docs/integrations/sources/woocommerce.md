@@ -20,13 +20,13 @@ You will need to generate new API key with read permissions and use `Customer ke
 1. Generate new [Rest API key](https://woocommerce.github.io/woocommerce-rest-api-docs/#rest-api-keys)
 2. Obtain `Customer key` and `Customer Secret`.
 
-### Step 2: Set up the Square connector in Airbyte
+### Step 2: Set up the WooCommerce connector in Airbyte
 
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, enter the name for the Square connector and select **WooCommerce** from the Source
+3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
    type dropdown.
 4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
 5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
@@ -37,7 +37,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Set the name for your source.
-3. On the Set up the source page, enter the name for the Square connector and select **WooCommerce** from the Source
+3. On the Set up the source page, enter the name for the WooCommerce connector and select **WooCommerce** from the Source
    type dropdown.
 4. Fill in `Customer key` and `Customer Secret` with data from Step 1 of this guide.
 5. Fill in `Shop Name`. For `https://EXAMPLE.com`, the shop name is 'EXAMPLE.com'.
@@ -46,7 +46,7 @@ You will need to generate new API key with read permissions and use `Customer ke
 
 ## Supported sync modes
 
-The Square source connector supports the
+The WooCommerce source connector supports the
 following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
 * [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
