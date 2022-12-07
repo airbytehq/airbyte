@@ -54,10 +54,33 @@ class MockStream(Stream):
         pass
 
 
+class MockHttpStream(HttpStream):
+    url_base = "https://test_base_url.com"
+    primary_key = ""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.resp_counter = 1
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+    def path(self, **kwargs) -> str:
+        return ""
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        stub_resp = {"data": self.resp_counter}
+        self.resp_counter += 1
+        yield stub_resp
+    pass
+
+
 def test_no_availability_strategy():
     stream_1 = MockStream("stream")
     assert stream_1.availability_strategy is None
-    assert stream_1.check_availability(logger)[0] is True
+
+    stream_1_is_available, _ = stream_1.check_availability(logger)
+    assert stream_1_is_available is True
 
 
 def test_availability_strategy():
@@ -78,9 +101,12 @@ def test_availability_strategy():
     for stream in [stream_1, stream_2]:
         assert isinstance(stream.availability_strategy, MockAvailabilityStrategy)
 
-    assert stream_1.check_availability(logger)[0] is True
-    assert stream_2.check_availability(logger)[0] is False
-    assert "Could not reach stream 'unavailable_stream'" in stream_2.check_availability(logger)[1]
+    stream_1_is_available, _ = stream_1.check_availability(logger)
+    assert stream_1_is_available is True
+
+    stream_2_is_available, reason = stream_2.check_availability(logger)
+    assert stream_2_is_available is False
+    assert "Could not reach stream 'unavailable_stream'" in reason
 
 
 def test_scoped_availability_strategy():
@@ -99,49 +125,52 @@ def test_scoped_availability_strategy():
     stream_1 = MockStreamWithScopedAvailabilityStrategy("repos")
     stream_2 = MockStreamWithScopedAvailabilityStrategy("projectV2")
 
-    assert stream_1.check_availability(logger)[0] is True
-    assert stream_2.check_availability(logger)[0] is False
-    assert "Missing required scopes: ['read:project']" in stream_2.check_availability(logger)[1]
+    stream_1_is_available, _ = stream_1.check_availability(logger)
+    assert stream_1_is_available is True
+
+    stream_2_is_available, reason = stream_2.check_availability(logger)
+    assert stream_2_is_available is False
+    assert "Missing required scopes: ['read:project']" in reason
 
 
 def test_http_availability_strategy(mocker):
-    class MockHttpStream(HttpStream):
-        url_base = "https://test_base_url.com"
-        primary_key = ""
-
-        def __init__(self, **kwargs):
-            super().__init__(**kwargs)
-            self.resp_counter = 1
-
-        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-            return None
-
-        def path(self, **kwargs) -> str:
-            return ""
-
-        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-            stub_resp = {"data": self.resp_counter}
-            self.resp_counter += 1
-            yield stub_resp
-        pass
-
     stream = MockHttpStream()
     assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert stream.check_availability(logger)[0] is False
+
+    is_available, reason = stream.check_availability(logger)
+    assert is_available is False
 
     expected_messages = [
         "This is most likely due to insufficient permissions on the credentials in use.",
         "Please visit the connector's documentation to learn more."
-        # "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
     ]
-    actual_message = stream.check_availability(logger)[1]
     for message in expected_messages:
-        assert message in actual_message
+        assert message in reason
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
     assert stream.check_availability(logger)[0] is True
+
+
+def test_http_availability_connector_specific_docs(mocker):
+    stream = MockHttpStream()
+    source = MockSource(streams=[stream])
+    assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
+
+    req = requests.Response()
+    req.status_code = 403
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    is_available, reason = stream.check_availability(logger, source)
+    assert is_available is False
+
+    expected_messages = [
+        "This is most likely due to insufficient permissions on the credentials in use.",
+        "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
+    ]
+    for message in expected_messages:
+        assert message in reason

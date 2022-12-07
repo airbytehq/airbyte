@@ -507,29 +507,6 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return self.handle_http_error(stream, logger, source, error)
         return True, None
 
-    def handle_http_error(self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError):
-        """
-        Override this method to define error handling for various `HTTPError`s
-        that are raised while attempting to check a stream's availability.
-
-        :param source: source
-        :param logger: source logger
-        :param stream: stream
-        :param error: HTTPerror raised while checking stream's availability.
-        :return: A tuple of (boolean, str). If boolean is true, then the stream
-          is available. Otherwise, the stream is unavailable for some reason and
-          the str should describe what went wrong.
-        """
-        if error.response.status_code == requests.codes.FORBIDDEN:
-            error_message = (
-                "This is most likely due to insufficient permissions on the credentials in use. "
-                "Please visit the connector's documentation to learn more. "
-            )
-            return False, error_message
-
-        error_message = repr(error)
-        return True, error_message
-
     def _get_stream_slice(self, stream):
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
         # but not iterators such as lists or tuples
@@ -543,3 +520,43 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return next(slices)
         except StopIteration:
             return {}
+
+    def handle_http_error(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError):
+        """
+        Override this method to define error handling for various `HTTPError`s
+        that are raised while attempting to check a stream's availability.
+
+        :param stream: stream
+        :param logger: source logger
+        :param source: source
+        :param error: HTTPerror raised while checking stream's availability.
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
+        """
+        if error.response.status_code == requests.codes.FORBIDDEN:
+            error_message = "This is most likely due to insufficient permissions on the credentials in use. "
+            error_message += self._visit_docs_message(logger, source)
+            return False, error_message
+
+        error_message = repr(error)
+        return True, error_message
+
+    def _visit_docs_message(self, logger: logging.Logger, source: Optional["Source"]) -> str:
+        """
+        :param source:
+        :return: A message telling the user where to go to learn more about the source.
+        """
+        if not source:
+            return "Please visit the connector's documentation to learn more. "
+
+        try:
+            connector_spec = source.spec(logger)
+            docs_url = connector_spec.documentationUrl
+            if docs_url:
+                return f"Please visit {docs_url} to learn more. "
+            else:
+                return "Please visit the connector's documentation to learn more. "
+        except FileNotFoundError:  # If we are unit testing without implementing spec()
+            docs_url = "https://docs.airbyte.com/integrations/sources/test"
+            return f"Please visit {docs_url} to learn more."
