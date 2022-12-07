@@ -71,10 +71,18 @@ def get_authenticator(config: MutableMapping) -> AuthBase:
 
 
 class SourceGitlab(AbstractSource):
-    def _generate_main_streams(self, config: MutableMapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
-        auth = get_authenticator(config)
-        auth_params = dict(authenticator=auth, api_url=config["api_url"])
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._auth_params = {}
 
+    def auth_params(self, config: MutableMapping[str, Any]) -> MutableMapping[str, Any]:
+        if not self._auth_params:
+            auth = get_authenticator(config)
+            self._auth_params = dict(authenticator=auth, api_url=config["api_url"])
+        return self._auth_params
+
+    def _generate_main_streams(self, config: MutableMapping[str, Any]) -> Tuple[GitlabStream, GitlabStream]:
+        auth_params = self.auth_params(config)
         pids = list(filter(None, config.get("projects", "").split(" ")))
         gids = config.get("groups")
 
@@ -122,9 +130,7 @@ class SourceGitlab(AbstractSource):
             return False, f"Unable to connect to Gitlab API with the provided credentials - {repr(error)}"
 
     def streams(self, config: MutableMapping[str, Any]) -> List[Stream]:
-        auth = get_authenticator(config)
-        auth_params = dict(authenticator=auth, api_url=config["api_url"])
-
+        auth_params = self.auth_params(config)
         groups, projects = self._generate_main_streams(config)
         pipelines = Pipelines(parent_stream=projects, start_date=config["start_date"], **auth_params)
         merge_requests = MergeRequests(parent_stream=projects, start_date=config["start_date"], **auth_params)
