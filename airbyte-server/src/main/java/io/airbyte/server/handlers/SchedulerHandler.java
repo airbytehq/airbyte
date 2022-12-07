@@ -75,6 +75,7 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -83,6 +84,7 @@ import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Singleton
 public class SchedulerHandler {
 
   private static final HashFunction HASH_FUNCTION = Hashing.md5();

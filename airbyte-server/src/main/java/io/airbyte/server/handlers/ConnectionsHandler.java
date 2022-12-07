@@ -55,6 +55,8 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,6 +71,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
 public class ConnectionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
@@ -82,7 +85,7 @@ public class ConnectionsHandler {
 
   @VisibleForTesting
   ConnectionsHandler(final ConfigRepository configRepository,
-                     final Supplier<UUID> uuidGenerator,
+                     @Named("randomUUIDSupplier") final Supplier<UUID> uuidGenerator,
                      final WorkspaceHelper workspaceHelper,
                      final TrackingClient trackingClient,
                      final EventRunner eventRunner,
@@ -95,6 +98,7 @@ public class ConnectionsHandler {
     this.connectionHelper = connectionHelper;
   }
 
+  @Deprecated(forRemoval = true)
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,

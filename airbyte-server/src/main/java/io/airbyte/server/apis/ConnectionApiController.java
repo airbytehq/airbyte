@@ -16,9 +16,13 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 import javax.ws.rs.Path;
 
-@Path("/v1/connections")
+@Controller("/api/v1/connections")
 public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;
@@ -34,37 +38,51 @@ public class ConnectionApiController implements ConnectionApi {
   }
 
   @Override
-  public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
+  @Post(uri = "/create",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionRead createConnection(@Body final ConnectionCreate connectionCreate) {
     return ApiHelper.execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
-  public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
+  @Post(uri = "/update",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionRead updateConnection(@Body final ConnectionUpdate connectionUpdate) {
     return ApiHelper.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
-  public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  @Post(uri = "/list",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionReadList listConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  @Post(uri = "/list_all",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionReadList listAllConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
-  public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
+  @Post(uri = "/search",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionReadList searchConnections(@Body final ConnectionSearch connectionSearch) {
     return ApiHelper.execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
   @Override
-  public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+  @Post(uri = "/get",
+      processes = MediaType.APPLICATION_JSON)
+  public ConnectionRead getConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
   }
 
   @Override
-  public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+  @Post(uri = "/delete",
+      processes = MediaType.APPLICATION_JSON)
+  public void deleteConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
@@ -73,12 +91,16 @@ public class ConnectionApiController implements ConnectionApi {
   }
 
   @Override
-  public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+  @Post(uri = "/sync",
+      processes = MediaType.APPLICATION_JSON)
+  public JobInfoRead syncConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
-  public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
+  @Post(uri = "/reset",
+      processes = MediaType.APPLICATION_JSON)
+  public JobInfoRead resetConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
