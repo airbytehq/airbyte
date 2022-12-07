@@ -24,16 +24,16 @@
   releaseStage: alpha
 - name: Amazon Ads
   sourceDefinitionId: c6b0a29e-1da9-4512-9002-7bfd0cba2246
-  dockerRepository: airbyte/source-amazon-ads
-  dockerImageTag: 0.1.20
+  dockerRepository: yuanrui2014/source-amazon-ads
+  dockerImageTag: 0.0.1
   documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-ads
   icon: amazonads.svg
   sourceType: api
   releaseStage: generally_available
 - name: Amazon Seller Partner
   sourceDefinitionId: e55879a8-0ef8-4557-abcf-ab34c53ec460
-  dockerRepository: airbyte/source-amazon-seller-partner
-  dockerImageTag: 0.2.25
+  dockerRepository: yuanrui2014/source-amazon-seller-partner
+  dockerImageTag: 0.0.1
   sourceType: api
   documentationUrl: https://docs.daspire.com/setup-guide/sources/amazon-seller-partner
   icon: amazonsellerpartner.svg
@@ -654,8 +654,8 @@
   releaseStage: alpha
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
-  dockerRepository: airbyte/source-mysql
-  dockerImageTag: 0.6.12
+  dockerRepository: yuanrui2014/source-mysql
+  dockerImageTag: 0.0.1
   documentationUrl: https://docs.daspire.com/setup-guide/sources/mysql
   icon: mysql.svg
   sourceType: database

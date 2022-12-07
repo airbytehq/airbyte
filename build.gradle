@@ -243,7 +243,7 @@ subprojects { subproj ->
             def buildArch = System.getenv('DOCKER_BUILD_ARCH') ?: isArm64 ? 'arm64' : 'amd64'
 
             platform = buildPlatform
-            images.add("airbyte/$subproj.dockerImageName:$rootProject.ext.image_tag")
+            images.add("yuanrui2014/$subproj.dockerImageName:$rootProject.ext.image_tag")
             buildArgs.put('JDK_VERSION', jdkVersion)
             buildArgs.put('DOCKER_BUILD_ARCH', buildArch)
             buildArgs.put('ALPINE_IMAGE', alpineImage)
