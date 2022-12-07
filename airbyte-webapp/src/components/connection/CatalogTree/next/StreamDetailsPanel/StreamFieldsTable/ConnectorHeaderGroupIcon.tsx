@@ -1,4 +1,5 @@
 import React from "react";
+import { FormattedMessage } from "react-intl";
 
 import { getIcon } from "utils/imageUtils";
 
@@ -13,7 +14,7 @@ export const ConnectorHeaderGroupIcon: React.FC<StreamHeaderGroupIconProps> = ({
   return (
     <span className={styles.connectorIconContainer}>
       <div className={styles.icon}>{getIcon(icon)}</div>
-      {type === "source" ? "Source" : "Destination"}
+      <FormattedMessage id={`connector.${type}`} />
     </span>
   );
 };
