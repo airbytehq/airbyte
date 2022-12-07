@@ -6,6 +6,7 @@ from base64 import b64encode
 from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
+import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -70,6 +71,12 @@ from .streams import (
 
 
 class SourceJira(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        start_date = config.get("start_date")
+        if start_date:
+            config["start_date"] = pendulum.parse(start_date)
+        return config
+
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
         token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
@@ -77,6 +84,8 @@ class SourceJira(AbstractSource):
         return authenticator
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        config = self._validate_and_transform(config)
+
         alive = True
         error_msg = None
 
@@ -100,6 +109,7 @@ class SourceJira(AbstractSource):
         return alive, error_msg
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+        config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
         incremental_args = {**args, "start_date": config.get("start_date", "")}

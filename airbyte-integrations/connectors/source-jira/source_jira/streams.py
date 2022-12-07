@@ -118,10 +118,9 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
                 cursor_exist_in_state = stream_state.get(cursor_part)
             cursor_field = cursor_field[-1]
 
+        issues_state = self._start_date
         if cursor_exist_in_state:
-            issues_state = pendulum.parse(stream_state.get(cursor_field, self._start_date))
-        elif self._start_date:
-            issues_state = pendulum.parse(self._start_date)
+            issues_state = pendulum.parse(stream_state[cursor_field])
         if issues_state:
             issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
             return f"{cursor_field} > '{issues_state_row}'"
