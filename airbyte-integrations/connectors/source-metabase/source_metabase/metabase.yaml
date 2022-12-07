@@ -13,11 +13,13 @@ definitions:
     url_base: "{{ config['instance_api_url'] }}"
     http_method: "GET"
     authenticator:
-      class_name: source_metabase.components.MetabaseSessionTokenAuthenticator
+      type: "SessionTokenAuthenticator"
       username: "{{ config['username'] }}"
       password: "{{ config['password'] }}"
       api_url: "{{ config['instance_api_url'] }}"
+      header: "X-Metabase-Session"
       session_token: "{{ config['session_token'] }}"
+      session_token_response_key: "id"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -57,6 +59,7 @@ definitions:
       name: "dashboards"
       path: "dashboard"
   users_stream:
+    primary_key: "id"
     retriever:
       $ref: "*ref(definitions.data_field_retriever)"
     $options:
