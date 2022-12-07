@@ -15,13 +15,6 @@ This page includes new features and improvements to the Airbyte Cloud and Airbyt
     * They provide out-of-the-box validation and enforce specific formatting on some data types, like timestamps. 
     * Non-primitive types, like `object`, `array`, and ` oneOf`, still use raw JSON Schema types.
     * These well-known types mostly correspond with the existing Airbyte data types, aside from a few differences: 
-        * BinaryData is the only new type, which is used in places where we currently produce a Base64 string.
-        * TimestampWithTimezone, TimestampWithoutTimezone, TimeWithTimezone, and TimeWithoutTimezone have been in use for some time, so we made them official.
-        * The `big_integer` and `big_number` types have been retired because they were not being used. 
-    
-    :::note
-
-    Connectors in your instance can't be upgraded in the UI in v0.40.19 to v0.40.21, so use v0.40.22 to upgrade.
-
-    :::
-
+        * `BinaryData` is the only new type, which is used in places that previously produced a `Base64` string.
+        * `TimestampWithTimezone`, `TimestampWithoutTimezone`, `TimeWithTimezone`, and `TimeWithoutTimezone` have been in use for some time, so we made them official.
+        * The `big_integer` and `big_number` types have been retired because they were not being used.
