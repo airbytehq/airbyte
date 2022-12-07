@@ -21,7 +21,7 @@ const cleanBreakingFieldChanges = (streamNode: SyncSchemaStream, breakingChanges
     // get all of the removed field paths
     const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName);
 
-    if (streamNode.config?.primaryKey && removedFieldPaths) {
+    if (streamNode.config?.primaryKey && removedFieldPaths?.length) {
       // if any of the field paths in the primary key match any of the field paths that were removed, clear the entire primaryKey property
       if (
         streamNode.config.primaryKey.some((key) => removedFieldPaths.some((removedPath) => isEqual(key, removedPath)))
@@ -171,7 +171,7 @@ const calculateInitialCatalog = (
           : [];
 
       // if there are breaking field changes in this stream, clear the relevant primary key(s)/cursor(s)
-      if (breakingChangesByStream && breakingChangesByStream.length > 0) {
+      if (breakingChangesByStream.length) {
         cleanBreakingFieldChanges(nodeStream, breakingChangesByStream);
       }
 

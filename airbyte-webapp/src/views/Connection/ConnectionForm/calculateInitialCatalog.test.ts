@@ -1,5 +1,11 @@
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode, StreamDescriptor, SyncMode } from "core/request/AirbyteClient";
+import {
+  DestinationSyncMode,
+  FieldTransformTransformType,
+  StreamDescriptor,
+  StreamTransformTransformType,
+  SyncMode,
+} from "core/request/AirbyteClient";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -605,5 +611,129 @@ describe("calculateInitialCatalog", () => {
     // existing stream remains as-is
     expect(calculatedStreams[1].config?.syncMode).toEqual(SyncMode.incremental);
     expect(calculatedStreams[1].config?.destinationSyncMode).toEqual(DestinationSyncMode.overwrite);
+  });
+
+  it("should remove the entire primary key if any path from it was removed", () => {
+    const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
+    const values = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["id"],
+              sourceDefinedPrimaryKey: [],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              primaryKey: [["id"], ["email"]],
+            },
+          },
+          {
+            id: "2",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test-2",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["updated_at"],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              primaryKey: [["id"]],
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup],
+      [
+        {
+          transformType: StreamTransformTransformType.update_stream,
+          streamDescriptor: { name: "test", namespace: "namespace-test" },
+          updateStream: [
+            {
+              breaking: true,
+              transformType: FieldTransformTransformType.remove_field,
+              fieldName: ["id"],
+            },
+          ],
+        },
+      ],
+      false
+    );
+    expect(values.streams[0].config?.primaryKey).toEqual([]);
+    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]);
+  });
+  it("should remove cursor from config if the field was removed during refresh", () => {
+    const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
+    const values = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: false,
+              defaultCursorField: [],
+              sourceDefinedPrimaryKey: [],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              cursorField: ["updated_at"],
+            },
+          },
+          {
+            id: "2",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test-2",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["updated_at"],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.incremental,
+              primaryKey: [["id"]],
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup],
+      [
+        {
+          transformType: StreamTransformTransformType.update_stream,
+          streamDescriptor: { name: "test", namespace: "namespace-test" },
+          updateStream: [
+            {
+              breaking: true,
+              transformType: FieldTransformTransformType.remove_field,
+              fieldName: ["updated_at"],
+            },
+          ],
+        },
+      ],
+      false
+    );
+    expect(values.streams[0].config?.cursorField).toEqual([]);
+    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]);
+  });
+
+  it("should not populate the source default cursor if the user-specified cursor field was removed during refresh", () => {
+    expect(2 + 2).toEqual(4);
+    // tbd expected behavior...
   });
 });
