@@ -1,6 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "AccountId": {
       "type": ["null", "integer"]
@@ -13,6 +14,9 @@
     },
     "KeywordId": {
       "type": ["null", "integer"]
+    },
+    "Keyword": {
+      "type": ["null", "string"]
     },
     "AdId": {
       "type": ["null", "integer"]

@@ -12,13 +12,8 @@ info:
     * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
     * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
-    Change Management:
-    * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
-    * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
-    * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
-      * Adding fields to request or response bodies.
-      * Adding new HTTP endpoints.
-    * All `web_backend` APIs are not considered public APIs and are not guaranteeing backwards compatibility.
+    Authentication (OSS):
+    * When authenticating to the Configuration API, you must use Basic Authentication by setting the Authentication Header to Basic and base64 encoding the username and password (which are `airbyte` and `password` by default - so base64 encoding `airbyte:password` results in `YWlyYnl0ZTpwYXNzd29yZA==`). So the full header reads `'Authorization': "Basic YWlyYnl0ZTpwYXNzd29yZA=="`
 
   version: "1.0.0"
   title: Airbyte Configuration API
