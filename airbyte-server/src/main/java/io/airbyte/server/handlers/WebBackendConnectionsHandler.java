@@ -196,13 +196,13 @@ public class WebBackendConnectionsHandler {
     return webBackendConnectionRead;
   }
 
-  private WebBackendConnectionListItem buildWebBackendConnectionListItem(
-                                                                         final StandardSync standardSync,
-                                                                         final Map<UUID, SourceRead> sourceReadById,
-                                                                         final Map<UUID, DestinationRead> destinationReadById,
-                                                                         final Map<UUID, JobRead> latestJobByConnectionId,
-                                                                         final Map<UUID, JobRead> runningJobByConnectionId,
-                                                                         final Optional<ActorCatalogFetchEvent> latestFetchEvent) {
+  static private WebBackendConnectionListItem buildWebBackendConnectionListItem(
+                                                                                final StandardSync standardSync,
+                                                                                final Map<UUID, SourceRead> sourceReadById,
+                                                                                final Map<UUID, DestinationRead> destinationReadById,
+                                                                                final Map<UUID, JobRead> latestJobByConnectionId,
+                                                                                final Map<UUID, JobRead> runningJobByConnectionId,
+                                                                                final Optional<ActorCatalogFetchEvent> latestFetchEvent) {
 
     final SourceRead source = sourceReadById.get(standardSync.getSourceId());
     final DestinationRead destination = destinationReadById.get(standardSync.getDestinationId());
@@ -244,10 +244,10 @@ public class WebBackendConnectionsHandler {
    * existing actor catalog, there is a schema change.
    */
   @VisibleForTesting
-  SchemaChange getSchemaChange(
-                               final ConnectionRead connectionRead,
-                               final Optional<UUID> currentSourceCatalogId,
-                               final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
+  static SchemaChange getSchemaChange(
+                                      final ConnectionRead connectionRead,
+                                      final Optional<UUID> currentSourceCatalogId,
+                                      final Optional<ActorCatalogFetchEvent> mostRecentFetchEvent) {
     if (connectionRead == null || currentSourceCatalogId.isEmpty()) {
       return SchemaChange.NO_CHANGE;
     }
