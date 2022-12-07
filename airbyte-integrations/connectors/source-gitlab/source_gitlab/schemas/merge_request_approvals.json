@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "iid": {
+      "type": ["null", "integer"]
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "merge_request_iid": {
+      "type": ["null", "integer"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "merge_status": {
+      "type": ["null", "string"]
+    },
+    "approved": {
+      "type": ["null", "boolean"]
+    },
+    "approvals_required" : {
+      "type": ["null", "integer"]
+    },
+    "approvals_left": {
+      "type": ["null", "integer"]
+    },
+    "require_password_to_approve" : {
+      "type": ["null", "boolean"]
+    },
+    "approved_by": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "type": ["null", "object"],
+            "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "username": {
+                "type": ["null", "string"]
+              },
+              "state": {
+                "type": ["null", "string"]
+              },
+              "avatar_url": {
+                "type": ["null", "string"]
+              },
+              "web_url": {
+                "type": ["null", "string"]
+              }
+            }
+          }
+        }
+      }
+    },
+    "suggested_approvers": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+              "id": {
+                "type": ["null", "integer"]
+              },
+              "name": {
+                "type": ["null", "string"]
+              },
+              "username": {
+                "type": ["null", "string"]
+              },
+              "state": {
+                "type": ["null", "string"]
+              },
+              "avatar_url": {
+                "type": ["null", "string"]
+              },
+              "web_url": {
+                "type": ["null", "string"]
+              } 
+        }
+      }
+    },
+    "approval_rules_left": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "rule_type": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "user_has_approved": {
+      "type": ["null", "boolean"]
+    },
+    "user_can_approve": {
+      "type": ["null", "boolean"]
+    },
+    "has_approval_rules": {
+      "type": ["null", "boolean"]
+    },
+    "merge_request_approvers_available": {
+      "type": ["null", "boolean"]
+    },
+    "multiple_approval_rules_available": {
+      "type": ["null", "boolean"]
+    }
+  }
+}

@@ -328,3 +328,38 @@ class EpicIssues(GitlabChildStream):
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
     path_template = "groups/{group_id}/epics/{id}/issues"
+
+class MergeRequestApprovals(GitlabChildStream):
+    path_list = ["project_id", "iid"]
+    path_template = "projects/{project_id}/merge_requests/{iid}/approvals"
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["project_id"] = stream_slice["project_id"]
+        record["merge_request_iid"] = stream_slice["iid"]
+
+        return record
+
+class MergeRequestNotes(GitlabChildStream):
+    path_list = ["project_id", "iid"]
+    path_template = "projects/{project_id}/merge_requests/{iid}/notes"
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["project_id"] = stream_slice["project_id"]
+        record["merge_request_iid"] = stream_slice["iid"]
+
+        return record
+
+class MergeRequestPipelines(GitlabChildStream):
+    path_list = ["project_id", "iid"]
+    path_template = "projects/{project_id}/merge_requests/{iid}/pipelines"
+
+    def transform(self, record, stream_slice: Mapping[str, Any] = None, **kwargs):
+        super().transform(record, stream_slice, **kwargs)
+        record["project_id"] = stream_slice["project_id"]
+        record["merge_request_iid"] = stream_slice["iid"]
+
+        return record
+
+

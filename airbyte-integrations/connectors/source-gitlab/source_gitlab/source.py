@@ -36,6 +36,9 @@ from .streams import (
     Releases,
     Tags,
     Users,
+    MergeRequestApprovals,
+    MergeRequestNotes,
+    MergeRequestPipelines,
 )
 
 
@@ -122,6 +125,9 @@ class SourceGitlab(AbstractSource):
             pipelines,
             PipelinesExtended(parent_stream=pipelines, **auth_params),
             Users(parent_stream=projects, **auth_params),
+            MergeRequestApprovals(parent_stream=merge_requests, **auth_params),
+            MergeRequestNotes(parent_stream=merge_requests, **auth_params),
+            MergeRequestPipelines(parent_stream=merge_requests, **auth_params),
         ]
 
         return streams
