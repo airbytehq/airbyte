@@ -5,10 +5,12 @@ import {
 } from "core/request/ConnectorBuilderClient";
 
 export interface BuilderFormValues {
-  connectorName: string;
-  urlBase: string;
-  // TODO: make required when authenticator is fully added
-  authenticator?: HttpRequesterAllOfAuthenticator;
+  global: {
+    connectorName: string;
+    urlBase: string;
+    // TODO: make required when authenticator is fully added
+    authenticator?: HttpRequesterAllOfAuthenticator;
+  };
   streams: BuilderStream[];
 }
 
@@ -27,9 +29,9 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
         name: stream.name,
         requester: {
           name: stream.name,
-          url_base: values.urlBase,
+          url_base: values.global?.urlBase,
           path: stream.urlPath,
-          authenticator: values.authenticator,
+          authenticator: values.global?.authenticator,
           // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
           config: {},
         },

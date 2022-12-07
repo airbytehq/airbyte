@@ -21,6 +21,31 @@ import { UiYamlToggleButton } from "./UiYamlToggleButton";
 
 export type BuilderView = "global" | number;
 
+interface ViewSelectButtonProps {
+  className?: string;
+  selected: boolean;
+  onClick: () => void;
+}
+
+const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>> = ({
+  children,
+  className,
+  selected,
+  onClick,
+}) => {
+  return (
+    <button
+      className={classnames(className, styles.viewButton, {
+        [styles.selectedViewButton]: selected,
+        [styles.unselectedViewButton]: !selected,
+      })}
+      onClick={onClick}
+    >
+      {children}
+    </button>
+  );
+};
+
 interface StreamSelectButtonProps {
   streamNum: number;
   onSelectStream: (streamNum: number, streamName: string) => void;
@@ -28,19 +53,13 @@ interface StreamSelectButtonProps {
 }
 
 const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamNum, onSelectStream, selected }) => {
-  const streamNamePath = `streams[${streamNum}].name`;
-  const [field] = useField(streamNamePath);
+  const streamPath = `streams[${streamNum}]`;
+  const [field] = useField(`${streamPath}.name`);
 
   return (
-    <button
-      className={classnames(styles.viewButton, {
-        [styles.selectedViewButton]: selected,
-        [styles.unselectedViewButton]: !selected,
-      })}
-      onClick={() => onSelectStream(streamNum, field.value)}
-    >
+    <ViewSelectButton selected={selected} onClick={() => onSelectStream(streamNum, field.value)}>
       {field.value}
-    </button>
+    </ViewSelectButton>
   );
 };
 
@@ -89,16 +108,14 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
         </Heading>
       </div>
 
-      <button
-        className={classnames(styles.globalConfigButton, styles.viewButton, {
-          [styles.selectedViewButton]: selectedView === "global",
-          [styles.unselectedViewButton]: selectedView !== "global",
-        })}
+      <ViewSelectButton
+        className={styles.globalConfigButton}
+        selected={selectedView === "global"}
         onClick={() => onViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
-      </button>
+      </ViewSelectButton>
 
       <div className={styles.streamsHeader}>
         <Text className={styles.streamsHeading} size="xs" bold>

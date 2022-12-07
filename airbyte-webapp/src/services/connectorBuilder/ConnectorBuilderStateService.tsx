@@ -15,8 +15,10 @@ import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { useListStreams } from "./ConnectorBuilderApiService";
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
-  connectorName: "",
-  urlBase: "",
+  global: {
+    connectorName: "",
+    urlBase: "",
+  },
   streams: [],
 };
 

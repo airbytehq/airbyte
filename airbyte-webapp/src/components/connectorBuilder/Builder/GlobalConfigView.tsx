@@ -5,10 +5,15 @@ export const GlobalConfigView: React.FC = () => {
   return (
     <>
       <BuilderCard>
-        <BuilderField type="text" path="connectorName" label="Connector Name" />
+        <BuilderField
+          type="text"
+          path="global.connectorName"
+          label="Connector Name"
+          tooltip="Name of the connector being built"
+        />
       </BuilderCard>
       <BuilderCard>
-        <BuilderField type="text" path="urlBase" label="API URL" />
+        <BuilderField type="text" path="global.urlBase" label="API URL" tooltip="Base URL of the source API" />
       </BuilderCard>
     </>
   );

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
-import { Heading } from "components/ui/Heading";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
@@ -54,11 +53,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, num
             <FormikPatch />
             <Modal
               size="sm"
-              title={
-                <Heading as="h1" size="sm">
-                  <FormattedMessage id="connectorBuilder.newStream" />
-                </Heading>
-              }
+              title={<FormattedMessage id="connectorBuilder.newStream" />}
               onClose={() => {
                 setIsOpen(false);
               }}
