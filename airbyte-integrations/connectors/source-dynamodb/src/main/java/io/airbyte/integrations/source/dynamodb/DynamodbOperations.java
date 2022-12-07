@@ -134,9 +134,11 @@ public class DynamodbOperations extends AbstractDatabase implements Closeable {
         comparator = ">";
       }
 
+      String attributePlaceholder = "#" + tableName + "_" + filterName;
       scanRequestBuilder
-          .filterExpression(filterName + " " + comparator + " :timestamp")
-          .expressionAttributeValues(Map.of(":timestamp", attributeValue));
+          .filterExpression(attributePlaceholder + " " + comparator + " :timestamp")
+          .expressionAttributeValues(Map.of(":timestamp", attributeValue))
+          .expressionAttributeNames(Map.of(attributePlaceholder, filterName));
 
     }
 
