@@ -35,6 +35,10 @@ public class EventListener {
   @SuppressWarnings({"PMD.AvoidCatchingThrowable", "PMD.DoNotTerminateVM"})
   public void startEmitters(final ApplicationStartupEvent event) {
     try {
+      /*
+        In order to have a smooth transition to micronaut for the server, we are starting 2 server. One managed by glassfish (legacy), one by
+        micronaut. Once all the controller are migrated, this will go away.
+       */
       final Configs configs = new EnvConfigs();
 
       final DataSource configDataSource =
@@ -46,6 +50,9 @@ public class EventListener {
       // Manual configuration that will be replaced by Dependency Injection in the future
       try (final Connection configsConnection = configDataSource.getConnection();
           final Connection jobsConnection = jobsDataSource.getConnection()) {
+        configsConnection.setAutoCommit(false);
+        jobsConnection.setAutoCommit(false);
+
         final DSLContext configsDslContext = DSL.using(configsConnection, SQLDialect.POSTGRES);
         final DSLContext jobsDslContext = DSL.using(jobsConnection, SQLDialect.POSTGRES);
 
