@@ -1,7 +1,7 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
-import styled from "styled-components";
 
 import { Switch } from "components/ui/Switch";
 
@@ -11,28 +11,13 @@ import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
-const ToggleLabel = styled.label`
-  text-transform: uppercase;
-  font-size: 14px;
-  line-height: 19px;
-  font-weight: 500;
-  color: ${({ theme }) => theme.greyColor40};
-  display: inline-block;
-  min-width: 75px;
-  text-align: left;
-  cursor: pointer;
-`;
-
-const Content = styled.div`
-  display: flex;
-  align-items: center;
-`;
+import styles from "./EnabledControl.module.scss";
 
 interface EnabledControlProps {
   disabled?: boolean;
 }
 
-const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
+export const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
   const analyticsService = useAnalyticsService();
 
   const { connection, updateConnection, connectionUpdating } = useConnectionEditService();
@@ -64,20 +49,24 @@ const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
     updateConnection,
   ]);
 
+  const isSwitchDisabled = disabled || connectionUpdating;
+
   return (
-    <Content>
-      <ToggleLabel htmlFor="toggle-enabled-source">
+    <div className={styles.container} data-testid="enabledControl">
+      <label
+        htmlFor="toggle-enabled-source"
+        className={classNames(styles.label, { [styles.disabled]: isSwitchDisabled })}
+      >
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
-      </ToggleLabel>
+      </label>
       <Switch
-        disabled={disabled || connectionUpdating}
+        disabled={isSwitchDisabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
         loading={loading}
         id="toggle-enabled-source"
+        data-testid="enabledControl-switch"
       />
-    </Content>
+    </div>
   );
 };
-
-export default EnabledControl;

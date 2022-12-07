@@ -13,7 +13,7 @@ import static io.airbyte.protocol.models.JsonSchemaType.STRING_TIME_WITH_TIMEZON
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.source.AbstractSourceDatabaseTypeTest;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Set;
 import org.jooq.DSLContext;

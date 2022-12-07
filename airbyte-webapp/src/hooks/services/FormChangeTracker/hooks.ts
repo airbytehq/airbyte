@@ -1,4 +1,4 @@
-import { uniqueId } from "lodash";
+import uniqueId from "lodash/uniqueId";
 import { useCallback, useMemo } from "react";
 import { createGlobalState } from "react-use";
 
@@ -10,6 +10,11 @@ export const useUniqueFormId = (formId?: string) => useMemo(() => formId ?? uniq
 
 export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   const [changedFormsById, setChangedFormsById] = useChangedFormsById();
+
+  const hasFormChanges = useMemo<boolean>(
+    () => Object.values(changedFormsById ?? {}).some((changed) => !!changed),
+    [changedFormsById]
+  );
 
   const clearAllFormChanges = useCallback(() => {
     setChangedFormsById({});
@@ -32,6 +37,7 @@ export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   );
 
   return {
+    hasFormChanges,
     trackFormChange,
     clearFormChange,
     clearAllFormChanges,

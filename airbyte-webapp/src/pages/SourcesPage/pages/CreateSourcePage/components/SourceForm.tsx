@@ -16,7 +16,7 @@ interface SourceFormProps {
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
+  }) => Promise<void>;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
   error?: FormError | null;
@@ -60,6 +60,7 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
     <ConnectorCard
       formType="source"
       title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      description={<FormattedMessage id="sources.description" />}
       isLoading={isLoading}
       hasSuccess={hasSuccess}
       errorMessage={errorMessage}

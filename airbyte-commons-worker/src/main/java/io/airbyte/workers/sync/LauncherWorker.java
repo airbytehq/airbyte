@@ -73,6 +73,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
   private final TemporalUtils temporalUtils;
   private final WorkerConfigs workerConfigs;
 
+  private final boolean isCustomConnector;
   private final AtomicBoolean cancelled = new AtomicBoolean(false);
   private AsyncOrchestratorPodProcess process;
 
@@ -87,7 +88,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
                         final Supplier<ActivityExecutionContext> activityContext,
                         final Integer serverPort,
                         final TemporalUtils temporalUtils,
-                        final WorkerConfigs workerConfigs) {
+                        final WorkerConfigs workerConfigs,
+                        final boolean isCustomConnector) {
 
     this.connectionId = connectionId;
     this.application = application;
@@ -101,6 +103,7 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
     this.serverPort = serverPort;
     this.temporalUtils = temporalUtils;
     this.workerConfigs = workerConfigs;
+    this.isCustomConnector = isCustomConnector;
   }
 
   @Trace(operationName = WORKER_OPERATION_NAME)
@@ -173,13 +176,19 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           log.info("Creating " + podName + " for attempt number: " + jobRunConfig.getAttemptId());
           killRunningPodsForConnection();
 
+          // custom connectors run in an isolated node pool from airbyte-supported connectors
+          // to reduce the blast radius of any problems with custom connector code.
+          final var nodeSelectors =
+              isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
+                  : workerConfigs.getworkerKubeNodeSelectors();
+
           try {
             process.create(
                 allLabels,
                 resourceRequirements,
                 fileMap,
                 portMap,
-                workerConfigs.getworkerKubeNodeSelectors());
+                nodeSelectors);
           } catch (final KubernetesClientException e) {
             ApmTraceUtils.addExceptionToTrace(e);
             throw new WorkerException(
