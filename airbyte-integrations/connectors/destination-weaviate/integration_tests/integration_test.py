@@ -63,7 +63,7 @@ def setup_teardown(config: Mapping):
 
     docker_client.containers.run(
         "semitechnologies/weaviate:1.16.1", detach=True, environment=env_vars, name=name,
-        ports={8080: ('127.0.0.1', 8080)}
+        ports={8080: ('127.0.0.1', 8081)}
     )
 
     retries = 3
@@ -105,6 +105,16 @@ def _record(stream: str, title: str, word_count: int) -> AirbyteMessage:
     )
 
 
+def _record_with_id(stream: str, title: str, word_count: int, id: int) -> AirbyteMessage:
+    return AirbyteMessage(
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={
+            "title": title,
+            "wordCount": word_count,
+            "id":  id
+        }, emitted_at=0)
+    )
+
+
 def retrieve_all_records(client: Client) -> List[AirbyteRecordMessage]:
     """retrieves and formats all Articles as Airbyte messages"""
     all_records = client.client.data_object.get(class_name="Article")
@@ -140,3 +150,29 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     expected_records = [_record(append_stream, str(i), i) for i in range(5)]
     records_in_destination = retrieve_all_records(client)
     assert expected_records == records_in_destination, "Records in destination should match records expected"
+
+def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
+    """
+    This test verifies that records can have an ID that's an integer
+    """
+    append_stream = configured_catalog.streams[0].stream.name
+    first_state_message = _state({"state": "1"})
+    first_record_chunk = [_record_with_id(append_stream, str(i), i, i) for i in range(1, 6)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, configured_catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    records_in_destination = retrieve_all_records(client)
+    assert len(records_in_destination) == 5, "Expecting there should be 5 records"
+
+    expected_records = [_record(append_stream, str(i), i) for i in range(1, 6)]
+    for expected, actual in zip(expected_records, records_in_destination):
+        assert expected.record.data.get("title") == actual.record.data.get("title"), "Titles should match"
+        assert expected.record.data.get("wordCount") == actual.record.data.get("wordCount"), "Titles should match"

@@ -19,6 +19,8 @@ class Client:
         id = ""
         if record.get("id"):
             id = record.get("id")
+            if isinstance(id, int):
+                id = uuid.UUID(int=id)
             del record["id"]
         else:
             id = uuid.uuid4()
