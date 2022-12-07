@@ -18,7 +18,6 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.db.factory.DataSourceFactory;
-import io.airbyte.db.jdbc.JdbcSourceOperations;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
@@ -36,7 +35,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.sql.JDBCType;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,10 +45,18 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   private static final String DATABASE = "new_db";
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
@@ -64,12 +70,12 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
     PSQL_DB.start();
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
   }
 
   @Override
   @BeforeEach
   public void setup() throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     COLUMN_CLAUSE_WITH_PK =
         "id INTEGER, name VARCHAR(200) NOT NULL, updated_at DATE NOT NULL, wakeup_at TIMETZ NOT NULL, last_visited_at TIMESTAMPTZ NOT NULL, last_comment_at TIMESTAMP NOT NULL";
@@ -268,7 +274,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
+  public AbstractJdbcSource<PostgresType> getJdbcSource() {
     return new PostgresSource();
   }
 
@@ -414,11 +420,6 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         "2006-01-01T17:23:54.123456",
         Lists.newArrayList(getTestMessages().get(1),
             getTestMessages().get(2)));
-  }
-
-  @Override
-  protected JdbcSourceOperations getSourceOperations() {
-    return new PostgresSourceOperations();
   }
 
   @Override

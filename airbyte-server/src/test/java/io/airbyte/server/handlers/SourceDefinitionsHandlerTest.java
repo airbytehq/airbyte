@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
@@ -324,54 +325,6 @@ class SourceDefinitionsHandlerTest {
   }
 
   @Test
-  @DisplayName("createSourceDefinition should correctly create a sourceDefinition")
-  void testCreateSourceDefinition() throws URISyntaxException, IOException, JsonValidationException {
-    final StandardSourceDefinition sourceDefinition = generateSourceDefinition();
-    final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
-
-    when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
-        sourceDefinition.getSpec(),
-        SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
-
-    final SourceDefinitionCreate create = new SourceDefinitionCreate()
-        .name(sourceDefinition.getName())
-        .dockerRepository(sourceDefinition.getDockerRepository())
-        .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .icon(sourceDefinition.getIcon())
-        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
-            .jobSpecific(Collections.emptyList()));
-
-    final SourceDefinitionRead expectedRead = new SourceDefinitionRead()
-        .name(sourceDefinition.getName())
-        .dockerRepository(sourceDefinition.getDockerRepository())
-        .dockerImageTag(sourceDefinition.getDockerImageTag())
-        .documentationUrl(new URI(sourceDefinition.getDocumentationUrl()))
-        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
-        .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()))
-        .protocolVersion(DEFAULT_PROTOCOL_VERSION)
-        .releaseStage(ReleaseStage.CUSTOM)
-        .resourceRequirements(new io.airbyte.api.model.generated.ActorDefinitionResourceRequirements()
-            ._default(new io.airbyte.api.model.generated.ResourceRequirements()
-                .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
-            .jobSpecific(Collections.emptyList()));
-
-    final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createPrivateSourceDefinition(create);
-
-    assertEquals(expectedRead, actualRead);
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
-    verify(configRepository)
-        .writeStandardSourceDefinition(
-            sourceDefinition
-                .withReleaseDate(null)
-                .withReleaseStage(StandardSourceDefinition.ReleaseStage.CUSTOM)
-                .withProtocolVersion(DEFAULT_PROTOCOL_VERSION));
-  }
-
-  @Test
   @DisplayName("createSourceDefinition should not create a sourceDefinition with an unsupported protocol version")
   void testCreateSourceDefinitionWithInvalidProtocol() throws URISyntaxException, IOException, JsonValidationException {
     final String invalidProtocol = "131.1.2";
@@ -380,7 +333,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -394,10 +347,12 @@ class SourceDefinitionsHandlerTest {
             ._default(new io.airbyte.api.model.generated.ResourceRequirements()
                 .cpuRequest(sourceDefinition.getResourceRequirements().getDefault().getCpuRequest()))
             .jobSpecific(Collections.emptyList()));
+    final CustomSourceDefinitionCreate customCreate = new CustomSourceDefinitionCreate()
+        .sourceDefinition(create)
+        .workspaceId(workspaceId);
+    assertThrows(UnsupportedProtocolVersionException.class, () -> sourceDefinitionsHandler.createCustomSourceDefinition(customCreate));
 
-    assertThrows(UnsupportedProtocolVersionException.class, () -> sourceDefinitionsHandler.createPrivateSourceDefinition(create));
-
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository, never())
         .writeStandardSourceDefinition(
             sourceDefinition
@@ -413,7 +368,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -449,7 +404,7 @@ class SourceDefinitionsHandlerTest {
     final SourceDefinitionRead actualRead = sourceDefinitionsHandler.createCustomSourceDefinition(customCreate);
 
     assertEquals(expectedRead, actualRead);
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository).writeCustomSourceDefinition(
         sourceDefinition
             .withReleaseDate(null)
@@ -468,7 +423,7 @@ class SourceDefinitionsHandlerTest {
     final String imageName = DockerUtils.getTaggedImageName(sourceDefinition.getDockerRepository(), sourceDefinition.getDockerImageTag());
 
     when(uuidSupplier.get()).thenReturn(sourceDefinition.getSourceDefinitionId());
-    when(schedulerSynchronousClient.createGetSpecJob(imageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(imageName, true)).thenReturn(new SynchronousResponse<>(
         sourceDefinition.getSpec(),
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -489,7 +444,7 @@ class SourceDefinitionsHandlerTest {
 
     assertThrows(UnsupportedProtocolVersionException.class, () -> sourceDefinitionsHandler.createCustomSourceDefinition(customCreate));
 
-    verify(schedulerSynchronousClient).createGetSpecJob(imageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(imageName, true);
     verify(configRepository, never()).writeCustomSourceDefinition(
         sourceDefinition
             .withReleaseDate(null)
@@ -514,7 +469,7 @@ class SourceDefinitionsHandlerTest {
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
-    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName, false)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -526,7 +481,7 @@ class SourceDefinitionsHandlerTest {
             new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag));
 
     assertEquals(newDockerImageTag, sourceDefinitionRead.getDockerImageTag());
-    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository).writeStandardSourceDefinition(updatedSource);
 
     final Configs configs = new EnvConfigs();
@@ -550,7 +505,7 @@ class SourceDefinitionsHandlerTest {
     final ConnectorSpecification newSpec = new ConnectorSpecification()
         .withConnectionSpecification(Jsons.jsonNode(ImmutableMap.of("foo2", "bar2")))
         .withProtocolVersion(newProtocolVersion);
-    when(schedulerSynchronousClient.createGetSpecJob(newImageName)).thenReturn(new SynchronousResponse<>(
+    when(schedulerSynchronousClient.createGetSpecJob(newImageName, false)).thenReturn(new SynchronousResponse<>(
         newSpec,
         SynchronousJobMetadata.mock(ConfigType.GET_SPEC)));
 
@@ -561,7 +516,7 @@ class SourceDefinitionsHandlerTest {
         .updateSourceDefinition(
             new SourceDefinitionUpdate().sourceDefinitionId(this.sourceDefinition.getSourceDefinitionId()).dockerImageTag(newDockerImageTag)));
 
-    verify(schedulerSynchronousClient).createGetSpecJob(newImageName);
+    verify(schedulerSynchronousClient).createGetSpecJob(newImageName, false);
     verify(configRepository, never()).writeStandardSourceDefinition(updatedSource);
   }
 
@@ -656,12 +611,11 @@ class SourceDefinitionsHandlerTest {
     }
 
     @Test
-    @DisplayName("Icon should contain data")
+    @DisplayName("Icon should be an SVG icon")
     void testIconHoldsData() {
       final String icon = SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon());
       assertNotNull(icon);
-      assert (icon.length() > 3000);
-      assert (icon.length() < 6000);
+      assertTrue(icon.contains("<svg"));
     }
 
   }

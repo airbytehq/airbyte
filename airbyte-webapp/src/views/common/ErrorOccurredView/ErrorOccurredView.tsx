@@ -14,7 +14,7 @@ interface ErrorOccurredViewProps {
 
 export const ErrorOccurredView: React.FC<ErrorOccurredViewProps> = ({ message, onCtaButtonClick, ctaButtonText }) => {
   return (
-    <div className={styles.errorOccurredView}>
+    <div className={styles.errorOccurredView} data-testid="errorView">
       <div className={styles.content}>
         <img src="/images/octavia/biting-nails.png" alt="" className={styles.octavia} />
         <Heading as="h2" size="lg" centered>

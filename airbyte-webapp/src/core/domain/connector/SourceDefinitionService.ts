@@ -7,8 +7,8 @@ import {
   SourceDefinitionIdWithWorkspaceId,
   updateSourceDefinition,
   SourceDefinitionUpdate,
-  createSourceDefinition,
-  SourceDefinitionCreate,
+  CustomSourceDefinitionCreate,
+  createCustomSourceDefinition,
 } from "../../request/AirbyteClient";
 
 export class SourceDefinitionService extends AirbyteRequestService {
@@ -28,7 +28,7 @@ export class SourceDefinitionService extends AirbyteRequestService {
     return updateSourceDefinition(body, this.requestOptions);
   }
 
-  public create(body: SourceDefinitionCreate) {
-    return createSourceDefinition(body, this.requestOptions);
+  public createCustom(body: CustomSourceDefinitionCreate) {
+    return createCustomSourceDefinition(body, this.requestOptions);
   }
 }

@@ -199,18 +199,6 @@ class PostgresSourceTest {
         .build());
   }
 
-  private JsonNode getConfigWithSsl(final PostgreSQLContainer<?> psqlDb, final String dbName) {
-    return Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", psqlDb.getHost())
-        .put("port", psqlDb.getFirstMappedPort())
-        .put("database", dbName)
-        .put("schemas", List.of(SCHEMA_NAME))
-        .put("username", psqlDb.getUsername())
-        .put("password", psqlDb.getPassword())
-        .put("ssl", true)
-        .build());
-  }
-
   private JsonNode getConfig(final PostgreSQLContainer<?> psqlDb, final String dbName, final String user, final String password) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, psqlDb.getHost())
@@ -482,22 +470,6 @@ class PostgresSourceTest {
   }
 
   @Test
-  void testGetDefaultConnectionPropertiesWithoutSsl() {
-    final JsonNode config = getConfig(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, Collections.emptyMap());
-  };
-
-  @Test
-  void testGetDefaultConnectionPropertiesWithSsl() {
-    final JsonNode config = getConfigWithSsl(PSQL_DB, dbName);
-    final Map<String, String> defaultConnectionProperties = new PostgresSource().getDefaultConnectionProperties(config);
-    assertEquals(defaultConnectionProperties, ImmutableMap.of(
-        "ssl", "true",
-        "sslmode", "require"));
-  };
-
-  @Test
   void testGetUsername() {
     final String username = "airbyte-user";
 
@@ -528,7 +500,7 @@ class PostgresSourceTest {
         final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, configuredAirbyteCatalog, null)));
         assertThat(throwable).isInstanceOf(ConfigErrorException.class)
             .hasMessageContaining(
-                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER}");
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table', cursorColumnName='id', cursorSqlType=OTHER, cause=Unsupported cursor type}");
       } finally {
         db.stop();
       }
@@ -568,7 +540,95 @@ class PostgresSourceTest {
         JdbcUtils.HOST_KEY, "localhost",
         JdbcUtils.PORT_KEY, 1111,
         JdbcUtils.USERNAME_KEY, "user",
-        JdbcUtils.DATABASE_KEY, "db/foo"));
+        JdbcUtils.DATABASE_KEY, "db/foo",
+        JdbcUtils.SSL_KEY, "false"));
+  }
+
+  @Test
+  public void tableWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream table = createTableWithNullValueCursor(database);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_table_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createTableWithNullValueCursor(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+                "test_table_null_cursor",
+                "public",
+                Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
+  }
+
+  @Test
+  public void viewWithNullValueCursorShouldThrowException() throws SQLException {
+    try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
+      db.start();
+      final JsonNode config = getConfig(db);
+      try (final DSLContext dslContext = getDslContext(config)) {
+        final Database database = new Database(dslContext);
+        final ConfiguredAirbyteStream table = createViewWithNullValueCursor(database);
+        final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(table));
+
+        final Throwable throwable = catchThrowable(() -> MoreIterators.toSet(new PostgresSource().read(config, catalog, null)));
+        assertThat(throwable).isInstanceOf(ConfigErrorException.class)
+            .hasMessageContaining(
+                "The following tables have invalid columns selected as cursor, please select a column with a well-defined ordering with no null values as a cursor. {tableName='public.test_view_null_cursor', cursorColumnName='id', cursorSqlType=INTEGER, cause=Cursor column contains NULL value}");
+
+      } finally {
+        db.stop();
+      }
+    }
+  }
+
+  private ConfiguredAirbyteStream createViewWithNullValueCursor(final Database database) throws SQLException {
+    database.query(ctx -> {
+      ctx.fetch("CREATE TABLE IF NOT EXISTS public.test_table_null_cursor(id INTEGER NULL)");
+      ctx.fetch("""
+          CREATE VIEW test_view_null_cursor(id) as
+          SELECT test_table_null_cursor.id
+          FROM test_table_null_cursor
+          """);
+      ctx.fetch("INSERT INTO public.test_table_null_cursor(id) VALUES (1), (2), (NULL)");
+      return null;
+    });
+
+    return new ConfiguredAirbyteStream().withSyncMode(SyncMode.INCREMENTAL)
+        .withCursorField(Lists.newArrayList("id"))
+        .withDestinationSyncMode(DestinationSyncMode.APPEND)
+        .withSyncMode(SyncMode.INCREMENTAL)
+        .withStream(CatalogHelpers.createAirbyteStream(
+                "test_view_null_cursor",
+                "public",
+                Field.of("id", JsonSchemaType.STRING))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
+            .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
+
   }
 
 }
