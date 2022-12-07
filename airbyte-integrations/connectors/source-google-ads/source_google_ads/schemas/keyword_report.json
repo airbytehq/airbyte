@@ -57,16 +57,16 @@
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
       "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
-    },
-    "metrics.historical_quality_score": {
-      "type": ["null", "integer"]
-    },
+    }
     "metrics.ctr": {
       "type": ["null", "number"]
     },
     "segments.date": {
       "type": ["null", "string"],
       "format": "date"
+    },
+    "segments.device": {
+      "type": ["null", "string"]
     },
     "campaign.bidding_strategy_type": {
       "type": ["null", "string"]
