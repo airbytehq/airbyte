@@ -5,6 +5,7 @@
 The Airbyte Pulsar destination allows you to sync data to Pulsar. Each stream is written to the corresponding Pulsar topic.
 
 ## Prerequisites
+
 - For Airbyte Open Source users using the [Postgres](https://docs.airbyte.com/integrations/sources/postgres) source connector, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer and upgrade your Pulsar connector to version `0.1.3` or newer
 
 ### Sync overview
@@ -17,19 +18,19 @@ Currently, this connector only writes data with JSON format. More formats \(e.g.
 
 Each record will contain in its key the uuid assigned by Airbyte, and in the value these 3 fields:
 
-* `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
-* `_airbyte_emitted_at`:  a timestamp representing when the event was pulled from the data source.
-* `_airbyte_data`: a json blob representing with the event data encoded in base64 .
-* `_airbyte_stream`: the name of each record's stream.
+- `_airbyte_ab_id`: a uuid assigned by Airbyte to each event that is processed.
+- `_airbyte_emitted_at`: a timestamp representing when the event was pulled from the data source.
+- `_airbyte_data`: a json blob representing with the event data encoded in base64 .
+- `_airbyte_stream`: the name of each record's stream.
 
 #### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | No |  |
-| Incremental - Append Sync | Yes |  |
-| Incremental - Deduped History | No | As this connector does not support dbt, we don't support this sync mode on this destination. |
-| Namespaces | Yes |  |
+| Feature                       | Supported?\(Yes/No\) | Notes                                                                                        |
+| :---------------------------- | :------------------- | :------------------------------------------------------------------------------------------- |
+| Full Refresh Sync             | No                   |                                                                                              |
+| Incremental - Append Sync     | Yes                  |                                                                                              |
+| Incremental - Deduped History | No                   | As this connector does not support dbt, we don't support this sync mode on this destination. |
+| Namespaces                    | Yes                  |                                                                                              |
 
 ## Getting started
 
@@ -37,7 +38,7 @@ Each record will contain in its key the uuid assigned by Airbyte, and in the val
 
 To use the Pulsar destination, you'll need:
 
-* A Pulsar cluster 2.8 or above.
+- A Pulsar cluster 2.8 or above.
 
 ### Setup guide
 
@@ -69,22 +70,28 @@ If you define output topic dynamically, you might want to enable `allowAutoTopic
 
 You should now have all the requirements needed to configure Pulsar as a destination in the UI. You can configure the following parameters on the Pulsar destination \(though many of these are optional or have default values\):
 
-* **Pulsar brokers**
-* **Use TLS**
-* **Topic type**
-* **Topic tenant**
-* **Topic namespace**
-* **Topic pattern**
-* **Test topic**
-* **Producer name**
-* **Sync producer**
-* **Compression type**
-* **Message send timeout**
-* **Max pending messages**
-* **Max pending messages across partitions**
-* **Enable batching**
-* **Batching max messages**
-* **Batching max publish delay**
-* **Block if queue is full**
+- **Pulsar brokers**
+- **Use TLS**
+- **Topic type**
+- **Topic tenant**
+- **Topic namespace**
+- **Topic pattern**
+- **Test topic**
+- **Producer name**
+- **Sync producer**
+- **Compression type**
+- **Message send timeout**
+- **Max pending messages**
+- **Max pending messages across partitions**
+- **Enable batching**
+- **Batching max messages**
+- **Batching max publish delay**
+- **Block if queue is full**
 
 More info about this can be found in the [Pulsar producer configs documentation site](https://pulsar.apache.org/docs/en/client-libraries-java/#producer).
+
+## CHANGELOG
+
+| Version | Date       | Pull Request                                             | Subject                                                                        |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------------------------------------------- |
+| 0.1.3   | 2022-08-05 | [15349](https://github.com/airbytehq/airbyte/pull/15349) | Update Pulsar destination to use outputRecordCollector to properly store state |
