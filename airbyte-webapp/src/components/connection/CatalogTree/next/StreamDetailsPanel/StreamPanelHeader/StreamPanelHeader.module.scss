@@ -19,3 +19,17 @@
   flex-direction: row;
   gap: variables.$spacing-xl;
 }
+
+.streamPropLabel {
+  display: inline;
+  color: colors.$grey-300;
+
+  &::after {
+    content: ":";
+  }
+}
+
+.streamPropValue {
+  display: inline;
+  margin-left: variables.$spacing-sm;
+}

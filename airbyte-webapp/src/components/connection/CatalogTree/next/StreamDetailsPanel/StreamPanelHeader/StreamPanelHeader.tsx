@@ -4,6 +4,7 @@ import { FormattedMessage } from "react-intl";
 import { CrossIcon } from "components/icons/CrossIcon";
 import { Button } from "components/ui/Button";
 import { Switch } from "components/ui/Switch";
+import { Text } from "components/ui/Text";
 
 import { AirbyteStream, AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
@@ -22,16 +23,16 @@ interface SomethingProps {
   value?: string | ReactNode;
 }
 
-export const StreamProperty: React.FC<SomethingProps> = ({ messageId, value }) => {
-  return (
-    <span>
-      <strong>
-        <FormattedMessage id={messageId} />
-      </strong>
-      : {value}
-    </span>
-  );
-};
+export const StreamProperty: React.FC<SomethingProps> = ({ messageId, value }) => (
+  <span>
+    <Text size="sm" className={styles.streamPropLabel}>
+      <FormattedMessage id={messageId} />
+    </Text>
+    <Text size="md" className={styles.streamPropValue}>
+      {value}
+    </Text>
+  </span>
+);
 
 export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
   config,
