@@ -56,6 +56,7 @@ public interface JobCreator {
                                           StandardSync standardSync,
                                           String destinationDockerImage,
                                           Version destinationProtocolVersion,
+                                          boolean isCustom,
                                           List<StandardSyncOperation> standardSyncOperations,
                                           List<StreamDescriptor> streamsToReset)
       throws IOException;
