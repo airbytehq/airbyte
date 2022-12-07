@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from __future__ import (  # Used to evaluate type hints at runtime, a NameError: name 'ConfigObserver' is not defined is thrown otherwise
+from __future__ import (  # Used to evaluate type hints at runtime, a NameError: name 'RemoteSecret' is not defined is thrown otherwise
     annotations,
 )
 
