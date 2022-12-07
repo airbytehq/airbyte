@@ -250,6 +250,7 @@ definitions:
       type:
         enum: [JsonDecoder]
   MinMaxDatetime:
+    description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
     type: object
     required:
       - type
@@ -260,18 +261,18 @@ definitions:
       datetime:
         anyOf:
           - type: string
-          - "$ref": "#/definition/InterpolatedString"
+          - "$ref": "#/definitions/InterpolatedString"
       datetime_format:
         type: string
         default: ""
       max_datetime:
         anyOf:
           - type: string
-          - "$ref": "#/definition/InterpolatedString"
+          - "$ref": "#/definitions/InterpolatedString"
       min_datetime:
         anyOf:
           - type: string
-          - "$ref": "#/definition/InterpolatedString"
+          - "$ref": "#/definitions/InterpolatedString"
       $options:
         type: object
         additionalProperties: true
