@@ -44,7 +44,7 @@ export const Toast: React.FC<ToastProps> = ({ type = ToastType.INFO, onAction, a
       <div className={classNames(styles.iconContainer)}>
         <FontAwesomeIcon icon={ICON_MAPPING[type]} className={styles.toastIcon} />
       </div>
-      <div>
+      <div className={styles.textContainer}>
         {text && (
           <Text size="lg" className={styles.text}>
             {text}
