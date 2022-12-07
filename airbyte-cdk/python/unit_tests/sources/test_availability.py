@@ -3,21 +3,15 @@
 #
 
 import logging
-import requests
-from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    AirbyteStream,
-    SyncMode,
-)
+import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.availability_strategy import (
-    AvailabilityStrategy,
-    HTTPAvailabilityStrategy,
-    ScopedAvailabilityStrategy,
-)
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
+from airbyte_cdk.sources.streams.core import StreamData
+from airbyte_cdk.sources.streams.http.http import HttpAvailabilityStrategy, HttpStream
 
 logger = logging.getLogger("airbyte")
 
@@ -38,26 +32,49 @@ class MockSource(AbstractSource):
         return self._streams
 
 
+class MockStream(Stream):
+    def __init__(self, name: str) -> Stream:
+        self._name = name
+
+    @property
+    def name(self) -> str:
+        return self._name
+
+    @property
+    def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
+        pass
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[StreamData]:
+        pass
+
+
 def test_availability_strategy():
     class MockAvailabilityStrategy(AvailabilityStrategy):
-        def check_availability(self, stream: Stream) -> Tuple[bool, any]:
+        def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
             if stream.name == "available_stream":
                 return True, None
             return False, f"Could not reach stream '{stream.name}'."
 
-    class MockSourceWithAvailabilityStrategy(MockSource):
+    class MockStreamWithAvailabilityStrategy(MockStream):
         @property
-        def availability_strategy(self):
+        def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
             return MockAvailabilityStrategy()
 
-    stream_1 = AirbyteStream(name="available_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-    stream_2 = AirbyteStream(name="unavailable_stream", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
+    stream_1 = MockStreamWithAvailabilityStrategy("available_stream")
+    stream_2 = MockStreamWithAvailabilityStrategy("unavailable_stream")
 
-    source = MockSourceWithAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert isinstance(source.availability_strategy, MockAvailabilityStrategy)
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
-    assert source.availability_strategy.check_availability(stream_2)[0] is False
-    assert "Could not reach stream 'unavailable_stream'" in source.availability_strategy.check_availability(stream_2)[1]
+    for stream in [stream_1, stream_2]:
+        assert isinstance(stream.availability_strategy, MockAvailabilityStrategy)
+
+    assert stream_1.availability_strategy.check_availability(logger, stream_1)[0] is True
+    assert stream_2.availability_strategy.check_availability(logger, stream_2)[0] is False
+    assert "Could not reach stream 'unavailable_stream'" in stream_2.availability_strategy.check_availability(logger, stream_2)[1]
 
 
 def test_scoped_availability_strategy():
@@ -68,22 +85,21 @@ def test_scoped_availability_strategy():
         def required_scopes(self) -> Dict[str, List[str]]:
             return {"repos": ["repo"], "projectV2": ["read:project"]}
 
-    class MockSourceWithScopedAvailabilityStrategy(MockSource):
+    class MockStreamWithScopedAvailabilityStrategy(MockStream):
         @property
         def availability_strategy(self) -> Optional[AvailabilityStrategy]:
             return MockScopedAvailabilityStrategy()
 
-    stream_1 = AirbyteStream(name="repos", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
-    stream_2 = AirbyteStream(name="projectV2", json_schema={}, supported_sync_modes=[SyncMode.full_refresh])
+    stream_1 = MockStreamWithScopedAvailabilityStrategy("repos")
+    stream_2 = MockStreamWithScopedAvailabilityStrategy("projectV2")
 
-    source = MockSourceWithScopedAvailabilityStrategy(streams=[stream_1, stream_2])
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
-    assert source.availability_strategy.check_availability(stream_2)[0] is False
-    assert "Missing required scopes: ['read:project']" in source.availability_strategy.check_availability(stream_2)[1]
+    assert stream_1.availability_strategy.check_availability(logger, stream_1)[0] is True
+    assert stream_2.availability_strategy.check_availability(logger, stream_2)[0] is False
+    assert "Missing required scopes: ['read:project']" in stream_2.availability_strategy.check_availability(logger, stream_2)[1]
 
 
 def test_http_availability_strategy(mocker):
-    class StubBasicReadHttpStream(HttpStream):
+    class MockHttpStream(HttpStream):
         url_base = "https://test_base_url.com"
         primary_key = ""
 
@@ -101,21 +117,25 @@ def test_http_availability_strategy(mocker):
             stub_resp = {"data": self.resp_counter}
             self.resp_counter += 1
             yield stub_resp
+        pass
 
-    class MockSourceWithHTTPAvailabilityStrategy(MockSource):
-        @property
-        def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-            return HTTPAvailabilityStrategy()
-
-    stream_1 = StubBasicReadHttpStream()
-    source = MockSourceWithHTTPAvailabilityStrategy(streams=[stream_1])
+    stream = MockHttpStream()
+    assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert source.availability_strategy.check_availability(stream_1)[0] is False
-    assert "403 Client Error" in source.availability_strategy.check_availability(stream_1)[1]
+    assert stream.availability_strategy.check_availability(logger, stream)[0] is False
+
+    expected_messages = [
+        "This is most likely due to insufficient permissions on the credentials in use.",
+        "Please visit the connector's documentation to learn more."
+        # "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
+    ]
+    actual_message = stream.availability_strategy.check_availability(logger, stream)[1]
+    for message in expected_messages:
+        assert message in actual_message
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert source.availability_strategy.check_availability(stream_1)[0] is True
+    assert stream.availability_strategy.check_availability(logger, stream)[0] is True

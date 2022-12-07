@@ -92,6 +92,10 @@ def abstract_source(mocker):
             HttpStream.__init__(self, *args, kvargs)
             self.read_records = MagicMock()
 
+        @property
+        def availability_strategy(self):
+            return None
+
     class MockStream(MagicMock, Stream):
         page_size = None
         get_json_schema = MagicMock()

@@ -18,7 +18,6 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
-from airbyte_cdk.sources.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -107,8 +106,8 @@ class AbstractSource(Source, ABC):
                         f"The requested stream {configured_stream.stream.name} was not found in the source."
                         f" Available streams: {stream_instances.keys()}"
                     )
-                if self.availability_strategy is not None:
-                    stream_is_available, error = self.availability_strategy.check_availability(stream_instance)
+                if stream_instance.availability_strategy is not None:
+                    stream_is_available, error = stream_instance.availability_strategy.check_availability(logger, stream_instance)
                     if not stream_is_available:
                         logger.info(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
                         continue
@@ -135,10 +134,6 @@ class AbstractSource(Source, ABC):
                     logger.info(timer.report())
 
         logger.info(f"Finished syncing {self.name}")
-
-    @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return None
 
     @property
     def per_stream_state_enabled(self) -> bool:
