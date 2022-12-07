@@ -3,7 +3,6 @@
 #
 
 
-import json
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
@@ -54,7 +53,7 @@ class Source(
         :return: The complete stream state based on the connector's previous sync
         """
         if state_path:
-            state_obj = json.loads(open(state_path, "r").read())
+            state_obj = self._read_json_file(state_path)
             if not state_obj:
                 return self._emit_legacy_state_format({})
             is_per_stream_state = isinstance(state_obj, List)
@@ -87,4 +86,4 @@ class Source(
 
     # can be overridden to change an input catalog
     def read_catalog(self, catalog_path: str) -> ConfiguredAirbyteCatalog:
-        return ConfiguredAirbyteCatalog.parse_obj(self.read_config(catalog_path))
+        return ConfiguredAirbyteCatalog.parse_obj(self._read_json_file(catalog_path))
