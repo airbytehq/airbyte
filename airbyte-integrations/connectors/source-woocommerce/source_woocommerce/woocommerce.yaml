@@ -8,7 +8,6 @@ definitions:
     type: JsonFileSchemaLoader
     file_path: "./source_woocommerce/schemas/{{ options['name'] }}.json"
   requester:
-    class: source-woo.source_woocommerce.request
     url_base: "https://{{ config['shop'] }}/wp-json/wc/v3"
     http_method: "GET"
     authenticator:
