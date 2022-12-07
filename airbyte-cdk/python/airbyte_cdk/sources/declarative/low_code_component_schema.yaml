@@ -1,0 +1,349 @@
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/handwritten_manifest.yaml
+title: LowCodeComponentManifest
+type: object
+description: Low Code connector components
+version: 1.0.0
+required:
+  - check
+  - spec
+  - streams
+  - version
+properties:
+  check:
+    "$ref": "#/definitions/CheckStream"
+  spec:
+    "$ref": "#/definitions/Spec"
+  streams:
+    type: array
+    items:
+      "$ref": "#/definitions/DeclarativeStream"
+  version:
+    type: string
+definitions:
+  CheckStream:
+    description: Checks the connections by trying to read records from one or many of the streams selected by the developer
+    type: object
+    required:
+      - type
+      - stream_names
+    properties:
+      type:
+        enum: [CheckStream]
+      stream_names:
+        type: array
+        items:
+          type: string
+  CursorPaginationStrategy:
+    description: Pagination strategy that evaluates an interpolated string to define the next page token
+    type: object
+    required:
+      - type
+      - cursor_value
+    properties:
+      type:
+        enum: [CursorPaginationStrategy]
+      cursor_value:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      page_size:
+        type: integer
+      stop_condition:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedBoolean"
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      $options:
+        type: object
+        additionalProperties: true
+  CustomAuthenticator:
+    type: object
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomAuthenticator]
+      class_name:
+        type: string
+      additional_parameters:
+        type: object
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  DeclarativeStream:
+    description: A stream whose behavior is described by a set of declarative low code components
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - retriever
+    properties:
+      type:
+        enum: [DeclarativeStream]
+      retriever:
+        "$ref": "#/definitions/SimpleRetriever"
+      checkpoint_interval:
+        type: integer
+      name:
+        type: string
+        default: ""
+      primary_key:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: array
+              items:
+                type: string
+        default: ""
+      schema_loader:
+        anyOf:
+          - "$ref": "#/definitions/JsonFileSchemaLoader"
+      stream_cursor_field:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              - type: string
+      transformations:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/AddFields"
+            - "$ref": "#/definitions/RemoveFields"
+      $options:
+        type: object
+        additional_properties: true
+  DefaultPaginator:
+    description: Default pagination implementation to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
+    type: object
+    required:
+      - type
+      - pagination_strategy
+      - url_base
+    properties:
+      type:
+        enum: [DefaultPaginator]
+      pagination_strategy:
+        anyOf:
+          - "$ref": "#/definitions/CursorPaginationStrategy"
+          - "$ref": "#/definitions/OffsetIncrement"
+          - "$ref": "#/definitions/PageIncrement"
+      url_base:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      page_size_option:
+        "$ref": "#/definitions/RequestOption"
+      page_token_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
+  DpathExtractor:
+    description: Record extractor that searches a decoded response over a path defined as an array of fields
+    type: object
+    required:
+      - type
+      - field_pointer
+    properties:
+      type:
+        enum: [DpathExtractor]
+      field_pointer:
+        type: array
+        items:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      decoder:
+        "$ref": "#/definitions/JsonDecoder"
+      $options:
+        type: object
+        additionalProperties: true
+  HttpRequester:
+    description: Default implementation of a requester
+    type: object
+    required:
+      - type
+      - name
+      - path
+      - url_base
+    properties:
+      type:
+        enum: [HttpRequester]
+      name:
+        type: string
+      path:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      url_base:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      authenticator:
+        anyOf:
+          - "$ref": "#/definitions/NoAuth"
+          - "$ref": "#/definitions/DeclarativeOauth2Authenticator"
+          - "$ref": "#/definitions/ApiKeyAuthenticator"
+          - "$ref": "#/definitions/BearerAuthenticator"
+          - "$ref": "#/definitions/BasicHttpAuthenticator"
+      error_handler:
+        anyOf:
+          - "$ref": "#/definitions/DefaultErrorHandler"
+          - "$ref": "#/definitions/CompositeErrorHandler"
+      http_method:
+        anyOf:
+          - type: string
+          - type: string
+            enum:
+              - GET
+              - POST
+        default: GET
+      request_options_provider:
+        "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+      $options:
+        type: object
+        additionalProperties: true
+  InterpolatedString:
+    description: A template string that will be interpolated against variables at runtime
+    type: object
+    required:
+      - type
+      - string
+    properties:
+      string:
+        type: string
+      default:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  JsonFileSchemaLoader:
+    description: Loads the schema from a json file
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [JsonFileSchemaLoader]
+      file_path:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      $options:
+        type: object
+        additionalProperties: true
+  JsonDecoder:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [JsonDecoder]
+  NoPagination:
+    description: Pagination implementation that never returns a next page
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [NoPagination]
+  OffsetIncrement:
+    description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
+    type: object
+    required:
+      - type
+      - page_size
+    properties:
+      type:
+        enum: [OffsetIncrement]
+      page_size:
+        type: integer
+      $options:
+        type: object
+        additionalProperties: true
+  PageIncrement:
+    description: Pagination strategy that returns the number of pages reads so far and returns it as the next page token
+    type: object
+    required:
+      - type
+      - page_size
+    properties:
+      type:
+        enum: [PageIncrement]
+      page_size:
+        type: integer
+      start_from_page:
+        type: integer
+        default: 0
+      $options:
+        type: object
+        additionalProperties: true
+  RecordSelector:
+    description: Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering records based on a heuristic.
+    type: object
+    required:
+      - type
+      - extractor
+    properties:
+      type:
+        enum: [RecordSelector]
+      extractor:
+        "$ref": "#/definitions/DpathExtractor"
+      record_filter:
+        "$ref": "#/definitions/RecordFilter"
+      $options:
+        type: object
+        additionalProperties: true
+  SimpleRetriever:
+    description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
+    type: object
+    required:
+      - type
+      - record_selector
+      - requester
+    properties:
+      type:
+        enum: [SimpleRetriever]
+      record_selector:
+        "$ref": "#/definitions/RecordSelector"
+      requester:
+        "$ref": "#/definitions/HttpRequester"
+      name:
+        type: string
+        default: ""
+      paginator:
+        anyOf:
+          - "$ref": "#/definitions/DefaultPaginator"
+          - "$ref": "#/definitions/NoPagination"
+      primary_key:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: array
+              items:
+                type: string
+        default: ""
+      stream_slicer:
+        anyOf:
+          - "$ref": "#/definitions/CartesianProductStreamSlicer"
+          - "$ref": "#/definitions/DatetimeStreamSlicer"
+          - "$ref": "#/definitions/ListStreamSlicer"
+          - "$ref": "#/definitions/SingleSlice"
+          - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
