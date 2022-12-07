@@ -33,17 +33,12 @@ fully_qualified.class_name(a_parameter=3, another_parameter="hello")
 ```
 
 If the component definition is a mapping with a "type" field,
-the factory will lookup
-the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/class_types_registry.py)
-and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
+the factory will lookup the [CLASS_TYPES_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/class_types_registry.py) and replace the "type" field by "class_name" -> CLASS_TYPES_REGISTRY[type]
 and instantiate the object from the resulting mapping
 
 If the component definition is a mapping with neither a "class_name" nor a "type" field,
-the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor
-type hints.
-If the type hint is an interface present
-in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py
-,
+the factory will do a best-effort attempt at inferring the component type by looking up the parent object's constructor type hints.
+If the type hint is an interface present in [DEFAULT_IMPLEMENTATIONS_REGISTRY](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/parsers/default_implementation_registry.py,
 then the factory will create an object of its default implementation.
 
 If the component definition is a list, then the factory will iterate over the elements of the list,
@@ -68,9 +63,7 @@ will result in
 TopLevel(param=ParamType(k="v"))
 ```
 
-More details on object instantiation can be
-found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory)
-.
+More details on object instantiation can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=factory#airbyte_cdk.sources.declarative.parsers.factory.DeclarativeComponentFactory).
 
 ## $options
 
@@ -224,9 +217,7 @@ value: "uh oh"
 To resolve the ambiguity, we try looking for the reference key at the top-level, and then traverse the structs downward
 until we find a key with the given path, or until there is nothing to traverse.
 
-More details on referencing values can be
-found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=yamlparser#airbyte_cdk.sources.declarative.parsers.yaml_parser.YamlParser)
-.
+More details on referencing values can be found [here](https://airbyte-cdk.readthedocs.io/en/latest/api/airbyte_cdk.sources.declarative.parsers.html?highlight=yamlparser#airbyte_cdk.sources.declarative.parsers.yaml_parser.YamlParser).
 
 ## String interpolation
 
@@ -249,8 +240,7 @@ some_object:
 ```
 
 Some components also pass in additional arguments to the context.
-This is the case for the [record selector](./understanding-the-yaml-file/record-selector.md), which passes in an
-additional `response` argument.
+This is the case for the [record selector](./understanding-the-yaml-file/record-selector.md), which passes in an additional `response` argument.
 
 Both dot notation and bracket notations (with single quotes ( `'`)) are interchangeable.
 This means that both these string templates will evaluate to the same string:
@@ -258,22 +248,17 @@ This means that both these string templates will evaluate to the same string:
 1. `"{{ options.name }}"`
 2. `"{{ options['name'] }}"`
 
-In addition to passing additional values through the $options argument, macros can be called from within the string
-interpolation.
+In addition to passing additional values through the $options argument, macros can be called from within the string interpolation.
 For example,
 `"{{ max(2, 3) }}" -> 3`
 
-The macros available can be
-found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py)
-.
+The macros available can be found [here](https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/interpolation/macros.py).
 
-Additional information on jinja templating can be found
-at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)
+Additional information on jinja templating can be found at [https://jinja.palletsprojects.com/en/3.1.x/templates/#](https://jinja.palletsprojects.com/en/3.1.x/templates/#)
 
 ## Component schema reference
 
-A JSON schema representation of the relationships between the components that can be used in the YAML configuration can
-be found [here](./source_schema.yaml).
+A JSON schema representation of the relationships between the components that can be used in the YAML configuration can be found [here](./source_schema.yaml).
 
 ## Custom components
 
@@ -288,10 +273,8 @@ accordingly.
 
 Any built-in components can be overloaded by a custom Python class.
 To create a custom component, define a new class in a new file in the connector's module.
-The class must implement the interface of the component it is replacing. For instance, a pagination strategy must
-implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
-The class must also be a dataclass where each field represents an argument to configure from the yaml file, and
-an `InitVar` named options.
+The class must implement the interface of the component it is replacing. For instance, a pagination strategy must implement `airbyte_cdk.sources.declarative.requesters.paginators.strategies.pagination_strategy.PaginationStrategy`.
+The class must also be a dataclass where each field represents an argument to configure from the yaml file, and an `InitVar` named options.
 
 For example:
 
