@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
@@ -78,13 +77,10 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
         standardSyncOperations.add(standardSyncOperation);
       }
 
-      ActorDefinitionResourceRequirements sourceResourceRequirements = sourceDefinition.getResourceRequirements();
-      ActorDefinitionResourceRequirements destinationResourceRequirements = destinationDefinition.getResourceRequirements();
-
       // for OSS users, make it possible to ignore default actor-level resource requirements
       if (!connectorSpecificResourceDefaultsEnabled) {
-        sourceResourceRequirements = null;
-        destinationResourceRequirements = null;
+        sourceDefinition.setResourceRequirements(null);
+        destinationDefinition.setResourceRequirements(null);
       }
 
       return jobCreator.createSyncJob(
@@ -97,8 +93,8 @@ public class DefaultSyncJobFactory implements SyncJobFactory {
           new Version(destinationDefinition.getProtocolVersion()),
           standardSyncOperations,
           workspace.getWebhookOperationConfigs(),
-          sourceResourceRequirements,
-          destinationResourceRequirements)
+          sourceDefinition,
+          destinationDefinition)
           .orElseThrow(() -> new IllegalStateException("We shouldn't be trying to create a new sync job if there is one running already."));
 
     } catch (final IOException | JsonValidationException | ConfigNotFoundException e) {
