@@ -26,12 +26,15 @@ describe(`${toEquivalentLocalTime.name}`, () => {
   });
 
   it("outputs the same YYYY-MM-DDTHH:mm:ss", () => {
+    timezoneMock.register("Etc/GMT+10");
+    const TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES = 600; // corresponds to GMT+10
     const TEST_UTC_TIMESTAMP = "2000-01-01T12:00:00Z";
 
     const result = toEquivalentLocalTime(TEST_UTC_TIMESTAMP);
 
     // Regardless of the timezone, the local time should be the same
-    expect(result?.toISOString().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
+    expect(dayjs(result).format().substring(0, 19)).toEqual(TEST_UTC_TIMESTAMP.substring(0, 19));
+    expect(result?.getTimezoneOffset()).toEqual(TEST_TIMEZONE_UTC_OFFSET_IN_MINUTES);
   });
 
   it("converts utc time to equivalent local time in PST", () => {
