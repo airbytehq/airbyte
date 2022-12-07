@@ -51,7 +51,7 @@ def ci_credentials(ctx, connector_name: str, gcp_gsm_credentials):
 def write_to_storage(ctx):
     written_files = ctx.obj["secret_manager"].write_to_storage(ctx.obj["connector_secrets"])
     written_files_count = len(written_files)
-    click.echo(f"{written_files_count} secret files were written: {','.join(written_files)}")
+    click.echo(f"{written_files_count} secret files were written: {','.join([str(path) for path in written_files])}")
 
 
 @ci_credentials.command(help="Update GSM secrets according to the content of the secrets/updated_configurations directory.")

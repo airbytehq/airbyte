@@ -171,8 +171,15 @@ class SecretsManager:
             return []
         return secrets
 
-    def write_to_storage(self, secrets: List[RemoteSecret]) -> List[str]:
-        """Tries to save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder"""
+    def write_to_storage(self, secrets: List[RemoteSecret]) -> List[Path]:
+        """Save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder
+
+        Args:
+            secrets (List[RemoteSecret]): List of remote secret to write locally
+
+        Returns:
+            List[Path]: List of paths were the secrets were written
+        """
         written_files = []
         if not secrets:
             return 0
@@ -251,7 +258,7 @@ class SecretsManager:
             existing_secrets (List[RemoteSecret]): List of existing secrets for the current connector on GSM.
 
         Returns:
-            int: Status code
+            List[RemoteSecret]: List of updated secrets as RemoteSecret instances
         """
         existing_secrets = {secret.name: secret for secret in existing_secrets}
         updated_secrets = {secret.name: secret for secret in self._get_updated_secrets()}
