@@ -86,6 +86,16 @@
           "type": "string",
           "default": ""
         },
+        "_schema_loader": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/JsonFileSchemaLoader"
+            },
+            {
+              "$ref": "#/definitions/DefaultSchemaLoader"
+            }
+          ]
+        },
         "stream_cursor_field": {
           "anyOf": [
             {
