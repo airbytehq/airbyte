@@ -223,9 +223,8 @@ public class WebBackendConnectionsHandler {
         .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync))
         .source(source)
         .destination(destination)
+        .isSyncing(latestRunningSyncJob.isPresent())
         .schemaChange(schemaChange);
-
-    listItem.setIsSyncing(latestRunningSyncJob.isPresent());
 
     latestSyncJob.ifPresent(job -> {
       listItem.setLatestSyncJobCreatedAt(job.getCreatedAt());
