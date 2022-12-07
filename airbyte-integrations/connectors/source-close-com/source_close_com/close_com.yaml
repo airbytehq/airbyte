@@ -47,7 +47,8 @@ definitions:
       inject_into: request_parameter
       field_name: ""
   stream_query_slicer:
-    type: DatetimeStreamSlicer
+#    type: DatetimeStreamSlicer
+    class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -59,7 +60,8 @@ definitions:
     datetime_format: "%Y-%m-%d"
 
   stream_slicer__cursor_date_created:
-    type: DatetimeStreamSlicer
+#    type: DatetimeStreamSlicer
+    class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
@@ -77,7 +79,8 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 
   stream_slicer__cursor_date_updated:
-    type: DatetimeStreamSlicer
+#    type: DatetimeStreamSlicer
+    class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
