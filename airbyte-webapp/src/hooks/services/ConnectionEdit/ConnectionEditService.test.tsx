@@ -6,10 +6,18 @@ import { mockDestination } from "test-utils/mock-data/mockDestination";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper } from "test-utils/testutils";
 
-import { WebBackendConnectionRead, WebBackendConnectionUpdate } from "core/request/AirbyteClient";
+import {
+  AirbyteStreamConfiguration,
+  WebBackendConnectionRead,
+  WebBackendConnectionUpdate,
+} from "core/request/AirbyteClient";
 
 import { useConnectionFormService } from "../ConnectionForm/ConnectionFormService";
-import { ConnectionEditServiceProvider, useConnectionEditService } from "./ConnectionEditService";
+import {
+  ConnectionEditServiceProvider,
+  getConnectionWithUpdatedCursorAndPrimaryKey,
+  useConnectionEditService,
+} from "./ConnectionEditService";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestination,
@@ -191,5 +199,112 @@ describe("ConnectionEditService", () => {
     expect(result.current.editService.schemaHasBeenRefreshed).toBe(false);
     expect(result.current.editService.schemaRefreshing).toBe(false);
     expect(result.current.editService.connection).toEqual(updatedConnection);
+  });
+
+  it("getConnectionWithUpdatedCursorAndPrimaryKey should correctly invalidate cursor and primary key", () => {
+    const connectionWithInvalidCursorAndPrimaryKey: WebBackendConnectionRead = {
+      ...mockConnection,
+    };
+    connectionWithInvalidCursorAndPrimaryKey.syncCatalog = {
+      streams: [
+        {
+          stream: {
+            ...mockConnection.syncCatalog.streams[0].stream,
+            name: "test_name_1",
+          },
+          config: {
+            ...(mockConnection.syncCatalog.streams[0].config as AirbyteStreamConfiguration),
+            primaryKey: [["test_primary_key_1"]],
+            cursorField: ["test_cursor_1"],
+          },
+        },
+      ],
+    };
+    connectionWithInvalidCursorAndPrimaryKey.catalogDiff = {
+      transforms: [
+        {
+          transformType: "update_stream",
+          streamDescriptor: { namespace: "apple", name: "test_name_1" },
+          updateStream: [
+            { transformType: "remove_field", fieldName: ["test_primary_key_1"], breaking: false },
+            { transformType: "remove_field", fieldName: ["test_cursor_1"], breaking: false },
+          ],
+        },
+      ],
+    };
+
+    const connectionWithValidCursorAndPrimaryKey: WebBackendConnectionRead = {
+      ...mockConnection,
+    };
+    connectionWithValidCursorAndPrimaryKey.syncCatalog = {
+      streams: [
+        {
+          stream: {
+            ...mockConnection.syncCatalog.streams[0].stream,
+            name: "test_name_1",
+          },
+          config: {
+            ...(mockConnection.syncCatalog.streams[0].config as AirbyteStreamConfiguration),
+            primaryKey: [],
+            cursorField: [],
+          },
+        },
+      ],
+    };
+    expect(getConnectionWithUpdatedCursorAndPrimaryKey(connectionWithValidCursorAndPrimaryKey).syncCatalog).toEqual(
+      connectionWithValidCursorAndPrimaryKey.syncCatalog
+    );
+  });
+
+  it("getConnectionWithUpdatedCursorAndPrimaryKey should correctly invalidate primary key with 2 and more values in path", () => {
+    const connectionWithInvalidCursorAndPrimaryKey: WebBackendConnectionRead = {
+      ...mockConnection,
+    };
+    connectionWithInvalidCursorAndPrimaryKey.syncCatalog = {
+      streams: [
+        {
+          stream: {
+            ...mockConnection.syncCatalog.streams[0].stream,
+            name: "test_name_2",
+          },
+          config: {
+            ...(mockConnection.syncCatalog.streams[0].config as AirbyteStreamConfiguration),
+            primaryKey: [["test", "primary", "key", "2"]],
+          },
+        },
+      ],
+    };
+    connectionWithInvalidCursorAndPrimaryKey.catalogDiff = {
+      transforms: [
+        {
+          transformType: "update_stream",
+          streamDescriptor: { namespace: "apple", name: "test_name_2" },
+          updateStream: [
+            { transformType: "remove_field", fieldName: ["test", "primary", "key", "2"], breaking: false },
+          ],
+        },
+      ],
+    };
+
+    const connectionWithValidCursorAndPrimaryKey: WebBackendConnectionRead = {
+      ...mockConnection,
+    };
+    connectionWithValidCursorAndPrimaryKey.syncCatalog = {
+      streams: [
+        {
+          stream: {
+            ...mockConnection.syncCatalog.streams[0].stream,
+            name: "test_name_2",
+          },
+          config: {
+            ...(mockConnection.syncCatalog.streams[0].config as AirbyteStreamConfiguration),
+            primaryKey: [],
+          },
+        },
+      ],
+    };
+    expect(getConnectionWithUpdatedCursorAndPrimaryKey(connectionWithValidCursorAndPrimaryKey).syncCatalog).toEqual(
+      connectionWithValidCursorAndPrimaryKey.syncCatalog
+    );
   });
 });

@@ -1,9 +1,11 @@
+import isEqual from "lodash/isEqual";
 import pick from "lodash/pick";
 import { useContext, useState, createContext, useCallback } from "react";
 import { useAsyncFn } from "react-use";
 
 import {
   AirbyteCatalog,
+  AirbyteStreamConfiguration,
   ConnectionStatus,
   WebBackendConnectionRead,
   WebBackendConnectionUpdate,
@@ -36,6 +38,53 @@ interface ConnectionEditHook {
 const getConnectionCatalog = (connection: WebBackendConnectionRead): ConnectionCatalog =>
   pick(connection, ["syncCatalog", "catalogId"]);
 
+export const getConnectionWithUpdatedCursorAndPrimaryKey = (
+  connection: WebBackendConnectionRead
+): WebBackendConnectionRead => {
+  const newConnection = { ...connection };
+  connection.catalogDiff?.transforms.forEach((transform) => {
+    const syncCatalogItemIndex = connection.syncCatalog.streams.findIndex(
+      (stream) => stream.stream?.name === transform.streamDescriptor.name
+    );
+    if (syncCatalogItemIndex === -1) {
+      return;
+    }
+    const syncCatalogItem = connection.syncCatalog.streams[syncCatalogItemIndex];
+    if (transform.transformType === "update_stream") {
+      transform.updateStream?.forEach((updateStream) => {
+        if (updateStream.transformType !== "remove_field") {
+          return;
+        }
+        const updatedStream = { ...connection.syncCatalog.streams[syncCatalogItemIndex] };
+        const isPkRemoved = syncCatalogItem.config?.primaryKey?.some((pk) => isEqual(updateStream.fieldName, pk));
+        const isCursorRemoved = isEqual(updateStream.fieldName, syncCatalogItem.config?.cursorField);
+        if (isPkRemoved || isCursorRemoved) {
+          if (connection.syncCatalog.streams[syncCatalogItemIndex].config) {
+            updatedStream.config = {
+              ...(connection.syncCatalog.streams[syncCatalogItemIndex].config as AirbyteStreamConfiguration),
+            };
+            if (isCursorRemoved) {
+              updatedStream.config.cursorField = [];
+            }
+            if (isPkRemoved) {
+              updatedStream.config.primaryKey = [];
+            }
+          }
+          newConnection.syncCatalog = {
+            ...connection.syncCatalog,
+            streams: [
+              ...connection.syncCatalog.streams?.slice(0, syncCatalogItemIndex),
+              updatedStream,
+              ...connection.syncCatalog.streams?.slice(syncCatalogItemIndex + 1),
+            ],
+          };
+        }
+      });
+    }
+  });
+  return newConnection;
+};
+
 const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEditHook => {
   const connectionService = useWebConnectionService();
   const [connection, setConnection] = useState(useGetConnection(connectionId));
@@ -45,7 +94,8 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEdi
   const [{ loading: schemaRefreshing, error: schemaError }, refreshSchema] = useAsyncFn(async () => {
     const refreshedConnection = await connectionService.getConnection(connectionId, true);
     if (refreshedConnection.catalogDiff && refreshedConnection.catalogDiff.transforms?.length > 0) {
-      setConnection(refreshedConnection);
+      const updatedConnection = getConnectionWithUpdatedCursorAndPrimaryKey(refreshedConnection);
+      setConnection(updatedConnection);
       setSchemaHasBeenRefreshed(true);
     }
   }, [connectionId]);
