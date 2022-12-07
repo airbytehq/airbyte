@@ -61,7 +61,7 @@ export const StreamPanelHeader: React.FC<StreamPanelHeaderProps> = ({
         <StreamProperty messageId="form.streamName" value={stream?.name} />
         <StreamProperty messageId="form.syncMode" value={syncMode} />
       </div>
-      <Button variant="clear" onClick={onClose} icon={<CrossIcon />} />
+      <Button variant="clear" onClick={onClose} className={styles.crossIcon} icon={<CrossIcon />} />
     </div>
   );
 };
