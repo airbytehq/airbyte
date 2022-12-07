@@ -35,7 +35,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 
 public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestinationAcceptanceTest {
 
-  protected GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
+  public GcsAvroParquetDestinationAcceptanceTest(final S3Format s3Format) {
     super(s3Format);
   }
 
