@@ -16852,7 +16852,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-firebolt:0.1.0"
+- dockerImage: "airbyte/source-firebolt:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
@@ -16863,7 +16863,7 @@
       - "username"
       - "password"
       - "database"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         username:
           type: "string"
@@ -16875,6 +16875,7 @@
           type: "string"
           title: "Password"
           description: "Firebolt password."
+          airbyte_secret: true
         account:
           type: "string"
           title: "Account"
