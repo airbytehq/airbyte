@@ -17,7 +17,7 @@
   vertical-align: top;
   position: relative;
 
-  &:has(:checked),
+  &--checked,
   &--indeterminate {
     background-color: colors.$blue-400;
     border-color: colors.$blue-400;

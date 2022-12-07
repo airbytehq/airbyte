@@ -11,7 +11,13 @@ export const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { 
   checked,
   ...rest
 }) => (
-  <label className={classNames(styles.label, { [styles["label--indeterminate"]]: indeterminate }, className)}>
+  <label
+    className={classNames(
+      styles.label,
+      { [styles["label--indeterminate"]]: indeterminate, [styles["label--checked"]]: checked },
+      className
+    )}
+  >
     <input {...rest} checked={checked} type="checkbox" className={styles.input} />
     {indeterminate ? <FontAwesomeIcon icon={faMinus} /> : checked && <FontAwesomeIcon icon={faCheck} />}
   </label>
