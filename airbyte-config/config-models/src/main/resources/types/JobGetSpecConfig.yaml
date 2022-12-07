@@ -10,3 +10,6 @@ required:
 properties:
   dockerImage:
     type: string
+  isCustomConnector:
+    description: determine if the running image is a custom connector.
+    type: boolean

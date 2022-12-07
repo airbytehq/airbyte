@@ -130,7 +130,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements());
+          workerConfigs.getResourceRequirements(),
+          launcherConfig.getIsCustomConnector());
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
           ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
           : new DefaultAirbyteStreamFactory();
