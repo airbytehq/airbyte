@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 # This script is not actually part of the source connector. Instead, this script automatically generates the
 # json schemas and class source definitions.
 # This is done by scraping the documentation pages using requests + beautifulsoup.
