@@ -1,8 +1,8 @@
 {
   "provider": "surveymonkey",
-  "authUrlTemplate": "https://api.surveymonkey.com/oauth/authorize?client_id={{{ urlencode client_id }}}&redirect_uri={{{ urlencode redirect_uri }}}&response_type=code&state={{{ urlencode state }}}",
+  "authUrlTemplate": "https://api.surveymonkey.com/oauth/authorize?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&response_type=code&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
   "accessTokenUrlTemplate": "https://api.surveymonkey.com/oauth/token",
-  "accessTokenBody": "grant_type=authorization_code&client_id={{{ urlencode client_id }}}&client_secret={{{ urlencode client_secret }}}&redirect_uri={{{ urlencode redirect_uri }}}&code={{{ urlencode code }}}",
+  "accessTokenBody": "grant_type=authorization_code&client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&redirect_uri={{#urlencode}}{{{ redirect_uri }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
   "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
   "accessTokenResponseMap": "{\"access_token\": \"/access_token\"}"
 }

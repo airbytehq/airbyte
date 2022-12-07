@@ -1,8 +1,8 @@
 {
   "provider": "intercom",
-  "authUrlTemplate": "https://app.intercom.com/oauth?client_id={{{ urlencode client_id }}}&state={{{ urlencode state }}}",
+  "authUrlTemplate": "https://app.intercom.com/oauth?client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&state={{#urlencode}}{{{ state }}}{{/urlencode}}",
   "accessTokenUrlTemplate": "https://api.intercom.io/auth/eagle/token",
-  "accessTokenBody": "client_id={{{ urlencode client_id }}}&client_secret={{{ urlencode client_secret }}}&code={{{ urlencode code }}}",
+  "accessTokenBody": "client_id={{#urlencode}}{{{ client_id }}}{{/urlencode}}&client_secret={{#urlencode}}{{{ client_secret }}}{{/urlencode}}&code={{#urlencode}}{{{ code }}}{{/urlencode}}",
   "accessTokenHeaders": "{\"content-type\": \"application/x-www-form-urlencoded\"}",
   "accessTokenResponseMap": "{\"access_token\": \"/token\"}"
 }
