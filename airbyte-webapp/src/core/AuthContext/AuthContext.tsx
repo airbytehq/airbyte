@@ -1,6 +1,7 @@
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 
+import useStateCallback from "hooks/useStateCallback";
 import { RoutePaths } from "pages/routePaths";
 
 export interface IAuthUser {
@@ -36,22 +37,20 @@ const UserContext = createContext<IUserContext>({
 export const AuthContextProvider: React.FC = ({ children }) => {
   const navigate = useNavigate();
 
-  const [authenticatedUser, setAuthenticatedUser] = useState<IAuthUser>(() => {
-    return getUser();
-  });
+  const [authenticatedUser, setAuthenticatedUser] = useStateCallback<IAuthUser>(getUser());
 
-  const setUser = (user: IAuthUser) => {
+  const setUser = async (user: IAuthUser) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
-    setAuthenticatedUser(user);
-    navigate(`/${RoutePaths.Connections}`);
+    setAuthenticatedUser(user, () => {
+      navigate(`/${RoutePaths.Connections}`);
+    });
   };
 
   const removeUser = () => {
     localStorage.removeItem(AUTH_USER_KEY);
-    setAuthenticatedUser(() => {
-      return getUser();
+    setAuthenticatedUser(getUser(), () => {
+      navigate(`/${RoutePaths.Signin}`);
     });
-    navigate(`/${RoutePaths.Signin}`);
   };
 
   return (
