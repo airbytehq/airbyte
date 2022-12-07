@@ -33,6 +33,7 @@ import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
+import io.airbyte.api.model.generated.WebBackendConnectionListRequestBody;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
 import io.airbyte.api.model.generated.WebBackendConnectionReadList;
 import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
@@ -40,7 +41,6 @@ import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
 import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
@@ -48,6 +48,7 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.ConfigRepository.StandardSyncQuery;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.server.converters.ApiPojoConverters;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
@@ -99,12 +100,17 @@ public class WebBackendConnectionsHandler {
     return Enums.convertTo(stateHandler.getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
   }
 
-  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
+  public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WebBackendConnectionListRequestBody webBackendConnectionListRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
-    // passing 'false' so that deleted connections are not included
-    final List<StandardSync> standardSyncs =
-        configRepository.listWorkspaceStandardSyncs(workspaceIdRequestBody.getWorkspaceId(), false);
+    final StandardSyncQuery query = new StandardSyncQuery(
+        webBackendConnectionListRequestBody.getWorkspaceId(),
+        webBackendConnectionListRequestBody.getSourceId(),
+        webBackendConnectionListRequestBody.getDestinationId(),
+        // passing 'false' so that deleted connections are not included
+        false);
+
+    final List<StandardSync> standardSyncs = configRepository.listWorkspaceStandardSyncs(query);
     final Map<UUID, SourceRead> sourceReadById =
         getSourceReadById(standardSyncs.stream().map(StandardSync::getSourceId).toList());
     final Map<UUID, DestinationRead> destinationReadById =

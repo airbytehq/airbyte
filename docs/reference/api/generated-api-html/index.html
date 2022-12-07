@@ -8682,7 +8682,7 @@ containing the updated stream needs to be sent.</div>
 
     <h3 class="field-label">Request body</h3>
     <div class="field-items">
-      <div class="param">WorkspaceIdRequestBody <a href="#WorkspaceIdRequestBody">WorkspaceIdRequestBody</a> (required)</div>
+      <div class="param">WebBackendConnectionListRequestBody <a href="#WebBackendConnectionListRequestBody">WebBackendConnectionListRequestBody</a> (required)</div>
 
       <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash;  </div>
 
@@ -9996,6 +9996,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#WebBackendCheckUpdatesRead"><code>WebBackendCheckUpdatesRead</code> - </a></li>
     <li><a href="#WebBackendConnectionCreate"><code>WebBackendConnectionCreate</code> - </a></li>
     <li><a href="#WebBackendConnectionListItem"><code>WebBackendConnectionListItem</code> - </a></li>
+    <li><a href="#WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a></li>
     <li><a href="#WebBackendConnectionRead"><code>WebBackendConnectionRead</code> - </a></li>
     <li><a href="#WebBackendConnectionReadList"><code>WebBackendConnectionReadList</code> - </a></li>
     <li><a href="#WebBackendConnectionRequestBody"><code>WebBackendConnectionRequestBody</code> - </a></li>
@@ -11481,6 +11482,15 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>
 <div class="param">schemaChange </div><div class="param-desc"><span class="param-type"><a href="#SchemaChange">SchemaChange</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="WebBackendConnectionListRequestBody"><code>WebBackendConnectionListRequestBody</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">workspaceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">sourceId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">destinationId (optional)</div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">

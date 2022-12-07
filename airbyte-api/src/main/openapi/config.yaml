@@ -1771,7 +1771,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+              $ref: "#/components/schemas/WebBackendConnectionListRequestBody"
         required: true
       responses:
         "200":
@@ -4604,6 +4604,17 @@ components:
           type: integer
         sourceDefinitions:
           type: integer
+    WebBackendConnectionListRequestBody:
+      type: object
+      required:
+        - workspaceId
+      properties:
+        workspaceId:
+          $ref: "#/components/schemas/WorkspaceId"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
