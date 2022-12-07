@@ -42,8 +42,8 @@ definitions:
     $options:
       name: "rates"
       path: "/exchangerates_data/{{stream_slice['start_time'] or 'latest'}}"
+      stream_cursor_field: "date"
     primary_key: "timestamp"
-    stream_cursor_field: "date"
 streams:
   - "*ref(definitions.rates_stream)"
 check:
