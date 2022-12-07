@@ -28,22 +28,6 @@ const useWorkspace = () => {
 
   const analyticsService = useAnalyticsService();
 
-  const finishOnboarding = async (skipStep?: string) => {
-    analyticsService.track(Namespace.ONBOARDING, Action.SKIP, {
-      actionDescription: "Skip Onboarding",
-      step: skipStep,
-    });
-
-    await updateWorkspace({
-      workspaceId: workspace.workspaceId,
-      initialSetupComplete: workspace.initialSetupComplete,
-      anonymousDataCollection: !!workspace.anonymousDataCollection,
-      news: !!workspace.news,
-      securityUpdates: !!workspace.securityUpdates,
-      displaySetupWizard: false,
-    });
-  };
-
   const setInitialSetupConfig = async (data: {
     email: string;
     anonymousDataCollection: boolean;
@@ -114,7 +98,6 @@ const useWorkspace = () => {
   );
 
   return {
-    finishOnboarding,
     setInitialSetupConfig,
     updatePreferences,
     updateWebhook,

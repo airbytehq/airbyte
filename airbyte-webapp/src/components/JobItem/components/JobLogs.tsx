@@ -1,10 +1,10 @@
-import { clamp } from "lodash";
+import clamp from "lodash/clamp";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
@@ -45,7 +45,7 @@ const jobIsSynchronousJobRead = (job: SynchronousJobRead | JobsWithJobs): job is
 const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
-  const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobRead).id;
+  const id: number | string = job.job?.id ?? (job as SynchronousJobRead).id;
 
   const debugInfo = useGetDebugInfoJob(id, typeof id === "number", true);
 

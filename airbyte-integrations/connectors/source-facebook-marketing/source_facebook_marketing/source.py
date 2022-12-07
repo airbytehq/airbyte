@@ -5,13 +5,14 @@
 import logging
 from typing import Any, List, Mapping, Optional, Tuple, Type
 
+import facebook_business
 import pendulum
 import requests
 from airbyte_cdk.models import AuthSpecification, ConnectorSpecification, DestinationSyncMode, OAuth2Specification
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from source_facebook_marketing.api import API
-from source_facebook_marketing.spec import ConnectorConfig, InsightConfig
+from source_facebook_marketing.spec import ConnectorConfig
 from source_facebook_marketing.streams import (
     Activities,
     AdAccount,
@@ -38,6 +39,7 @@ logger = logging.getLogger("airbyte")
 
 class SourceFacebookMarketing(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
         config = ConnectorConfig.parse_obj(config)
@@ -59,9 +61,16 @@ class SourceFacebookMarketing(AbstractSource):
         try:
             api = API(account_id=config.account_id, access_token=config.access_token)
             logger.info(f"Select account {api.account}")
-            return True, None
         except requests.exceptions.RequestException as e:
             return False, e
+
+        # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+        for stream in self.get_custom_insights_streams(api, config):
+            try:
+                stream.check_breakdowns()
+            except facebook_business.exceptions.FacebookRequestError as e:
+                return False, e._api_error_message
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Type[Stream]]:
         """Discovery method, returns available streams
@@ -149,7 +158,7 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         ]
 
-        return self._update_insights_streams(insights=config.custom_insights, default_args=insights_args, streams=streams)
+        return streams + self.get_custom_insights_streams(api, config)
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
         """Returns the spec for this integration.
@@ -170,28 +179,21 @@ class SourceFacebookMarketing(AbstractSource):
             ),
         )
 
-    def _update_insights_streams(self, insights: List[InsightConfig], default_args, streams) -> List[Type[Stream]]:
-        """Update method, if insights have values returns streams replacing the
-        default insights streams else returns streams
-        """
-        if not insights:
-            return streams
-
-        insights_custom_streams = list()
-
-        for insight in insights:
-            args = dict(
-                api=default_args["api"],
+    def get_custom_insights_streams(self, api: API, config: ConnectorConfig) -> List[Type[Stream]]:
+        """return custom insights streams"""
+        streams = []
+        for insight in config.custom_insights or []:
+            stream = AdsInsights(
+                api=api,
                 name=f"Custom{insight.name}",
                 fields=list(set(insight.fields)),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
+                action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
-                start_date=insight.start_date or default_args["start_date"],
-                end_date=insight.end_date or default_args["end_date"],
-                insights_lookback_window=insight.insights_lookback_window or default_args["insights_lookback_window"],
+                start_date=insight.start_date or config.start_date,
+                end_date=insight.end_date or config.end_date,
+                insights_lookback_window=insight.insights_lookback_window or config.insights_lookback_window,
             )
-            insight_stream = AdsInsights(**args)
-            insights_custom_streams.append(insight_stream)
-
-        return streams + insights_custom_streams
+            streams.append(stream)
+        return streams

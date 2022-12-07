@@ -1,11 +1,12 @@
-@use "../../../scss/colors";
-@use "../../../scss/fonts";
+@use "scss/colors";
+@use "scss/fonts";
+@use "scss/variables";
 
 .circle {
   height: 20px;
   width: fit-content;
   min-width: 20px;
-  border-radius: 10px;
+  border-radius: variables.$border-radius-lg;
   padding: 0 4px;
   text-align: center;
   overflow: hidden;

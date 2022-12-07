@@ -128,7 +128,16 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of successful workflow syncs."),
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
-      "count of the number of workflow failures");
+      "count of the number of workflow failures"),
+  REPLICATION_BYTES_SYNCED(MetricEmittingApps.WORKER,
+      "replication_bytes_synced",
+      "number of bytes synced during replication"),
+  REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
+      "replication_records_synced",
+      "number of records synced during replication"),
+  RESET_REQUEST(MetricEmittingApps.WORKER,
+      "reset_request",
+      "number of requested resets");
 
   private final MetricEmittingApp application;
   private final String metricName;

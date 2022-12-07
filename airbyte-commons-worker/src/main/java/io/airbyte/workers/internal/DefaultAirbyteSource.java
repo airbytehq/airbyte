@@ -39,7 +39,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
-  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
       .setPrefixColor(Color.BLUE_BACKGROUND);
 
@@ -53,8 +53,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
-        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  }
+
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting

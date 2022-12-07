@@ -17,7 +17,6 @@ import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -176,14 +175,8 @@ public class SourceHandler {
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
-    final List<SourceConnection> sourceConnections = configRepository.listSourceConnection()
-        .stream()
-        .filter(sc -> sc.getSourceDefinitionId().equals(sourceDefinitionIdRequestBody.getSourceDefinitionId())
-            && !MoreBooleans.isTruthy(sc.getTombstone()))
-        .toList();
-
     final List<SourceRead> reads = Lists.newArrayList();
-    for (final SourceConnection sourceConnection : sourceConnections) {
+    for (final SourceConnection sourceConnection : configRepository.listSourcesForDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId())) {
       reads.add(buildSourceRead(sourceConnection));
     }
 
@@ -220,11 +213,15 @@ public class SourceHandler {
     final var workspaceIdRequestBody = new WorkspaceIdRequestBody()
         .workspaceId(source.getWorkspaceId());
 
-    connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
+    final List<UUID> uuidsToDelete = connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody)
         .getConnections().stream()
         .filter(con -> con.getSourceId().equals(source.getSourceId()))
         .map(ConnectionRead::getConnectionId)
-        .forEach(connectionsHandler::deleteConnection);
+        .toList();
+
+    for (final UUID uuidToDelete : uuidsToDelete) {
+      connectionsHandler.deleteConnection(uuidToDelete);
+    }
 
     final var spec = getSpecFromSourceId(source.getSourceId());
     final var fullConfig = secretsRepositoryReader.getSourceConnectionWithSecrets(source.getSourceId()).getConfiguration();

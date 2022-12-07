@@ -1,5 +1,78 @@
 # Changelog
 
+## 0.12.2
+Revert breaking change on `read_config` while keeping the improvement on the error message
+
+## 0.12.0
+Improve error readability when reading JSON config files
+
+## 0.11.3
+Low-code: Log response error message on failure
+
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
+## 0.11.0
+Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
+
+## 0.10.0
+Low-code: Add `start_from_page` option to a PageIncrement class
+
+## 0.9.5
+Low-code: Add jinja macro `format_datetime`
+
+## 0.9.4
+Low-code: Fix reference resolution for connector builder
+
+## 0.9.3
+Low-code: Avoid duplicate HTTP query in `simple_retriever`
+
+## 0.9.2
+Low-code: Make `default_paginator.page_token_option` optional
+
+## 0.9.1
+Low-code: Fix filtering vars in `InterpolatedRequestInputProvider.eval_request_inputs`
+
+## 0.9.0
+Low-code: Allow `grant_type` to be specified for OAuthAuthenticator
+
+## 0.8.1
+Low-code: Don't update cursor for non-record messages and fix default loader for connector builder manifests
+
+## 0.8.0
+Low-code: Allow for request and response to be emitted as log messages
+
+## 0.7.1
+Low-code: Decouple yaml manifest parsing from the declarative source implementation
+
+## 0.7.0
+Low-code: Allow connector specifications to be defined in the manifest
+
+## 0.6.0
+Low-code: Add support for monthly and yearly incremental updates for `DatetimeStreamSlicer`
+
+## 0.5.4
+Low-code: Get response.json in a safe way
+
+## 0.5.3
+Low-code: Replace EmptySchemaLoader with DefaultSchemaLoader to retain backwards compatibility
+Low-code: Evaluate backoff strategies at runtime
+
+## 0.5.2
+Low-code: Allow for read even when schemas are not defined for a connector yet
+
+## 0.4.2
+Low-code: Fix off by one error with the stream slicers
+
+## 0.4.1
+Low-code: Fix a few bugs with the stream slicers
+
+## 0.4.0
+Low-code: Add support for custom error messages on error response filters
+
 ## 0.3.0
 Publish python typehints via `py.typed` file. 
 

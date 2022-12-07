@@ -1,1 +1,1 @@
-export { validateCronExpression } from "./validateCronExpression";
+export { validateCronExpression, validateCronFrequencyOneHourOrMore } from "./validateCronExpression";

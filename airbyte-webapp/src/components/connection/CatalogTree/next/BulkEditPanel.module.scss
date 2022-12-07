@@ -1,0 +1,77 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.headerCell {
+  margin-right: variables.$spacing-xl;
+  padding-right: 0 !important;
+  display: flex;
+  min-width: unset !important;
+  flex-direction: column;
+
+  &.streamsCounterCell {
+    background-color: colors.$blue-500;
+    border-radius: 9px;
+    align-items: center;
+    height: 50px;
+    padding: 0 variables.$spacing-sm !important;
+    justify-content: center;
+    flex: 0 !important;
+  }
+
+  &.syncCell {
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+.syncCellContent {
+  height: 25px;
+}
+
+.text {
+  color: colors.$white;
+  margin: 0;
+  white-space: nowrap;
+
+  &.streamsCountNumber {
+    font-size: 21px;
+    font-weight: 500;
+    line-height: 25px;
+  }
+
+  &.streamsCountText {
+    font-size: 9px;
+    font-weight: 500;
+    line-height: 17px;
+  }
+
+  &.headerText {
+    font-size: 12px;
+    font-weight: 400;
+    margin-bottom: 5px;
+  }
+}
+
+.cancelButton {
+  border-color: colors.$white !important;
+  color: colors.$white !important;
+  margin-right: variables.$spacing-md;
+  white-space: nowrap;
+}
+
+.applyButton {
+  box-shadow: none !important;
+  background-color: colors.$white !important;
+  color: colors.$blue-500 !important;
+  white-space: nowrap;
+}
+
+.buttonCell {
+  min-width: unset !important;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.syncModeSelect {
+  width: 100%;
+}

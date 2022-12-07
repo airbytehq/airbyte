@@ -24,6 +24,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
@@ -91,9 +92,6 @@ public class DefaultJobPersistence implements JobPersistence {
   private final int JOB_HISTORY_EXCESSIVE_NUMBER_OF_JOBS;
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultJobPersistence.class);
-  private static final Set<String> SYSTEM_SCHEMA = Set
-      .of("pg_toast", "information_schema", "pg_catalog", "import_backup", "pg_internal",
-          "catalog_history");
   public static final String ATTEMPT_NUMBER = "attempt_number";
   private static final String JOB_ID = "job_id";
   private static final String WHERE = "WHERE ";
@@ -222,6 +220,10 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private void updateJobStatus(final DSLContext ctx, final long jobId, final JobStatus newStatus, final LocalDateTime now) {
     final Job job = getJob(ctx, jobId);
+    if (job.isJobInTerminalState()) {
+      // If the job is already terminal, no need to set a new status
+      return;
+    }
     job.validateStatusTransition(newStatus);
     ctx.execute(
         "UPDATE jobs SET status = CAST(? as JOB_STATUS), updated_at = ? WHERE id = ?",
@@ -332,39 +334,23 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public <T> void writeOutput(final long jobId,
-                              final int attemptNumber,
-                              final T output,
-                              final SyncStats syncStats,
-                              final NormalizationSummary normalizationSummary)
+  public void writeOutput(final long jobId, final int attemptNumber, final JobOutput output)
       throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
+    final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
+
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
           .set(ATTEMPTS.OUTPUT, JSONB.valueOf(Jsons.serialize(output)))
           .set(ATTEMPTS.UPDATED_AT, now)
           .where(ATTEMPTS.JOB_ID.eq(jobId), ATTEMPTS.ATTEMPT_NUMBER.eq(attemptNumber))
           .execute();
-      final Optional<Record> record =
-          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-              attemptNumber).stream().findFirst();
-      final Long attemptId = record.get().get("id", Long.class);
+      final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
-      ctx.insertInto(SYNC_STATS)
-          .set(SYNC_STATS.ID, UUID.randomUUID())
-          .set(SYNC_STATS.UPDATED_AT, now)
-          .set(SYNC_STATS.CREATED_AT, now)
-          .set(SYNC_STATS.ATTEMPT_ID, attemptId)
-          .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
-          .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
-          .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
-          .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
-          .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
-          .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
-          .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
-          .execute();
+      if (syncStats != null) {
+        writeSyncStats(now, syncStats, attemptId, ctx);
+      }
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
@@ -383,6 +369,24 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
+  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+    ctx.insertInto(SYNC_STATS)
+        .set(SYNC_STATS.ID, UUID.randomUUID())
+        .set(SYNC_STATS.UPDATED_AT, now)
+        .set(SYNC_STATS.CREATED_AT, now)
+        .set(SYNC_STATS.ATTEMPT_ID, attemptId)
+        .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
+        .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+        .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
+        .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
+        .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMaxSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
+        .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
+        .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+        .execute();
+  }
+
   @Override
   public void writeAttemptFailureSummary(final long jobId, final int attemptNumber, final AttemptFailureSummary failureSummary) throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
@@ -396,21 +400,34 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final Long attemptId) throws IOException {
+  public List<SyncStats> getSyncStats(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-            .fetch(getSyncStatsRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .fetch(getSyncStatsRecordMapper())
+              .stream()
+              .toList();
+        });
   }
 
   @Override
-  public List<NormalizationSummary> getNormalizationSummary(final Long attemptId) throws IOException, JsonProcessingException {
+  public List<NormalizationSummary> getNormalizationSummary(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
-        .query(ctx -> ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
-            .fetch(getNormalizationSummaryRecordMapper())
-            .stream()
-            .toList());
+        .query(ctx -> {
+          final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
+          return ctx.select(DSL.asterisk()).from(NORMALIZATION_SUMMARIES).where(NORMALIZATION_SUMMARIES.ATTEMPT_ID.eq(attemptId))
+              .fetch(getNormalizationSummaryRecordMapper())
+              .stream()
+              .toList();
+        });
+  }
+
+  private static Long getAttemptId(final long jobId, final int attemptNumber, final DSLContext ctx) {
+    final Optional<Record> record =
+        ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+            attemptNumber).stream().findFirst();
+    return record.get().get("id", Long.class);
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
@@ -780,18 +797,6 @@ public class DefaultJobPersistence implements JobPersistence {
     setMetadata(SECRET_MIGRATION_STATUS, "true");
   }
 
-  private final String SCHEDULER_MIGRATION_STATUS = "schedulerMigration";
-
-  @Override
-  public boolean isSchedulerMigrated() throws IOException {
-    return getMetadata(SCHEDULER_MIGRATION_STATUS).count() == 1;
-  }
-
-  @Override
-  public void setSchedulerMigrationDone() throws IOException {
-    setMetadata(SCHEDULER_MIGRATION_STATUS, "true");
-  }
-
   @Override
   public Optional<String> getVersion() throws IOException {
     return getMetadata(AirbyteVersion.AIRBYTE_VERSION_KEY_NAME).findFirst();
@@ -834,6 +839,27 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setAirbyteProtocolVersionMin(final Version version) throws IOException {
     setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME, version.serialize());
+  }
+
+  @Override
+  public Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException {
+    final Optional<Version> min = getAirbyteProtocolVersionMin();
+    final Optional<Version> max = getAirbyteProtocolVersionMax();
+
+    if (min.isPresent() != max.isPresent()) {
+      // Flagging this because this would be highly suspicious but not bad enough that we should fail
+      // hard.
+      // If the new config is fine, the system should self-heal.
+      LOGGER.warn("Inconsistent AirbyteProtocolVersion found, only one of min/max was found. (min:{}, max:{})",
+          min.map(Version::serialize).orElse(""), max.map(Version::serialize).orElse(""));
+    }
+
+    if (min.isEmpty() && max.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new AirbyteProtocolVersionRange(min.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION),
+        max.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION)));
   }
 
   private Stream<String> getMetadata(final String keyName) throws IOException {
@@ -898,27 +924,6 @@ public class DefaultJobPersistence implements JobPersistence {
     return exportDatabase(DEFAULT_SCHEMA);
   }
 
-  /**
-   * This is different from {@link #exportDatabase()} cause it exports all the tables in all the
-   * schemas available
-   */
-  @Override
-  public Map<String, Stream<JsonNode>> dump() throws IOException {
-    final Map<String, Stream<JsonNode>> result = new HashMap<>();
-    for (final String schema : listSchemas()) {
-      final List<String> tables = listAllTables(schema);
-
-      for (final String table : tables) {
-        if (result.containsKey(table)) {
-          throw new RuntimeException("Multiple tables found with the same name " + table);
-        }
-        result.put(table.toUpperCase(), exportTable(schema, table));
-      }
-    }
-
-    return result;
-  }
-
   private Map<JobsDatabaseSchema, Stream<JsonNode>> exportDatabase(final String schema) throws IOException {
     final List<String> tables = listTables(schema);
     final Map<JobsDatabaseSchema, Stream<JsonNode>> result = new HashMap<>();
@@ -963,25 +968,6 @@ public class DefaultJobPersistence implements JobPersistence {
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }
-  }
-
-  private List<String> listAllTables(final String schema) throws IOException {
-    if (schema != null) {
-      return jobDatabase.query(context -> context.meta().getSchemas(schema).stream()
-          .flatMap(s -> context.meta(s).getTables().stream())
-          .map(Named::getName)
-          .collect(Collectors.toList()));
-    } else {
-      return List.of();
-    }
-  }
-
-  private List<String> listSchemas() throws IOException {
-    return jobDatabase.query(context -> context.meta().getSchemas().stream()
-        .map(Named::getName)
-        .filter(c -> !SYSTEM_SCHEMA.contains(c))
-        .collect(Collectors.toList()));
-
   }
 
   private Stream<JsonNode> exportTable(final String schema, final String tableName) throws IOException {

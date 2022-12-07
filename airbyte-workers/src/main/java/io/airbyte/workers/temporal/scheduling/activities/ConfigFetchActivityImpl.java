@@ -64,6 +64,12 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
+  public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return configRepository.getStandardSync(connectionId);
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Override
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
@@ -168,6 +174,28 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
     return new GetMaxAttemptOutput(syncJobMaxAttempts);
+  }
+
+  @Override
+  public Optional<UUID> getSourceId(UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getSourceId());
+    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's Source ID: ", e);
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<Status> getStatus(UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getStatus());
+    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's status: ", e);
+      return Optional.empty();
+    }
   }
 
 }

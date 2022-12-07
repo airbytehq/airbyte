@@ -4,8 +4,8 @@ import classNames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedDateParts, FormattedMessage, FormattedTimeParts } from "react-intl";
 
-import { StatusIcon } from "components";
 import { Cell, Row } from "components/SimpleTableComponents";
+import { StatusIcon } from "components/ui/StatusIcon";
 
 import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
@@ -16,10 +16,10 @@ import styles from "./MainInfo.module.scss";
 import { ResetStreamsDetails } from "./ResetStreamDetails";
 
 const getJobConfig = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).configType ?? (job as JobsWithJobs).job.configType;
+  (job as SynchronousJobRead).configType ?? job.job.configType;
 
 const getJobCreatedAt = (job: SynchronousJobRead | JobsWithJobs) =>
-  (job as SynchronousJobRead).createdAt ?? (job as JobsWithJobs).job.createdAt;
+  (job as SynchronousJobRead).createdAt ?? job.job.createdAt;
 
 const partialSuccessCheck = (attempts: AttemptRead[]) => {
   if (attempts.length > 0 && attempts[attempts.length - 1].status === JobStatus.failed) {

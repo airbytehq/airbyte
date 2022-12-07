@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.check.connection;
 
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
@@ -85,7 +86,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
   @Override
   public ConnectorJobOutput runWithJobOutput(final CheckConnectionInput args) {
     ApmTraceUtils
-        .addTagsToTrace(Map.of(JOB_ID_KEY, args.getJobRunConfig().getJobId(), DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
+        .addTagsToTrace(Map.of(ATTEMPT_NUMBER_KEY, args.getJobRunConfig().getAttemptId(), JOB_ID_KEY, args.getJobRunConfig().getJobId(),
+            DOCKER_IMAGE_KEY, args.getLauncherConfig().getDockerImage()));
     final JsonNode fullConfig = secretsHydrator.hydrate(args.getConnectionConfiguration().getConnectionConfiguration());
 
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput()
@@ -128,7 +130,8 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           Math.toIntExact(launcherConfig.getAttemptId()),
           launcherConfig.getDockerImage(),
           processFactory,
-          workerConfigs.getResourceRequirements());
+          workerConfigs.getResourceRequirements(),
+          launcherConfig.getIsCustomConnector());
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
           ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
           : new DefaultAirbyteStreamFactory();
