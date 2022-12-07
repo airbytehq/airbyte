@@ -520,12 +520,14 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           the str should describe what went wrong.
         """
         if error.response.status_code == requests.codes.FORBIDDEN:
-            error_message = "This is most likely due to insufficient permissions on the credentials in use. "
-            error_message += self._visit_docs_message(logger)
+            error_message = (
+                "This is most likely due to insufficient permissions on the credentials in use. "
+                "Please visit the connector's documentation to learn more. "
+            )
             return False, error_message
 
         error_message = repr(error)
-        return False, error_message
+        return True, error_message
 
     def _get_stream_slice(self, stream):
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
@@ -540,22 +542,3 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return next(slices)
         except StopIteration:
             return {}
-
-    def _visit_docs_message(self, logger: logging.Logger) -> str:
-        """
-        :param source:
-        :return: A message telling the user where to go to learn more about the source.
-        """
-        try:
-            # connector_spec = source.spec(logger)
-            # docs_url = connector_spec.documentationUrl
-            # if docs_url:
-            #     learn_more_message = f"Please visit {docs_url} to learn more. "
-            # else:
-            learn_more_message = "Please visit the connector's documentation to learn more. "
-
-        except FileNotFoundError:  # If we are unit testing without implementing spec()
-            docs_url = "https://docs.airbyte.com/integrations/sources/test"
-            learn_more_message = f"Please visit {docs_url} to learn more."
-
-        return learn_more_message
