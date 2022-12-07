@@ -171,8 +171,9 @@ class SecretsManager:
             return []
         return secrets
 
-    def write_to_storage(self, secrets: List[RemoteSecret]) -> int:
+    def write_to_storage(self, secrets: List[RemoteSecret]) -> List[str]:
         """Tries to save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder"""
+        written_files = []
         if not secrets:
             return 0
         for secret in secrets:
@@ -181,8 +182,8 @@ class SecretsManager:
             filepath = secrets_dir / secret.configuration_file_name
             with open(filepath, "w") as file:
                 file.write(secret.value)
-            self.logger.info(f"The file {filepath} was saved")
-        return 0
+            written_files.append(filepath)
+        return written_files
 
     def _create_new_secret_version(self, new_secret: Secret, old_secret: RemoteSecret) -> RemoteSecret:
         """Create a new secret version from a new secret instance. Disable the previous secret version.
@@ -243,7 +244,7 @@ class SecretsManager:
             for configuration_file_name, versions_by_creation_time in updated_configuration_files_versions.items()
         ]
 
-    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> int:
+    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> List[RemoteSecret]:
         """Update existing secrets if an updated version was found locally.
 
         Args:
@@ -254,6 +255,7 @@ class SecretsManager:
         """
         existing_secrets = {secret.name: secret for secret in existing_secrets}
         updated_secrets = {secret.name: secret for secret in self._get_updated_secrets()}
+        new_remote_secrets = []
         for existing_secret_name in existing_secrets:
             if existing_secret_name in updated_secrets and json.loads(updated_secrets[existing_secret_name].value) != json.loads(
                 existing_secrets[existing_secret_name].value
@@ -261,5 +263,6 @@ class SecretsManager:
                 new_secret = updated_secrets[existing_secret_name]
                 old_secret = existing_secrets[existing_secret_name]
                 new_remote_secret = self._create_new_secret_version(new_secret, old_secret)
+                new_remote_secrets.append(new_remote_secret)
                 self.logger.info(f"Updated {new_remote_secret.name} with new value")
-        return 0
+        return new_remote_secrets

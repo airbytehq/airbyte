@@ -182,13 +182,19 @@ def test_update_secrets(tmp_path, matchers, old_secret_value, updated_configurat
     with requests_mock.Mocker() as m:
         add_version_adapter = m.post(matchers["addVersion"], json={"name": "new_version"})
         disable_version_adapter = m.post(matchers["disable"], json={})
-        assert manager.update_secrets(existing_secrets) == 0
+        updated_secrets = manager.update_secrets(existing_secrets)
 
     if old_secret_value != updated_configurations[-1]:
         # We confirm the new version was created from the latest updated_configuration value
+        for secret in updated_secrets:
+            assert secret.connector_name == "source-test"
+            assert secret.configuration_file_name == "config.json"
+            assert secret.value == updated_configurations[-1]
+            assert secret.enabled_version == "new_version"
         expected_add_version_payload = {"payload": {"data": base64.b64encode(updated_configurations[-1].encode()).decode("utf-8")}}
         assert add_version_adapter.last_request.json() == expected_add_version_payload
         assert disable_version_adapter.called_once
     else:
+        assert not updated_secrets
         assert not add_version_adapter.called
         assert not disable_version_adapter.called
