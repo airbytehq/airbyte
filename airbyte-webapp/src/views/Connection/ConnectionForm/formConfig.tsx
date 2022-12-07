@@ -82,11 +82,13 @@ export function useDefaultTransformation(): OperationCreate {
 interface CreateConnectionValidationSchemaArgs {
   allowSubOneHourCronExpressions: boolean;
   mode: ConnectionFormMode;
+  isAutoDetectSchemaChangesEnabled: boolean;
 }
 
 export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
+  isAutoDetectSchemaChangesEnabled,
 }: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
@@ -128,10 +130,9 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
-      nonBreakingChangesPreference:
-        process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES === "true"
-          ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference))
-          : yup.mixed().notRequired(),
+      nonBreakingChangesPreference: isAutoDetectSchemaChangesEnabled
+        ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+        : yup.mixed().notRequired(),
 
       namespaceDefinition: yup
         .string()
