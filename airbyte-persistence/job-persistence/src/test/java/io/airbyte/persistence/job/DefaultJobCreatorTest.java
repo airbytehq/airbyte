@@ -426,7 +426,9 @@ class DefaultJobCreatorTest {
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
-        .withState(connectionState);
+        .withState(connectionState)
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
@@ -482,7 +484,9 @@ class DefaultJobCreatorTest {
         .withOperationSequence(List.of(STANDARD_SYNC_OPERATION))
         .withResourceRequirements(workerResourceRequirements)
         .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
-        .withState(connectionState);
+        .withState(connectionState)
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(false);
 
     final JobConfig jobConfig = new JobConfig()
         .withConfigType(ConfigType.RESET_CONNECTION)
