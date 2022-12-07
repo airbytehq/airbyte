@@ -132,6 +132,7 @@ jobs:
           attempt_limit: 3
           attempt_delay: 10000 # in ms
       - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
         run: |
           source venv/bin/activate
           ci_credentials ${{ github.event.inputs.connector }} update-secrets
