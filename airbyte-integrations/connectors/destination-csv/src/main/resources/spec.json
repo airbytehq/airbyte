@@ -17,15 +17,64 @@
         "examples": ["/local"]
       },
       "delimiter": {
+        "type": "object",
         "description": "The character delimiting individual cells in the CSV data.",
-        "type": "string",
-        "default": ",",
-        "enum": [
-          "Comma: ,",
-          "Semicolon: ;",
-          "Tab: \\t",
-          "Space: ' '",
-          "Pipe: |"
+        "oneOf": [
+          {
+            "title": "Comma",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": ",",
+                "default": ","
+              }
+            }
+          },
+          {
+            "title": "Semicolon",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": ";",
+                "default": ";"
+              }
+            }
+          },
+          {
+            "title": "Tab",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": "  ",
+                "default": "  "
+              }
+            }
+          },
+          {
+            "title": "Space",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": " ",
+                "default": " "
+              }
+            }
+          },
+          {
+            "title": "Pipe",
+            "required": ["symbol"],
+            "properties": {
+              "symbol": {
+                "type": "string",
+                "const": "|",
+                "default": "|"
+              }
+            }
+          }
         ]
       }
     }
