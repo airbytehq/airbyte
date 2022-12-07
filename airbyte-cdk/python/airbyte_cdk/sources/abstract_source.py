@@ -137,10 +137,6 @@ class AbstractSource(Source, ABC):
         logger.info(f"Finished syncing {self.name}")
 
     @property
-    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return None
-
-    @property
     def per_stream_state_enabled(self) -> bool:
         return True
 
