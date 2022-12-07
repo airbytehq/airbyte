@@ -33,8 +33,6 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
-  private JsonNode configJson;
-
   @Override
   protected String getImageName() {
     return "airbyte/destination-exasol:dev";
