@@ -6,15 +6,15 @@
 # json schemas and class source definitions.
 # This is done by scraping the documentation pages using requests + beautifulsoup.
 
-import requests
 import json
-import re
 import os
-import pandas as pd
-
-from bs4 import BeautifulSoup, Tag
-from dataclasses import dataclass
+import re
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import dataclass
+
+import pandas as pd
+import requests
+from bs4 import BeautifulSoup, Tag
 
 
 @dataclass
