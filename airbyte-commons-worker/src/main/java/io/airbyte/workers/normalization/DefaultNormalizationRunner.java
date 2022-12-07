@@ -145,6 +145,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           attempt,
           jobRoot,
           normalizationImageName,
+          // custom connector does not use normalization
+          false,
           false, files,
           null,
           resourceRequirements,

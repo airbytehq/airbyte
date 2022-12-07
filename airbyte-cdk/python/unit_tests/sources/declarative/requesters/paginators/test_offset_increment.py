@@ -6,7 +6,6 @@ import json
 
 import pytest
 import requests
-
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 
