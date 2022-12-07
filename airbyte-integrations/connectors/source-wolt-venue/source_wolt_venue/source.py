@@ -136,7 +136,7 @@ class SourceWoltVenue(AbstractSource):
         venues_mapping = [
             ("5e8c54125fb96f4417ebc836", "B62"),
             ("620ba315e563c1faa7a9b2d6", "T18"),
-            # ("620ba4e460f7329be919d9c1", "TMG"),
-            # ("620ba7cde15dc14dbd1e5dbc", "Storo"),
+            ("620ba4e460f7329be919d9c1", "TMG"),
+            ("620ba7cde15dc14dbd1e5dbc", "Storo"),
         ]
         return [OfflineMinutes(config=config, venues_mapping=iter(venues_mapping))]
