@@ -22,6 +22,7 @@ import {
   OperationCreate,
   OperationRead,
   OperatorType,
+  SchemaChange,
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
@@ -272,19 +273,41 @@ export const useInitialValues = (
   const workspace = useCurrentWorkspace();
   const { catalogDiff } = connection;
 
+  // used to determine if we should calculate optimal sync mode
   const newStreamDescriptors = catalogDiff?.transforms
     .filter((transform) => transform.transformType === "add_stream")
     .map((stream) => stream.streamDescriptor);
+
+  // used to determine if we need to clear any primary keys or cursor fields that were removed
+  const breakingFieldChanges = useMemo(() => {
+    if (connection.schemaChange === SchemaChange.breaking) {
+      const breakingChanges = catalogDiff?.transforms.filter((transform) => {
+        if (transform.transformType === "update_stream") {
+          return transform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
+        }
+        return false;
+      });
+      return breakingChanges;
+    }
+    return [];
+  }, [catalogDiff?.transforms, connection]);
 
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
+        breakingFieldChanges,
         isNotCreateMode,
         newStreamDescriptors
       ),
-    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreamDescriptors]
+    [
+      breakingFieldChanges,
+      connection.syncCatalog,
+      destDefinition?.supportedDestinationSyncModes,
+      isNotCreateMode,
+      newStreamDescriptors,
+    ]
   );
 
   return useMemo(() => {

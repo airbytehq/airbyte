@@ -1,9 +1,12 @@
+import isEqual from "lodash/isEqual";
+
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
 import {
   DestinationSyncMode,
   SyncMode,
   AirbyteStreamConfiguration,
   StreamDescriptor,
+  StreamTransform,
 } from "core/request/AirbyteClient";
 
 const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
@@ -11,6 +14,29 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
     return streamNode.stream.defaultCursorField;
   }
   return streamNode.config?.cursorField || [];
+};
+
+const cleanBreakingFieldChanges = (streamNode: SyncSchemaStream, breakingChangesByStream: StreamTransform[]) => {
+  breakingChangesByStream.forEach((streamTransformation) => {
+    // get all of the removed field paths
+    const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName) as string[][];
+
+    if (streamNode.config?.primaryKey && removedFieldPaths) {
+      // if any of the field paths in the primary key match any of the field paths that were removed, clear the entire primaryKey property
+      if (
+        streamNode.config.primaryKey.some((key) => removedFieldPaths.some((removedPath) => isEqual(key, removedPath)))
+      ) {
+        streamNode.config.primaryKey = [];
+      }
+    }
+
+    if (streamNode.config?.cursorField && removedFieldPaths) {
+      // if the cursor field path is one of the removed field paths, clear the entire cursorField property
+      if (removedFieldPaths.some((key) => isEqual(key, streamNode?.config?.cursorField))) {
+        streamNode.config.cursorField = [];
+      }
+    }
+  });
 };
 
 const verifySourceDefinedProperties = (streamNode: SyncSchemaStream, isEditMode: boolean) => {
@@ -124,6 +150,7 @@ const getOptimalSyncMode = (
 const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
+  breakingFieldChanges: StreamTransform[] | undefined,
   isNotCreateMode?: boolean,
   newStreamDescriptors?: StreamDescriptor[]
 ): SyncSchema => {
@@ -132,11 +159,26 @@ const calculateInitialCatalog = (
       const nodeWithId: SyncSchemaStream = { ...apiNode, id: id.toString() };
       const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
 
-      // if the stream is new since a refresh, we want to verify cursor and get optimal sync modes
-      const matches = newStreamDescriptors?.some(
-        (streamId) => streamId.name === nodeStream?.stream?.name && streamId.namespace === nodeStream.stream?.namespace
+      // narrow down the breaking field changes from this connection to only those relevant to this stream
+      const breakingChangesByStream = breakingFieldChanges?.filter((streamTransformFromDiff) => {
+        return (
+          streamTransformFromDiff.streamDescriptor.name === nodeStream?.stream?.name &&
+          streamTransformFromDiff.streamDescriptor.namespace === nodeStream.stream?.namespace
+        );
+      });
+
+      // if there are breaking field changes in this stream, clear the relevant primary key(s)/cursor(s)
+      if (breakingChangesByStream && breakingChangesByStream.length > 0) {
+        cleanBreakingFieldChanges(nodeStream, breakingChangesByStream);
+      }
+
+      // if the stream is new since a refresh, verify cursor and get optimal sync modes
+      const isStreamNew = newStreamDescriptors?.some(
+        (streamIdFromDiff) =>
+          streamIdFromDiff.name === nodeStream?.stream?.name &&
+          streamIdFromDiff.namespace === nodeStream.stream?.namespace
       );
-      if (isNotCreateMode && !matches) {
+      if (isNotCreateMode && !isStreamNew) {
         return nodeStream;
       }
       return getOptimalSyncMode(verifyConfigCursorField(nodeStream), supportedDestinationSyncModes);
