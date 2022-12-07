@@ -1,0 +1,20 @@
+{
+  "title": "Vendor Inventory Health and Planning Data",
+  "description": "Vendor Inventory Health and Planning Data Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "seller-sku": {
+      "type": ["null", "string"]
+    },
+    "quantity": {
+      "type": ["null", "string"]
+    },
+    "price": {
+      "type": ["null", "number"]
+    },
+    "product ID": {
+      "type": ["null", "number"]
+    }
+  }
+}

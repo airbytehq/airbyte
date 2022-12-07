@@ -1,0 +1,21 @@
+{
+    "title": "Vendor Net Pure Product Margin Report",
+    "description": "Vendor Net Pure Product Margin Report",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+      "startDate": {
+        "type": ["null", "string"]
+      },
+      "endDate": {
+        "type": ["null", "string"]
+      },
+      "asin": {
+        "type": ["null", "string"]
+      },
+      "netPureProductMargin": {
+        "type": ["null", "number"]
+      }
+    }
+  }
+  
