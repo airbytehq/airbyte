@@ -1,31 +1,42 @@
-import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
+import { JSONSchema7TypeName } from "json-schema";
 
 import { AirbyteJSONSchema } from "core/jsonSchema";
 
-interface FormItem {
+/**
+ * When turning the JSON schema into `FormBlock`s,
+ * some often used props are copied over for easy access.
+ */
+type FormRelevantJSONSchema = Pick<
+  AirbyteJSONSchema,
+  | "default"
+  | "examples"
+  | "description"
+  | "pattern"
+  | "order"
+  | "const"
+  | "title"
+  | "airbyte_hidden"
+  | "enum"
+  | "format"
+>;
+
+interface FormItem extends FormRelevantJSONSchema {
   fieldKey: string;
   path: string;
   isRequired: boolean;
-  order?: number;
-  title?: string;
-  description?: string;
-  airbyte_hidden?: boolean;
 }
 
-export interface FormBaseItem extends FormItem, AirbyteJSONSchema {
+export interface FormBaseItem extends FormItem {
   _type: "formItem";
   type: JSONSchema7TypeName;
   isSecret?: boolean;
   multiline?: boolean;
-  default?: JSONSchema7Type;
 }
 
 export interface FormGroupItem extends FormItem {
   _type: "formGroup";
   jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
-  isLoading?: boolean;
-  examples?: JSONSchema7Type;
 }
 
 export interface FormConditionItem extends FormItem {
