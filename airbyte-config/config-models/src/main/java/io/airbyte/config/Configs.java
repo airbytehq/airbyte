@@ -406,6 +406,16 @@ public interface Configs {
   Map<String, String> getJobKubeNodeSelectors();
 
   /**
+   * Define an isolated kube node selectors, so we can run risky images in it.
+   */
+  Map<String, String> getIsolatedJobKubeNodeSelectors();
+
+  /**
+   * Define if we want to run custom connector related jobs in a separate node pool.
+   */
+  boolean getUseCustomKubeNodeSelector();
+
+  /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
   Map<String, String> getSpecJobKubeNodeSelectors();
