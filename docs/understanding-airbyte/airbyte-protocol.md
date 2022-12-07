@@ -6,7 +6,7 @@ The Airbyte Protocol describes a series of standard components and all the inter
 
 This document describes the protocol as it exists in its CURRENT form. Stay tuned for an RFC on how the protocol will evolve.
 
-This document is intended to contain ALL the rules of the Airbyte Protocol in one place. Anything not contained in this document is NOT part of the Protocol. At the time of writing, there is one known exception, which is the [Supported Data Types](supported-data-types.md), which contains rules on data types that are part of the Protocol. That said, there are additional articles, e.g. [A Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md) that repackage the information in this document for different audiences.
+This document is intended to contain ALL the rules of the Airbyte Protocol in one place. Anything not contained in this document is NOT part of the Protocol. At the time of writing, there is one known exception, which is the [Supported Data Types](supported-data-types.md), which contains rules on data types that are part of the Protocol. That said, there are additional articles, e.g. [A Beginner's Guide to the Airbyte Catalog](beginners-guide-to-catalog.md), and [Airbyte vs. Singer: Why Airbyte Is Not Built on Top of Singer](https://airbyte.com/blog/airbyte-vs-singer-why-airbyte-is-not-built-on-top-of-singer), that repackage the information in this document for different audiences.
 
 ## Key Concepts
 
