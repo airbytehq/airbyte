@@ -7,14 +7,15 @@ package io.airbyte.server.filter;
 import com.google.common.net.HttpHeaders;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.MutableHttpResponse;
-import io.micronaut.http.annotation.Filter;
 import io.micronaut.http.filter.HttpServerFilter;
 import io.micronaut.http.filter.ServerFilterChain;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.reactivestreams.Publisher;
 
 // https://medium.com/@Leejjon_net/how-to-allow-cross-origin-requests-in-a-jax-rs-microservice-d2a6aa2df484
-@Filter("/**")
+// @Filter("/**")
+@Slf4j
 public class CorsFilter implements HttpServerFilter {
 
   public static final Map<String, String> MAP = Map.of(
