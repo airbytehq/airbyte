@@ -35,7 +35,7 @@ exports[`<StartWithDestinationCard /> should renders without crash with provided
                 >
                   Don’t have your own destination yet?
                 </div>
-                <div
+                <span
                   class="<removed-for-snapshot-test>"
                 >
                   <div
@@ -43,7 +43,7 @@ exports[`<StartWithDestinationCard /> should renders without crash with provided
                   >
                     Alpha
                   </div>
-                </div>
+                </span>
               </div>
               <div
                 class="<removed-for-snapshot-test>"
