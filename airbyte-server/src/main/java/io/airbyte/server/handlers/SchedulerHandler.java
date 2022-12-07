@@ -265,7 +265,7 @@ public class SchedulerHandler {
       final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
 
       if (discoverSchemaRequestBody.getConnectionId() != null) {
-        discoveredSchemaWithCatalogDiff(discoveredSchema, discoverSchemaRequestBody);
+        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
       }
 
       return discoveredSchema;
@@ -404,32 +404,6 @@ public class SchedulerHandler {
     } else {
       connectionStatus = connectionRead.getStatus();
     }
-
-    // final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog
-    // = connectionsHandler
-    // .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
-    //
-    // final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-    // connectionRead.getSyncCatalog();
-    // CatalogDiff diff =
-    // connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog),
-    // discoveredSchema.getCatalog(),
-    // CatalogConverter.toProtocol(currentAirbyteCatalog));
-    // boolean containsBreakingChange = containsBreakingChange(diff);
-    // ConnectionUpdate updateObject =
-    // new
-    // ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
-    // ConnectionStatus connectionStatus;
-    // if (shouldDisableConnection(containsBreakingChange,
-    // connectionRead.getNonBreakingChangesPreference(), diff)) {
-    // connectionStatus = ConnectionStatus.INACTIVE;
-    // } else {
-    // connectionStatus = ConnectionStatus.ACTIVE;
-    // }
-    // updateObject.status(connectionStatus);
-    // connectionsHandler.updateConnection(updateObject);
-    // discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
-    //
   }
 
   private boolean shouldDisableConnection(final boolean containsBreakingChange,
