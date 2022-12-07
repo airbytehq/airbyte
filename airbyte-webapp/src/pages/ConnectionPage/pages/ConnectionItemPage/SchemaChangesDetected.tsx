@@ -48,7 +48,7 @@ export const SchemaChangesDetected: React.FC = () => {
       <Text size="lg">
         <FormattedMessage id={`connection.schemaChange.${hasBreakingSchemaChange ? "breaking" : "nonBreaking"}`} />
       </Text>
-      <Button onClick={onReviewActionButtonClick} isLoading={schemaRefreshing}>
+      <Button variant="dark" onClick={onReviewActionButtonClick} isLoading={schemaRefreshing}>
         <FormattedMessage id="connection.schemaChange.reviewAction" />
       </Button>
     </div>
