@@ -94,7 +94,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
     });
   };
 
-  const [field] = useField("connectorName");
+  const [field] = useField("global.connectorName");
 
   return (
     <div className={classnames(className, styles.container)}>
