@@ -35,6 +35,7 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
+    implementation 'io.sentry:sentry:6.3.1'
     implementation 'io.swagger:swagger-annotations:1.6.2'
 
     annotationProcessor platform(libs.micronaut.bom)

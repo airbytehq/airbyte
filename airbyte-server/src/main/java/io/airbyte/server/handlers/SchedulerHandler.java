@@ -43,6 +43,7 @@ import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -101,8 +102,9 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final EnvVariableFeatureFlags envVariableFeatureFlags;
+  private final FeatureFlags envVariableFeatureFlags;
 
+  // TODO: Convert to be fully using micronaut
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
                           final SecretsRepositoryWriter secretsRepositoryWriter,
@@ -112,7 +114,7 @@ public class SchedulerHandler {
                           final LogConfigs logConfigs,
                           final EventRunner eventRunner,
                           final ConnectionsHandler connectionsHandler,
-                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                          final FeatureFlags envVariableFeatureFlags) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -136,7 +138,7 @@ public class SchedulerHandler {
                    final EventRunner eventRunner,
                    final JobConverter jobConverter,
                    final ConnectionsHandler connectionsHandler,
-                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                   final FeatureFlags envVariableFeatureFlags) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;

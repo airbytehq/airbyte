@@ -11,8 +11,8 @@ import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
-import io.micronaut.http.annotation.Post;
 import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 
 @Controller("/api/v1/attempt/")
 public class AttemptApiController implements AttemptApi {
@@ -26,7 +26,7 @@ public class AttemptApiController implements AttemptApi {
   @Override
   @Post(uri = "/save_stats",
         processes = MediaType.APPLICATION_JSON)
-  public InternalOperationResult saveStats(@Body final SaveStatsRequestBody saveStatsRequestBody) {
+  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
     throw new UnsupportedOperationException();
   }
 

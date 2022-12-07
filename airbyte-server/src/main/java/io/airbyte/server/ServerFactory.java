@@ -32,7 +32,6 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
@@ -51,7 +50,6 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
@@ -173,12 +171,6 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      ConnectionApiFactory.setValues(
-          connectionsHandler,
-          operationsHandler,
-          schedulerHandler,
-          mdc);
-
       DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
 
       DestinationApiFactory.setValues(destinationApiHandler, schedulerHandler, mdc);
@@ -217,7 +209,6 @@ public interface ServerFactory {
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
-          ConnectionApiController.class,
           DbMigrationApiController.class,
           DestinationApiController.class,
           DestinationDefinitionApiController.class,
@@ -238,8 +229,6 @@ public interface ServerFactory {
           WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
-          new CorsFilter(),
-          new ConnectionApiBinder(),
           new DbMigrationBinder(),
           new DestinationApiBinder(),
           new DestinationDefinitionApiBinder(),

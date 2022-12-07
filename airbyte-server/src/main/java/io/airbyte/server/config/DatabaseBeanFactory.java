@@ -6,6 +6,7 @@ package io.airbyte.server.config;
 
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.StreamResetPersistence;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
@@ -120,4 +121,9 @@ public class DatabaseBeanFactory {
     return new JobsDatabaseAvailabilityCheck(dslContext, DatabaseConstants.DEFAULT_ASSERT_DATABASE_TIMEOUT_MS);
   }
 
+  @Singleton
+  @Requires(env = WorkerMode.CONTROL_PLANE)
+  public StreamResetPersistence streamResetPersistence(@Named("configDatabase") final Database configDatabase) {
+    return new StreamResetPersistence(configDatabase);
+  }
 }
