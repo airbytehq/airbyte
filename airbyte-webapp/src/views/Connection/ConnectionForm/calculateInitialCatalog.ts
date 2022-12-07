@@ -150,7 +150,7 @@ const getOptimalSyncMode = (
 const calculateInitialCatalog = (
   schema: SyncSchema,
   supportedDestinationSyncModes: DestinationSyncMode[],
-  breakingFieldChanges: StreamTransform[] | undefined,
+  breakingFieldChanges: StreamTransform[],
   isNotCreateMode?: boolean,
   newStreamDescriptors?: StreamDescriptor[]
 ): SyncSchema => {
@@ -160,15 +160,18 @@ const calculateInitialCatalog = (
       const nodeStream = verifySourceDefinedProperties(verifySupportedSyncModes(nodeWithId), isNotCreateMode || false);
 
       // narrow down the breaking field changes from this connection to only those relevant to this stream
-      const breakingChangesByStream = breakingFieldChanges?.filter((streamTransformFromDiff) => {
-        return (
-          streamTransformFromDiff.streamDescriptor.name === nodeStream?.stream?.name &&
-          streamTransformFromDiff.streamDescriptor.namespace === nodeStream.stream?.namespace
-        );
-      });
+      const breakingChangesByStream =
+        breakingFieldChanges.length > 0
+          ? breakingFieldChanges.filter((streamTransformFromDiff) => {
+              return (
+                streamTransformFromDiff.streamDescriptor.name === nodeStream?.stream?.name &&
+                streamTransformFromDiff.streamDescriptor.namespace === nodeStream.stream?.namespace
+              );
+            })
+          : [];
 
       // if there are breaking field changes in this stream, clear the relevant primary key(s)/cursor(s)
-      if (breakingChangesByStream && breakingChangesByStream.length > 0) {
+      if (breakingChangesByStream.length > 0) {
         cleanBreakingFieldChanges(nodeStream, breakingChangesByStream);
       }
 
