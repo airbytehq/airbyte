@@ -114,6 +114,10 @@ For incremental streams, data is synced up to the previous day using your Google
 
 ## Custom Query: Understanding Google Ads Query Language
 
+:::warning
+Additional streams for Google Ads are dynamically created based on the specified Custom GAQL Queries. For an existing Google Ads source, when you are updating or removing Custom GAQL Queries, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
+:::
+
 The Google Ads Query Language can query the Google Ads API. Check out [Google Ads Query Language](https://developers.google.com/google-ads/api/docs/query/overview) and the [query builder](https://developers.google.com/google-ads/api/docs/query/overview). You can add these as custom queries when configuring the Google Ads source.
 
 Each custom query in the input configuration must work for all the customer account IDs. Otherwise, the customer ID will be skipped for every query that fails the validation test. For example, if your query contains `metrics` fields in the `select` clause, it will not be executed against manager accounts.
