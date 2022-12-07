@@ -21,6 +21,7 @@
     },
     "page_size_for_large_streams": {
       "title": "Page size for large streams (Optional)",
+      "description": "The GitHub connector contains several streams with a large amount of data. The page size of such streams depends on the size of your repository. We recommended that you specify values between 10 and 30.",
       "order": 3
     },
     "credentials": {

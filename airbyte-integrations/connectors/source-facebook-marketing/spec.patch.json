@@ -6,6 +6,12 @@
           "insights_lookback_window": {
             "minimum": 1,
             "mininum": null
+          },
+          "page_size": {
+            "description": "Page size used when sending requests to Facebook API to specify number of records per page when response has pagination. You won't need to set this field for most use cases."
+          },
+          "max_batch_size": {
+            "description": "Maximum batch size used when sending batch requests to Facebook API. You won't need to set this field for most use cases."
           }
         }
       }

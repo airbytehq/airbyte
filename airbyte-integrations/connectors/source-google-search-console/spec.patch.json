@@ -2,6 +2,12 @@
   "required": ["site_urls", "start_date", "credentials"],
   "properties": {
     "authorization": null,
+    "site_urls": {
+      "description": "The URLs of the website property attached to your GSC account. See the docs for more information: https://go.estuary.dev/jp3e13"
+    },
+    "custom_reports": {
+      "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See the docs for more information: https://go.estuary.dev/6VN40S"
+    },
     "credentials": {
       "type": "object",
       "title": "Authentication Type",

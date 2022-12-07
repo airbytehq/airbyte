@@ -12,6 +12,9 @@
     "tenant_id": {
       "airbyte_secret": false
     },
+    "developer_token": {
+      "description": "Developer token associated with user. See the docs for more information: https://go.estuary.dev/BpBK1T"
+    },
     "credentials": {
       "type": "object",
       "description": "",
