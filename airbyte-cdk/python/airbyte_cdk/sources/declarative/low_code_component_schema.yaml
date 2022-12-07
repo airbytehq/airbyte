@@ -249,6 +249,32 @@ definitions:
     properties:
       type:
         enum: [JsonDecoder]
+  MinMaxDatetime:
+    type: object
+    required:
+      - type
+      - datetime
+    properties:
+      type:
+        enum: [MinMaxDatetime]
+      datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definition/InterpolatedString"
+      datetime_format:
+        type: string
+        default: ""
+      max_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definition/InterpolatedString"
+      min_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definition/InterpolatedString"
+      $options:
+        type: object
+        additionalProperties: true
   NoPagination:
     description: Pagination implementation that never returns a next page
     type: object
