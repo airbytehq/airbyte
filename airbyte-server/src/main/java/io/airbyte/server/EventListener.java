@@ -46,6 +46,9 @@ public class EventListener {
       // Manual configuration that will be replaced by Dependency Injection in the future
       try (final Connection configsConnection = configDataSource.getConnection();
           final Connection jobsConnection = jobsDataSource.getConnection()) {
+        configsConnection.setAutoCommit(false);
+        jobsConnection.setAutoCommit(false);
+
         final DSLContext configsDslContext = DSL.using(configsConnection, SQLDialect.POSTGRES);
         final DSLContext jobsDslContext = DSL.using(jobsConnection, SQLDialect.POSTGRES);
 
