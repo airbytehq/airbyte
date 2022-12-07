@@ -1,6 +1,12 @@
 # Changelog
 
-## 0.11.2
+## 0.12.2
+Revert breaking change on `read_config` while keeping the improvement on the error message
+
+## 0.12.0
+Improve error readability when reading JSON config files
+
+## 0.11.3
 Low-code: Log response error message on failure
 
 ## 0.11.2
