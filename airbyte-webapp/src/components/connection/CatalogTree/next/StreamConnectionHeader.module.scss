@@ -10,6 +10,10 @@ $icon-size: 15px;
   align-items: center;
   overflow: hidden;
   scrollbar-gutter: stable;
+
+  &.newTableContainer {
+    overflow: unset;
+  }
 }
 
 .connector {

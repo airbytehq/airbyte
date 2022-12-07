@@ -3,3 +3,7 @@
 .catalogTreeTable {
   padding: variables.$spacing-lg variables.$spacing-xl 0;
 }
+
+.newCatalogTreeTable {
+  overflow: auto;
+}

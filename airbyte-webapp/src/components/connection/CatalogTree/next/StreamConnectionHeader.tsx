@@ -13,6 +13,7 @@ import { getIcon } from "utils/imageUtils";
 import styles from "./StreamConnectionHeader.module.scss";
 
 const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
+const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
 export const StreamConnectionHeader: React.FC = () => {
   const {
@@ -22,8 +23,9 @@ export const StreamConnectionHeader: React.FC = () => {
   const destinationDefinition = useDestinationDefinition(destination.destinationDefinitionId);
   const sourceStyles = classnames(styles.connector, styles.source);
   const destinationStyles = classnames(styles.connector, styles.destination);
+
   return (
-    <div className={styles.container}>
+    <div className={classnames(styles.container, { [styles.newTableContainer]: !!isNewStreamsTableEnabled })}>
       <div className={sourceStyles}>
         {renderIcon(sourceDefinition.icon)}{" "}
         <Heading as="h5" size="sm">
