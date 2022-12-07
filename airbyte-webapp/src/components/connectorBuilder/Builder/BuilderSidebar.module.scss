@@ -1,5 +1,6 @@
 @use "scss/variables";
 @use "scss/colors";
+@use "scss/mixins";
 
 .container {
   padding: variables.$spacing-sm;
@@ -10,8 +11,9 @@
 }
 
 .connectorImg {
+  @include mixins.shadow;
+
   width: 90px;
-  box-shadow: 0 2px 4px rgba(26, 25, 77, 12%);
   border-radius: 25px;
   padding: variables.$spacing-xl;
   margin-top: 50px;
