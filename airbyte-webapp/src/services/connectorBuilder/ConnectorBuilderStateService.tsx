@@ -107,8 +107,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const streams = useMemo(() => {
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
-  // const streamListErrorMessage = undefined;
-  // const streams = useMemo(() => [{ name: "stream1", url: "url1" }], []);
   const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
   const [selectedStreamName, setSelectedStream] = useState(firstStreamName);

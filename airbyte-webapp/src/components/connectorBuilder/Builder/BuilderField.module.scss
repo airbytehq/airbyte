@@ -1,12 +1,6 @@
 @use "scss/variables";
 @use "scss/colors";
 
-// .container {
-//   display: flex;
-//   flex-direction: column;
-//   gap: 0;
-// }
-
 .error {
   margin-top: variables.$spacing-sm;
   color: colors.$red;
