@@ -15,8 +15,7 @@
       "type": ["null", "integer"]
     },
     "Keyword": {
-      "type": ["null", "string"],
-      additionalProperties: true
+      "type": ["null", "string"]
     },
     "AdId": {
       "type": ["null", "integer"]
