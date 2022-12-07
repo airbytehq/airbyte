@@ -348,7 +348,9 @@ public class DefaultJobPersistence implements JobPersistence {
           .execute();
       final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
-      writeSyncStats(now, syncStats, attemptId, ctx);
+      if (syncStats != null) {
+        writeSyncStats(now, syncStats, attemptId, ctx);
+      }
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)

@@ -1,3 +1,8 @@
+/**
+ * FeatureItems are for permanent flags to differentiate features between environments (e.g. Cloud vs. OSS),
+ * workspaces, specific user groups, etc.
+ */
+
 export enum FeatureItem {
   AllowUploadCustomImage = "ALLOW_UPLOAD_CUSTOM_IMAGE",
   AllowCustomDBT = "ALLOW_CUSTOM_DBT",
