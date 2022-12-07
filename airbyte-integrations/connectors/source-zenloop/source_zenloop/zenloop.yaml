@@ -47,6 +47,7 @@ definitions:
           request_parameters:
             order_type: "desc"
             order_by: "inserted_at"
+            date_shortcut: "custom"
   surveys:
     $ref: "*ref(definitions.base_stream)"
     $options:
@@ -76,7 +77,7 @@ definitions:
         parent_key: public_hash_id
         stream_slice_field: id
   date_slicer:
-    class_name: source_zenloop.components.ZenloopDatetimeStreamSlicer
+    type: DatetimeStreamSlicer
     cursor_field: "inserted_at"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
     start_datetime:
@@ -112,7 +113,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "*ref(definitions.incremental_base_stream.retriever.requester)"
         path: "{{ 'surveys/' + stream_slice.id + '/answers' }}"
       stream_slicer:
         type: CartesianProductStreamSlicer
@@ -127,7 +128,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
       requester:
-        $ref: "*ref(definitions.requester)"
+        $ref: "*ref(definitions.incremental_base_stream.retriever.requester)"
         path: "{{ 'survey_groups/' + stream_slice.id + '/answers' }}"
       stream_slicer:
         type: CartesianProductStreamSlicer

@@ -16,21 +16,6 @@ from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
-class ZenloopDatetimeStreamSlicer(DatetimeStreamSlicer):
-    def get_request_params(
-        self,
-        *,
-        stream_state: Optional[StreamState] = None,
-        stream_slice: Optional[StreamSlice] = None,
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> Mapping[str, Any]:
-        params = super().get_request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        date_shortcut = {"date_shortcut": "custom"}  # required request param when specified date_from and date_to params
-        params.update(date_shortcut)
-        return params
-
-
-@dataclass
 class ZenloopSubstreamSlicer(SubstreamSlicer):
     def stream_slices(self, sync_mode: SyncMode, stream_state: StreamState) -> Iterable[StreamSlice]:
         """
