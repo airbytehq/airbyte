@@ -384,25 +384,31 @@ public class SchedulerHandler {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
-  private void discoveredSchemaWithCatalogDiff(final SourceDiscoverSchemaRead discoveredSchema,
-                                               final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
+                                                                 SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
-    final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
-        .getConnectionAirbyteCatalog(discoverSchemaRequestBody.getConnectionId());
-    final ConnectionRead connectionRead = connectionsHandler.getConnection(discoverSchemaRequestBody.getConnectionId());
-    final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-        connectionRead.getSyncCatalog();
-    final CatalogDiff diff =
-        connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-            CatalogConverter.toProtocol(currentAirbyteCatalog));
-    final boolean containsBreakingChange = containsBreakingChange(diff);
-    final ConnectionUpdate updateObject =
-        new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(discoverSchemaRequestBody.getConnectionId());
-    final ConnectionStatus connectionStatus;
-    if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
-      connectionStatus = ConnectionStatus.INACTIVE;
-    } else {
-      connectionStatus = connectionRead.getStatus();
+    final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
+    for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
+      final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
+          .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
+      final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
+          connectionRead.getSyncCatalog();
+      CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+          CatalogConverter.toProtocol(currentAirbyteCatalog));
+      boolean containsBreakingChange = containsBreakingChange(diff);
+      ConnectionUpdate updateObject =
+          new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
+      ConnectionStatus connectionStatus;
+      if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
+        connectionStatus = ConnectionStatus.INACTIVE;
+      } else {
+        connectionStatus = connectionRead.getStatus();
+      }
+      updateObject.status(connectionStatus);
+      connectionsHandler.updateConnection(updateObject);
+      if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
+        discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
+      }
     }
   }
 
