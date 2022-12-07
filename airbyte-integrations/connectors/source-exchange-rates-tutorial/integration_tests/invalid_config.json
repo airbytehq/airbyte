@@ -1,3 +1,5 @@
 {
-  "todo-wrong-field": "this should be an incomplete config file, used in standard tests"
+  "access_key": "12345",
+  "start_date": "2022-12-05",
+  "base": "USD"
 }
