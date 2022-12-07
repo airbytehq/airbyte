@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 from dataclasses import dataclass
 
@@ -13,6 +17,7 @@ class CustomDatetimeStreamSlicer(DatetimeStreamSlicer):
     but at the same time the value of the same field is "2021-01-01T00:00:00+00:00 in record 2,
     then it is not enough to specify only one format in the `datetime_format` option.
     """
+
     def _format_datetime(self, dt: datetime.datetime) -> str:
         return pendulum.datetime(
             year=dt.year,
@@ -22,7 +27,7 @@ class CustomDatetimeStreamSlicer(DatetimeStreamSlicer):
             minute=dt.minute,
             second=dt.second,
             microsecond=dt.microsecond,
-            tz=dt.tzinfo or self._timezone
+            tz=dt.tzinfo or self._timezone,
         ).to_iso8601_string()
 
     def parse_date(self, date: str) -> datetime.datetime:
