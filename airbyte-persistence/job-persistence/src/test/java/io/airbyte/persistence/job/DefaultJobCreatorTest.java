@@ -440,6 +440,7 @@ class DefaultJobCreatorTest {
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         DESTINATION_PROTOCOL_VERSION,
+        false,
         List.of(STANDARD_SYNC_OPERATION),
         streamsToReset);
 
@@ -495,6 +496,7 @@ class DefaultJobCreatorTest {
         STANDARD_SYNC,
         DESTINATION_IMAGE_NAME,
         DESTINATION_PROTOCOL_VERSION,
+        false,
         List.of(STANDARD_SYNC_OPERATION),
         streamsToReset);
 
