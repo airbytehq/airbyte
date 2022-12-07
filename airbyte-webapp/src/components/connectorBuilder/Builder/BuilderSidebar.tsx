@@ -96,8 +96,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
   const [field] = useField("connectorName");
 
-  console.log("numStreams", numStreams);
-
   return (
     <div className={classnames(className, styles.container)}>
       <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />

@@ -35,8 +35,6 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) =>
     }
   };
 
-  console.log("values", values);
-
   return (
     <>
       <FormikPatch />

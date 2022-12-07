@@ -55,19 +55,18 @@ export const ConnectorBuilderStateContext = React.createContext<Context | null>(
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
 
+  // manifest values
   const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
     DEFAULT_BUILDER_FORM_VALUES
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
-  console.log("formValues", formValues);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
-  console.log("manifest", manifest);
 
   useEffect(() => {
     setJsonManifest(convertToManifest(formValues));
@@ -93,8 +92,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
       console.error(`Config value is not valid JSON! Error: ${err}`);
     }
   }, [configString]);
-
-  // console.log("manifest", manifest);
 
   // streams
   const {

@@ -1,13 +1,16 @@
 import { useMonaco } from "@monaco-editor/react";
 import { load, YAMLException } from "js-yaml";
+import isMatch from "lodash/isMatch";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
 import { ConnectorManifest } from "core/request/ConnectorBuilderClient";
+import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { convertToManifest } from "../Builder/types";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
@@ -17,12 +20,17 @@ interface YamlEditorProps {
 }
 
 export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const yamlEditorRef = useRef<editor.IStandaloneCodeEditor>();
-  // const template = useManifestTemplate();
-  // const [locallyStoredYaml, setLocallyStoredYaml] = useLocalStorage<string>("connectorBuilderYaml", template);
-  // useDebounce(() => setLocallyStoredYaml(yamlValue), 500, [yamlValue]);
-  const { yamlManifest, yamlIsValid, setYamlEditorIsMounted, setYamlIsValid, setJsonManifest } =
-    useConnectorBuilderState();
+  const {
+    yamlManifest,
+    yamlIsValid,
+    jsonManifest,
+    builderFormValues,
+    setYamlEditorIsMounted,
+    setYamlIsValid,
+    setJsonManifest,
+  } = useConnectorBuilderState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
   const monaco = useMonaco();
@@ -64,10 +72,31 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     }
   }, [yamlValue, monaco, setJsonManifest, setYamlIsValid]);
 
+  const yamlIsDirty = useMemo(() => {
+    return !isMatch(convertToManifest(builderFormValues), jsonManifest);
+  }, [jsonManifest, builderFormValues]);
+  console.log(yamlIsDirty);
+
+  const handleToggleYamlEditor = () => {
+    if (yamlIsDirty) {
+      openConfirmationModal({
+        text: "connectorBuilder.toggleModal.text",
+        title: "connectorBuilder.toggleModal.title",
+        submitButtonText: "connectorBuilder.toggleModal.submitButton",
+        onSubmit: () => {
+          toggleYamlEditor();
+          closeConfirmationModal();
+        },
+      });
+    } else {
+      toggleYamlEditor();
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.control}>
-        <UiYamlToggleButton yamlSelected onClick={toggleYamlEditor} />
+        <UiYamlToggleButton yamlSelected onClick={handleToggleYamlEditor} />
         <DownloadYamlButton className={styles.downloadButton} yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>
