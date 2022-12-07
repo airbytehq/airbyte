@@ -19,7 +19,7 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
 const cleanBreakingFieldChanges = (streamNode: SyncSchemaStream, breakingChangesByStream: StreamTransform[]) => {
   breakingChangesByStream.forEach((streamTransformation) => {
     // get all of the removed field paths
-    const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName) as string[][];
+    const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName);
 
     if (streamNode.config?.primaryKey && removedFieldPaths) {
       // if any of the field paths in the primary key match any of the field paths that were removed, clear the entire primaryKey property
