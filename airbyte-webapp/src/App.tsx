@@ -10,7 +10,7 @@ import { I18nProvider } from "core/i18n";
 import { ServicesProvider } from "core/servicesProvider";
 import { AppMonitoringServiceProvider } from "hooks/services/AppMonitoringService";
 import { ConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { defaultFeatures, FeatureService } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureService } from "hooks/services/Feature";
 import { FormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ModalServiceProvider } from "hooks/services/Modal";
 import NotificationService from "hooks/services/Notification";
@@ -42,7 +42,7 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
     <AppMonitoringServiceProvider>
       <ApiErrorBoundary>
         <WorkspaceServiceProvider>
-          <FeatureService features={defaultFeatures}>
+          <FeatureService features={defaultOssFeatures}>
             <NotificationService>
               <ConfirmationModalService>
                 <ModalServiceProvider>

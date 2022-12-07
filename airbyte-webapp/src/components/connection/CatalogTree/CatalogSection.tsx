@@ -11,6 +11,7 @@ import {
   DestinationSyncMode,
   NamespaceDefinitionType,
   SyncMode,
+  SelectedFieldInfo,
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -93,6 +94,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const onPkUpdate = useCallback(
     (newPrimaryKey: string[][]) => updateStreamWithConfig({ primaryKey: newPrimaryKey }),
+    [updateStreamWithConfig]
+  );
+
+  const onSelectedFieldsUpdate = useCallback(
+    (selectedFields: SelectedFieldInfo[]) => updateStreamWithConfig({ selectedFields, fieldSelectionEnabled: true }),
     [updateStreamWithConfig]
   );
 
@@ -184,6 +190,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
               syncSchemaFields={flattenedFields}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
+              onSelectedFieldsUpdate={onSelectedFieldsUpdate}
               shouldDefinePk={shouldDefinePk}
               shouldDefineCursor={shouldDefineCursor}
             />

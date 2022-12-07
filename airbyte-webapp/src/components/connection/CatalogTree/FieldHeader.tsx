@@ -1,14 +1,17 @@
 import React, { memo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { HeaderCell, NameContainer } from "./styles";
+import { HeaderCell, SyncHeaderContainer } from "./styles";
 
 const FieldHeaderInner: React.FC = () => (
   <>
+    <HeaderCell flex={0}>
+      <SyncHeaderContainer>
+        <FormattedMessage id="form.field.sync" />
+      </SyncHeaderContainer>
+    </HeaderCell>
     <HeaderCell lighter flex={1.5}>
-      <NameContainer>
-        <FormattedMessage id="form.field.name" />
-      </NameContainer>
+      <FormattedMessage id="form.field.name" />
     </HeaderCell>
     <HeaderCell lighter>
       <FormattedMessage id="form.field.dataType" />

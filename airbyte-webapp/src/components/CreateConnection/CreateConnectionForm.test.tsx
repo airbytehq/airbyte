@@ -7,7 +7,7 @@ import { mockConnection } from "test-utils/mock-data/mockConnection";
 import { mockDestination } from "test-utils/mock-data/mockDestination";
 import { TestWrapper } from "test-utils/testutils";
 
-import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 import * as sourceHook from "hooks/services/useSourceHook";
 
 import { CreateConnectionForm } from "./CreateConnectionForm";
@@ -118,7 +118,7 @@ describe("CreateConnectionForm", () => {
     it("should not allow cron expressions under one hour when feature not enabled", async () => {
       jest.spyOn(sourceHook, "useDiscoverSchema").mockImplementationOnce(() => baseUseDiscoverSchema);
 
-      const featuresToInject = defaultFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
+      const featuresToInject = defaultOssFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
 
       const container = tlr(
         <TestWrapper features={featuresToInject}>

@@ -184,6 +184,7 @@
   "form.selected": "Selected",
   "form.notSelected": "Not selected",
   "form.nullable": "Nullable",
+  "form.field.sync": "Sync",
   "form.field.name": "Field name",
   "form.field.dataType": "Data type",
   "form.field.destinationName": "Destination name",
@@ -527,6 +528,7 @@
   "connector.connectorsInDevelopment.docLink": "See our <lnk>documentation</lnk> for more details.",
   "connector.setupGuide": "Setup Guide",
   "connector.setupGuide.notFound": "No Setup Guide found for this connector.",
+  "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
 
