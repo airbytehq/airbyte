@@ -1,0 +1,183 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Subscription/Subscriptions",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the EntryID. The EntryID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "BlockEntry": {
+      "description": "Indicates if subscription is blocked for time cost entry",
+      "type": "boolean"
+    },
+    "CancellationDate": {
+      "description": "Date of cancellation",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Classification": {
+      "description": "Guid ID of classification, to filter the report based on the classification of a subscription",
+      "type": "string"
+    },
+    "ClassificationCode": {
+      "description": "Code of classification, to filter the report based on the classification of a subscription",
+      "type": "string"
+    },
+    "ClassificationDescription": {
+      "description": "Description of classification, to filter the report based on the classification of a subscription",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Date when the subscription was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "The Guid ID of the user that created the subscription",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "The full name of the user that created the subscription",
+      "type": "string"
+    },
+    "Currency": {
+      "description": "Currency code used in the transactions",
+      "type": "string"
+    },
+    "CustomerPONumber": {
+      "description": "Purchase order number of that is linked to customer",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description of the subscription",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division number of the company that the subscription is linked to",
+      "type": "integer"
+    },
+    "EndDate": {
+      "description": "The date and time when the subscription ends",
+      "type": "string",
+      "format": "date-time"
+    },
+    "EntryID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "InvoiceDay": {
+      "description": "For monthly, quaterly, half-year and yearly invoice period, the day number of the month when the invoice of the subscription is sent.  While for weekly invoice period, the weekday number of the week when the invoice of the subscription is sent: 0=Monday 1=Tuesday 2=Wednesday 3=Thursday  4=Friday 5=Saturday 6=Sunday",
+      "type": "integer"
+    },
+    "InvoicedTo": {
+      "description": "The date when the invoice of the subscription is sent",
+      "type": "string",
+      "format": "date-time"
+    },
+    "InvoiceTo": {
+      "description": "The account which the subsciption is invoiced to",
+      "type": "string"
+    },
+    "InvoiceToContactPerson": {
+      "description": "The ID of the contact person that is linked to the account the subscription is invoice to",
+      "type": "string"
+    },
+    "InvoiceToContactPersonFullName": {
+      "description": "The name of the contact person that is linked to the account the subscription is invoice to",
+      "type": "string"
+    },
+    "InvoiceToName": {
+      "description": "Name of the account to invoice to",
+      "type": "string"
+    },
+    "InvoicingStartDate": {
+      "description": "Date to start invoicing the account",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modified": {
+      "description": "Date and time when the subscription has been modified",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "The ID of the user that modified the subscription",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "The name of the user that modified the subscription",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "For additional information regarding the subscription",
+      "type": "string"
+    },
+    "Number": {
+      "description": "Subscription number of the company",
+      "type": "integer"
+    },
+    "OrderedBy": {
+      "description": "Reference to order account, GUID ID of the subscriber",
+      "type": "string"
+    },
+    "OrderedByContactPerson": {
+      "description": "Reference of contact person of order account, displays the contact name of the subscriber",
+      "type": "string"
+    },
+    "OrderedByContactPersonFullName": {
+      "description": "Name of contact person of order account, displays the full contact name of the subscriber",
+      "type": "string"
+    },
+    "OrderedByName": {
+      "description": "Name of order account, displays the name of the subscriber",
+      "type": "string"
+    },
+    "PaymentCondition": {
+      "description": "Code of subscriptions payment condition",
+      "type": "string"
+    },
+    "PaymentConditionDescription": {
+      "description": "Description of subscriptions payment condition",
+      "type": "string"
+    },
+    "Printed": {
+      "description": "Indicates if subscription has been printed",
+      "type": "boolean"
+    },
+    "Project": {
+      "description": "The Guid ID of the project, reference to Project endpoint",
+      "type": "string"
+    },
+    "ReasonCancelled": {
+      "description": "Guid ID of the reason of cancellation record linked to the subscription",
+      "type": "string"
+    },
+    "ReasonCancelledCode": {
+      "description": "Code of the reason of cancellation record linked to the subscription",
+      "type": "string"
+    },
+    "ReasonCancelledDescription": {
+      "description": "Description of the reason of cancellation record linked to the subscription",
+      "type": "string"
+    },
+    "StartDate": {
+      "description": "Start date of the subscription",
+      "type": "string",
+      "format": "date-time"
+    },
+    "SubscriptionType": {
+      "description": "The GUID ID of the subscription condition, reference to SubscriptionType endpoint",
+      "type": "string"
+    },
+    "SubscriptionTypeCode": {
+      "description": "The code of the subscription condition record",
+      "type": "string"
+    },
+    "SubscriptionTypeDescription": {
+      "description": "The code of the subscription condition description",
+      "type": "string"
+    }
+  }
+}

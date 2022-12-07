@@ -1,0 +1,286 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/CRM/Contacts",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.\nNote: This endpoint does not support query { $select=* } since there are a lot of properties in this endpoint.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Account": {
+      "description": "The account to which the contact belongs",
+      "type": "string"
+    },
+    "AccountIsCustomer": {
+      "description": "Indicates if account is a customer",
+      "type": "boolean"
+    },
+    "AccountIsSupplier": {
+      "description": "Indicates if account is a supplier",
+      "type": "boolean"
+    },
+    "AccountMainContact": {
+      "description": "Reference to the main contact of the account",
+      "type": "string"
+    },
+    "AccountName": {
+      "description": "Name of the account",
+      "type": "string"
+    },
+    "AddressLine2": {
+      "description": "Second address line",
+      "type": "string"
+    },
+    "AddressStreet": {
+      "description": "Street name of the address",
+      "type": "string"
+    },
+    "AddressStreetNumber": {
+      "description": "Street number of the address",
+      "type": "string"
+    },
+    "AddressStreetNumberSuffix": {
+      "description": "Street number suffix of the address",
+      "type": "string"
+    },
+    "AllowMailing": {
+      "description": "Obsolete",
+      "type": "integer"
+    },
+    "BirthDate": {
+      "description": "Birth date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "BirthName": {
+      "description": "Obsolete. Please don't use this field anymore as it may overwrite LastName.",
+      "type": "string"
+    },
+    "BirthNamePrefix": {
+      "description": "Obsolete. Please don't use this field anymore as it may overwrite MiddleName.",
+      "type": "string"
+    },
+    "BirthPlace": {
+      "description": "Birth place",
+      "type": "string"
+    },
+    "BusinessEmail": {
+      "description": "Email address of the contact",
+      "type": "string"
+    },
+    "BusinessFax": {
+      "description": "Fax of the contact",
+      "type": "string"
+    },
+    "BusinessMobile": {
+      "description": "Mobile of the contact",
+      "type": "string"
+    },
+    "BusinessPhone": {
+      "description": "Phone of the contact",
+      "type": "string"
+    },
+    "BusinessPhoneExtension": {
+      "description": "Phone extension of the contact",
+      "type": "string"
+    },
+    "City": {
+      "description": "City",
+      "type": "string"
+    },
+    "Code": {
+      "description": "Code of the account",
+      "type": "string"
+    },
+    "Country": {
+      "description": "Country code",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of the creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of the creator",
+      "type": "string"
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Email": {
+      "description": "Email address of the contact",
+      "type": "string"
+    },
+    "EndDate": {
+      "description": "End date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FirstName": {
+      "description": "First name. Provide at least first name or last name to create a new contact",
+      "type": "string"
+    },
+    "FullName": {
+      "description": "Full name (First name Middle name Last name)",
+      "type": "string"
+    },
+    "Gender": {
+      "description": "Gender",
+      "type": "string"
+    },
+    "HID": {
+      "description": "Contact ID",
+      "type": "integer"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "IdentificationDate": {
+      "description": "Identification date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "IdentificationDocument": {
+      "description": "Reference to the identification document of the contact",
+      "type": "string"
+    },
+    "IdentificationUser": {
+      "description": "Reference to the user responsible for identification",
+      "type": "string"
+    },
+    "Initials": {
+      "description": "Initials",
+      "type": "string"
+    },
+    "IsAnonymised": {
+      "description": "Indicates whether the contact is anonymised.",
+      "type": "integer"
+    },
+    "IsMailingExcluded": {
+      "description": "Indicates whether contacts are excluded from the marketing list",
+      "type": "boolean"
+    },
+    "IsMainContact": {
+      "description": "Indicates if this is the main contact of the linked account",
+      "type": "boolean"
+    },
+    "JobTitleDescription": {
+      "description": "Jobtitle of the contact",
+      "type": "string"
+    },
+    "Language": {
+      "description": "Language code",
+      "type": "string"
+    },
+    "LastName": {
+      "description": "Last name. Provide at least first name or last name to create a new contact",
+      "type": "string"
+    },
+    "LeadPurpose": {
+      "description": "Reference to purpose of an contact",
+      "type": "string"
+    },
+    "LeadSource": {
+      "description": "Reference to source of an contact",
+      "type": "string"
+    },
+    "MarketingNotes": {
+      "description": "The user should be able to do a full text search on these notes to gather contacts for a marketing campaign",
+      "type": "string"
+    },
+    "MiddleName": {
+      "description": "Middle name",
+      "type": "string"
+    },
+    "Mobile": {
+      "description": "Business phone of the contact",
+      "type": "string"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of the last modifier",
+      "type": "string"
+    },
+    "Nationality": {
+      "description": "Nationality",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "Extra remarks",
+      "type": "string"
+    },
+    "PartnerName": {
+      "description": "Last name of partner",
+      "type": "string"
+    },
+    "PartnerNamePrefix": {
+      "description": "Middlename of partner",
+      "type": "string"
+    },
+    "Person": {
+      "description": "Reference to the personal information of this contact such as name, gender, address etc.",
+      "type": "string"
+    },
+    "Phone": {
+      "description": "Phone of the contact",
+      "type": "string"
+    },
+    "PhoneExtension": {
+      "description": "Phone extension of the contact",
+      "type": "string"
+    },
+    "PictureName": {
+      "description": "Filename of the picture",
+      "type": "string"
+    },
+    "PictureThumbnailUrl": {
+      "description": "Url to retrieve the picture thumbnail",
+      "type": "string"
+    },
+    "PictureUrl": {
+      "description": "Url to retrieve the picture",
+      "type": "string"
+    },
+    "Postcode": {
+      "description": "Postcode",
+      "type": "string"
+    },
+    "SocialSecurityNumber": {
+      "description": "Social security number",
+      "type": "string"
+    },
+    "StartDate": {
+      "description": "Start date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "State": {
+      "description": "State",
+      "type": "string"
+    },
+    "Title": {
+      "description": "Title",
+      "type": "string"
+    }
+  }
+}

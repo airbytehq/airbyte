@@ -1,0 +1,240 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Project/Projects",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Account": {
+      "description": "The account for this project",
+      "type": "string"
+    },
+    "AccountCode": {
+      "description": "Code of Account",
+      "type": "string"
+    },
+    "AccountContact": {
+      "description": "Contact person of Account",
+      "type": "string"
+    },
+    "AccountName": {
+      "description": "Name of Account",
+      "type": "string"
+    },
+    "AllowAdditionalInvoicing": {
+      "description": "Indicates if additional invoice is allowed for project",
+      "type": "boolean"
+    },
+    "AllowMemberEntryOnly": {
+      "description": "Allow only member to create time or cost entry",
+      "type": "boolean"
+    },
+    "BlockEntry": {
+      "description": "Block time and cost entries",
+      "type": "boolean"
+    },
+    "BlockPlanning": {
+      "description": "Block planning and reservations",
+      "type": "boolean"
+    },
+    "BlockPurchasing": {
+      "description": "Block purchasing",
+      "type": "boolean"
+    },
+    "BlockRebilling": {
+      "description": "Block rebilling",
+      "type": "boolean"
+    },
+    "BudgetedAmount": {
+      "description": "Budgeted amount of sales in the default currency of the company",
+      "type": "number"
+    },
+    "BudgetedCosts": {
+      "description": "Budgeted amount of costs in the default currency of the company",
+      "type": "number"
+    },
+    "BudgetedRevenue": {
+      "description": "Budgeted amount of revenue in the default currency of the company",
+      "type": "number"
+    },
+    "BudgetOverrunHours": {
+      "description": "BudgetOverrunHours: 10-Allowed, 20-Not Allowed",
+      "type": "integer"
+    },
+    "BudgetType": {
+      "description": "Budget type",
+      "type": "integer"
+    },
+    "BudgetTypeDescription": {
+      "description": "Budget type description",
+      "type": "string"
+    },
+    "Classification": {
+      "description": "Used only for PSA to link a project classification to the project",
+      "type": "string"
+    },
+    "ClassificationDescription": {
+      "description": "Description of Classification",
+      "type": "string"
+    },
+    "Code": {
+      "description": "Code",
+      "type": "string"
+    },
+    "CostsAmountFC": {
+      "description": "Used only for PSA to store the budgetted costs of a project (except for project type Campaign and Non-billable). Positive quantities only",
+      "type": "number"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "CustomerPOnumber": {
+      "description": "Used only for PSA to store the customer's PO number",
+      "type": "string"
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description of the project",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "DivisionName": {
+      "description": "Name of Division",
+      "type": "string"
+    },
+    "EndDate": {
+      "description": "End date of the project. In combination with the start date the status is determined",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FixedPriceItem": {
+      "description": "Item used for fixed price invoicing. To be defined per project. If empty the functionality relies on the setting",
+      "type": "string"
+    },
+    "FixedPriceItemDescription": {
+      "description": "Description of FixedPriceItem",
+      "type": "string"
+    },
+    "HasWBSLines": {
+      "description": "Indicates if whether the Project has WBS",
+      "type": "boolean"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "IncludeInvoiceSpecification": {
+      "description": "Include invoice specification. E.g: 1 = Based on account, 2 = Always, 3 = Never",
+      "type": "integer"
+    },
+    "IncludeSpecificationInInvoicePdf": {
+      "description": "Indicates whether to include invoice specification in invoice PDF",
+      "type": "boolean"
+    },
+    "InternalNotes": {
+      "description": "Internal notes not to be printed in invoice",
+      "type": "string"
+    },
+    "InvoiceAddress": {
+      "description": "Invoice address",
+      "type": "string"
+    },
+    "InvoiceAsQuoted": {
+      "description": "Indicates whether the project is invoice as quoted",
+      "type": "boolean"
+    },
+    "Manager": {
+      "description": "Responsible person for this project",
+      "type": "string"
+    },
+    "ManagerFullname": {
+      "description": "Name of Manager",
+      "type": "string"
+    },
+    "MarkupPercentage": {
+      "description": "Purchase markup percentage",
+      "type": "number"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "For additional information about projects",
+      "type": "string"
+    },
+    "PrepaidItem": {
+      "description": "Used only for PSA. This item is used for prepaid invoicing. If left empty, the functionality relies on a setting",
+      "type": "string"
+    },
+    "PrepaidItemDescription": {
+      "description": "Description of PrepaidItem",
+      "type": "string"
+    },
+    "PrepaidType": {
+      "description": "PrepaidType: 1-Retainer, 2-Hour type bundle",
+      "type": "integer"
+    },
+    "PrepaidTypeDescription": {
+      "description": "Description of PrepaidType",
+      "type": "string"
+    },
+    "SalesTimeQuantity": {
+      "description": "Budgeted time. Total number of hours estimated for the fixed price project",
+      "type": "number"
+    },
+    "SourceQuotation": {
+      "description": "Source quotation",
+      "type": "string"
+    },
+    "StartDate": {
+      "description": "Start date of a project. In combination with the end date the status is determined",
+      "type": "string",
+      "format": "date-time"
+    },
+    "TimeQuantityToAlert": {
+      "description": "Alert when exceeding (Hours)",
+      "type": "number"
+    },
+    "Type": {
+      "description": "Reference to ProjectTypes. E.g: 1 = Campaign , 2 = Fixed Price, 3 = Time and Material, 4 = Non billable, 5 = Prepaid",
+      "type": "integer"
+    },
+    "TypeDescription": {
+      "description": "Description of Type",
+      "type": "string"
+    },
+    "UseBillingMilestones": {
+      "description": "Indicates whether the Project is using billing milestones",
+      "type": "boolean"
+    }
+  }
+}

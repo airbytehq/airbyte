@@ -1,0 +1,180 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Documents/Documents",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Account": {
+      "description": "ID of the related account of this document",
+      "type": "string"
+    },
+    "AccountCode": {
+      "description": "Code of Account",
+      "type": "string"
+    },
+    "AccountName": {
+      "description": "Name of Account",
+      "type": "string"
+    },
+    "AmountFC": {
+      "description": "Amount in the currency of the transaction",
+      "type": "number"
+    },
+    "Body": {
+      "description": "Body of this document",
+      "type": "string"
+    },
+    "Category": {
+      "description": "ID of the category of this document",
+      "type": "string"
+    },
+    "CategoryDescription": {
+      "description": "Description of Category",
+      "type": "string"
+    },
+    "Contact": {
+      "description": "ID of the related contact of this document",
+      "type": "string"
+    },
+    "ContactFullName": {
+      "description": "Contact full name",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Currency": {
+      "description": "Currency code",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "DocumentDate": {
+      "description": "Entry date of the incoming document",
+      "type": "string",
+      "format": "date-time"
+    },
+    "DocumentFolder": {
+      "description": "The Id of document folder",
+      "type": "string"
+    },
+    "DocumentFolderCode": {
+      "description": "The Code of document folder",
+      "type": "string"
+    },
+    "DocumentFolderDescription": {
+      "description": "The Decsription of document folder",
+      "type": "string"
+    },
+    "DocumentViewUrl": {
+      "description": "Url to view the document",
+      "type": "string"
+    },
+    "ExpiryDate": {
+      "description": "Expiry date of this document",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FinancialTransactionEntryID": {
+      "description": "Reference to the transaction lines of the financial entry. For a document of type sales invoice it will return the InvoiceID of the sales invoice (SalesInvoices API).",
+      "type": "string"
+    },
+    "HasEmptyBody": {
+      "description": "Indicates that the document body is empty",
+      "type": "boolean"
+    },
+    "HID": {
+      "description": "Human-readable ID, formatted as xx.xxx.xxx. Unique. May not be equal to zero",
+      "type": "integer"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "InheritShare": {
+      "description": "InheritShare value",
+      "type": "boolean"
+    },
+    "Language": {
+      "description": "The language code of the document",
+      "type": "string"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "Opportunity": {
+      "description": "The opportunity linked to the document",
+      "type": "string"
+    },
+    "Project": {
+      "description": "The project linked to the document",
+      "type": "string"
+    },
+    "ProjectCode": {
+      "description": "Code of project",
+      "type": "string"
+    },
+    "ProjectDescription": {
+      "description": "Description of project",
+      "type": "string"
+    },
+    "ProposedEntryStatus": {
+      "description": "ProposedEntryStatus, 0 = Void, 5 = Rejected, 20 = Open, 50 = Processed",
+      "type": "integer"
+    },
+    "SalesInvoiceNumber": {
+      "description": "'Our reference' of the transaction that belongs to this document",
+      "type": "integer"
+    },
+    "SalesOrderNumber": {
+      "description": "Number of the sales order",
+      "type": "integer"
+    },
+    "SendMethod": {
+      "description": "Send method",
+      "type": "integer"
+    },
+    "ShopOrderNumber": {
+      "description": "Number of the shop order",
+      "type": "integer"
+    },
+    "Subject": {
+      "description": "Subject of this document",
+      "type": "string"
+    },
+    "Type": {
+      "description": "ID of the type of this document",
+      "type": "integer"
+    },
+    "TypeDescription": {
+      "description": "Description of Type",
+      "type": "string"
+    }
+  }
+}

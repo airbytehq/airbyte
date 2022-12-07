@@ -1,0 +1,296 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Financial/TransactionLines",
+  "description": "The API will return both header and line data in the same API call, to determine if the record is the header or the line, the line number can be used. If the line number is 0 it is the transaction line header, if the line number is 1 or higher it is a transaction line.\r\nThe sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Account": {
+      "description": "Reference to account",
+      "type": "string"
+    },
+    "AccountCode": {
+      "description": "Code of the Account",
+      "type": "string"
+    },
+    "AccountName": {
+      "description": "Name of the Account",
+      "type": "string"
+    },
+    "AmountDC": {
+      "description": "Amount in the default currency of the company",
+      "type": "number"
+    },
+    "AmountFC": {
+      "description": "Amount in the currency of the transaction",
+      "type": "number"
+    },
+    "AmountVATBaseFC": {
+      "description": "Vat base amount in the currency of the transaction",
+      "type": "number"
+    },
+    "AmountVATFC": {
+      "description": "Vat amount in the currency of the transaction",
+      "type": "number"
+    },
+    "Asset": {
+      "description": "Reference to asset",
+      "type": "string"
+    },
+    "AssetCode": {
+      "description": "Code of Asset",
+      "type": "string"
+    },
+    "AssetDescription": {
+      "description": "Description of Asset",
+      "type": "string"
+    },
+    "CostCenter": {
+      "description": "Reference to cost center",
+      "type": "string"
+    },
+    "CostCenterDescription": {
+      "description": "Description of CostCenter",
+      "type": "string"
+    },
+    "CostUnit": {
+      "description": "Reference to cost unit",
+      "type": "string"
+    },
+    "CostUnitDescription": {
+      "description": "Description of CostUnit",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Currency": {
+      "description": "Currency",
+      "type": "string"
+    },
+    "Date": {
+      "description": "Entry date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Description": {
+      "description": "Description",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Document": {
+      "description": "Reference to document",
+      "type": "string"
+    },
+    "DocumentNumber": {
+      "description": "Number of the document",
+      "type": "integer"
+    },
+    "DocumentSubject": {
+      "description": "Subject of the document",
+      "type": "string"
+    },
+    "DueDate": {
+      "description": "Date that payment should be done",
+      "type": "string",
+      "format": "date-time"
+    },
+    "EntryID": {
+      "description": "The transaction lines that make up a financial entry share the same EntryID",
+      "type": "string"
+    },
+    "EntryNumber": {
+      "description": "Entry number of the header",
+      "type": "integer"
+    },
+    "ExchangeRate": {
+      "description": "Exchange rate",
+      "type": "number"
+    },
+    "ExternalLinkDescription": {
+      "description": "Description of ExternalLink",
+      "type": "string"
+    },
+    "ExternalLinkReference": {
+      "description": "External link",
+      "type": "string"
+    },
+    "ExtraDutyAmountFC": {
+      "description": "Extra duty amount",
+      "type": "number"
+    },
+    "ExtraDutyPercentage": {
+      "description": "Extra duty percentage",
+      "type": "number"
+    },
+    "FinancialPeriod": {
+      "description": "Financial period",
+      "type": "integer"
+    },
+    "FinancialYear": {
+      "description": "Financial year",
+      "type": "integer"
+    },
+    "GLAccount": {
+      "description": "General ledger account",
+      "type": "string"
+    },
+    "GLAccountCode": {
+      "description": "Code of GLAccount",
+      "type": "string"
+    },
+    "GLAccountDescription": {
+      "description": "Description of GLAccount",
+      "type": "string"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "InvoiceNumber": {
+      "description": "Invoice number",
+      "type": "integer"
+    },
+    "Item": {
+      "description": "Reference to item",
+      "type": "string"
+    },
+    "ItemCode": {
+      "description": "Code of Item",
+      "type": "string"
+    },
+    "ItemDescription": {
+      "description": "Description of Item",
+      "type": "string"
+    },
+    "JournalCode": {
+      "description": "The journal code",
+      "type": "string"
+    },
+    "JournalDescription": {
+      "description": "The journal description",
+      "type": "string"
+    },
+    "LineNumber": {
+      "description": "Line number",
+      "type": "integer"
+    },
+    "LineType": {
+      "description": "Line type",
+      "type": "integer"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "Extra remarks",
+      "type": "string"
+    },
+    "OffsetID": {
+      "description": "OffsetID",
+      "type": "string"
+    },
+    "OrderNumber": {
+      "description": "Order number",
+      "type": "integer"
+    },
+    "PaymentDiscountAmount": {
+      "description": "Discount amount when paid in time",
+      "type": "number"
+    },
+    "PaymentReference": {
+      "description": "Payment reference",
+      "type": "string"
+    },
+    "Project": {
+      "description": "Reference to project",
+      "type": "string"
+    },
+    "ProjectCode": {
+      "description": "Code of Project",
+      "type": "string"
+    },
+    "ProjectDescription": {
+      "description": "Description of Project",
+      "type": "string"
+    },
+    "Quantity": {
+      "description": "Quantity",
+      "type": "number"
+    },
+    "SerialNumber": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "Status": {
+      "description": "20 = Open, 50 = Processed",
+      "type": "integer"
+    },
+    "Subscription": {
+      "description": "Reference to subscription line",
+      "type": "string"
+    },
+    "SubscriptionDescription": {
+      "description": "Description of subscription line",
+      "type": "string"
+    },
+    "TrackingNumber": {
+      "description": "Tracking number of item",
+      "type": "string"
+    },
+    "TrackingNumberDescription": {
+      "description": "Tracking number description",
+      "type": "string"
+    },
+    "Type": {
+      "description": "The transaction type.",
+      "type": "integer"
+    },
+    "VATCode": {
+      "description": "Vat code",
+      "type": "string"
+    },
+    "VATCodeDescription": {
+      "description": "Description of VATCode",
+      "type": "string"
+    },
+    "VATPercentage": {
+      "description": "Vat percentage",
+      "type": "number"
+    },
+    "VATType": {
+      "description": "Vat type",
+      "type": "string"
+    },
+    "YourRef": {
+      "description": "Your reference (of customer)",
+      "type": "string"
+    }
+  }
+}

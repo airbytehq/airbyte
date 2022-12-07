@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Inventory/ItemWarehouses",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.\nNote: This endpoint does not support query { $select=* } since there are a lot of properties in this endpoint.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "DefaultStorageLocation": {
+      "description": "This is a default storage location",
+      "type": "string"
+    },
+    "DefaultStorageLocationCode": {
+      "description": "Default storage location's code",
+      "type": "string"
+    },
+    "DefaultStorageLocationDescription": {
+      "description": "Default storage location's description",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "ID": {
+      "description": "A guid that is the unique identifier of the linkage between item and warehouse",
+      "type": "string"
+    },
+    "Item": {
+      "description": "Item ID",
+      "type": "string"
+    },
+    "ItemCode": {
+      "description": "Code of item",
+      "type": "string"
+    },
+    "ItemDescription": {
+      "description": "Description of item",
+      "type": "string"
+    },
+    "MaximumStock": {
+      "description": "Maximum quantity of items that you want in warehouse",
+      "type": "number"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "OrderPolicy": {
+      "description": "Order Policy options: 1-Lot for lot, 2-Fixed order quantity, 3-Min / Max, 4-Order",
+      "type": "integer"
+    },
+    "Period": {
+      "description": "Period that work together with replenishment in MRP",
+      "type": "integer"
+    },
+    "ReorderPoint": {
+      "description": "Quantity of items as an indication of when you need to reorder more stock for the warehouse",
+      "type": "number"
+    },
+    "ReorderQuantity": {
+      "description": "Reorder quantity that work together with replenishment in MRP",
+      "type": "number"
+    },
+    "ReplenishmentType": {
+      "description": "Replenishment options: 1-Purchase, 2-Assemble, 3-Make, 4-Transfer, 5-No replenishment advice",
+      "type": "integer"
+    },
+    "ReservedStock": {
+      "description": "The quantity in a back to back order process which is already received from the purchase order, but not yet delivered for the sales order.",
+      "type": "number"
+    },
+    "SafetyStock": {
+      "description": "Minimum quantity of items you must have in stock",
+      "type": "number"
+    },
+    "Warehouse": {
+      "description": "Warehouse ID",
+      "type": "string"
+    },
+    "WarehouseCode": {
+      "description": "Code of warehouse",
+      "type": "string"
+    },
+    "WarehouseDescription": {
+      "description": "Description of warehouse",
+      "type": "string"
+    }
+  }
+}

@@ -7,6 +7,7 @@ from urllib.parse import unquote
 
 import requests
 import pendulum
+import logging
 import re
 
 from airbyte_cdk.sources import AbstractSource
@@ -133,7 +134,7 @@ class ExactStream(HttpStream, IncrementalMixin):
         if response.status_code == 401:
             error_reason = response.headers.get("WWW-Authenticate", "")
             error_reason = unquote(error_reason)
-            
+
             if "message expired" in error_reason:
                 self.auth.refresh_access_token()
                 return True
@@ -142,7 +143,6 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         # TODO: handle the rate limiting?
         return super().should_retry(response)
-
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
@@ -194,9 +194,189 @@ class ExactStream(HttpStream, IncrementalMixin):
         return {k: parse_value(v) for k, v in obj.items()}
 
 
-class Subscriptions(ExactStream):
-    primary_key = "EntryID"
-    endpoint = "sync/subscription/Subscriptions"
+class SyncCashflowPaymentTerms(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Cashflow/PaymentTerms"
+
+
+class SyncCRMAccounts(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/Accounts"
+
+
+class SyncCRMAddresses(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/Addresses"
+
+
+class SyncCRMContacts(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/Contacts"
+
+
+class SyncCRMQuotationHeaders(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/QuotationHeaders"
+
+
+class SyncCRMQuotationLines(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/QuotationLines"
+
+
+class SyncCRMQuotations(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/CRM/Quotations"
+
+
+class SyncDeleted(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Deleted"
+
+
+class SyncDocumentsDocumentAttachments(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Documents/DocumentAttachments"
+
+
+class SyncDocumentsDocuments(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Documents/Documents"
+
+
+class SyncFinancialGLAccounts(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Financial/GLAccounts"
+
+
+class SyncFinancialGLClassifications(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Financial/GLClassifications"
+
+
+class SyncFinancialTransactionLines(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Financial/TransactionLines"
+
+
+class SyncHRMLeaveAbsenceHoursByDay(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/HRM/LeaveAbsenceHoursByDay"
+
+
+class SyncInventoryItemWarehouses(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Inventory/ItemWarehouses"
+
+
+class SyncInventorySerialBatchNumbers(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Inventory/SerialBatchNumbers"
+
+
+class SyncInventoryStockPositions(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Inventory/StockPositions"
+
+
+class SyncInventoryStockSerialBatchNumbers(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Inventory/StockSerialBatchNumbers"
+
+
+class SyncInventoryStorageLocationStockPositions(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Inventory/StorageLocationStockPositions"
+
+
+class SyncLogisticsItems(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Logistics/Items"
+
+
+class SyncLogisticsPurchaseItemPrices(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Logistics/PurchaseItemPrices"
+
+
+class SyncLogisticsSalesItemPrices(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Logistics/SalesItemPrices"
+
+
+class SyncLogisticsSupplierItem(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Logistics/SupplierItem"
+
+
+class SyncProjectProjectPlanning(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Project/ProjectPlanning"
+
+
+class SyncProjectProjects(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Project/Projects"
+
+
+class SyncProjectProjectWBS(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Project/ProjectWBS"
+
+
+class SyncProjectTimeCostTransactions(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Project/TimeCostTransactions"
+
+
+class SyncPurchaseOrderPurchaseOrders(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/PurchaseOrder/PurchaseOrders"
+
+
+class SyncSalesSalesPriceListVolumeDiscounts(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Sales/SalesPriceListVolumeDiscounts"
+
+
+class SyncSalesInvoiceSalesInvoices(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesInvoice/SalesInvoices"
+
+
+class SyncSalesOrderGoodsDeliveries(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesOrder/GoodsDeliveries"
+
+
+class SyncSalesOrderGoodsDeliveryLines(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesOrder/GoodsDeliveryLines"
+
+
+class SyncSalesOrderSalesOrderHeaders(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesOrder/SalesOrderHeaders"
+
+
+class SyncSalesOrderSalesOrderLines(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesOrder/SalesOrderLines"
+
+
+class SyncSalesOrderSalesOrders(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/SalesOrder/SalesOrders"
+
+
+class SyncSubscriptionSubscriptionLines(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Subscription/SubscriptionLines"
+
+
+class SyncSubscriptionSubscriptions(ExactStream):
+    primary_key = "Timestamp"
+    endpoint = "sync/Subscription/Subscriptions"
 
 
 # Source
@@ -226,5 +406,41 @@ class SourceExact(AbstractSource):
         auth._access_token = config["access_token"]
 
         return [
-            Subscriptions(authenticator=auth),
+            SyncCashflowPaymentTerms(authenticator=auth),
+            SyncCRMAccounts(authenticator=auth),
+            SyncCRMAddresses(authenticator=auth),
+            SyncCRMContacts(authenticator=auth),
+            SyncCRMQuotationHeaders(authenticator=auth),
+            SyncCRMQuotationLines(authenticator=auth),
+            SyncCRMQuotations(authenticator=auth),
+            SyncDeleted(authenticator=auth),
+            SyncDocumentsDocumentAttachments(authenticator=auth),
+            SyncDocumentsDocuments(authenticator=auth),
+            SyncFinancialGLAccounts(authenticator=auth),
+            SyncFinancialGLClassifications(authenticator=auth),
+            SyncFinancialTransactionLines(authenticator=auth),
+            SyncHRMLeaveAbsenceHoursByDay(authenticator=auth),
+            SyncInventoryItemWarehouses(authenticator=auth),
+            SyncInventorySerialBatchNumbers(authenticator=auth),
+            SyncInventoryStockPositions(authenticator=auth),
+            SyncInventoryStockSerialBatchNumbers(authenticator=auth),
+            SyncInventoryStorageLocationStockPositions(authenticator=auth),
+            SyncLogisticsItems(authenticator=auth),
+            SyncLogisticsPurchaseItemPrices(authenticator=auth),
+            SyncLogisticsSalesItemPrices(authenticator=auth),
+            SyncLogisticsSupplierItem(authenticator=auth),
+            SyncProjectProjectPlanning(authenticator=auth),
+            SyncProjectProjects(authenticator=auth),
+            SyncProjectProjectWBS(authenticator=auth),
+            SyncProjectTimeCostTransactions(authenticator=auth),
+            SyncPurchaseOrderPurchaseOrders(authenticator=auth),
+            SyncSalesSalesPriceListVolumeDiscounts(authenticator=auth),
+            SyncSalesInvoiceSalesInvoices(authenticator=auth),
+            SyncSalesOrderGoodsDeliveries(authenticator=auth),
+            SyncSalesOrderGoodsDeliveryLines(authenticator=auth),
+            SyncSalesOrderSalesOrderHeaders(authenticator=auth),
+            SyncSalesOrderSalesOrderLines(authenticator=auth),
+            SyncSalesOrderSalesOrders(authenticator=auth),
+            SyncSubscriptionSubscriptionLines(authenticator=auth),
+            SyncSubscriptionSubscriptions(authenticator=auth),
         ]

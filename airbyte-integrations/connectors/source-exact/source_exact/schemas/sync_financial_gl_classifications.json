@@ -1,0 +1,98 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Financial/GLClassifications",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.\nNote: This endpoint does not support query { $select=* }. Please query with a selection of one or more of the resource properties.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Abstract": {
+      "description": "Abstract elements are only used in presentation linkbases to group other elements. They are not supposed to be used in instance documents",
+      "type": "boolean"
+    },
+    "Balance": {
+      "description": "Only used for amount concepts: in that case either 'debit' or 'credit'",
+      "type": "string"
+    },
+    "Code": {
+      "description": "The Code is unique",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description of the element. Note that this description is only used for division-specific taxonomies (or reporting schemes).",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division is optional. For taxonomies of Taxonomies.Type = 0 (general taxonomies), the Division is empty. For division specific taxonomies it is mandatory",
+      "type": "integer"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "IsTupleSubElement": {
+      "description": "Obsolete",
+      "type": "boolean"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "Name": {
+      "description": "The Name is unique in the namespace",
+      "type": "string"
+    },
+    "Nillable": {
+      "description": "Determines whether usage of the element is mandatory in an instance document",
+      "type": "boolean"
+    },
+    "Parent": {
+      "description": "Parent element for reporting schemes. In a reporting scheme, an element can have only one parent. This column is only used for reporting schemes. Note that in a real taxonomy, elements can have multiple parents.",
+      "type": "string"
+    },
+    "PeriodType": {
+      "description": "Only used for item concepts: either 'instant' or 'duration'. 'instant' is used for balance types of concepts, 'duration' is used for P&L types of concepts",
+      "type": "string"
+    },
+    "SubstitutionGroup": {
+      "description": "Mostly import sutstitutiongroup is xbrli:tuple, which makes the element a tuple concept. The default substitutiongroup for item concepts is xbrli:item",
+      "type": "string"
+    },
+    "TaxonomyNamespace": {
+      "description": "Namespace of the element",
+      "type": "string"
+    },
+    "TaxonomyNamespaceDescription": {
+      "description": "Description of TaxonomyNamespace",
+      "type": "string"
+    },
+    "Type": {
+      "description": "Type of the element",
+      "type": "string"
+    }
+  }
+}

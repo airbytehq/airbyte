@@ -1,0 +1,231 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/CRM/Addresses",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Account": {
+      "description": "Account linked to the address",
+      "type": "string"
+    },
+    "AccountIsSupplier": {
+      "description": "Indicates if the account is a supplier",
+      "type": "boolean"
+    },
+    "AccountName": {
+      "description": "Name of the account",
+      "type": "string"
+    },
+    "AddressLine1": {
+      "description": "First address line",
+      "type": "string"
+    },
+    "AddressLine2": {
+      "description": "Second address line",
+      "type": "string"
+    },
+    "AddressLine3": {
+      "description": "Third address line",
+      "type": "string"
+    },
+    "City": {
+      "description": "City",
+      "type": "string"
+    },
+    "Contact": {
+      "description": "Contact linked to Address",
+      "type": "string"
+    },
+    "ContactName": {
+      "description": "Contact name",
+      "type": "string"
+    },
+    "Country": {
+      "description": "Country code",
+      "type": "string"
+    },
+    "CountryName": {
+      "description": "Country name",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Fax": {
+      "description": "Fax number",
+      "type": "string"
+    },
+    "FreeBoolField_01": {
+      "description": "Free boolean field 1",
+      "type": "boolean"
+    },
+    "FreeBoolField_02": {
+      "description": "Free boolean field 2",
+      "type": "boolean"
+    },
+    "FreeBoolField_03": {
+      "description": "Free boolean field 3",
+      "type": "boolean"
+    },
+    "FreeBoolField_04": {
+      "description": "Free boolean field 4",
+      "type": "boolean"
+    },
+    "FreeBoolField_05": {
+      "description": "Free boolean field 5",
+      "type": "boolean"
+    },
+    "FreeDateField_01": {
+      "description": "Free date field 1",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_02": {
+      "description": "Free date field 2",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_03": {
+      "description": "Free date field 3",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_04": {
+      "description": "Free date field 4",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_05": {
+      "description": "Free date field 5",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeNumberField_01": {
+      "description": "Free number field 1",
+      "type": "number"
+    },
+    "FreeNumberField_02": {
+      "description": "Free number field 2",
+      "type": "number"
+    },
+    "FreeNumberField_03": {
+      "description": "Free number field 3",
+      "type": "number"
+    },
+    "FreeNumberField_04": {
+      "description": "Free number field 4",
+      "type": "number"
+    },
+    "FreeNumberField_05": {
+      "description": "Free number field 5",
+      "type": "number"
+    },
+    "FreeTextField_01": {
+      "description": "Free text field 1",
+      "type": "string"
+    },
+    "FreeTextField_02": {
+      "description": "Free text field 2",
+      "type": "string"
+    },
+    "FreeTextField_03": {
+      "description": "Free text field 3",
+      "type": "string"
+    },
+    "FreeTextField_04": {
+      "description": "Free text field 4",
+      "type": "string"
+    },
+    "FreeTextField_05": {
+      "description": "Free text field 5",
+      "type": "string"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "Mailbox": {
+      "description": "Mailbox",
+      "type": "string"
+    },
+    "Main": {
+      "description": "Indicates if the address is the main address for this type",
+      "type": "boolean"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "NicNumber": {
+      "description": "Last 5 digits of SIRET number which is an intern sequential number of 4 digits representing the identification of the localization of the office",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "Notes for an address",
+      "type": "string"
+    },
+    "Phone": {
+      "description": "Phone number",
+      "type": "string"
+    },
+    "PhoneExtension": {
+      "description": "Phone extension",
+      "type": "string"
+    },
+    "Postcode": {
+      "description": "Postcode",
+      "type": "string"
+    },
+    "State": {
+      "description": "State",
+      "type": "string"
+    },
+    "StateDescription": {
+      "description": "Name of the State",
+      "type": "string"
+    },
+    "Type": {
+      "description": "The type of address. Visit=1, Postal=2, Invoice=3, Delivery=4",
+      "type": "integer"
+    },
+    "Warehouse": {
+      "description": "The warehouse linked to the address, if a warehouse is linked the account will be empty. Can only be filled for type=Delivery",
+      "type": "string"
+    },
+    "WarehouseCode": {
+      "description": "Code of the warehoude",
+      "type": "string"
+    },
+    "WarehouseDescription": {
+      "description": "Description of the warehouse",
+      "type": "string"
+    }
+  }
+}

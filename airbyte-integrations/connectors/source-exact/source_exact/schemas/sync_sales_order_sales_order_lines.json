@@ -1,0 +1,247 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/SalesOrder/SalesOrderLines",
+  "description": "Any change in the line of the SalesOrders will lead to a new timestamp value in the line. The API will return line data in the API call.\r\nThe sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "AmountDC": {
+      "description": "Amount in the default currency of the company",
+      "type": "number"
+    },
+    "AmountFC": {
+      "description": "Amount in the currency of the transaction",
+      "type": "number"
+    },
+    "CostCenter": {
+      "description": "Reference to Cost center",
+      "type": "string"
+    },
+    "CostCenterDescription": {
+      "description": "Description of CostCenter",
+      "type": "string"
+    },
+    "CostPriceFC": {
+      "description": "Item cost price",
+      "type": "number"
+    },
+    "CostUnit": {
+      "description": "Reference to Cost unit",
+      "type": "string"
+    },
+    "CostUnitDescription": {
+      "description": "Description of CostUnit",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "CustomerItemCode": {
+      "description": "Code the customer uses for this item",
+      "type": "string"
+    },
+    "DeliveryDate": {
+      "description": "Delivery date of this line",
+      "type": "string",
+      "format": "date-time"
+    },
+    "DeliveryStatus": {
+      "description": "Shipping status of the sales order line. 12=Open, 20=Partial, 21=Complete, 45=Cancelled",
+      "type": "integer"
+    },
+    "DeliveryStatusDescription": {
+      "description": "Description of DeliveryStatus",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description",
+      "type": "string"
+    },
+    "Discount": {
+      "description": "Discount given on the default price. Discount = (DefaultPrice of Item - PriceItem in line) / DefaultPrice of Item",
+      "type": "number"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "InvoiceStatus": {
+      "description": "Invoice status of the sales order line. 12=Open, 20=Partial, 21=Complete, 45=Cancelled",
+      "type": "integer"
+    },
+    "InvoiceStatusDescription": {
+      "description": "Description of InvoiceStatus",
+      "type": "string"
+    },
+    "Item": {
+      "description": "Reference to the item that is sold in this sales order line",
+      "type": "string"
+    },
+    "ItemCode": {
+      "description": "Code of Item",
+      "type": "string"
+    },
+    "ItemDescription": {
+      "description": "Description of Item",
+      "type": "string"
+    },
+    "ItemVersion": {
+      "description": "Item Version",
+      "type": "string"
+    },
+    "ItemVersionDescription": {
+      "description": "Description of Item Version",
+      "type": "string"
+    },
+    "LineNumber": {
+      "description": "Line number",
+      "type": "integer"
+    },
+    "Margin": {
+      "description": "Sales margin of the sales order line",
+      "type": "number"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "NetPrice": {
+      "description": "Net price of the sales order line",
+      "type": "number"
+    },
+    "Notes": {
+      "description": "Extra notes",
+      "type": "string"
+    },
+    "OrderID": {
+      "description": "The OrderID identifies the sales order. All the lines of a sales order have the same OrderID",
+      "type": "string"
+    },
+    "OrderNumber": {
+      "description": "Number of sales order",
+      "type": "integer"
+    },
+    "Pricelist": {
+      "description": "Price list",
+      "type": "string"
+    },
+    "PricelistDescription": {
+      "description": "Description of Pricelist",
+      "type": "string"
+    },
+    "Project": {
+      "description": "The project to which the sales order line is linked. The project can be different per line. Sometimes also the project in the header is filled although this is not really used",
+      "type": "string"
+    },
+    "ProjectCode": {
+      "description": "Code of Project",
+      "type": "string"
+    },
+    "ProjectDescription": {
+      "description": "Description of Project",
+      "type": "string"
+    },
+    "PurchaseOrder": {
+      "description": "Purchase order that is linked to the sales order",
+      "type": "string"
+    },
+    "PurchaseOrderLine": {
+      "description": "Purchase order line of the purchase order that is linked to the sales order",
+      "type": "string"
+    },
+    "PurchaseOrderLineNumber": {
+      "description": "Number of the purchase order line",
+      "type": "integer"
+    },
+    "PurchaseOrderNumber": {
+      "description": "Number of the purchase order",
+      "type": "integer"
+    },
+    "Quantity": {
+      "description": "The number of items sold in default units. The quantity shown in the entry screen is Quantity * UnitFactor. Positive quantity = Sales order lines, Negative quantity = Trade-in lines.",
+      "type": "number"
+    },
+    "QuantityDelivered": {
+      "description": "The number of items delivered",
+      "type": "number"
+    },
+    "QuantityInvoiced": {
+      "description": "The number of items invoiced",
+      "type": "number"
+    },
+    "ShopOrder": {
+      "description": "Reference to ShopOrder",
+      "type": "string"
+    },
+    "ShopOrderNumber": {
+      "description": "Number of shop order",
+      "type": "integer"
+    },
+    "Status": {
+      "description": "The status of the sales order line. 12 = Open, 20 = Partial, 21 = Complete, 45 = Cancelled.",
+      "type": "integer"
+    },
+    "StatusDescription": {
+      "description": "Description of Status",
+      "type": "string"
+    },
+    "UnitCode": {
+      "description": "Code of item unit",
+      "type": "string"
+    },
+    "UnitDescription": {
+      "description": "Description of Unit",
+      "type": "string"
+    },
+    "UnitPrice": {
+      "description": "Price per unit in the currency of the transaction",
+      "type": "number"
+    },
+    "UseDropShipment": {
+      "description": "Indicates if drop shipment is used (delivery directly to customer, invoice to wholesaler)",
+      "type": "integer"
+    },
+    "VATAmount": {
+      "description": "VAT amount in the currency of the transaction",
+      "type": "number"
+    },
+    "VATCode": {
+      "description": "VAT code",
+      "type": "string"
+    },
+    "VATCodeDescription": {
+      "description": "Description of VATCode",
+      "type": "string"
+    },
+    "VATPercentage": {
+      "description": "The vat percentage of the VAT code. This is the percentage at the moment the sales order is created. It's also used for the default calculation of VAT amounts and VAT base amounts",
+      "type": "number"
+    }
+  }
+}

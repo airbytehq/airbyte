@@ -1,0 +1,437 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Logistics/Items",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.\nNote: This endpoint does not support query { $select=* } since there are a lot of properties in this endpoint.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "AverageCost": {
+      "description": "The current average cost price",
+      "type": "number"
+    },
+    "Barcode": {
+      "description": "Barcode of the item (numeric string)",
+      "type": "string"
+    },
+    "Class_01": {
+      "description": "Item class code referring to ItemClasses with ClassID 1",
+      "type": "string"
+    },
+    "Class_02": {
+      "description": "Item class code referring to ItemClasses with ClassID 2",
+      "type": "string"
+    },
+    "Class_03": {
+      "description": "Item class code referring to ItemClasses with ClassID 3",
+      "type": "string"
+    },
+    "Class_04": {
+      "description": "Item class code referring to ItemClasses with ClassID 4",
+      "type": "string"
+    },
+    "Class_05": {
+      "description": "Item class code referring to ItemClasses with ClassID 5",
+      "type": "string"
+    },
+    "Class_06": {
+      "description": "Item class code referring to ItemClasses with ClassID 6",
+      "type": "string"
+    },
+    "Class_07": {
+      "description": "Item class code referring to ItemClasses with ClassID 7",
+      "type": "string"
+    },
+    "Class_08": {
+      "description": "Item class code referring to ItemClasses with ClassID 8",
+      "type": "string"
+    },
+    "Class_09": {
+      "description": "Item class code referring to ItemClasses with ClassID 9",
+      "type": "string"
+    },
+    "Class_10": {
+      "description": "Item class code referring to ItemClasses with ClassID 10",
+      "type": "string"
+    },
+    "Code": {
+      "description": "Item code",
+      "type": "string"
+    },
+    "CopyRemarks": {
+      "description": "Copy sales remarks to sales lines",
+      "type": "integer"
+    },
+    "CostPriceCurrency": {
+      "description": "The currency of the current and proposed cost price",
+      "type": "string"
+    },
+    "CostPriceNew": {
+      "description": "Proposed cost price",
+      "type": "number"
+    },
+    "CostPriceStandard": {
+      "description": "The current standard cost price",
+      "type": "number"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description of the item",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "EndDate": {
+      "description": "Together with StartDate this determines if the item is active",
+      "type": "string",
+      "format": "date-time"
+    },
+    "ExtraDescription": {
+      "description": "Extra description text, slightly longer than the regular description (255 instead of 60)",
+      "type": "string"
+    },
+    "FreeBoolField_01": {
+      "description": "Free boolean field 1",
+      "type": "boolean"
+    },
+    "FreeBoolField_02": {
+      "description": "Free boolean field 2",
+      "type": "boolean"
+    },
+    "FreeBoolField_03": {
+      "description": "Free boolean field 3",
+      "type": "boolean"
+    },
+    "FreeBoolField_04": {
+      "description": "Free boolean field 4",
+      "type": "boolean"
+    },
+    "FreeBoolField_05": {
+      "description": "Free boolean field 5",
+      "type": "boolean"
+    },
+    "FreeDateField_01": {
+      "description": "Free date field 1",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_02": {
+      "description": "Free date field 2",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_03": {
+      "description": "Free date field 3",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_04": {
+      "description": "Free date field 4",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeDateField_05": {
+      "description": "Free date field 5",
+      "type": "string",
+      "format": "date-time"
+    },
+    "FreeNumberField_01": {
+      "description": "Free numeric field 1",
+      "type": "number"
+    },
+    "FreeNumberField_02": {
+      "description": "Free numeric field 2",
+      "type": "number"
+    },
+    "FreeNumberField_03": {
+      "description": "Free numeric field 3",
+      "type": "number"
+    },
+    "FreeNumberField_04": {
+      "description": "Free numeric field 4",
+      "type": "number"
+    },
+    "FreeNumberField_05": {
+      "description": "Free numeric field 5",
+      "type": "number"
+    },
+    "FreeNumberField_06": {
+      "description": "Free numeric field 6",
+      "type": "number"
+    },
+    "FreeNumberField_07": {
+      "description": "Free numeric field 7",
+      "type": "number"
+    },
+    "FreeNumberField_08": {
+      "description": "Free numeric field 8",
+      "type": "number"
+    },
+    "FreeTextField_01": {
+      "description": "Free text field 1",
+      "type": "string"
+    },
+    "FreeTextField_02": {
+      "description": "Free text field 2",
+      "type": "string"
+    },
+    "FreeTextField_03": {
+      "description": "Free text field 3",
+      "type": "string"
+    },
+    "FreeTextField_04": {
+      "description": "Free text field 4",
+      "type": "string"
+    },
+    "FreeTextField_05": {
+      "description": "Free text field 5",
+      "type": "string"
+    },
+    "FreeTextField_06": {
+      "description": "Free text field 6",
+      "type": "string"
+    },
+    "FreeTextField_07": {
+      "description": "Free text field 7",
+      "type": "string"
+    },
+    "FreeTextField_08": {
+      "description": "Free text field 8",
+      "type": "string"
+    },
+    "FreeTextField_09": {
+      "description": "Free text field 9",
+      "type": "string"
+    },
+    "FreeTextField_10": {
+      "description": "Free text field 10",
+      "type": "string"
+    },
+    "GLCosts": {
+      "description": "GL account the cost entries will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": "string"
+    },
+    "GLCostsCode": {
+      "description": "Code of GL account for costs",
+      "type": "string"
+    },
+    "GLCostsDescription": {
+      "description": "Description of GLCosts",
+      "type": "string"
+    },
+    "GLRevenue": {
+      "description": "GL account the revenue will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": "string"
+    },
+    "GLRevenueCode": {
+      "description": "Code of GLRevenue",
+      "type": "string"
+    },
+    "GLRevenueDescription": {
+      "description": "Description of GLRevenue",
+      "type": "string"
+    },
+    "GLStock": {
+      "description": "GL account the stock entries will be booked on. This overrules the GL account from the item group. If the license contains 'Intuit integration' this property overrides the value in Settings, not the item group.",
+      "type": "string"
+    },
+    "GLStockCode": {
+      "description": "Code of GL account for stock",
+      "type": "string"
+    },
+    "GLStockDescription": {
+      "description": "Description of GLStock",
+      "type": "string"
+    },
+    "GrossWeight": {
+      "description": "Gross weight for international goods shipments",
+      "type": "number"
+    },
+    "ID": {
+      "description": "A guid that is the unique identifier of the item",
+      "type": "string"
+    },
+    "IsBatchItem": {
+      "description": "Indicates if batches are used for this item",
+      "type": "integer"
+    },
+    "IsFractionAllowedItem": {
+      "description": "Indicates if fractions (for example 0.35) are allowed for quantities of this item",
+      "type": "boolean"
+    },
+    "IsMakeItem": {
+      "description": "Indicates that an Item is produced to Inventory, not purchased",
+      "type": "integer"
+    },
+    "IsNewContract": {
+      "description": "Only used for packages (IsPackageItem=1). To indicate if this package is a new contract type package",
+      "type": "integer"
+    },
+    "IsOnDemandItem": {
+      "description": "Is On demand Item",
+      "type": "integer"
+    },
+    "IsPackageItem": {
+      "description": "Indicates if the item is a package item. Can only be created in the hosting administration",
+      "type": "boolean"
+    },
+    "IsPurchaseItem": {
+      "description": "Indicates if the item can be purchased",
+      "type": "boolean"
+    },
+    "IsRegistrationCodeItem": {
+      "description": "Indicated if the item is used in voucher functionality",
+      "type": "integer"
+    },
+    "IsSalesItem": {
+      "description": "Indicates if the item can be sold",
+      "type": "boolean"
+    },
+    "IsSerialItem": {
+      "description": "Indicates that serial numbers are used for this item",
+      "type": "boolean"
+    },
+    "IsStockItem": {
+      "description": "If you have the Trade or Manufacturing license and you check this property the item will be shown in the stock positions overview, stock counts and transaction lists. If you have the Invoice module and you check this property you will get a general journal entry based on the Stock and Costs G/L accounts of the item group. If you don\u2019t want the general journal entry to be created you should change the Stock/Costs G/L account on the Item group page to the type Costs instead of Inventory.",
+      "type": "boolean"
+    },
+    "IsSubcontractedItem": {
+      "description": "Indicates if the item is provided by an outside supplier",
+      "type": "boolean"
+    },
+    "IsTaxableItem": {
+      "description": "Indicates if tax needs to be calculated for this item",
+      "type": "integer"
+    },
+    "IsTime": {
+      "description": "Indicates if the item is a time unit item (for example a labor hour item)",
+      "type": "integer"
+    },
+    "IsWebshopItem": {
+      "description": "Indicates if the item can be exported to a web shop",
+      "type": "integer"
+    },
+    "ItemGroup": {
+      "description": "GUID of Item group of the item",
+      "type": "string"
+    },
+    "ItemGroupCode": {
+      "description": "Code of ItemGroup",
+      "type": "string"
+    },
+    "ItemGroupDescription": {
+      "description": "Description of ItemGroup",
+      "type": "string"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "NetWeight": {
+      "description": "Net weight for international goods shipments",
+      "type": "number"
+    },
+    "NetWeightUnit": {
+      "description": "Net Weight unit for international goods shipment, only available in manufacturing packages",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "Notes",
+      "type": "string"
+    },
+    "PictureName": {
+      "description": "File name of picture",
+      "type": "string"
+    },
+    "PictureThumbnailUrl": {
+      "description": "Url where thumbnail picture can be retrieved",
+      "type": "string"
+    },
+    "PictureUrl": {
+      "description": "Url where picture can be retrieved",
+      "type": "string"
+    },
+    "SalesVatCode": {
+      "description": "Code of SalesVat",
+      "type": "string"
+    },
+    "SalesVatCodeDescription": {
+      "description": "Description of SalesVatCode",
+      "type": "string"
+    },
+    "SearchCode": {
+      "description": "Search code of the item",
+      "type": "string"
+    },
+    "SecurityLevel": {
+      "description": "Security level (0 - 100)",
+      "type": "integer"
+    },
+    "StartDate": {
+      "description": "Together with EndDate this determines if the item is active",
+      "type": "string",
+      "format": "date-time"
+    },
+    "StatisticalCode": {
+      "description": "Statistical code",
+      "type": "string"
+    },
+    "StatisticalNetWeight": {
+      "description": "Statistical net weight",
+      "type": "number"
+    },
+    "StatisticalUnits": {
+      "description": "Statistical units",
+      "type": "number"
+    },
+    "StatisticalValue": {
+      "description": "Statistical value",
+      "type": "number"
+    },
+    "Stock": {
+      "description": "Quantity that is in stock",
+      "type": "number"
+    },
+    "Unit": {
+      "description": "The standard unit of this item",
+      "type": "string"
+    },
+    "UnitDescription": {
+      "description": "Description of Unit",
+      "type": "string"
+    },
+    "UnitType": {
+      "description": "Type of unit: A=Area, L=Length, O=Other, T=Time, V=Volume, W=Weight",
+      "type": "string"
+    }
+  }
+}

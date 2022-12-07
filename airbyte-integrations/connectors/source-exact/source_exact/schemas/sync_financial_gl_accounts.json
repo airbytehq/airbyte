@@ -1,0 +1,178 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/Financial/GLAccounts",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "AssimilatedVATBox": {
+      "description": "AssimilatedVATBox (France)",
+      "type": "integer"
+    },
+    "BalanceSide": {
+      "description": "The following values are supported: D (Debit) C (Credit)",
+      "type": "string"
+    },
+    "BalanceType": {
+      "description": "The following values are supported: B (Balance Sheet) W (Profit & Loss)",
+      "type": "string"
+    },
+    "BelcotaxType": {
+      "description": "Indentify the kind of rewarding for the G/L account. This is used in the official document for the fiscal fiches Belcotax",
+      "type": "integer"
+    },
+    "Code": {
+      "description": "Unique Code of the G/L account",
+      "type": "string"
+    },
+    "Compress": {
+      "description": "Indicate if this G/L account should be shown as compressed without the details in the CRW report of G/L history",
+      "type": "boolean"
+    },
+    "Costcenter": {
+      "description": "Cost Center linked to the G/L account",
+      "type": "string"
+    },
+    "CostcenterDescription": {
+      "description": "Description of Costcenter",
+      "type": "string"
+    },
+    "Costunit": {
+      "description": "Cost Unit linked to the G/L account",
+      "type": "string"
+    },
+    "CostunitDescription": {
+      "description": "Description of Costunit",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Name of the G/L account. If Multilanguage featureset is enabled in the administration and the G/L account already has a set of termed description, this field is not allowed to change.",
+      "type": "string"
+    },
+    "DescriptionTermID": {
+      "description": "Term ID for description",
+      "type": "integer"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "ExcludeVATListing": {
+      "description": "General ledger transactions on this G/L account should not appear on the VAT listing",
+      "type": "integer"
+    },
+    "ExpenseNonDeductiblePercentage": {
+      "description": "Expenses on this G/L account can not be used to reduce the incomes",
+      "type": "number"
+    },
+    "ID": {
+      "description": "Primary Key",
+      "type": "string"
+    },
+    "IsBlocked": {
+      "description": "When blocked you can't use this general ledger account anymore for new entries",
+      "type": "boolean"
+    },
+    "Matching": {
+      "description": "Allow entries on this general ledger account to be matched via the G/L account card",
+      "type": "boolean"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "PrivateGLAccount": {
+      "description": "If a private use percentage is defined, you need to specify the G/L account used for the re-invoice of the private use to the owner of the company",
+      "type": "string"
+    },
+    "PrivatePercentage": {
+      "description": "Specify the percentage of the cost that should be re-invoiced to the owner of the company as private use of the costs",
+      "type": "number"
+    },
+    "ReportingCode": {
+      "description": "Used in the export of yearly report",
+      "type": "string"
+    },
+    "RevalueCurrency": {
+      "description": "Indicates if the amounts booked on this general ledger account will be recalculated when currency revaluation is done",
+      "type": "boolean"
+    },
+    "SearchCode": {
+      "description": "Search Code",
+      "type": "string"
+    },
+    "Type": {
+      "description": "The type of the G/L account. Supported values are: 10 = Cash 12 = Bank 14 = Credit card 16 = Payment services 20 = Accounts receivable 21 = Prepayment accounts receivable 22 = Accounts payable 24 = VAT 25 = Employees payable 26 = Prepaid expenses 27 = Accrued expenses 29 = Income taxes payable 30 = Fixed assets 32 = Other assets 35 = Accumulated depreciation 40 = Inventory 50 = Capital stock 52 = Retained earnings 55 = Long term debt 60 = Current portion of debt 90 = General 100 = Tax payable 110 = Revenue 111 = Cost of goods 120 = Other costs 121 = Sales, general administrative expenses 122 = Depreciation costs 123 = Research and development 125 = Employee costs 126 = Employment costs 130 = Exceptional costs 140 = Exceptional income 150 = Income taxes 160 = Interest income 300 = Year end reflection 301 = Indirect year end costing 302 = Direct year end costing",
+      "type": "integer"
+    },
+    "TypeDescription": {
+      "description": "Description of Type",
+      "type": "string"
+    },
+    "UseCostcenter": {
+      "description": "Indicates if cost centers can be used when using this general ledger account. The following values are supported: 0 (Optional) 1 (Mandatory) 2 (No)",
+      "type": "integer"
+    },
+    "UseCostunit": {
+      "description": "Indicates if cost units can be used when using this general ledger account. The following values are supported: 0 (Optional) 1 (Mandatory) 2 (No)",
+      "type": "integer"
+    },
+    "VATCode": {
+      "description": "VAT Code linked to the G/L account",
+      "type": "string"
+    },
+    "VATDescription": {
+      "description": "Description of VAT",
+      "type": "string"
+    },
+    "VATGLAccountType": {
+      "description": "Specify the kind of purchase this G/L account is used for. This is important for the Belgian VAT return to indicate in which VAT box the base amount of purchase should go",
+      "type": "string"
+    },
+    "VATNonDeductibleGLAccount": {
+      "description": "If you use a percentage of non deductible VAT, you can specify another G/L account that will be used for the non deductible part of the VAT amount. This is used directly in the entry application of purchase invoices.",
+      "type": "string"
+    },
+    "VATNonDeductiblePercentage": {
+      "description": "If not the full amount of the VAT is deductible, you can indicate a percentage for the non decuctible part. This is used during the entry of purchase invoices",
+      "type": "number"
+    },
+    "VATSystem": {
+      "description": "The following values are supported: I (Invoice) C (Cash) (France)",
+      "type": "string"
+    },
+    "YearEndCostGLAccount": {
+      "description": "Indicates the costing account for year end calculations",
+      "type": "string"
+    },
+    "YearEndReflectionGLAccount": {
+      "description": "Indicates the reflection account that is used by year end application",
+      "type": "string"
+    }
+  }
+}

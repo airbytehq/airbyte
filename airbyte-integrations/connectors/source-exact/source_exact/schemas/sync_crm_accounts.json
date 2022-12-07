@@ -1,0 +1,644 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/CRM/Accounts",
+  "description": "The sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "Accountant": {
+      "description": "Reference to the accountant of the customer. Conditions: The referred accountant must have value > 0 in the field IsAccountant",
+      "type": "string"
+    },
+    "AccountManager": {
+      "description": "ID of the account manager",
+      "type": "string"
+    },
+    "AccountManagerFullName": {
+      "description": "Name of the account manager",
+      "type": "string"
+    },
+    "AccountManagerHID": {
+      "description": "Number of the account manager",
+      "type": "integer"
+    },
+    "ActivitySector": {
+      "description": "Reference to Activity sector of the account",
+      "type": "string"
+    },
+    "ActivitySubSector": {
+      "description": "Reference to Activity sub-sector of the account",
+      "type": "string"
+    },
+    "AddressLine1": {
+      "description": "Visit address first line",
+      "type": "string"
+    },
+    "AddressLine2": {
+      "description": "Visit address second line",
+      "type": "string"
+    },
+    "AddressLine3": {
+      "description": "Visit address third line",
+      "type": "string"
+    },
+    "Blocked": {
+      "description": "Indicates if the account is blocked",
+      "type": "boolean"
+    },
+    "BRIN": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "BSN": {
+      "description": "Citizen Service Number for the Netherlands",
+      "type": "string"
+    },
+    "BusinessType": {
+      "description": "Reference to the business type of the account",
+      "type": "string"
+    },
+    "CanDropShip": {
+      "description": "Indicates the default for the possibility to drop ship when an item is linked to a supplier",
+      "type": "boolean"
+    },
+    "ChamberOfCommerce": {
+      "description": "Chamber of commerce number",
+      "type": "string"
+    },
+    "City": {
+      "description": "Visit address City",
+      "type": "string"
+    },
+    "Classification": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "Classification1": {
+      "description": "Account classification 1",
+      "type": "string"
+    },
+    "Classification2": {
+      "description": "Account classification 2",
+      "type": "string"
+    },
+    "Classification3": {
+      "description": "Account classification 3",
+      "type": "string"
+    },
+    "Classification4": {
+      "description": "Account classification 4",
+      "type": "string"
+    },
+    "Classification5": {
+      "description": "Account classification 5",
+      "type": "string"
+    },
+    "Classification6": {
+      "description": "Account classification 6",
+      "type": "string"
+    },
+    "Classification7": {
+      "description": "Account classification 7",
+      "type": "string"
+    },
+    "Classification8": {
+      "description": "Account classification 8",
+      "type": "string"
+    },
+    "ClassificationDescription": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "Code": {
+      "description": "Unique key, fixed length numeric string with leading spaces, length 18. IMPORTANT: When you use OData $filter on this field you have to make sure the filter parameter contains the leading spaces",
+      "type": "string"
+    },
+    "CodeAtSupplier": {
+      "description": "Code under which your own company is known at the account",
+      "type": "string"
+    },
+    "CompanySize": {
+      "description": "Reference to Company size of the account",
+      "type": "string"
+    },
+    "ConsolidationScenario": {
+      "description": "Consolidation scenario (Time & Billing). Values: 0 = No consolidation, 1 = Item, 2 = Item + Project, 3 = Item + Employee, 4 = Item + Employee + Project, 5 = Project + WBS + Item, 6 = Project + WBS + Item + Employee. Item means in this case including Unit and Price, these also have to be the same to consolidate",
+      "type": "integer"
+    },
+    "ControlledDate": {
+      "description": "Date of the latest control of account data with external web service",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Costcenter": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "CostcenterDescription": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "CostPaid": {
+      "description": "Obsolete",
+      "type": "integer"
+    },
+    "Country": {
+      "description": "Country code",
+      "type": "string"
+    },
+    "CountryName": {
+      "description": "Country name",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "CreditLinePurchase": {
+      "description": "Maximum amount of credit for Purchase. If no value has been defined, there is no credit limit",
+      "type": "number"
+    },
+    "CreditLineSales": {
+      "description": "Maximum amount of credit for sales. If no value has been defined, there is no credit limit",
+      "type": "number"
+    },
+    "Currency": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "CustomerSince": {
+      "description": "Obsolete",
+      "type": "string",
+      "format": "date-time"
+    },
+    "CustomField": {
+      "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
+      "type": "string"
+    },
+    "DatevCreditorCode": {
+      "description": "DATEV creditor code for Germany legislation",
+      "type": "string"
+    },
+    "DatevDebtorCode": {
+      "description": "DATEV debtor code for Germany legislation",
+      "type": "string"
+    },
+    "DeliveryAdvice": {
+      "description": "Allows a customer to do goods delivery based on setting complete, partial or partial no back order. Values:  0 = Partial, 1 = Complete,  2 = PartialNoBackOrder",
+      "type": "integer"
+    },
+    "DiscountPurchase": {
+      "description": "Default discount percentage for purchase. This is stored as a fraction. ie 5.5% is stored as .055",
+      "type": "number"
+    },
+    "DiscountSales": {
+      "description": "Default discount percentage for sales. This is stored as a fraction. ie 5.5% is stored as .055",
+      "type": "number"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Document": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "DunsNumber": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "Email": {
+      "description": "E-Mail address of the account",
+      "type": "string"
+    },
+    "EndDate": {
+      "description": "Determines in combination with the start date if the account is active. If the current date is > end date the account is inactive",
+      "type": "string",
+      "format": "date-time"
+    },
+    "EORINumber": {
+      "description": "EORI number",
+      "type": "string"
+    },
+    "EstablishedDate": {
+      "description": "RegistrationDate",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Fax": {
+      "description": "Fax number",
+      "type": "string"
+    },
+    "GLAccountPurchase": {
+      "description": "Default (corporate) GL offset account for purchase (cost)",
+      "type": "string"
+    },
+    "GLAccountSales": {
+      "description": "Default (corporate) GL offset account for sales (revenue)",
+      "type": "string"
+    },
+    "GLAP": {
+      "description": "Default GL account for Accounts Payable",
+      "type": "string"
+    },
+    "GLAR": {
+      "description": "Default GL account for Accounts Receivable",
+      "type": "string"
+    },
+    "GlnNumber": {
+      "description": "Global Location Number can be used by companies to identify their locations, giving them complete flexibility to identify any type or level of location required",
+      "type": "string"
+    },
+    "HasWithholdingTaxSales": {
+      "description": "Indicates whether a customer has withholding tax on sales",
+      "type": "boolean"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "IgnoreDatevWarningMessage": {
+      "description": "Suppressed warning message when there is duplication on the DATEV code",
+      "type": "boolean"
+    },
+    "IncotermAddressPurchase": {
+      "description": "Address of Incoterm for Purchase",
+      "type": "string"
+    },
+    "IncotermAddressSales": {
+      "description": "Address of Incoterm for Sales",
+      "type": "string"
+    },
+    "IncotermCodePurchase": {
+      "description": "Code of Incoterm for Purchase",
+      "type": "string"
+    },
+    "IncotermCodeSales": {
+      "description": "Code of Incoterm for Sales",
+      "type": "string"
+    },
+    "IncotermVersionPurchase": {
+      "description": "Version of Incoterm for Purchase  Supported version for Incoterms : 2010, 2020",
+      "type": "integer"
+    },
+    "IncotermVersionSales": {
+      "description": "Version of Incoterm for Sales  Supported version for Incoterms : 2010, 2020",
+      "type": "integer"
+    },
+    "IntraStatArea": {
+      "description": "Intrastat Area",
+      "type": "string"
+    },
+    "IntraStatDeliveryTerm": {
+      "description": "Intrastat delivery method",
+      "type": "string"
+    },
+    "IntraStatSystem": {
+      "description": "System for Intrastat",
+      "type": "string"
+    },
+    "IntraStatTransactionA": {
+      "description": "Transaction type A for Intrastat",
+      "type": "string"
+    },
+    "IntraStatTransactionB": {
+      "description": "Transaction type B for Intrastat",
+      "type": "string"
+    },
+    "IntraStatTransportMethod": {
+      "description": "Transport method for Intrastat",
+      "type": "string"
+    },
+    "InvoiceAccount": {
+      "description": "ID of account to be invoiced instead of this account",
+      "type": "string"
+    },
+    "InvoiceAccountCode": {
+      "description": "Code of InvoiceAccount",
+      "type": "string"
+    },
+    "InvoiceAccountName": {
+      "description": "Name of InvoiceAccount",
+      "type": "string"
+    },
+    "InvoiceAttachmentType": {
+      "description": "Indicates which attachment types should be sent when a sales invoice is printed. Only values in related table with Invoice=1 are allowed",
+      "type": "integer"
+    },
+    "InvoicingMethod": {
+      "description": "Method of sending for sales invoices. Values: 1: Paper, 2: EMail, 4: Mailbox (electronic exchange), 8: Send and track",
+      "type": "integer"
+    },
+    "IsAccountant": {
+      "description": "Indicates whether the account is an accountant. Values: 0 = No accountant, 1 = True, but accountant doesn't want his name to be published in the list of accountants, 2 = True, and accountant is published in the list of accountants",
+      "type": "integer"
+    },
+    "IsAgency": {
+      "description": "Indicates whether the accounti is an agency",
+      "type": "integer"
+    },
+    "IsAnonymised": {
+      "description": "Indicates whtether the account is anonymised.",
+      "type": "integer"
+    },
+    "IsBank": {
+      "description": "Obsolete",
+      "type": "boolean"
+    },
+    "IsCompetitor": {
+      "description": "Indicates whether the account is a competitor",
+      "type": "integer"
+    },
+    "IsExtraDuty": {
+      "description": "Indicates whether a customer is eligible for extra duty",
+      "type": "boolean"
+    },
+    "IsMailing": {
+      "description": "Indicates if the account is excluded from mailing marketing information",
+      "type": "integer"
+    },
+    "IsMember": {
+      "description": "Obsolete",
+      "type": "boolean"
+    },
+    "IsPilot": {
+      "description": "Indicates whether the account is a pilot account",
+      "type": "boolean"
+    },
+    "IsPurchase": {
+      "description": "Obsolete",
+      "type": "boolean"
+    },
+    "IsReseller": {
+      "description": "Indicates whether the account is a reseller",
+      "type": "boolean"
+    },
+    "IsSales": {
+      "description": "Indicates whether the account is allowed for sales",
+      "type": "boolean"
+    },
+    "IsSupplier": {
+      "description": "Indicates whether the account is a supplier",
+      "type": "boolean"
+    },
+    "Language": {
+      "description": "Language code",
+      "type": "string"
+    },
+    "LanguageDescription": {
+      "description": "Language description",
+      "type": "string"
+    },
+    "Latitude": {
+      "description": "Latitude (used by Google maps)",
+      "type": "number"
+    },
+    "LeadPurpose": {
+      "description": "Reference to Lead purpose of an account",
+      "type": "string"
+    },
+    "LeadSource": {
+      "description": "Reference to Lead source of an account",
+      "type": "string"
+    },
+    "LogoFileName": {
+      "description": "The file name (without path, but with extension) of the image",
+      "type": "string"
+    },
+    "LogoThumbnailUrl": {
+      "description": "Thumbnail url of the logo",
+      "type": "string"
+    },
+    "LogoUrl": {
+      "description": "Url to retrieve the logo",
+      "type": "string"
+    },
+    "Longitude": {
+      "description": "Longitude (used by Google maps)",
+      "type": "number"
+    },
+    "MainContact": {
+      "description": "Reference to main contact person",
+      "type": "string"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    },
+    "Name": {
+      "description": "Account name",
+      "type": "string"
+    },
+    "OINNumber": {
+      "description": "Dutch government identification number",
+      "type": "string"
+    },
+    "Parent": {
+      "description": "ID of the parent account",
+      "type": "string"
+    },
+    "PayAsYouEarn": {
+      "description": "Indicates the loan repayment plan for UK legislation",
+      "type": "string"
+    },
+    "PaymentConditionPurchase": {
+      "description": "Code of default payment condition for purchase",
+      "type": "string"
+    },
+    "PaymentConditionPurchaseDescription": {
+      "description": "Description of PaymentConditionPurchase",
+      "type": "string"
+    },
+    "PaymentConditionSales": {
+      "description": "Code of default payment condition for sales",
+      "type": "string"
+    },
+    "PaymentConditionSalesDescription": {
+      "description": "Description of PaymentConditionSales",
+      "type": "string"
+    },
+    "Phone": {
+      "description": "Phone number",
+      "type": "string"
+    },
+    "PhoneExtension": {
+      "description": "Phone number extention",
+      "type": "string"
+    },
+    "Postcode": {
+      "description": "Visit address postcode",
+      "type": "string"
+    },
+    "PriceList": {
+      "description": "Default sales price list for account",
+      "type": "string"
+    },
+    "PurchaseCurrency": {
+      "description": "Currency of purchase",
+      "type": "string"
+    },
+    "PurchaseCurrencyDescription": {
+      "description": "Description of PurchaseCurrency",
+      "type": "string"
+    },
+    "PurchaseLeadDays": {
+      "description": "Indicates number of days required to receive a purchase. Acts as a default",
+      "type": "integer"
+    },
+    "PurchaseVATCode": {
+      "description": "Default VAT code used for purchase entries",
+      "type": "string"
+    },
+    "PurchaseVATCodeDescription": {
+      "description": "Description of PurchaseVATCode",
+      "type": "string"
+    },
+    "RecepientOfCommissions": {
+      "description": "Define the relation that should be taken in the official document of the rewarding fiscal fiches Belcotax",
+      "type": "boolean"
+    },
+    "Remarks": {
+      "description": "Remarks",
+      "type": "string"
+    },
+    "Reseller": {
+      "description": "ID of the reseller account. Conditions: the target account must have the property IsReseller turned on",
+      "type": "string"
+    },
+    "ResellerCode": {
+      "description": "Code of Reseller",
+      "type": "string"
+    },
+    "ResellerName": {
+      "description": "Name of Reseller",
+      "type": "string"
+    },
+    "RSIN": {
+      "description": "Fiscal number for NL legislation",
+      "type": "string"
+    },
+    "SalesCurrency": {
+      "description": "Currency of Sales used for Time & Billing",
+      "type": "string"
+    },
+    "SalesCurrencyDescription": {
+      "description": "Description of SalesCurrency",
+      "type": "string"
+    },
+    "SalesTaxSchedule": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "SalesTaxScheduleCode": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "SalesTaxScheduleDescription": {
+      "description": "Obsolete",
+      "type": "string"
+    },
+    "SalesVATCode": {
+      "description": "Default VAT code for a sales entry",
+      "type": "string"
+    },
+    "SalesVATCodeDescription": {
+      "description": "Description of SalesVATCode",
+      "type": "string"
+    },
+    "SearchCode": {
+      "description": "Search code",
+      "type": "string"
+    },
+    "SecurityLevel": {
+      "description": "Security level (0 - 100)",
+      "type": "integer"
+    },
+    "SeparateInvPerProject": {
+      "description": "Separate invoice per project (Time & Billing)",
+      "type": "integer"
+    },
+    "SeparateInvPerSubscription": {
+      "description": "Indicates how invoices are generated from subscriptions. 0 = subscriptions belonging to the same customer are combined in a single invoice. 1 = each subscription results in one invoice. In both cases, each individual subscription line results in one invoice line",
+      "type": "integer"
+    },
+    "ShippingLeadDays": {
+      "description": "Indicates the number of days it takes to send goods to the customer. Acts as a default",
+      "type": "integer"
+    },
+    "ShippingMethod": {
+      "description": "Default shipping method",
+      "type": "string"
+    },
+    "ShowRemarkForSales": {
+      "description": "Indicates whether to display Ordered by account's remarks when creating a new sales order",
+      "type": "boolean"
+    },
+    "StartDate": {
+      "description": "Indicates in combination with the end date if the account is active",
+      "type": "string",
+      "format": "date-time"
+    },
+    "State": {
+      "description": "State/Province/County code When changing the Country and the State is filled, the State must be assigned with a valid value from the selected country or set to empty",
+      "type": "string"
+    },
+    "StateName": {
+      "description": "Name of State",
+      "type": "string"
+    },
+    "Status": {
+      "description": "If the status field is filled this means the account is a customer. The value indicates the customer status. Possible values: A=None, S=Suspect, P=Prospect, C=Customer",
+      "type": "string"
+    },
+    "StatusSince": {
+      "description": "Obsolete",
+      "type": "string",
+      "format": "date-time"
+    },
+    "TradeName": {
+      "description": "Trade name can be registered and shown with the client (for all legislations)",
+      "type": "string"
+    },
+    "Type": {
+      "description": "Account type: Values: A = Relation, D = Division",
+      "type": "string"
+    },
+    "UniqueTaxpayerReference": {
+      "description": "Unique taxpayer reference for UK legislation",
+      "type": "string"
+    },
+    "VATLiability": {
+      "description": "Indicates the VAT status of an account to be able to identify the relation that should be selected in the VAT debtor listing in Belgium",
+      "type": "string"
+    },
+    "VATNumber": {
+      "description": "The number under which the account is known at the Value Added Tax collection agency",
+      "type": "string"
+    },
+    "Website": {
+      "description": "Website of the account",
+      "type": "string"
+    }
+  }
+}

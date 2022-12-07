@@ -1,0 +1,271 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "Sync/CRM/QuotationHeaders",
+  "description": "Any change in the header of the Quotations will lead to a new timestamp value in the header. The API will return header data in the API call.\r\nThe sync api's have the goal to keep the data between Exact Online and a 3rd party application the same.\r\nThe sync api's are all based on row versioning and because of that it is guaranteed to be unique. Every time an existing record is changed or a new record is inserted, the row versioning value is higher than the highest available value at that time. When retrieving records via these api's also a timestamp value is returned. The highest timestamp value of the records returned should be stored on client side. Next time records are retrieved, the timestamp value stored on client side should be provided as parameter. The api will then return only the new and changed records. Using this method is more reliable than using modified date, since it can happen that multiple records have the same modified date and therefore same record can be returned more than once. This will not happen when using timestamp.\r\nThe sync api's are also developed to give best performance when retrieving records. Because of performance and the intended purpose of the api's, only the timestamp field is allowed as parameter.\r\nThe single and bulk api\u2019s are designed for a different purpose. They provide ability to retrieve specific record or a set of records which meet certain conditions.\r\nIn case the division is moved to another database in Exact Online the timestamp values will be reset. Therefore, after a division is moved all data needs to be synchronized again in order to get the new timestamp values. To see if a division was moved, the /api/v1/{division}/system/Divisions can be used. The property DivisionMoveDate indicated at which date a division was moved and this date can be used to determine if it is needed to synchronize all data again.\r\nThe API has two important key fields, the Timestamp and the ID. The ID should be used to uniquely identify the record and will never change\r\n. The Timestamp is used to get new or changed records in an efficient way and will change for every change made to the record.\r\nThe timestamp value returned has no relation with actual date or time. As such it cannot be converted to a date\\time value. The timestamp is a rowversion value.\r\nWhen you use the sync or delete api for the first time for a particular division, filter on timestamp greater than 1.",
+  "properties": {
+    "Timestamp": {
+      "description": "Timestamp",
+      "type": "integer"
+    },
+    "AmountDC": {
+      "description": "Amount in the default currency of the company",
+      "type": "number"
+    },
+    "AmountDiscount": {
+      "description": "Discount amount in the currency of the transaction",
+      "type": "number"
+    },
+    "AmountDiscountExclVat": {
+      "description": "Discount amount excluding VAT in the currency of the transaction",
+      "type": "number"
+    },
+    "AmountFC": {
+      "description": "Amount in the currency of the transaction",
+      "type": "number"
+    },
+    "CloseDate": {
+      "description": "Date on which the customer accepted or rejected the quotation version",
+      "type": "string",
+      "format": "date-time"
+    },
+    "ClosingDate": {
+      "description": "Date on which you expect to close/win the deal",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Created": {
+      "description": "Date and time on which the quotation was created",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of the creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of the creator",
+      "type": "string"
+    },
+    "Currency": {
+      "description": "The currency of the quotation",
+      "type": "string"
+    },
+    "DeliveryAccount": {
+      "description": "The account where the items should delivered",
+      "type": "string"
+    },
+    "DeliveryAccountCode": {
+      "description": "The code of the delivery account",
+      "type": "string"
+    },
+    "DeliveryAccountContact": {
+      "description": "The contact person of the delivery account",
+      "type": "string"
+    },
+    "DeliveryAccountContactFullName": {
+      "description": "Full name of the delivery account contact person",
+      "type": "string"
+    },
+    "DeliveryAccountName": {
+      "description": "The name of the delivery account",
+      "type": "string"
+    },
+    "DeliveryAddress": {
+      "description": "The id of the delivery address",
+      "type": "string"
+    },
+    "DeliveryDate": {
+      "description": "The date of the delivery",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Description": {
+      "description": "By default this contains the item description",
+      "type": "string"
+    },
+    "Discount": {
+      "description": "Discount given on the default price. This is stored as a fraction. ie 5.5% is stored as .055",
+      "type": "number"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Document": {
+      "description": "Document linked to the quotation",
+      "type": "string"
+    },
+    "DocumentSubject": {
+      "description": "The subject of the document",
+      "type": "string"
+    },
+    "DueDate": {
+      "description": "Date after which the quotation is no longer valid",
+      "type": "string",
+      "format": "date-time"
+    },
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "IncotermAddress": {
+      "description": "Address of Incoterm",
+      "type": "string"
+    },
+    "IncotermCode": {
+      "description": "Code of Incoterm",
+      "type": "string"
+    },
+    "IncotermVersion": {
+      "description": "Version of Incoterm  Supported version for Incoterms : 2010, 2020",
+      "type": "integer"
+    },
+    "InvoiceAccount": {
+      "description": "The account to which the invoice is sent",
+      "type": "string"
+    },
+    "InvoiceAccountCode": {
+      "description": "The code of the invoice account",
+      "type": "string"
+    },
+    "InvoiceAccountContact": {
+      "description": "The contact person of the invoice account",
+      "type": "string"
+    },
+    "InvoiceAccountContactFullName": {
+      "description": "Full name of the invoice account contact person",
+      "type": "string"
+    },
+    "InvoiceAccountName": {
+      "description": "The name of the invoice account",
+      "type": "string"
+    },
+    "Modified": {
+      "description": "Date and time on which the quotation was last modified",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of the modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of the modifier",
+      "type": "string"
+    },
+    "Notes": {
+      "description": "Extra notes",
+      "type": "string"
+    },
+    "Opportunity": {
+      "description": "Opportunity linked to the quotation",
+      "type": "string"
+    },
+    "OpportunityName": {
+      "description": "The name of the opportunity",
+      "type": "string"
+    },
+    "OrderAccount": {
+      "description": "The account that requested the quotation",
+      "type": "string"
+    },
+    "OrderAccountCode": {
+      "description": "The code of the order account",
+      "type": "string"
+    },
+    "OrderAccountContact": {
+      "description": "The contact person of the order account",
+      "type": "string"
+    },
+    "OrderAccountContactFullName": {
+      "description": "Full name of the order account contact person",
+      "type": "string"
+    },
+    "OrderAccountName": {
+      "description": "The name of the order account",
+      "type": "string"
+    },
+    "PaymentCondition": {
+      "description": "Payment condition code",
+      "type": "string"
+    },
+    "PaymentConditionDescription": {
+      "description": "Payment condition description",
+      "type": "string"
+    },
+    "Project": {
+      "description": "The project linked to the quotation",
+      "type": "string"
+    },
+    "ProjectCode": {
+      "description": "The code of the project",
+      "type": "string"
+    },
+    "ProjectDescription": {
+      "description": "The description of the project",
+      "type": "string"
+    },
+    "QuotationDate": {
+      "description": "Date on which the quotation version is entered or printed. Both during entering and printing this date can be adjusted",
+      "type": "string",
+      "format": "date-time"
+    },
+    "QuotationID": {
+      "description": "Identifies the quotation. All the lines of a quotation have the same QuotationID",
+      "type": "string"
+    },
+    "QuotationNumber": {
+      "description": "Unique number to indentify the quotation. By default this number is based on the setting for first available number",
+      "type": "integer"
+    },
+    "Remarks": {
+      "description": "Extra text that can be added to the quotation",
+      "type": "string"
+    },
+    "SalesChannel": {
+      "description": "ID of Sales channel.",
+      "type": "string"
+    },
+    "SalesChannelCode": {
+      "description": "Code of Sales channel.",
+      "type": "string"
+    },
+    "SalesChannelDescription": {
+      "description": "Description of Sales channel.",
+      "type": "string"
+    },
+    "SalesPerson": {
+      "description": "The user that is responsible for the quotation version",
+      "type": "string"
+    },
+    "SalesPersonFullName": {
+      "description": "Full name of the sales person",
+      "type": "string"
+    },
+    "ShippingMethod": {
+      "description": "Shipping method ID",
+      "type": "string"
+    },
+    "ShippingMethodDescription": {
+      "description": "Shipping method description",
+      "type": "string"
+    },
+    "Status": {
+      "description": "The status of the quotation version. 5 = Rejected, 6 = Reviewed and closed, 10 = Recovery, 20 = Draft, 25 = Open, 35 = Processing... , 40 = Printed, 50 = Accepted",
+      "type": "integer"
+    },
+    "StatusDescription": {
+      "description": "The description of the status",
+      "type": "string"
+    },
+    "VersionNumber": {
+      "description": "Number indicating the different reviews which are made for the quotation",
+      "type": "integer"
+    },
+    "YourRef": {
+      "description": "The number by which this quotation is identified by the order account",
+      "type": "string"
+    }
+  }
+}
