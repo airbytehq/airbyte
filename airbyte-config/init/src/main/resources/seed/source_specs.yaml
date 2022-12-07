@@ -1762,7 +1762,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.16"
+- dockerImage: "airbyte/source-bing-ads:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -2422,7 +2422,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-close-com:0.1.0"
+- dockerImage: "airbyte/source-close-com:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
@@ -2431,7 +2431,7 @@
       type: "object"
       required:
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_key:
           type: "string"
@@ -3492,7 +3492,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.77"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.78"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -11351,7 +11351,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.30"
+- dockerImage: "airbyte/source-postgres:1.0.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11600,7 +11600,7 @@
                 enum:
                 - "pgoutput"
                 - "wal2json"
-                const: "pgoutput"
+                default: "pgoutput"
                 order: 2
               replication_slot:
                 type: "string"
@@ -16876,7 +16876,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-firebolt:0.1.0"
+- dockerImage: "airbyte/source-firebolt:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
@@ -16887,7 +16887,7 @@
       - "username"
       - "password"
       - "database"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         username:
           type: "string"
@@ -16899,6 +16899,7 @@
           type: "string"
           title: "Password"
           description: "Firebolt password."
+          airbyte_secret: true
         account:
           type: "string"
           title: "Account"

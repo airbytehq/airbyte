@@ -467,9 +467,39 @@ public interface Configs {
   String getJobKubeMainContainerImagePullSecret();
 
   /**
-   * Define the Job pod socat image.
+   * Define the Memory request for the Sidecar
+   */
+  String getSidecarMemoryRequest();
+
+  /**
+   * Define the Memory limit for the Sidecar
+   */
+  String getSidecarKubeMemoryLimit();
+
+  /**
+   * Define the CPU request for the Sidecar
+   */
+  String getSidecarKubeCpuRequest();
+
+  /**
+   * Define the CPU limit for the Sidecar
+   */
+  String getSidecarKubeCpuLimit();
+
+  /**
+   * Define the CPU request for the SOCAT Sidecar
    */
   String getJobKubeSocatImage();
+
+  /**
+   * Define the CPU limit for the SOCAT Sidecar
+   */
+  String getSocatSidecarKubeCpuLimit();
+
+  /**
+   * Define the Job pod socat image.
+   */
+  String getSocatSidecarKubeCpuRequest();
 
   /**
    * Define the Job pod busybox image.
