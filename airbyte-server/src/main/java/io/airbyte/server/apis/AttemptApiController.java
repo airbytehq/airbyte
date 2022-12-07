@@ -12,9 +12,9 @@ import io.airbyte.server.handlers.AttemptHandler;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
+import io.micronaut.http.annotation.Controller;
 
-@Path("/api/v1/attempt/")
+@Controller("/api/v1/attempt/")
 public class AttemptApiController implements AttemptApi {
 
   private final AttemptHandler attemptHandler;
