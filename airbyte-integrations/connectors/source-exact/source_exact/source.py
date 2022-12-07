@@ -381,7 +381,7 @@ class SyncSubscriptionSubscriptions(ExactStream):
 
 # Source
 class SourceExact(AbstractSource):
-    def check_connection(self, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, any]:
         access_token = config.get("access_token")
         refresh_token = config.get("refresh_token")
 
