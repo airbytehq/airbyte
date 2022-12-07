@@ -17,6 +17,7 @@ logger = logging.getLogger("airbyte")
 ValidFields = Enum("ValidEnums", AdsInsights.Field.__dict__)
 ValidBreakdowns = Enum("ValidBreakdowns", AdsInsights.Breakdowns.__dict__)
 ValidActionBreakdowns = Enum("ValidActionBreakdowns", AdsInsights.ActionBreakdowns.__dict__)
+ValidActionReportTimes = Enum("ValidActionReportTimes", AdsInsights.ActionReportTime.__dict__)
 DATE_TIME_PATTERN = "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
 EMPTY_PATTERN = "^$"
 
@@ -48,6 +49,16 @@ class InsightConfig(BaseModel):
         title="Action Breakdowns",
         description="A list of chosen action_breakdowns for action_breakdowns",
         default=[],
+    )
+
+    action_report_time: Optional[ValidActionReportTimes] = Field(
+        title="Action Report Time",
+        description=(
+            "Determines the report time of action stats. For example, if a person saw the ad on Jan 1st " 
+            "but converted on Jan 2nd, when you query the API with action_report_time=impression, you see a conversion on Jan 1st. "
+            "When you query the API with action_report_time=conversion, you see a conversion on Jan 2nd."
+        ),
+        default="mixed",
     )
 
     time_increment: Optional[PositiveInt] = Field(
