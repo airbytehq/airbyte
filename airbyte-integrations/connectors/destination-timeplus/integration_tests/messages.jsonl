@@ -1,0 +1,1 @@
+{"type": "RECORD", "record": {"stream": "airbyte_acceptance_table", "data": {"raw": "my_value"}, "emitted_at": 1626172757000}}

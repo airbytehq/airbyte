@@ -39,23 +39,19 @@ class DestinationTimeplus(Destination):
         configuration.api_key['X-Api-Key'] = apikey
         configuration.host=endpoint+"/api"
         stream_api = timeplus_client.StreamsV1beta1Api(timeplus_client.ApiClient(configuration))
+        stream_list = stream_api.v1beta1_streams_get()
+        all_streams = {s.name for s in stream_list}
 
         # only support "overwrite", "append"
         for configured_stream in configured_catalog.streams:
-            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+            is_overwrite = configured_stream.destination_sync_mode == DestinationSyncMode.overwrite
+            stream_exists = configured_stream.stream.name in all_streams
+            if is_overwrite and stream_exists:
                 # delete the existing stream
                 stream_api.v1beta1_streams_name_delete(configured_stream.stream.name)
+            if is_overwrite or not stream_exists:
                 # create a new stream
-                stream_def=timeplus_client.StreamDef()
-                stream_def.name=configured_stream.stream.name
-                stream_def.columns=[]
-                col_def=timeplus_client.ColumnDef()
-                col_def.name='raw'
-                col_def.type='string'
-                stream_def.columns.push(col_def)
-                stream_api.v1beta1_streams_post(stream_def)
-
-        streams = {s.stream.name for s in configured_catalog.streams}
+                stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=configured_stream.stream.name, columns=[timeplus_client.ColumnDef(name='raw',type='string')]))
 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -64,19 +60,9 @@ class DestinationTimeplus(Destination):
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                if record.stream not in streams:
-                    # Message contains record from a stream that is not in the catalog. Skip it!
-                    continue
                 
-                batch_body=timeplus_client.IngestData()
-
-                batch_body.columns=[]
-                col_def=timeplus_client.ColumnDef()
-                col_def.name='raw'
-                col_def.type='string'
-                batch_body.columns.push(col_def)
+                batch_body=timeplus_client.IngestData(columns=[timeplus_client.ColumnDef(name='raw',type='string')],data=[[json.dumps(record.data)]])
                 # TODO: check the stream name, if same, then batch upload data
-                batch_body.data=[[json.dumps(record.data)]]
 
                 stream_api.v1beta1_streams_name_ingest_post(batch_body,record.stream)
 
@@ -110,8 +96,7 @@ class DestinationTimeplus(Destination):
             configuration = timeplus_client.Configuration()
             configuration.api_key['X-Api-Key'] = apikey
             configuration.host=endpoint+"/api"
-            api_instance = timeplus_client.APIKeysV1beta1Api(timeplus_client.ApiClient(configuration))
-            api_instance.v1beta1_auth_api_keys_get()
+            timeplus_client.APIKeysV1beta1Api(timeplus_client.ApiClient(configuration)).v1beta1_auth_api_keys_get()
             logger.info("Successfully connected to "+endpoint)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
