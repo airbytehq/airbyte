@@ -7,3 +7,7 @@ plugins {
 airbytePython {
     moduleDirectory 'source_exchange_rates_tutorial'
 }
+
+dependencies {
+    implementation files(project(':airbyte-integrations:bases:source-acceptance-test').airbyteDocker.outputs)
+}
