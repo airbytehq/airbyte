@@ -24,7 +24,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.streams.http.http import HttpStream, HttpAvailabilityStrategy
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pydantic import ValidationError
 
@@ -43,10 +43,15 @@ class MockSource(Source):
 
 
 class MockAbstractSource(AbstractSource):
+    def __init__(self, streams: Optional[List[Stream]] = None):
+        self._streams = streams
+
     def check_connection(self, *args, **kwargs) -> Tuple[bool, Optional[Any]]:
         return True, ""
 
     def streams(self, *args, **kwargs) -> List[Stream]:
+        if self._streams:
+            return self._streams
         return []
 
 
@@ -458,3 +463,54 @@ def test_source_config_transform_and_no_transform(abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2
     assert [r.record.data for r in records] == [{"value": "23"}, {"value": 23}]
+
+
+def test_default_availability_strategy(catalog, mocker):
+    mocker.patch.multiple(HttpStream, __abstractmethods__=set())
+    mocker.patch.multiple(Stream, __abstractmethods__=set())
+
+    class MockHttpStream(MagicMock, HttpStream):
+        url_base = "http://example.com"
+        path = "/dummy/path"
+        get_json_schema = MagicMock()
+
+        def supports_incremental(self):
+            return True
+
+        def __init__(self, *args, **kvargs):
+            MagicMock.__init__(self)
+            HttpStream.__init__(self, *args, kvargs)
+            self.read_records = MagicMock()
+
+    class MockStream(MagicMock, Stream):
+        page_size = None
+        get_json_schema = MagicMock()
+
+        def __init__(self, *args, **kvargs):
+            MagicMock.__init__(self)
+            self.read_records = MagicMock()
+
+    streams = [MockHttpStream(), MockStream()]
+    http_stream, non_http_stream = streams
+    source = MockAbstractSource(streams=streams)
+
+    http_stream = streams[0]
+    assert isinstance(http_stream, HttpStream)
+    assert not isinstance(non_http_stream, HttpStream)
+
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+    assert non_http_stream.availability_strategy is None
+
+    # Add an extra record for the default HttpAvailabilityStrategy to pull from
+    # during the try: next(records) check, since we are mocking the return value
+    # and not re-creating the generator like we would during actual reading
+    http_stream.read_records.return_value = iter([{"value": "test"}] + [{}] * 3)
+    non_http_stream.read_records.return_value = iter([{}] * 3)
+
+    # Test with empty config
+    logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
+    records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+    # 3 for http stream and 3 for non http stream
+    assert len(records) == 3 + 3
+    assert http_stream.read_records.called
+    assert non_http_stream.read_records.calledgi
