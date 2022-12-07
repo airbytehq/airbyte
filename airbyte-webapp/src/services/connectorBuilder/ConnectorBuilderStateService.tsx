@@ -43,7 +43,6 @@ interface Context {
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
-  setYamlManifest: (yamlValue: string) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -136,7 +135,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     configJson,
     setBuilderFormValues,
     setJsonManifest,
-    setYamlManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
     setSelectedStream,
