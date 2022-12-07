@@ -11,7 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http.http import HTTPAvailabilityStrategy, HttpStream
+from airbyte_cdk.sources.streams.http.http import HttpAvailabilityStrategy, HttpStream
 
 logger = logging.getLogger("airbyte")
 
@@ -120,7 +120,7 @@ def test_http_availability_strategy(mocker):
         pass
 
     stream = MockHttpStream()
-    assert isinstance(stream.availability_strategy, HTTPAvailabilityStrategy)
+    assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 403

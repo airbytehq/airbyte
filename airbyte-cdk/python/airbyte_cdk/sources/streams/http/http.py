@@ -117,7 +117,7 @@ class HttpStream(Stream, ABC):
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return HTTPAvailabilityStrategy()
+        return HttpAvailabilityStrategy()
 
     @abstractmethod
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -484,7 +484,7 @@ class HttpSubStream(HttpStream, ABC):
                 yield {"parent": record}
 
 
-class HTTPAvailabilityStrategy(AvailabilityStrategy):
+class HttpAvailabilityStrategy(AvailabilityStrategy):
     def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
         """
         Check stream availability by attempting to read the first record of the
