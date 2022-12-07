@@ -7,6 +7,10 @@ micronaut:
         httpMethod: GET
         access:
           - isAnonymous()
+      - pattern: /**
+        httpMethod: POST
+        access:
+          - isAnonymous()
   server:
     port: 8080
 airbyte:

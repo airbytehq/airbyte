@@ -76,7 +76,7 @@ public class AirbyteApiClient {
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(micronautApiClient);
     dbMigrationApi = new DbMigrationApi(apiClient);
-    attemptApi = new AttemptApi(apiClient);
+    attemptApi = new AttemptApi(micronautApiClient);
     stateApi = new StateApi(apiClient);
   }
 

@@ -13,7 +13,6 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.AttemptApiController;
 import io.airbyte.server.apis.ConnectionApiController;
 import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
@@ -33,7 +32,6 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.AttemptApiBinder;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
@@ -53,7 +51,6 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.AttemptApiFactory;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
@@ -176,8 +173,6 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      AttemptApiFactory.setValues(attemptHandler, mdc);
-
       ConnectionApiFactory.setValues(
           connectionsHandler,
           operationsHandler,
@@ -222,7 +217,6 @@ public interface ServerFactory {
 
       // server configurations
       final Set<Class<?>> componentClasses = Set.of(
-          AttemptApiController.class,
           ConnectionApiController.class,
           DbMigrationApiController.class,
           DestinationApiController.class,
@@ -245,7 +239,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new CorsFilter(),
-          new AttemptApiBinder(),
           new ConnectionApiBinder(),
           new DbMigrationBinder(),
           new DestinationApiBinder(),
