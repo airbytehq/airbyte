@@ -19,6 +19,7 @@ import {
   DestinationSyncMode,
   Geography,
   NamespaceDefinitionType,
+  NonBreakingChangesPreference,
   OperationCreate,
   OperationRead,
   OperatorType,
@@ -37,6 +38,7 @@ export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
+  nonBreakingChangesPreference?: NonBreakingChangesPreference | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -81,11 +83,13 @@ export function useDefaultTransformation(): OperationCreate {
 interface CreateConnectionValidationSchemaArgs {
   allowSubOneHourCronExpressions: boolean;
   mode: ConnectionFormMode;
+  isAutoDetectSchemaChangesEnabled: boolean;
 }
 
 export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
+  isAutoDetectSchemaChangesEnabled,
 }: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
@@ -127,6 +131,10 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
+      nonBreakingChangesPreference: isAutoDetectSchemaChangesEnabled
+        ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+        : yup.mixed().notRequired(),
+
       namespaceDefinition: yup
         .string()
         .oneOf([
@@ -315,6 +323,7 @@ export const useInitialValues = (
       syncCatalog: initialSchema,
       scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
+      nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.ignore,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -344,6 +353,7 @@ export const useInitialValues = (
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
+    connection.nonBreakingChangesPreference,
     connection.operations,
     connection.prefix,
     connection.scheduleData,
