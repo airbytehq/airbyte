@@ -535,7 +535,8 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           the str should describe what went wrong.
         """
         if error.response.status_code == requests.codes.FORBIDDEN:
-            error_message = "This is most likely due to insufficient permissions on the credentials in use. "
+            error_message = f"The endpoint to access stream {stream.name} returned 403: Forbidden. "
+            error_message += "This is most likely due to insufficient permissions on the credentials in use. "
             error_message += self._visit_docs_message(logger, source)
             return False, error_message
 

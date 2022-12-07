@@ -575,6 +575,7 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     assert non_http_stream.read_records.called
     expected_logs = [
         f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
+        f"The endpoint to access stream {http_stream.name} returned 403: Forbidden.",
         "This is most likely due to insufficient permissions on the credentials in use.",
         "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
     ]
