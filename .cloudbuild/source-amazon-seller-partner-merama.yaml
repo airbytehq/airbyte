@@ -1,0 +1,8 @@
+
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: [ 'build', '-t', 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-amazon-seller-partner-merama:${_SASPM_VERSION}', './airbyte-integrations/connectors/source-amazon-seller-partner-merama' ]
+substitutions:
+  _SASPM_VERSION: 0.0.1
+images:
+- 'us-docker.pkg.dev/$PROJECT_ID/airbyte-custom-connectors/source-amazon-seller-partner-merama:${_SASPM_VERSION}'
