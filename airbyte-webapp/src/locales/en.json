@@ -58,6 +58,8 @@
   "form.change": "Change",
   "form.add": "Add",
   "form.saveChanges": "Save changes",
+  "form.openDatepicker": "Open datepicker",
+  "form.datepickerTimeCaption": "Time (UTC)",
   "form.saveChangesAndTest": "Save changes and test",
   "form.sourceRetest": "Retest source",
   "form.destinationRetest": "Retest destination",
