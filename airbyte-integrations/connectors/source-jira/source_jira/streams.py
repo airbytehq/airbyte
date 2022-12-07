@@ -342,6 +342,8 @@ class Issues(IncrementalJiraStream):
         self._additional_fields = additional_fields
         self._expand_changelog = expand_changelog
         self._render_fields = render_fields
+        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -367,8 +369,7 @@ class Issues(IncrementalJiraStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
-        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         fields = [
             "assignee",
             "attachment",
@@ -393,8 +394,7 @@ class Issues(IncrementalJiraStream):
         for name in additional_field_names + self._additional_fields:
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
-        projects_stream = Projects(**stream_args)
-        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for project in self.projects_stream.read_records(sync_mode=SyncMode.full_refresh):
             yield from super().read_records(
                 stream_slice={"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}, **kwargs
             )
