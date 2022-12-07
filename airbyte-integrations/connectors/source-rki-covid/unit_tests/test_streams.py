@@ -31,15 +31,6 @@ def test_next_page_token(patch_base_class):
     assert stream.next_page_token(**inputs) == expected_token
 
 
-# def test_parse_response(patch_base_class):
-#     stream = RkiCovidStream()
-#     # TODO: replace this with your input parameters
-#     inputs = {"response": MagicMock()}
-#     # TODO: replace this with your expected parced object
-#     expected_parsed_object = {}
-#     assert next(stream.parse_response(**inputs)) == expected_parsed_object
-
-
 def test_request_headers(patch_base_class):
     stream = RkiCovidStream()
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
