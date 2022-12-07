@@ -60,6 +60,8 @@
   "form.change": "Change",
   "form.add": "Add",
   "form.saveChanges": "Save changes",
+  "form.openDatepicker": "Open datepicker",
+  "form.datepickerTimeCaption": "Time (UTC)",
   "form.saveChangesAndTest": "Save changes and test",
   "form.sourceRetest": "Retest source",
   "form.destinationRetest": "Retest destination",
@@ -371,8 +373,8 @@
   "connection.linkedJobNotFound": "Job not found",
   "connection.returnToSyncHistory": "Return to Sync History",
 
-  "connection.schemaChange.breaking": "Breaking schema updates detected.",
-  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected.",
+  "connection.schemaChange.breaking": "Breaking schema updates detected",
+  "connection.schemaChange.nonBreaking": "Non-breaking schema updates detected",
   "connection.schemaChange.reviewAction": "Review changes",
 
   "form.frequency": "Replication frequency*",
