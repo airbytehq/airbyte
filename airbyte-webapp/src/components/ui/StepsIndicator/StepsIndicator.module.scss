@@ -15,7 +15,7 @@
   display: inline-block;
   width: 35px;
   height: 4px;
-  border-radius: 3px;
+  border-radius: variables.$border-radius-2xs;
   background-color: colors.$grey-300;
 
   // Give the element a bit larger hover area for the tooltip to show

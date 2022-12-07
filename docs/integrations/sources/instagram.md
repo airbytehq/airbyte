@@ -31,7 +31,7 @@ Generate access tokens with the following permissions:
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Click **Set up source**.
 <!-- /env:cloud -->
 
@@ -44,7 +44,7 @@ Generate access tokens with the following permissions:
 4. Enter a name for your source.
 5. Click **Authenticate your Instagram account**.
 6. Log in and authorize the Instagram account.
-7. Enter the **Start Date** in YYYY-MM-DDT00:00:00Z format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
+7. Enter the **Start Date** in YYYY-MM-DDTHH:mm:ssZ format. All data generated after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 8. Paste the access tokens from [Step 1](#step-1-set-up-instagram​).
 9. Click **Set up source**.
 <!-- /env:oss -->
