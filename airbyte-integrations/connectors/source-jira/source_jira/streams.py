@@ -88,6 +88,23 @@ class StartDateJiraStream(JiraStream, ABC):
         super().__init__(**kwargs)
         self._start_date = start_date
 
+
+class IncrementalJiraStream(StartDateJiraStream, ABC):
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        cursor_field = self.cursor_field
+        if isinstance(cursor_field, str):
+            latest_record = latest_record.get(self.cursor_field)
+        elif isinstance(cursor_field, list):
+            for cursor_part in cursor_field:
+                latest_record = latest_record.get(cursor_part, {})
+            cursor_field = cursor_field[-1]
+        latest_record_date = pendulum.parse(latest_record)
+        stream_state = current_stream_state.get(cursor_field)
+        if stream_state:
+            return {cursor_field: str(max(latest_record_date, pendulum.parse(stream_state)))}
+        else:
+            return {cursor_field: str(latest_record_date)}
+
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         issues_state = None
         cursor_exist_in_state: Any = False
@@ -109,23 +126,6 @@ class StartDateJiraStream(JiraStream, ABC):
             issues_state_row = issues_state.strftime("%Y/%m/%d %H:%M")
             return f"{cursor_field} > '{issues_state_row}'"
         return None
-
-
-class IncrementalJiraStream(StartDateJiraStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        cursor_field = self.cursor_field
-        if isinstance(cursor_field, str):
-            latest_record = latest_record.get(self.cursor_field)
-        elif isinstance(cursor_field, list):
-            for cursor_part in cursor_field:
-                latest_record = latest_record.get(cursor_part, {})
-            cursor_field = cursor_field[-1]
-        latest_record_date = pendulum.parse(latest_record)
-        stream_state = current_stream_state.get(cursor_field)
-        if stream_state:
-            return {cursor_field: str(max(latest_record_date, pendulum.parse(stream_state)))}
-        else:
-            return {cursor_field: str(latest_record_date)}
 
 
 class ApplicationRoles(JiraStream):
