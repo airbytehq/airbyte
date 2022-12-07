@@ -25,7 +25,7 @@ export const StreamFieldsTableHeader: React.FC = React.memo(() => (
     </HeaderCell>
     {/*
     In the design, but we may be unable to get the destination data type
-    <HeaderCell lighter>
+    <HeaderCell light>
       <FormattedMessage id="form.field.dataType" />
     </HeaderCell>
     */}
