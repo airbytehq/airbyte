@@ -14,7 +14,7 @@ import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.availability_strategy import AvailabilityStrategy, HTTPAvailabilityStrategy
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, HTTPAvailabilityStrategy
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 

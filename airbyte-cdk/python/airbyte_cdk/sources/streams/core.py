@@ -19,7 +19,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
-    from airbyte_cdk.sources.availability_strategy import AvailabilityStrategy
+    from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
 # Mapping[str, Any]: The content of an AirbyteRecordMessage

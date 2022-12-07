@@ -7,11 +7,10 @@ import requests
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 from airbyte_cdk.models import (
-    AirbyteStream,
     SyncMode,
 )
-from airbyte_cdk.sources import AbstractSource, Source
-from airbyte_cdk.sources.availability_strategy import (
+from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources.streams.availability_strategy import (
     AvailabilityStrategy,
     HTTPAvailabilityStrategy,
     ScopedAvailabilityStrategy,
