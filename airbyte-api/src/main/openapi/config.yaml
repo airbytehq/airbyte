@@ -13,7 +13,7 @@ info:
     * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
     Authentication (OSS):
-    * When authenticating to the Configuration API, you must use Basic Authentication by setting the Authentication Header to Basic and base64 encoding the username and password, airbyte and password by default. See https://github.com/airbytehq/airbyte#quick-start for more details.
+    * When authenticating to the Configuration API, you must use Basic Authentication by setting the Authentication Header to Basic and base64 encoding the username and password (which are `airbyte` and `password` by default - so base64 encoding `airbyte:password` results in `YWlyYnl0ZTpwYXNzd29yZA==`). So the full header reads `'Authorization': "Basic YWlyYnl0ZTpwYXNzd29yZA=="`
 
   version: "1.0.0"
   title: Airbyte Configuration API
