@@ -4,12 +4,12 @@ import { fillPostgresForm, fillPokeAPIForm } from "./connector";
 
 export const createPostgresSource = (
   name: string,
-  host: string = "localhost",
-  port: string = "5433",
-  database: string = "airbyte_ci_source",
-  username: string = "postgres",
-  password: string = "secret_password",
-  schema: string = ""
+  host = "localhost",
+  port = "5433",
+  database = "airbyte_ci_source",
+  username = "postgres",
+  password = "secret_password",
+  schema = ""
 ) => {
   cy.intercept("/api/v1/scheduler/sources/check_connection").as("checkSourceUpdateConnection");
   cy.intercept("/api/v1/sources/create").as("createSource");
