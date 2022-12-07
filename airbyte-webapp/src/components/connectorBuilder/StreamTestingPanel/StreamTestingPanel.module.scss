@@ -32,7 +32,6 @@ $buttonHeight: 36px;
 }
 
 .listErrorDisplay {
-  margin: calc(variables.$spacing-lg + $buttonHeight) auto auto;
   padding: variables.$spacing-lg;
   display: flex;
   flex-direction: column;
@@ -47,4 +46,18 @@ $buttonHeight: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.addStreamMessage {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: variables.$spacing-2xl;
+}
+
+.addStreamHeading {
+  color: colors.$dark-blue;
 }

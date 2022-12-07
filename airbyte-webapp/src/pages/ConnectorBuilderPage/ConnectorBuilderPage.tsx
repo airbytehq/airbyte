@@ -48,7 +48,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
           secondPanel={{
             children: <StreamTestingPanel />,
             className: styles.rightPanel,
-            flex: 0.33,
+            flex: 0,
             minWidth: 60,
             overlay: {
               displayThreshold: 325,

@@ -602,6 +602,7 @@
   "connectorBuilder.resetModal.submitButton": "Reset",
   "connectorBuilder.streamsHeading": "STREAMS ({number})",
   "connectorBuilder.globalConfiguration": "Global Configuration",
+  "connectorBuilder.noStreamsMessage": "Add a stream to test it here",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

@@ -105,7 +105,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
       )}
       {!hideSecondPanel && (
         <ReflexElement
-          className={classNames(styles.panelStyle, styles.secondPanel, secondPanel.className)}
+          className={classNames(styles.panelStyle, secondPanel.className)}
           propagateDimensions
           minSize={secondPanel.minWidth}
           flex={secondPanel.flex}

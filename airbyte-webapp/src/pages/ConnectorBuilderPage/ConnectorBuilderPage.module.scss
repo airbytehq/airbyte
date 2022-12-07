@@ -1,11 +1,14 @@
 @use "scss/colors";
 @use "scss/variables";
+@use "scss/mixins";
 
 .leftPanel {
   overflow: hidden;
 }
 
 .rightPanel {
+  @include mixins.left-shadow;
+
   border-top-left-radius: variables.$border-radius-md;
   border-bottom-left-radius: variables.$border-radius-md;
   background-color: colors.$white;
