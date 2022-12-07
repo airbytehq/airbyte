@@ -111,17 +111,17 @@ public class WebBackendConnectionsHandler {
         false);
 
     final List<StandardSync> standardSyncs = configRepository.listWorkspaceStandardSyncs(query);
-    final Map<UUID, SourceRead> sourceReadById =
-        getSourceReadById(standardSyncs.stream().map(StandardSync::getSourceId).toList());
-    final Map<UUID, DestinationRead> destinationReadById =
-        getDestinationReadById(standardSyncs.stream().map(StandardSync::getDestinationId).toList());
-    final Map<UUID, JobRead> latestJobByConnectionId =
-        getLatestJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
-    final Map<UUID, JobRead> runningJobByConnectionId =
-        getRunningJobByConnectionId(standardSyncs.stream().map(StandardSync::getConnectionId).toList());
+    final List<UUID> sourceIds = standardSyncs.stream().map(StandardSync::getSourceId).toList();
+    final List<UUID> destinationIds = standardSyncs.stream().map(StandardSync::getDestinationId).toList();
+    final List<UUID> connectionIds = standardSyncs.stream().map(StandardSync::getConnectionId).toList();
 
+    // Fetching all the related objects we need for the final output
+    final Map<UUID, SourceRead> sourceReadById = getSourceReadById(sourceIds);
+    final Map<UUID, DestinationRead> destinationReadById = getDestinationReadById(destinationIds);
+    final Map<UUID, JobRead> latestJobByConnectionId = getLatestJobByConnectionId(connectionIds);
+    final Map<UUID, JobRead> runningJobByConnectionId = getRunningJobByConnectionId(connectionIds);
     final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
-        configRepository.getMostRecentActorCatalogFetchEventForSources(new ArrayList<>());
+        configRepository.getMostRecentActorCatalogFetchEventForSources(sourceIds);
 
     final List<WebBackendConnectionListItem> connectionItems = Lists.newArrayList();
 
