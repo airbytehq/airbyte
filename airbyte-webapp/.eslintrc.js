@@ -7,8 +7,9 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:css-modules/recommended",
     "plugin:jsx-a11y/recommended",
+    "plugin:@airbyte/recommended",
   ],
-  plugins: ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y"],
+  plugins: ["react", "@typescript-eslint", "prettier", "unused-imports", "css-modules", "jsx-a11y", "@airbyte"],
   parserOptions: {
     ecmaVersion: 2020,
     sourceType: "module",
@@ -105,7 +106,7 @@ module.exports = {
   parser: "@typescript-eslint/parser",
   overrides: [
     {
-      files: ["scripts/**/*"],
+      files: ["scripts/**/*", "packages/**/*"],
       rules: {
         "@typescript-eslint/no-var-requires": "off",
       },
