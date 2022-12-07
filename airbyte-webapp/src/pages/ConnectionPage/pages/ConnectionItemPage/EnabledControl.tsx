@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 import { useAsyncFn } from "react-use";
@@ -48,13 +49,18 @@ export const EnabledControl: React.FC<EnabledControlProps> = ({ disabled }) => {
     updateConnection,
   ]);
 
+  const isSwitchDisabled = disabled || connectionUpdating;
+
   return (
     <div className={styles.container} data-testid="enabledControl">
-      <label htmlFor="toggle-enabled-source" className={styles.label}>
+      <label
+        htmlFor="toggle-enabled-source"
+        className={classNames(styles.label, { [styles.disabled]: isSwitchDisabled })}
+      >
         <FormattedMessage id={connection.status === ConnectionStatus.active ? "tables.enabled" : "tables.disabled"} />
       </label>
       <Switch
-        disabled={disabled || connectionUpdating}
+        disabled={isSwitchDisabled}
         onChange={onChangeStatus}
         checked={connection.status === ConnectionStatus.active}
         loading={loading}

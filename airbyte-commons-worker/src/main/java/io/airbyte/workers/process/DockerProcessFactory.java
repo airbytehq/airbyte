@@ -83,6 +83,7 @@ public class DockerProcessFactory implements ProcessFactory {
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
+                        final boolean usesIsolatedPool,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
