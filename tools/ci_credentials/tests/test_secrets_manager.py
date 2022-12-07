@@ -126,10 +126,11 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
 def test_write(tmp_path, connector_name, secrets, expected_files):
     manager = SecretsManager(connector_name=connector_name, gsm_credentials={})
     manager.base_folder = tmp_path
-    manager.write_to_storage(secrets)
+    written_files = manager.write_to_storage(secrets)
     for expected_file in expected_files:
         target_file = tmp_path / expected_file
         assert target_file.exists()
+        assert target_file in written_files
         has = False
         for secret in secrets:
             if target_file.name == secret.configuration_file_name:
