@@ -267,8 +267,7 @@ Please help us improve the low code CDK! If you find yourself needing to build a
 please [create a feature request issue](https://github.com/airbytehq/airbyte/issues/new?assignees=&labels=type%2Fenhancement%2C+%2Cneeds-triage%2C+area%2Flow-code%2Fcustom-components&template=feature-request.md&title=Low%20Code%20Feature:)
 . If appropriate, we'll add it directly to the framework (or you can submit a PR)!
 
-If an issue already exist for the missing feature you need, please upvote or comment so we can prioritize it
-accordingly.
+If an issue already exist for the missing feature you need, please upvote or comment so we can prioritize it accordingly.
 :::
 
 Any built-in components can be overloaded by a custom Python class.
