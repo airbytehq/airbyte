@@ -137,20 +137,8 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
           tdClassName: styles.textCell,
         },
       }),
-      // In the design, but we may be unable to get the destination data type
-      columnHelper.accessor("dataType", {
-        id: "destinationDataType",
-        header: () => <FormattedMessage id="form.field.dataType" />,
-        cell: ({ getValue }) => (
-          <FormattedMessage id={`${getValue()}`} defaultMessage={formatMessage({ id: "airbyte.datatype.unknown" })} />
-        ),
-        meta: {
-          thClassName: styles.headerCell,
-          tdClassName: styles.dataTypeCell,
-        },
-      }),
     ],
-    [columnHelper, formatMessage]
+    [columnHelper]
   );
 
   const columns = useMemo(
