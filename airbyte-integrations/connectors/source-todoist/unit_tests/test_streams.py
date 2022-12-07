@@ -12,50 +12,39 @@ from source_todoist.source import TodoistStream
 @pytest.fixture
 def patch_base_class(mocker):
     # Mock abstract methods to enable instantiating abstract class
-    mocker.patch.object(TodoistStream, "path", "v0/example_endpoint")
-    mocker.patch.object(TodoistStream, "primary_key", "test_primary_key")
     mocker.patch.object(TodoistStream, "__abstractmethods__", set())
 
 
 def test_request_params(patch_base_class):
     stream = TodoistStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request parameters
     expected_params = {}
     assert stream.request_params(**inputs) == expected_params
 
 
 def test_next_page_token(patch_base_class):
     stream = TodoistStream()
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected next page token
     expected_token = None
     assert stream.next_page_token(**inputs) == expected_token
 
 
 def test_parse_response(patch_base_class):
     stream = TodoistStream()
-    # TODO: replace this with your input parameters
     inputs = {"response": MagicMock()}
-    # TODO: replace this with your expected parced object
     expected_parsed_object = {}
     assert next(stream.parse_response(**inputs)) == expected_parsed_object
 
 
 def test_request_headers(patch_base_class):
     stream = TodoistStream()
-    # TODO: replace this with your input parameters
     inputs = {"stream_slice": None, "stream_state": None, "next_page_token": None}
-    # TODO: replace this with your expected request headers
     expected_headers = {}
     assert stream.request_headers(**inputs) == expected_headers
 
 
 def test_http_method(patch_base_class):
     stream = TodoistStream()
-    # TODO: replace this with your expected http request method
     expected_method = "GET"
     assert stream.http_method == expected_method
 

@@ -6,7 +6,7 @@ The Todoist source supports only `Full Refresh` syncs.
 
 ### Output schema
 
-Two output streams are available from this source. A list of these streams can be found below in the [Streams](outreach.md#streams) section.
+Two output streams are available from this source. A list of these streams can be found below in the [Streams](todoist.md#streams) section.
 
 ### Features
 
@@ -19,18 +19,26 @@ Two output streams are available from this source. A list of these streams can b
 
 ### Requirements
 
-* Token API
+* Todoist API token
 
-### Setup guide
+You can find your personal token in the [integrations settings view](https://todoist.com/prefs/integrations) of the Todoist web app and replace the token value in the samples.
 
-Getting a Token API requires an account, and you must generate a personal token.Check out [here](https://todoist.com/app/settings/integrations/).
+
+### Set up the Todoist connector in Airbyte
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Todoist** from the Source type dropdown.
+4. Enter the name for the Todoist connector.
+5. For **Token**, enter the [Todoist personal token](https://todoist.com/app/settings/integrations/).
+6. Click **Set up source**.
 
 ## Streams
 
 List of available streams:
 
-* Tasks
-* Projects
+* [Tasks](https://developer.todoist.com/rest/v2/#tasks)
+* [Projects](https://developer.todoist.com/rest/v2/#projects)
 
 ## Changelog
 

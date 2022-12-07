@@ -2,10 +2,16 @@
     "$schema": "http://json-schema.org/schema#",
     "properties": {
         "assignee_id": {
-            "type": "null"
+            "type": [
+                "null",
+                "string"
+            ]
         },
         "assigner_id": {
-            "type": "null"
+            "type": [
+                "null",
+                "string"
+            ]
         },
         "comment_count": {
             "type": "integer"
