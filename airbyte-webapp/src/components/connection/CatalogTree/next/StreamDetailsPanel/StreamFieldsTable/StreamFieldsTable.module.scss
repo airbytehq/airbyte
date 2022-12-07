@@ -4,6 +4,12 @@
 $cell-height: 28px;
 $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
 
+.customTableStyle {
+  td {
+    border-bottom-color: colors.$grey-50;
+  }
+}
+
 .headerGroupCell {
   height: 58px;
   background-color: colors.$white;

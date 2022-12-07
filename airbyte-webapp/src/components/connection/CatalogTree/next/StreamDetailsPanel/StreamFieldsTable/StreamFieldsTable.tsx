@@ -2,6 +2,7 @@ import { createColumnHelper } from "@tanstack/react-table";
 import React, { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
 import { CheckBox } from "components/ui/CheckBox";
 import { NextTable } from "components/ui/NextTable";
@@ -15,7 +16,6 @@ import { useSourceDefinition } from "services/connector/SourceDefinitionService"
 import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
-import { pathDisplayName } from "../../../PathPopout";
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
 import styles from "./StreamFieldsTable.module.scss";
 
@@ -181,5 +181,5 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
     [columnHelper, destinationColumns, destinationDefinition.icon, sourceColumns, sourceDefinition.icon]
   );
 
-  return <NextTable<TableStream> columns={columns} data={tableData} />;
+  return <NextTable<TableStream> columns={columns} data={tableData} className={styles.customTableStyle} />;
 };

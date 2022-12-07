@@ -8,9 +8,10 @@ export interface TableProps<TData> {
   data: TData[];
   columns: Array<ColumnDef<TData>>;
   onClickRow?: (data: unknown) => void;
+  className?: string;
 }
 
-export const NextTable = <TData,>({ columns, data, onClickRow }: PropsWithChildren<TableProps<TData>>) => {
+export const NextTable = <TData,>({ columns, data, onClickRow, className }: PropsWithChildren<TableProps<TData>>) => {
   const table = useReactTable({
     columns,
     data,
@@ -18,7 +19,7 @@ export const NextTable = <TData,>({ columns, data, onClickRow }: PropsWithChildr
   });
 
   return (
-    <table className={styles.table}>
+    <table className={classNames(styles.table, className)}>
       <thead className={styles.thead}>
         {table.getHeaderGroups().map((headerGroup) => (
           <tr key={`table-header-${headerGroup.id}}`}>
