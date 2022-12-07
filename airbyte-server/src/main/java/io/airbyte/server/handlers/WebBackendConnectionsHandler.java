@@ -101,7 +101,7 @@ public class WebBackendConnectionsHandler {
   }
 
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WebBackendConnectionListRequestBody webBackendConnectionListRequestBody)
-      throws IOException, JsonValidationException, ConfigNotFoundException {
+      throws IOException {
 
     final StandardSyncQuery query = new StandardSyncQuery(
         webBackendConnectionListRequestBody.getWorkspaceId(),
@@ -202,14 +202,13 @@ public class WebBackendConnectionsHandler {
                                                                          final Map<UUID, DestinationRead> destinationReadById,
                                                                          final Map<UUID, JobRead> latestJobByConnectionId,
                                                                          final Map<UUID, JobRead> runningJobByConnectionId,
-                                                                         final Optional<ActorCatalogFetchEvent> latestFetchEvent)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
+                                                                         final Optional<ActorCatalogFetchEvent> latestFetchEvent) {
 
     final SourceRead source = sourceReadById.get(standardSync.getSourceId());
     final DestinationRead destination = destinationReadById.get(standardSync.getDestinationId());
     final Optional<JobRead> latestSyncJob = Optional.ofNullable(latestJobByConnectionId.get(standardSync.getConnectionId()));
     final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
-    final ConnectionRead connectionRead = connectionsHandler.getConnection(standardSync.getConnectionId());
+    final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
     final Optional<UUID> currentCatalogId = connectionRead == null ? Optional.empty() : Optional.ofNullable(connectionRead.getSourceCatalogId());
 
     final SchemaChange schemaChange = getSchemaChange(connectionRead, currentCatalogId, latestFetchEvent);
