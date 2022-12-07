@@ -13,8 +13,9 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, HTTPAvailabilityStrategy
+from requests import HTTPError
 from requests.auth import AuthBase
 from requests_cache.session import CachedSession
 
@@ -481,3 +482,80 @@ class HttpSubStream(HttpStream, ABC):
             # iterate over all parent records with current stream_slice
             for record in parent_records:
                 yield {"parent": record}
+
+
+class HTTPAvailabilityStrategy(AvailabilityStrategy):
+    def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
+        """
+        Check stream availability by attempting to read the first record of the
+        stream.
+
+        :param source: source
+        :param logger: source logger
+        :param stream: stream
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
+        """
+        try:
+            # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
+            stream_slice = self._get_stream_slice(stream)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+            next(records)
+        except HTTPError as error:
+            return self.handle_http_error(logger, stream, error)
+        return True, None
+
+    def handle_http_error(self, logger: logging.Logger, stream: Stream, error: HTTPError):
+        """
+        Override this method to define error handling for various `HTTPError`s
+        that are raised while attempting to check a stream's availability.
+
+        :param source: source
+        :param logger: source logger
+        :param stream: stream
+        :param error: HTTPerror raised while checking stream's availability.
+        :return: A tuple of (boolean, str). If boolean is true, then the stream
+          is available. Otherwise, the stream is unavailable for some reason and
+          the str should describe what went wrong.
+        """
+        if error.response.status_code == requests.codes.FORBIDDEN:
+            error_message = "This is most likely due to insufficient permissions on the credentials in use. "
+            error_message += self._visit_docs_message(logger)
+            return False, error_message
+
+        error_message = repr(error)
+        return False, error_message
+
+    def _get_stream_slice(self, stream):
+        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
+        # but not iterators such as lists or tuples
+        slices = iter(
+            stream.stream_slices(
+                cursor_field=stream.cursor_field,
+                sync_mode=SyncMode.full_refresh,
+            )
+        )
+        try:
+            return next(slices)
+        except StopIteration:
+            return {}
+
+    def _visit_docs_message(self, logger: logging.Logger) -> str:
+        """
+        :param source:
+        :return: A message telling the user where to go to learn more about the source.
+        """
+        try:
+            # connector_spec = source.spec(logger)
+            # docs_url = connector_spec.documentationUrl
+            # if docs_url:
+            #     learn_more_message = f"Please visit {docs_url} to learn more. "
+            # else:
+            learn_more_message = "Please visit the connector's documentation to learn more. "
+
+        except FileNotFoundError:  # If we are unit testing without implementing spec()
+            docs_url = "https://docs.airbyte.com/integrations/sources/test"
+            learn_more_message = f"Please visit {docs_url} to learn more."
+
+        return learn_more_message

@@ -3,21 +3,15 @@
 #
 
 import logging
-import requests
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
-from airbyte_cdk.models import (
-    SyncMode,
-)
+import requests
+from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams.availability_strategy import (
-    AvailabilityStrategy,
-    HTTPAvailabilityStrategy,
-    ScopedAvailabilityStrategy,
-)
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.streams.http.http import HTTPAvailabilityStrategy, HttpStream
 
 logger = logging.getLogger("airbyte")
 
@@ -50,11 +44,12 @@ class MockStream(Stream):
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
         pass
 
-    def read_records(self,
+    def read_records(
+        self,
         sync_mode: SyncMode,
         cursor_field: List[str] = None,
         stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None
+        stream_state: Mapping[str, Any] = None,
     ) -> Iterable[StreamData]:
         pass
 
