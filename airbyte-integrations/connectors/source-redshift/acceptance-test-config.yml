@@ -1,29 +1,35 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-redshift:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "src/test-integration/resources/expected_spec.json"
-      timeout_seconds: "1200"
-      config_path: "secrets/config.json"
+    tests:
+      - spec_path: "src/test-integration/resources/expected_spec.json"
+        timeout_seconds: "1200"
+        config_path: "secrets/config.json"
   connection:
-    - config_path: "secrets/config.json"
-      timeout_seconds: "1200"
-      status: "succeed"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: "1200"
+        status: "succeed"
   discovery:
-    - config_path: "secrets/config.json"
-      timeout_seconds: "1200"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: "1200"
   basic_read:
-    - config_path: "secrets/config.json"
-      timeout_seconds: "1200"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_records.json"
+    tests:
+      - config_path: "secrets/config.json"
+        timeout_seconds: "1200"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.json"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      timeout_seconds: "1200"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: "1200"
   incremental:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_inc.json"
-      timeout_seconds: "1200"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog_inc.json"
+        timeout_seconds: "1200"
