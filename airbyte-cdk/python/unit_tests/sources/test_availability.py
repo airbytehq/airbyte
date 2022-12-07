@@ -54,9 +54,15 @@ class MockStream(Stream):
         pass
 
 
+def test_no_availabilitly_strategy():
+    stream_1 = MockStream("stream")
+    assert stream_1.availability_strategy is None
+    assert stream_1.check_availability(logger) is None
+
+
 def test_availability_strategy():
     class MockAvailabilityStrategy(AvailabilityStrategy):
-        def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
+        def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, any]:
             if stream.name == "available_stream":
                 return True, None
             return False, f"Could not reach stream '{stream.name}'."
@@ -72,9 +78,9 @@ def test_availability_strategy():
     for stream in [stream_1, stream_2]:
         assert isinstance(stream.availability_strategy, MockAvailabilityStrategy)
 
-    assert stream_1.availability_strategy.check_availability(logger, stream_1)[0] is True
-    assert stream_2.availability_strategy.check_availability(logger, stream_2)[0] is False
-    assert "Could not reach stream 'unavailable_stream'" in stream_2.availability_strategy.check_availability(logger, stream_2)[1]
+    assert stream_1.check_availability(logger)[0] is True
+    assert stream_2.check_availability(logger)[0] is False
+    assert "Could not reach stream 'unavailable_stream'" in stream_2.check_availability(logger)[1]
 
 
 def test_scoped_availability_strategy():
@@ -93,9 +99,9 @@ def test_scoped_availability_strategy():
     stream_1 = MockStreamWithScopedAvailabilityStrategy("repos")
     stream_2 = MockStreamWithScopedAvailabilityStrategy("projectV2")
 
-    assert stream_1.availability_strategy.check_availability(logger, stream_1)[0] is True
-    assert stream_2.availability_strategy.check_availability(logger, stream_2)[0] is False
-    assert "Missing required scopes: ['read:project']" in stream_2.availability_strategy.check_availability(logger, stream_2)[1]
+    assert stream_1.check_availability(logger)[0] is True
+    assert stream_2.check_availability(logger)[0] is False
+    assert "Missing required scopes: ['read:project']" in stream_2.check_availability(logger)[1]
 
 
 def test_http_availability_strategy(mocker):
@@ -125,17 +131,17 @@ def test_http_availability_strategy(mocker):
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert stream.availability_strategy.check_availability(logger, stream)[0] is False
+    assert stream.check_availability(logger)[0] is False
 
     expected_messages = [
         "This is most likely due to insufficient permissions on the credentials in use.",
         "Please visit the connector's documentation to learn more."
         # "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
     ]
-    actual_message = stream.availability_strategy.check_availability(logger, stream)[1]
+    actual_message = stream.check_availability(logger)[1]
     for message in expected_messages:
         assert message in actual_message
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert stream.availability_strategy.check_availability(logger, stream)[0] is True
+    assert stream.check_availability(logger)[0] is True

@@ -485,7 +485,7 @@ class HttpSubStream(HttpStream, ABC):
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, str]:
+    def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, str]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -503,10 +503,10 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
-            return self.handle_http_error(logger, stream, error)
+            return self.handle_http_error(stream, logger, error)
         return True, None
 
-    def handle_http_error(self, logger: logging.Logger, stream: Stream, error: HTTPError):
+    def handle_http_error(self, stream: Stream, logger: logging.Logger, error: HTTPError):
         """
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.

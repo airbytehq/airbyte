@@ -174,6 +174,13 @@ class Stream(ABC):
         """
         return True
 
+    def check_availability(self, logger: logging.Logger):
+        """
+        :return:
+        """
+        if self.availability_strategy:
+            return self.availability_strategy.check_availability(self, logger)
+
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         """

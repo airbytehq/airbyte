@@ -15,7 +15,7 @@ class AvailabilityStrategy(ABC):
     """
 
     @abstractmethod
-    def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, any]:
+    def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, any]:
         """
         Checks stream availability.
 
@@ -29,7 +29,7 @@ class AvailabilityStrategy(ABC):
 
 
 class ScopedAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, logger: logging.Logger, stream: Stream) -> Tuple[bool, Optional[str]]:
+    def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, Optional[str]]:
         """
         Check stream availability based on required scopes for streams and
         the scopes granted to the source.
