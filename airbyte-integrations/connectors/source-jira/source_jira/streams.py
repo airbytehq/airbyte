@@ -24,6 +24,7 @@ class JiraStream(HttpStream, ABC):
 
     primary_key: Optional[str] = "id"
     parse_response_root: Optional[str] = None
+    api_v1 = False
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super(JiraStream, self).__init__(**kwargs)
@@ -32,6 +33,8 @@ class JiraStream(HttpStream, ABC):
 
     @property
     def url_base(self) -> str:
+        if self.api_v1:
+            return f"https://{self._domain}/rest/agile/1.0/"
         return f"https://{self._domain}/rest/api/{API_VERSION}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -78,12 +81,6 @@ class JiraStream(HttpStream, ABC):
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
-
-
-class V1ApiJiraStream(JiraStream, ABC):
-    @property
-    def url_base(self) -> str:
-        return f"https://{self._domain}/rest/agile/1.0/"
 
 
 class StartDateJiraStream(JiraStream, ABC):
@@ -159,13 +156,14 @@ class Avatars(JiraStream):
             yield from super().read_records(stream_slice={"avatar_type": avatar_type}, **kwargs)
 
 
-class Boards(V1ApiJiraStream):
+class Boards(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
 
     parse_response_root = "values"
     use_cache = True
+    api_v1 = True
 
     def path(self, **kwargs) -> str:
         return "board"
@@ -191,13 +189,14 @@ class Boards(V1ApiJiraStream):
         return record
 
 
-class BoardIssues(V1ApiJiraStream, IncrementalJiraStream):
+class BoardIssues(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-issue-get
     """
 
     cursor_field = "updated"
     parse_response_root = "issues"
+    api_v1 = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
@@ -1027,13 +1026,14 @@ class ScreenSchemes(JiraStream):
         return "screenscheme"
 
 
-class Sprints(V1ApiJiraStream):
+class Sprints(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-sprint-get
     """
 
     parse_response_root = "values"
     use_cache = True
+    api_v1 = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
@@ -1047,13 +1047,14 @@ class Sprints(V1ApiJiraStream):
         yield from []
 
 
-class SprintIssues(V1ApiJiraStream, IncrementalJiraStream):
+class SprintIssues(IncrementalJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-agile-1-0-sprint-sprintid-issue-get
     """
 
     cursor_field = "updated"
     parse_response_root = "issues"
+    api_v1 = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         sprint_id = stream_slice["sprint_id"]
