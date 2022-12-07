@@ -5,13 +5,15 @@ import base64
 import json
 import os
 import re
+from glob import glob
 from json.decoder import JSONDecodeError
 from pathlib import Path
-from typing import Any, ClassVar, Mapping, Tuple
+from typing import Any, ClassVar, List, Mapping
 
 from ci_common_utils import GoogleApi, Logger
 
-DEFAULT_SECRET_FILE = "config"
+from .models import DEFAULT_SECRET_FILE, RemoteSecret, Secret
+
 DEFAULT_SECRET_FILE_WITH_EXT = DEFAULT_SECRET_FILE + ".json"
 
 GSM_SCOPES = ("https://www.googleapis.com/auth/cloud-platform",)
@@ -43,8 +45,8 @@ MASK_KEY_PATTERNS = [
 ]
 
 
-class SecretsLoader:
-    """Loading and saving all requested secrets into connector folders"""
+class SecretsManager:
+    """Loading, saving and updating all requested secrets into connector folders"""
 
     logger: ClassVar[Logger] = Logger()
     if os.getenv("VERSION") == "dev":
@@ -63,9 +65,9 @@ class SecretsLoader:
             self._api = GoogleApi(self.gsm_credentials, GSM_SCOPES)
         return self._api
 
-    def __load_gsm_secrets(self) -> Mapping[Tuple[str, str], str]:
+    def __load_gsm_secrets(self) -> List[RemoteSecret]:
         """Loads needed GSM secrets"""
-        secrets = {}
+        secrets = []
         # docs: https://cloud.google.com/secret-manager/docs/filtering#api
         filter = "name:SECRET_"
         if self.connector_name:
@@ -105,8 +107,8 @@ class SecretsLoader:
                 enabled_versions = [version["name"] for version in data["versions"] if version["state"] == "ENABLED"]
                 if len(enabled_versions) > 1:
                     self.logger.critical(f"{log_name} should have one enabled version at the same time!!!")
-
-                secret_url = f"https://secretmanager.googleapis.com/v1/{enabled_versions[0]}:access"
+                enabled_version = enabled_versions[0]
+                secret_url = f"https://secretmanager.googleapis.com/v1/{enabled_version}:access"
                 data = self.api.get(secret_url)
                 secret_value = data.get("payload", {}).get("data")
                 if not secret_value:
@@ -121,7 +123,8 @@ class SecretsLoader:
                 except JSONDecodeError as err:
                     self.logger.error(f"{log_name} has non-JSON value!!! Error: {err}")
                     continue
-                secrets[(connector_name, filename)] = secret_value
+                remote_secret = RemoteSecret(connector_name, filename, secret_value, enabled_version)
+                secrets.append(remote_secret)
 
             next_token = data.get("nextPageToken")
             if not next_token:
@@ -160,82 +163,113 @@ class SecretsLoader:
                 # carry on
                 pass
 
-    @staticmethod
-    def generate_secret_name(connector_name: str, filename: str) -> str:
-        """
-        Generates an unique GSM secret name.
-        Format of secret name: SECRET_<CAPITAL_CONNECTOR_NAME>_<OPTIONAL_UNIQUE_FILENAME_PART>__CREDS
-        Examples:
-            1. connector_name: source-linnworks, filename: dsdssds_a-b---_---_config.json
-               => SECRET_SOURCE-LINNWORKS_DSDSSDS_A-B__CREDS
-            2. connector_name: source-s3, filename: config.json
-               => SECRET_SOURCE-LINNWORKS__CREDS
-        """
-        name_parts = ["secret", connector_name]
-        filename_wo_ext = filename.replace(".json", "")
-        if filename_wo_ext != DEFAULT_SECRET_FILE:
-            name_parts.append(filename_wo_ext.replace(DEFAULT_SECRET_FILE, "").strip("_-"))
-        name_parts.append("_creds")
-        return "_".join(name_parts).upper()
-
-    def create_secret(self, connector_name: str, filename: str, secret_value: str) -> bool:
-        """
-        Creates a new GSM secret with auto-generated name.
-        """
-        secret_name = self.generate_secret_name(connector_name, filename)
-        self.logger.info(f"Generated the new secret name '{secret_name}' for {connector_name}({filename})")
-        params = {
-            "secretId": secret_name,
-        }
-        labels = {
-            "connector": connector_name,
-        }
-        if filename != DEFAULT_SECRET_FILE:
-            labels["filename"] = filename.replace(".json", "")
-        body = {
-            "labels": labels,
-            "replication": {"automatic": {}},
-        }
-        url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets"
-        data = self.api.post(url, json=body, params=params)
-
-        # try to create a new version
-        secret_name = data["name"]
-        self.logger.info(f"the GSM secret {secret_name} was created")
-        secret_url = f"https://secretmanager.googleapis.com/v1/{secret_name}:addVersion"
-        body = {"payload": {"data": base64.b64encode(secret_value.encode()).decode("utf-8")}}
-        self.api.post(secret_url, json=body)
-        return True
-
-    def read_from_gsm(self) -> int:
+    def read_from_gsm(self) -> List[RemoteSecret]:
         """Reads all necessary secrets from different sources"""
         secrets = self.__load_gsm_secrets()
-
-        for k in secrets:
-            if not isinstance(secrets[k], tuple):
-                secrets[k] = ("GSM", secrets[k])
-            source, _ = secrets[k]
-            self.logger.info(f"Register the file {k[1]}({k[0]}) from {source}")
-
         if not len(secrets):
             self.logger.warning(f"not found any secrets of the connector '{self.connector_name}'")
-            return {}
-        return {k: v[1] for k, v in secrets.items()}
+            return []
+        return secrets
 
-    def write_to_storage(self, secrets: Mapping[Tuple[str, str], str]) -> int:
-        """Tries to save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder"""
+    def write_to_storage(self, secrets: List[RemoteSecret]) -> List[Path]:
+        """Save target secrets to the airbyte-integrations/connectors|bases/{connector_name}/secrets folder
+
+        Args:
+            secrets (List[RemoteSecret]): List of remote secret to write locally
+
+        Returns:
+            List[Path]: List of paths were the secrets were written
+        """
+        written_files = []
         if not secrets:
             return 0
-        for (connector_name, filename), secret_value in secrets.items():
-            if connector_name == "base-normalization":
-                secrets_dir = f"airbyte-integrations/bases/{connector_name}/secrets"
-            else:
-                secrets_dir = f"airbyte-integrations/connectors/{connector_name}/secrets"
-
-            secrets_dir = self.base_folder / secrets_dir
+        for secret in secrets:
+            secrets_dir = self.base_folder / secret.directory
             secrets_dir.mkdir(parents=True, exist_ok=True)
-            filepath = secrets_dir / filename
+            filepath = secrets_dir / secret.configuration_file_name
             with open(filepath, "w") as file:
-                file.write(secret_value)
-            self.logger.info(f"The file {filepath} was saved")
-        return 0
+                file.write(secret.value)
+            written_files.append(filepath)
+        return written_files
+
+    def _create_new_secret_version(self, new_secret: Secret, old_secret: RemoteSecret) -> RemoteSecret:
+        """Create a new secret version from a new secret instance. Disable the previous secret version.
+
+        Args:
+            new_secret (Secret): The new secret instance
+            old_secret (RemoteSecret): The old secret instance
+
+        Returns:
+            RemoteSecret: The newly created remote secret instance
+        """
+        secret_url = f"https://secretmanager.googleapis.com/v1/projects/{self.api.project_id}/secrets/{new_secret.name}:addVersion"
+        body = {"payload": {"data": base64.b64encode(new_secret.value.encode()).decode("utf-8")}}
+        new_version_response = self.api.post(secret_url, json=body)
+        self._disable_version(old_secret.enabled_version)
+        return RemoteSecret.from_secret(new_secret, enabled_version=new_version_response["name"])
+
+    def _disable_version(self, version_name: str) -> dict:
+        """Disable a GSM secret version
+
+        Args:
+            version_name (str): Full name of the version (containing project id and secret name)
+
+        Returns:
+            dict: API response
+        """
+        disable_version_url = f"https://secretmanager.googleapis.com/v1/{version_name}:disable"
+        return self.api.post(disable_version_url)
+
+    def _get_updated_secrets(self) -> List[Secret]:
+        """Find locally updated configurations files and return the most recent instance for each configuration file name.
+
+        Returns:
+            List[Secret]: List of Secret instances parsed from local updated configuration files
+        """
+        updated_configurations_glob = (
+            f"{str(self.base_folder)}/airbyte-integrations/connectors/{self.connector_name}/secrets/updated_configurations/*.json"
+        )
+        updated_configuration_files_versions = {}
+        for updated_configuration_path in glob(updated_configurations_glob):
+            updated_configuration_path = Path(updated_configuration_path)
+            with open(updated_configuration_path, "r") as updated_configuration:
+                updated_configuration_value = json.load(updated_configuration)
+            configuration_original_file_name = f"{updated_configuration_path.stem.split('|')[0]}{updated_configuration_path.suffix}"
+            updated_configuration_files_versions.setdefault(configuration_original_file_name, [])
+            updated_configuration_files_versions[configuration_original_file_name].append(
+                (updated_configuration_value, os.path.getctime(str(updated_configuration_path)))
+            )
+
+        for updated_configurations in updated_configuration_files_versions.values():
+            updated_configurations.sort(key=lambda x: x[1])
+        return [
+            Secret(
+                connector_name=self.connector_name,
+                configuration_file_name=configuration_file_name,
+                value=json.dumps(versions_by_creation_time[-1][0]),
+            )
+            for configuration_file_name, versions_by_creation_time in updated_configuration_files_versions.items()
+        ]
+
+    def update_secrets(self, existing_secrets: List[RemoteSecret]) -> List[RemoteSecret]:
+        """Update existing secrets if an updated version was found locally.
+
+        Args:
+            existing_secrets (List[RemoteSecret]): List of existing secrets for the current connector on GSM.
+
+        Returns:
+            List[RemoteSecret]: List of updated secrets as RemoteSecret instances
+        """
+        existing_secrets = {secret.name: secret for secret in existing_secrets}
+        updated_secrets = {secret.name: secret for secret in self._get_updated_secrets()}
+        new_remote_secrets = []
+        for existing_secret_name in existing_secrets:
+            if existing_secret_name in updated_secrets and json.loads(updated_secrets[existing_secret_name].value) != json.loads(
+                existing_secrets[existing_secret_name].value
+            ):
+                new_secret = updated_secrets[existing_secret_name]
+                old_secret = existing_secrets[existing_secret_name]
+                new_remote_secret = self._create_new_secret_version(new_secret, old_secret)
+                new_remote_secrets.append(new_remote_secret)
+                self.logger.info(f"Updated {new_remote_secret.name} with new value")
+        return new_remote_secrets
