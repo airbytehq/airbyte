@@ -540,8 +540,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             error_message += self._visit_docs_message(logger, source)
             return False, error_message
 
-        error_message = repr(error)
-        return True, error_message
+        return True, None
 
     def _visit_docs_message(self, logger: logging.Logger, source: Optional["Source"]) -> str:
         """
