@@ -15,6 +15,12 @@ TEST_REQUIREMENTS = [
     "source-acceptance-test",
 ]
 
+DISCOVER_REQUIREMENTS = [
+    "beautifulsoup4~=4.11.1",
+    "html5lib~=1.1",
+    "pandas~=1.5.2",
+]
+
 setup(
     name="source_exact",
     description="Source implementation for Exact.",
@@ -25,5 +31,6 @@ setup(
     package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
+        "discover": DISCOVER_REQUIREMENTS,
     },
 )
