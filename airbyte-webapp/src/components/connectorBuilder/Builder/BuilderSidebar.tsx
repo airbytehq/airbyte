@@ -99,7 +99,10 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   return (
     <div className={classnames(className, styles.container)}>
       <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />
+
+      {/* TODO: replace with uploaded img when that functionality is added */}
       <img className={styles.connectorImg} src="/logo.png" alt="Connector Logo" />
+
       <div className={styles.connectorName}>
         <Heading as="h2" size="sm" className={styles.connectorNameText}>
           {field.value}
