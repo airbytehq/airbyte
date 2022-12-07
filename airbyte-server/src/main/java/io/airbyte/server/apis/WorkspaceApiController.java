@@ -16,13 +16,15 @@ import io.airbyte.api.model.generated.WorkspaceUpdate;
 import io.airbyte.api.model.generated.WorkspaceUpdateName;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
 
 @Path("/v1/workspaces")
-@AllArgsConstructor
 public class WorkspaceApiController implements WorkspaceApi {
 
   private final WorkspacesHandler workspacesHandler;
+
+  public WorkspaceApiController(final WorkspacesHandler workspacesHandler) {
+    this.workspacesHandler = workspacesHandler;
+  }
 
   @Override
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate) {

@@ -36,8 +36,9 @@ public class EventListener {
   public void startEmitters(final ApplicationStartupEvent event) {
     try {
       /*
-        In order to have a smooth transition to micronaut for the server, we are starting 2 server. One managed by glassfish (legacy), one by
-        micronaut. Once all the controller are migrated, this will go away.
+       * In order to have a smooth transition to micronaut for the server, we are starting 2 server. One
+       * managed by glassfish (legacy), one by micronaut. Once all the controller are migrated, this will
+       * go away.
        */
       final Configs configs = new EnvConfigs();
 
