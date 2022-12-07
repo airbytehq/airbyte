@@ -119,6 +119,7 @@ public class WebBackendConnectionsHandler {
     final Map<UUID, SourceRead> sourceReadById = getSourceReadById(sourceIds);
     final Map<UUID, DestinationRead> destinationReadById = getDestinationReadById(destinationIds);
     final Map<UUID, JobRead> latestJobByConnectionId = getLatestJobByConnectionId(connectionIds);
+    // This call could be removed, running jobs should be a subset of latest jobs, need to expose the right status filtering for this.
     final Map<UUID, JobRead> runningJobByConnectionId = getRunningJobByConnectionId(connectionIds);
     final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
         configRepository.getMostRecentActorCatalogFetchEventForSources(sourceIds);
