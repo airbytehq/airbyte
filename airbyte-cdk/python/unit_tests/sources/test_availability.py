@@ -7,7 +7,7 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple, Union
 
 import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources import AbstractSource
+from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
@@ -54,15 +54,15 @@ class MockStream(Stream):
         pass
 
 
-def test_no_availabilitly_strategy():
+def test_no_availability_strategy():
     stream_1 = MockStream("stream")
     assert stream_1.availability_strategy is None
-    assert stream_1.check_availability(logger) is None
+    assert stream_1.check_availability(logger)[0] is True
 
 
 def test_availability_strategy():
     class MockAvailabilityStrategy(AvailabilityStrategy):
-        def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, any]:
+        def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional[Source]) -> Tuple[bool, any]:
             if stream.name == "available_stream":
                 return True, None
             return False, f"Could not reach stream '{stream.name}'."

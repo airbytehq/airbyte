@@ -13,6 +13,7 @@ from urllib.parse import urljoin
 import requests
 import requests_cache
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources import Source
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import Stream, StreamData
 from requests import HTTPError
@@ -485,7 +486,7 @@ class HttpSubStream(HttpStream, ABC):
 
 
 class HttpAvailabilityStrategy(AvailabilityStrategy):
-    def check_availability(self, stream: Stream, logger: logging.Logger) -> Tuple[bool, str]:
+    def check_availability(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Tuple[bool, str]:
         """
         Check stream availability by attempting to read the first record of the
         stream.
@@ -503,10 +504,10 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
-            return self.handle_http_error(stream, logger, error)
+            return self.handle_http_error(stream, logger, source, error)
         return True, None
 
-    def handle_http_error(self, stream: Stream, logger: logging.Logger, error: HTTPError):
+    def handle_http_error(self, stream: Stream, logger: logging.Logger, source: Source, error: HTTPError):
         """
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.

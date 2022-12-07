@@ -4,6 +4,7 @@
 
 
 import json
+import logging
 import os
 import shutil
 import sys
@@ -19,7 +20,7 @@ from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from pytest import fixture
 from pytest import raises as pytest_raises
 
-logger = AirbyteLogger()
+logger = logging.getLogger("airbyte")
 
 
 MODULE = sys.modules[__name__]

@@ -19,6 +19,7 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from deprecated.classic import deprecated
 
 if typing.TYPE_CHECKING:
+    from airbyte_cdk.sources import Source
     from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 
 # A stream's read method can return one of the following types:
@@ -174,12 +175,13 @@ class Stream(ABC):
         """
         return True
 
-    def check_availability(self, logger: logging.Logger):
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None):
         """
         :return:
         """
         if self.availability_strategy:
-            return self.availability_strategy.check_availability(self, logger)
+            return self.availability_strategy.check_availability(self, logger, source)
+        return True, None
 
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
