@@ -14,7 +14,7 @@ import styles from "./CatalogTreeTableHeader.module.scss";
 
 const TextCell: React.FC<React.PropsWithChildren<{ flex?: string }>> = ({ flex = "0 0 120px", children }) => {
   return (
-    <Cell flex={flex}>
+    <Cell flex={flex} flush>
       <Text size="sm" className={styles.cellText}>
         {children}
       </Text>

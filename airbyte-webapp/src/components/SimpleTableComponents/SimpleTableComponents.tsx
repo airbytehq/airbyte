@@ -28,8 +28,10 @@ export const Cell = styled.div<{
   flex?: string | number;
   light?: boolean;
   ellipsis?: boolean;
+  flush?: boolean;
 }>`
   flex: ${({ flex }) => flexCalc(flex)};
+  padding-right: ${({ flush }) => (flush ? 0 : 10)}px;
   word-break: break-word;
   color: ${({ theme, light }) => (light ? theme.greyColor60 : "inherit")};
   font-weight: ${({ light }) => (light ? "normal" : "inherit")};
