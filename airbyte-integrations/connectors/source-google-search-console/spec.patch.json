@@ -25,6 +25,7 @@
             "auth_type": {
               "type": "string",
               "const": "Client",
+              "default": "Client",
               "order": 0
             },
             "client_id": {
@@ -37,12 +38,6 @@
               "title": "Client Secret",
               "type": "string",
               "description": "The client secret of your Google Search Console developer application. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
-              "airbyte_secret": true
-            },
-            "access_token": {
-              "title": "Access Token",
-              "type": "string",
-              "description": "Access token for making authenticated requests. Read more <a href=\"https://developers.google.com/webmaster-tools/v1/how-tos/authorizing\">here</a>.",
               "airbyte_secret": true
             },
             "refresh_token": {
@@ -61,6 +56,7 @@
             "auth_type": {
               "type": "string",
               "const": "Service",
+              "default": "Service",
               "order": 0
             },
             "service_account_info": {
