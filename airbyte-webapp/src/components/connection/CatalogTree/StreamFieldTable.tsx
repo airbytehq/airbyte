@@ -24,7 +24,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
     if (isSelected) {
       props.onSelectedFieldsUpdate([...(props.config?.selectedFields || []), { fieldName }]);
     } else {
-      props.onSelectedFieldsUpdate(props.config?.selectedFields?.filter((f) => f !== fieldName) || []);
+      props.onSelectedFieldsUpdate(props.config?.selectedFields?.filter((f) => f.fieldName !== fieldName) || []);
     }
   };
 
