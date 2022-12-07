@@ -5,9 +5,10 @@
 import json
 import logging
 import tempfile
+import requests
 from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
-from typing import Any, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
 
 import pytest
@@ -465,7 +466,7 @@ def test_source_config_transform_and_no_transform(abstract_source, catalog):
     assert [r.record.data for r in records] == [{"value": "23"}, {"value": 23}]
 
 
-def test_default_availability_strategy(catalog, mocker):
+def test_read_default_http_availability_strategy_stream_available(catalog, mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
@@ -507,10 +508,75 @@ def test_default_availability_strategy(catalog, mocker):
     http_stream.read_records.return_value = iter([{"value": "test"}] + [{}] * 3)
     non_http_stream.read_records.return_value = iter([{}] * 3)
 
-    # Test with empty config
     logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
     records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
     # 3 for http stream and 3 for non http stream
     assert len(records) == 3 + 3
     assert http_stream.read_records.called
-    assert non_http_stream.read_records.calledgi
+    assert non_http_stream.read_records.called
+
+
+def test_read_default_http_availability_strategy_stream_unavailable(catalog, mocker, caplog):
+    mocker.patch.multiple(Stream, __abstractmethods__=set())
+
+    class MockHttpStream(HttpStream):
+        url_base = "https://test_base_url.com"
+        primary_key = ""
+
+        def __init__(self, **kwargs):
+            super().__init__(**kwargs)
+            self.resp_counter = 1
+
+        def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+            return None
+
+        def path(self, **kwargs) -> str:
+            return ""
+
+        def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+            stubResp = {"data": self.resp_counter}
+            self.resp_counter += 1
+            yield stubResp
+
+    class MockStream(MagicMock, Stream):
+        page_size = None
+        get_json_schema = MagicMock()
+
+        def __init__(self, *args, **kvargs):
+            MagicMock.__init__(self)
+            self.read_records = MagicMock()
+
+    streams = [MockHttpStream(), MockStream()]
+    http_stream, non_http_stream = streams
+    source = MockAbstractSource(streams=streams)
+
+    http_stream = streams[0]
+    assert isinstance(http_stream, HttpStream)
+    assert not isinstance(non_http_stream, HttpStream)
+
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+    assert non_http_stream.availability_strategy is None
+
+    # Don't set anything for read_records return value for HttpStream, since
+    # it should be skipped due to it being unavailable
+    non_http_stream.read_records.return_value = iter([{}] * 3)
+
+    # Patch HTTP request to stream to make it unavailable
+    req = requests.Response()
+    req.status_code = 403
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    logger = logging.getLogger("test_read_default_http_availability_strategy_stream_unavailable")
+    with caplog.at_level(logging.WARNING):
+        records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
+
+    # 0 for http stream and 3 for non http stream
+    assert len(records) == 0 + 3
+    assert non_http_stream.read_records.called
+    expected_logs = [
+        f"Skipped syncing stream '{http_stream.name}' because it was unavailable.",
+        "This is most likely due to insufficient permissions on the credentials in use.",
+        "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
+    ]
+    for message in expected_logs:
+        assert message in caplog.text
