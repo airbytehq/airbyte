@@ -1,0 +1,33 @@
+{
+    "title": "Vendor Forecasting Reporting",
+    "description": "Vendor Forecasting Reporting",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+      "forecastGenerationDate": {
+        "type": ["null", "string"]
+      },
+      "asin": {
+        "type": ["null", "string"]
+      },
+      "startDate": {
+        "type": ["null", "string"]
+      },
+      "endDate": {
+        "type": ["null", "string"]
+      },
+      "meanForecastUnits": {
+        "type": ["null", "number"]
+      },
+      "p70ForecastUnits": {
+        "type": ["null", "number"]
+      },
+      "p80ForecastUnits": {
+        "type": ["null", "number"]
+      },
+      "p90ForecastUnits": {
+        "type": ["null", "number"]
+      }
+    }
+  }
+  
