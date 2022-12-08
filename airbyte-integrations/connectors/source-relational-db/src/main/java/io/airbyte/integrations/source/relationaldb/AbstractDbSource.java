@@ -224,7 +224,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
 
     if (!tablesWithInvalidCursorToWarnAbout.isEmpty()) {
-      LOGGER.warn(InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor));
+      LOGGER.warn("source-postgres detected null cursor value " + InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
