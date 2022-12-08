@@ -11,7 +11,6 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.FlywayFactory;
 import io.airbyte.db.instance.configs.ConfigsDatabaseMigrator;
 import io.airbyte.db.instance.jobs.JobsDatabaseMigrator;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.micronaut.runtime.event.ApplicationStartupEvent;
 import io.micronaut.scheduling.TaskExecutors;
 import io.micronaut.scheduling.annotation.ExecuteOn;
@@ -60,9 +59,9 @@ public class EventListener {
         // Ensure that the database resources are closed on application shutdown
         CloseableShutdownHook.registerRuntimeShutdownHook(configsConnection, jobsConnection, configsDslContext, jobsDslContext);
 
-        final Flyway configsFlyway = FlywayFactory.create(configDataSource, DbMigrationHandler.class.getSimpleName(),
+        final Flyway configsFlyway = FlywayFactory.create(configDataSource, ServerApp.class.getSimpleName(),
             ConfigsDatabaseMigrator.DB_IDENTIFIER, ConfigsDatabaseMigrator.MIGRATION_FILE_LOCATION);
-        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, DbMigrationHandler.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
+        final Flyway jobsFlyway = FlywayFactory.create(jobsDataSource, ServerApp.class.getSimpleName(), JobsDatabaseMigrator.DB_IDENTIFIER,
             JobsDatabaseMigrator.MIGRATION_FILE_LOCATION);
 
         ServerApp.getServer(new ServerFactory.Api(), configs, configsDslContext, configsFlyway, jobsDslContext, jobsFlyway).start();
