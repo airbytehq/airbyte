@@ -269,9 +269,9 @@
   releaseStage: alpha
 - name: Snowflake
   destinationDefinitionId: 424892c4-daac-4491-b35d-c6688ba547ba
-  dockerRepository: airbyte/destination-snowflake
-  dockerImageTag: 0.4.35
-  documentationUrl: https://docs.airbyte.io/integrations/destinations/snowflake
+  dockerRepository: yuanrui2014/destination-snowflake
+  dockerImageTag: 0.0.1
+  documentationUrl: https://docs.daspire.com/setup-guide/destinations/snowflake
   icon: snowflake.svg
   resourceRequirements:
     jobSpecific:
