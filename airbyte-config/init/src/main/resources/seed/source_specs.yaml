@@ -1200,7 +1200,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.17"
+- dockerImage: "airbyte/source-amplitude:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1208,11 +1208,20 @@
       title: "Amplitude Spec"
       type: "object"
       required:
+      - "data_region"
       - "api_key"
       - "secret_key"
       - "start_date"
       additionalProperties: true
       properties:
+        data_region:
+          type: "string"
+          title: "Data region"
+          description: "Amplitude data region server"
+          enum:
+          - "Standard Server"
+          - "EU Residency Server"
+          default: "Standard Server"
         api_key:
           type: "string"
           title: "API Key"
