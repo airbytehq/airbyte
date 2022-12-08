@@ -53,7 +53,7 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-      pattern = "(?i)^testing_config_db_table$")
+            pattern = "(?i)^testing_config_db_table$")
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("ephemeralSecretPersistence")
   public SecretPersistence ephemeralLocalTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
@@ -71,10 +71,10 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-      pattern = "(?i)^google_secret_manager$")
+            pattern = "(?i)^google_secret_manager$")
   @Named("ephemeralSecretPersistence")
   public SecretPersistence ephemeralGoogleSecretPersistence(@Value("${airbyte.secret.store.gcp.credentials}") final String credentials,
-                                                   @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
+                                                            @Value("${airbyte.secret.store.gcp.project-id}") final String projectId) {
     return GoogleSecretManagerPersistence.getEphemeral(projectId, credentials);
   }
 
@@ -91,15 +91,14 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.secret.persistence",
-      pattern = "(?i)^vault$")
+            pattern = "(?i)^vault$")
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("ephemeralSecretPersistence")
   public SecretPersistence ephemeralVaultSecretPersistence(@Value("${airbyte.secret.store.vault.address}") final String address,
-                                                  @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
-                                                  @Value("${airbyte.secret.store.vault.token}") final String token) {
+                                                           @Value("${airbyte.secret.store.vault.prefix}") final String prefix,
+                                                           @Value("${airbyte.secret.store.vault.token}") final String token) {
     return new VaultSecretPersistence(address, prefix, token);
   }
-
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)

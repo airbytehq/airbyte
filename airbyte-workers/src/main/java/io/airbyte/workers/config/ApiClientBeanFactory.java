@@ -39,11 +39,10 @@ public class ApiClientBeanFactory {
   @Singleton
   @Named("apiClient")
   public ApiClient apiClient(
-      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-      @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
-      @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
-      @Named("internalApiScheme") final String internalApiScheme
-  ) {
+                             @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+                             @Value("${airbyte.internal.api.host}") final String airbyteApiHost,
+                             @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
+                             @Named("internalApiScheme") final String internalApiScheme) {
     return new io.airbyte.api.client.invoker.generated.ApiClient()
         .setScheme(internalApiScheme)
         .setHost(parseHostName(airbyteApiHost))
@@ -63,11 +62,10 @@ public class ApiClientBeanFactory {
   @Singleton
   @Named("micronautApiClient")
   public ApiClient micronautApiClient(
-      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
-      @Value("${airbyte.internal.api.micronaut-host}") final String airbyteMicronautApiHost,
-      @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
-      @Named("internalApiScheme") final String internalApiScheme
-  ) {
+                                      @Value("${airbyte.internal.api.auth-header.name}") final String airbyteApiAuthHeaderName,
+                                      @Value("${airbyte.internal.api.micronaut-host}") final String airbyteMicronautApiHost,
+                                      @Named("internalApiAuthToken") final BeanProvider<String> internalApiAuthToken,
+                                      @Named("internalApiScheme") final String internalApiScheme) {
     return new io.airbyte.api.client.invoker.generated.ApiClient()
         .setScheme(internalApiScheme)
         .setHost(parseHostName(airbyteMicronautApiHost))
@@ -85,7 +83,8 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
-  public AirbyteApiClient airbyteApiClient(@Named("apiClient") final ApiClient apiClient, @Named("micronautApiClient") final ApiClient micronautApiClient) {
+  public AirbyteApiClient airbyteApiClient(@Named("apiClient") final ApiClient apiClient,
+                                           @Named("micronautApiClient") final ApiClient micronautApiClient) {
     return new AirbyteApiClient(apiClient, micronautApiClient);
   }
 

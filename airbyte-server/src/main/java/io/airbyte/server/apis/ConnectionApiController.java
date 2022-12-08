@@ -40,49 +40,49 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/create",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionRead createConnection(@Body final ConnectionCreate connectionCreate) {
     return ApiHelper.execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
   @Post(uri = "/update",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionRead updateConnection(@Body final ConnectionUpdate connectionUpdate) {
     return ApiHelper.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
   @Post(uri = "/list",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionReadList listConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   @Post(uri = "/list_all",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionReadList listAllConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   @Post(uri = "/search",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionReadList searchConnections(@Body final ConnectionSearch connectionSearch) {
     return ApiHelper.execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
   @Override
   @Post(uri = "/get",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public ConnectionRead getConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
   }
 
   @Override
   @Post(uri = "/delete",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public void deleteConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
@@ -93,14 +93,14 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/sync",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public JobInfoRead syncConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
   @Post(uri = "/reset",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   public JobInfoRead resetConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
