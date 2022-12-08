@@ -9,6 +9,7 @@ export interface SideMenuItem {
   indicatorCount?: number;
   component: React.ComponentType;
   id?: string;
+  isAuthorized?: boolean;
 }
 
 export interface CategoryItem {

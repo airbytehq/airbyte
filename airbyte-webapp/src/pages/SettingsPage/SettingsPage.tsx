@@ -7,10 +7,11 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
-import { CategoryItem } from "components/SideMenu/SideMenu";
-import TabMenu from "components/TabMenu";
+import { TabMenu, CategoryItem } from "components/TabMenu";
 
 // import useConnector from "hooks/services/useConnector";
+import { useUser } from "core/AuthContext";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Roles/roles";
 import useRouter from "hooks/useRouter";
 
 import AccountSettingsPage from "./pages/AccountSettingsPage";
@@ -73,6 +74,7 @@ export const SettingsRoute = {
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
+  const { user } = useUser();
   // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
@@ -89,16 +91,23 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
           component: UserManagementPage,
+          show: true,
         },
         {
           path: `${SettingsRoute.AccountSettings}`,
           name: <FormattedMessage id="settings.account.settings" />,
           component: AccountSettingsPage,
+          show: true,
         },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
           component: PlansBillingPage,
+          show:
+            getRoleAgainstRoleNumber(user.role) === ROLES["Administrator(owner)"] ||
+            getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
+              ? true
+              : false,
         },
       ],
     },
@@ -129,9 +138,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 <Routes>
                   {menuItems
                     .flatMap((menuItem) => menuItem.routes)
-                    .map(({ path, component: Component }) => (
-                      <Route key={path} path={path} element={<Component />} />
-                    ))}
+                    .map(
+                      ({ path, component: Component, show }) =>
+                        show && <Route key={path} path={path} element={<Component />} />
+                    )}
 
                   <Route path="*" element={<Navigate to={firstRoute} replace />} />
                 </Routes>

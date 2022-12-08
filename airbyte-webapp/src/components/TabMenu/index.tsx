@@ -1,3 +1,1 @@
-import TabMenu from "./TabMenu";
-
-export default TabMenu;
+export * from "./TabMenu";

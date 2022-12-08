@@ -9,6 +9,7 @@ export interface SideMenuItem {
   indicatorCount?: number;
   component: React.ComponentType;
   id?: string;
+  show?: boolean;
 }
 
 export interface CategoryItem {
@@ -47,25 +48,26 @@ const TabName = styled.div`
   text-transform: uppercase;
 `;
 
-const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
+export const TabMenu: React.FC<IProps> = ({ data, activeItem, onSelect }) => {
   return (
     <Content>
       {data.map((tabItem, index) => (
         <Tab key={index}>
           {tabItem.category && <TabName>{tabItem.category}</TabName>}
-          {tabItem.routes.map((route) => (
-            <TabItem
-              id={route.id}
-              key={route.path}
-              name={route.name}
-              isActive={activeItem?.endsWith(route.path)}
-              onClick={() => onSelect(route.path)}
-            />
-          ))}
+          {tabItem.routes.map(
+            (route) =>
+              route.show && (
+                <TabItem
+                  id={route.id}
+                  key={route.path}
+                  name={route.name}
+                  isActive={activeItem?.endsWith(route.path)}
+                  onClick={() => onSelect(route.path)}
+                />
+              )
+          )}
         </Tab>
       ))}
     </Content>
   );
 };
-
-export default TabMenu;

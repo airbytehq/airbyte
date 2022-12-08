@@ -3,10 +3,13 @@ import styled from "styled-components";
 
 import { LoadingPage } from "components";
 
+import { useUser } from "core/AuthContext";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Roles/roles";
 import useRouter from "hooks/useRouter";
 import { UnauthorizedModal } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UnauthorizedModal";
 import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
 import { RoutePaths } from "pages/routePaths";
+import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 import SideBar from "views/layout/SideBar";
@@ -27,7 +30,8 @@ const Content = styled.div`
 `;
 
 const MainView: React.FC = (props) => {
-  const { pathname } = useRouter();
+  const { user } = useUser();
+  const { pathname, push } = useRouter();
 
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
 
@@ -36,8 +40,16 @@ const MainView: React.FC = (props) => {
   const isUpgradePlanBar = !pathname.split("/").includes(RoutePaths.Payment);
 
   const onUpgradePlan = () => {
-    setIsAuthorized(true);
+    if (
+      getRoleAgainstRoleNumber(user.role) === ROLES["Administrator(owner)"] ||
+      getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
+    ) {
+      push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+    } else {
+      setIsAuthorized(true);
+    }
   };
+
   return (
     <MainContainer>
       {isSidebar && <SideBar />}
