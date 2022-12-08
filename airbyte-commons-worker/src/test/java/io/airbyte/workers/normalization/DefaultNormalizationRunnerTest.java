@@ -86,14 +86,14 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
-        NORMALIZATION_IMAGE, false, files, null,
+        DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), false, files, null,
         workerConfigs.getResourceRequirements(),
         Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
             AirbyteIntegrationLauncher.NORMALIZE_STEP),
         Map.of(),
         Map.of(),
         "run",
-        "--integration-type", "bigquery",
+        "--integration-type", INTEGRATION_TYPE,
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME))
             .thenReturn(process);

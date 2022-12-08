@@ -250,7 +250,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/postgres
   icon: postgresql.svg
   releaseStage: alpha
-  normalizationRepository: airbyte/normalization-postgres
+  normalizationRepository: airbyte/normalization
   normalizationTag: 0.2.24
   supportsDbt: true
   integrationType: postgres
