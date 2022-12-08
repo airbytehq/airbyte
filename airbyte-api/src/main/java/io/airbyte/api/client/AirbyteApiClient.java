@@ -7,7 +7,6 @@ package io.airbyte.api.client;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.api.client.generated.AttemptApi;
 import io.airbyte.api.client.generated.ConnectionApi;
-import io.airbyte.api.client.generated.DbMigrationApi;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.DestinationDefinitionApi;
 import io.airbyte.api.client.generated.DestinationDefinitionSpecificationApi;
@@ -58,7 +57,6 @@ public class AirbyteApiClient {
   private final SourceDefinitionSpecificationApi sourceDefinitionSpecificationApi;
   private final WorkspaceApi workspaceApi;
   private final HealthApi healthApi;
-  private final DbMigrationApi dbMigrationApi;
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
 
@@ -75,7 +73,6 @@ public class AirbyteApiClient {
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(apiClient);
-    dbMigrationApi = new DbMigrationApi(apiClient);
     attemptApi = new AttemptApi(apiClient);
     stateApi = new StateApi(apiClient);
   }
@@ -126,10 +123,6 @@ public class AirbyteApiClient {
 
   public HealthApi getHealthApi() {
     return healthApi;
-  }
-
-  public DbMigrationApi getDbMigrationApi() {
-    return dbMigrationApi;
   }
 
   public AttemptApi getAttemptApi() {

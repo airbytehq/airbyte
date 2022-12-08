@@ -1200,7 +1200,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.17"
+- dockerImage: "airbyte/source-amplitude:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1208,11 +1208,20 @@
       title: "Amplitude Spec"
       type: "object"
       required:
+      - "data_region"
       - "api_key"
       - "secret_key"
       - "start_date"
       additionalProperties: true
       properties:
+        data_region:
+          type: "string"
+          title: "Data region"
+          description: "Amplitude data region server"
+          enum:
+          - "Standard Server"
+          - "EU Residency Server"
+          default: "Standard Server"
         api_key:
           type: "string"
           title: "API Key"
@@ -1762,7 +1771,7 @@
     - "overwrite"
     - "append"
     - "append_dedup"
-- dockerImage: "airbyte/source-bing-ads:0.1.16"
+- dockerImage: "airbyte/source-bing-ads:0.1.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bing-ads"
     connectionSpecification:
@@ -2422,7 +2431,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-close-com:0.1.0"
+- dockerImage: "airbyte/source-close-com:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/close-com"
     connectionSpecification:
@@ -2431,7 +2440,7 @@
       type: "object"
       required:
       - "api_key"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         api_key:
           type: "string"
@@ -3492,7 +3501,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.76"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.78"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4539,7 +4548,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-gridly:0.1.0"
+- dockerImage: "airbyte/source-gridly:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gridly"
     connectionSpecification:
@@ -4548,6 +4557,7 @@
       type: "object"
       required:
       - "api_key"
+      - "grid_id"
       properties:
         api_key:
           type: "string"
@@ -6733,7 +6743,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-kafka:0.2.2"
+- dockerImage: "airbyte/source-kafka:0.2.3"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/kafka"
     connectionSpecification:
@@ -6744,7 +6754,7 @@
       - "bootstrap_servers"
       - "subscription"
       - "protocol"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         MessageFormat:
           title: "MessageFormat"
@@ -6755,16 +6765,11 @@
             properties:
               deserialization_type:
                 type: "string"
-                enum:
-                - "JSON"
-                default: "JSON"
+                const: "JSON"
           - title: "AVRO"
             properties:
               deserialization_type:
-                type: "string"
-                enum:
-                - "AVRO"
-                default: "AVRO"
+                const: "AVRO"
               deserialization_strategy:
                 type: "string"
                 enum:
@@ -6815,9 +6820,6 @@
                   \ list of topic partitions is empty, it is treated the same as unsubscribe()."
                 type: "string"
                 const: "assign"
-                enum:
-                - "assign"
-                default: "assign"
               topic_partitions:
                 title: "List of topic:partition Pairs"
                 type: "string"
@@ -6832,9 +6834,6 @@
                 description: "The Topic pattern from which the records will be read."
                 type: "string"
                 const: "subscribe"
-                enum:
-                - "subscribe"
-                default: "subscribe"
               topic_pattern:
                 title: "Topic Pattern"
                 type: "string"
@@ -6876,9 +6875,7 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "PLAINTEXT"
-                default: "PLAINTEXT"
+                const: "PLAINTEXT"
           - title: "SASL PLAINTEXT"
             required:
             - "security_protocol"
@@ -6887,17 +6884,13 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "SASL_PLAINTEXT"
-                default: "SASL_PLAINTEXT"
+                const: "SASL_PLAINTEXT"
               sasl_mechanism:
                 title: "SASL Mechanism"
                 description: "The SASL mechanism used for client connections. This\
                   \ may be any mechanism for which a security provider is available."
                 type: "string"
-                default: "PLAIN"
-                enum:
-                - "PLAIN"
+                const: "PLAIN"
               sasl_jaas_config:
                 title: "SASL JAAS Config"
                 description: "The JAAS login context parameters for SASL connections\
@@ -6913,9 +6906,7 @@
             properties:
               security_protocol:
                 type: "string"
-                enum:
-                - "SASL_SSL"
-                default: "SASL_SSL"
+                const: "SASL_SSL"
               sasl_mechanism:
                 title: "SASL Mechanism"
                 description: "The SASL mechanism used for client connections. This\
@@ -8809,7 +8800,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.14"
+- dockerImage: "airbyte/source-mysql:1.0.15"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -11370,7 +11361,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.30"
+- dockerImage: "airbyte/source-postgres:1.0.31"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11619,7 +11610,7 @@
                 enum:
                 - "pgoutput"
                 - "wal2json"
-                const: "pgoutput"
+                default: "pgoutput"
                 order: 2
               replication_slot:
                 type: "string"
@@ -16895,7 +16886,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-firebolt:0.1.0"
+- dockerImage: "airbyte/source-firebolt:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/firebolt"
     connectionSpecification:
@@ -16906,7 +16897,7 @@
       - "username"
       - "password"
       - "database"
-      additionalProperties: false
+      additionalProperties: true
       properties:
         username:
           type: "string"
@@ -16918,6 +16909,7 @@
           type: "string"
           title: "Password"
           description: "Firebolt password."
+          airbyte_secret: true
         account:
           type: "string"
           title: "Account"
