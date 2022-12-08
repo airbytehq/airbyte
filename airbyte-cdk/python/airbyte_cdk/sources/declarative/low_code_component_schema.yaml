@@ -103,6 +103,23 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  ConstantBackoffStrategy:
+    description: Backoff strategy with a constant backoff interval
+    type: object
+    required:
+      - type
+      - backoff_time_in_seconds
+    properties:
+      type:
+        enum: [ConstantBackoffStrategy]
+      backoff_time_in_seconds:
+        anyOf:
+          - type: float
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      $options:
+        type: object
+        additionalProperties: true
   CursorPaginationStrategy:
     description: Pagination strategy that evaluates an interpolated string to define the next page token
     type: object
@@ -135,6 +152,22 @@ definitions:
     properties:
       type:
         enum: [CustomAuthenticator]
+      class_name:
+        type: string
+      additional_parameters:
+        type: object
+        additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomBackoffStrategy:
+    type: object
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomBackoffStrategy]
       class_name:
         type: string
       additional_parameters:
@@ -313,6 +346,23 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       decoder:
         "$ref": "#/definitions/JsonDecoder"
+      $options:
+        type: object
+        additionalProperties: true
+  ExponentialBackoffStrategy:
+    description: Backoff strategy with an exponential backoff interval
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [ExponentialBackoffStrategy]
+      factor:
+        anyOf:
+          - type: float
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+        default: 5
       $options:
         type: object
         additionalProperties: true
@@ -562,6 +612,49 @@ definitions:
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
+  WaitTimeFromHeaderBackoffStrategy:
+    description: Extract wait time from http header
+    type: object
+    required:
+      - type
+      - header
+    properties:
+      type:
+        enum: [WaitTimeFromHeaderBackoffStrategy]
+      header:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      regex:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  WaitUntilTimeFromHeaderBackoffStrategy:
+    description: Extract time at which we can retry the request from response header and wait for the difference between now and that time
+    type: object
+    required:
+      - type
+      - header
+    properties:
+      type:
+        enum: [WaitUntilTimeFromHeaderBackoffStrategy]
+      header:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      min_wait:
+        anyOf:
+          - type: float
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      regex:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
       $options:
         type: object
         additionalProperties: true
