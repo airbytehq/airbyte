@@ -81,13 +81,14 @@ const getOptimalSyncMode = (
     return streamNode;
   }
   const {
-    stream: { supportedSyncModes, sourceDefinedCursor },
+    stream: { supportedSyncModes, sourceDefinedCursor, sourceDefinedPrimaryKey },
   } = streamNode;
 
   if (
     supportedSyncModes.includes(SyncMode.incremental) &&
     supportedDestinationSyncModes.includes(DestinationSyncMode.append_dedup) &&
-    sourceDefinedCursor
+    sourceDefinedCursor &&
+    sourceDefinedPrimaryKey?.length
   ) {
     return updateStreamConfig({
       syncMode: SyncMode.incremental,
