@@ -1,3 +1,5 @@
+set -e
+
 cd $1
 
 # Pasted from https://github.com/airbytehq/airbyte/blob/master/buildSrc/src/main/groovy/airbyte-python.gradle#L85-L96
