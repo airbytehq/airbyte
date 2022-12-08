@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
 from connector_builder.generated.models.stream_read_pages import StreamReadPages
 from connector_builder.generated.models.stream_read_slice_descriptor import StreamReadSliceDescriptor
 
@@ -23,8 +23,8 @@ class StreamReadSlices(BaseModel):
         state: The state of this StreamReadSlices [Optional].
     """
 
-    pages: List[StreamReadPages] = Field(alias="pages")
-    slice_descriptor: Optional[StreamReadSliceDescriptor] = Field(alias="sliceDescriptor", default=None)
-    state: Optional[Dict[str, Any]] = Field(alias="state", default=None)
+    pages: List[StreamReadPages]
+    slice_descriptor: Optional[StreamReadSliceDescriptor] = None
+    state: Optional[Dict[str, Any]] = None
 
 StreamReadSlices.update_forward_refs()

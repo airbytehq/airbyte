@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
 
 
 class StreamsListReadStreams(BaseModel):
@@ -20,7 +20,7 @@ class StreamsListReadStreams(BaseModel):
         url: The url of this StreamsListReadStreams.
     """
 
-    name: str = Field(alias="name")
-    url: str = Field(alias="url")
+    name: str
+    url: str
 
 StreamsListReadStreams.update_forward_refs()
