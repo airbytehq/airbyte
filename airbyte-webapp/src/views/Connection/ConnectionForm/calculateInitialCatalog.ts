@@ -182,6 +182,7 @@ const calculateInitialCatalog = (
           streamIdFromDiff.name === nodeStream?.stream?.name &&
           streamIdFromDiff.namespace === nodeStream.stream?.namespace
       );
+
       if (isNotCreateMode && !isStreamNew) {
         return nodeStream;
       }

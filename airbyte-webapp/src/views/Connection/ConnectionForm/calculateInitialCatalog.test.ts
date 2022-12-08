@@ -115,6 +115,7 @@ describe("calculateInitialCatalog", () => {
         ],
       },
       [DestinationSyncMode.append_dedup, DestinationSyncMode.overwrite],
+      [],
       false
     );
 
@@ -731,10 +732,11 @@ describe("calculateInitialCatalog", () => {
       ],
       false
     );
-    expect(values.streams[0].config?.primaryKey).toEqual([]);
-    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]);
+    expect(values.streams[0].config?.primaryKey).toEqual([]); // was entirely cleared
+    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]); // was not affected
   });
-  it("should remove cursor from config if the field was removed", () => {
+
+  it("should remove cursor from config if the old cursor field was removed, even if there is a default", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
     const values = calculateInitialCatalog(
       {
@@ -745,7 +747,7 @@ describe("calculateInitialCatalog", () => {
               ...sourceDefinedStream,
               name: "test",
               sourceDefinedCursor: false,
-              defaultCursorField: [],
+              defaultCursorField: ["id"],
               sourceDefinedPrimaryKey: [],
               supportedSyncModes: [SyncMode.incremental],
             },
@@ -769,6 +771,7 @@ describe("calculateInitialCatalog", () => {
               ...config,
               destinationSyncMode: DestinationSyncMode.append_dedup,
               syncMode: SyncMode.incremental,
+              cursorField: ["updated_at"],
               primaryKey: [["id"]],
             },
           },
@@ -788,14 +791,9 @@ describe("calculateInitialCatalog", () => {
           ],
         },
       ],
-      false
+      true
     );
-    expect(values.streams[0].config?.cursorField).toEqual([]);
-    expect(values.streams[1].config?.primaryKey).toEqual([["id"]]);
-  });
-
-  it("should not populate the source default cursor if the user-specified cursor field was removed during refresh", () => {
-    expect(2 + 2).toEqual(4);
-    // tbd expected behavior...
+    expect(values.streams[0].config?.cursorField).toEqual([]); // was entirely cleared and not replaced with default
+    expect(values.streams[1].config?.cursorField).toEqual(["updated_at"]); // was unaffected
   });
 });
