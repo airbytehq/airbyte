@@ -126,4 +126,5 @@ public class DatabaseBeanFactory {
   public StreamResetPersistence streamResetPersistence(@Named("configDatabase") final Database configDatabase) {
     return new StreamResetPersistence(configDatabase);
   }
+
 }

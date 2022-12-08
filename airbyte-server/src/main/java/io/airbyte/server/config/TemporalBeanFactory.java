@@ -7,37 +7,24 @@ package io.airbyte.server.config;
 import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
-import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.temporal.TemporalClient;
-import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.persistence.job.DefaultJobCreator;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
-import io.airbyte.persistence.job.factory.DefaultSyncJobFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
-import io.airbyte.persistence.job.factory.SyncJobFactory;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
-import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.micronaut.context.annotation.Factory;
-import io.micronaut.context.annotation.Property;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
-import io.temporal.client.WorkflowClient;
-import io.temporal.serviceclient.WorkflowServiceStubs;
-import io.temporal.worker.WorkerFactory;
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.util.Optional;
 
 /**
  * Micronaut bean factory for Temporal-related singletons.
@@ -81,4 +68,5 @@ public class TemporalBeanFactory {
                                                                final OAuthConfigSupplier oAuthConfigSupplier) {
     return new DefaultSynchronousSchedulerClient(temporalClient, jobTracker, jobErrorReporter, oAuthConfigSupplier);
   }
+
 }

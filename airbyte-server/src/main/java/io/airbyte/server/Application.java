@@ -9,12 +9,7 @@ import io.micronaut.runtime.Micronaut;
 public class Application {
 
   public static void main(final String[] args) {
-    Micronaut
-        .build(args)
-        // Lazy initialization can make the first requests to be slow
-        .eagerInitSingletons(true)
-        .mainClass(Application.class)
-        .start();
+    Micronaut.run(Application.class, args);
   }
 
 }

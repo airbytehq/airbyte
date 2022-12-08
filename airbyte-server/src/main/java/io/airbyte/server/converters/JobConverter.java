@@ -245,7 +245,7 @@ public class JobConverter {
   }
 
   public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
-      final AttemptNormalizationStatus databaseStatus) {
+                                                                                 final AttemptNormalizationStatus databaseStatus) {
     return new AttemptNormalizationStatusRead()
         .attemptNumber(databaseStatus.attemptNumber())
         .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())

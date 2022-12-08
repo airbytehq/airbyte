@@ -56,6 +56,7 @@ export const DestinationSettingsPage: React.FC = () => {
         formId={formId}
         availableConnectorDefinitions={[destinationDefinition]}
         selectedConnectorDefinitionSpecification={destinationSpecification}
+        selectedConnectorDefinitionId={destinationSpecification.destinationDefinitionId}
         connector={destination}
         onSubmit={onSubmitForm}
       />

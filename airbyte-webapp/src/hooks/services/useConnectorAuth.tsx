@@ -2,6 +2,8 @@ import { useCallback, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
+import { ToastType } from "components/ui/Toast";
+
 import { useConfig } from "config";
 import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
@@ -107,7 +109,7 @@ export function useConnectorAuth(): {
             notificationService.registerNotification({
               id: "oauthConnector.credentialsMissing",
               // Since it's dev only we don't need i18n on this string
-              title: "OAuth is not enabled for this connector on this environment.",
+              text: "OAuth is not enabled for this connector on this environment.",
             });
           } else {
             // Log error to our monitoring, this should never happen and means OAuth credentials
@@ -119,8 +121,8 @@ export function useConnectorAuth(): {
             });
             notificationService.registerNotification({
               id: "oauthConnector.credentialsMissing",
-              title: formatMessage({ id: "connector.oauthCredentialsMissing" }),
-              isError: true,
+              text: formatMessage({ id: "connector.oauthCredentialsMissing" }),
+              type: ToastType.ERROR,
             });
           }
         }

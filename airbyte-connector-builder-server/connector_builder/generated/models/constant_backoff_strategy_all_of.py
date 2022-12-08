@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringnumberstring import AnyOfInterpolatedStringnumberstring
 
 
@@ -21,7 +21,7 @@ class ConstantBackoffStrategyAllOf(BaseModel):
         config: The config of this ConstantBackoffStrategyAllOf.
     """
 
-    backoff_time_in_seconds: AnyOfInterpolatedStringnumberstring
-    config: Dict[str, Any]
+    backoff_time_in_seconds: AnyOfInterpolatedStringnumberstring = Field(alias="backoff_time_in_seconds")
+    config: Dict[str, Any] = Field(alias="config")
 
 ConstantBackoffStrategyAllOf.update_forward_refs()

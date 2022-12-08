@@ -45,25 +45,25 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -283,8 +283,6 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler,
         envVariableFeatureFlags);
 
-    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
-
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);
 
@@ -322,8 +320,6 @@ public class ServerApp implements ServerRunnable {
         destinationHandler,
         sourceHandler);
 
-    final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
-
     final StatePersistence statePersistence = new StatePersistence(configsDatabase);
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
@@ -340,6 +336,9 @@ public class ServerApp implements ServerRunnable {
         configRepository);
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
+
+    final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
 
     LOGGER.info("Starting server...");
 
@@ -362,14 +361,12 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
-        dbMigrationHandler,
         destinationDefinitionsHandler,
         destinationHandler,
         healthCheckHandler,
         jobHistoryHandler,
         logsHandler,
         oAuthHandler,
-        openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
         sourceHandler,
@@ -377,7 +374,8 @@ public class ServerApp implements ServerRunnable {
         stateHandler,
         workspacesHandler,
         webBackendConnectionsHandler,
-        webBackendGeographiesHandler);
+        webBackendGeographiesHandler,
+        webBackendCheckUpdatesHandler);
   }
 
 }

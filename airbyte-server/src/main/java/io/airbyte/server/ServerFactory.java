@@ -13,8 +13,6 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.ConnectionApiController;
-import io.airbyte.server.apis.DbMigrationApiController;
 import io.airbyte.server.apis.DestinationApiController;
 import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
@@ -32,14 +30,12 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.DbMigrationBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.OpenapiApiBinder;
 import io.airbyte.server.apis.binders.OperationApiBinder;
 import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceApiBinder;
@@ -49,14 +45,12 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.DbMigrationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
-import io.airbyte.server.apis.factories.OpenapiApiFactory;
 import io.airbyte.server.apis.factories.OperationApiFactory;
 import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceApiFactory;
@@ -68,19 +62,18 @@ import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.apis.factories.WorkspaceApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
@@ -113,14 +106,12 @@ public interface ServerFactory {
                         final Flyway jobsFlyway,
                         final AttemptHandler attemptHandler,
                         final ConnectionsHandler connectionsHandler,
-                        final DbMigrationHandler dbMigrationHandler,
                         final DestinationDefinitionsHandler destinationDefinitionsHandler,
                         final DestinationHandler destinationApiHandler,
                         final HealthCheckHandler healthCheckHandler,
                         final JobHistoryHandler jobHistoryHandler,
                         final LogsHandler logsHandler,
                         final OAuthHandler oAuthHandler,
-                        final OpenApiConfigHandler openApiConfigHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler,
                         final SourceHandler sourceHandler,
@@ -128,7 +119,8 @@ public interface ServerFactory {
                         final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler,
                         final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                        final WebBackendGeographiesHandler webBackendGeographiesHandler);
+                        final WebBackendGeographiesHandler webBackendGeographiesHandler,
+                        final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler);
 
   class Api implements ServerFactory {
 
@@ -151,14 +143,12 @@ public interface ServerFactory {
                                  final Flyway jobsFlyway,
                                  final AttemptHandler attemptHandler,
                                  final ConnectionsHandler connectionsHandler,
-                                 final DbMigrationHandler dbMigrationHandler,
                                  final DestinationDefinitionsHandler destinationDefinitionsHandler,
                                  final DestinationHandler destinationApiHandler,
                                  final HealthCheckHandler healthCheckHandler,
                                  final JobHistoryHandler jobHistoryHandler,
                                  final LogsHandler logsHandler,
                                  final OAuthHandler oAuthHandler,
-                                 final OpenApiConfigHandler openApiConfigHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler,
                                  final SourceHandler sourceHandler,
@@ -166,10 +156,9 @@ public interface ServerFactory {
                                  final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                                 final WebBackendGeographiesHandler webBackendGeographiesHandler) {
+                                 final WebBackendGeographiesHandler webBackendGeographiesHandler,
+                                 final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
-
-      DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
 
       DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
 
@@ -187,8 +176,6 @@ public interface ServerFactory {
 
       OperationApiFactory.setValues(operationsHandler);
 
-      OpenapiApiFactory.setValues(openApiConfigHandler);
-
       SchedulerApiFactory.setValues(schedulerHandler);
 
       SourceApiFactory.setValues(schedulerHandler, sourceHandler);
@@ -199,14 +186,12 @@ public interface ServerFactory {
 
       StateApiFactory.setValues(stateHandler);
 
-      WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler);
+      WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
       WorkspaceApiFactory.setValues(workspacesHandler);
 
-      // server configurations
+      // server configuration
       final Set<Class<?>> componentClasses = Set.of(
-          DbMigrationApiController.class,
-          DestinationApiController.class,
           DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           DestinationOauthApiController.class,
@@ -225,14 +210,12 @@ public interface ServerFactory {
           WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
-          new DbMigrationBinder(),
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
           new DestinationOauthApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new OpenapiApiBinder(),
           new OperationApiBinder(),
           new SchedulerApiBinder(),
           new SourceApiBinder(),
