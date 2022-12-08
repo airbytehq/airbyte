@@ -1,5 +1,5 @@
 import classNames from "classnames";
-import { Form, Formik, useFormikContext } from "formik";
+import { Form, Formik, useField } from "formik";
 import { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -9,6 +9,7 @@ import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 import { FormikPatch } from "core/form/FormikPatch";
 
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
+import { BuilderStream } from "../types";
 import styles from "./AddStreamButton.module.scss";
 import { BuilderField } from "./BuilderField";
 
@@ -19,13 +20,13 @@ interface AddStreamValues {
 
 interface AddStreamButtonProps {
   className?: string;
-  numStreams: number;
   onAddStream: (addedStreamNum: number, addedStreamName: string) => void;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, numStreams, onAddStream }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onAddStream }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { setFieldValue } = useFormikContext();
+  const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
+  const numStreams = streamsField.value.length;
 
   return (
     <>
@@ -40,12 +41,15 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, num
         <Formik
           initialValues={{ streamName: "", urlPath: "" }}
           onSubmit={(values: AddStreamValues) => {
-            setFieldValue(`streams[${numStreams}]`, {
-              name: values.streamName,
-              urlPath: values.urlPath,
-              fieldPointer: [],
-              httpMethod: "GET",
-            });
+            helpers.setValue([
+              ...streamsField.value,
+              {
+                name: values.streamName,
+                urlPath: values.urlPath,
+                fieldPointer: [],
+                httpMethod: "GET",
+              },
+            ]);
             setIsOpen(false);
             onAddStream(numStreams, values.streamName);
           }}

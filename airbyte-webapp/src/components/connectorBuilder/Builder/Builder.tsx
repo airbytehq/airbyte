@@ -34,7 +34,6 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) =>
       <BuilderSidebar
         className={styles.sidebar}
         toggleYamlEditor={toggleYamlEditor}
-        numStreams={values.streams.length}
         onViewSelect={handleViewSelect}
         selectedView={selectedView}
       />

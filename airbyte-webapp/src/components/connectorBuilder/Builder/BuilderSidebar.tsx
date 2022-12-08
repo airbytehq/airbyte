@@ -50,7 +50,6 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
 interface BuilderSidebarProps {
   className?: string;
   toggleYamlEditor: () => void;
-  numStreams: number;
   onViewSelect: (selected: BuilderView, streamName?: string) => void;
   selectedView: BuilderView;
 }
@@ -58,7 +57,6 @@ interface BuilderSidebarProps {
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   className,
   toggleYamlEditor,
-  numStreams,
   onViewSelect,
   selectedView,
 }) => {
@@ -102,12 +100,11 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
       <div className={styles.streamsHeader}>
         <Text className={styles.streamsHeading} size="xs" bold>
-          <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: numStreams }} />
+          <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: values.streams.length }} />
         </Text>
 
         <AddStreamButton
           className={styles.addStreamButton}
-          numStreams={numStreams}
           onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
         />
       </div>
