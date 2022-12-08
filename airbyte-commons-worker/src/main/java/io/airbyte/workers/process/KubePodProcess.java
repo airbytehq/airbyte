@@ -101,7 +101,7 @@ import org.slf4j.MDC;
 // it is required for the connectors
 @SuppressWarnings("PMD.AvoidPrintStackTrace")
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
-public class KubePodProcess extends Process implements KubePod {
+public class KubePodProcess implements KubePod {
 
   private static final Configs configs = new EnvConfigs();
 
@@ -623,21 +623,6 @@ public class KubePodProcess extends Process implements KubePod {
     });
   }
 
-  @Override
-  public OutputStream getOutputStream() {
-    return this.stdin;
-  }
-
-  @Override
-  public InputStream getInputStream() {
-    return this.stdout;
-  }
-
-  @Override
-  public InputStream getErrorStream() {
-    return this.stderr;
-  }
-
   /**
    * Waits for the Kube Pod backing this process and returns the exit value after closing resources.
    */
@@ -650,15 +635,6 @@ public class KubePodProcess extends Process implements KubePod {
     }
 
     return exitValue();
-  }
-
-  /**
-   * Waits for the Kube Pod backing this process and returns the exit value until a timeout. Closes
-   * resources if and only if the timeout is not reached.
-   */
-  @Override
-  public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
-    return super.waitFor(timeout, unit);
   }
 
   /**
@@ -677,11 +653,6 @@ public class KubePodProcess extends Process implements KubePod {
       close();
       LOGGER.info(prependPodInfo("Destroyed Kube process.", podNamespace, podName));
     }
-  }
-
-  @Override
-  public Info info() {
-    return new KubePodProcessInfo(podDefinition.getMetadata().getName());
   }
 
   private Container getMainContainerFromPodDefinition() {
@@ -776,6 +747,48 @@ public class KubePodProcess extends Process implements KubePod {
     close();
 
     return returnCode;
+  }
+
+  @Override
+  public Process toProcess() {
+    return new Process() {
+
+      @Override
+      public OutputStream getOutputStream() {
+        return KubePodProcess.this.stdin;
+      }
+
+      @Override
+      public InputStream getInputStream() {
+        return KubePodProcess.this.stdout;
+      }
+
+      @Override
+      public InputStream getErrorStream() {
+        return KubePodProcess.this.stderr;
+      }
+
+      @Override
+      public int waitFor() throws InterruptedException {
+        return KubePodProcess.this.waitFor();
+      }
+
+      @Override
+      public int exitValue() {
+        return KubePodProcess.this.exitValue();
+      }
+
+      @Override
+      public void destroy() {
+        KubePodProcess.this.destroy();
+      }
+
+      @Override
+      public Info info() {
+        return new KubePodProcessInfo(podDefinition.getMetadata().getName());
+      }
+
+    };
   }
 
   public static ResourceRequirementsBuilder getResourceRequirementsBuilder(final ResourceRequirements resourceRequirements) {
