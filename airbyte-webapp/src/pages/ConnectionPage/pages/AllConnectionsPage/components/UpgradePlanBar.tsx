@@ -4,6 +4,10 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+interface IProps {
+  onUpgradePlan?: () => void;
+}
+
 const Container = styled.div`
   width: 100%;
   height: 90px;
@@ -24,13 +28,13 @@ const Text = styled.div`
   margin-right: 50px;
 `;
 
-export const UpgradePlanBar: React.FC = () => {
+export const UpgradePlanBar: React.FC<IProps> = ({ onUpgradePlan }) => {
   return (
     <Container>
       <Text>
         <FormattedMessage id="upgrade.plan.countdown" />
       </Text>
-      <Button size="lg" black>
+      <Button size="lg" black onClick={() => onUpgradePlan?.()}>
         <FormattedMessage id="upgrade.plan.btn" />
       </Button>
     </Container>

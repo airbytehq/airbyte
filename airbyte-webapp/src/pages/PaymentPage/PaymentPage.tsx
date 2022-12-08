@@ -61,25 +61,23 @@ const PaymentPage: React.FC<SettingsPageProps> = () => {
   const firstRoute = menuItems[0].routes?.[0]?.path;
 
   return (
-    <>
+    <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
       <PaymentNav data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
-      <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
-        <Content className={styles.pageContainer}>
-          <MainView>
-            <Suspense fallback={<LoadingPage />}>
-              <Routes>
-                {menuItems
-                  .flatMap((menuItem) => menuItem.routes)
-                  .map(({ path, component: Component }) => (
-                    <Route key={path} path={path} element={<Component />} />
-                  ))}
-                <Route path="*" element={<Navigate to={firstRoute} replace />} />
-              </Routes>
-            </Suspense>
-          </MainView>
-        </Content>
-      </MainPageWithScroll>
-    </>
+      <Content className={styles.pageContainer}>
+        <MainView>
+          <Suspense fallback={<LoadingPage />}>
+            <Routes>
+              {menuItems
+                .flatMap((menuItem) => menuItem.routes)
+                .map(({ path, component: Component }) => (
+                  <Route key={path} path={path} element={<Component />} />
+                ))}
+              <Route path="*" element={<Navigate to={firstRoute} replace />} />
+            </Routes>
+          </Suspense>
+        </MainView>
+      </Content>
+    </MainPageWithScroll>
   );
 };
 
