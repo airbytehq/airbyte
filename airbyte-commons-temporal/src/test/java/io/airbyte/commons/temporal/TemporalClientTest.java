@@ -270,7 +270,7 @@ public class TemporalClientTest {
           .thenReturn(discoverCatalogWorkflow);
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
-          .withSourceDockerImage(IMAGE_NAME2)
+          .withDestinationDockerImage(IMAGE_NAME2)
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())
@@ -342,7 +342,7 @@ public class TemporalClientTest {
 
       final JobSyncConfig syncConfig = new JobSyncConfig()
           .withSourceDockerImage(IMAGE_NAME1)
-          .withSourceDockerImage(IMAGE_NAME2)
+          .withDestinationDockerImage(IMAGE_NAME2)
           .withSourceConfiguration(Jsons.emptyObject())
           .withDestinationConfiguration(Jsons.emptyObject())
           .withOperationSequence(List.of())

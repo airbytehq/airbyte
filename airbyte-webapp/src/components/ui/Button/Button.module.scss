@@ -1,4 +1,5 @@
-@use "../../../scss/colors";
+@use "scss/colors";
+@use "scss/variables";
 
 .button {
   display: inline-flex;
@@ -7,11 +8,12 @@
   font-size: 12px;
   line-height: 15px;
   color: colors.$grey;
-  border-radius: 6px;
+  border-radius: variables.$border-radius-sm;
   border: 0;
   font-weight: 600;
   cursor: pointer;
   transition: 0.2s ease-in;
+  white-space: nowrap;
 
   &.full {
     width: 100%;
@@ -209,6 +211,21 @@
     &:active {
       background-color: colors.$grey-200;
       color: colors.$grey-500;
+    }
+  }
+
+  &.typeDark {
+    background-color: colors.$dark-blue;
+    color: colors.$white;
+
+    &:hover {
+      background-color: colors.$dark-blue-800;
+      color: colors.$white;
+    }
+
+    &:active {
+      background-color: colors.$dark-blue-1000;
+      color: colors.$white;
     }
   }
 

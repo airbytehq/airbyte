@@ -11,8 +11,8 @@ First we'll update the spec block in `source_exchange_rates_tutorial/exchange_ra
 
 ```yaml
 spec: 
-  documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
     type: object
@@ -103,7 +103,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
     step: "1d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
@@ -181,7 +181,7 @@ definitions:
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc() }}"
-      datetime_format: "%Y-%m-%d %H:%M:%S.%f"
+      datetime_format: "%Y-%m-%d %H:%M:%S.%f+00:00"
     step: "1d"
     datetime_format: "%Y-%m-%d"
     cursor_field: "{{ options['stream_cursor_field'] }}"
@@ -210,8 +210,8 @@ check:
   stream_names:
     - "rates"
 spec: 
-  documentationUrl: https://docs.airbyte.io/integrations/sources/exchangeratesapi
-  connectionSpecification:
+  documentation_url: https://docs.airbyte.io/integrations/sources/exchangeratesapi
+  connection_specification:
     $schema: http://json-schema.org/draft-07/schema#
     title: exchangeratesapi.io Source Spec
     type: object

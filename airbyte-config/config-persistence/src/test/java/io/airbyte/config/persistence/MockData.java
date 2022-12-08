@@ -12,6 +12,7 @@ import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Notification;
@@ -134,7 +135,7 @@ public class MockData {
 
   private static final Instant NOW = Instant.parse("2021-12-15T20:30:40.00Z");
 
-  private static final String CONNECTION_SPECIFICATION = "'{\"name\":\"John\", \"age\":30, \"car\":null}'";
+  private static final String CONNECTION_SPECIFICATION = "{\"name\":\"John\", \"age\":30, \"car\":null}";
   private static final UUID OPERATION_ID_4 = UUID.randomUUID();
   private static final UUID WEBHOOK_CONFIG_ID = UUID.randomUUID();
   private static final String WEBHOOK_OPERATION_EXECUTION_URL = "test-webhook-url";
@@ -340,21 +341,21 @@ public class MockData {
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
+        .withConfiguration(Jsons.deserialize(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_1);
     final SourceConnection sourceConnection2 = new SourceConnection()
         .withName("source-2")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
+        .withConfiguration(Jsons.deserialize(CONNECTION_SPECIFICATION))
         .withSourceId(SOURCE_ID_2);
     final SourceConnection sourceConnection3 = new SourceConnection()
         .withName("source-3")
         .withTombstone(false)
         .withSourceDefinitionId(SOURCE_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_2)
-        .withConfiguration(Jsons.jsonNode(("")))
+        .withConfiguration(Jsons.emptyObject())
         .withSourceId(SOURCE_ID_3);
     return Arrays.asList(sourceConnection1, sourceConnection2, sourceConnection3);
   }
@@ -365,21 +366,21 @@ public class MockData {
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_1)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
+        .withConfiguration(Jsons.deserialize(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_1);
     final DestinationConnection destinationConnection2 = new DestinationConnection()
         .withName("destination-2")
         .withTombstone(false)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_1)
-        .withConfiguration(Jsons.jsonNode(CONNECTION_SPECIFICATION))
+        .withConfiguration(Jsons.deserialize(CONNECTION_SPECIFICATION))
         .withDestinationId(DESTINATION_ID_2);
     final DestinationConnection destinationConnection3 = new DestinationConnection()
         .withName("destination-3")
         .withTombstone(true)
         .withDestinationDefinitionId(DESTINATION_DEFINITION_ID_2)
         .withWorkspaceId(WORKSPACE_ID_2)
-        .withConfiguration(Jsons.jsonNode(""))
+        .withConfiguration(Jsons.emptyObject())
         .withDestinationId(DESTINATION_ID_3);
     return Arrays.asList(destinationConnection1, destinationConnection2, destinationConnection3);
   }
@@ -471,6 +472,7 @@ public class MockData {
         .withSourceId(SOURCE_ID_1)
         .withDestinationId(DESTINATION_ID_1)
         .withCatalog(getConfiguredCatalog())
+        .withFieldSelectionData(new FieldSelectionData().withAdditionalProperty("foo", true))
         .withName("standard-sync-1")
         .withManual(true)
         .withNamespaceDefinition(NamespaceDefinitionType.CUSTOMFORMAT)

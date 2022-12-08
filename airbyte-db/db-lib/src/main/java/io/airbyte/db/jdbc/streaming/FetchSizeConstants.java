@@ -10,7 +10,7 @@ public final class FetchSizeConstants {
   // This size is not enforced. It is only used to calculate a proper
   // fetch size. The max row size the connector can handle is actually
   // limited by the heap size.
-  public static final double TARGET_BUFFER_SIZE_RATIO = 0.5;
+  public static final double TARGET_BUFFER_SIZE_RATIO = 0.6;
   public static final long MIN_BUFFER_BYTE_SIZE = 250L * 1024L * 1024L; // 250 MB
   public static final long MAX_BUFFER_BYTE_SIZE = 1024L * 1024L * 1024L; // 1GB
   // sample size for making the first estimation of the row size
