@@ -662,11 +662,6 @@ public interface Configs {
   // Container Orchestrator
 
   /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only.
-   */
-  boolean getContainerOrchestratorEnabled();
-
-  /**
    * Get the name of the container orchestrator secret. Internal-use only.
    */
   String getContainerOrchestratorSecretName();
