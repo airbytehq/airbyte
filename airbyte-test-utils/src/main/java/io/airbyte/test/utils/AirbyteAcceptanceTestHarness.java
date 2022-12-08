@@ -845,7 +845,8 @@ public class AirbyteAcceptanceTestHarness {
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
       ++count;
     }
-    if (count >= 60) {
+    final boolean exceeded60seconds = count >= 60;
+    if (exceeded60seconds) {
       // Fail because taking more than 60seconds to start a job is not expected
       // Returning the current mostRecencSyncJob here could end up hiding some issues
       Assertions.fail("unable to find the next job within 60seconds");
