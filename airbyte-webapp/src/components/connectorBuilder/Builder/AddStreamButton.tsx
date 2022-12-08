@@ -33,7 +33,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, num
         onClick={() => {
           setIsOpen(true);
         }}
-        icon={<PlusIcon className={styles.plus} />}
+        icon={<PlusIcon />}
       />
       {isOpen && (
         <Formik
