@@ -527,6 +527,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
 
+        Checks whether an error's status_code is in a list of unavailable_error_codes,
+        and gets the associated reason for that error.
+
         :param stream: stream
         :param logger: source logger
         :param source: source
@@ -535,15 +538,42 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           is available. Otherwise, the stream is unavailable for some reason and
           the str should describe what went wrong.
         """
-        if error.response.status_code == requests.codes.FORBIDDEN:
-            error_message = f"The endpoint to access stream {stream.name} returned 403: Forbidden. "
-            error_message += "This is most likely due to insufficient permissions on the credentials in use. "
-            error_message += self._visit_docs_message(logger, source)
-            return False, error_message
+        if error.response.status_code in self.unavailable_error_codes:
+            reason = self.get_reason_for_error(stream, logger, source, error)
+            return False, reason
 
         return True, None
 
-    def _visit_docs_message(self, logger: logging.Logger, source: Optional["Source"]) -> str:
+    @property
+    def unavailable_error_codes(self) -> List[int]:
+        """
+
+        :return: A list of
+        """
+        return [requests.codes.FORBIDDEN]
+
+    def get_reason_for_error(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError) -> str:
+        """
+        Given an HTTPError, returns a `str` error message explaining why that error
+        may have occurred, and how the user can resolve that error, if applicable.
+        Should return reasons for all errors listed in self.unavailable_error_codes.
+
+        :param stream:
+        :param logger:
+        :param source:
+        :param error:
+        :return:
+        """
+        if error.response.status_code == requests.codes.FORBIDDEN:
+            forbidden_error_message = f"The endpoint to access stream {stream.name} returned 403: Forbidden. "
+            forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
+            forbidden_error_message += self._visit_docs_message(logger, source)
+            return forbidden_error_message
+
+        return f"The endpoint to access stream {stream.name} returned a {error.response.status_code} error."
+
+    @staticmethod
+    def _visit_docs_message(logger: logging.Logger, source: Optional["Source"]) -> str:
         """
         :param source:
         :return: A message telling the user where to go to learn more about the source.
