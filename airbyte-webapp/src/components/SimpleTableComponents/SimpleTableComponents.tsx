@@ -22,16 +22,13 @@ export const Header = styled(Row)`
   padding: 0;
 `;
 
-const flexCalc = (flex?: string | number) => (typeof flex === "number" ? `${flex} 0 0 ` : flex) ?? "1 0 0";
-
 export const Cell = styled.div<{
-  flex?: string | number;
+  flex?: number;
   light?: boolean;
   ellipsis?: boolean;
   flush?: boolean;
 }>`
-  flex: ${({ flex }) => flexCalc(flex)};
-  min-width: ${({ flex }) => (typeof flex === "string" ? flex.split(" ")[2] : undefined)};
+  flex: ${({ flex }) => (flex !== undefined ? flex : 1)} 0 0;
   padding-right: ${({ flush }) => (flush ? 0 : 10)}px;
   word-break: break-word;
   color: ${({ theme, light }) => (light ? theme.greyColor60 : "inherit")};
