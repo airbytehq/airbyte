@@ -30,6 +30,8 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
+type EditorView = "ui" | "yaml";
+
 interface Context {
   builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
@@ -41,12 +43,14 @@ interface Context {
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
+  editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
   setConfigString: (configString: string) => void;
+  setEditorView: (editorView: EditorView) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
@@ -78,6 +82,8 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   useEffect(() => {
     setYamlManifest(dump(jsonManifest));
   }, [jsonManifest]);
+
+  const [editorView, setEditorView] = useState<EditorView>("ui");
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -131,12 +137,14 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     selectedStream,
     configString,
     configJson,
+    editorView,
     setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
     setSelectedStream,
     setConfigString,
+    setEditorView,
   };
 
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;

@@ -80,7 +80,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest } = useConnectorBuilderState();
-  const { setValues } = useFormikContext();
+  const { setValues, setTouched } = useFormikContext();
   const handleResetForm = () => {
     openConfirmationModal({
       text: "connectorBuilder.resetModal.text",
@@ -142,6 +142,8 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
           );
         })}
       </div>
+
+      <Button onClick={() => setTouched({}, true)}>Touch</Button>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
       <Button

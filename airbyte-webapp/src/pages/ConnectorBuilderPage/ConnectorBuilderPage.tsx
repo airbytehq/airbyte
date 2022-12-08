@@ -1,10 +1,9 @@
 import classnames from "classnames";
 import { Formik } from "formik";
 import { useIntl } from "react-intl";
-import { useToggle } from "react-use";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
-import { BuilderFormValues } from "components/connectorBuilder/Builder/types";
+import { builderFormValidationSchema, BuilderFormValues } from "components/connectorBuilder/Builder/types";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
@@ -18,9 +17,8 @@ import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
   const { formatMessage } = useIntl();
-  const [showYamlEditor, toggleYamlEditor] = useToggle(false);
 
-  const { builderFormValues } = useConnectorBuilderState();
+  const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   return (
     <Formik
@@ -28,17 +26,18 @@ const ConnectorBuilderPageInner: React.FC = () => {
       onSubmit={(values: BuilderFormValues) => {
         console.log(values);
       }}
+      validationSchema={builderFormValidationSchema}
     >
       {({ values }) => (
         <ResizablePanels
-          className={classnames({ [styles.gradientBg]: showYamlEditor, [styles.solidBg]: !showYamlEditor })}
+          className={classnames({ [styles.gradientBg]: editorView === "yaml", [styles.solidBg]: editorView === "ui" })}
           firstPanel={{
             children: (
               <>
-                {showYamlEditor ? (
-                  <YamlEditor toggleYamlEditor={toggleYamlEditor} />
+                {editorView === "yaml" ? (
+                  <YamlEditor toggleYamlEditor={() => setEditorView("ui")} />
                 ) : (
-                  <Builder values={values} toggleYamlEditor={toggleYamlEditor} />
+                  <Builder values={values} toggleYamlEditor={() => setEditorView("yaml")} />
                 )}
               </>
             ),

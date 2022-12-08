@@ -606,6 +606,7 @@
   "connectorBuilder.toggleModal.text": "<b>Toggling back to the UI will erase any changes you have made in the YAML editor.</b>\n\nIn order to export your current yaml, click the Download YAML button.",
   "connectorBuilder.toggleModal.title": "Warning",
   "connectorBuilder.toggleModal.submitButton": "Confirm",
+  "connectorBuilder.configErrorsTest": "Cannot test stream while there are form errors",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

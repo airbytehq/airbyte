@@ -1,14 +1,9 @@
-import { faWarning } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import { FormattedMessage, useIntl } from "react-intl";
+import { useIntl } from "react-intl";
 
-import { RotateIcon } from "components/icons/RotateIcon";
-import { Button } from "components/ui/Button";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
-import { Tooltip } from "components/ui/Tooltip";
 
 import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
@@ -16,6 +11,7 @@ import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBui
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
+import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
 interface StreamTesterProps {
@@ -24,7 +20,7 @@ interface StreamTesterProps {
 
 export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, yamlIsValid } = useConnectorBuilderState();
+  const { jsonManifest, configJson } = useConnectorBuilderState();
   const {
     data: streamReadData,
     refetch: readStream,
@@ -58,42 +54,14 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
     }
   }, [isError]);
 
-  const testButton = (
-    <Button
-      className={styles.testButton}
-      size="sm"
-      onClick={() => {
-        readStream();
-      }}
-      disabled={!yamlIsValid}
-      icon={
-        yamlIsValid ? (
-          <div>
-            <RotateIcon width={styles.testIconHeight} height={styles.testIconHeight} />
-          </div>
-        ) : (
-          <FontAwesomeIcon icon={faWarning} />
-        )
-      }
-    >
-      <Text className={styles.testButtonText} size="sm" bold>
-        <FormattedMessage id="connectorBuilder.testButton" />
-      </Text>
-    </Button>
-  );
-
   return (
     <div className={styles.container}>
       <Text className={styles.url} size="lg">
         {selectedStream.url}
       </Text>
-      {yamlIsValid ? (
-        testButton
-      ) : (
-        <Tooltip control={testButton} containerClassName={styles.testButtonTooltipContainer}>
-          <FormattedMessage id="connectorBuilder.invalidYamlTest" />
-        </Tooltip>
-      )}
+
+      <StreamTestButton selectedStreamName={selectedStream.name} readStream={readStream} />
+
       {isFetching && (
         <div className={styles.fetchingSpinner}>
           <Spinner />
