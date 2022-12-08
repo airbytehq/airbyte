@@ -201,30 +201,30 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
-        datetime_format:
-          type: string
-        end_datetime:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/MinMaxDatetime"
-        start_datetime:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/MinMaxDatetime"
-        step:
-          type: string
-        end_time_option:
-          "$ref": "#/definitions/RequestOption"
-        lookback_window:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        start_time_option:
-          "$ref": "#/definitions/RequestOption"
-        stream_state_field_end:
-          type: string
-        stream_state_field_start:
-          type: string
+      datetime_format:
+        type: string
+      end_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+      start_datetime:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/MinMaxDatetime"
+      step:
+        type: string
+      end_time_option:
+        "$ref": "#/definitions/RequestOption"
+      lookback_window:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      start_time_option:
+        "$ref": "#/definitions/RequestOption"
+      stream_state_field_end:
+        type: string
+      stream_state_field_start:
+        type: string
       $options:
         type: object
         additionalProperties: true
@@ -554,6 +554,31 @@ definitions:
     properties:
       type:
         enum: [JsonDecoder]
+  ListStreamSlicer:
+    description: Stream slicer that iterates over the values of a list
+    type: object
+    required:
+      - type
+      - cursor_field
+      - slice_values
+    properties:
+      type:
+        enum: [ListStreamSlicer]
+      cursor_field:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      slice_values:
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+      request_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
   MinMaxDatetime:
     description: Compares the provided date against optional minimum or maximum times. The max_datetime serves as the ceiling and will be returned when datetime exceeds it. The min_datetime serves as the floor
     type: object
