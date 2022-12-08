@@ -40,6 +40,10 @@ export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProp
   const [overwrittenFeatures, setOverwrittenFeaturesState] = useState<FeatureSet>();
 
   const envOverwrites = useMemo(() => {
+    // Allow env feature overwrites only during development
+    if (process.env.NODE_ENV !== "development") {
+      return {};
+    }
     const featureSet: FeatureSet = {};
     for (const item of Object.values(FeatureItem)) {
       const envFeature = process.env[`REACT_APP_FEATURE_${item}`];
@@ -57,8 +61,7 @@ export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProp
       ...workspaceFeatures,
       ...userFeatures,
       ...overwrittenFeatures,
-      // Any REACT_APP_FEATURE_FEATURE_ID env can overwrite feature states during development
-      ...(process.env.NODE_ENV === "development" ? envOverwrites : {}),
+      ...envOverwrites,
     };
 
     return Object.entries(combined)
