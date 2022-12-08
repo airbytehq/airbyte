@@ -6,11 +6,18 @@ description: Connector Builder structs #TODO
 properties:
   version:
     "$ref": "#/definitions/Version"
+  definitions:
+    type: "#/definitions/Definitions"
+  globals:
+    "$ref": "#/definitions/Streams"
   streams:
     "$ref": "#/definitions/Streams"
   check:
     "$ref": "#/definitions/ConnectionChecker"
 definitions:
+  Definitions:
+    type: object
+    additionalProperties: false
   "$parameters":
     type: object
     additionalProperties: false
@@ -37,6 +44,17 @@ definitions:
     type: array
     items:
       "$ref": "#/definitions/Stream"
+  Globals:
+    type: object
+    additionalProperties: false
+    required:
+      - authenticator
+      - url_base
+    properties:
+      authenticator:
+        "$ref": "#/definitions/Authenticator"
+      url_base:
+        type: string
   Stream:
     type: object
     additionalProperties: false
@@ -90,16 +108,12 @@ definitions:
     additionalProperties: false
     required:
       - name
-      - url_base
       - path
     properties:
       "$parameters":
         "$ref": "#/definitions/$parameters"
       name:
         type: string
-      url_base:
-        type: string
-        description: "base url"
       path:
         type: string
         description: "path"
@@ -114,8 +128,6 @@ definitions:
         "$ref": "#/definitions/RequestInput"
       request_body_json:
         "$ref": "#/definitions/RequestInput"
-      authenticator:
-        "$ref": "#/definitions/Authenticator"
       error_handler:
         "$ref": "#/definitions/ErrorHandler"
   HttpMethod:
