@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.3
+Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
+
 ## 0.12.2
 Revert breaking change on `read_config` while keeping the improvement on the error message
 
