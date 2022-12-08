@@ -734,7 +734,7 @@ describe("calculateInitialCatalog", () => {
     expect(values.streams[0].config?.primaryKey).toEqual([]);
     expect(values.streams[1].config?.primaryKey).toEqual([["id"]]);
   });
-  it("should remove cursor from config if the field was removed during refresh", () => {
+  it("should remove cursor from config if the field was removed", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
     const values = calculateInitialCatalog(
       {
