@@ -35,14 +35,14 @@ export interface FormBaseItem extends FormItem {
 
 export interface FormGroupItem extends FormItem {
   _type: "formGroup";
-  jsonSchema: AirbyteJSONSchema;
   properties: FormBlock[];
 }
 
 export interface FormConditionItem extends FormItem {
   _type: "formCondition";
-  conditions: Record<string, FormGroupItem | FormBaseItem>;
+  conditions: FormGroupItem[];
   selectionPath: string;
+  selectionConstValues: unknown[];
 }
 
 export interface FormObjectArrayItem extends FormItem {

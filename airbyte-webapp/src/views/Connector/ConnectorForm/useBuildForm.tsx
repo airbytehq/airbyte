@@ -1,14 +1,12 @@
 import flatten from "flat";
 import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
-import merge from "lodash/merge";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBlock, WidgetConfig, WidgetConfigMap } from "core/form/types";
-import { buildPathInitialState } from "core/form/uiWidget";
+import { FormBlock, FormGroupItem } from "core/form/types";
 import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
 import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 
@@ -21,6 +19,7 @@ export interface BuildFormHook {
 }
 
 export function useBuildForm(
+  isEditMode: boolean,
   formType: "source" | "destination",
   selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification,
   initialValues?: Partial<ConnectorFormValues>
@@ -43,16 +42,53 @@ export function useBuildForm(
     }),
     [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
   );
-  const startValues = useMemo<ConnectorFormValues>(
-    () => ({
+
+  const formFields = useMemo<FormBlock>(() => jsonSchemaToUiWidget(jsonSchema), [jsonSchema]);
+
+  if (formFields._type !== "formGroup") {
+    throw new Error("Top level configuration has to be an object");
+  }
+
+  const startValues = useMemo<ConnectorFormValues>(() => {
+    if (isEditMode) {
+      return {
+        name: "",
+        connectionConfiguration: {},
+        ...initialValues,
+      };
+    }
+    const baseValues = {
       name: "",
       connectionConfiguration: {},
       ...initialValues,
-    }),
-    [initialValues]
-  );
+    };
 
-  const formFields = useMemo<FormBlock>(() => jsonSchemaToUiWidget(jsonSchema), [jsonSchema]);
+    function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
+      formGroup.properties.forEach((property) => {
+        if (property.const) {
+          values[property.fieldKey] = property.const;
+        }
+        if (property.default) {
+          values[property.fieldKey] = property.default;
+        }
+        switch (property._type) {
+          case "formGroup":
+            values[property.fieldKey] = {};
+            setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
+            break;
+          case "formCondition":
+            // only implicitly select the first option if there is no default set on the condition node
+            if (!property.default) {
+              values[property.fieldKey] = {};
+              setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
+            }
+        }
+      });
+    }
+    setDefaultValues(formFields, baseValues as Record<string, unknown>);
+
+    return baseValues;
+  }, [formFields, initialValues, isEditMode]);
 
   return {
     initialValues: startValues,
@@ -61,48 +97,9 @@ export function useBuildForm(
   };
 }
 
-// useBuildUiWidgetsContext hook
-interface BuildUiWidgetsContextHook {
-  uiWidgetsInfo: WidgetConfigMap;
-  setUiWidgetsInfo: (widgetId: string, updatedValues: WidgetConfig) => void;
-  resetUiWidgetsInfo: () => void;
-}
-
-export const useBuildUiWidgetsContext = (
-  formFields: FormBlock[] | FormBlock,
-  formValues: ConnectorFormValues
-): BuildUiWidgetsContextHook => {
-  const [overriddenWidgetState, setUiWidgetsInfo] = useState<WidgetConfigMap>({});
-
-  // As schema is dynamic, it is possible, that new updated values, will differ from one stored.
-  const mergedState = useMemo(
-    () =>
-      merge(
-        buildPathInitialState(Array.isArray(formFields) ? formFields : [formFields], formValues),
-        merge(overriddenWidgetState)
-      ),
-    [formFields, formValues, overriddenWidgetState]
-  );
-
-  const setUiWidgetsInfoSubState = useCallback(
-    (widgetId: string, updatedValues: WidgetConfig) => setUiWidgetsInfo({ ...mergedState, [widgetId]: updatedValues }),
-    [mergedState, setUiWidgetsInfo]
-  );
-
-  const resetUiWidgetsInfo = useCallback(() => {
-    setUiWidgetsInfo({});
-  }, []);
-
-  return {
-    uiWidgetsInfo: mergedState,
-    setUiWidgetsInfo: setUiWidgetsInfoSubState,
-    resetUiWidgetsInfo,
-  };
-};
-
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
-export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
-  useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
+export const useConstructValidationSchema = (jsonSchema: JSONSchema7, formFields: FormBlock): AnySchema =>
+  useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
 
 export const usePatchFormik = (): void => {
   const { setFieldTouched, isSubmitting, isValidating, errors } = useFormikContext();

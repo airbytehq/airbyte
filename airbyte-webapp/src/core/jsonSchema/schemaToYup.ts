@@ -1,7 +1,7 @@
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
-import { WidgetConfigMap } from "core/form/types";
+import { FormBlock, FormGroupItem, FormObjectArrayItem, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
 /**
@@ -20,7 +20,7 @@ import { isDefined } from "utils/common";
  */
 export const buildYupFormForJsonSchema = (
   jsonSchema: JSONSchema7,
-  uiConfig?: WidgetConfigMap,
+  formField: FormBlock,
   parentSchema?: JSONSchema7,
   propertyKey?: string,
   propertyPath: string | undefined = propertyKey
@@ -33,23 +33,64 @@ export const buildYupFormForJsonSchema = (
     | yup.BooleanSchema
     | null = null;
 
-  if (jsonSchema.oneOf && uiConfig && propertyPath) {
-    let selectedSchema = jsonSchema.oneOf.find(
-      (condition) => typeof condition !== "boolean" && uiConfig[propertyPath]?.selectedItem === condition.title
-    );
-
-    // Select first oneOf path if no item selected
-    selectedSchema = selectedSchema ?? jsonSchema.oneOf[0];
-
-    if (selectedSchema && typeof selectedSchema !== "boolean") {
-      return buildYupFormForJsonSchema(
-        { type: jsonSchema.type, ...selectedSchema },
-        uiConfig,
-        jsonSchema,
-        propertyKey,
-        propertyPath
-      );
+  if (jsonSchema.oneOf && propertyPath) {
+    const conditionFormField = formField as FormConditionItem;
+    const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
+    jsonSchema.oneOf.forEach((condition, index) => {
+      if (typeof condition !== "object" || condition.type !== "object") {
+        throw new Error("Spec uses oneOf with a condition that's not an object type");
+      }
+      const selectionConstValue = conditionFormField.selectionConstValues[index];
+      const selectionFormField = conditionFormField.conditions[index];
+      Object.entries(condition.properties || {}).forEach(([key, prop], propertyIndex) => {
+        if (!flattenedKeys.has(key)) {
+          flattenedKeys.set(key, []);
+        }
+        flattenedKeys
+          .get(key)
+          ?.push([
+            selectionConstValue,
+            typeof prop === "boolean"
+              ? yup.mixed()
+              : buildYupFormForJsonSchema(
+                  prop,
+                  selectionFormField.properties[propertyIndex],
+                  condition,
+                  key,
+                  propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+                ),
+          ]);
+      });
+    });
+    const selectionKey = conditionFormField.selectionPath.split(".").pop();
+    if (!selectionKey) {
+      throw new Error("");
     }
+
+    return yup.object().shape(
+      Object.fromEntries(
+        Array.from(flattenedKeys.entries()).map(([key, schemaByCondition]) => {
+          let mergedSchema = yup.mixed();
+          if (key === selectionKey) {
+            return [key, mergedSchema];
+          }
+          const allSelectionConstValuesWithThisKey = schemaByCondition.map(([constValue]) => constValue);
+          schemaByCondition.forEach(([selectionConstValue, conditionalSchema]) => {
+            mergedSchema = mergedSchema.when(selectionKey, {
+              is: selectionConstValue,
+              then: () => conditionalSchema,
+              otherwise: (schema) => schema,
+            });
+          });
+          mergedSchema = mergedSchema.when(selectionKey, {
+            is: (val: unknown) => !allSelectionConstValuesWithThisKey.includes(val),
+            then: (schema) => schema.strip(),
+            otherwise: (schema) => schema,
+          });
+          return [key, mergedSchema];
+        })
+      )
+    );
   }
 
   switch (jsonSchema.type) {
@@ -86,7 +127,7 @@ export const buildYupFormForJsonSchema = (
           .of(
             buildYupFormForJsonSchema(
               jsonSchema.items,
-              uiConfig,
+              (formField as FormObjectArrayItem).properties,
               jsonSchema,
               propertyKey,
               propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
@@ -97,18 +138,26 @@ export const buildYupFormForJsonSchema = (
     case "object":
       let objectSchema = yup.object();
 
-      const keyEntries = Object.entries(jsonSchema.properties || {}).map(([propertyKey, condition]) => [
-        propertyKey,
-        typeof condition !== "boolean"
-          ? buildYupFormForJsonSchema(
-              condition,
-              uiConfig,
-              jsonSchema,
-              propertyKey,
-              propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
-            )
-          : yup.mixed(),
-      ]);
+      const keyEntries = Object.entries(jsonSchema.properties || {}).map(([propertyKey, propertySchema]) => {
+        const correspondingFormField = (formField as FormGroupItem).properties.find(
+          (property) => property.fieldKey === propertyKey
+        );
+        if (!correspondingFormField) {
+          throw new Error("mistmatch between form fields and schema");
+        }
+        return [
+          propertyKey,
+          typeof propertySchema !== "boolean"
+            ? buildYupFormForJsonSchema(
+                propertySchema,
+                correspondingFormField,
+                jsonSchema,
+                propertyKey,
+                propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
+              )
+            : yup.mixed(),
+        ];
+      });
 
       if (keyEntries.length) {
         objectSchema = objectSchema.shape(Object.fromEntries(keyEntries));
