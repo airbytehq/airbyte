@@ -16,7 +16,6 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
@@ -35,11 +34,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -56,7 +53,6 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -141,8 +137,6 @@ class SyncWorkflowTest {
 
     normalizationSummary = new NormalizationSummary();
 
-    standardSync = new StandardSync().withSourceId(SOURCE_ID).withStatus(Status.ACTIVE);
-
     normalizationInput = new NormalizationInput()
         .withDestinationConfiguration(syncInput.getDestinationConfiguration())
         .withCatalog(syncInput.getCatalog())
@@ -217,7 +211,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSuccess() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testSuccess() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -244,7 +238,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testReplicationFailure() {
     doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -262,7 +256,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testReplicationFailedGracefully() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testReplicationFailedGracefully() {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -289,7 +283,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testNormalizationFailure() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testNormalizationFailure() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -312,7 +306,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringReplication() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testCancelDuringReplication() {
     doAnswer(ignored -> {
       cancelWorkflow();
       return replicationSuccessOutput;
@@ -333,7 +327,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testCancelDuringNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testCancelDuringNormalization() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
@@ -360,7 +354,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() throws IOException, JsonValidationException, ConfigNotFoundException, ApiException {
+  void testSkipNormalization() {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
@@ -404,7 +398,7 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+  void testSkipReplicationAfterRefreshSchema() {
     when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
     StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
