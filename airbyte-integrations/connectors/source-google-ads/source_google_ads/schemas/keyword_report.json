@@ -57,7 +57,7 @@
     "ad_group_criterion.keyword.match_type": {
       "type": ["null", "string"],
       "enum": ["BROAD", "EXACT", "PHRASE", "UNKNOWN", "UNSPECIFIED"]
-    }
+    },
     "metrics.ctr": {
       "type": ["null", "number"]
     },
