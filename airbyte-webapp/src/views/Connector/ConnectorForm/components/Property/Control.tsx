@@ -1,6 +1,7 @@
 import { Field, useField } from "formik";
 import React from "react";
 
+import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -8,6 +9,7 @@ import { TagInput } from "components/ui/TagInput/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
+import { useExperiment } from "hooks/services/Experiment";
 import { isDefined } from "utils/common";
 
 import SecretConfirmationControl from "./SecretConfirmationControl";
@@ -21,6 +23,7 @@ interface ControlProps {
 
 export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
   const [field, meta, helpers] = useField(name);
+  const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -50,6 +53,26 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         onChange={(dataItems) => helpers.setValue(dataItems)}
         value={field.value}
         disabled={disabled}
+      />
+    );
+  }
+
+  if (
+    property.type === "string" &&
+    (property.format === "date-time" || property.format === "date") &&
+    useDatepickerExperiment
+  ) {
+    return (
+      <DatePicker
+        error={error}
+        withTime={property.format === "date-time"}
+        onChange={(value) => {
+          helpers.setTouched(true);
+          helpers.setValue(value);
+        }}
+        value={field.value}
+        disabled={disabled}
+        onBlur={() => helpers.setTouched(true)}
       />
     );
   }

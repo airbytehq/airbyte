@@ -8,7 +8,16 @@ import { AirbyteJSONSchema } from "core/jsonSchema";
  */
 type FormRelevantJSONSchema = Pick<
   AirbyteJSONSchema,
-  "default" | "examples" | "description" | "pattern" | "order" | "const" | "title" | "airbyte_hidden" | "enum"
+  | "default"
+  | "examples"
+  | "description"
+  | "pattern"
+  | "order"
+  | "const"
+  | "title"
+  | "airbyte_hidden"
+  | "enum"
+  | "format"
 >;
 
 interface FormItem extends FormRelevantJSONSchema {

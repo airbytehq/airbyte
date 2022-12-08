@@ -1,6 +1,6 @@
 import pick from "lodash/pick";
 
-import { FormBaseItem, FormBlock, FormGroupItem } from "core/form/types";
+import { FormBlock } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
@@ -118,6 +118,7 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
+    format: jsonSchema.format,
     type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
   };
 };
