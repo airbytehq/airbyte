@@ -156,6 +156,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
         final Optional<Long> jobIdOptional =
             jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, new Version(destinationDef.getProtocolVersion()),
+                destinationDef.getCustom(),
                 standardSyncOperations, streamsToReset);
 
         final long jobId = jobIdOptional.isEmpty()

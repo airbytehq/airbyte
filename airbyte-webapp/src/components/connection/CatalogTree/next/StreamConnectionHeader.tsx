@@ -12,7 +12,7 @@ import { getIcon } from "utils/imageUtils";
 
 import styles from "./StreamConnectionHeader.module.scss";
 
-const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
+export const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
 const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
 export const StreamConnectionHeader: React.FC = () => {
