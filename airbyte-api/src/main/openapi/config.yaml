@@ -48,8 +48,6 @@ tags:
     description: Source OAuth related resources to delegate access from user.
   - name: source_oauth
     description: Source OAuth related resources to delegate access from user.
-  - name: db_migration
-    description: Database migration related resources.
   - name: web_backend
     description: |
       Endpoints for the Airbyte web application. Those APIs should not be called outside the web application implementation and are not
@@ -1612,52 +1610,6 @@ paths:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/db_migrations/list:
-    post:
-      tags:
-        - db_migration
-      summary: List all database migrations
-      operationId: listMigrations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DbMigrationRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DbMigrationReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/db_migrations/migrate:
-    post:
-      tags:
-        - db_migration
-      summary: Migrate the database to the latest version
-      operationId: executeMigrations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DbMigrationRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DbMigrationExecutionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_oauths/oauth_params/create:
     post:
       tags:
@@ -1796,6 +1748,19 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/web_backend/check_updates:
+    post:
+      tags:
+        - web_backend
+      summary: Returns a summary of source and destination definitions that could be updated.
+      operationId: webBackendCheckUpdates
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendCheckUpdatesRead"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -4628,6 +4593,17 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendCheckUpdatesRead:
+      type: object
+      description: Summary of source and destination definitions that could be updated
+      required:
+        - destinationDefinitions
+        - sourceDefinitions
+      properties:
+        destinationDefinitions:
+          type: integer
+        sourceDefinitions:
+          type: integer
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
