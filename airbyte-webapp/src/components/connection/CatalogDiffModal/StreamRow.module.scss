@@ -1,0 +1,72 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.row {
+  display: flex;
+  flex-direction: row;
+  height: 40px;
+  align-items: center;
+  padding: variables.$spacing-sm variables.$spacing-lg;
+  gap: variables.$spacing-md;
+  border-bottom: 1px solid colors.$white;
+  width: 100%;
+  font-size: 12px;
+
+  &.add {
+    background-color: colors.$green-50;
+  }
+
+  &.remove {
+    background-color: colors.$red-50;
+  }
+}
+
+.content {
+  display: flex;
+  align-items: center;
+}
+
+.iconContainer {
+  width: 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin-right: variables.$spacing-lg;
+}
+
+.icon {
+  margin-top: -1px;
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+
+  &.mod {
+    color: colors.$blue-100;
+  }
+}
+
+.syncModeBox {
+  font-size: 11px;
+  line-height: 12px;
+  border-radius: variables.$border-radius-md;
+  padding: variables.$spacing-sm variables.$spacing-md;
+  width: 226px;
+  opacity: 0.5;
+  background: colors.$red-100;
+}
+
+.nameCell,
+%nameCell {
+  width: 150px;
+  text-align: left;
+
+  & .row {
+    display: flex;
+    flex-direction: row;
+  }
+}
