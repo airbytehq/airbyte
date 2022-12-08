@@ -1,4 +1,4 @@
-FROM fishtownanalytics/dbt:1.0.0
+FROM ghcr.io/dbt-labs/dbt-core:1.3.1
 COPY --from=airbyte/base-airbyte-protocol-python:0.1.1 /airbyte /airbyte
 
 # Install SSH Tunneling dependencies
@@ -20,7 +20,7 @@ WORKDIR /airbyte/normalization_code
 RUN pip install .
 
 WORKDIR /airbyte/normalization_code/dbt-template/
-RUN pip install dbt-clickhouse==1.1.8
+RUN pip install "dbt-clickhouse>=1.3.1"
 # Download external dbt dependencies
 RUN dbt deps
 
