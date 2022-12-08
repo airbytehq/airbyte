@@ -1,0 +1,18 @@
+micronaut:
+  application:
+    name: dbRepositories
+datasources:
+  default:
+    driverClassName: org.postgresql.Driver
+    db-type: postgres
+    dialect: POSTGRES
+jpa:
+  default:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+netty:
+  default:
+    allocator:
+      max-order: 3
