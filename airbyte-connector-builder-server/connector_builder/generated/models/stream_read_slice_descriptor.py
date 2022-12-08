@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class StreamReadSliceDescriptor(BaseModel):
@@ -20,7 +20,7 @@ class StreamReadSliceDescriptor(BaseModel):
         list_item: The list_item of this StreamReadSliceDescriptor [Optional].
     """
 
-    start_datetime: Optional[datetime] = None
-    list_item: Optional[str] = None
+    start_datetime: Optional[datetime] = Field(alias="startDatetime", default=None)
+    list_item: Optional[str] = Field(alias="listItem", default=None)
 
 StreamReadSliceDescriptor.update_forward_refs()

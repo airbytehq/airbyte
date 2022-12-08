@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class HttpRequest(BaseModel):
@@ -23,10 +23,10 @@ class HttpRequest(BaseModel):
         http_method: The http_method of this HttpRequest.
     """
 
-    url: str
-    parameters: Optional[Dict[str, Any]] = None
-    body: Optional[Dict[str, Any]] = None
-    headers: Optional[Dict[str, Any]] = None
-    http_method: str
+    url: str = Field(alias="url")
+    parameters: Optional[Dict[str, Any]] = Field(alias="parameters", default=None)
+    body: Optional[Dict[str, Any]] = Field(alias="body", default=None)
+    headers: Optional[Dict[str, Any]] = Field(alias="headers", default=None)
+    http_method: str = Field(alias="http_method")
 
 HttpRequest.update_forward_refs()
