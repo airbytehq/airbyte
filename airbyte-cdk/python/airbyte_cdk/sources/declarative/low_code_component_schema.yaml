@@ -518,6 +518,39 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  InterpolatedRequestOptionsProvider:
+    description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
+    type: object
+    required:
+      - type
+    properties:
+      request_body_data:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_body_json:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_headers:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      request_parameters:
+        anyOf:
+          - type: string
+          - type: object
+            additionalProperties:
+              type: string
+      $options:
+        type: object
+        additionalProperties: true
   InterpolatedString:
     description: A template string that will be interpolated against variables at runtime
     type: object
