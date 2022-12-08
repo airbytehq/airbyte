@@ -152,7 +152,8 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         Math.toIntExact(jobRunConfig.getAttemptId()),
         new DefaultNormalizationRunner(
             processFactory,
-            destinationLauncherConfig.getNormalizationDockerImage()),
+            destinationLauncherConfig.getNormalizationDockerImage(),
+            destinationLauncherConfig.getIntegrationType()),
         workerEnvironment);
   }
 

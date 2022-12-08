@@ -91,6 +91,7 @@ Referenced by:
  normalization_repository   | character varying(255)   |           |          |
  normalization_tag          | character varying(255)   |           |          |
  supports_dbt               | boolean                  |           |          |
+ integration_type           | character varying(255)   |           |          |
 Indexes:
     "actor_definition_pkey" PRIMARY KEY, btree (id)
 Referenced by:

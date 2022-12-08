@@ -45,6 +45,7 @@
   normalizationRepository: airbyte/normalization
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: bigquery
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -60,6 +61,7 @@
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
   normalizationTag: 0.2.24
+  integrationType: bigquery
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -91,6 +93,7 @@
   normalizationRepository: airbyte/normalization-clickhouse
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: clickhouse
 - name: Cloudflare R2
   destinationDefinitionId: 0fb07be9-7c3b-4336-850d-5efc006152ee
   dockerRepository: airbyte/destination-r2
@@ -203,6 +206,7 @@
   normalizationRepository: airbyte/normalization-mssql
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: mssql
 - name: MeiliSearch
   destinationDefinitionId: af7c921e-5892-4ff2-b6c1-4a5ab258fb7e
   dockerRepository: airbyte/destination-meilisearch
@@ -227,6 +231,7 @@
   normalizationRepository: airbyte/normalization-mysql
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: mysql
 - name: Oracle
   destinationDefinitionId: 3986776d-2319-4de9-8af8-db14c0996e72
   dockerRepository: airbyte/destination-oracle
@@ -237,6 +242,7 @@
   normalizationRepository: airbyte/normalization-oracle
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: oracle
 - name: Postgres
   destinationDefinitionId: 25c5221d-dce2-4163-ade9-739ef790f503
   dockerRepository: airbyte/destination-postgres
@@ -247,6 +253,7 @@
   normalizationRepository: airbyte/normalization-postgres
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: postgres
 - name: Pulsar
   destinationDefinitionId: 2340cbba-358e-11ec-8d3d-0242ac130203
   dockerRepository: airbyte/destination-pulsar
@@ -277,6 +284,7 @@
   normalizationRepository: airbyte/normalization-redshift
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: redshift
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -331,6 +339,7 @@
   normalizationRepository: airbyte/normalization-snowflake
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: snowflake
   resourceRequirements:
     jobSpecific:
       - jobType: sync
@@ -383,6 +392,7 @@
   normalizationRepository: airbyte/normalization-tidb
   normalizationTag: 0.2.24
   supportsDbt: true
+  integrationType: tidb
 - name: Typesense
   destinationDefinitionId: 36be8dc6-9851-49af-b776-9d4c30e4ab6a
   dockerRepository: airbyte/destination-typesense

@@ -144,7 +144,8 @@ public class DbtTransformationActivityImpl implements DbtTransformationActivity 
         new DbtTransformationRunner(
             processFactory, new DefaultNormalizationRunner(
                 processFactory,
-                destinationLauncherConfig.getNormalizationDockerImage())));
+                destinationLauncherConfig.getNormalizationDockerImage(),
+                destinationLauncherConfig.getIntegrationType())));
   }
 
   private CheckedSupplier<Worker<OperatorDbtInput, Void>, Exception> getContainerLauncherWorkerFactory(

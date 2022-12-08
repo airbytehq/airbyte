@@ -55,16 +55,11 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private Process process = null;
 
   public DefaultNormalizationRunner(final ProcessFactory processFactory,
-                                    final String normalizationImage) {
+                                    final String normalizationImage,
+                                    final String destinationType) {
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImage;
-    this.destinationType = getDestinationTypeFromNormalizationImage(normalizationImage);
-  }
-
-  private String getDestinationTypeFromNormalizationImage(final String normalizationImage) {
-    String imageNameWithoutTag = normalizationImage.contains(":") ? normalizationImage.split(":")[0] : normalizationImage;
-    return "airbyte/normalization".equalsIgnoreCase(imageNameWithoutTag) ? "bigquery"
-        : imageNameWithoutTag.replace("airbyte/normalization-", "");
+    this.destinationType = destinationType;
   }
 
   @Override

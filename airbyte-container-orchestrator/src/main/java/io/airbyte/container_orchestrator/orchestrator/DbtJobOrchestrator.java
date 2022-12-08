@@ -79,7 +79,8 @@ public class DbtJobOrchestrator implements JobOrchestrator<OperatorDbtInput> {
         new DbtTransformationRunner(
             processFactory, new DefaultNormalizationRunner(
                 processFactory,
-                destinationLauncherConfig.getNormalizationDockerImage())));
+                destinationLauncherConfig.getNormalizationDockerImage(),
+                destinationLauncherConfig.getIntegrationType())));
 
     log.info("Running dbt worker...");
     final Path jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

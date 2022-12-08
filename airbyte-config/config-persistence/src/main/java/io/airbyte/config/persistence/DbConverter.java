@@ -180,6 +180,8 @@ public class DbConverter {
             : record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
         .withSupportsDbt(record.get(ACTOR_DEFINITION.SUPPORTS_DBT) == null ? null
             : record.get(ACTOR_DEFINITION.SUPPORTS_DBT))
+        .withIntegrationType(record.get(ACTOR_DEFINITION.INTEGRATION_TYPE) == null ? null
+            : record.get(ACTOR_DEFINITION.INTEGRATION_TYPE))
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));

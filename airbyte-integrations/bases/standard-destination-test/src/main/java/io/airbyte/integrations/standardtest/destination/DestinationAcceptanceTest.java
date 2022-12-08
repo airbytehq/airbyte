@@ -239,6 +239,12 @@ public abstract class DestinationAcceptanceTest {
         .orElse(false);
   }
 
+  protected String getIntegrationType() {
+    return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
+        .map(StandardDestinationDefinition::getIntegrationType)
+        .orElse(null);
+  }
+
   /**
    * Detects if a destination implements append dedup mode from the spec.json that should include
    * 'supportedDestinationSyncMode'
@@ -563,7 +569,8 @@ public abstract class DestinationAcceptanceTest {
       try {
         new DefaultNormalizationRunner(
             processFactory,
-            getNormalizationImageName());
+            getNormalizationImageName(),
+            getIntegrationType());
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -868,7 +875,8 @@ public abstract class DestinationAcceptanceTest {
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
         new DefaultNormalizationRunner(
             processFactory,
-            getNormalizationImageName()));
+            getNormalizationImageName(),
+            getIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -943,7 +951,8 @@ public abstract class DestinationAcceptanceTest {
     final DbtTransformationRunner runner = new DbtTransformationRunner(processFactory,
         new DefaultNormalizationRunner(
             processFactory,
-            getNormalizationImageName()));
+            getNormalizationImageName(),
+            getIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1289,7 +1298,8 @@ public abstract class DestinationAcceptanceTest {
 
     final NormalizationRunner runner = new DefaultNormalizationRunner(
         processFactory,
-        getNormalizationImageName());
+        getNormalizationImageName(),
+        getIntegrationType());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,
