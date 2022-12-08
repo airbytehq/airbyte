@@ -86,6 +86,23 @@ definitions:
         type: array
         items:
           type: string
+  CompositeErrorHandler:
+    description: Error handler that sequentially iterates over a list of error handlers
+    type: object
+    required:
+      - error_handlers
+    properties:
+      type:
+        enum: [CompositeErrorHandler]
+      error_handlers:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/CompositeErrorHandler"
+            - "$ref": "#/definitions/DefaultErrorHandler"
+      $options:
+        type: object
+        additionalProperties: true
   CursorPaginationStrategy:
     description: Pagination strategy that evaluates an interpolated string to define the next page token
     type: object
@@ -228,6 +245,30 @@ definitions:
       $options:
         type: object
         additional_properties: true
+  DefaultErrorHandler:
+    description: The default error handler. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
+    type: object
+    properties:
+      type:
+        enum: [DefaultErrorHandler]
+      backoff_strategies:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/ConstantBackoffStrategy"
+            - "$ref": "#/definitions/ExponentialBackoffStrategy"
+            - "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+            - "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+      max_retries:
+        type: integer
+        default: 5
+      response_filters:
+        type: array
+        items:
+          "$ref": "#/definitions/HttpResponseFilter"
+      $options:
+        type: object
+        additional_properties: true
   DefaultPaginator:
     description: Default pagination implementation to request pages of results with a fixed size until the pagination strategy no longer returns a next_page_token
     type: object
@@ -317,6 +358,39 @@ definitions:
         default: GET
       request_options_provider:
         "$ref": "#/definitions/InterpolatedRequestOptionsProvider"
+      $options:
+        type: object
+        additionalProperties: true
+  HttpResponseFilter:
+    description: A filter that is used to select on properties of the HTTP response received
+    type: object
+    required:
+      - action
+    properties:
+      type:
+        enum: [HttpResponseFilter]
+      action:
+        type: string
+        enum:
+          - SUCCESS
+          - FAIL
+          - RETRY
+          - IGNORE
+      error_message:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      error_message_contains:
+        type: string
+      http_codes:
+        type: array
+        items:
+          type: integer
+        uniqueItems: true
+      predicate:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedBoolean"
       $options:
         type: object
         additionalProperties: true
