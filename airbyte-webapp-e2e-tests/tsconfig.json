@@ -18,6 +18,13 @@
     "lib": ["es2015", "dom"],
     "isolatedModules": false,
     "allowJs": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "commands/*": ["commands/*"],
+      "fixtures/*": ["fixtures/*"],
+      "integration": ["integration/*"],
+      "pages/*": ["pages/*"],
+      "plugins/*": ["plugins/*"]
+    }
   }
 }

@@ -288,6 +288,14 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
             assert actual == expected_state
 
 
+def test_read_invalid_state(source):
+    with tempfile.NamedTemporaryFile("w") as state_file:
+        state_file.write("invalid json content")
+        state_file.flush()
+        with pytest.raises(ValueError, match="Could not read json file"):
+            source.read_state(state_file.name)
+
+
 def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
     expected_state = [
         AirbyteStateMessage(

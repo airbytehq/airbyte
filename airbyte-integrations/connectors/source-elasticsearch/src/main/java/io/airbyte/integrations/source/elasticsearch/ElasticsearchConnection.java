@@ -146,11 +146,18 @@ public class ElasticsearchConnection {
    * @throws IOException throws IOException if Elasticsearch request fails
    */
   public Map<String, MappingMetadata> getMappings(final List<String> indices) throws IOException {
-    GetMappingsRequest request = new GetMappingsRequest();
-    String[] copiedIndices = indices.toArray(String[]::new);
-    request.indices(copiedIndices);
-    GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
-    return getMappingResponse.mappings();
+    int chunk = 15;
+    Map<String, MappingMetadata> mappings = new HashMap<>();
+    // Avoid too_long_frame_exception error by "batching"
+    // the indexes mapping calls
+    for(int i = 0; i < indices.size(); i += chunk){
+      String[] copiedIndices = indices.subList(i, Math.min(indices.size(), i + chunk)).toArray(String[]::new);
+      GetMappingsRequest request = new GetMappingsRequest();
+      request.indices(copiedIndices);
+      GetMappingsResponse getMappingResponse = client.indices().getMapping(request, RequestOptions.DEFAULT);
+      mappings.putAll(getMappingResponse.mappings());
+    }
+    return mappings;
   }
 
   /**
