@@ -36,8 +36,7 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       config:
         type: object
-        additionalProperties:
-          type: object
+        additionalProperties: true
   BasicHttpAuthenticator:
     type: object
     required:
@@ -49,8 +48,7 @@ definitions:
         enum: [BasicHttpAuthenticator]
       config:
         type: object
-        additionalProperties:
-          type: object
+        additionalProperties: true
       username:
         anyOf:
           - type: string
@@ -74,8 +72,7 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       config:
         type: object
-        additionalProperties:
-          type: object
+        additionalProperties: true
   CheckStream:
     description: Checks the connections by trying to read records from one or many of the streams selected by the developer
     type: object
@@ -151,8 +148,7 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       config:
         type: object
-        additionalProperties:
-          type: object
+        additionalProperties: true
       refresh_token:
         anyOf:
           - type: string
