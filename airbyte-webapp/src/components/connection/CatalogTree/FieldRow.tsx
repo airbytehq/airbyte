@@ -9,12 +9,13 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
+import { useExperiment } from "hooks/services/Experiment";
 import { equal } from "utils/objects";
 import { useTranslateDataType } from "utils/useTranslateDataType";
 
 import DataTypeCell from "./DataTypeCell";
 import { pathDisplayName } from "./PathPopout";
-import { SyncCheckboxContainer } from "./styles";
+import { NameContainer, SyncCheckboxContainer } from "./styles";
 
 interface FieldRowProps {
   isPrimaryKeyEnabled: boolean;
@@ -26,6 +27,10 @@ interface FieldRowProps {
   field: SyncSchemaField;
   config: AirbyteStreamConfiguration | undefined;
 }
+
+const FirstCell = styled(Cell)`
+  margin-left: -10px;
+`;
 
 const LastCell = styled(Cell)`
   margin-right: -10px;
@@ -41,8 +46,11 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   isPrimaryKeyEnabled,
   isSelected,
 }) => {
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
   const dataType = useTranslateDataType(field);
   const name = pathDisplayName(field.path);
+
+  console.log("isColumnSelectionEnabled", isColumnSelectionEnabled);
 
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
@@ -50,30 +58,43 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
 
   return (
     <>
-      <Cell flex={0}>
-        <SyncCheckboxContainer>
-          {!isNestedField && (
-            <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)} />
-          )}
-          {isNestedField && (
-            <Tooltip
-              control={
-                <Switch
-                  small
-                  disabled
-                  checked={isSelected}
-                  onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
-                />
-              }
-            >
-              This field will be synced if <code>{field.path[0]}</code> is enabled
-            </Tooltip>
-          )}
-        </SyncCheckboxContainer>
-      </Cell>
-      <Cell ellipsis flex={1.5}>
-        {name}
-      </Cell>
+      {isColumnSelectionEnabled && (
+        <Cell flex={0}>
+          <SyncCheckboxContainer>
+            {!isNestedField && (
+              <Switch
+                small
+                checked={isSelected}
+                onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
+              />
+            )}
+            {isNestedField && (
+              <Tooltip
+                control={
+                  <Switch
+                    small
+                    disabled
+                    checked={isSelected}
+                    onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
+                  />
+                }
+              >
+                This field will be synced if <code>{field.path[0]}</code> is enabled
+              </Tooltip>
+            )}
+          </SyncCheckboxContainer>
+        </Cell>
+      )}
+      {isColumnSelectionEnabled && (
+        <Cell ellipsis flex={1.5}>
+          <span title={name}>{name}</span>
+        </Cell>
+      )}
+      {!isColumnSelectionEnabled && (
+        <FirstCell ellipsis flex={1.5}>
+          <NameContainer title={name}>{name}</NameContainer>
+        </FirstCell>
+      )}
       <DataTypeCell>{dataType}</DataTypeCell>
       <Cell>{isCursorEnabled && <RadioButton checked={isCursor} onChange={() => onCursorChange(field.path)} />}</Cell>
       <Cell>
