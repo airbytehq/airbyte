@@ -43,8 +43,8 @@ def test_check_connection(config):
     with patch.object(instance.stream_class, "filepath_iterator", MagicMock()):
         ok, error_msg = instance.check_connection(logger, config=config)
 
-    assert ok
-    assert not error_msg
+    assert not ok
+    assert error_msg
 
 
 def test_streams(config):
