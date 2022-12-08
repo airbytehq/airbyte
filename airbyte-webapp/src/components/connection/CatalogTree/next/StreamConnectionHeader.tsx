@@ -12,7 +12,7 @@ import { getIcon } from "utils/imageUtils";
 
 import styles from "./StreamConnectionHeader.module.scss";
 
-const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
+export const renderIcon = (icon?: string): JSX.Element => <div className={styles.icon}>{getIcon(icon)}</div>;
 
 export const StreamConnectionHeader: React.FC = () => {
   const {
