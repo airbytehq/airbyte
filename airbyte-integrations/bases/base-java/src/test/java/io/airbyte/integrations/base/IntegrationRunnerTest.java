@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.base;
 
+import static io.airbyte.integrations.util.ConnectorExceptionUtil.COMMON_EXCEPTION_MESSAGE_TEMPLATE;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -269,7 +270,8 @@ class IntegrationRunnerTest {
   @Test
   void testCheckRuntimeException() throws Exception {
     final IntegrationConfig intConfig = IntegrationConfig.check(configPath);
-    final AirbyteConnectionStatus output = new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage("Runtime Error");
+    final AirbyteConnectionStatus output =
+        new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(String.format(COMMON_EXCEPTION_MESSAGE_TEMPLATE, "Runtime Error"));
     final RuntimeException runtimeException = new RuntimeException("Runtime Error");
 
     when(cliParser.parse(ARGS)).thenReturn(intConfig);
