@@ -1,5 +1,6 @@
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
@@ -30,13 +31,15 @@ import styles from "./CatalogTreeTableHeader.module.scss";
 
 const TextCell: React.FC<React.PropsWithChildren<{ flex?: string }>> = ({ flex = "0 0 120px", children }) => {
   return (
-    <Cell flex={flex} flush>
+    <Cell flex={flex} flush ellipsis>
       <Text size="sm" className={styles.cellText}>
         {children}
       </Text>
     </Cell>
   );
 };
+
+const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
 export const CatalogTreeTableHeader: React.FC = () => {
   const { mode } = useConnectionFormService();
@@ -60,7 +63,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
   };
 
   return (
-    <Header className={styles.headerContainer}>
+    <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewStreamsTableEnabled })}>
       <div className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox

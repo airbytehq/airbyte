@@ -61,7 +61,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     className,
     children,
   }) => (
-    <Cell flex={flex} title={title} className={className} flush>
+    <Cell flex={flex} title={title} className={className} flush ellipsis>
       {children}
     </Cell>
   );
