@@ -46,7 +46,7 @@ export const ListBox = <T,>({
       <Listbox value={selectedValue} onChange={onSelect}>
         <Listbox.Button className={classNames(buttonClassName, styles.button)}>
           <ControlButton selectedOption={selectedOption} />
-          <CaretDownIcon />
+          <CaretDownIcon className={styles.caret} />
         </Listbox.Button>
         {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
         <div className={styles.optionsContainer}>

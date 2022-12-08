@@ -6,7 +6,7 @@
   cursor: pointer;
   border: 1px solid colors.$grey-50;
   background-color: colors.$grey-50;
-  border-radius: 4px;
+  border-radius: variables.$border-radius-xs;
   text-align: left;
   display: flex;
   justify-content: space-between;
@@ -16,7 +16,7 @@
   min-height: 36px;
 
   &:hover {
-    border: 1px solid colors.$grey-100;
+    border-color: colors.$grey-100;
   }
 }
 
@@ -36,6 +36,10 @@
   left: 0;
   width: 100%;
   z-index: 1;
+}
+
+.caret {
+  color: colors.$grey-300;
 }
 
 .option {
