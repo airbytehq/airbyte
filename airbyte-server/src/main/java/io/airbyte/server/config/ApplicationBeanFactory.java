@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.config;
 
 import io.airbyte.analytics.TrackingClient;
@@ -11,8 +15,6 @@ import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
-import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
-import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
@@ -60,9 +62,9 @@ public class ApplicationBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   public JobTracker jobTracker(
-      final ConfigRepository configRepository,
-      final JobPersistence jobPersistence,
-      final TrackingClient trackingClient) {
+                               final ConfigRepository configRepository,
+                               final JobPersistence jobPersistence,
+                               final TrackingClient trackingClient) {
     return new JobTracker(configRepository, jobPersistence, trackingClient);
   }
 
@@ -86,4 +88,5 @@ public class ApplicationBeanFactory {
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
     return StringUtils.isNotEmpty(value) ? creatorFunction.apply(value.toUpperCase(Locale.ROOT)) : defaultValue;
   }
+
 }
