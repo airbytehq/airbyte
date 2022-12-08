@@ -150,8 +150,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         cursor_datetime = self._calculate_cursor_datetime_from_state(stream_state)
         start_datetime = max(earliest_possible_start_datetime, cursor_datetime) - lookback_delta
 
-        dates = self._partition_daterange(start_datetime, end_datetime, self._step)
-        return dates
+        return self._partition_daterange(start_datetime, end_datetime, self._step)
 
     def _calculate_cursor_datetime_from_state(self, stream_state: Mapping[str, Any]) -> datetime.datetime:
         if self.cursor_field.eval(self.config, stream_state=stream_state) in stream_state:
