@@ -3,11 +3,11 @@ import { useEffect, useState } from "react";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
 import { BuilderSidebar, BuilderView } from "./BuilderSidebar";
 import { GlobalConfigView } from "./GlobalConfigView";
 import { StreamConfigView } from "./StreamConfigView";
-import { BuilderFormValues } from "./types";
 
 interface BuilderProps {
   values: BuilderFormValues;

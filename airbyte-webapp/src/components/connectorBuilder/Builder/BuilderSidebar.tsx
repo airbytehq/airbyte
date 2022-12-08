@@ -14,10 +14,10 @@ import {
   useConnectorBuilderState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { BuilderFormValues } from "../types";
 import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
-import { BuilderFormValues } from "./types";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
 
 export type BuilderView = "global" | number;

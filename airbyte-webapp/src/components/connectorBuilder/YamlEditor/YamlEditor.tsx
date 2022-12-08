@@ -10,8 +10,8 @@ import { ConnectorManifest } from "core/request/ConnectorBuilderClient";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { convertToManifest } from "../Builder/types";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
+import { convertToManifest } from "../types";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 

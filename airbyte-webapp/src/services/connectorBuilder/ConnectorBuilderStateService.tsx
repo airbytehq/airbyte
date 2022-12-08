@@ -3,7 +3,7 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
-import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/Builder/types";
+import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
 
 import {
   ConnectorManifest,
