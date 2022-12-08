@@ -23,6 +23,8 @@ airbyte:
       initialization-timeout-ms: ${JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS:60000}
       minimum-migration-version: ${JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION}
   version: ${AIRBYTE_VERSION}
+  workspace:
+    root: ${WORKSPACE_ROOT}
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}
     store:
@@ -33,3 +35,14 @@ airbyte:
         address: ${VAULT_ADDRESS:}
         prefix: ${VAULT_PREFIX:}
         token: ${VAULT_AUTH_TOKEN:}
+
+temporal:
+  cloud:
+    client:
+      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
+      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
+    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
+    host: ${TEMPORAL_CLOUD_HOST:}
+    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
+  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}

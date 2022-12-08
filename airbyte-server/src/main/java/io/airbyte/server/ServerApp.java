@@ -187,8 +187,8 @@ public class ServerApp implements ServerRunnable {
     final Optional<SecretPersistence> ephemeralSecretPersistence = SecretPersistence.getEphemeral(configsDslContext, configs);
     final ConfigRepository configRepository = new ConfigRepository(configsDatabase);
     final SecretsRepositoryReader secretsRepositoryReader = new SecretsRepositoryReader(configRepository, secretsHydrator);
-    final SecretsRepositoryWriter secretsRepositoryWriter =
-        new SecretsRepositoryWriter(configRepository, secretPersistence, ephemeralSecretPersistence);
+    final SecretsRepositoryWriter secretsRepositoryWriter = new SecretsRepositoryWriter(configRepository, secretPersistence,
+        ephemeralSecretPersistence);
 
     LOGGER.info("Creating jobs persistence...");
     final Database jobsDatabase = new Database(jobsDslContext);

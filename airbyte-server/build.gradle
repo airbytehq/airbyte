@@ -39,13 +39,15 @@ dependencies {
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
+    annotationProcessor libs.micronaut.jaxrs.processor
 
     implementation platform(libs.micronaut.bom)
     implementation libs.bundles.micronaut
+    implementation libs.micronaut.jaxrs.server
 
     // Ensure that the versions defined in deps.toml are used
     // instead of versions from transitive dependencies
-    implementation (libs.flyway.core) {
+    implementation(libs.flyway.core) {
         force = true
     }
 
