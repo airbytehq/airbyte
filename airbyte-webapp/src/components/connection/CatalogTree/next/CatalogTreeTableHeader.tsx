@@ -5,7 +5,7 @@ import { useFormikContext } from "formik";
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Cell, Header } from "components/SimpleTableComponents";
+import { Header } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
 import { CheckBox } from "components/ui/CheckBox";
 import { Text } from "components/ui/Text";
@@ -27,15 +27,19 @@ import {
   DestinationStreamNamesModal,
   StreamNameDefinitionValueType,
 } from "../../DestinationStreamNamesModal/DestinationStreamNamesModal";
+import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableHeader.module.scss";
 
-const TextCell: React.FC<React.PropsWithChildren<{ flex?: string }>> = ({ flex = "0 0 120px", children }) => {
+const HeaderCell: React.FC<React.PropsWithChildren<Parameters<typeof CatalogTreeTableCell>[0]>> = ({
+  size,
+  children,
+}) => {
   return (
-    <Cell flex={flex} flush ellipsis>
+    <CatalogTreeTableCell size={size}>
       <Text size="sm" className={styles.cellText}>
         {children}
       </Text>
-    </Cell>
+    </CatalogTreeTableCell>
   );
 };
 
@@ -73,36 +77,36 @@ export const CatalogTreeTableHeader: React.FC = () => {
           />
         )}
       </div>
-      <TextCell flex="0 0 60px">
+      <HeaderCell size="small">
         <FormattedMessage id="sources.sync" />
-      </TextCell>
+      </HeaderCell>
       {/* <TextCell>
         <FormattedMessage id="form.fields" />
       </TextCell> */}
-      <TextCell>
+      <HeaderCell>
         <FormattedMessage id="form.namespace" />
-      </TextCell>
-      <TextCell>
+      </HeaderCell>
+      <HeaderCell>
         <FormattedMessage id="form.streamName" />
-      </TextCell>
-      <TextCell flex="0 0 200px">
+      </HeaderCell>
+      <HeaderCell size="large">
         <FormattedMessage id="form.syncMode" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.syncType.info" />
           <TooltipLearnMoreLink url={links.syncModeLink} />
         </InfoTooltip>
-      </TextCell>
-      <TextCell>
+      </HeaderCell>
+      <HeaderCell>
         <FormattedMessage id="form.cursorField" />
         <InfoTooltip>
           <FormattedMessage id="connectionForm.cursor.info" />
         </InfoTooltip>
-      </TextCell>
-      <TextCell>
+      </HeaderCell>
+      <HeaderCell>
         <FormattedMessage id="form.primaryKey" />
-      </TextCell>
+      </HeaderCell>
       <div className={styles.arrowPlaceholder} />
-      <TextCell>
+      <HeaderCell>
         <FormattedMessage id="form.namespace" />
         <Button
           type="button"
@@ -126,8 +130,8 @@ export const CatalogTreeTableHeader: React.FC = () => {
         >
           <FontAwesomeIcon icon={faGear} />
         </Button>
-      </TextCell>
-      <TextCell>
+      </HeaderCell>
+      <HeaderCell>
         <FormattedMessage id="form.streamName" />
         <Button
           type="button"
@@ -150,7 +154,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
         >
           <FontAwesomeIcon icon={faGear} />
         </Button>
-      </TextCell>
+      </HeaderCell>
     </Header>
   );
 };

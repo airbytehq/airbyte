@@ -13,6 +13,7 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { StreamHeaderProps } from "../StreamHeader";
 // eslint-disable-next-line css-modules/no-unused-class
+import { CatalogTreeTableCell } from "./CatalogTreeTableCell";
 import styles from "./CatalogTreeTableRow.module.scss";
 import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
@@ -55,17 +56,6 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
-  const TableCell: React.FC<{ flex?: string; title?: string; className?: string }> = ({
-    flex = "0 0 120px",
-    title,
-    className,
-    children,
-  }) => (
-    <Cell flex={flex} title={title} className={className} flush ellipsis>
-      {children}
-    </Cell>
-  );
-
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
   return (
@@ -76,23 +66,23 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <TableCell flex="0 0 60px">
+      <CatalogTreeTableCell size="small">
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
-      </TableCell>
+      </CatalogTreeTableCell>
       {/* <Cell>{fieldCount}</Cell> */}
-      <TableCell title={stream.stream?.namespace || ""}>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
         </Text>
-      </TableCell>
-      <TableCell title={stream.stream?.name || ""}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {stream.stream?.name}
         </Text>
-      </TableCell>
-      <TableCell flex="0 0 200px">
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell size="large">
         {disabled ? (
-          <Cell title={syncSchema.syncMode}>
+          <Cell>
             <Text size="md" className={styles.cellText}>
               {syncSchema.syncMode}
             </Text>
@@ -106,8 +96,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             variant={pillButtonVariant}
           />
         )}
-      </TableCell>
-      <TableCell>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
@@ -117,8 +107,8 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             variant={pillButtonVariant}
           />
         )}
-      </TableCell>
-      <TableCell>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -129,18 +119,18 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             variant={pillButtonVariant}
           />
         )}
-      </TableCell>
+      </CatalogTreeTableCell>
       <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
-      <TableCell title={destNamespace}>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
         </Text>
-      </TableCell>
-      <TableCell title={destName}>
+      </CatalogTreeTableCell>
+      <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {destName}
         </Text>
-      </TableCell>
+      </CatalogTreeTableCell>
     </Row>
   );
 };
