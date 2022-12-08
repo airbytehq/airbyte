@@ -15,7 +15,7 @@
             "type": "object",
             "title": "Authenticate via Retently (OAuth)",
             "required": ["client_id", "client_secret", "refresh_token"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -47,7 +47,7 @@
             "type": "object",
             "title": "Authenticate with API Token",
             "required": ["api_key"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
               "auth_type": {
                 "type": "string",
@@ -75,7 +75,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -85,7 +85,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"
@@ -97,7 +97,7 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string",

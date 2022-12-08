@@ -66,14 +66,10 @@ class RetentlyStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
-        data = response.json().get("data") or response.json()
+        data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
-        if type(stream_data) == list :
-            for d in stream_data:
-                yield d
-        else:
-            yield data
-
+        for d in stream_data:
+            yield d
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
@@ -136,6 +132,16 @@ class Nps(RetentlyStream):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
 
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json().get("data")
+        yield data
+
 class Campaigns(RetentlyStream):
     json_path = "campaigns"
 
@@ -143,6 +149,18 @@ class Campaigns(RetentlyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "campaigns"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for d in stream_data:
+            yield d
 
 class Feedback(RetentlyStream):
     json_path = "responses"
