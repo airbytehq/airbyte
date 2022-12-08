@@ -25,7 +25,7 @@ from source_adaptive_insights.serializers import (
     handle_export_dimensions,
     handle_export_levels,
     handle_export_accounts,
-    handle_export_data
+    handle_export_data, handle_export_headcount
 )
 from datetime import datetime
 
@@ -269,7 +269,7 @@ class ExportData(AdaptiveInsightsStream):
         yield from handle_export_data(response=json_response, version=self.version_type)
 
 
-class ExportHeadCount(AdaptiveInsightsStream):
+class ExportHeadcount(AdaptiveInsightsStream):
 
     primary_key = "id"
     http_method = "POST"
@@ -298,8 +298,7 @@ class ExportHeadCount(AdaptiveInsightsStream):
 
         return payload
 
-
-    def construct_xml_body(self, start_date: str, end_date: str) -> str:
+    def construct_xml_body(self, start_date: str) -> str:
 
         return f"""<?xml version='1.0' encoding='UTF-8'?>
         <call method="{self.method}" callerName="Airbyte - auto">
@@ -307,21 +306,22 @@ class ExportHeadCount(AdaptiveInsightsStream):
         <version name="{self.version_type}" isDefault="false"/>
         <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
         <filters>
-        {self.construct_account_payload()}
-        <timeSpan start="{start_date}" end="{end_date}"/>
+        <accounts>
+        <account code="personnel.ActualRptHC" isAssumption="false" includeDescendants="true"/>
+        </accounts>
+        <timeSpan start="{start_date}" end="{start_date}"/>
         </filters>
         <dimensions>
         <dimension name="Position"/>
-        <dimension name="Assignment" />
+        <dimension name="Assignment"/>
         <dimension name="Location"/>
         <dimension name="Personnel_Input_Type"/>
         </dimensions>
         <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
-        <currency useCorporate="false" useLocal="false" override="EUR"/>
+        <currency override="USD"/>
         </rules>
         </call>
         """.encode("utf-8")
-
 
     @staticmethod
     def add_one_month(date_str: str) -> str:
@@ -352,8 +352,8 @@ class ExportHeadCount(AdaptiveInsightsStream):
 
         while True:
             
-            self.logger.info(f"Runing `export_headcount` for period {start_date} for version {self.version_type} with argument `start_date:{self.start_date}` - `end_date:{end_date}`")
-            response = self.send_data_request(xml_body=self.construct_xml_body(start_date=start_date, end_date=start_date))
+            self.logger.info(f"Running `export_headcount` for period {start_date} for version {self.version_type} with argument `start_date:{self.start_date}` - `end_date:{end_date}`")
+            response = self.send_data_request(xml_body=self.construct_xml_body(start_date=start_date))
             
             for record in self.parse_response(response):
                 yield record
@@ -368,9 +368,8 @@ class ExportHeadCount(AdaptiveInsightsStream):
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
 
         json_response = xmltodict.parse(response.content)
-        
-        yield from handle_export_data(response=json_response, version=self.version_type)
 
+        yield from handle_export_headcount(response=json_response, version=self.version_type)
 
 
 # Source
@@ -421,5 +420,5 @@ class SourceAdaptiveInsights(AbstractSource):
             ExportLevels(**args),
             ExportAccounts(**args),
             ExportData(**args),
-            ExportHeadCount(**args)
+            ExportHeadcount(**args)
         ]

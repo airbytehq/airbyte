@@ -14,7 +14,8 @@ from source_adaptive_insights.source import (
     ExportDimensions,
     ExportLevels,
     ExportAccounts,
-    ExportData
+    ExportData,
+    ExportHeadcount
 )
 
 dimensions_expected = {
@@ -284,6 +285,34 @@ def test_request_body_data_export_data(patch_base_class):
         <dimension name="Location" />
         <dimension name="Contract"/>
         <dimension name="Assignment"/>
+        </dimensions>
+        <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
+        <currency override="USD"/>
+        </rules>
+        </call>
+        """.encode('utf-8')
+    inputs = {}
+    assert stream.construct_xml_body(start_date="01/2019", end_date="01/2019") == expected_data
+
+
+def test_request_body_data_export_headcount(patch_base_class):
+    stream = ExportHeadcount(username="a", password="b", version_type="c", start_date="d", accounts="e,f")
+    expected_data = """<?xml version='1.0' encoding='UTF-8'?>
+        <call method="exportData" callerName="Airbyte - auto">
+        <credentials login="a" password="b"/>
+        <version name="c" isDefault="false"/>
+        <format useInternalCodes="true" includeCodes="false" includeNames="true" displayNameEnabled="true"/>
+        <filters>
+        <accounts>
+        <account code="personnel.ActualRptHC" isAssumption="false" includeDescendants="true"/>
+        </accounts>
+        <timeSpan start="01/2019" end="01/2019"/>
+        </filters>
+        <dimensions>
+        <dimension name="Position"/>
+        <dimension name="Assignment"/>
+        <dimension name="Location"/>
+        <dimension name="Personnel_Input_Type"/>
         </dimensions>
         <rules includeZeroRows="false" includeRollupAccounts="true" timeRollups="false">
         <currency override="USD"/>
