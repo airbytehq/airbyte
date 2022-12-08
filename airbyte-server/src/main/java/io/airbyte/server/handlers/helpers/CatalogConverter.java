@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
+import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
 import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
+import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
@@ -45,11 +47,17 @@ public class CatalogConverter {
   @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static io.airbyte.protocol.models.AirbyteStream toProtocol(final AirbyteStream stream, AirbyteStreamConfiguration config)
       throws JsonValidationException {
-    JsonNode streamSchema = stream.getJsonSchema();
     if (config.getFieldSelectionEnabled() != null && config.getFieldSelectionEnabled()) {
       // Validate the selected field paths.
+      if (config.getSelectedFields() == null) {
+        throw new JsonValidationException("Requested field selection but no selected fields provided");
+      }
+      final JsonNode properties = stream.getJsonSchema().findValue("properties");
+      if (properties == null || !properties.isObject()) {
+        throw new JsonValidationException("Requested field selection but no properties node found");
+      }
       for (final var selectedFieldInfo : config.getSelectedFields()) {
-        if (selectedFieldInfo.getFieldPath().isEmpty()) {
+        if (selectedFieldInfo.getFieldPath() == null || selectedFieldInfo.getFieldPath().isEmpty()) {
           throw new JsonValidationException("Selected field path cannot be empty");
         }
         if (selectedFieldInfo.getFieldPath().size() > 1) {
@@ -59,12 +67,12 @@ public class CatalogConverter {
       }
       // Only include the selected fields.
       List<String> selectedFieldNames = config.getSelectedFields().stream().map((field) -> field.getFieldPath().get(0)).collect(Collectors.toList());
-      final JsonNode properties = streamSchema.findValue("properties");
-      if (properties.isObject()) {
-        ((ObjectNode) properties).retain(selectedFieldNames);
-      } else {
-        throw new JsonValidationException("Requested field selection but no properties node found");
+      for (final String selectedFieldName : selectedFieldNames) {
+        if (!properties.has(selectedFieldName)) {
+          throw new JsonValidationException(String.format("Requested selected field %s not found in JSON schema", selectedFieldName));
+        }
       }
+      ((ObjectNode) properties).retain(selectedFieldNames);
     }
     return new io.airbyte.protocol.models.AirbyteStream()
         .withName(stream.getName())
@@ -119,6 +127,13 @@ public class CatalogConverter {
                   .aliasName(Names.toAlphanumericAndUnderscore(configuredStream.getStream().getName()))
                   .selected(true)
                   .fieldSelectionEnabled(getStreamHasFieldSelectionEnabled(fieldSelectionData, streamDescriptor));
+          if (configuration.getFieldSelectionEnabled()) {
+            final List<String> selectedColumns = new ArrayList<>();
+            // TODO(mfsiega-airbyte): support nested fields here.
+            configuredStream.getStream().getJsonSchema().findValue("properties").fieldNames().forEachRemaining((name) -> selectedColumns.add(name));
+            configuration.setSelectedFields(
+                selectedColumns.stream().map((fieldName) -> new SelectedFieldInfo().addFieldPathItem(fieldName)).collect(Collectors.toList()));
+          }
           return new io.airbyte.api.model.generated.AirbyteStreamAndConfiguration()
               .stream(toApi(configuredStream.getStream()))
               .config(configuration);
@@ -198,19 +213,19 @@ public class CatalogConverter {
    * @param syncCatalog the catalog
    * @return the map as a FieldSelectionData object
    */
-  public static FieldSelectionData getFieldSelectionData(AirbyteCatalog syncCatalog) {
+  public static FieldSelectionData getFieldSelectionData(final AirbyteCatalog syncCatalog) {
     if (syncCatalog == null) {
       return null;
     }
     final var fieldSelectionData = new FieldSelectionData();
-    syncCatalog.getStreams().stream().forEach((streamAndConfig) -> {
+    for (final AirbyteStreamAndConfiguration streamAndConfig : syncCatalog.getStreams()) {
       final var streamDescriptor = new StreamDescriptor()
           .name(streamAndConfig.getStream().getName())
           .namespace(streamAndConfig.getStream().getNamespace());
       final boolean fieldSelectionEnabled =
           streamAndConfig.getConfig().getFieldSelectionEnabled() == null ? false : streamAndConfig.getConfig().getFieldSelectionEnabled();
       fieldSelectionData.setAdditionalProperty(streamDescriptorToStringForFieldSelection(streamDescriptor), fieldSelectionEnabled);
-    });
+    }
     return fieldSelectionData;
   }
 

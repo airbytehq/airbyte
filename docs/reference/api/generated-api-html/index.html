@@ -10244,7 +10244,7 @@ containing the updated stream needs to be sent.</div>
 <div class="param">aliasName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span> Alias name to the stream to be used in the destination </div>
 <div class="param">selected (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> If this is true, the stream is selected with all of its properties. </div>
 <div class="param">fieldSelectionEnabled (optional)</div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span> Whether field selection should be enabled. If this is true, only the properties in <code>selectedFields</code> will be included. </div>
-<div class="param">selectedFields (optional)</div><div class="param-desc"><span class="param-type"><a href="#SelectedFieldInfo">array[SelectedFieldInfo]</a></span> Paths to the fields that will be included. This must be set if <code>fieldSelectedEnabled</code> is set. An empty list indicates that no properties will be included. </div>
+<div class="param">selectedFields (optional)</div><div class="param-desc"><span class="param-type"><a href="#SelectedFieldInfo">array[SelectedFieldInfo]</a></span> Paths to the fields that will be included in the configured catalog. This must be set if <code>fieldSelectedEnabled</code> is set. An empty list indicates that no properties will be included. </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11321,7 +11321,7 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
   </div>
   <div class="model">
     <h3><a name="SelectedFieldInfo"><code>SelectedFieldInfo</code> - </a> <a class="up" href="#__Models">Up</a></h3>
-    <div class='model-description'>Path to a field/column/property in a stream to be selected.</div>
+    <div class='model-description'>Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called &quot;foo&quot;, this will be [&quot;foo&quot;]. Use multiple path elements for nested schemas.</div>
     <div class="field-items">
       <div class="param">fieldPath (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">array[String]</a></span>  </div>
     </div>  <!-- field-items -->
