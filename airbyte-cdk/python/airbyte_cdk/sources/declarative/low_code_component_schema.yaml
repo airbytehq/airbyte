@@ -26,7 +26,6 @@ definitions:
     required:
       - type
       - api_token
-      - config
     properties:
       type:
         enum: [ApiKeyAuthenticator]
@@ -34,21 +33,14 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
-      config:
-        type: object
-        additionalProperties: true
   BasicHttpAuthenticator:
     type: object
     required:
       - type
-      - config
       - username
     properties:
       type:
         enum: [BasicHttpAuthenticator]
-      config:
-        type: object
-        additionalProperties: true
       username:
         anyOf:
           - type: string
@@ -62,7 +54,6 @@ definitions:
     required:
       - type
       - api_token
-      - config
     properties:
       type:
         enum: [BearerAuthenticator]
@@ -70,9 +61,6 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
-      config:
-        type: object
-        additionalProperties: true
   CheckStream:
     description: Checks the connections by trying to read records from one or many of the streams selected by the developer
     type: object
@@ -182,7 +170,6 @@ definitions:
       - type
       - client_id
       - client_secret
-      - config
       - refresh_token
       - token_refresh_endpoint
     properties:
@@ -196,9 +183,6 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
-      config:
-        type: object
-        additionalProperties: true
       refresh_token:
         anyOf:
           - type: string
