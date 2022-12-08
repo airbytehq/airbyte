@@ -14,7 +14,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-from .utils import safe_max
+from .utils import read_full_refresh, safe_max
 
 API_VERSION = 3
 
@@ -166,6 +166,10 @@ class Boards(JiraStream):
     use_cache = True
     api_v1 = True
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
     def path(self, **kwargs) -> str:
         return "board"
 
@@ -179,10 +183,9 @@ class Boards(JiraStream):
         params["projectKeyOrId"] = stream_slice["project_id"]
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"project_id": project["id"], "project_key": project["key"]}, **kwargs)
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for project in read_full_refresh(self.projects_stream):
+            yield {"project_id": project["id"], "project_key": project["key"]}
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
