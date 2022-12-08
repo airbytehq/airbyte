@@ -6,8 +6,8 @@ import { useLocalStorage } from "react-use";
 import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
 
 import {
-  ConnectorManifest,
   StreamReadRequestBodyConfig,
+  StreamReadRequestBodyManifest,
   StreamsListReadStreamsItem,
 } from "core/request/ConnectorBuilderClient";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
@@ -22,7 +22,7 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   streams: [],
 };
 
-const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+const DEFAULT_JSON_MANIFEST_VALUES: StreamReadRequestBodyManifest = {
   version: "0.1.0",
   check: {
     stream_names: [],
@@ -32,7 +32,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
 
 interface Context {
   builderFormValues: BuilderFormValues;
-  jsonManifest: ConnectorManifest;
+  jsonManifest: StreamReadRequestBodyManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
@@ -42,7 +42,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
-  setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setJsonManifest: (jsonValue: StreamReadRequestBodyManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -61,7 +61,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
 
-  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+  const [jsonManifest, setJsonManifest] = useLocalStorage<StreamReadRequestBodyManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );

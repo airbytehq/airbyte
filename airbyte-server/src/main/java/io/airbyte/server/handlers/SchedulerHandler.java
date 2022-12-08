@@ -401,7 +401,7 @@ public class SchedulerHandler {
     if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
       connectionStatus = ConnectionStatus.INACTIVE;
     } else {
-      connectionStatus = ConnectionStatus.ACTIVE;
+      connectionStatus = connectionRead.getStatus();
     }
     updateObject.status(connectionStatus);
     connectionsHandler.updateConnection(updateObject);
