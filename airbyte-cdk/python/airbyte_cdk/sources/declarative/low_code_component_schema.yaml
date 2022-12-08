@@ -415,6 +415,17 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  DefaultSchemaLoader:
+    description: Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [DefaultSchemaLoader]
+      $options:
+        type: object
+        additionalProperties: true
   DpathExtractor:
     description: Record extractor that searches a decoded response over a path defined as an array of fields
     type: object
