@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_booleanstring import AnyOfInterpolatedBooleanstring
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.any_ofstringstring import AnyOfstringstring
@@ -27,11 +27,11 @@ class HttpResponseFilter(BaseModel):
         error_message: The error_message of this HttpResponseFilter [Optional].
     """
 
-    action: AnyOfstringstring
-    config: Dict[str, Any]
-    http_codes: Optional[list[int]] = None
-    error_message_contains: Optional[str] = None
-    predicate: Optional[AnyOfInterpolatedBooleanstring] = None
-    error_message: Optional[AnyOfInterpolatedStringstring] = None
+    action: AnyOfstringstring = Field(alias="action")
+    config: Dict[str, Any] = Field(alias="config")
+    http_codes: Optional[list[int]] = Field(alias="http_codes", default=None)
+    error_message_contains: Optional[str] = Field(alias="error_message_contains", default=None)
+    predicate: Optional[AnyOfInterpolatedBooleanstring] = Field(alias="predicate", default=None)
+    error_message: Optional[AnyOfInterpolatedStringstring] = Field(alias="error_message", default=None)
 
 HttpResponseFilter.update_forward_refs()
