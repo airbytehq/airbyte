@@ -52,7 +52,6 @@ airbyte:
     specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
   container:
     orchestrator:
-      enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
