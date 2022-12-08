@@ -8,12 +8,15 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.workers.normalization.DefaultNormalizationRunner.DestinationType;
 import io.airbyte.workers.process.ProcessFactory;
 import java.util.Map;
+import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
+@Slf4j
 public class NormalizationRunnerFactory {
 
   public static final String BASE_NORMALIZATION_IMAGE_NAME = "airbyte/normalization";
-  public static final String NORMALIZATION_VERSION = "0.2.24";
+  public static final String NORMALIZATION_VERSION = "0.2.25";
 
   static final Map<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>> NORMALIZATION_MAPPING =
       ImmutableMap.<String, ImmutablePair<String, DefaultNormalizationRunner.DestinationType>>builder()
@@ -38,12 +41,21 @@ public class NormalizationRunnerFactory {
 
   public static NormalizationRunner create(final String connectorImageName,
                                            final ProcessFactory processFactory,
-                                           final String normalizationVersion) {
+                                           final String normalizationVersion,
+                                           final String normalizationImage) {
     final var valuePair = getNormalizationInfoForConnector(connectorImageName);
+    final String factoryNormalizationImage = String.format("%s:%s", valuePair.getLeft(), normalizationVersion);
+    if (Objects.nonNull(normalizationImage)
+        && !normalizationImage.equalsIgnoreCase(factoryNormalizationImage)) {
+      log.error(
+          "The normalization image name or tag in the definition file is different from the normalization image or tag in the NormalizationRunnerFactory!");
+      log.error(
+          "the definition file value - {}, the NormalizationRunnerFactory value - {}", normalizationImage, factoryNormalizationImage);
+    }
     return new DefaultNormalizationRunner(
         valuePair.getRight(),
         processFactory,
-        String.format("%s:%s", valuePair.getLeft(), normalizationVersion));
+        factoryNormalizationImage);
   }
 
   public static ImmutablePair<String, DestinationType> getNormalizationInfoForConnector(final String connectorImageName) {

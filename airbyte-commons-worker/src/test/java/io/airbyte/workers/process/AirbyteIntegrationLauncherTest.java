@@ -53,7 +53,8 @@ class AirbyteIntegrationLauncherTest {
       WorkerEnvConstants.WORKER_CONNECTOR_IMAGE, FAKE_IMAGE,
       WorkerEnvConstants.WORKER_JOB_ID, JOB_ID,
       WorkerEnvConstants.WORKER_JOB_ATTEMPT, String.valueOf(JOB_ATTEMPT),
-      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()));
+      EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, String.valueOf(new EnvVariableFeatureFlags().useStreamCapableState()),
+      EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, String.valueOf(new EnvVariableFeatureFlags().autoDetectSchema()));
 
   private WorkerConfigs workerConfigs;
   @Mock
@@ -63,14 +64,14 @@ class AirbyteIntegrationLauncherTest {
   @BeforeEach
   void setUp() {
     workerConfigs = new WorkerConfigs(new EnvConfigs());
-    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements());
+    launcher = new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, FAKE_IMAGE, processFactory, workerConfigs.getResourceRequirements(), false);
   }
 
   @Test
   void spec() throws WorkerException {
     launcher.spec(JOB_ROOT);
 
-    Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, Collections.emptyMap(), null,
+    Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, Collections.emptyMap(), null,
         workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA,
         Map.of(),
         "spec");
@@ -80,7 +81,7 @@ class AirbyteIntegrationLauncherTest {
   void check() throws WorkerException {
     launcher.check(JOB_ROOT, CONFIG, "{}");
 
-    Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
+    Mockito.verify(processFactory).create(CHECK_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(JOB_TYPE, CHECK_JOB),
         JOB_METADATA,
@@ -93,7 +94,7 @@ class AirbyteIntegrationLauncherTest {
   void discover() throws WorkerException {
     launcher.discover(JOB_ROOT, CONFIG, "{}");
 
-    Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_FILES, null,
+    Mockito.verify(processFactory).create(DISCOVER_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(JOB_TYPE, DISCOVER_JOB),
         JOB_METADATA,
@@ -106,7 +107,7 @@ class AirbyteIntegrationLauncherTest {
   void read() throws WorkerException {
     launcher.read(JOB_ROOT, CONFIG, "{}", CATALOG, "{}", "state", "{}");
 
-    Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, CONFIG_CATALOG_STATE_FILES, null,
+    Mockito.verify(processFactory).create(READ_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, CONFIG_CATALOG_STATE_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
         JOB_METADATA,
@@ -122,7 +123,7 @@ class AirbyteIntegrationLauncherTest {
   void write() throws WorkerException {
     launcher.write(JOB_ROOT, CONFIG, "{}", CATALOG, "{}");
 
-    Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, true, CONFIG_CATALOG_FILES, null,
+    Mockito.verify(processFactory).create(WRITE_STEP, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, true, CONFIG_CATALOG_FILES, null,
         workerConfigs.getResourceRequirements(),
         Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
         JOB_METADATA,

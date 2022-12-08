@@ -6,23 +6,19 @@
     "cypress:open": "cypress open",
     "cypress:ci": "CYPRESS_BASE_URL=http://localhost:8000 cypress run",
     "cypress:ci:record": "CYPRESS_BASE_URL=http://localhost:8000 cypress run --record --key $CYPRESS_KEY",
-    "createdb": "docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci --name airbyte_ci_pg postgres"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "node": true
-    },
-    "rules": {
-      "cypress/no-unnecessary-waiting": "warn"
-    },
-    "extends": [
-      "plugin:cypress/recommended"
-    ]
+    "createdbsource": "docker run --rm -d -p 5433:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_source --name airbyte_ci_pg_source postgres",
+    "createdbdestination": "docker run --rm -d -p 5434:5432 -e POSTGRES_PASSWORD=secret_password -e POSTGRES_DB=airbyte_ci_destination --name airbyte_ci_pg_destination postgres",
+    "lint": "eslint --ext js,ts,tsx cypress"
   },
   "devDependencies": {
+    "@types/node": "^18.11.9",
+    "@typescript-eslint/eslint-plugin": "^5.27.1",
+    "@typescript-eslint/parser": "^5.27.1",
     "cypress": "^9.2.0",
+    "cypress-postgres": "^1.1.1",
+    "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-cypress": "^2.12.1",
+    "eslint-plugin-prettier": "^4.0.0",
     "prettier": "^2.6.2",
     "typescript": "^4.5.4"
   }
