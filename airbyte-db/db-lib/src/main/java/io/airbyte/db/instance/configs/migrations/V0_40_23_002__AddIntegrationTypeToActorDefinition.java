@@ -13,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_40_22_001__AddIntegrationTypeToActorDefinition extends BaseJavaMigration {
+public class V0_40_23_002__AddIntegrationTypeToActorDefinition extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
-      V0_40_22_001__AddIntegrationTypeToActorDefinition.class);
+      V0_40_23_002__AddIntegrationTypeToActorDefinition.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
