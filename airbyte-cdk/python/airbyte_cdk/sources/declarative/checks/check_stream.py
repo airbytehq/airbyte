@@ -6,7 +6,6 @@ import logging
 from dataclasses import InitVar, dataclass
 from typing import Any, List, Mapping, Tuple
 
-from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
@@ -37,10 +36,8 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             if stream_name in stream_name_to_stream.keys():
                 stream = stream_name_to_stream[stream_name]
                 try:
-                    # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
-                    stream_slice = StreamHelper.get_stream_slice(stream)
-                    records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-                    next(records)
+                    stream_helper = StreamHelper()
+                    stream_helper.get_first_record(stream)
                 except Exception as error:
                     return False, f"Unable to connect to stream {stream_name} - {error}"
             else:

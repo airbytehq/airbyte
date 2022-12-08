@@ -6,7 +6,6 @@ import logging
 import typing
 from typing import Dict, Optional, Tuple
 
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
@@ -31,10 +30,8 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           resolve the unavailability, if possible.
         """
         try:
-            # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
-            stream_slice = StreamHelper.get_stream_slice(stream)
-            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-            next(records)
+            stream_helper = StreamHelper()
+            stream_helper.get_first_record(stream)
         except HTTPError as error:
             return self.handle_http_error(stream, logger, source, error)
         return True, None
