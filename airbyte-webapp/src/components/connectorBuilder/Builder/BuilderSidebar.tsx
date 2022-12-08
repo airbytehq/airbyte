@@ -2,7 +2,7 @@ import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
@@ -60,6 +60,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   onViewSelect,
   selectedView,
 }) => {
+  const { formatMessage } = useIntl();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
@@ -81,7 +82,11 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />
 
       {/* TODO: replace with uploaded img when that functionality is added */}
-      <img className={styles.connectorImg} src="/logo.png" alt="Connector Logo" />
+      <img
+        className={styles.connectorImg}
+        src="/logo.png"
+        alt={formatMessage({ id: "connectorBuilder.connectorImgAlt" })}
+      />
 
       <div className={styles.connectorName}>
         <Heading as="h2" size="sm" className={styles.connectorNameText}>

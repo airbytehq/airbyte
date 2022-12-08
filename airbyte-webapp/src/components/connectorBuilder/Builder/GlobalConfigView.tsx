@@ -4,6 +4,7 @@ import { BuilderField } from "./BuilderField";
 export const GlobalConfigView: React.FC = () => {
   return (
     <>
+      {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderCard>
         <BuilderField
           type="text"

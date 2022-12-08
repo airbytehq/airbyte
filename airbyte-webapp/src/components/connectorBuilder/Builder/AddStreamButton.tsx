@@ -1,7 +1,7 @@
 import classNames from "classnames";
 import { Form, Formik, useField } from "formik";
 import { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
@@ -24,6 +24,7 @@ interface AddStreamButtonProps {
 }
 
 export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onAddStream }) => {
+  const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
   const numStreams = streamsField.value.length;
@@ -65,12 +66,17 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onA
             >
               <Form>
                 <ModalBody className={styles.body}>
-                  <BuilderField path="streamName" type="text" label="Stream name" tooltip="Name of the new stream" />
+                  <BuilderField
+                    path="streamName"
+                    type="text"
+                    label={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameLabel" })}
+                    tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameTooltip" })}
+                  />
                   <BuilderField
                     path="urlPath"
                     type="text"
-                    label="URL Path"
-                    tooltip="URL path of the endpoint for this stream"
+                    label={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathLabel" })}
+                    tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathTooltip" })}
                   />
                 </ModalBody>
                 <ModalFooter>

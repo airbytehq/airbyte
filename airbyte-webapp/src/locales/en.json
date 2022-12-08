@@ -596,7 +596,11 @@
   "connectorBuilder.testConnector": "TEST YOUR CONNECTOR",
   "connectorBuilder.couldNotDetectStreams": "Could not detect streams in the YAML editor:",
   "connectorBuilder.ensureProperYaml": "In order to test a stream, ensure that the YAML is structured as described in <a>the docs</a>.",
-  "connectorBuilder.newStream": "New stream",
+  "connectorBuilder.addStreamModal.title": "New stream",
+  "connectorBuilder.addStreamModal.streamNameLabel": "Stream name",
+  "connectorBuilder.addStreamModal.streamNameTooltip": "Name of the new stream",
+  "connectorBuilder.addStreamModal.urlPathLabel": "URL path",
+  "connectorBuilder.addStreamModal.urlPathTooltip": "URL path of the endpoint for this stream",
   "connectorBuilder.resetModal.text": "This will erase all streams and values that are currently set. Are you sure you want to continue?",
   "connectorBuilder.resetModal.title": "Reset Connector Builder",
   "connectorBuilder.resetModal.submitButton": "Reset",
@@ -606,6 +610,9 @@
   "connectorBuilder.toggleModal.text": "<b>Toggling back to the UI will erase any changes you have made in the YAML editor.</b>\n\nIn order to export your current yaml, click the Download YAML button.",
   "connectorBuilder.toggleModal.title": "Warning",
   "connectorBuilder.toggleModal.submitButton": "Confirm",
+  "connectorBuilder.connectorImgAlt": "Connector Image",
+  "connectorBuilder.uiYamlToggle.ui": "UI",
+  "connectorBuilder.uiYamlToggle.yaml": "YAML",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

@@ -1,4 +1,5 @@
 import classnames from "classnames";
+import { FormattedMessage } from "react-intl";
 
 import { Text } from "components/ui/Text";
 
@@ -21,7 +22,7 @@ export const UiYamlToggleButton: React.FC<UiYamlToggleButtonProps> = ({ classNam
         size="xs"
         bold
       >
-        UI
+        <FormattedMessage id="connectorBuilder.uiYamlToggle.ui" />
       </Text>
       <Text
         className={classnames(styles.text, {
@@ -31,7 +32,7 @@ export const UiYamlToggleButton: React.FC<UiYamlToggleButtonProps> = ({ classNam
         size="xs"
         bold
       >
-        YAML
+        <FormattedMessage id="connectorBuilder.uiYamlToggle.yaml" />
       </Text>
     </button>
   );
