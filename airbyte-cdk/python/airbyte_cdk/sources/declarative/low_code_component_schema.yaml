@@ -33,6 +33,10 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
+      header:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
   BasicHttpAuthenticator:
     type: object
     required:
@@ -269,8 +273,7 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       refresh_request_body:
         type: object
-        additionalProperties:
-          type: object
+        additionalProperties: true
       scopes:
         type: array
         items:
@@ -688,6 +691,28 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  ParentStreamConfig:
+    description: Describes how to create a stream slice from a parent stream
+    type: object
+    required:
+      - type
+      - parent_key
+      - stream
+      - stream_slice_field
+    properties:
+      type:
+        enum: [ParentStreamConfig]
+      parent_key:
+        type: string
+      stream:
+        "$ref": "#/definitions/Stream"
+      stream_slice_field:
+        type: string
+      request_option:
+        "$ref": "#/definitions/RequestOption"
+      $options:
+        type: object
+        additionalProperties: true
   RecordFilter:
     description: Filter applied on a list of Records
     type: object
@@ -758,6 +783,32 @@ definitions:
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
           - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
+  SingleSlice:
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [SingleSlice]
+      $options:
+        type: object
+        additionalProperties: true
+  SubstreamSlicer:
+    description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
+    type: object
+    required:
+      - type
+      - parent_stream_configs
+    properties:
+      type:
+        enum: [SubstreamSlicer]
+      parent_stream_configs:
+        type: array
+        items:
+          "$ref": "#/definitions/ParentStreamConfig"
       $options:
         type: object
         additionalProperties: true
