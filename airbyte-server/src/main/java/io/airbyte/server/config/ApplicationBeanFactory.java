@@ -12,8 +12,6 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
-import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
-import io.airbyte.persistence.job.errorreporter.JobErrorReportingClient;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
@@ -84,12 +82,6 @@ public class ApplicationBeanFactory {
   public Path workspaceRoot(@Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return Path.of(workspaceRoot);
   }
-
-  @Singleton
-  public JsonSchemaValidator jsonSchemaValidator() {
-    return new JsonSchemaValidator();
-  }
-
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
