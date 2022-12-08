@@ -45,7 +45,7 @@ const jobIsSynchronousJobRead = (job: SynchronousJobRead | JobsWithJobs): job is
 const JobLogs: React.FC<JobLogsProps> = ({ jobIsFailed, job }) => {
   const isSynchronousJobRead = jobIsSynchronousJobRead(job);
 
-  const id: number | string = job.job?.id ?? (job as SynchronousJobRead).id;
+  const id: number | string = (job as JobsWithJobs).job?.id ?? (job as SynchronousJobRead).id;
 
   const debugInfo = useGetDebugInfoJob(id, typeof id === "number", true);
 
