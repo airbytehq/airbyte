@@ -108,8 +108,8 @@ def test_scoped_availability_strategy():
 
     class MockStreamWithScopedAvailabilityStrategy(MockStream):
         def __init__(self, availability_strategy, **kwargs):
-            self._availability_strategy = availability_strategy
             super().__init__(**kwargs)
+            self._availability_strategy = availability_strategy
 
         @property
         def availability_strategy(self) -> Optional[AvailabilityStrategy]:

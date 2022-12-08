@@ -107,7 +107,7 @@ def abstract_source(mocker):
         page_size = None
         get_json_schema = MagicMock()
 
-        def __init__(self, *args, **kvargs):
+        def __init__(self, **kwargs):
             MagicMock.__init__(self)
             self.read_records = MagicMock()
 
@@ -502,9 +502,6 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
 
     streams = [MockHttpStream(), MockStream()]
     http_stream, non_http_stream = streams
-    source = MockAbstractSource(streams=streams)
-
-    http_stream = streams[0]
     assert isinstance(http_stream, HttpStream)
     assert not isinstance(non_http_stream, HttpStream)
 
@@ -517,6 +514,7 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
     http_stream.read_records.return_value = iter([{"value": "test"}] + [{}] * 3)
     non_http_stream.read_records.return_value = iter([{}] * 3)
 
+    source = MockAbstractSource(streams=streams)
     logger = logging.getLogger(f"airbyte.{getattr(abstract_source, 'name', '')}")
     records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
     # 3 for http stream and 3 for non http stream
@@ -543,9 +541,9 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
             return ""
 
         def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-            stubResp = {"data": self.resp_counter}
+            stub_response = {"data": self.resp_counter}
             self.resp_counter += 1
-            yield stubResp
+            yield stub_response
 
     class MockStream(MagicMock, Stream):
         page_size = None
@@ -557,9 +555,6 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
 
     streams = [MockHttpStream(), MockStream()]
     http_stream, non_http_stream = streams
-    source = MockAbstractSource(streams=streams)
-
-    http_stream = streams[0]
     assert isinstance(http_stream, HttpStream)
     assert not isinstance(non_http_stream, HttpStream)
 
@@ -567,14 +562,15 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
     assert non_http_stream.availability_strategy is None
 
     # Don't set anything for read_records return value for HttpStream, since
-    # it should be skipped due to it being unavailable
+    # it should be skipped due to the stream being unavailable
     non_http_stream.read_records.return_value = iter([{}] * 3)
 
-    # Patch HTTP request to stream to make it unavailable
+    # Patch HTTP request to stream endpoint to make it unavailable
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
 
+    source = MockAbstractSource(streams=streams)
     logger = logging.getLogger("test_read_default_http_availability_strategy_stream_unavailable")
     with caplog.at_level(logging.WARNING):
         records = [r for r in source.read(logger=logger, config={}, catalog=catalog, state={})]
