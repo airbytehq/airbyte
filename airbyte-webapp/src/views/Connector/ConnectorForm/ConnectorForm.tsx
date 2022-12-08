@@ -205,7 +205,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
-            selectedConnector={selectedConnectorDefinitionSpecification}
             formFields={formFields}
             errorMessage={errorMessage}
             isTestConnectionInProgress={isTestConnectionInProgress}
