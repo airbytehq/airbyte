@@ -747,7 +747,7 @@ definitions:
       parent_key:
         type: string
       stream:
-        "$ref": "#/definitions/Stream"
+        "$ref": "#/definitions/DeclarativeStream"
       stream_slice_field:
         type: string
       request_option:
@@ -868,6 +868,21 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  Spec:
+    description: A connection specification made up of information about the connector and how it can be configured
+    type: object
+    required:
+      - type
+      - connection_specification
+      - documentation_url
+    properties:
+      type:
+        enum: [Spec]
+      connection_specification:
+        type: object
+        additionalProperties: true
+      documentation_url:
+        type: string
   SubstreamSlicer:
     description: Stream slicer that iterates over the parent's stream slices and records and emits slices by interpolating the slice_definition mapping
     type: object
