@@ -108,6 +108,7 @@ public class EnvConfigs implements Configs {
   public static final String JOB_DEFAULT_ENV_PREFIX = "JOB_DEFAULT_ENV_";
   private static final String SECRET_PERSISTENCE = "SECRET_PERSISTENCE";
   public static final String JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET = "JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET";
+  public static final String JOB_KUBE_CUSTOM_IMAGE_PULL_SECRET = "JOB_KUBE_CUSTOM_IMAGE_PULL_SECRET";
   public static final String PUBLISH_METRICS = "PUBLISH_METRICS";
   public static final String DD_AGENT_HOST = "DD_AGENT_HOST";
   public static final String DD_DOGSTATSD_PORT = "DD_DOGSTATSD_PORT";
@@ -745,6 +746,14 @@ public class EnvConfigs implements Configs {
   @Override
   public String getJobKubeMainContainerImagePullSecret() {
     return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  }
+
+  @Override
+  public Optional<String> getCustomImagePullSecret() {
+    if (getEnv(JOB_KUBE_CUSTOM_IMAGE_PULL_SECRET) != null) {
+      return Optional.of(getEnv(JOB_KUBE_CUSTOM_IMAGE_PULL_SECRET));
+    }
+    return Optional.empty();
   }
 
   @Override

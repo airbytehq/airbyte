@@ -466,6 +466,8 @@ public interface Configs {
    */
   String getJobKubeMainContainerImagePullSecret();
 
+  Optional<String> getCustomImagePullSecret();
+
   /**
    * Define the Memory request for the Sidecar
    */

@@ -367,6 +367,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
                         final String imagePullSecret,
+                        final Optional<String> customImagePullSecret,
                         final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
@@ -515,8 +516,11 @@ public class KubePodProcess extends Process implements KubePod {
       podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
     }
 
+    List<LocalObjectReference> imagePullSecretsList = new ArrayList<>();
+    imagePullSecretsList.add(new LocalObjectReference(imagePullSecret));
+    customImagePullSecret.ifPresent(secret -> imagePullSecretsList.add(new LocalObjectReference(secret)));
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
-        .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
+        .withImagePullSecrets(imagePullSecretsList) // An empty string turns this into a no-op setting.
         .withNodeSelector(nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)

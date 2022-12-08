@@ -106,6 +106,7 @@ airbyte:
       kube:
         use-isolated-node-selector: ${USE_ISOLATED_NODE_SELECTOR:false}
         node-selectors: ${ISOLATED_JOB_KUBE_NODE_SELECTORS:}
+        image-pull-secret: ${JOB_KUBE_CUSTOM_IMAGE_PULL_SECRET:}
     connection:
       enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
     discover:
