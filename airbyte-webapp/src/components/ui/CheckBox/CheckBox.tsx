@@ -14,6 +14,7 @@ const CheckBoxInput = styled.input`
 const CheckBoxContainer = styled.label<{
   checked?: boolean;
   indeterminate?: boolean;
+  disabled?: boolean;
 }>`
   height: 18px;
   min-width: 18px;
@@ -22,6 +23,7 @@ const CheckBoxContainer = styled.label<{
   background: ${({ theme, checked, indeterminate }) =>
     checked || indeterminate ? theme.primaryColor : theme.whiteColor};
   color: ${({ theme }) => theme.whiteColor};
+  opacity: ${({ disabled }) => (disabled === true ? 0.5 : 1)};
   text-align: center;
   border-radius: 4px;
   font-size: 13px;
@@ -42,6 +44,7 @@ export const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { 
     className={props.className}
     checked={props.checked}
     indeterminate={indeterminate}
+    disabled={props.disabled}
   >
     <CheckBoxInput {...props} type="checkbox" />
     {indeterminate ? <FontAwesomeIcon icon={faMinus} /> : props.checked && <FontAwesomeIcon icon={faCheck} />}
