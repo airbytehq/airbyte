@@ -20,13 +20,13 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.0"
+          disable_for_version: "0.1.4"
       - config_path: "secrets/config_api_token.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.0"
+          disable_for_version: "0.1.4"
       - config_path: "secrets/config_oauth.json"
         backward_compatibility_tests_config:
-          disable_for_version: "0.2.0"
+          disable_for_version: "0.1.4"
   basic_read:
     tests:
       - config_path: "secrets/config_api_token.json"
