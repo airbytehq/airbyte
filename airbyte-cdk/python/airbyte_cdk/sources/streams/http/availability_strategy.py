@@ -106,6 +106,11 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
                 return f"Please visit {docs_url} to learn more. "
             else:
                 return "Please visit the connector's documentation to learn more. "
-        except FileNotFoundError:  # If we are unit testing without implementing spec()
-            docs_url = "https://docs.airbyte.com/integrations/sources/test"
+
+        except FileNotFoundError:  # If we are unit testing without implementing spec() method in source
+            if source:
+                docs_url = f"https://docs.airbyte.com/integrations/sources/{source.name}"
+            else:
+                docs_url = "https://docs.airbyte.com/integrations/sources/test"
+
             return f"Please visit {docs_url} to learn more."

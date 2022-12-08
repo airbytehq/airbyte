@@ -17,22 +17,6 @@ from airbyte_cdk.sources.streams.http.http import HttpStream
 logger = logging.getLogger("airbyte")
 
 
-class MockSource(AbstractSource):
-    def __init__(
-        self,
-        streams: List[Stream] = None,
-    ):
-        self._streams = streams
-
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
-        return True, ""
-
-    def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        if not self._streams:
-            raise Exception("Stream is not set")
-        return self._streams
-
-
 class MockStream(Stream):
     def __init__(self, name: str) -> Stream:
         self._name = name
@@ -151,16 +135,16 @@ def test_scoped_availability_strategy():
     assert "Missing required scopes: ['read:project']" in reason
 
 
-def test_http_availability_strategy(mocker):
-    stream = MockHttpStream()
-    assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
+def test_default_http_availability_strategy(mocker):
+    http_stream = MockHttpStream()
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
 
-    is_available, reason = stream.check_availability(logger)
-    assert is_available is False
+    stream_is_available, reason = http_stream.check_availability(logger)
+    assert stream_is_available is False
 
     expected_messages = [
         "This is most likely due to insufficient permissions on the credentials in use.",
@@ -171,25 +155,39 @@ def test_http_availability_strategy(mocker):
 
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
-    assert stream.check_availability(logger)[0] is True
+
+    stream_is_available, _ = http_stream.check_availability(logger)
+    assert stream_is_available is True
 
 
 def test_http_availability_connector_specific_docs(mocker):
-    stream = MockHttpStream()
-    source = MockSource(streams=[stream])
-    assert isinstance(stream.availability_strategy, HttpAvailabilityStrategy)
+    class MockSource(AbstractSource):
+        def __init__(self, streams: List[Stream] = None):
+            self._streams = streams
+
+        def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+            return True, ""
+
+        def streams(self, config: Mapping[str, Any]) -> List[Stream]:
+            if not self._streams:
+                raise Exception("Stream is not set")
+            return self._streams
+
+    http_stream = MockHttpStream()
+    source = MockSource(streams=[http_stream])
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
     req = requests.Response()
     req.status_code = 403
     mocker.patch.object(requests.Session, "send", return_value=req)
 
-    is_available, reason = stream.check_availability(logger, source)
-    assert is_available is False
+    stream_is_available, reason = http_stream.check_availability(logger, source)
+    assert stream_is_available is False
 
     expected_messages = [
-        f"The endpoint to access stream '{stream.name}' returned 403: Forbidden.",
+        f"The endpoint to access stream '{http_stream.name}' returned 403: Forbidden.",
         "This is most likely due to insufficient permissions on the credentials in use.",
-        "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
+        f"Please visit https://docs.airbyte.com/integrations/sources/{source.name} to learn more."
     ]
     for message in expected_messages:
         assert message in reason
