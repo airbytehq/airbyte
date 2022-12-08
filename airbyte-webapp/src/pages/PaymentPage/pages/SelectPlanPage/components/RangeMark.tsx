@@ -21,8 +21,8 @@ const LabelText = styled.div`
 const Mark = styled.div<{
   isActive: boolean;
 }>`
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   background: ${({ theme, isActive }) => (isActive ? theme.primaryColor : "transparent")};
   border-radius: 25px;
   cursor: pointer;
@@ -33,8 +33,8 @@ const Mark = styled.div<{
 `;
 
 const LabelInnerCircle = styled.div`
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background: ${({ theme }) => theme.white};
   border-radius: 50%;
 `;

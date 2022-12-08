@@ -22,6 +22,7 @@ const AllDestinationsPage: React.FC = () => {
 
   return destinations.length ? (
     <MainPageWithScroll
+      withPadding
       headTitle={<HeadTitle titles={[{ id: "admin.destinations" }]} />}
       pageTitle={
         <PageTitle

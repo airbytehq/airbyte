@@ -1,11 +1,16 @@
 import styled from "styled-components";
 
-export const Row = styled.div`
+export const Row = styled.div<{
+  borderTop?: string;
+  borderBottom?: string;
+  alignItems?: string;
+  height?: string;
+}>`
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items: center;
-  height: 32px;
+  align-items: ${({ alignItems }) => (alignItems ? alignItems : "center")};
+  height: ${({ height }) => (height ? height : "32px")};
   position: relative;
 
   font-size: 14px;
@@ -13,6 +18,8 @@ export const Row = styled.div`
   font-weight: normal;
   color: ${({ theme }) => theme.darkPrimaryColor};
   border: none;
+  border-top: ${({ borderTop }) => (borderTop ? borderTop : "none")};
+  border-bottom: ${({ borderBottom }) => (borderBottom ? borderBottom : "none")};
 `;
 
 export const Header = styled(Row)`

@@ -1,3 +1,5 @@
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
 import React, { Suspense } from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { ThemeProvider } from "styled-components";
@@ -61,26 +63,30 @@ const Services: React.FC = ({ children }) => (
   </AuthContextProvider>
 );
 
+const stripePromise = loadStripe("pk_test_6pRNASCoBOKtIshFeQd4XMUh");
+
 const App: React.FC = () => {
   return (
     <React.StrictMode>
-      <StyleProvider>
-        <I18nProvider locale="en" messages={en}>
-          <StoreProvider>
-            <ServicesProvider>
-              <Suspense fallback={<LoadingPage />}>
-                <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
-                  <Router>
-                    <Services>
-                      <Routing />
-                    </Services>
-                  </Router>
-                </ConfigServiceProvider>
-              </Suspense>
-            </ServicesProvider>
-          </StoreProvider>
-        </I18nProvider>
-      </StyleProvider>
+      <Elements stripe={stripePromise}>
+        <StyleProvider>
+          <I18nProvider locale="en" messages={en}>
+            <StoreProvider>
+              <ServicesProvider>
+                <Suspense fallback={<LoadingPage />}>
+                  <ConfigServiceProvider defaultConfig={defaultConfig} providers={configProviders}>
+                    <Router>
+                      <Services>
+                        <Routing />
+                      </Services>
+                    </Router>
+                  </ConfigServiceProvider>
+                </Suspense>
+              </ServicesProvider>
+            </StoreProvider>
+          </I18nProvider>
+        </StyleProvider>
+      </Elements>
     </React.StrictMode>
   );
 };

@@ -1,13 +1,22 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-const Container = styled.div``;
+import PaymentForm from "./components/PaymentForm";
+import PlanCard from "./components/PlanCard";
+
+const Container = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: space-between;
+`;
 
 const BillingAndPaymentPage: React.FC = () => {
   return (
     <Container>
-      <FormattedMessage id="plan.billing.payment" />
+      <PlanCard />
+      <PaymentForm />
     </Container>
   );
 };

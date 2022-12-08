@@ -112,6 +112,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
       <Seperator />
       <ContentContainer>
         <MainPageWithScroll
+          withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
           pageTitle={
             <div style={{ padding: "0 0 0 20px" }}>
