@@ -21,11 +21,15 @@ cursor_field = "created"
 timezone = datetime.timezone.utc
 
 
+class MockedNowDatetime(datetime.datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return FAKE_NOW
+
+
 @pytest.fixture()
 def mock_datetime_now(monkeypatch):
-    datetime_mock = unittest.mock.MagicMock(wraps=datetime.datetime)
-    datetime_mock.now.return_value = FAKE_NOW
-    monkeypatch.setattr(datetime, "datetime", datetime_mock)
+    monkeypatch.setattr(datetime, "datetime", MockedNowDatetime)
 
 
 @pytest.mark.parametrize(
@@ -284,6 +288,22 @@ def mock_datetime_now(monkeypatch):
                 {"start_time": "2021-01-03T00:00:00.000000+0000", "end_time": "2021-01-03T00:00:00.000000+0000"},
                 {"start_time": "2021-01-04T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"},
                 {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T00:00:00.000000+0000"},
+            ],
+        ),
+        (
+            "test_with_lookback_window_from_cursor",
+            {cursor_field: "2021-01-05T00:00:00.000000+0000"},
+            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-06T00:00:00.000000+0000", options={}),
+            "1d",
+            cursor_field,
+            "3d",
+            datetime_format,
+            [
+                {"start_time": "2021-01-03T00:00:00.000000+0000", "end_time": "2021-01-03T00:00:00.000000+0000"},
+                {"start_time": "2021-01-04T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"},
+                {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T00:00:00.000000+0000"},
+                {"start_time": "2021-01-06T00:00:00.000000+0000", "end_time": "2021-01-06T00:00:00.000000+0000"},
             ],
         ),
         (
