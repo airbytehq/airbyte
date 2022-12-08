@@ -1,13 +1,12 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
@@ -34,12 +33,20 @@ public class GitlabOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient, stateSupplier);
   }
 
-  @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration) throws IOException {
+  protected static String getDomain(JsonNode inputOAuthConfiguration) throws IOException {
     final var domain = inputOAuthConfiguration.get("domain");
+    if (domain == null) {
+      throw new IOException("Domain field is empty.");
+    }
+    return domain.asText();
+  }
+
+  @Override
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration)
+      throws IOException {
     final URIBuilder builder = new URIBuilder()
         .setScheme("https")
-        .setHost(domain == null ? "gitlab.com" : domain.asText())
+        .setHost(getDomain(inputOAuthConfiguration))
         .setPath("oauth/authorize")
         .addParameter("client_id", clientId)
         .addParameter("redirect_uri", redirectUrl)
@@ -54,27 +61,16 @@ public class GitlabOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getClientIdUnsafe(final JsonNode oauthConfig) {
-    // the config object containing client ID is nested inside the "credentials" object
-    Preconditions.checkArgument(oauthConfig.hasNonNull("credentials"));
-    return super.getClientIdUnsafe(oauthConfig.get("credentials"));
-  }
-
-  @Override
-  protected String getClientSecretUnsafe(final JsonNode oauthConfig) {
-    // the config object containing client SECRET is nested inside the "credentials" object
-    Preconditions.checkArgument(oauthConfig.hasNonNull("credentials"));
-    return super.getClientSecretUnsafe(oauthConfig.get("credentials"));
-  }
-
-  @Override
   protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     final var domain = inputOAuthConfiguration.get("domain");
     return String.format(ACCESS_TOKEN_URL, domain == null ? "gitlab.com" : domain.asText());
   }
 
   @Override
-  protected Map<String, String> getAccessTokenQueryParameters(final String clientId, final String clientSecret, final String authCode, final String redirectUrl) {
+  protected Map<String, String> getAccessTokenQueryParameters(final String clientId,
+                                                              final String clientSecret,
+                                                              final String authCode,
+                                                              final String redirectUrl) {
     return ImmutableMap.<String, String>builder()
         .put("client_id", clientId)
         .put("client_secret", clientSecret)
@@ -82,6 +78,34 @@ public class GitlabOAuthFlow extends BaseOAuth2Flow {
         .put("grant_type", "authorization_code")
         .put("redirect_uri", redirectUrl)
         .build();
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    final Map<String, Object> result = new HashMap<>();
+    // check for refresh_token after successful authentication
+    if (data.has("refresh_token")) {
+      result.put("refresh_token", data.get("refresh_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'refresh_token' in query params from %s", accessTokenUrl));
+    }
+    // check for access_token after successful authentication
+    if (data.has("access_token")) {
+      result.put("access_token", data.get("access_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", accessTokenUrl));
+    }
+    return result;
+  }
+
+  @Override
+  @Deprecated
+  public Map<String, Object> completeSourceOAuth(final UUID workspaceId,
+                                                 final UUID sourceDefinitionId,
+                                                 final Map<String, Object> queryParams,
+                                                 final String redirectUrl)
+      throws IOException, ConfigNotFoundException {
+    throw new IOException("Deprecated API not supported by this connector");
   }
 
 }
