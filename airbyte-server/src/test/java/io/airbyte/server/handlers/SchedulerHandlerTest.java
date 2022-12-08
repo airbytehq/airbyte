@@ -729,7 +729,8 @@ class SchedulerHandlerTest {
         CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
-    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).status(ConnectionStatus.ACTIVE);
+    final ConnectionRead connectionRead =
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).status(ConnectionStatus.ACTIVE);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
