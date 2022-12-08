@@ -58,14 +58,15 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <Section title={<FormattedMessage id="connection.transfer" />} className={styles.lightOverlay}>
+        <SchemaChangeOverlay />
+        <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
           {allowAutoDetectSchemaChanges && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
         {!isNewStreamsTableEnabled && (
-          <Section className={styles.lightOverlay}>
+          <Section>
             <Heading as="h2" size="sm">
               <FormattedMessage id="connection.streams" />
             </Heading>
@@ -129,7 +130,6 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           </Section>
         )}
         <Section className={styles.flush}>
-          <SchemaChangeOverlay />
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}
