@@ -21,8 +21,7 @@ public class WorkerConfigs {
   private final Map<String, String> workerKubeNodeSelectors;
   private final Optional<Map<String, String>> workerIsolatedKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
-  private final String jobImagePullSecret;
-  private final Optional<String> customImagePullSecret;
+  private final List<String> jobImagePullSecret;
   private final String jobImagePullPolicy;
   private final String sidecarImagePullPolicy;
   private final String jobSocatImage;
@@ -47,7 +46,6 @@ public class WorkerConfigs {
         configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getCustomImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -80,7 +78,6 @@ public class WorkerConfigs {
         configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getCustomImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -113,7 +110,6 @@ public class WorkerConfigs {
         configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getCustomImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -146,7 +142,6 @@ public class WorkerConfigs {
         configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
         configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getCustomImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -168,7 +163,6 @@ public class WorkerConfigs {
         configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
         configs.getJobKubeMainContainerImagePullSecret(),
-        configs.getCustomImagePullSecret(),
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -201,12 +195,8 @@ public class WorkerConfigs {
     return workerKubeAnnotations;
   }
 
-  public String getJobImagePullSecret() {
+  public List<String> getJobImagePullSecret() {
     return jobImagePullSecret;
-  }
-
-  public Optional<String> getCustomImagePullSecret() {
-    return customImagePullSecret;
   }
 
   public String getJobImagePullPolicy() {
