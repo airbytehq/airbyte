@@ -4,6 +4,7 @@
 
 import uuid
 import logging
+import json
 from typing import Any, Mapping
 
 import weaviate
@@ -25,6 +26,18 @@ class Client:
             del record["id"]
         else:
             id = uuid.uuid4()
+
+        # TODO support nested objects instead of converting to json string
+        for k, v in record.items():
+            # TODO better support empty list by inferring from catalog
+            if isinstance(v, list) and len(v) == 0:
+                record[k] = json.dumps(v)
+            if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
+                record[k] = json.dumps(v)
+            if isinstance(v, dict):
+                record[k] = json.dumps(v)
+
+        logging.info(record.get("past_types"))
 
         self.client.batch.add_data_object(record, stream_name.title(), id)
         if self.client.batch.num_objects() >= self.batch_size:

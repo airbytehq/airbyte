@@ -135,7 +135,7 @@ def _record_with_id(stream: str, title: str, word_count: int, id: int) -> Airbyt
     )
 
 
-def retrieve_all_records(client: Client) -> List[AirbyteRecordMessage]:
+def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
     """retrieves and formats all Articles as Airbyte messages"""
     all_records = client.client.data_object.get(class_name="Article")
     out = []
@@ -144,6 +144,11 @@ def retrieve_all_records(client: Client) -> List[AirbyteRecordMessage]:
         out.append(_record("Article", props["title"], props["wordCount"]))
     out.sort(key=lambda x: x.record.data.get("title"))
     return out
+
+
+def retrieve_all_pokemons(client: Client) -> List[dict]:
+    """retrieves and formats all Articles as Airbyte messages"""
+    return client.client.data_object.get(class_name="Pokemon")
 
 
 def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
@@ -168,7 +173,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
     expected_records = [_record(append_stream, str(i), i) for i in range(5)]
-    records_in_destination = retrieve_all_records(client)
+    records_in_destination = retrieve_all_articles(client)
     assert expected_records == records_in_destination, "Records in destination should match records expected"
 
 
@@ -190,7 +195,7 @@ def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog,
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    records_in_destination = retrieve_all_records(client)
+    records_in_destination = retrieve_all_articles(client)
     assert len(records_in_destination) == 5, "Expecting there should be 5 records"
 
     expected_records = [_record(append_stream, str(i), i) for i in range(1, 6)]
@@ -203,14 +208,18 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
     destination = DestinationWeaviate()
 
     first_state_message = _state({"state": "1"})
+    pikachu = _pokemon_record("pikachu")
     output_states = list(
         destination.write(
-            config, pokemon_catalog, [_pokemon_record("pikachu"), first_state_message]
+            config, pokemon_catalog, [pikachu, first_state_message]
         )
     )
 
     expected_states = [first_state_message]
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    records_in_destination = retrieve_all_records(client)
-    assert len(records_in_destination) == 1, "Expecting there should be 1 record"
+    records_in_destination = retrieve_all_pokemons(client)
+    assert len(records_in_destination["objects"]) == 1, "Expecting there should be 1 record"
+
+    actual = records_in_destination["objects"][0]
+    assert actual["properties"]["name"] == pikachu.record.data.get("name"), "Names should match"
