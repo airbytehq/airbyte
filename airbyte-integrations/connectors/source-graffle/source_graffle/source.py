@@ -15,7 +15,8 @@ from .stream_events import (
   WithdrawEvents,
   SaleEvents,
   RoyaltyEvents,
-  BurnedNftsEvents
+  BurnedNftsEvents,
+  ChallengeBurnedNftsEvents
 )
 
 class SourceGraffle(AbstractSource):
@@ -44,5 +45,6 @@ class SourceGraffle(AbstractSource):
       WithdrawEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Withdraw"),
       SaleEvents(config, "A.097bafa4e0b48eef.FindMarketSale.Sale"),
       RoyaltyEvents(config, "A.097bafa4e0b48eef.FindMarket.RoyaltyPaid"),
-      BurnedNftsEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Burned")
+      BurnedNftsEvents(config, "A.30cf5dcf6ea8d379.AeraNFT.Burned"),
+      ChallengeBurnedNftsEvents(config, "A.097bafa4e0b48eef.FindFurnace.Burned")
     ]
