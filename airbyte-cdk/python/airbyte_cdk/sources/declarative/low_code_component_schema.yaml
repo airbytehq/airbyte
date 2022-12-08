@@ -61,6 +61,26 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
+  CartesianProductStreamSlicer:
+    description: Stream slicer that iterates over the cartesian product of input stream slicers
+    type: object
+    required:
+      - type
+      - stream_slicers
+    properties:
+      type:
+        enum: [CartesianProductStreamSlicer]
+      stream_slicers:
+        type: array
+        items:
+          anyOf:
+            - "$ref": "#/definitions/DatetimeStreamSlicer"
+            - "$ref": "#/definitions/ListStreamSlicer"
+            - "$ref": "#/definitions/SingleSlice"
+            - "$ref": "#/definitions/SubstreamSlicer"
+      $options:
+        type: object
+        additionalProperties: true
   CheckStream:
     description: Checks the connections by trying to read records from one or many of the streams selected by the developer
     type: object
@@ -161,6 +181,50 @@ definitions:
       additional_parameters:
         type: object
         additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  DatetimeStreamSlicer:
+    description: Stream slicer that slices the stream over a datetime range
+    type: object
+    required:
+      - type
+      - cursor_field
+      - end_datetime
+      - datetime_format
+      - start_datetime
+      - step
+    properties:
+      type:
+        enum: [DatetimeStreamSlicer]
+      cursor_field:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+        datetime_format:
+          type: string
+        end_datetime:
+          anyOf:
+            - type: string
+            - "$ref": "#/definitions/MinMaxDatetime"
+        start_datetime:
+          anyOf:
+            - type: string
+            - "$ref": "#/definitions/MinMaxDatetime"
+        step:
+          type: string
+        end_time_option:
+          "$ref": "#/definitions/RequestOption"
+        lookback_window:
+          anyOf:
+            - type: string
+            - "$ref": "#/definitions/InterpolatedString"
+        start_time_option:
+          "$ref": "#/definitions/RequestOption"
+        stream_state_field_end:
+          type: string
+        stream_state_field_start:
+          type: string
       $options:
         type: object
         additionalProperties: true
