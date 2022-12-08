@@ -4548,7 +4548,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-gridly:0.1.0"
+- dockerImage: "airbyte/source-gridly:0.1.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gridly"
     connectionSpecification:
@@ -4557,6 +4557,7 @@
       type: "object"
       required:
       - "api_key"
+      - "grid_id"
       properties:
         api_key:
           type: "string"
