@@ -283,12 +283,12 @@ jobs:
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
           source venv/bin/activate
-          ci_credentials ${{ matrix.connector }}
+          ci_credentials ${{ matrix.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
+            ci_credentials destination-bigquery write-to-storage
+            ci_credentials destination-postgres write-to-storage
+            ci_credentials destination-snowflake write-to-storage
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -317,9 +317,22 @@ jobs:
         with:
           command: |
             echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache   
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
           attempt_limit: 3
           attempt_delay: 5000 in # ms
+      - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ matrix.connector }} update-secrets
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery update-secrets
+            ci_credentials destination-postgres update-secrets
+            ci_credentials destination-snowflake update-secrets
+          fi
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors') && success()
         run: |
