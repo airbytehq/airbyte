@@ -86,7 +86,7 @@ class JiraStream(HttpStream, ABC):
 
 
 class StartDateJiraStream(JiraStream, ABC):
-    def __init__(self, start_date: str = "", **kwargs):
+    def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
         super().__init__(**kwargs)
         self._start_date = start_date
 
