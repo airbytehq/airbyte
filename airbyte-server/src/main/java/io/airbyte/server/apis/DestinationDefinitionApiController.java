@@ -15,20 +15,27 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
-@Path("/v1/destination_definitions")
+@Controller("/api/v1/destination_definitions")
 @AllArgsConstructor
 public class DestinationDefinitionApiController implements DestinationDefinitionApi {
 
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
 
+  @Post(uri = "/create_custom",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.createCustomDestinationDefinition(customDestinationDefinitionCreate));
   }
 
+  @Post(uri = "/delete",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     ApiHelper.execute(() -> {
@@ -37,42 +44,58 @@ public class DestinationDefinitionApiController implements DestinationDefinition
     });
   }
 
+  @Post(uri = "/get",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinition(destinationDefinitionIdRequestBody));
   }
 
+  @Post(uri = "/get_for_workspace",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.getDestinationDefinitionForWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  @Post(uri = "/grant_definition",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper
         .execute(() -> destinationDefinitionsHandler.grantDestinationDefinitionToWorkspace(destinationDefinitionIdWithWorkspaceId));
   }
 
+  @Post(uri = "/list",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionReadList listDestinationDefinitions() {
     return ApiHelper.execute(destinationDefinitionsHandler::listDestinationDefinitions);
   }
 
+  @Post(uri = "/list_for_workspace",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.listDestinationDefinitionsForWorkspace(workspaceIdRequestBody));
   }
 
+  @Post(uri = "/list_latest",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return ApiHelper.execute(destinationDefinitionsHandler::listLatestDestinationDefinitions);
   }
 
+  @Post(uri = "/list_private",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.listPrivateDestinationDefinitions(workspaceIdRequestBody));
   }
 
+  @Post(uri = "/revoke_definition",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     ApiHelper.execute(() -> {
@@ -81,6 +104,8 @@ public class DestinationDefinitionApiController implements DestinationDefinition
     });
   }
 
+  @Post(uri = "/update",
+      processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate) {
     return ApiHelper.execute(() -> destinationDefinitionsHandler.updateDestinationDefinition(destinationDefinitionUpdate));
