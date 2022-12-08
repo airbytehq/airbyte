@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.12.4
+Lookback window should applied when a state is supplied as well
+
+## 0.12.3
+Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
+
+## 0.12.2
+Revert breaking change on `read_config` while keeping the improvement on the error message
+
+## 0.12.0
+Improve error readability when reading JSON config files
+
+## 0.11.3
+Low-code: Log response error message on failure
+
+## 0.11.2
+Low-code: Include the HTTP method used by the request in logging output of the `airbyte-cdk`
+
+## 0.11.1
+Low-code: Fix the component manifest schema to and validate check instead of checker
+
 ## 0.11.0
 Declare a new authenticator `SingleUseRefreshTokenOauth2Authenticator` that can perform connector configuration mutation and emit `AirbyteControlMessage.ConnectorConfig`.
 
