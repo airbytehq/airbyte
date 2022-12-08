@@ -15,11 +15,11 @@ def config_fixture():
 
 def test_check_connection_ok(mocker, config):
     source = SourceCommcare()
-    logger_mock=Mock()
+    logger_mock = Mock()
     assert source.check_connection(logger_mock, config=config) == (True, None)
+
 
 def test_check_connection_fail(mocker, config):
     source = SourceCommcare()
-    logger_mock =MagicMock()
+    logger_mock = MagicMock()
     assert source.check_connection(logger_mock, config={}) == (False, None)
-

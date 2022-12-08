@@ -4,8 +4,7 @@
 
 import re
 from abc import ABC
-from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qs
 
@@ -45,9 +44,8 @@ class CommcareStream(HttpStream, ABC):
             response.raise_for_status()
             meta = response.json()["meta"]
             return parse_qs(meta["next"][1:])
-        except:
-            return None
-        return None
+        except Exception as ex:
+            return ex
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -108,9 +106,8 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
             response.raise_for_status()
             meta = response.json()["meta"]
             return parse_qs(meta["next"][1:])
-        except:
-            return None
-        return None
+        except Exception as ex:
+            return ex
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -251,7 +248,7 @@ class Form(IncrementalStream):
 # Source
 class SourceCommcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        if not "api_key" in config:
+        if "api_key" not in config:
             # print("Returning No")
             return False, None
         # print("Returning Yes")
