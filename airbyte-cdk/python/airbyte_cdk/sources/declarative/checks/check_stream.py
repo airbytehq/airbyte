@@ -9,6 +9,7 @@ from typing import Any, List, Mapping, Tuple
 from airbyte_cdk.models.airbyte_protocol import SyncMode
 from airbyte_cdk.sources.declarative.checks.connection_checker import ConnectionChecker
 from airbyte_cdk.sources.source import Source
+from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
 from dataclasses_jsonschema import JsonSchemaMixin
 
 
@@ -37,7 +38,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 stream = stream_name_to_stream[stream_name]
                 try:
                     # Some streams need a stream slice to read records (eg if they have a SubstreamSlicer)
-                    stream_slice = self._get_stream_slice(stream)
+                    stream_slice = StreamHelper.get_stream_slice(stream)
                     records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
                     next(records)
                 except Exception as error:
@@ -45,17 +46,3 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
             else:
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
         return True, None
-
-    def _get_stream_slice(self, stream):
-        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
-        # but not iterators such as lists or tuples
-        slices = iter(
-            stream.stream_slices(
-                cursor_field=stream.cursor_field,
-                sync_mode=SyncMode.full_refresh,
-            )
-        )
-        try:
-            return next(slices)
-        except StopIteration:
-            return {}

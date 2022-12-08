@@ -4,11 +4,12 @@
 
 import logging
 import typing
-from typing import Any, Dict, Mapping, Optional, Tuple
+from typing import Dict, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
+from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
 from requests import HTTPError
 
 if typing.TYPE_CHECKING:
@@ -31,26 +32,12 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         """
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
-            stream_slice = self._get_stream_slice(stream)
+            stream_slice = StreamHelper.get_stream_slice(stream)
             records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
             next(records)
         except HTTPError as error:
             return self.handle_http_error(stream, logger, source, error)
         return True, None
-
-    def _get_stream_slice(self, stream) -> Optional[Mapping[str, Any]]:
-        # We wrap the return output of stream_slices() because some implementations return types that are iterable,
-        # but not iterators such as lists or tuples
-        slices = iter(
-            stream.stream_slices(
-                cursor_field=stream.cursor_field,
-                sync_mode=SyncMode.full_refresh,
-            )
-        )
-        try:
-            return next(slices)
-        except StopIteration:
-            return {}
 
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
