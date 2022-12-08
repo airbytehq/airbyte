@@ -15,8 +15,8 @@ stream_slicers = [
     ListStreamSlicer(slice_values=[2331], cursor_field="project_id", config={}, options={}),
     DatetimeStreamSlicer(
         start_datetime=MinMaxDatetime(datetime="2021-01-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", options={}),
-        end_datetime=MinMaxDatetime(datetime="2021-01-03T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", options={}),
-        step="1d",
+        end_datetime=MinMaxDatetime(datetime="2021-02-01T00:00:00.00+0000", datetime_format="%Y-%m-%dT%H:%M:%S.%f%z", options={}),
+        step="10d",
         cursor_field="timestamp",
         datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
         start_time_option=RequestOption(inject_into="request_parameter", field_name="after", options={}),
@@ -86,39 +86,48 @@ def test_update_cursor(test_name, initial_state, stream_slice, last_record, expe
     [
         ("test_empty_state",
          {},
-         [
-             {'start_time': '2021-01-01T00:00:00.000000+0000',
-              'end_time': '2021-01-02T00:00:00.000000+0000',
-              'project_id': '2331'},
-             {'start_time': '2021-01-02T00:00:00.000000+0000',
-              'end_time': '2021-01-03T00:00:00.000000+0000',
-              'project_id': '2331'},
-             {'start_time': '2021-01-03T00:00:00.000000+0000',
-              'end_time': '2021-01-03T00:00:00.000000+0000',
-              'project_id': '2331'}
-         ]
+         [{'end_time': '2021-01-10T00:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-01T00:00:00.000000+0000'},
+          {'end_time': '2021-01-20T00:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-10T00:00:00.000000+0000'},
+          {'end_time': '2021-01-30T00:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-20T00:00:00.000000+0000'},
+          {'end_time': '2021-02-01T00:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-30T00:00:00.000000+0000'}]
          ),
         ("test_state",
          {'2331': {"timestamp": "2021-01-01T17:00:00.000000+0000"}},
-         [
-             {'start_time': '2021-01-01T17:00:00.000000+0000',
-              'end_time': '2021-01-02T17:00:00.000000+0000',
-              'project_id': '2331'},
-             {'start_time': '2021-01-02T17:00:00.000000+0000',
-              'end_time': '2021-01-03T00:00:00.000000+0000',
-              'project_id': '2331'}
-         ]
+         [{'end_time': '2021-01-11T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-01T17:00:00.000000+0000'},
+          {'end_time': '2021-01-21T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-11T17:00:00.000000+0000'},
+          {'end_time': '2021-01-31T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-21T17:00:00.000000+0000'}]
          ),
         ("test_old_stype_state",
          {"timestamp": "2021-01-01T17:00:00.000000+0000"},
-         [
-             {'start_time': '2021-01-01T17:00:00.000000+0000',
-              'end_time': '2021-01-02T17:00:00.000000+0000',
-              'project_id': '2331'},
-             {'start_time': '2021-01-02T17:00:00.000000+0000',
-              'end_time': '2021-01-03T00:00:00.000000+0000',
-              'project_id': '2331'}
-         ]
+         [{'end_time': '2021-01-11T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-01T17:00:00.000000+0000'},
+          {'end_time': '2021-01-21T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-11T17:00:00.000000+0000'},
+          {'end_time': '2021-01-31T17:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-21T17:00:00.000000+0000'}]
+         ),
+        ("test_state_for_one_slice",
+         {'2331': {"timestamp": "2021-01-27T17:00:00.000000+0000"}},
+         [{'end_time': '2021-02-01T00:00:00.000000+0000',
+           'project_id': '2331',
+           'start_time': '2021-01-27T17:00:00.000000+0000'}]
          ),
     ],
 )
