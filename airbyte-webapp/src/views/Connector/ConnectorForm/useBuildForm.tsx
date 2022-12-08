@@ -1,8 +1,6 @@
-import flatten from "flat";
-import { useFormikContext } from "formik";
 import { JSONSchema7, JSONSchema7Definition } from "json-schema";
 import merge from "lodash/merge";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AnySchema } from "yup";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
@@ -88,27 +86,3 @@ export const useBuildUiWidgetsContext = (
 // As validation schema depends on what path of oneOf is currently selected in jsonschema
 export const useConstructValidationSchema = (jsonSchema: JSONSchema7, uiWidgetsInfo: WidgetConfigMap): AnySchema =>
   useMemo(() => buildYupFormForJsonSchema(jsonSchema, uiWidgetsInfo), [uiWidgetsInfo, jsonSchema]);
-
-export const usePatchFormik = (): void => {
-  const { setFieldTouched, isSubmitting, isValidating, errors } = useFormikContext();
-
-  /* Fixes issue https://github.com/airbytehq/airbyte/issues/1978
-     Problem described here https://github.com/formium/formik/issues/445
-     The problem is next:
-
-     When we touch the field, it would be set as touched field correctly.
-     If validation fails on submit - Formik detects touched object mapping based
-     either on initialValues passed to Formik or on current value set.
-     So in case of creation, if we touch an input, don't change value and
-     press submit - our touched map will be cleared.
-
-     This hack just touches all fields on submit.
-   */
-  useEffect(() => {
-    if (isSubmitting && !isValidating) {
-      for (const path of Object.keys(flatten(errors))) {
-        setFieldTouched(path, true, false);
-      }
-    }
-  }, [errors, isSubmitting, isValidating, setFieldTouched]);
-};

@@ -6,6 +6,7 @@ import { useDeepCompareEffect } from "react-use";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { FormikPatch } from "core/form/FormikPatch";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -20,13 +21,7 @@ import {
   useBuildInitialSchema,
   useBuildUiWidgetsContext,
   useConstructValidationSchema,
-  usePatchFormik,
 } from "./useBuildForm";
-
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
 
 /**
  * This function sets all initial const values in the form to current values

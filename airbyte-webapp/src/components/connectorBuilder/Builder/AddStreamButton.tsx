@@ -6,9 +6,10 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
+import { FormikPatch } from "core/form/FormikPatch";
+
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
 import styles from "./AddStreamButton.module.scss";
-import { FormikPatch } from "./Builder";
 import { BuilderField } from "./BuilderField";
 
 interface AddStreamValues {
