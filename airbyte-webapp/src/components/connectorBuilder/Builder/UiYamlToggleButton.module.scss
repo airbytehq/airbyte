@@ -26,11 +26,11 @@
 }
 
 .selected {
-  background-color: colors.$white;
-  color: colors.$dark-blue;
+  background-color: transparent;
+  color: colors.$white;
 }
 
 .unselected {
-  background-color: transparent;
-  color: colors.$white;
+  background-color: colors.$white;
+  color: colors.$dark-blue;
 }
