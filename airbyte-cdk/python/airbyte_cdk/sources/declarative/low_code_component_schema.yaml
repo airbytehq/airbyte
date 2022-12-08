@@ -36,9 +36,7 @@ definitions:
         items:
           type: string
       value:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
   AddFields:
     description: Transformation which adds field to an output record. The path of the added field can be nested.
     type: object
@@ -65,13 +63,9 @@ definitions:
       type:
         enum: [ApiKeyAuthenticator]
       api_token:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       header:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
   BackoffStrategy:
     type: object
     anyOf:
@@ -90,13 +84,9 @@ definitions:
       type:
         enum: [BasicHttpAuthenticator]
       username:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       password:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
   BearerAuthenticator:
     description: Authenticator for requests authenticated with a Bearer token
     type: object
@@ -107,9 +97,7 @@ definitions:
       type:
         enum: [BearerAuthenticator]
       api_token:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
   CartesianProductStreamSlicer:
     description: Stream slicer that iterates over the cartesian product of input stream slicers
     type: object
@@ -173,7 +161,6 @@ definitions:
         anyOf:
           - type: number
           - type: string
-          - "$ref": "#/definitions/InterpolatedString"
       $options:
         type: object
         additionalProperties: true
@@ -187,15 +174,11 @@ definitions:
       type:
         enum: [CursorPaginationStrategy]
       cursor_value:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       page_size:
         type: integer
       stop_condition:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedBoolean"
+        type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       $options:
@@ -245,9 +228,7 @@ definitions:
       type:
         enum: [DatetimeStreamSlicer]
       cursor_field:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       datetime_format:
         type: string
       end_datetime:
@@ -263,9 +244,7 @@ definitions:
       end_time_option:
         "$ref": "#/definitions/RequestOption"
       lookback_window:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       start_time_option:
         "$ref": "#/definitions/RequestOption"
       stream_state_field_end:
@@ -288,33 +267,19 @@ definitions:
       type:
         enum: [DeclarativeOauth2Authenticator]
       client_id:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       client_secret:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       refresh_token:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       token_refresh_endpoint:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       access_token_name:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       expires_in_name:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       grant_type:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       refresh_request_body:
         type: object
         additionalProperties: true
@@ -323,9 +288,7 @@ definitions:
         items:
           type: string
       token_expiry_date:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
   DeclarativeStream:
     description: A stream whose behavior is described by a set of declarative low code components
     type: object
@@ -413,9 +376,7 @@ definitions:
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
       url_base:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       page_size_option:
@@ -449,7 +410,6 @@ definitions:
         type: array
         items:
           - type: string
-          - "$ref": "#/definitions/InterpolatedString"
       decoder:
         "$ref": "#/definitions/JsonDecoder"
       $options:
@@ -467,7 +427,6 @@ definitions:
         anyOf:
           - type: number
           - type: string
-          - "$ref": "#/definitions/InterpolatedString"
         default: 5
       $options:
         type: object
@@ -486,13 +445,9 @@ definitions:
       name:
         type: string
       path:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       url_base:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       authenticator:
         anyOf:
           - "$ref": "#/definitions/NoAuth"
@@ -533,9 +488,7 @@ definitions:
           - RETRY
           - IGNORE
       error_message:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       error_message_contains:
         type: string
       http_codes:
@@ -544,39 +497,7 @@ definitions:
           type: integer
         uniqueItems: true
       predicate:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedBoolean"
-      $options:
-        type: object
-        additionalProperties: true
-  InterpolatedBoolean:
-    description: A template string that will be interpolated against variables at runtime. The string will be evaluated as False if it interpolates to a value in ['False', 'false', '{}', '[]', '()', '', '0', '0.0', {}, False, [], (), set()]"
-    type: object
-    required:
-      - type
-      - condition
-    properties:
-      type:
-        enum: [InterpolatedBoolean]
-      condition:
         type: string
-      $options:
-        type: object
-        additionalProperties: true
-  InterpolatedMapping:
-    description: Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
-    type: object
-    required:
-      - type
-      - mapping
-    properties:
-      type:
-        enum: [InterpolatedMapping]
-      mapping:
-        type: object
-        additionalProperties:
-          type: string
       $options:
         type: object
         additionalProperties: true
@@ -615,22 +536,6 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  InterpolatedString:
-    description: A template string that will be interpolated against variables at runtime
-    type: object
-    required:
-      - type
-      - string
-    properties:
-      type:
-        enum: [InterpolatedString]
-      string:
-        type: string
-      default:
-        type: string
-      $options:
-        type: object
-        additionalProperties: true
   JsonFileSchemaLoader:
     description: Loads the schema from a json file
     type: object
@@ -640,9 +545,7 @@ definitions:
       type:
         enum: [JsonFileSchemaLoader]
       file_path:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       $options:
         type: object
         additionalProperties: true
@@ -664,9 +567,7 @@ definitions:
       type:
         enum: [ListStreamSlicer]
       cursor_field:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       slice_values:
         anyOf:
           - type: string
@@ -688,20 +589,14 @@ definitions:
       type:
         enum: [MinMaxDatetime]
       datetime:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       datetime_format:
         type: string
         default: ""
       max_datetime:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       min_datetime:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       $options:
         type: object
         additionalProperties: true
@@ -777,22 +672,6 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  ParsedAddFieldDefinition:
-    description: Defines the field to add on a record
-    type: object
-    required:
-      - type
-      - path
-      - value
-    properties:
-      type:
-        enum: [ParsedAddFieldDefinition]
-      path:
-        type: array
-        items:
-          type: string
-      value:
-        "$ref": "#/definitions/InterpolatedString"
   RecordFilter:
     description: Filter applied on a list of Records
     type: object
@@ -951,9 +830,7 @@ definitions:
       type:
         enum: [WaitTimeFromHeaderBackoffStrategy]
       header:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       regex:
         type: string
       $options:
@@ -969,18 +846,13 @@ definitions:
       type:
         enum: [WaitUntilTimeFromHeaderBackoffStrategy]
       header:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       min_wait:
         anyOf:
           - type: number
           - type: string
-          - "$ref": "#/definitions/InterpolatedString"
       regex:
-        anyOf:
-          - type: string
-          - "$ref": "#/definitions/InterpolatedString"
+        type: string
       $options:
         type: object
         additionalProperties: true
