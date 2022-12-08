@@ -19,7 +19,7 @@ import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/Connecti
 
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
-import { StreamDetailsPanel } from "./next/StreamDetailsPanel";
+import { StreamDetailsPanel } from "./next/StreamDetailsPanel/StreamDetailsPanel";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
