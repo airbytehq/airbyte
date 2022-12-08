@@ -1,7 +1,7 @@
 import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
-import { useField, useFormikContext } from "formik";
+import { useFormikContext } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -17,6 +17,7 @@ import {
 import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
+import { BuilderFormValues } from "./types";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
 
 export type BuilderView = "global" | number;
@@ -46,23 +47,6 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   );
 };
 
-interface StreamSelectButtonProps {
-  streamNum: number;
-  onSelectStream: (streamNum: number, streamName: string) => void;
-  selected: boolean;
-}
-
-const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamNum, onSelectStream, selected }) => {
-  const streamPath = `streams[${streamNum}]`;
-  const [field] = useField(`${streamPath}.name`);
-
-  return (
-    <ViewSelectButton selected={selected} onClick={() => onSelectStream(streamNum, field.value)}>
-      {field.value}
-    </ViewSelectButton>
-  );
-};
-
 interface BuilderSidebarProps {
   className?: string;
   toggleYamlEditor: () => void;
@@ -80,7 +64,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest } = useConnectorBuilderState();
-  const { setValues } = useFormikContext();
+  const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
       text: "connectorBuilder.resetModal.text",
@@ -94,8 +78,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
     });
   };
 
-  const [field] = useField("global.connectorName");
-
   return (
     <div className={classnames(className, styles.container)}>
       <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />
@@ -105,7 +87,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
       <div className={styles.connectorName}>
         <Heading as="h2" size="sm" className={styles.connectorNameText}>
-          {field.value}
+          {values.global?.connectorName}
         </Heading>
       </div>
 
@@ -131,16 +113,11 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       </div>
 
       <div className={styles.streamList}>
-        {Array.from(Array(numStreams).keys()).map((streamNum) => {
-          return (
-            <StreamSelectButton
-              key={streamNum}
-              streamNum={streamNum}
-              onSelectStream={onViewSelect}
-              selected={selectedView === streamNum}
-            />
-          );
-        })}
+        {values.streams.map(({ name }, num) => (
+          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => onViewSelect(num, name)}>
+            {name}
+          </ViewSelectButton>
+        ))}
       </div>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
