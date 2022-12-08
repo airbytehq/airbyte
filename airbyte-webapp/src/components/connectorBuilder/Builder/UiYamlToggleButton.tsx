@@ -14,7 +14,7 @@ export const UiYamlToggleButton: React.FC<UiYamlToggleButtonProps> = ({ classNam
   return (
     <button className={classnames(styles.button, className)} onClick={onClick}>
       <Text
-        className={classnames(styles.ui, styles.text, {
+        className={classnames(styles.text, {
           [styles.selected]: !yamlSelected,
           [styles.unselected]: yamlSelected,
         })}
@@ -24,7 +24,7 @@ export const UiYamlToggleButton: React.FC<UiYamlToggleButtonProps> = ({ classNam
         UI
       </Text>
       <Text
-        className={classnames(styles.yaml, styles.text, {
+        className={classnames(styles.text, {
           [styles.selected]: yamlSelected,
           [styles.unselected]: !yamlSelected,
         })}

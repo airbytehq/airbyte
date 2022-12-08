@@ -5,15 +5,16 @@
   cursor: pointer;
   border: variables.$border-thin solid colors.$dark-blue;
   background-color: colors.$dark-blue;
-  display: flex;
-  border-radius: 6px;
+  border-radius: variables.$border-radius-sm;
   padding: 0;
   overflow: hidden;
-  height: 21px;
-  width: 96px;
+
+  // absolute positioning so it is in the same spot in both the ui and yaml views
   position: absolute;
   top: 15px;
-  left: 52px;
+  left: 51px;
+  display: grid;
+  grid-template: 1fr / 1fr 1fr;
 }
 
 .text {
@@ -23,6 +24,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
+  padding: 4px 8px;
 }
 
 .selected {
