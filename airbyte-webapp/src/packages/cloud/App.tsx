@@ -44,6 +44,7 @@ const Services: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
                     FeatureItem.AllowOAuthConnector,
                     FeatureItem.AllowSync,
                     FeatureItem.AllowChangeDataGeographies,
+                    FeatureItem.AllowDBTCloudIntegration,
                   ]}
                 >
                   <AppServicesProvider>

@@ -1,7 +1,7 @@
 # Scaffold Source Python Source
 
 This is the repository for the Scaffold Source Python source connector, written in Python.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/scaffold-source-python).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/scaffold-source-python).
 
 ## Local development
 
@@ -36,7 +36,7 @@ From the Airbyte repository root, run:
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/scaffold-source-python)
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/scaffold-source-python)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_scaffold_source_python/spec.yaml` file.
 Note that the `secrets` directory is gitignored by default, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
@@ -95,7 +95,7 @@ Place custom tests inside `integration_tests/` folder, then, from the connector 
 python -m pytest integration_tests
 ```
 #### Acceptance Tests
-Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
+Customize `acceptance-test-config.yml` file to configure tests. See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference) for more information.
 If your connector requires to create or destroy resources for use during acceptance tests create fixtures for it and place them inside integration_tests/acceptance.py.
 To run your integration tests with acceptance tests, from the connector root, run
 ```

@@ -8,6 +8,14 @@
 
   &:hover {
     background-color: colors.$grey-50;
+
+    &.breaking {
+      background-color: colors.$red-100;
+    }
+
+    &.nonBreaking {
+      background-color: colors.$yellow-100;
+    }
   }
 }
 
@@ -17,6 +25,7 @@
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
+  gap: variables.$spacing-md;
 }
 
 .pathContainer,
@@ -36,5 +45,12 @@
 .enabledControlContainer {
   display: flex;
   justify-content: space-around;
-  padding: variables.$spacing-md;
+}
+
+.breaking {
+  background: colors.$red-50;
+}
+
+.nonBreaking {
+  background: colors.$yellow-50;
 }
