@@ -71,6 +71,14 @@ definitions:
         anyOf:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
+  BackoffStrategy:
+    type: object
+    anyOf:
+      - "$ref": "#/definitions/ConstantBackoffStrategy"
+      - "$ref": "#/definitions/ExponentialBackoffStrategy"
+      - "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+      - "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
+      - "$ref": "#/definitions/CustomBackoffStrategy"
   BasicHttpAuthenticator:
     type: object
     required:
@@ -208,12 +216,10 @@ definitions:
         additionalProperties: true
   CustomBackoffStrategy:
     type: object
+    additionalProperties: false
     required:
-      - type
       - class_name
     properties:
-      type:
-        enum: [CustomBackoffStrategy]
       class_name:
         type: string
       additional_parameters:
