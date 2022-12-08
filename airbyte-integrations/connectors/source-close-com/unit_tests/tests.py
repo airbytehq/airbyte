@@ -3,5 +3,5 @@
 #
 
 
-def test_example_method():
+def test():
     assert True
