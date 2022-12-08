@@ -6,7 +6,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
-import { StreamsListRequestBodyManifest } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -41,7 +41,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
       const yamlEditorModel = yamlEditorRef.current.getModel();
 
       try {
-        const json = load(yamlValue) as StreamsListRequestBodyManifest;
+        const json = load(yamlValue) as ConnectorManifest;
         setJsonManifest(json);
         setYamlIsValid(true);
 

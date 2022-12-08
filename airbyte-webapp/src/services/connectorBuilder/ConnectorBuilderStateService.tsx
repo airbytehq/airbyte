@@ -5,11 +5,8 @@ import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
 
-import {
-  StreamReadRequestBodyConfig,
-  StreamReadRequestBodyManifest,
-  StreamsListReadStreamsItem,
-} from "core/request/ConnectorBuilderClient";
+import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
@@ -22,7 +19,7 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   streams: [],
 };
 
-const DEFAULT_JSON_MANIFEST_VALUES: StreamReadRequestBodyManifest = {
+const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   version: "0.1.0",
   check: {
     stream_names: [],
@@ -32,7 +29,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: StreamReadRequestBodyManifest = {
 
 interface Context {
   builderFormValues: BuilderFormValues;
-  jsonManifest: StreamReadRequestBodyManifest;
+  jsonManifest: ConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
@@ -42,7 +39,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
-  setJsonManifest: (jsonValue: StreamReadRequestBodyManifest) => void;
+  setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -61,7 +58,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
 
-  const [jsonManifest, setJsonManifest] = useLocalStorage<StreamReadRequestBodyManifest>(
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );

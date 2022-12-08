@@ -1,4 +1,4 @@
-import { ConnectorManifest, DeclarativeStream } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest, DeclarativeStream } from "core/request/ConnectorManifest";
 
 export interface BuilderFormValues {
   global: {
