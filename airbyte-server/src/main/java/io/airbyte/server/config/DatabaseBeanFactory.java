@@ -32,7 +32,7 @@ import org.jooq.DSLContext;
 @Slf4j
 @SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public class DatabaseBeanFactory {
-  // To remove
+
   private static final String BASELINE_DESCRIPTION = "Baseline from file-based migration v1";
   private static final Boolean BASELINE_ON_MIGRATION = true;
   private static final String INSTALLED_BY = "ServerApp";
