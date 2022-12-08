@@ -545,7 +545,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         except KeyError:
             return True, None
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> List[int, str]:
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Dict[int, str]:
         """
         Returns a dictionary of (status code, reason) where the 'reason' explains
         why that error code may have occurred and how the user can resolve that
