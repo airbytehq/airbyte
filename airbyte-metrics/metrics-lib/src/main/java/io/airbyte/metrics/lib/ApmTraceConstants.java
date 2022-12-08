@@ -53,6 +53,12 @@ public final class ApmTraceConstants {
     public static final String CONNECTOR_VERSION_KEY = "connector_version";
 
     /**
+     * Name of the APM trace tag that holds the destination definition ID value associated with the
+     * trace.
+     */
+    public static final String DESTINATION_DEFINITION_ID_KEY = "destination.definition_id";
+
+    /**
      * Name of the APM trace tag that holds the destination Docker image value associated with the
      * trace.
      */
@@ -101,6 +107,11 @@ public final class ApmTraceConstants {
     public static final String REPLICATION_STATUS_KEY = "replication.status";
 
     /**
+     * Name of the APM trace tag that holds the source definition ID value associated with the trace.
+     */
+    public static final String SOURCE_DEFINITION_ID_KEY = "source.definition_id";
+
+    /**
      * Name of the APM trace tag that holds the source Docker image value associated with the trace.
      */
     public static final String SOURCE_DOCKER_IMAGE_KEY = "source.docker_image";
@@ -114,6 +125,11 @@ public final class ApmTraceConstants {
      * Name of the APM trace tag that holds the webhook config ID value associated with the trace.
      */
     public static final String WEBHOOK_CONFIG_ID_KEY = "webhook.config_id";
+
+    /**
+     * Name of the APM trace tag that holds the workspace ID value associated with the trace.
+     */
+    public static final String WORKSPACE_ID_KEY = "workspace.id";
 
     private Tags() {}
 
