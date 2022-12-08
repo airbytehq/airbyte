@@ -169,7 +169,7 @@ def test_http_availability_connector_specific_docs(mocker):
     assert is_available is False
 
     expected_messages = [
-        f"The endpoint to access stream {stream.name} returned 403: Forbidden.",
+        f"The endpoint to access stream '{stream.name}' returned 403: Forbidden.",
         "This is most likely due to insufficient permissions on the credentials in use.",
         "Please visit https://docs.airbyte.com/integrations/sources/test to learn more."
     ]

@@ -7,7 +7,7 @@ import logging
 import os
 from abc import ABC, abstractmethod
 from contextlib import suppress
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 from urllib.parse import urljoin
 
 import requests
@@ -538,25 +538,19 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
           is available. Otherwise, the stream is unavailable for some reason and
           the str should describe what went wrong.
         """
-        if error.response.status_code in self.unavailable_error_codes:
-            reason = self.get_reason_for_error(stream, logger, source, error)
+        try:
+            status_code = error.response.status_code
+            reason = self.reasons_for_unavailable_status_codes(stream, logger, source)[status_code]
             return False, reason
+        except KeyError:
+            return True, None
 
-        return True, None
-
-    @property
-    def unavailable_error_codes(self) -> List[int]:
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> List[int, str]:
         """
-
-        :return: A list of
-        """
-        return [requests.codes.FORBIDDEN]
-
-    def get_reason_for_error(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError) -> str:
-        """
-        Given an HTTPError, returns a `str` error message explaining why that error
-        may have occurred, and how the user can resolve that error, if applicable.
-        Should return reasons for all errors listed in self.unavailable_error_codes.
+        Returns a dictionary of (status code, reason) where the 'reason' explains
+        why that error code may have occurred and how the user can resolve that
+        error, if applicable. Should return reasons for all errors listed in
+        self.unavailable_error_codes.
 
         :param stream:
         :param logger:
@@ -564,13 +558,12 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         :param error:
         :return:
         """
-        if error.response.status_code == requests.codes.FORBIDDEN:
-            forbidden_error_message = f"The endpoint to access stream {stream.name} returned 403: Forbidden. "
-            forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
-            forbidden_error_message += self._visit_docs_message(logger, source)
-            return forbidden_error_message
+        forbidden_error_message = f"The endpoint to access stream '{stream.name}' returned 403: Forbidden. "
+        forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
+        forbidden_error_message += self._visit_docs_message(logger, source)
 
-        return f"The endpoint to access stream {stream.name} returned a {error.response.status_code} error."
+        reasons_for_codes: List[int, str] = {403: forbidden_error_message}
+        return reasons_for_codes
 
     @staticmethod
     def _visit_docs_message(logger: logging.Logger, source: Optional["Source"]) -> str:
