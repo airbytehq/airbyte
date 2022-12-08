@@ -87,6 +87,7 @@ include ':airbyte-commons-protocol'
 include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
 include ':airbyte-db:db-lib' // reused by acceptance tests in connector base.
+include ':airbyte-db:db-repositories'
 include ':airbyte-json-validation'
 include ':airbyte-metrics:metrics-lib'
 include ':airbyte-oauth'
