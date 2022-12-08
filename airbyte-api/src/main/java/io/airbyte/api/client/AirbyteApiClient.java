@@ -182,6 +182,7 @@ public class AirbyteApiClient {
         keepTrying = false;
       } catch (final Exception e) {
         LOGGER.info("Attempt {} to {} error: {}", currRetries, desc, e);
+        LOGGER.error("Error", e);
         currRetries++;
 
         // Sleep anywhere from 1 to jitterMaxIntervalSecs seconds.
