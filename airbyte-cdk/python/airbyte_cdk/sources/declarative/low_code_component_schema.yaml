@@ -21,6 +21,40 @@ properties:
   version:
     type: string
 definitions:
+  AddedFieldDefinition:
+    description: Defines the field to add on a record
+    type: object
+    required:
+      - type
+      - path
+      - value
+    properties:
+      type:
+        enum: [AddedFieldDefinition]
+      path:
+        type: array
+        items:
+          type: string
+      value:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+  AddFields:
+    description: Transformation which adds field to an output record. The path of the added field can be nested.
+    type: object
+    required:
+      - type
+      - fields
+    properties:
+      type:
+        enum: [AddFields]
+      fields:
+        type: array
+        items:
+          - "$ref": "#/definitions/AddedFieldDefinition"
+      $options:
+        type: object
+        additionalProperties: true
   ApiKeyAuthenticator:
     type: object
     required:
@@ -502,6 +536,8 @@ definitions:
       - type
       - condition
     properties:
+      type:
+        enum: [InterpolatedBoolean]
       condition:
         type: string
       $options:
@@ -514,6 +550,8 @@ definitions:
       - type
       - mapping
     properties:
+      type:
+        enum: [InterpolatedMapping]
       mapping:
         type: object
         additionalProperties:
@@ -527,6 +565,8 @@ definitions:
     required:
       - type
     properties:
+      type:
+        enum: [InterpolatedRequestOptionsProvider]
       request_body_data:
         anyOf:
           - type: string
@@ -561,6 +601,8 @@ definitions:
       - type
       - string
     properties:
+      type:
+        enum: [InterpolatedString]
       string:
         type: string
       default:
@@ -713,6 +755,22 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  ParsedAddFieldDefinition:
+    description: Defines the field to add on a record
+    type: object
+    required:
+      - type
+      - path
+      - value
+    properties:
+      type:
+        enum: [ParsedAddFieldDefinition]
+      path:
+        type: array
+        items:
+          type: string
+      value:
+        "$ref": "#/definitions/InterpolatedString"
   RecordFilter:
     description: Filter applied on a list of Records
     type: object
@@ -743,6 +801,20 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  RemoveFields:
+    description: A transformation which removes fields from a record. The fields removed are designated using FieldPointers. During transformation, if a field or any of its parents does not exist in the record, no error is thrown.
+    type: object
+    required:
+      - type
+      - field_pointers
+    properties:
+      type:
+        enum: [RemoveFields]
+      field_pointers:
+        type: array
+        items:
+          items:
+            type: string
   SimpleRetriever:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
     type: object
