@@ -23,7 +23,6 @@ import org.elasticsearch.common.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
 public class JsonSchemaValidator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
