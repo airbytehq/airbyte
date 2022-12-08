@@ -15,6 +15,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, HttpSubStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 
 from .utils import analytics_columns, to_datetime_str
 
@@ -29,6 +30,7 @@ class PinterestStream(HttpStream, ABC):
     data_fields = ["items"]
     raise_on_http_errors = True
     max_rate_limit_exceeded = False
+    transformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
 
     def __init__(self, config: Mapping[str, Any]):
         super().__init__(authenticator=config["authenticator"])
