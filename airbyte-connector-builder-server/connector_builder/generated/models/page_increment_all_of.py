@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 
 
 class PageIncrementAllOf(BaseModel):
@@ -20,7 +20,7 @@ class PageIncrementAllOf(BaseModel):
         start_from_page: The start_from_page of this PageIncrementAllOf [Optional].
     """
 
-    page_size: int
-    start_from_page: Optional[int] = None
+    page_size: int = Field(alias="page_size")
+    start_from_page: Optional[int] = Field(alias="start_from_page", default=None)
 
 PageIncrementAllOf.update_forward_refs()
