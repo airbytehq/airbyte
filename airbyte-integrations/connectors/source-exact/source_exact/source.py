@@ -129,18 +129,19 @@ class ExactStream(HttpStream, IncrementalMixin):
 
     def should_retry(self, response: requests.Response) -> bool:
         # Test whether token is expired -> refresh and then retry
-        if response.status_code == 401:
-            error_reason = response.headers.get("WWW-Authenticate", "")
-            error_reason = unquote(error_reason)
-
-            if "message expired" in error_reason:
-                self.auth.refresh_access_token()
-                return True
-
-            raise RuntimeError(f"Unexpected forbidden error: {error_reason}")
+        if self._is_token_expired(response):
+            self.auth.refresh_access_token()
+            return True
 
         # TODO: handle the rate limiting?
         return super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # Trigger user backoff
+        return 1 if self._is_token_expired(response) else None
+
+    def error_message(self, response: requests.Response) -> str:
+        return "Access token expired" if self._is_token_expired(response) else ""
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
@@ -162,6 +163,18 @@ class ExactStream(HttpStream, IncrementalMixin):
             return next_page_token["next_url"]
 
         return self.endpoint
+
+    def _is_token_expired(self, response: requests.Response):
+        if response.status_code == 401:
+            error_reason = response.headers.get("WWW-Authenticate", "")
+            error_reason = unquote(error_reason)
+
+            if "message expired" in error_reason or "access token expired" in error_reason:
+                return True
+
+            raise RuntimeError(f"Unexpected forbidden error: {error_reason}")
+
+        return False
 
     def _parse_timestamps(self, obj: dict):
         """
