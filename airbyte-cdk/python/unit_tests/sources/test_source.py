@@ -5,13 +5,13 @@
 import json
 import logging
 import tempfile
-import requests
 from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
-from typing import Any, Callable, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from unittest.mock import MagicMock
 
 import pytest
+import requests
 from airbyte_cdk.models import (
     AirbyteGlobalState,
     AirbyteStateBlob,
@@ -25,7 +25,8 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams.core import Stream
-from airbyte_cdk.sources.streams.http.http import HttpStream, HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from pydantic import ValidationError
 

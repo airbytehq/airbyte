@@ -11,7 +11,8 @@ from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
-from airbyte_cdk.sources.streams.http.http import HttpAvailabilityStrategy, HttpStream
+from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
+from airbyte_cdk.sources.streams.http.http import HttpStream
 
 logger = logging.getLogger("airbyte")
 
