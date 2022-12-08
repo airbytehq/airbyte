@@ -27,19 +27,20 @@ definitions:
       backoff_strategies:
         - type: ConstantBackoffStrategy
           backoff_time_in_seconds: 60
-  paginator:
+  default_paginator:
     type: "DefaultPaginator"
     url_base: "https://api.monday.com/v2"
     pagination_strategy:
-      class_name: "source_monday.PageIncrementWorkaround"
-      page_size: "{{ options['items_per_page'] }}"
+      type: "PageIncrement"
+      start_from_page: 1
+      page_size: 100
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
     requester:
       $ref: "*ref(definitions.requester)"
     paginator:
-      $ref: "*ref(definitions.paginator)"
+      $ref: "*ref(definitions.default_paginator)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -61,6 +62,11 @@ definitions:
           type: DpathExtractor
           field_pointer: "/data/boards/*/items/*"
           class_name: "source_monday.DpathStringExtractor"
+      paginator:
+        $ref: "*ref(definitions.default_paginator)"
+        pagination_strategy:
+          $ref: "*ref(definitions.default_paginator.pagination_strategy)"
+          page_size: 1
     $options:
       name: "items"
       path: ""
