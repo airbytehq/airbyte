@@ -21,6 +21,7 @@
 # SOFTWARE.
 
 
-from .source import SourceCloseCom
+from .datetime_slicer import CustomDatetimeStreamSlicer
+from .source_lc import SourceCloseCom
 
-__all__ = ["SourceCloseCom"]
+__all__ = ["SourceCloseCom", "CustomDatetimeStreamSlicer"]

@@ -1,7 +1,6 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
@@ -18,7 +17,6 @@ interface FormRootProps {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-  selectedConnector: ConnectorDefinitionSpecification | undefined;
 }
 
 export const FormRoot: React.FC<FormRootProps> = ({
@@ -29,7 +27,6 @@ export const FormRoot: React.FC<FormRootProps> = ({
   errorMessage,
   hasSuccess,
   onStopTestingConnector,
-  selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
   const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
@@ -53,16 +50,14 @@ export const FormRoot: React.FC<FormRootProps> = ({
           successMessage={successMessage}
         />
       ) : (
-        selectedConnector && (
-          <CreateControls
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onCancelTesting={onStopTestingConnector}
-            isSubmitting={isSubmitting || isTestConnectionInProgress}
-            errorMessage={errorMessage}
-            formType={formType}
-            hasSuccess={hasSuccess}
-          />
-        )
+        <CreateControls
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
+          errorMessage={errorMessage}
+          formType={formType}
+          hasSuccess={hasSuccess}
+        />
       )}
     </Form>
   );
