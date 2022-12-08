@@ -33,7 +33,6 @@ import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.DbMigrationBinder;
-import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
@@ -51,7 +50,6 @@ import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.DbMigrationApiFactory;
-import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
@@ -173,8 +171,6 @@ public interface ServerFactory {
 
       DbMigrationApiFactory.setValues(dbMigrationHandler, mdc);
 
-      DestinationApiFactory.setValues(destinationApiHandler, schedulerHandler, mdc);
-
       DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
 
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
@@ -230,7 +226,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new DbMigrationBinder(),
-          new DestinationApiBinder(),
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
           new DestinationOauthApiBinder(),

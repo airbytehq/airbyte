@@ -16,61 +16,83 @@ import io.airbyte.api.model.generated.DestinationUpdate;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.micronaut.http.MediaType;
+import io.micronaut.http.annotation.Body;
+import io.micronaut.http.annotation.Controller;
+import io.micronaut.http.annotation.Post;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
-@Path("/v1/destinations")
+@Controller("/api/v1/destinations")
 @AllArgsConstructor
 public class DestinationApiController implements DestinationApi {
 
   private final DestinationHandler destinationHandler;
   private final SchedulerHandler schedulerHandler;
 
+  @Post(uri = "/check_connection",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public CheckConnectionRead checkConnectionToDestination(final DestinationIdRequestBody destinationIdRequestBody) {
+  public CheckConnectionRead checkConnectionToDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
+  @Post(uri = "/check_connection_for_update",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public CheckConnectionRead checkConnectionToDestinationForUpdate(final DestinationUpdate destinationUpdate) {
+  public CheckConnectionRead checkConnectionToDestinationForUpdate(@Body final DestinationUpdate destinationUpdate) {
     return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
   }
 
+  @Post(uri = "/clone",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody) {
+  public DestinationRead cloneDestination(@Body final DestinationCloneRequestBody destinationCloneRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
   }
 
+  @Post(uri = "/create",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationRead createDestination(final DestinationCreate destinationCreate) {
+  public DestinationRead createDestination(@Body final DestinationCreate destinationCreate) {
     return ApiHelper.execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
+  @Post(uri = "/delete",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody) {
+  public void deleteDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     ApiHelper.execute(() -> {
       destinationHandler.deleteDestination(destinationIdRequestBody);
       return null;
     });
   }
 
+  @Post(uri = "/get",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody) {
+  public DestinationRead getDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
+  @Post(uri = "/list",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
+  public DestinationReadList listDestinationsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
   }
 
+  @Post(uri = "/search",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationReadList searchDestinations(final DestinationSearch destinationSearch) {
+  public DestinationReadList searchDestinations(@Body final DestinationSearch destinationSearch) {
     return ApiHelper.execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
+  @Post(uri = "/update",
+      processes = MediaType.APPLICATION_JSON)
   @Override
-  public DestinationRead updateDestination(final DestinationUpdate destinationUpdate) {
+  public DestinationRead updateDestination(@Body final DestinationUpdate destinationUpdate) {
     return ApiHelper.execute(() -> destinationHandler.updateDestination(destinationUpdate));
   }
 
