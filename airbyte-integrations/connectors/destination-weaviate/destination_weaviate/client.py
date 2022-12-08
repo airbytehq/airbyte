@@ -25,7 +25,7 @@ class Client:
         else:
             id = uuid.uuid4()
 
-        self.client.batch.add_data_object(record, stream_name, id)
+        self.client.batch.add_data_object(record, stream_name.title(), id)
         if self.client.batch.num_objects() >= self.batch_size:
             self.client.batch.create_objects()
 
