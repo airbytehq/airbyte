@@ -54,7 +54,7 @@ class EventsStream(HttpStream):
       "eventType": self.event_id,
       "pageSize": self.page_size,
     }
-
+  
   def read_records(self, *args, **kwargs) -> Iterable[Mapping[str, Any]]:
     for record in super().read_records(*args, **kwargs):
       if record["id"] == self._cursor_value:
@@ -119,6 +119,11 @@ class WithdrawEvents(EventsStream):
 
 
 class BurnedNftsEvents(EventsStream):
+  def path(self, **_) -> str:
+    return f"api/company/{self.company_id}/search"
+
+
+class ChallengeBurnedNftsEvents(EventsStream):
   def path(self, **_) -> str:
     return f"api/company/{self.company_id}/search"
 
