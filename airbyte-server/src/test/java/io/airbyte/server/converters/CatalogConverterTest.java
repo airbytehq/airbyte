@@ -9,20 +9,23 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.DataType;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.server.handlers.helpers.CatalogConverter;
 import io.airbyte.server.helpers.ConnectionHelpers;
+import io.airbyte.validation.json.JsonValidationException;
 import org.junit.jupiter.api.Test;
 
 class CatalogConverterTest {
 
   @Test
-  void testConvertToProtocol() {
+  void testConvertToProtocol() throws JsonValidationException {
     assertEquals(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(), CatalogConverter.toProtocol(ConnectionHelpers.generateBasicApiCatalog()));
   }
 
   @Test
   void testConvertToAPI() {
-    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog()));
+    assertEquals(ConnectionHelpers.generateBasicApiCatalog(), CatalogConverter.toApi(ConnectionHelpers.generateBasicConfiguredAirbyteCatalog(),
+        new FieldSelectionData()));
   }
 
   @Test

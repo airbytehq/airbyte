@@ -237,7 +237,7 @@ public class ConnectionHelpers {
     ApiPojoConverters.populateConnectionReadSchedule(standardSync, connectionRead);
 
     if (standardSync.getCatalog() != null) {
-      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()));
     }
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -331,7 +331,8 @@ public class ConnectionHelpers {
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(Names.toAlphanumericAndUnderscore(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix))
-        .selected(true);
+        .selected(true)
+        .fieldSelectionEnabled(false);
   }
 
   private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
