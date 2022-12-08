@@ -5,6 +5,7 @@
 
 import inflection
 import pytest
+from source_acceptance_test.config import Config
 
 
 @pytest.mark.usefixtures("inputs")
@@ -16,3 +17,5 @@ class BaseTest:
         if class_name.startswith("Test"):
             class_name = class_name[len("Test") :]
         return inflection.underscore(class_name)
+
+    MANDATORY_FOR_TEST_STRICTNESS_LEVELS = [Config.TestStrictnessLevel.high]

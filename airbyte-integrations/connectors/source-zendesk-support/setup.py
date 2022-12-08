@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1.60", "pytz", "requests-futures~=1.0.0", "pendulum~=2.1.2"]
+MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "pytz", "requests-futures~=1.0.0", "pendulum~=2.1.2"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock~=3.6", "source-acceptance-test", "requests-mock==1.9.3"]
 

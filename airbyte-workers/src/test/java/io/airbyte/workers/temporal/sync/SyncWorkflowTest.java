@@ -26,6 +26,7 @@ import io.airbyte.config.OperatorWebhook;
 import io.airbyte.config.OperatorWebhookInput;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
@@ -33,9 +34,12 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
+import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import io.micronaut.context.BeanRegistration;
@@ -54,6 +58,7 @@ import io.temporal.worker.Worker;
 import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -79,12 +84,13 @@ class SyncWorkflowTest {
   private PersistStateActivityImpl persistStateActivity;
   private NormalizationSummaryCheckActivityImpl normalizationSummaryCheckActivity;
   private WebhookOperationActivityImpl webhookOperationActivity;
-
-  private static final String SYNC_TASK_QUEUE = "SYNC_TASK_QUEUE";
+  private RefreshSchemaActivityImpl refreshSchemaActivity;
+  private ConfigFetchActivityImpl configFetchActivity;
 
   // AIRBYTE CONFIGURATION
   private static final long JOB_ID = 11L;
   private static final int ATTEMPT_ID = 21;
+  private static final UUID SOURCE_ID = UUID.randomUUID();
   private static final JobRunConfig JOB_RUN_CONFIG = new JobRunConfig()
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID);
@@ -98,6 +104,8 @@ class SyncWorkflowTest {
       .withJobId(String.valueOf(JOB_ID))
       .withAttemptId((long) ATTEMPT_ID)
       .withDockerImage(IMAGE_NAME2);
+
+  private static final String SYNC_QUEUE = "SYNC";
 
   private StandardSync sync;
   private StandardSyncInput syncInput;
@@ -114,9 +122,9 @@ class SyncWorkflowTest {
   private TemporalProxyHelper temporalProxyHelper;
 
   @BeforeEach
-  void setUp() throws IOException {
+  void setUp() {
     testEnv = TestWorkflowEnvironment.newInstance();
-    syncWorker = testEnv.newWorker(SYNC_TASK_QUEUE);
+    syncWorker = testEnv.newWorker(SYNC_QUEUE);
     client = testEnv.getWorkflowClient();
 
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
@@ -146,9 +154,15 @@ class SyncWorkflowTest {
     persistStateActivity = mock(PersistStateActivityImpl.class);
     normalizationSummaryCheckActivity = mock(NormalizationSummaryCheckActivityImpl.class);
     webhookOperationActivity = mock(WebhookOperationActivityImpl.class);
+    refreshSchemaActivity = mock(RefreshSchemaActivityImpl.class);
+    configFetchActivity = mock(ConfigFetchActivityImpl.class);
 
     when(normalizationActivity.generateNormalizationInput(any(), any())).thenReturn(normalizationInput);
     when(normalizationSummaryCheckActivity.shouldRunNormalization(any(), any(), any())).thenReturn(true);
+
+    when(configFetchActivity.getSourceId(sync.getConnectionId())).thenReturn(Optional.of(SOURCE_ID));
+    when(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID)).thenReturn(true);
+    when(configFetchActivity.getStatus(sync.getConnectionId())).thenReturn(Optional.of(Status.ACTIVE));
 
     longActivityOptions = ActivityOptions.newBuilder()
         .setScheduleToCloseTimeout(Duration.ofDays(3))
@@ -190,10 +204,10 @@ class SyncWorkflowTest {
   // bundle up all the temporal worker setup / execution into one method.
   private StandardSyncOutput execute() {
     syncWorker.registerActivitiesImplementations(replicationActivity, normalizationActivity, dbtTransformationActivity,
-        persistStateActivity, normalizationSummaryCheckActivity, webhookOperationActivity);
+        persistStateActivity, normalizationSummaryCheckActivity, webhookOperationActivity, refreshSchemaActivity, configFetchActivity);
     testEnv.start();
     final SyncWorkflow workflow =
-        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_TASK_QUEUE).build());
+        client.newWorkflowStub(SyncWorkflow.class, WorkflowOptions.newBuilder().setTaskQueue(SYNC_QUEUE).build());
 
     return workflow.run(JOB_RUN_CONFIG, SOURCE_LAUNCHER_CONFIG, DESTINATION_LAUNCHER_CONFIG, syncInput, sync.getConnectionId());
   }
@@ -204,7 +218,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -218,6 +232,8 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
         replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
         actualOutput.getStandardSyncSummary());
@@ -229,10 +245,12 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -245,7 +263,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doReturn(normalizationSummary).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -254,6 +272,8 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -270,7 +290,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doThrow(new IllegalArgumentException("induced exception")).when(normalizationActivity).normalize(
         JOB_RUN_CONFIG,
@@ -279,6 +299,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -294,10 +316,12 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -310,7 +334,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     doAnswer(ignored -> {
       cancelWorkflow();
@@ -322,6 +346,8 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -330,7 +356,7 @@ class SyncWorkflowTest {
 
   @Test
   @Disabled("This behavior has been disabled temporarily (OC Issue #741)")
-  void testSkipNormalization() throws IOException {
+  void testSkipNormalization() {
     final SyncStats syncStats = new SyncStats().withRecordsCommitted(0L);
     final StandardSyncSummary standardSyncSummary = new StandardSyncSummary().withTotalStats(syncStats);
     final StandardSyncOutput replicationSuccessOutputNoRecordsCommitted =
@@ -341,10 +367,12 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
 
     execute();
 
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutputNoRecordsCommitted, syncInput.getCatalog());
     verifyNoInteractions(normalizationActivity);
@@ -354,7 +382,7 @@ class SyncWorkflowTest {
 
   @Test
   void testWebhookOperation() {
-    when(replicationActivity.replicate(any(), any(), any(), any())).thenReturn(new StandardSyncOutput());
+    when(replicationActivity.replicate(any(), any(), any(), any(), any())).thenReturn(new StandardSyncOutput());
     final StandardSyncOperation webhookOperation = new StandardSyncOperation()
         .withOperationId(UUID.randomUUID())
         .withOperatorType(OperatorType.WEBHOOK)
@@ -369,6 +397,17 @@ class SyncWorkflowTest {
             .withWorkspaceWebhookConfigs(workspaceWebhookConfigs))).thenReturn(true);
     final StandardSyncOutput actualOutput = execute();
     assertEquals(actualOutput.getWebhookOperationSummary().getSuccesses().get(0), WEBHOOK_CONFIG_ID);
+  }
+
+  @Test
+  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+    when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
+    StandardSyncOutput output = execute();
+    verifyShouldRefreshSchema(refreshSchemaActivity);
+    verifyRefreshSchema(refreshSchemaActivity, sync);
+    verifyNoInteractions(replicationActivity);
+    verifyNoInteractions(normalizationActivity);
+    assertEquals(output.getStandardSyncSummary().getStatus(), ReplicationStatus.CANCELLED);
   }
 
   @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -393,7 +432,7 @@ class SyncWorkflowTest {
         JOB_RUN_CONFIG,
         SOURCE_LAUNCHER_CONFIG,
         DESTINATION_LAUNCHER_CONFIG,
-        syncInput);
+        syncInput, SYNC_QUEUE);
   }
 
   private static void verifyPersistState(final PersistStateActivity persistStateActivity,
@@ -421,6 +460,14 @@ class SyncWorkflowTest {
         DESTINATION_LAUNCHER_CONFIG,
         resourceRequirements,
         operatorDbtInput);
+  }
+
+  private static void verifyShouldRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity) {
+    verify(refreshSchemaActivity).shouldRefreshSchema(SOURCE_ID);
+  }
+
+  private static void verifyRefreshSchema(final RefreshSchemaActivity refreshSchemaActivity, final StandardSync sync) {
+    verify(refreshSchemaActivity).refreshSchema(SOURCE_ID, sync.getConnectionId());
   }
 
 }

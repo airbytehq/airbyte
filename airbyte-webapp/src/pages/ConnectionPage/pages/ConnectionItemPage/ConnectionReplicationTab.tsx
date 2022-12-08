@@ -1,6 +1,7 @@
 import { Form, Formik, FormikHelpers } from "formik";
 import React, { useCallback, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useUnmount } from "react-use";
 
 import { SchemaError } from "components/CreateConnection/SchemaError";
 import LoadingSchema from "components/LoadingSchema";
@@ -8,25 +9,31 @@ import LoadingSchema from "components/LoadingSchema";
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
+import { useConfirmCatalogDiff } from "hooks/connection/useConfirmCatalogDiff";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
-import { equal, naturalComparatorBy } from "utils/objects";
-import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
+import { equal } from "utils/objects";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import {
+  createConnectionValidationSchema,
+  FormikConnectionFormValues,
+} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./ConnectionReplicationTab.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
 
 export const ConnectionReplicationTab: React.FC = () => {
+  const isAutoDetectSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
   const workspaceId = useCurrentWorkspaceId();
@@ -36,9 +43,10 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const [saved, setSaved] = useState(false);
 
-  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, setSchemaHasBeenRefreshed } =
+  const { connection, schemaRefreshing, schemaHasBeenRefreshed, updateConnection, discardRefreshedSchema } =
     useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
+  const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
@@ -73,19 +81,32 @@ export const ConnectionReplicationTab: React.FC = () => {
 
   const onFormSubmit = useCallback(
     async (values: FormikConnectionFormValues, _: FormikHelpers<FormikConnectionFormValues>) => {
-      const formValues = tidyConnectionFormValues(values, workspaceId, mode, connection.operations);
-
-      // Detect whether the catalog has any differences in its enabled streams compared to the original one.
-      // This could be due to user changes (e.g. in the sync mode) or due to new/removed
-      // streams due to a "refreshed source schema".
-      const catalogHasChanged = !equal(
-        formValues.syncCatalog.streams
-          .filter((s) => s.config?.selected)
-          .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
-        connection.syncCatalog.streams
-          .filter((s) => s.config?.selected)
-          .sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? ""))
+      const formValues = tidyConnectionFormValues(
+        values,
+        workspaceId,
+        mode,
+        allowSubOneHourCronExpressions,
+        isAutoDetectSchemaChangesEnabled,
+        connection.operations
       );
+
+      // Check if the user refreshed the catalog and there was any change in a currently enabled stream
+      const hasDiffInEnabledStream = connection.catalogDiff?.transforms.some(({ streamDescriptor }) => {
+        // Find the stream for this transform in our form's syncCatalog
+        const stream = formValues.syncCatalog.streams.find(
+          ({ stream }) => streamDescriptor.name === stream?.name && streamDescriptor.namespace === stream.namespace
+        );
+        return stream?.config?.selected;
+      });
+
+      // Check if the user made any modifications to enabled streams compared to the ones in the latest connection
+      // e.g. changed the sync mode of an enabled stream
+      const hasUserChangesInEnabledStreams = !equal(
+        formValues.syncCatalog.streams.filter((s) => s.config?.selected),
+        connection.syncCatalog.streams.filter((s) => s.config?.selected)
+      );
+
+      const catalogHasChanged = hasDiffInEnabledStream || hasUserChangesInEnabledStreams;
 
       setSubmitError(null);
 
@@ -102,9 +123,8 @@ export const ConnectionReplicationTab: React.FC = () => {
           });
           if (result.type !== "canceled") {
             // Save the connection taking into account the correct skipReset value from the dialog choice.
-            // We also want to skip the reset sync if the connection is not in an "active" status
             await saveConnection(formValues, {
-              skipReset: !result.reason || connection.status !== "active",
+              skipReset: !result.reason,
               catalogHasChanged,
             });
           } else {
@@ -117,28 +137,32 @@ export const ConnectionReplicationTab: React.FC = () => {
         }
 
         setSaved(true);
-        setSchemaHasBeenRefreshed(false);
       } catch (e) {
         setSubmitError(e);
       }
     },
     [
-      connection.connectionId,
-      connection.operations,
-      connection.status,
-      connection.syncCatalog.streams,
-      connectionService,
-      formatMessage,
-      mode,
-      openModal,
-      saveConnection,
-      setSchemaHasBeenRefreshed,
-      setSubmitError,
       workspaceId,
+      mode,
+      allowSubOneHourCronExpressions,
+      isAutoDetectSchemaChangesEnabled,
+      connection.operations,
+      connection.catalogDiff?.transforms,
+      connection.syncCatalog.streams,
+      connection.connectionId,
+      setSubmitError,
+      connectionService,
+      openModal,
+      formatMessage,
+      saveConnection,
     ]
   );
 
   useConfirmCatalogDiff();
+
+  useUnmount(() => {
+    discardRefreshedSchema();
+  });
 
   return (
     <div className={styles.content}>
@@ -146,27 +170,37 @@ export const ConnectionReplicationTab: React.FC = () => {
         <SchemaError schemaError={schemaError} />
       ) : !schemaRefreshing && connection ? (
         <Formik
+          initialStatus={{ editControlsVisible: true }}
           initialValues={initialValues}
-          validationSchema={connectionValidationSchema(mode)}
+          validationSchema={createConnectionValidationSchema({
+            mode,
+            allowSubOneHourCronExpressions,
+            isAutoDetectSchemaChangesEnabled,
+          })}
           onSubmit={onFormSubmit}
           enableReinitialize
-          validateOnChange={false}
         >
-          {({ values, isSubmitting, isValid, dirty, resetForm }) => (
+          {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
             <Form>
-              <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
-              <EditControls
+              <ConnectionFormFields
+                values={values}
                 isSubmitting={isSubmitting}
-                submitDisabled={!isValid}
-                dirty={dirty}
-                resetForm={async () => {
-                  resetForm();
-                  setSchemaHasBeenRefreshed(false);
-                }}
-                successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                errorMessage={getErrorMessage(isValid, dirty)}
-                enableControls={schemaHasBeenRefreshed || dirty}
+                dirty={dirty || schemaHasBeenRefreshed}
               />
+              {status.editControlsVisible && (
+                <EditControls
+                  isSubmitting={isSubmitting}
+                  submitDisabled={!isValid}
+                  dirty={dirty}
+                  resetForm={async () => {
+                    resetForm();
+                    discardRefreshedSchema();
+                  }}
+                  successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                  errorMessage={getErrorMessage(isValid, dirty)}
+                  enableControls={schemaHasBeenRefreshed || dirty}
+                />
+              )}
             </Form>
           )}
         </Formik>

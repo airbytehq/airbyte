@@ -4,15 +4,19 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.workers.temporal.sync.RouterService;
+import io.airbyte.workers.temporal.scheduling.RouterService;
 import jakarta.inject.Singleton;
+import java.io.IOException;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Singleton
 public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueActivity {
 
@@ -27,9 +31,14 @@ public class RouteToSyncTaskQueueActivityImpl implements RouteToSyncTaskQueueAct
   public RouteToSyncTaskQueueOutput route(final RouteToSyncTaskQueueInput input) {
     ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
 
-    final String taskQueueForConnectionId = routerService.getTaskQueue(input.getConnectionId());
+    try {
+      final String taskQueueForConnectionId = routerService.getTaskQueue(input.getConnectionId());
 
-    return new RouteToSyncTaskQueueOutput(taskQueueForConnectionId);
+      return new RouteToSyncTaskQueueOutput(taskQueueForConnectionId);
+    } catch (final IOException e) {
+      log.warn("Encountered an error while attempting to route connection {} to a task queue: \n{}", input.getConnectionId(), e);
+      throw new RetryableException(e);
+    }
   }
 
 }

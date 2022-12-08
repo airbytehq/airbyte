@@ -5,9 +5,11 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.protocol.models.StreamDescriptor;
@@ -32,11 +34,13 @@ public interface JobCreator {
                                DestinationConnection destination,
                                StandardSync standardSync,
                                String sourceDockerImage,
+                               Version sourceProtocolVersion,
                                String destinationDockerImage,
+                               Version destinationProtocolVersion,
                                List<StandardSyncOperation> standardSyncOperations,
                                @Nullable JsonNode webhookOperationConfigs,
-                               @Nullable ActorDefinitionResourceRequirements sourceResourceReqs,
-                               @Nullable ActorDefinitionResourceRequirements destinationResourceReqs)
+                               StandardSourceDefinition sourceDefinition,
+                               StandardDestinationDefinition destinationDefinition)
       throws IOException;
 
   /**
@@ -51,6 +55,8 @@ public interface JobCreator {
   Optional<Long> createResetConnectionJob(DestinationConnection destination,
                                           StandardSync standardSync,
                                           String destinationDockerImage,
+                                          Version destinationProtocolVersion,
+                                          boolean isCustom,
                                           List<StandardSyncOperation> standardSyncOperations,
                                           List<StreamDescriptor> streamsToReset)
       throws IOException;

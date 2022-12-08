@@ -74,75 +74,65 @@
         "oneOf": [
           {
             "title": "disable",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Disable SSL.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "disable",
-                "enum": ["disable"],
-                "default": "disable",
                 "order": 0
               }
             }
           },
           {
             "title": "allow",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Allow SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "allow",
-                "enum": ["allow"],
-                "default": "allow",
                 "order": 0
               }
             }
           },
           {
             "title": "prefer",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Prefer SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "prefer",
-                "enum": ["prefer"],
-                "default": "prefer",
                 "order": 0
               }
             }
           },
           {
             "title": "require",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Require SSL mode.",
             "required": ["mode"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "require",
-                "enum": ["require"],
-                "default": "require",
                 "order": 0
               }
             }
           },
           {
             "title": "verify-ca",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Verify-ca SSL mode.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify-ca",
-                "enum": ["verify-ca"],
-                "default": "verify-ca",
                 "order": 0
               },
               "ca_certificate": {
@@ -180,15 +170,13 @@
           },
           {
             "title": "verify-full",
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "Verify-full SSL mode.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
                 "type": "string",
                 "const": "verify-full",
-                "enum": ["verify-full"],
-                "default": "verify-full",
                 "order": 0
               },
               "ca_certificate": {
@@ -240,8 +228,6 @@
               "method": {
                 "type": "string",
                 "const": "Standard",
-                "enum": ["Standard"],
-                "default": "Standard",
                 "order": 0
               }
             }
@@ -254,9 +240,7 @@
               "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
-                "order": 0
+                "order": 1
               },
               "plugin": {
                 "type": "string",
@@ -264,26 +248,26 @@
                 "description": "A logical decoding plugin installed on the PostgreSQL server. The `pgoutput` plugin is used by default. If the replication table contains a lot of big jsonb values it is recommended to use `wal2json` plugin. Read more about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-2-select-a-replication-plugin\">selecting replication plugins</a>.",
                 "enum": ["pgoutput", "wal2json"],
                 "default": "pgoutput",
-                "order": 1
+                "order": 2
               },
               "replication_slot": {
                 "type": "string",
                 "title": "Replication Slot",
                 "description": "A plugin logical replication slot. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-3-create-replication-slot\">replication slots</a>.",
-                "order": 2
+                "order": 3
               },
               "publication": {
                 "type": "string",
                 "title": "Publication",
                 "description": "A Postgres publication used for consuming changes. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-4-create-publications-and-replication-identities-for-tables\">publications and replication identities</a>.",
-                "order": 3
+                "order": 4
               },
               "initial_waiting_seconds": {
                 "type": "integer",
                 "title": "Initial Waiting Time in Seconds (Advanced)",
                 "description": "The amount of time the connector will wait when it launches to determine if there is new data to sync or not. Defaults to 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about <a href=\"https://docs.airbyte.com/integrations/sources/postgres#step-5-optional-set-up-initial-waiting-time\">initial waiting time</a>.",
                 "default": 300,
-                "order": 4,
+                "order": 5,
                 "min": 120,
                 "max": 1200
               }

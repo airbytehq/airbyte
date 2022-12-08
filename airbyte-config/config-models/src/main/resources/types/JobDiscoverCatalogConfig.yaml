@@ -30,3 +30,9 @@ properties:
   configHash:
     description: Hash of the source configuration -- see `configuration` field in SourceConnection.yaml -- so we can persist this alongside the discovered catalog.
     type: string
+  protocolVersion:
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    description: determine if the running image is a custom connector.
+    type: boolean

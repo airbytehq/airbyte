@@ -49,6 +49,8 @@ The Intercom connector should not run into Intercom API limitations under normal
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------- |
+| 0.1.29  | 2022-10-31 | [18681](https://github.com/airbytehq/airbyte/pull/18681) | Define correct version for airbyte-cdk~=0.2                                                    |
+| 0.1.28  | 2022-10-20 | [18216](https://github.com/airbytehq/airbyte/pull/18216) | Use airbyte-cdk~=0.2.0 with SQLite caching                                                    |
 | 0.1.27  | 2022-08-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                 |
 | 0.1.26  | 2022-08-18 | [16540](https://github.com/airbytehq/airbyte/pull/16540) | Fix JSON schema                                                                               |
 | 0.1.25  | 2022-08-18 | [15681](https://github.com/airbytehq/airbyte/pull/15681) | Update Intercom API to v 2.5                                                                  |

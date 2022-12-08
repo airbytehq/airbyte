@@ -8,13 +8,11 @@ import static io.airbyte.cron.MicronautCronRunner.SCHEDULED_TRACE_OPERATION_NAME
 
 import datadog.trace.api.Trace;
 import io.airbyte.config.Configs.DeploymentMode;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.init.ApplyDefinitionsHelper;
 import io.airbyte.config.init.RemoteDefinitionsProvider;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.scheduling.annotation.Scheduled;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.net.URI;
 import lombok.extern.slf4j.Slf4j;
@@ -29,29 +27,33 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DefinitionsUpdater {
 
-  @Inject
-  private ConfigRepository configRepository;
+  private final ConfigRepository configRepository;
 
-  @Value("${airbyte.cron.update-definitions.enabled}")
-  private boolean shouldUpdateDefinitions;
+  private final boolean shouldUpdateDefinitions;
 
   private final URI remoteCatalogUrl;
   private final DeploymentMode deploymentMode;
 
-  public DefinitionsUpdater() {
+  public DefinitionsUpdater(final ConfigRepository configRepository,
+                            final DeploymentMode deploymentMode,
+                            @Value("${airbyte.remote-connector-catalog-url}") final String remoteCatalogUrl,
+                            @Value("${airbyte.cron.update-definitions.enabled}") final boolean shouldUpdateDefinitions) {
     log.info("Creating connector definitions updater");
 
-    final EnvConfigs envConfigs = new EnvConfigs();
-    remoteCatalogUrl = envConfigs.getRemoteConnectorCatalogUrl().orElse(null);
-    deploymentMode = envConfigs.getDeploymentMode();
+    this.configRepository = configRepository;
+    this.deploymentMode = deploymentMode;
+    this.remoteCatalogUrl = remoteCatalogUrl != null ? URI.create(remoteCatalogUrl) : null;
+    this.shouldUpdateDefinitions = shouldUpdateDefinitions;
   }
 
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
-    if (!shouldUpdateDefinitions)
+    if (!shouldUpdateDefinitions) {
+      log.info("Connector definitions update disabled.");
       return;
+    }
 
     if (remoteCatalogUrl == null) {
       log.warn("Tried to update definitions, but the remote catalog url is not set");

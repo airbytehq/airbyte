@@ -21,11 +21,15 @@ cursor_field = "created"
 timezone = datetime.timezone.utc
 
 
+class MockedNowDatetime(datetime.datetime):
+    @classmethod
+    def now(cls, tz=None):
+        return FAKE_NOW
+
+
 @pytest.fixture()
 def mock_datetime_now(monkeypatch):
-    datetime_mock = unittest.mock.MagicMock(wraps=datetime.datetime)
-    datetime_mock.now.return_value = FAKE_NOW
-    monkeypatch.setattr(datetime, "datetime", datetime_mock)
+    monkeypatch.setattr(datetime, "datetime", MockedNowDatetime)
 
 
 @pytest.mark.parametrize(
@@ -68,6 +72,56 @@ def mock_datetime_now(monkeypatch):
                 {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-06T00:00:00.000000+0000"},
                 {"start_time": "2021-01-07T00:00:00.000000+0000", "end_time": "2021-01-08T00:00:00.000000+0000"},
                 {"start_time": "2021-01-09T00:00:00.000000+0000", "end_time": "2021-01-10T00:00:00.000000+0000"},
+            ],
+        ),
+        (
+            "test_1_week",
+            None,
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
+            MinMaxDatetime(datetime="2021-02-10T00:00:00.000000+0000", options={}),
+            "1w",
+            cursor_field,
+            None,
+            datetime_format,
+            [
+                {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-07T00:00:00.000000+0000"},
+                {"start_time": "2021-01-08T00:00:00.000000+0000", "end_time": "2021-01-14T00:00:00.000000+0000"},
+                {"start_time": "2021-01-15T00:00:00.000000+0000", "end_time": "2021-01-21T00:00:00.000000+0000"},
+                {"start_time": "2021-01-22T00:00:00.000000+0000", "end_time": "2021-01-28T00:00:00.000000+0000"},
+                {"start_time": "2021-01-29T00:00:00.000000+0000", "end_time": "2021-02-04T00:00:00.000000+0000"},
+                {"start_time": "2021-02-05T00:00:00.000000+0000", "end_time": "2021-02-10T00:00:00.000000+0000"},
+            ],
+        ),
+        (
+            "test_1_month",
+            None,
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
+            MinMaxDatetime(datetime="2021-06-10T00:00:00.000000+0000", options={}),
+            "1m",
+            cursor_field,
+            None,
+            datetime_format,
+            [
+                {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-01-31T00:00:00.000000+0000"},
+                {"start_time": "2021-02-01T00:00:00.000000+0000", "end_time": "2021-02-28T00:00:00.000000+0000"},
+                {"start_time": "2021-03-01T00:00:00.000000+0000", "end_time": "2021-03-31T00:00:00.000000+0000"},
+                {"start_time": "2021-04-01T00:00:00.000000+0000", "end_time": "2021-04-30T00:00:00.000000+0000"},
+                {"start_time": "2021-05-01T00:00:00.000000+0000", "end_time": "2021-05-31T00:00:00.000000+0000"},
+                {"start_time": "2021-06-01T00:00:00.000000+0000", "end_time": "2021-06-10T00:00:00.000000+0000"},
+            ],
+        ),
+        (
+            "test_1_year",
+            None,
+            MinMaxDatetime(datetime="{{ config['start_date'] }}", options={}),
+            MinMaxDatetime(datetime="2022-06-10T00:00:00.000000+0000", options={}),
+            "1y",
+            cursor_field,
+            None,
+            datetime_format,
+            [
+                {"start_time": "2021-01-01T00:00:00.000000+0000", "end_time": "2021-12-31T00:00:00.000000+0000"},
+                {"start_time": "2022-01-01T00:00:00.000000+0000", "end_time": "2022-01-01T00:00:00.000000+0000"},
             ],
         ),
         (
@@ -234,6 +288,22 @@ def mock_datetime_now(monkeypatch):
                 {"start_time": "2021-01-03T00:00:00.000000+0000", "end_time": "2021-01-03T00:00:00.000000+0000"},
                 {"start_time": "2021-01-04T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"},
                 {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T00:00:00.000000+0000"},
+            ],
+        ),
+        (
+            "test_with_lookback_window_from_cursor",
+            {cursor_field: "2021-01-05T00:00:00.000000+0000"},
+            MinMaxDatetime(datetime="2021-01-01T00:00:00.000000+0000", options={}),
+            MinMaxDatetime(datetime="2021-01-06T00:00:00.000000+0000", options={}),
+            "1d",
+            cursor_field,
+            "3d",
+            datetime_format,
+            [
+                {"start_time": "2021-01-03T00:00:00.000000+0000", "end_time": "2021-01-03T00:00:00.000000+0000"},
+                {"start_time": "2021-01-04T00:00:00.000000+0000", "end_time": "2021-01-04T00:00:00.000000+0000"},
+                {"start_time": "2021-01-05T00:00:00.000000+0000", "end_time": "2021-01-05T00:00:00.000000+0000"},
+                {"start_time": "2021-01-06T00:00:00.000000+0000", "end_time": "2021-01-06T00:00:00.000000+0000"},
             ],
         ),
         (

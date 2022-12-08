@@ -4,8 +4,11 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import datadog.trace.api.Trace;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
@@ -36,7 +39,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private static final Duration HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
   private static final Duration GRACEFUL_SHUTDOWN_DURATION = Duration.of(1, ChronoUnit.MINUTES);
 
-  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("source")
       .setPrefixColor(Color.BLUE_BACKGROUND);
 
@@ -50,8 +53,11 @@ public class DefaultAirbyteSource implements AirbyteSource {
   private final boolean logConnectorMessages = new EnvVariableFeatureFlags().logConnectorMessages();
 
   public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher) {
-    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER),
-        new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
+    this(integrationLauncher, new DefaultAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER));
+  }
+
+  public DefaultAirbyteSource(final IntegrationLauncher integrationLauncher, final AirbyteStreamFactory streamFactory) {
+    this(integrationLauncher, streamFactory, new HeartbeatMonitor(HEARTBEAT_FRESH_DURATION));
   }
 
   @VisibleForTesting
@@ -63,6 +69,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     this.heartbeatMonitor = heartbeatMonitor;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerSourceConfig sourceConfig, final Path jobRoot) throws Exception {
     Preconditions.checkState(sourceProcess == null);
@@ -85,19 +92,19 @@ public class DefaultAirbyteSource implements AirbyteSource {
         .iterator();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
     Preconditions.checkState(sourceProcess != null);
-    // As this check is done on every message read, it is important for this operation to be efficient.
-    // Short circuit early to avoid checking the underlying process.
-    final var isEmpty = !messageIterator.hasNext(); // hasNext is blocking.
-    if (!isEmpty) {
-      return false;
-    }
 
-    return !sourceProcess.isAlive() && !messageIterator.hasNext();
+    /*
+     * As this check is done on every message read, it is important for this operation to be efficient.
+     * Short circuit early to avoid checking the underlying process. note: hasNext is blocking.
+     */
+    return !messageIterator.hasNext() && !sourceProcess.isAlive();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() throws IllegalStateException {
     Preconditions.checkState(sourceProcess != null, "Source process is null, cannot retrieve exit value.");
@@ -110,6 +117,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return exitValue;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     Preconditions.checkState(sourceProcess != null);
@@ -117,6 +125,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     return Optional.ofNullable(messageIterator.hasNext() ? messageIterator.next() : null);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
     if (sourceProcess == null) {
@@ -136,6 +145,7 @@ public class DefaultAirbyteSource implements AirbyteSource {
     }
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() throws Exception {
     LOGGER.info("Attempting to cancel source process...");

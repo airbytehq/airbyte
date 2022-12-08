@@ -20,16 +20,23 @@ public interface SynchronousSchedulerClient {
 
   SynchronousResponse<StandardCheckConnectionOutput> createSourceCheckConnectionJob(SourceConnection source,
                                                                                     String dockerImage,
-                                                                                    Version protocolVersion)
+                                                                                    Version protocolVersion,
+                                                                                    boolean isCustomConnector)
       throws IOException;
 
   SynchronousResponse<StandardCheckConnectionOutput> createDestinationCheckConnectionJob(DestinationConnection destination,
                                                                                          String dockerImage,
-                                                                                         Version protocolVersion)
+                                                                                         Version protocolVersion,
+                                                                                         boolean isCustomConnector)
       throws IOException;
 
-  SynchronousResponse<UUID> createDiscoverSchemaJob(SourceConnection source, String dockerImage, String connectorVersion) throws IOException;
+  SynchronousResponse<UUID> createDiscoverSchemaJob(SourceConnection source,
+                                                    String dockerImage,
+                                                    String connectorVersion,
+                                                    Version protocolVersion,
+                                                    boolean isCustomConnector)
+      throws IOException;
 
-  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage) throws IOException;
+  SynchronousResponse<ConnectorSpecification> createGetSpecJob(String dockerImage, boolean isCustomConnector) throws IOException;
 
 }

@@ -1,0 +1,31 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: variables.$spacing-md;
+}
+
+.tooltip {
+  display: flex;
+}
+
+.step {
+  display: inline-block;
+  width: 35px;
+  height: 4px;
+  border-radius: variables.$border-radius-2xs;
+  background-color: colors.$grey-300;
+
+  // Give the element a bit larger hover area for the tooltip to show
+  margin: 8px 0;
+
+  &.completed {
+    background-color: colors.$blue-200;
+  }
+
+  &.current {
+    background-color: colors.$blue;
+  }
+}

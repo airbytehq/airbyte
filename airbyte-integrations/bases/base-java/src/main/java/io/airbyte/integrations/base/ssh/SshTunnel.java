@@ -6,6 +6,7 @@ package io.airbyte.integrations.base.ssh;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Preconditions;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.commons.json.Jsons;
@@ -298,6 +299,7 @@ public class SshTunnel implements AutoCloseable {
    * From the OPENSSH private key string, use mina-sshd to deserialize the key pair, reconstruct the
    * keys from the key info, and return the key pair for use in authentication.
    *
+   * @return The {@link KeyPair} to add - may not be {@code null}
    * @see <a href=
    *      "https://javadoc.io/static/org.apache.sshd/sshd-common/2.8.0/org/apache/sshd/common/config/keys/loader/KeyPairResourceLoader.html#loadKeyPairs-org.apache.sshd.common.session.SessionContext-org.apache.sshd.common.util.io.resource.IoResource-org.apache.sshd.common.config.keys.FilePasswordProvider-">loadKeyPairs()</a>
    */
@@ -310,7 +312,7 @@ public class SshTunnel implements AutoCloseable {
     if (keyPairs != null && keyPairs.iterator().hasNext()) {
       return keyPairs.iterator().next();
     }
-    return null;
+    throw new ConfigErrorException("Unable to load private key pairs, verify key pairs are properly inputted");
   }
 
   private String validateKey() {
