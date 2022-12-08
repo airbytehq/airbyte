@@ -190,17 +190,9 @@ font-style: italic;
 <li>The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. <code>localhost:8000/v1/connections/create</code>.</li>
 <li>For all <code>update</code> methods, the whole object must be passed in, even the fields that did not change.</li>
 </ul>
-<p>Change Management:</p>
+<p>Authentication (OSS):</p>
 <ul>
-<li>The major version of the API endpoint can be determined / specified in the URL <code>localhost:8080/v1/connections/create</code></li>
-<li>Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.</li>
-<li>All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
-<ul>
-<li>Adding fields to request or response bodies.</li>
-<li>Adding new HTTP endpoints.</li>
-</ul>
-</li>
-<li>All <code>web_backend</code> APIs are not considered public APIs and are not guaranteeing backwards compatibility.</li>
+<li>When authenticating to the Configuration API, you must use Basic Authentication by setting the Authentication Header to Basic and base64 encoding the username and password (which are <code>airbyte</code> and <code>password</code> by default - so base64 encoding <code>airbyte:password</code> results in <code>YWlyYnl0ZTpwYXNzd29yZA==</code>). So the full header reads <code>'Authorization': &quot;Basic YWlyYnl0ZTpwYXNzd29yZA==&quot;</code></li>
 </ul>
 </div>
     <div class="app-desc">More information: <a href="https://openapi-generator.tech">https://openapi-generator.tech</a></div>
