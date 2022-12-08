@@ -239,6 +239,9 @@ class SourceFauna(Source):
                     if (
                         type(source) is Ref
                         and source.collection() == Ref("collections")
+                        # If either of these are missing, the index has no terms or values
+                        and "terms" in index
+                        and "values" in index
                         # Index must have 2 values and no terms
                         and len(index["values"]) == 2
                         and len(index["terms"]) == 0
