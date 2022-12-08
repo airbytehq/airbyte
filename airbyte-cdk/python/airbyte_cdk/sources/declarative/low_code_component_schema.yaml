@@ -556,6 +556,20 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  RecordFilter:
+    description: Filter applied on a list of Records
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [RecordFilter]
+      backoff_time_in_seconds:
+        type: string
+        default: ""
+      $options:
+        type: object
+        additionalProperties: true
   RecordSelector:
     description: Responsible for translating an HTTP response into a list of records by extracting records from the response and optionally filtering records based on a heuristic.
     type: object
