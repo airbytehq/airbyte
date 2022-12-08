@@ -44,7 +44,6 @@ import io.airbyte.server.errors.NotFoundExceptionMapper;
 import io.airbyte.server.errors.UncaughtExceptionMapper;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
-import io.airbyte.server.handlers.DbMigrationHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
@@ -282,8 +281,6 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler,
         envVariableFeatureFlags);
 
-    final DbMigrationHandler dbMigrationHandler = new DbMigrationHandler(configsDatabase, configsFlyway, jobsDatabase, jobsFlyway);
-
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);
 
@@ -361,7 +358,6 @@ public class ServerApp implements ServerRunnable {
         jobsFlyway,
         attemptHandler,
         connectionsHandler,
-        dbMigrationHandler,
         destinationDefinitionsHandler,
         destinationHandler,
         healthCheckHandler,
@@ -378,5 +374,4 @@ public class ServerApp implements ServerRunnable {
         webBackendConnectionsHandler,
         webBackendGeographiesHandler);
   }
-
 }
