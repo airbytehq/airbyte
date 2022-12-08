@@ -31,6 +31,7 @@ export const Cell = styled.div<{
   flush?: boolean;
 }>`
   flex: ${({ flex }) => flexCalc(flex)};
+  min-width: ${({ flex }) => (typeof flex === "string" ? flex.split(" ")[2] : undefined)};
   padding-right: ${({ flush }) => (flush ? 0 : 10)}px;
   word-break: break-word;
   color: ${({ theme, light }) => (light ? theme.greyColor60 : "inherit")};
