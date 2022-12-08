@@ -3,8 +3,8 @@ import { Formik } from "formik";
 import { useIntl } from "react-intl";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
-import { builderFormValidationSchema, BuilderFormValues } from "components/connectorBuilder/Builder/types";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
+import { builderFormValidationSchema } from "components/connectorBuilder/types";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 
@@ -21,13 +21,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   return (
-    <Formik
-      initialValues={builderFormValues}
-      onSubmit={(values: BuilderFormValues) => {
-        console.log(values);
-      }}
-      validationSchema={builderFormValidationSchema}
-    >
+    <Formik initialValues={builderFormValues} onSubmit={() => undefined} validationSchema={builderFormValidationSchema}>
       {({ values }) => (
         <ResizablePanels
           className={classnames({ [styles.gradientBg]: editorView === "yaml", [styles.solidBg]: editorView === "ui" })}

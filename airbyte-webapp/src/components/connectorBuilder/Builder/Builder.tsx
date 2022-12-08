@@ -2,18 +2,12 @@ import { Form } from "formik";
 import { useEffect, useState } from "react";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
-import { usePatchFormik } from "views/Connector/ConnectorForm/useBuildForm";
 
+import { BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
 import { BuilderSidebar, BuilderView } from "./BuilderSidebar";
 import { GlobalConfigView } from "./GlobalConfigView";
 import { StreamConfigView } from "./StreamConfigView";
-import { BuilderFormValues } from "./types";
-
-export const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
 
 interface BuilderProps {
   values: BuilderFormValues;
@@ -47,20 +41,16 @@ export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) =>
   };
 
   return (
-    <>
-      <FormikPatch />
-      <div className={styles.container}>
-        <BuilderSidebar
-          className={styles.sidebar}
-          toggleYamlEditor={toggleYamlEditor}
-          numStreams={values.streams.length}
-          onViewSelect={handleViewSelect}
-          selectedView={selectedView}
-        />
-        <Form className={styles.form}>
-          {selectedView === "global" ? <GlobalConfigView /> : <StreamConfigView streamNum={selectedView} />}
-        </Form>
-      </div>
-    </>
+    <div className={styles.container}>
+      <BuilderSidebar
+        className={styles.sidebar}
+        toggleYamlEditor={toggleYamlEditor}
+        onViewSelect={handleViewSelect}
+        selectedView={selectedView}
+      />
+      <Form className={styles.form}>
+        {selectedView === "global" ? <GlobalConfigView /> : <StreamConfigView streamNum={selectedView} />}
+      </Form>
+    </div>
   );
 };

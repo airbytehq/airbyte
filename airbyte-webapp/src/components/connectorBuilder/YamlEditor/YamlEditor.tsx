@@ -6,12 +6,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
-import { ConnectorManifest } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { convertToManifest } from "../Builder/types";
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
+import { convertToManifest } from "../types";
 import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
@@ -75,7 +75,6 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   const yamlIsDirty = useMemo(() => {
     return !isMatch(convertToManifest(builderFormValues), jsonManifest);
   }, [jsonManifest, builderFormValues]);
-  console.log(yamlIsDirty);
 
   const handleToggleYamlEditor = () => {
     if (yamlIsDirty) {

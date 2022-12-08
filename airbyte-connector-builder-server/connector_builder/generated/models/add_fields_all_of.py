@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.added_field_definition import AddedFieldDefinition
 from connector_builder.generated.models.parsed_add_field_definition import ParsedAddFieldDefinition
 
@@ -22,7 +22,7 @@ class AddFieldsAllOf(BaseModel):
         parsed_fields: The parsed_fields of this AddFieldsAllOf [Optional].
     """
 
-    fields: List[AddedFieldDefinition]
-    parsed_fields: Optional[List[ParsedAddFieldDefinition]] = None
+    fields: List[AddedFieldDefinition] = Field(alias="fields")
+    parsed_fields: Optional[List[ParsedAddFieldDefinition]] = Field(alias="_parsed_fields", default=None)
 
 AddFieldsAllOf.update_forward_refs()

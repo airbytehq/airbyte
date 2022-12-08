@@ -2,7 +2,7 @@ import { deleteEntity, openSettingForm, submitButtonClick, updateField } from ".
 import { fillLocalJsonForm, fillPostgresForm } from "./connector";
 import { goToDestinationPage, openNewDestinationForm } from "pages/destinationPage";
 
-export const createLocalJsonDestination = (name: string, destinationPath: string = "/local") => {
+export const createLocalJsonDestination = (name: string, destinationPath = "/local") => {
   cy.intercept("/api/v1/scheduler/destinations/check_connection").as("checkDestinationConnection");
   cy.intercept("/api/v1/destinations/create").as("createDestination");
 
@@ -17,12 +17,12 @@ export const createLocalJsonDestination = (name: string, destinationPath: string
 
 export const createPostgresDestination = (
   name: string,
-  host: string = "localhost",
-  port: string = "5434",
-  database: string = "airbyte_ci_destination",
-  username: string = "postgres",
-  password: string = "secret_password",
-  schema: string = ""
+  host = "localhost",
+  port = "5434",
+  database = "airbyte_ci_destination",
+  username = "postgres",
+  password = "secret_password",
+  schema = ""
 ) => {
   cy.intercept("/api/v1/scheduler/destinations/check_connection").as("checkDestinationConnection");
   cy.intercept("/api/v1/destinations/create").as("createDestination");

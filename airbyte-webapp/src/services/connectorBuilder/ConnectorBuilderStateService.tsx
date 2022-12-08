@@ -3,13 +3,10 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
-import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/Builder/types";
+import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
 
-import {
-  ConnectorManifest,
-  StreamReadRequestBodyConfig,
-  StreamsListReadStreamsItem,
-} from "core/request/ConnectorBuilderClient";
+import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";

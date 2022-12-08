@@ -1,8 +1,8 @@
 import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
-import { useField, useFormikContext } from "formik";
-import { FormattedMessage } from "react-intl";
+import { useFormikContext } from "formik";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
@@ -14,6 +14,7 @@ import {
   useConnectorBuilderState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { BuilderFormValues } from "../types";
 import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
@@ -46,27 +47,9 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   );
 };
 
-interface StreamSelectButtonProps {
-  streamNum: number;
-  onSelectStream: (streamNum: number, streamName: string) => void;
-  selected: boolean;
-}
-
-const StreamSelectButton: React.FC<StreamSelectButtonProps> = ({ streamNum, onSelectStream, selected }) => {
-  const streamPath = `streams[${streamNum}]`;
-  const [field] = useField(`${streamPath}.name`);
-
-  return (
-    <ViewSelectButton selected={selected} onClick={() => onSelectStream(streamNum, field.value)}>
-      {field.value}
-    </ViewSelectButton>
-  );
-};
-
 interface BuilderSidebarProps {
   className?: string;
   toggleYamlEditor: () => void;
-  numStreams: number;
   onViewSelect: (selected: BuilderView, streamName?: string) => void;
   selectedView: BuilderView;
 }
@@ -74,13 +57,13 @@ interface BuilderSidebarProps {
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
   className,
   toggleYamlEditor,
-  numStreams,
   onViewSelect,
   selectedView,
 }) => {
+  const { formatMessage } = useIntl();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest } = useConnectorBuilderState();
-  const { setValues, setTouched } = useFormikContext();
+  const { values, setValues, setTouched } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
       text: "connectorBuilder.resetModal.text",
@@ -94,18 +77,20 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
     });
   };
 
-  const [field] = useField("global.connectorName");
-
   return (
     <div className={classnames(className, styles.container)}>
       <UiYamlToggleButton yamlSelected={false} onClick={toggleYamlEditor} />
 
       {/* TODO: replace with uploaded img when that functionality is added */}
-      <img className={styles.connectorImg} src="/logo.png" alt="Connector Logo" />
+      <img
+        className={styles.connectorImg}
+        src="/logo.png"
+        alt={formatMessage({ id: "connectorBuilder.connectorImgAlt" })}
+      />
 
       <div className={styles.connectorName}>
         <Heading as="h2" size="sm" className={styles.connectorNameText}>
-          {field.value}
+          {values.global?.connectorName}
         </Heading>
       </div>
 
@@ -120,27 +105,21 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
       <div className={styles.streamsHeader}>
         <Text className={styles.streamsHeading} size="xs" bold>
-          <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: numStreams }} />
+          <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: values.streams.length }} />
         </Text>
 
         <AddStreamButton
           className={styles.addStreamButton}
-          numStreams={numStreams}
           onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
         />
       </div>
 
       <div className={styles.streamList}>
-        {Array.from(Array(numStreams).keys()).map((streamNum) => {
-          return (
-            <StreamSelectButton
-              key={streamNum}
-              streamNum={streamNum}
-              onSelectStream={onViewSelect}
-              selected={selectedView === streamNum}
-            />
-          );
-        })}
+        {values.streams.map(({ name }, num) => (
+          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => onViewSelect(num, name)}>
+            {name}
+          </ViewSelectButton>
+        ))}
       </div>
 
       <Button onClick={() => setTouched({}, true)}>Touch</Button>
