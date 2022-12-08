@@ -43,7 +43,7 @@ public class SnowflakeInternalStagingDestinationAcceptanceTest extends Snowflake
   }
 
   private void testSyncWithNormalizationWithKeyPairAuth(String messagesFilename, String catalogFilename, String configName) throws Exception {
-    if (!normalizationFromSpec()) {
+    if (!normalizationFromDefinition()) {
       return;
     }
 

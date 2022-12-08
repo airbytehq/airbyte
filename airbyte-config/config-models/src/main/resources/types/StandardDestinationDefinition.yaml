@@ -64,4 +64,5 @@ properties:
     type: string
   supportsDbt:
     type: boolean
-    default: false
+  integrationType:
+    type: string

@@ -38,7 +38,7 @@ class JobErrorReporterTest {
   private static final DeploymentMode DEPLOYMENT_MODE = DeploymentMode.OSS;
   private static final String AIRBYTE_VERSION = "0.1.40";
   private static final String NORMALIZATION_IMAGE = "airbyte/normalization";
-  private static final String NORMALIZATION_VERSION = "0.2.18";
+  private static final String NORMALIZATION_VERSION = "0.2.24";
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final String SOURCE_DEFINITION_NAME = "stripe";
   private static final String SOURCE_DOCKER_REPOSITORY = "airbyte/source-stripe";
@@ -85,7 +85,7 @@ class JobErrorReporterTest {
     jobErrorReportingClient = mock(JobErrorReportingClient.class);
     webUrlHelper = mock(WebUrlHelper.class);
     jobErrorReporter = new JobErrorReporter(
-        configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, NORMALIZATION_IMAGE, NORMALIZATION_VERSION, webUrlHelper, jobErrorReportingClient);
+        configRepository, DEPLOYMENT_MODE, AIRBYTE_VERSION, webUrlHelper, jobErrorReportingClient);
 
     Mockito.when(webUrlHelper.getConnectionUrl(WORKSPACE_ID, CONNECTION_ID)).thenReturn(CONNECTION_URL);
     Mockito.when(webUrlHelper.getWorkspaceUrl(WORKSPACE_ID)).thenReturn(WORKSPACE_URL);
@@ -138,6 +138,8 @@ class JobErrorReporterTest {
             .withDockerRepository(DESTINATION_DOCKER_REPOSITORY)
             .withReleaseStage(DESTINATION_RELEASE_STAGE)
             .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
+            .withNormalizationRepository(NORMALIZATION_IMAGE)
+            .withNormalizationTag(NORMALIZATION_VERSION)
             .withName(DESTINATION_DEFINITION_NAME));
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);

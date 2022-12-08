@@ -71,7 +71,6 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
-import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.temporal.serviceclient.WorkflowServiceStubs;
 import java.net.http.HttpClient;
 import java.util.Map;
@@ -222,8 +221,6 @@ public class ServerApp implements ServerRunnable {
             configRepository,
             configs.getDeploymentMode(),
             configs.getAirbyteVersionOrWarning(),
-            NormalizationRunnerFactory.BASE_NORMALIZATION_IMAGE_NAME,
-            NormalizationRunnerFactory.NORMALIZATION_VERSION,
             webUrlHelper,
             jobErrorReportingClient);
 
