@@ -112,7 +112,7 @@ class SourceJira(AbstractSource):
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
-        incremental_args = {**args, "start_date": config.get("start_date", "")}
+        incremental_args = {**args, "start_date": config.get("start_date")}
         render_fields = config.get("render_fields", False)
         issues_stream = Issues(
             **incremental_args,

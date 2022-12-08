@@ -14,6 +14,8 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
+from .utils import safe_max
+
 API_VERSION = 3
 
 
@@ -105,7 +107,7 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
         else:
             return {cursor_field: str(latest_record_date)}
 
-    def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
+    def jql_compare_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[str]:
         issues_state = None
         cursor_exist_in_state: Any = False
         cursor_field = self.cursor_field
@@ -210,7 +212,7 @@ class BoardIssues(IncrementalJiraStream):
         stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["key", "updated"]
-        jql = self.jql_compare_date(stream_state)
+        jql = self.jql_compare_date(stream_state, stream_slice)
         if jql:
             params["jql"] = jql
         return params
@@ -263,7 +265,7 @@ class Epics(IncrementalJiraStream):
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["summary", "description", "status", "updated"]
-        jql_parts = ["issuetype = 'Epic'", f"project = '{project_id}'", self.jql_compare_date(stream_state)]
+        jql_parts = ["issuetype = 'Epic'", f"project = '{project_id}'", self.jql_compare_date(stream_state, stream_slice)]
         params["jql"] = " and ".join([p for p in jql_parts if p])
         if self._render_fields:
             params["expand"] = "renderedFields"
@@ -343,6 +345,7 @@ class Issues(IncrementalJiraStream):
         self._render_fields = render_fields
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self._starting_point_cache = {}
 
     def path(self, **kwargs) -> str:
         return "search"
@@ -356,7 +359,7 @@ class Issues(IncrementalJiraStream):
         project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = stream_slice["fields"]
-        jql_parts = [f"project = '{project_id}'", self.jql_compare_date(stream_state)]
+        jql_parts = [f"project = '{project_id}'", self.jql_compare_date(stream_state, stream_slice)]
         params["jql"] = " and ".join([p for p in jql_parts if p])
         expand = []
         if self._expand_changelog:
@@ -367,7 +370,10 @@ class Issues(IncrementalJiraStream):
             params["expand"] = ",".join(expand)
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        # For every new sync clear starting_point cache
+        self._starting_point_cache.clear()
+
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         fields = [
             "assignee",
@@ -394,9 +400,52 @@ class Issues(IncrementalJiraStream):
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
         for project in self.projects_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(
-                stream_slice={"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}, **kwargs
-            )
+            yield {"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        start_point = self.get_starting_point(stream_state=stream_state, stream_slice=stream_slice)
+        for record in super().read_records(
+            sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
+        ):
+            cursor_value = pendulum.parse(record[self.cursor_field])
+            if not start_point or cursor_value >= start_point:
+                yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        slice_value = latest_record["projectId"]
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(slice_value, {}).get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state.setdefault(slice_value, {})[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def jql_compare_date(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> Optional[str]:
+        compare_date = self.get_starting_point(stream_state, stream_slice)
+        if compare_date:
+            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} >= '{compare_date}'"
+
+    def _get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        if stream_state:
+            slice_value = stream_slice["project_id"]
+            stream_state_value = stream_state.get(slice_value, {}).get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value)
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
+
+    def get_starting_point(self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any]) -> str:
+        slice_value = stream_slice["project_id"]
+        if slice_value not in self._starting_point_cache:
+            self._starting_point_cache[slice_value] = self._get_starting_point(stream_state, stream_slice)
+        return self._starting_point_cache[slice_value]
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
@@ -1067,7 +1116,7 @@ class SprintIssues(IncrementalJiraStream):
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = stream_slice["fields"]
-        jql = self.jql_compare_date(stream_state)
+        jql = self.jql_compare_date(stream_state, stream_slice)
         if jql:
             params["jql"] = jql
         return params
