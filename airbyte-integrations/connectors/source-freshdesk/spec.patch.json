@@ -1,7 +1,22 @@
 {
-  "properties": {
-    "api_key": {
-      "description": "Freshdesk API Key. See the docs https://docs.airbyte.com/integrations/sources/freshdesk for more information on how to obtain this key."
+      "title": "Freshdesk Spec",
+      "type": "object",
+      "required": ["domain", "api_key"],
+      "additionalProperties": true,
+      "properties": {
+        "domain": {
+          "type": "string",
+          "description": "Freshdesk domain",
+          "title": "Domain",
+          "examples": ["myaccount.freshdesk.com"],
+          "pattern": "^[a-zA-Z0-9._-]*\\.freshdesk\\.com$"
+        },
+        "api_key": {
+          "type": "string",
+          "title": "API Key",
+          "description": "Freshdesk API Key. See the docs for more information on how to obtain this key: https://go.estuary.dev/6l5OEo",
+          "airbyte_secret": true
+        }
+      } 
     }
-  }
-}
+    
