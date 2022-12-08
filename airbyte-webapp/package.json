@@ -1,6 +1,6 @@
 {
   "name": "airbyte-webapp",
-  "version": "0.40.23",
+  "version": "0.40.24",
   "private": true,
   "engines": {
     "node": ">=16.0.0"
@@ -38,6 +38,7 @@
     "@monaco-editor/react": "^4.4.5",
     "@sentry/react": "^6.19.6",
     "@sentry/tracing": "^6.19.6",
+    "@tanstack/react-table": "^8.7.0",
     "@types/segment-analytics": "^0.0.34",
     "classnames": "^2.3.1",
     "dayjs": "^1.11.3",
