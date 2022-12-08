@@ -22,6 +22,7 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
+import requests
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client
 
@@ -38,6 +39,19 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="Article", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+
+    return ConfiguredAirbyteCatalog(streams=[append_stream])
+
+@pytest.fixture(name="pokemon_catalog")
+def pokemon_catalog_fixture() -> ConfiguredAirbyteCatalog:
+    stream_schema = requests.get("https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations"
+                                 "/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json").json()
+
+    append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name="Pokemon", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
@@ -105,6 +119,12 @@ def _record(stream: str, title: str, word_count: int) -> AirbyteMessage:
     )
 
 
+def _pokemon_record(pokemon: str):
+    url = f"https://pokeapi.co/api/v2/pokemon/{pokemon}"
+    data = requests.get(url).json()
+    return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="pokemon", data=data, emitted_at=0))
+
+
 def _record_with_id(stream: str, title: str, word_count: int, id: int) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={
@@ -151,6 +171,7 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     records_in_destination = retrieve_all_records(client)
     assert expected_records == records_in_destination, "Records in destination should match records expected"
 
+
 def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that records can have an ID that's an integer
@@ -176,3 +197,20 @@ def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog,
     for expected, actual in zip(expected_records, records_in_destination):
         assert expected.record.data.get("title") == actual.record.data.get("title"), "Titles should match"
         assert expected.record.data.get("wordCount") == actual.record.data.get("wordCount"), "Titles should match"
+
+
+def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: ConfiguredAirbyteCatalog, client: Client):
+    destination = DestinationWeaviate()
+
+    first_state_message = _state({"state": "1"})
+    output_states = list(
+        destination.write(
+            config, pokemon_catalog, [_pokemon_record("pikachu"), first_state_message]
+        )
+    )
+
+    expected_states = [first_state_message]
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    records_in_destination = retrieve_all_records(client)
+    assert len(records_in_destination) == 1, "Expecting there should be 1 record"

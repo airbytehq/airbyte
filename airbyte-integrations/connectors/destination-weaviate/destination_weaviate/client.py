@@ -3,6 +3,7 @@
 #
 
 import uuid
+import logging
 from typing import Any, Mapping
 
 import weaviate
@@ -27,10 +28,15 @@ class Client:
 
         self.client.batch.add_data_object(record, stream_name.title(), id)
         if self.client.batch.num_objects() >= self.batch_size:
-            self.client.batch.create_objects()
+            self.flush()
 
     def flush(self):
-        self.client.batch.create_objects()
+        # TODO add error handling
+        results = self.client.batch.create_objects()
+        for result in results:
+            errors = result.get("result", {}).get("errors", [])
+            if errors:
+                logging.error(f"Object {result.get('id')} had errors: {errors}")
 
     @staticmethod
     def get_weaviate_client(config: Mapping[str, Any]) -> weaviate.Client:
