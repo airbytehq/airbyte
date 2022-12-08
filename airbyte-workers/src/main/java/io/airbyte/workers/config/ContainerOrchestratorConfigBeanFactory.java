@@ -15,6 +15,7 @@ import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
+import io.micronaut.context.env.Environment;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -106,6 +107,10 @@ public class ContainerOrchestratorConfigBeanFactory {
     environmentVariables.put(AIRBYTE_API_AUTH_HEADER_NAME_ENV_VAR, airbyteApiAuthHeaderName);
     environmentVariables.put(AIRBYTE_API_AUTH_HEADER_VALUE_ENV_VAR, airbyteApiAuthHeaderValue);
     environmentVariables.put(INTERNAL_API_HOST_ENV_VAR, airbyteApiHost);
+
+    if (System.getenv(Environment.ENVIRONMENTS_ENV) != null) {
+      environmentVariables.put(Environment.ENVIRONMENTS_ENV, System.getenv(Environment.ENVIRONMENTS_ENV));
+    }
 
     return new ContainerOrchestratorConfig(
         namespace,
