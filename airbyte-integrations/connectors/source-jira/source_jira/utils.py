@@ -20,3 +20,17 @@ def read_full_refresh(stream_instance: Stream):
         records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
         for record in records:
             yield record
+
+
+def call_once(f):
+    result = None
+    called = False
+
+    def wrapper(*args, **kwargs):
+        nonlocal called, result
+        if not called:
+            result = f(*args, **kwargs)
+            called = True
+        return result
+
+    return wrapper
