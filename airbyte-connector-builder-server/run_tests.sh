@@ -1,3 +1,5 @@
+set -e
+
 cd $1
 
 # Install dependencies
