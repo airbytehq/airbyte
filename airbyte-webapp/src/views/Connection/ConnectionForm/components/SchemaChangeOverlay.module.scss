@@ -1,0 +1,14 @@
+@use "scss/colors";
+
+.background {
+  z-index: 1000;
+  background-color: red;
+  height: 100%;
+  overflow: hidden;
+}
+
+.schemaChangeImage {
+  margin-left: auto;
+  margin-right: auto;
+  z-index: 10000;
+}

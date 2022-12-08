@@ -21,6 +21,7 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
+import { SchemaChangeOverlay } from "./components/SchemaChangeOverlay";
 import { Section } from "./components/Section";
 import { SyncCatalogField } from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
@@ -57,14 +58,14 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <Section title={<FormattedMessage id="connection.transfer" />}>
+        <Section title={<FormattedMessage id="connection.transfer" />} className={styles.lightOverlay}>
           <ScheduleField />
           {allowAutoDetectSchemaChanges && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>
         {!isNewStreamsTableEnabled && (
-          <Section>
+          <Section className={styles.lightOverlay}>
             <Heading as="h2" size="sm">
               <FormattedMessage id="connection.streams" />
             </Heading>
@@ -128,6 +129,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
           </Section>
         )}
         <Section className={styles.flush}>
+          <SchemaChangeOverlay />
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}

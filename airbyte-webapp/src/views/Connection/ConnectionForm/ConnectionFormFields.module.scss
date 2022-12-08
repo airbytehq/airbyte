@@ -1,4 +1,5 @@
-@use "../../../scss/variables";
+@use "scss/variables";
+@use "scss/colors";
 
 .formContainer {
   display: flex;
@@ -46,4 +47,11 @@
 .flush {
   padding: 0;
   gap: 0;
+}
+
+.lightOverlay {
+  z-index: -10;
+  background-color: colors.$white;
+  opacity: 0.2;
+  overflow: hidden;
 }
