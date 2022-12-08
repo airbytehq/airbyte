@@ -1,6 +1,6 @@
 import pick from "lodash/pick";
 
-import { FormBlock } from "core/form/types";
+import { FormBaseItem, FormBlock, FormGroupItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
