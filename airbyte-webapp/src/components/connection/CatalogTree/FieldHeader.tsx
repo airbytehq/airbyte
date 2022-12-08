@@ -5,7 +5,7 @@ import { HeaderCell, SyncHeaderContainer } from "./styles";
 
 const FieldHeaderInner: React.FC = () => (
   <>
-    <HeaderCell flex={0}>
+    <HeaderCell lighter flex={0}>
       <SyncHeaderContainer>
         <FormattedMessage id="form.field.sync" />
       </SyncHeaderContainer>

@@ -4,8 +4,10 @@ import styled from "styled-components";
 import { Cell } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { RadioButton } from "components/ui/RadioButton";
+import { Switch } from "components/ui/Switch";
+import { Tooltip } from "components/ui/Tooltip";
 
-import { SyncSchemaField } from "core/domain/catalog";
+import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { equal } from "utils/objects";
 import { useTranslateDataType } from "utils/useTranslateDataType";
@@ -44,12 +46,29 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
 
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
-  console.log("fieldrow rendered");
+  const isNestedField = SyncSchemaFieldObject.isNestedField(field);
+
   return (
     <>
       <Cell flex={0}>
-        <SyncCheckboxContainer title={name}>
-          <CheckBox checked={isSelected} onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)} />
+        <SyncCheckboxContainer>
+          {!isNestedField && (
+            <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)} />
+          )}
+          {isNestedField && (
+            <Tooltip
+              control={
+                <Switch
+                  small
+                  disabled
+                  checked={isSelected}
+                  onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
+                />
+              }
+            >
+              This field will be synced if <code>{field.path[0]}</code> is enabled
+            </Tooltip>
+          )}
         </SyncCheckboxContainer>
       </Cell>
       <Cell ellipsis flex={1.5}>

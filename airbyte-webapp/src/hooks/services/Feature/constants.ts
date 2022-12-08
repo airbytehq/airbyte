@@ -12,5 +12,6 @@ export const defaultCloudFeatures = [
   FeatureItem.AllowOAuthConnector,
   FeatureItem.AllowSync,
   FeatureItem.AllowChangeDataGeographies,
+  FeatureItem.AllowDBTCloudIntegration,
   FeatureItem.AllowFieldSelection,
 ];

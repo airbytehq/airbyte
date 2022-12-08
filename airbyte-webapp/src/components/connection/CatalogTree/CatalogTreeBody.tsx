@@ -16,7 +16,6 @@ interface CatalogTreeBodyProps {
 }
 
 export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, changedStreams, onStreamChanged }) => {
-  console.log(streams);
   const { mode } = useConnectionFormService();
 
   const onUpdateStream = useCallback(

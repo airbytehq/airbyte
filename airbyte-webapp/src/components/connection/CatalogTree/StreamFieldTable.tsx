@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration, SelectedFieldInfo } from "core/request/AirbyteClient";
@@ -10,23 +10,57 @@ import styles from "./StreamFieldTable.module.scss";
 import { TreeRowWrapper } from "./TreeRowWrapper";
 
 interface StreamFieldTableProps {
-  syncSchemaFields: SyncSchemaField[];
   config: AirbyteStreamConfiguration | undefined;
-  shouldDefinePk: boolean;
-  shouldDefineCursor: boolean;
   onCursorSelect: (cursorPath: string[]) => void;
+  onFirstFieldDeselected: (fieldName: string) => void;
   onPkSelect: (pkPath: string[]) => void;
   onSelectedFieldsUpdate: (selectedFields: SelectedFieldInfo[]) => void;
+  onAllFieldsSelected: () => void;
+  shouldDefineCursor: boolean;
+  shouldDefinePk: boolean;
+  syncSchemaFields: SyncSchemaField[];
+  numberOfFieldsInStream: number;
 }
 
-export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
+export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
+  config,
+  onCursorSelect,
+  onFirstFieldDeselected,
+  onPkSelect,
+  onSelectedFieldsUpdate,
+  onAllFieldsSelected,
+  shouldDefineCursor,
+  shouldDefinePk,
+  syncSchemaFields,
+  numberOfFieldsInStream,
+}) => {
   const handleFieldToggle = (fieldName: string, isSelected: boolean) => {
-    if (isSelected) {
-      props.onSelectedFieldsUpdate([...(props.config?.selectedFields || []), { fieldName }]);
+    const previouslySelectedFields = config?.selectedFields || [];
+
+    if (!config?.fieldSelectionEnabled && !isSelected) {
+      onFirstFieldDeselected(fieldName);
+    } else if (isSelected && previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+      // In this case we are selecting the only unselected field
+      onAllFieldsSelected();
+    } else if (isSelected) {
+      onSelectedFieldsUpdate([...previouslySelectedFields, { fieldName }]);
     } else {
-      props.onSelectedFieldsUpdate(props.config?.selectedFields?.filter((f) => f !== fieldName) || []);
+      onSelectedFieldsUpdate(previouslySelectedFields.filter((f) => f.fieldName !== fieldName) || []);
     }
   };
+
+  const isFieldSelected = useCallback(
+    (field: SyncSchemaField): boolean => {
+      // All fields are implicitly selected if field selection is disabled
+      if (!config?.fieldSelectionEnabled) {
+        return true;
+      }
+
+      // path[0] is the top-level field name for all nested fields
+      return !!config?.selectedFields?.find((sf) => sf.fieldName === field.path[0]);
+    },
+    [config]
+  );
 
   return (
     <div className={styles.container}>
@@ -34,17 +68,17 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
         <FieldHeader />
       </TreeRowWrapper>
       <div className={styles.rowsContainer}>
-        {props.syncSchemaFields.map((field) => (
+        {syncSchemaFields.map((field) => (
           <TreeRowWrapper depth={1} key={pathDisplayName(field.path)}>
             <FieldRow
               field={field}
-              config={props.config}
-              isPrimaryKeyEnabled={props.shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)}
-              isCursorEnabled={props.shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
-              onPrimaryKeyChange={props.onPkSelect}
-              onCursorChange={props.onCursorSelect}
+              config={config}
+              isPrimaryKeyEnabled={shouldDefinePk && SyncSchemaFieldObject.isPrimitive(field)}
+              isCursorEnabled={shouldDefineCursor && SyncSchemaFieldObject.isPrimitive(field)}
+              onPrimaryKeyChange={onPkSelect}
+              onCursorChange={onCursorSelect}
               onToggleFieldSelected={handleFieldToggle}
-              isSelected={!!props.config?.selectedFields?.find((sf) => sf.fieldName === field.cleanedName)}
+              isSelected={isFieldSelected(field)}
             />
           </TreeRowWrapper>
         ))}

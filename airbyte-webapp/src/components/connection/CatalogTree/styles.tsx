@@ -22,7 +22,9 @@ export const NameContainer = styled.span`
 `;
 
 export const SyncHeaderContainer = styled.span`
-  padding-left: 30px;
+  padding-left: 34px;
+  display: inline-block;
+  min-width: 62px;
 `;
 
 export const SyncCheckboxContainer = styled.div`
