@@ -1,5 +1,5 @@
-@use "../../../../../scss/colors";
-@use "../../../../../scss/variables" as vars;
+@use "scss/colors";
+@use "scss/variables" as vars;
 
 .button {
   cursor: pointer;
@@ -7,7 +7,7 @@
   padding: 0;
   margin: 0;
   width: 100%;
-  border-radius: 10px;
+  border-radius: vars.$border-radius-lg;
 }
 
 .connectorCardWrapper {

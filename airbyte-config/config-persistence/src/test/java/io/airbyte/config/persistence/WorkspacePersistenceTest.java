@@ -42,6 +42,12 @@ class WorkspacePersistenceTest extends BaseConfigDatabaseTest {
   }
 
   @Test
+  void testGetWorkspace() throws ConfigNotFoundException, IOException, JsonValidationException {
+    configRepository.writeStandardWorkspaceNoSecrets(createBaseStandardWorkspace().withWorkspaceId(UUID.randomUUID()));
+    assertReturnsWorkspace(createBaseStandardWorkspace());
+  }
+
+  @Test
   void testWorkspaceWithNullTombstone() throws ConfigNotFoundException, IOException, JsonValidationException {
     assertReturnsWorkspace(createBaseStandardWorkspace());
   }
