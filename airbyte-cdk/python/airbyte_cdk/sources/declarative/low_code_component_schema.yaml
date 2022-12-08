@@ -428,6 +428,32 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  InterpolatedBoolean:
+    description: A template string that will be interpolated against variables at runtime. The string will be evaluated as False if it interpolates to a value in ['False', 'false', '{}', '[]', '()', '', '0', '0.0', {}, False, [], (), set()]"
+    type: object
+    required:
+      - type
+      - condition
+    properties:
+      condition:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  InterpolatedMapping:
+    description: Wrapper around a Mapping[str, str] where both the keys and values are to be interpolated.
+    type: object
+    required:
+      - type
+      - mapping
+    properties:
+      mapping:
+        type: object
+        additionalProperties:
+          type: string
+      $options:
+        type: object
+        additionalProperties: true
   InterpolatedString:
     description: A template string that will be interpolated against variables at runtime
     type: object
