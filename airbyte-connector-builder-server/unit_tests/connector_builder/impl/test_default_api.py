@@ -386,25 +386,27 @@ def test_read_stream_returns_error_if_stream_does_not_exist():
     "log_message, expected_request",
     [
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(
-                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"}
+                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"},
+                http_method="PUT",
             ),
             id="test_create_request_with_all_fields",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}),
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "GET", "headers": {"field": "name"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"},
+                        http_method="GET"),
             id="test_create_request_with_no_body",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "body":{"key": "value"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, body={"key": "value"}),
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "body":{"key": "value"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_headers",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords", "headers": {"field": "name"}, "body":{"key": "value"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}),
+            'request:{"url": "https://nichirin.com/v1/swords", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_parameters",
         ),
         pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),

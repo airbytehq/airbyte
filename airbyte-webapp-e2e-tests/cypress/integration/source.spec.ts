@@ -13,11 +13,12 @@ describe("Source main actions", () => {
     cy.intercept("/api/v1/sources/create").as("createSource");
     createPostgresSource("Test source cypress");
 
-    cy.wait("@createSource", {timeout: 30000}).then((interception) => {
-      assert("include", `/source/${interception.response?.body.Id}`)});
+    cy.wait("@createSource", { timeout: 30000 }).then((interception) => {
+      assert("include", `/source/${interception.response?.body.Id}`);
+    });
   });
 
-  //TODO: add update source on some other connector or create 1 more user for pg
+  // TODO: add update source on some other connector or create 1 more user for pg
   it.skip("Update source", () => {
     const sourceName = appendRandomString("Test source cypress for update");
     createPostgresSource(sourceName);
@@ -70,8 +71,9 @@ describe("Unsaved changes modal", () => {
 
     cy.get("[data-testid='confirmationModal']").should("exist");
     cy.get("[data-testid='confirmationModal']").contains("Discard changes");
-    cy.get("[data-testid='confirmationModal']")
-      .contains("There are unsaved changes. Are you sure you want to discard your changes?");
+    cy.get("[data-testid='confirmationModal']").contains(
+      "There are unsaved changes. Are you sure you want to discard your changes?"
+    );
   });
 
   it("Check leaving Source page after failing testing", () => {
@@ -82,13 +84,14 @@ describe("Unsaved changes modal", () => {
     fillPokeAPIForm("testName", "name");
     submitButtonClick();
 
-    cy.wait("@checkSourceUpdateConnection", {timeout: 5000});
+    cy.wait("@checkSourceUpdateConnection", { timeout: 5000 });
 
     openHomepage();
 
     cy.get("[data-testid='confirmationModal']").should("exist");
     cy.get("[data-testid='confirmationModal']").contains("Discard changes");
-    cy.get("[data-testid='confirmationModal']")
-      .contains("There are unsaved changes. Are you sure you want to discard your changes?");
+    cy.get("[data-testid='confirmationModal']").contains(
+      "There are unsaved changes. Are you sure you want to discard your changes?"
+    );
   });
 });
