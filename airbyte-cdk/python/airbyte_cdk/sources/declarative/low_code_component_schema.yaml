@@ -56,6 +56,7 @@ definitions:
         type: object
         additionalProperties: true
   ApiKeyAuthenticator:
+    description: Authenticator for requests requiring an api token
     type: object
     required:
       - type
@@ -80,6 +81,7 @@ definitions:
       - "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
       - "$ref": "#/definitions/CustomBackoffStrategy"
   BasicHttpAuthenticator:
+    description: Authenticator for requests authenticated with a username and optional password
     type: object
     required:
       - type
@@ -96,6 +98,7 @@ definitions:
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
   BearerAuthenticator:
+    description: Authenticator for requests authenticated with a Bearer token
     type: object
     required:
       - type
@@ -273,6 +276,7 @@ definitions:
         type: object
         additionalProperties: true
   DeclarativeOauth2Authenticator:
+    description: Authenticator for requests using Oauth authentication
     type: object
     required:
       - type
@@ -702,6 +706,7 @@ definitions:
         type: object
         additionalProperties: true
   NoAuth:
+    description: Authenticator for requests requiring no authentication
     type: object
     required:
       - type
@@ -876,6 +881,7 @@ definitions:
         type: object
         additionalProperties: true
   SingleSlice:
+    description: Stream slicer returning only a single stream slice
     type: object
     required:
       - type
