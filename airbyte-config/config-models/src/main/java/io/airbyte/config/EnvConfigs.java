@@ -477,7 +477,7 @@ public class EnvConfigs implements Configs {
   // Airbyte Services
   @Override
   public String getTemporalHost() {
-    return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+    return getEnvOrDefault(TEMPORAL_HOST, "daspire-temporal:7233");
   }
 
   @Override
