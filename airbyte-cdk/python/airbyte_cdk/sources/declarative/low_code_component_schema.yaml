@@ -837,6 +837,25 @@ definitions:
         items:
           items:
             type: string
+  RequestOption:
+    description:
+    type: object
+    required:
+      - type
+      - field_name
+      - inject_into
+    properties:
+      type:
+        enum: [RequestOptions]
+      field_name:
+        type: string
+      inject_into:
+        enum:
+          - request_parameter
+          - header
+          - path
+          - body_data
+          - body_json
   SimpleRetriever:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
     type: object

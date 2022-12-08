@@ -55,6 +55,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self._debug = debug
         self._factory = DeclarativeComponentFactory()
 
+        # todo: now that type is required, we need to implement a type resolver to append types if not defined before validation
+
         self._validate_source()
 
         # Stopgap to protect the top-level namespace until it's validated through the schema
