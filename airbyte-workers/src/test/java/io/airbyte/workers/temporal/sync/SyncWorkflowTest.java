@@ -113,7 +113,6 @@ class SyncWorkflowTest {
   private StandardSyncSummary standardSyncSummary;
   private StandardSyncSummary failedSyncSummary;
   private SyncStats syncStats;
-  private StandardSync standardSync;
   private NormalizationSummary normalizationSummary;
   private ActivityOptions longActivityOptions;
   private ActivityOptions shortActivityOptions;
