@@ -8703,34 +8703,22 @@ containing the updated stream needs to be sent.</div>
     <div class="example-data-content-type">Content-Type: application/json</div>
     <pre class="example"><code>{
   "connections" : [ {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -8742,34 +8730,22 @@ containing the updated stream needs to be sent.</div>
       }
     }
   }, {
-    "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "latestSyncJobCreatedAt" : 0,
+    "name" : "name",
     "destination" : {
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "destinationName" : "destinationName",
       "name" : "name",
       "icon" : "icon",
-      "destinationDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
     },
+    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "isSyncing" : true,
     "source" : {
       "sourceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "connectionConfiguration" : {
-        "user" : "charles"
-      },
       "name" : "name",
       "icon" : "icon",
-      "sourceDefinitionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-      "sourceName" : "sourceName",
-      "workspaceId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91"
+      "sourceName" : "sourceName"
     },
-    "destinationId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
-    "name" : "name",
-    "connectionId" : "046b6c7f-0b8a-43b9-b35d-6489e6daee91",
     "scheduleData" : {
       "cron" : {
         "cronExpression" : "cronExpression",
@@ -9902,6 +9878,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#DestinationRead"><code>DestinationRead</code> - </a></li>
     <li><a href="#DestinationReadList"><code>DestinationReadList</code> - </a></li>
     <li><a href="#DestinationSearch"><code>DestinationSearch</code> - </a></li>
+    <li><a href="#DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a></li>
     <li><a href="#DestinationSyncMode"><code>DestinationSyncMode</code> - </a></li>
     <li><a href="#DestinationUpdate"><code>DestinationUpdate</code> - </a></li>
     <li><a href="#FieldAdd"><code>FieldAdd</code> - </a></li>
@@ -9986,6 +9963,7 @@ containing the updated stream needs to be sent.</div>
     <li><a href="#SourceRead"><code>SourceRead</code> - </a></li>
     <li><a href="#SourceReadList"><code>SourceReadList</code> - </a></li>
     <li><a href="#SourceSearch"><code>SourceSearch</code> - </a></li>
+    <li><a href="#SourceSnippetRead"><code>SourceSnippetRead</code> - </a></li>
     <li><a href="#SourceUpdate"><code>SourceUpdate</code> - </a></li>
     <li><a href="#StreamDescriptor"><code>StreamDescriptor</code> - </a></li>
     <li><a href="#StreamState"><code>StreamState</code> - </a></li>
@@ -10637,6 +10615,16 @@ containing the updated stream needs to be sent.</div>
 <div class="param">connectionConfiguration (optional)</div><div class="param-desc"><span class="param-type"><a href="#DestinationConfiguration">DestinationConfiguration</a></span>  </div>
 <div class="param">name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">destinationName (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="DestinationSnippetRead"><code>DestinationSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">destinationName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -11370,6 +11358,16 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     </div>  <!-- field-items -->
   </div>
   <div class="model">
+    <h3><a name="SourceSnippetRead"><code>SourceSnippetRead</code> - </a> <a class="up" href="#__Models">Up</a></h3>
+    <div class='model-description'></div>
+    <div class="field-items">
+      <div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
+<div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">sourceName </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">icon (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
     <h3><a name="SourceUpdate"><code>SourceUpdate</code> - </a> <a class="up" href="#__Models">Up</a></h3>
     <div class='model-description'></div>
     <div class="field-items">
@@ -11471,13 +11469,11 @@ if oauth parameters were contained inside the top level, rootObject=[] If they w
     <div class="field-items">
       <div class="param">connectionId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">sourceId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
-<div class="param">destinationId </div><div class="param-desc"><span class="param-type"><a href="#UUID">UUID</a></span>  format: uuid</div>
 <div class="param">scheduleType (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleType">ConnectionScheduleType</a></span>  </div>
 <div class="param">scheduleData (optional)</div><div class="param-desc"><span class="param-type"><a href="#ConnectionScheduleData">ConnectionScheduleData</a></span>  </div>
 <div class="param">status </div><div class="param-desc"><span class="param-type"><a href="#ConnectionStatus">ConnectionStatus</a></span>  </div>
-<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceRead">SourceRead</a></span>  </div>
-<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationRead">DestinationRead</a></span>  </div>
+<div class="param">source </div><div class="param-desc"><span class="param-type"><a href="#SourceSnippetRead">SourceSnippetRead</a></span>  </div>
+<div class="param">destination </div><div class="param-desc"><span class="param-type"><a href="#DestinationSnippetRead">DestinationSnippetRead</a></span>  </div>
 <div class="param">latestSyncJobCreatedAt (optional)</div><div class="param-desc"><span class="param-type"><a href="#long">Long</a></span> epoch time of the latest sync job. null if no sync job has taken place. format: int64</div>
 <div class="param">latestSyncJobStatus (optional)</div><div class="param-desc"><span class="param-type"><a href="#JobStatus">JobStatus</a></span>  </div>
 <div class="param">isSyncing </div><div class="param-desc"><span class="param-type"><a href="#boolean">Boolean</a></span>  </div>

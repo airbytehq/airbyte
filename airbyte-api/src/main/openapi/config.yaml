@@ -2738,6 +2738,21 @@ components:
           type: string
         icon:
           type: string
+    SourceSnippetRead:
+      type: object
+      required:
+        - sourceId
+        - name
+        - sourceName
+      properties:
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
+        name:
+          type: string
+        sourceName:
+          type: string
+        icon:
+          type: string
     SourceReadList:
       type: object
       required:
@@ -3029,6 +3044,21 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         connectionConfiguration:
           $ref: "#/components/schemas/DestinationConfiguration"
+        name:
+          type: string
+        destinationName:
+          type: string
+        icon:
+          type: string
+    DestinationSnippetRead:
+      type: object
+      required:
+        - destinationId
+        - name
+        - destinationName
+      properties:
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
         name:
           type: string
         destinationName:
@@ -4621,8 +4651,6 @@ components:
       required:
         - connectionId
         - name
-        - sourceId
-        - destinationId
         - source
         - destination
         - status
@@ -4633,10 +4661,6 @@ components:
           $ref: "#/components/schemas/ConnectionId"
         name:
           type: string
-        sourceId:
-          $ref: "#/components/schemas/SourceId"
-        destinationId:
-          $ref: "#/components/schemas/DestinationId"
         scheduleType:
           $ref: "#/components/schemas/ConnectionScheduleType"
         scheduleData:
@@ -4644,9 +4668,9 @@ components:
         status:
           $ref: "#/components/schemas/ConnectionStatus"
         source:
-          $ref: "#/components/schemas/SourceRead"
+          $ref: "#/components/schemas/SourceSnippetRead"
         destination:
-          $ref: "#/components/schemas/DestinationRead"
+          $ref: "#/components/schemas/DestinationSnippetRead"
         latestSyncJobCreatedAt:
           $ref: "#/components/schemas/JobCreatedAt"
         latestSyncJobStatus:

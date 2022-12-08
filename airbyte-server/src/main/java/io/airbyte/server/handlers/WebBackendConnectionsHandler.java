@@ -20,6 +20,7 @@ import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.DestinationSnippetRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.OperationCreate;
 import io.airbyte.api.model.generated.OperationReadList;
@@ -29,6 +30,7 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
+import io.airbyte.api.model.generated.SourceSnippetRead;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.StreamTransform;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
@@ -116,10 +118,11 @@ public class WebBackendConnectionsHandler {
     final List<UUID> connectionIds = standardSyncs.stream().map(StandardSync::getConnectionId).toList();
 
     // Fetching all the related objects we need for the final output
-    final Map<UUID, SourceRead> sourceReadById = getSourceReadById(sourceIds);
-    final Map<UUID, DestinationRead> destinationReadById = getDestinationReadById(destinationIds);
+    final Map<UUID, SourceSnippetRead> sourceReadById = getSourceSnippetReadById(sourceIds);
+    final Map<UUID, DestinationSnippetRead> destinationReadById = getDestinationSnippetReadById(destinationIds);
     final Map<UUID, JobRead> latestJobByConnectionId = getLatestJobByConnectionId(connectionIds);
-    // This call could be removed, running jobs should be a subset of latest jobs, need to expose the right status filtering for this.
+    // This call could be removed, running jobs should be a subset of latest jobs, need to expose the
+    // right status filtering for this.
     final Map<UUID, JobRead> runningJobByConnectionId = getRunningJobByConnectionId(connectionIds);
     final Map<UUID, ActorCatalogFetchEvent> newestFetchEventsByActorId =
         configRepository.getMostRecentActorCatalogFetchEventForSources(sourceIds);
@@ -150,23 +153,19 @@ public class WebBackendConnectionsHandler {
         .collect(Collectors.toMap(j -> UUID.fromString(j.getConfigId()), Function.identity()));
   }
 
-  private Map<UUID, SourceRead> getSourceReadById(final List<UUID> sourceIds) throws IOException {
-    final List<SourceRead> sourceReads = configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds)
+  private Map<UUID, SourceSnippetRead> getSourceSnippetReadById(final List<UUID> sourceIds) throws IOException {
+    return configRepository.getSourceAndDefinitionsFromSourceIds(sourceIds)
         .stream()
-        .map(sourceAndDefinition -> SourceHandler.toSourceRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
-        .toList();
-
-    return sourceReads.stream().collect(Collectors.toMap(SourceRead::getSourceId, Function.identity()));
+        .map(sourceAndDefinition -> SourceHandler.toSourceSnippetRead(sourceAndDefinition.source(), sourceAndDefinition.definition()))
+        .collect(Collectors.toMap(SourceSnippetRead::getSourceId, Function.identity()));
   }
 
-  private Map<UUID, DestinationRead> getDestinationReadById(final List<UUID> destinationIds) throws IOException {
-    final List<DestinationRead> destinationReads = configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
+  private Map<UUID, DestinationSnippetRead> getDestinationSnippetReadById(final List<UUID> destinationIds) throws IOException {
+    return configRepository.getDestinationAndDefinitionsFromDestinationIds(destinationIds)
         .stream()
-        .map(destinationAndDefinition -> DestinationHandler.toDestinationRead(destinationAndDefinition.destination(),
+        .map(destinationAndDefinition -> DestinationHandler.toDestinationSnippetRead(destinationAndDefinition.destination(),
             destinationAndDefinition.definition()))
-        .toList();
-
-    return destinationReads.stream().collect(Collectors.toMap(DestinationRead::getDestinationId, Function.identity()));
+        .collect(Collectors.toMap(DestinationSnippetRead::getDestinationId, Function.identity()));
   }
 
   private WebBackendConnectionRead buildWebBackendConnectionRead(final ConnectionRead connectionRead, final Optional<UUID> currentSourceCatalogId)
@@ -199,14 +198,14 @@ public class WebBackendConnectionsHandler {
 
   static private WebBackendConnectionListItem buildWebBackendConnectionListItem(
                                                                                 final StandardSync standardSync,
-                                                                                final Map<UUID, SourceRead> sourceReadById,
-                                                                                final Map<UUID, DestinationRead> destinationReadById,
+                                                                                final Map<UUID, SourceSnippetRead> sourceReadById,
+                                                                                final Map<UUID, DestinationSnippetRead> destinationReadById,
                                                                                 final Map<UUID, JobRead> latestJobByConnectionId,
                                                                                 final Map<UUID, JobRead> runningJobByConnectionId,
                                                                                 final Optional<ActorCatalogFetchEvent> latestFetchEvent) {
 
-    final SourceRead source = sourceReadById.get(standardSync.getSourceId());
-    final DestinationRead destination = destinationReadById.get(standardSync.getDestinationId());
+    final SourceSnippetRead source = sourceReadById.get(standardSync.getSourceId());
+    final DestinationSnippetRead destination = destinationReadById.get(standardSync.getDestinationId());
     final Optional<JobRead> latestSyncJob = Optional.ofNullable(latestJobByConnectionId.get(standardSync.getConnectionId()));
     final Optional<JobRead> latestRunningSyncJob = Optional.ofNullable(runningJobByConnectionId.get(standardSync.getConnectionId()));
     final ConnectionRead connectionRead = ApiPojoConverters.internalToConnectionRead(standardSync);
@@ -216,8 +215,6 @@ public class WebBackendConnectionsHandler {
 
     final WebBackendConnectionListItem listItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
-        .sourceId(standardSync.getSourceId())
-        .destinationId(standardSync.getDestinationId())
         .status(ApiPojoConverters.toApiStatus(standardSync.getStatus()))
         .name(standardSync.getName())
         .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
