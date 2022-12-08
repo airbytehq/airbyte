@@ -181,6 +181,13 @@ describe("Feature Service", () => {
         expect(getFeature(FeatureItem.AllowSync)).toBe(false);
         expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(true);
       });
+
+      it("should not overwrite in a non dev environment", () => {
+        (process.env.NODE_ENV as string) = "productions";
+        const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
+        expect(getFeature(FeatureItem.AllowSync)).toBe(true);
+        expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(false);
+      });
     });
   });
 
