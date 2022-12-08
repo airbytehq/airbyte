@@ -242,7 +242,7 @@ describe("Service Form", () => {
         <ConnectorForm
           formType="source"
           formValues={{ name: "test-name" }}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             result = values;
           }}
           selectedConnectorDefinitionSpecification={
@@ -381,7 +381,7 @@ describe("Service Form", () => {
     const renderConnectorForm = (props: ConnectorFormProps) =>
       render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const onSubmitClb = () => {};
+    const onSubmitClb = async () => {};
     const connectorDefSpec = {
       connectionSpecification: schema,
       sourceDefinitionId: "test-service-type",
