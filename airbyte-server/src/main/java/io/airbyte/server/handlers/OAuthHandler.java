@@ -209,7 +209,7 @@ public class OAuthHandler {
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
-        completeDestinationOAuthRequest.getSourceDefinitionId()));
+        completeDestinationOAuthRequest.getDestinationDefinitionId()));
 
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
