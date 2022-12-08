@@ -107,12 +107,12 @@ jobs:
       - name: Write Integration Test Credentials for ${{ github.event.inputs.connector }}
         run: |
           source venv/bin/activate
-          ci_credentials ${{ github.event.inputs.connector }}
+          ci_credentials ${{ github.event.inputs.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
+            ci_credentials destination-bigquery write-to-storage
+            ci_credentials destination-postgres write-to-storage
+            ci_credentials destination-snowflake write-to-storage
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -124,6 +124,19 @@ jobs:
           ACTION_RUN_ID: ${{github.run_id}}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+      - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ github.event.inputs.connector }} update-secrets
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ github.event.inputs.connector }}" ] || [ 'base-normalization' = "${{ github.event.inputs.connector }}" ]; then
+            ci_credentials destination-bigquery update-secrets
+            ci_credentials destination-postgres update-secrets
+            ci_credentials destination-snowflake update-secrets
+          fi
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Archive test reports artifacts
         if: github.event.inputs.comment-id && failure()
         uses: actions/upload-artifact@v3

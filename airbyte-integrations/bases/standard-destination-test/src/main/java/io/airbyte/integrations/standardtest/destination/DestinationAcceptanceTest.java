@@ -1195,13 +1195,13 @@ public abstract class DestinationAcceptanceTest {
 
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
   }
@@ -1210,7 +1210,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
@@ -1222,7 +1222,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,

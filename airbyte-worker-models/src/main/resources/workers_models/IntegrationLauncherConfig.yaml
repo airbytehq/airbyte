@@ -26,3 +26,5 @@ properties:
   protocolVersion:
     type: object
     existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    type: boolean
