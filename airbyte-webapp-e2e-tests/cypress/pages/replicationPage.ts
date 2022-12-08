@@ -11,7 +11,7 @@ const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
 const cursorFieldDropdown = "button[class^='PathPopoutButton_button']";
 const streamFieldNames = "[class^='TreeRowWrapper_rowWrapper'] span";
 const streamDataTypes = "[class^='TreeRowWrapper_rowWrapper'] div:nth-child(2)";
-const arrowStream = "[class^='Arrow_container__']";
+const ExpandStreamDetailsTableBtn = "[class^='Arrow_container__']";
 const cursorFieldText = "[class^='PathPopoutButton_button__']";
 const primaryKeyText = "[class^='PathPopoutButton_button__']";
 const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
@@ -31,8 +31,8 @@ export const enterConnectionName = (name: string) => {
   cy.get(connectionNameInput).type(name);
 };
 
-export const clickArrowStream = () => {
-  cy.get(arrowStream).click();
+export const expandStreamDetails = () => {
+  cy.get(ExpandStreamDetailsTableBtn).click();
 };
 
 export const selectSchedule = (value: string) => {

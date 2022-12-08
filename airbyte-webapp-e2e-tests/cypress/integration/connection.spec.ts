@@ -23,7 +23,7 @@ import {
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
-  clickArrowStream
+  expandStreamDetails
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -388,7 +388,7 @@ describe("Connection - stream view", () => {
     goToReplicationTab();
 
     searchStream("users");
-    clickArrowStream();
+    expandStreamDetails();
     checkStreamFields(collectionNames, collectionTypes);
 
     deleteSource(sourceName);
