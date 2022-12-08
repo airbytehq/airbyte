@@ -64,7 +64,7 @@ public abstract class GcsDestinationAcceptanceTest extends DestinationAcceptance
   protected NamingConventionTransformer nameTransformer;
   protected S3StorageOperations s3StorageOperations;
 
-  protected GcsDestinationAcceptanceTest(final S3Format outputFormat) {
+  public GcsDestinationAcceptanceTest(final S3Format outputFormat) {
     this.outputFormat = outputFormat;
   }
 
