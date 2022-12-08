@@ -133,64 +133,58 @@ definitions:
     type: object
     required:
       - type
-      - access_token_name
       - client_id
       - client_secret
       - config
-      - expires_in_name
-      - grant_type
-      - refresh_request_body
       - refresh_token
-      - scopes
-      - token_expiry_date
       - token_refresh_endpoint
     properties:
       type:
         enum: [DeclarativeOauth2Authenticator]
-        access_token_name:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        client_id:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        client_secret:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        config:
+      client_id:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      client_secret:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      config:
+        type: object
+        additionalProperties:
           type: object
-          additionalProperties:
-            type: object
-        expires_in_name:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        grant_type:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        refresh_request_body:
+      refresh_token:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      token_refresh_endpoint:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      access_token_name:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      expires_in_name:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      grant_type:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
+      refresh_request_body:
+        type: object
+        additionalProperties:
           type: object
-          additionalProperties:
-            type: object
-        refresh_token:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        scopes:
-          - type: array
-            items:
-              type: string
-        token_expiry_date:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
-        token_refresh_endpoint:
-          anyOf:
-            - type: string
-            - "$ref": "#/definitions/InterpolatedString"
+      scopes:
+        type: array
+        items:
+          type: string
+      token_expiry_date:
+        anyOf:
+          - type: string
+          - "$ref": "#/definitions/InterpolatedString"
   DeclarativeStream:
     description: A stream whose behavior is described by a set of declarative low code components
     type: object
