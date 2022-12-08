@@ -76,7 +76,6 @@ class DataProcessor:
         df = pd.read_csv(StringIO(response), sep=",")
         del response  # memory management
 
-
         df = df.melt(
             id_vars=[
                 "Account Name",
