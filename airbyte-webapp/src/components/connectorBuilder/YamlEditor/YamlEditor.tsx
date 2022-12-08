@@ -75,7 +75,6 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   const yamlIsDirty = useMemo(() => {
     return !isMatch(convertToManifest(builderFormValues), jsonManifest);
   }, [jsonManifest, builderFormValues]);
-  console.log(yamlIsDirty);
 
   const handleToggleYamlEditor = () => {
     if (yamlIsDirty) {
