@@ -114,7 +114,7 @@ definitions:
         enum: [ConstantBackoffStrategy]
       backoff_time_in_seconds:
         anyOf:
-          - type: float
+          - type: number
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
       $options:
@@ -359,7 +359,7 @@ definitions:
         enum: [ExponentialBackoffStrategy]
       factor:
         anyOf:
-          - type: float
+          - type: number
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
         default: 5
@@ -648,7 +648,7 @@ definitions:
           - "$ref": "#/definitions/InterpolatedString"
       min_wait:
         anyOf:
-          - type: float
+          - type: number
           - type: string
           - "$ref": "#/definitions/InterpolatedString"
       regex:
