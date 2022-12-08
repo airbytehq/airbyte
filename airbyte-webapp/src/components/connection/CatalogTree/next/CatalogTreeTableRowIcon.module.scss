@@ -1,0 +1,24 @@
+@use "scss/colors";
+
+.icon {
+  margin-right: 7px;
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+
+  &.changed {
+    color: colors.$blue;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+:export {
+  modificationIconColor: colors.$blue;
+}
