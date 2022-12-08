@@ -8,13 +8,14 @@ You can use [OAuth](https://mailchimp.com/developer/marketing/guides/access-user
 
 ## Set up the Mailchimp source connector
 
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte OSS account.
+1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) or Airbyte Open Source account.
 2. Click **Sources** and then click **+ New source**. 
 3. On the Set up the source page, select **Mailchimp** from the Source type dropdown.
 4. Enter a name for your source.
-6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte OSS.
+
+6. You can use OAuth or an API key to authenticate your Mailchimp account. We recommend using OAuth for Airbyte Cloud and an API key for Airbyte Open Source.
     - To authenticate using OAuth for Airbyte Cloud, ensure you have [registered your Mailchimp account](#prerequisite) and then click **Authenticate your Mailchimp account** to sign in with Mailchimp and authorize your account. 
-    - To authenticate using an API key for Airbyte OSS, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
+    - To authenticate using an API key for Airbyte Open Source, select **API key** from the Authentication dropdown and enter the [API key](https://mailchimp.com/developer/marketing/guides/quick-start/#generate-your-api-key) for your Mailchimp account.    
     :::note
     Check the [performance considerations](#performance-considerations) before using an API key.
     :::
@@ -228,7 +229,9 @@ Now that you have set up the Mailchimp source connector, check out the following
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                                  |
-|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------|
+|---------|------------|----------------------------------------------------------|--------------------------------------------------------------------------|
+| 0.3.0   | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream.                               |
+| 0.2.15  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                            |
 | 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                     |
 | 0.2.13  | 2022-04-11 | [11632](https://github.com/airbytehq/airbyte/pull/11632) | Add unit tests                                                           |
 | 0.2.12  | 2022-03-17 | [10975](https://github.com/airbytehq/airbyte/pull/10975) | Fix campaign's stream normalization                                      |

@@ -1,0 +1,2 @@
+{"meta":{"entity": "accounts","url": "https://example.com/api/accounts/123","changed_on": "2022/04/20T16:20Z"},"payload": {"accounts": ["data", "goes","here"]}}
+{"meta":{"entity": "line_items","url": "https://example.com/api/accounts/123/line_items/42","changed_on": "2022/04/20T16:20Z"},"payload": {"line_items": ["data", "goes","here"]}}

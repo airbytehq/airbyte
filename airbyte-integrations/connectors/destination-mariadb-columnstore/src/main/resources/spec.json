@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mariadb-columnstore",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mariadb-columnstore",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -45,6 +45,12 @@
         "type": "string",
         "airbyte_secret": true,
         "order": 4
+      },
+      "jdbc_url_params": {
+        "description": "Additional properties to pass to the JDBC URL string when connecting to the database formatted as 'key=value' pairs separated by the symbol '&'. (example: key1=value1&key2=value2&key3=value3).",
+        "title": "JDBC URL Params",
+        "type": "string",
+        "order": 5
       }
     }
   }

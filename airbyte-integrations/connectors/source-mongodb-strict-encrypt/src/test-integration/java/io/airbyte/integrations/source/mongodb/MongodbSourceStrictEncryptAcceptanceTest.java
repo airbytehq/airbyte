@@ -4,12 +4,16 @@
 
 package io.airbyte.integrations.source.mongodb;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.catchThrowable;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.mongodb.client.MongoCollection;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -37,7 +41,7 @@ import org.junit.jupiter.api.Test;
 public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
   private static final String DATABASE_NAME = "test";
-  private static final String COLLECTION_NAME = "acceptance_test";
+  private static final String COLLECTION_NAME = "acceptance_test1";
   private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   private static final String INSTANCE_TYPE = "instance_type";
 
@@ -78,7 +82,7 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
         .put("auth_source", "admin")
         .build());
 
-    var credentials = String.format("%s:%s@", config.get("user").asText(),
+    final var credentials = String.format("%s:%s@", config.get("user").asText(),
         config.get(JdbcUtils.PASSWORD_KEY).asText());
     final String connectionString = String.format("mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true",
         credentials,
@@ -144,6 +148,24 @@ public class MongodbSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTe
     final ConnectorSpecification expected = getSpec();
 
     assertEquals(expected, actual);
+  }
+
+  @Test
+  void testCheck() throws Exception {
+    final JsonNode instanceConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put("instance", MongoInstanceType.STANDALONE.getType())
+        .put("tls", false)
+        .build());
+
+    final JsonNode invalidStandaloneConfig = Jsons.clone(getConfig());
+
+    ((ObjectNode) invalidStandaloneConfig).put(INSTANCE_TYPE, instanceConfig);
+
+    final Throwable throwable = catchThrowable(() -> new MongodbSourceStrictEncrypt().check(invalidStandaloneConfig));
+    assertThat(throwable).isInstanceOf(ConfigErrorException.class);
+    assertThat(((ConfigErrorException) throwable)
+        .getDisplayMessage()
+        .contains("TLS connection must be used to read from MongoDB."));
   }
 
 }

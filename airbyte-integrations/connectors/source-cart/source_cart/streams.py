@@ -2,26 +2,35 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 import urllib.parse
 from abc import ABC
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from datetime import datetime
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import requests
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.http.auth.core import HttpAuthenticator
 
 
 class CartStream(HttpStream, ABC):
     primary_key = "id"
 
-    def __init__(self, start_date: str, store_name: str, end_date: str = None, **kwargs):
+    def __init__(
+        self,
+        start_date: str,
+        end_date: str = None,
+        authenticator: HttpAuthenticator = None,
+        **kwargs,
+    ):
+        super().__init__(**kwargs)
         self._start_date = start_date
         self._end_date = end_date
-        self.store_name = store_name
-        super().__init__(**kwargs)
+        self._authenticator = authenticator
 
     @property
     def url_base(self) -> str:
-        return f"https://{self.store_name}/api/v1/"
+        return self._authenticator.url_base()
 
     @property
     def data_field(self) -> str:
@@ -34,13 +43,26 @@ class CartStream(HttpStream, ABC):
     def path(self, **kwargs) -> str:
         return self.name
 
+    @property
+    def max_retries(self) -> Union[int, None]:
+        return 3
+
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
         We dont need to check the response.status_code == 429 since this header exists only in this case.
+        Some endpoints or sometimes Cart.com API returns a datetie instead of the float value to wait to next request.
+        Also after calculating the float when Cart.com return a datetime using the value directly
+        causes Server Error after a few attempts. Because of this was created the `server_backoff` variable to give time
+        to server recover from too many requests.
         """
+        server_backoff = 3
         retry_after = response.headers.get("Retry-After")
         if retry_after:
-            return float(retry_after)
+            try:
+                return float(retry_after)
+            except ValueError:
+                retry_after_datetime = datetime.strptime(retry_after, "%a, %d %b %Y %H:%M:%S %Z")
+                return float(server_backoff * abs(retry_after_datetime - datetime.now()).seconds)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
@@ -51,7 +73,10 @@ class CartStream(HttpStream, ABC):
             return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
-        return {"Cache-Control": "no-cache", "Content-Type": "application/json"}
+        extra_params = {}
+        params = self.request_params(**kwargs)
+        extra_params = self._authenticator.extra_params(self, params)
+        return dict({"Cache-Control": "no-cache", "Content-Type": "application/json"}, **extra_params)
 
     def parse_response(self, response: requests.Response, stream_state: Mapping[str, Any], **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
@@ -87,7 +112,10 @@ class IncrementalCartStream(CartStream, ABC):
             query += f" AND lt:{self._end_date}"
 
         params[self.cursor_field] = query
-        return params
+
+        ord_params = ["count", "page", "sort", self.cursor_field]
+        ordered_params = {k: params[k] for k in ord_params if k in params}
+        return ordered_params
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """

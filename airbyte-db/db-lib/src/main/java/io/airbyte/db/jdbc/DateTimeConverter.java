@@ -33,13 +33,23 @@ public class DateTimeConverter {
   private static final Logger LOGGER = LoggerFactory.getLogger(DateTimeConverter.class);
   public static final DateTimeFormatter TIME_WITH_TIMEZONE_FORMATTER = DateTimeFormatter.ofPattern(
       "HH:mm:ss[.][SSSSSSSSS][SSSSSSS][SSSSSS][SSSSS][SSSS][SSS][SS][S][''][XXX][XX][X]");
+  private static boolean loggedUnknownTimeWithTimeZoneClass = false;
+  private static boolean loggedUnknownTimeClass = false;
+  private static boolean loggedUnknownTimestampWithTimeZoneClass = false;
+  private static boolean loggedUnknownTimestampClass = false;
+  private static boolean loggedUnknownDateClass = false;
 
   public static String convertToTimeWithTimezone(final Object time) {
     if (time instanceof final java.time.OffsetTime timetz) {
       return timetz.format(TIMETZ_FORMATTER);
+    } else {
+      if (!loggedUnknownTimeWithTimeZoneClass) {
+        LOGGER.info("Unknown class for Time with timezone data type" + time.getClass());
+        loggedUnknownTimeWithTimeZoneClass = true;
+      }
+      final OffsetTime timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER);
+      return timetz.format(TIMETZ_FORMATTER);
     }
-    final OffsetTime timetz = OffsetTime.parse(time.toString(), TIME_WITH_TIMEZONE_FORMATTER);
-    return timetz.format(TIMETZ_FORMATTER);
   }
 
   public static String convertToTimestampWithTimezone(final Object timestamp) {
@@ -57,9 +67,17 @@ public class DateTimeConverter {
       return resolveEra(t.toLocalDate(), t.format(TIMESTAMPTZ_FORMATTER));
     } else if (timestamp instanceof final ZonedDateTime timestamptz) {
       return resolveEra(timestamptz.toLocalDate(), timestamptz.format(TIMESTAMPTZ_FORMATTER));
+    } else if (timestamp instanceof final Instant instant) {
+      final OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, UTC);
+      final ZonedDateTime timestamptz = ZonedDateTime.from(offsetDateTime);
+      final LocalDate localDate = timestamptz.toLocalDate();
+      final String value = timestamptz.format(TIMESTAMPTZ_FORMATTER);
+      return resolveEra(localDate, value);
     } else {
-      // This case probably isn't strictly necessary, but I'm leaving it just in case there's some weird
-      // situation that I'm not aware of.
+      if (!loggedUnknownTimestampWithTimeZoneClass) {
+        LOGGER.info("Unknown class for Timestamp with time zone data type" + timestamp.getClass());
+        loggedUnknownTimestampWithTimeZoneClass = true;
+      }
       final Instant instant = Instant.parse(timestamp.toString());
       final OffsetDateTime offsetDateTime = OffsetDateTime.ofInstant(instant, UTC);
       final ZonedDateTime timestamptz = ZonedDateTime.from(offsetDateTime);
@@ -82,7 +100,15 @@ public class DateTimeConverter {
     } else if (timestamp instanceof final Instant i) {
       // Incremental mode
       return resolveEra(i.atZone(UTC).toLocalDate(), i.atOffset(UTC).toLocalDateTime().format(TIMESTAMP_FORMATTER));
+    } else if (timestamp instanceof final LocalDateTime localDateTime) {
+      final LocalDate date = localDateTime.toLocalDate();
+      final String value = localDateTime.format(TIMESTAMP_FORMATTER);
+      return resolveEra(date, value);
     } else {
+      if (!loggedUnknownTimestampClass) {
+        LOGGER.info("Unknown class for Timestamp data type" + timestamp.getClass());
+        loggedUnknownTimestampClass = true;
+      }
       final LocalDateTime localDateTime = LocalDateTime.parse(timestamp.toString());
       final LocalDate date = localDateTime.toLocalDate();
       final String value = localDateTime.format(TIMESTAMP_FORMATTER);
@@ -103,6 +129,10 @@ public class DateTimeConverter {
       // Incremental mode
       return resolveEra(d, d.format(DATE_FORMATTER));
     } else {
+      if (!loggedUnknownDateClass) {
+        LOGGER.info("Unknown class for Date data type" + date.getClass());
+        loggedUnknownDateClass = true;
+      }
       final LocalDate localDate = LocalDate.parse(date.toString());
       return resolveEra(localDate, localDate.format(DATE_FORMATTER));
     }
@@ -115,16 +145,26 @@ public class DateTimeConverter {
       return localTime.format(TIME_FORMATTER);
     } else if (time instanceof java.time.Duration) {
       long value = ((Duration) time).toNanos();
-      if (value >= 0 && value <= TimeUnit.DAYS.toNanos(1)) {
+      if (value >= 0 && value < TimeUnit.DAYS.toNanos(1)) {
         return LocalTime.ofNanoOfDay(value).format(TIME_FORMATTER);
       } else {
-        final long updatedValue = 0 > value ? Math.abs(value) : TimeUnit.DAYS.toNanos(1);
-        LOGGER.debug("Time values must use number of milliseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
+        final long updatedValue = Math.min(Math.abs(value), LocalTime.MAX.toNanoOfDay());
+        LOGGER.debug("Time values must use number of nanoseconds greater than 0 and less than 86400000000000 but its {}, converting to {} ", value,
             updatedValue);
         return LocalTime.ofNanoOfDay(updatedValue).format(TIME_FORMATTER);
       }
     } else {
-      return LocalTime.parse(time.toString()).format(TIME_FORMATTER);
+      if (!loggedUnknownTimeClass) {
+        LOGGER.info("Unknown class for Time data type" + time.getClass());
+        loggedUnknownTimeClass = true;
+      }
+
+      final String valueAsString = time.toString();
+      if (valueAsString.startsWith("24")) {
+        LOGGER.debug("Time value {} is above range, converting to 23:59:59", valueAsString);
+        return LocalTime.MAX.format(TIME_FORMATTER);
+      }
+      return LocalTime.parse(valueAsString).format(TIME_FORMATTER);
     }
   }
 

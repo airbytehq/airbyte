@@ -9,6 +9,7 @@ import enum
 import importlib
 import inspect
 import typing
+import warnings
 from dataclasses import fields
 from typing import Any, List, Literal, Mapping, Type, Union, get_args, get_origin, get_type_hints
 
@@ -137,13 +138,11 @@ class DeclarativeComponentFactory:
             class_ = self._get_class_from_fully_qualified_class_name(class_or_class_name)
         else:
             class_ = class_or_class_name
-
         # create components in options before propagating them
         if OPTIONS_STR in kwargs:
             kwargs[OPTIONS_STR] = {
                 k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs[OPTIONS_STR].items()
             }
-
         updated_kwargs = {k: self._create_subcomponent(k, v, kwargs, config, class_, instantiate) for k, v in kwargs.items()}
 
         if instantiate:
@@ -153,7 +152,12 @@ class DeclarativeComponentFactory:
             # concrete classes that implement the interface before generating the schema
             class_copy = copy.deepcopy(class_)
             DeclarativeComponentFactory._transform_interface_to_union(class_copy)
-            schema = class_copy.json_schema()
+
+            # dataclasses_jsonschema can throw warnings when a declarative component has a fields cannot be turned into a schema.
+            # Some builtin field types like Any or DateTime get flagged, but are not as critical to schema generation and validation
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=UserWarning)
+                schema = class_copy.json_schema()
 
             component_definition = {
                 **updated_kwargs,
@@ -210,7 +214,7 @@ class DeclarativeComponentFactory:
                 self._create_subcomponent(
                     key,
                     sub,
-                    self._merge_dicts(kwargs.get(OPTIONS_STR, dict()), self._get_subcomponent_options(sub)),
+                    kwargs,
                     config,
                     parent_class,
                     instantiate,
@@ -225,7 +229,7 @@ class DeclarativeComponentFactory:
                 options = kwargs.get(OPTIONS_STR, {})
                 try:
                     # enums can't accept options
-                    if issubclass(expected_type, enum.Enum):
+                    if issubclass(expected_type, enum.Enum) or self.is_primitive(definition):
                         return expected_type(definition)
                     else:
                         return expected_type(definition, options=options)
@@ -233,13 +237,20 @@ class DeclarativeComponentFactory:
                     raise Exception(f"failed to instantiate type {expected_type}. {e}")
         return definition
 
+    def is_primitive(self, obj):
+        return isinstance(obj, (int, float, bool))
+
     @staticmethod
     def is_object_definition_with_class_name(definition):
         return isinstance(definition, dict) and "class_name" in definition
 
     @staticmethod
     def is_object_definition_with_type(definition):
-        return isinstance(definition, dict) and "type" in definition
+        # The `type` field is an overloaded term in the context of the low-code manifest. As part of the language, `type` is shorthand
+        # for convenience to avoid defining the entire classpath. For the connector specification, `type` is a part of the spec schema.
+        # For spec parsing, as part of this check, when the type is set to object, we want it to remain a mapping. But when type is
+        # defined any other way, then it should be parsed as a declarative component in the manifest.
+        return isinstance(definition, dict) and "type" in definition and definition["type"] != "object"
 
     @staticmethod
     def get_default_type(parameter_name, parent_class):

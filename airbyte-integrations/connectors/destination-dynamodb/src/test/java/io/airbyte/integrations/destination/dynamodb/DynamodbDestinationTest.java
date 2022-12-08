@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.dynamodb;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.*;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,8 @@ class DynamodbDestinationTest {
 
   @Test
   void testGetOutputTableNameWithStream() throws Exception {
-    final var stream = new AirbyteStream();
-    stream.setName("test_stream");
-    stream.setNamespace("test_namespace");
+    final var stream =
+        new AirbyteStream().withName("test_stream").withNamespace("test_namespace").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
     final var actual = DynamodbOutputTableHelper.getOutputTableName("test_table", stream);
     assertEquals("test_table_test_namespace_test_stream", actual);
   }

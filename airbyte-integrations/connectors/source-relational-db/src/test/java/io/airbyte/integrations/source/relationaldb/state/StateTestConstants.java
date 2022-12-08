@@ -4,9 +4,9 @@
 
 package io.airbyte.integrations.source.relationaldb.state;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.Collections;
@@ -28,15 +28,23 @@ public final class StateTestConstants {
   public static final String CURSOR_FIELD1 = "year";
   public static final String CURSOR_FIELD2 = "generation";
   public static final String CURSOR = "2000";
+  public static final long CURSOR_RECORD_COUNT = 19L;
 
   private StateTestConstants() {}
 
-  @SuppressWarnings("SameParameterValue")
   public static Optional<DbStreamState> getState(final String cursorField, final String cursor) {
     return Optional.of(new DbStreamState()
         .withStreamName(STREAM_NAME1)
         .withCursorField(Lists.newArrayList(cursorField))
         .withCursor(cursor));
+  }
+
+  public static Optional<DbStreamState> getState(final String cursorField, final String cursor, final long cursorRecordCount) {
+    return Optional.of(new DbStreamState()
+        .withStreamName(STREAM_NAME1)
+        .withCursorField(Lists.newArrayList(cursorField))
+        .withCursor(cursor)
+        .withCursorRecordCount(cursorRecordCount));
   }
 
   public static Optional<ConfiguredAirbyteCatalog> getCatalog(final String cursorField) {

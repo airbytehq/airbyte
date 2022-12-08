@@ -34,6 +34,7 @@ from source_github.streams import (
     PullRequestStats,
     Releases,
     Repositories,
+    RepositoryStats,
     Reviews,
     Stargazers,
     Tags,
@@ -41,6 +42,7 @@ from source_github.streams import (
     TeamMemberships,
     Teams,
     Users,
+    WorkflowJobs,
     WorkflowRuns,
 )
 from source_github.utils import read_full_refresh
@@ -58,12 +60,7 @@ def test_internal_server_error_retry(time_mock):
     stream_slice = {"repository": "airbytehq/airbyte", "comment_id": "id"}
 
     time_mock.reset_mock()
-    responses.add(
-        "GET",
-        "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions",
-        status=HTTPStatus.INTERNAL_SERVER_ERROR,
-        json={"message": "Server Error"},
-    )
+    responses.add("GET", "https://api.github.com/repos/airbytehq/airbyte/comments/id/reactions", status=HTTPStatus.INTERNAL_SERVER_ERROR)
     with pytest.raises(BaseBackoffException):
         list(stream.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
 
@@ -74,9 +71,14 @@ def test_internal_server_error_retry(time_mock):
 @pytest.mark.parametrize(
     ("http_status", "response_headers", "expected_backoff_time"),
     [
-        (HTTPStatus.BAD_GATEWAY, {}, 60),
-        (HTTPStatus.FORBIDDEN, {"Retry-After": 120}, 120),
-        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": 1655804724}, 300.0),
+        (HTTPStatus.BAD_GATEWAY, {}, None),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, None),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, None),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "30"}, 60),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "120"}, 120),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804454"}, 60.0),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Reset": "1655804724"}, 300.0),
     ],
 )
 @patch("time.time", return_value=1655804424.0)
@@ -87,6 +89,28 @@ def test_backoff_time(time_mock, http_status, response_headers, expected_backoff
     args = {"authenticator": None, "repositories": ["test_repo"], "start_date": "start_date", "page_size_for_large_streams": 30}
     stream = PullRequestCommentReactions(**args)
     assert stream.backoff_time(response_mock) == expected_backoff_time
+
+
+@pytest.mark.parametrize(
+    ("http_status", "response_headers", "text"),
+    [
+        (HTTPStatus.OK, {"X-RateLimit-Resource": "graphql"}, '{"errors": [{"type": "RATE_LIMITED"}]}'),
+        (HTTPStatus.FORBIDDEN, {"X-RateLimit-Remaining": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "0"}, ""),
+        (HTTPStatus.FORBIDDEN, {"Retry-After": "60"}, ""),
+        (HTTPStatus.INTERNAL_SERVER_ERROR, {}, ""),
+        (HTTPStatus.BAD_GATEWAY, {}, ""),
+        (HTTPStatus.SERVICE_UNAVAILABLE, {}, ""),
+    ],
+)
+def test_should_retry(http_status, response_headers, text):
+    stream = RepositoryStats(repositories=["test_repo"], page_size_for_large_streams=30)
+    response_mock = MagicMock()
+    response_mock.status_code = http_status
+    response_mock.headers = response_headers
+    response_mock.text = text
+    response_mock.json = lambda: json.loads(text)
+    assert stream.should_retry(response_mock)
 
 
 @responses.activate
@@ -471,7 +495,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
-    stream = ProjectColumns(Projects(**repository_args_with_start_date), **repository_args_with_start_date)
+    projects_stream = Projects(**repository_args_with_start_date)
+    stream = ProjectColumns(projects_stream, **repository_args_with_start_date)
 
     stream_state = {}
 
@@ -513,6 +538,8 @@ def test_stream_project_columns():
 
     ProjectsResponsesAPI.register(data)
 
+    projects_stream._session.cache.clear()
+    stream._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
     assert records == [
         {"id": 24, "name": "column_24", "project_id": 2, "repository": "organization/repository", "updated_at": "2022-04-01T10:00:00Z"},
@@ -583,6 +610,9 @@ def test_stream_project_cards():
     ProjectsResponsesAPI.register(data)
 
     stream_state = {}
+
+    projects_stream._session.cache.clear()
+    project_columns_stream._session.cache.clear()
     records = read_incremental(stream, stream_state=stream_state)
 
     assert records == [
@@ -863,7 +893,9 @@ def test_stream_team_members_full_refresh():
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/members", json=[{"login": "login2"}])
     responses.add("GET", "https://api.github.com/orgs/org1/teams/team2/memberships/login2", json={"username": "login2"})
 
-    stream = TeamMembers(parent=Teams(**organization_args), **repository_args)
+    teams_stream = Teams(**organization_args)
+    stream = TeamMembers(parent=teams_stream, **repository_args)
+    teams_stream._session.cache.clear()
     records = list(read_full_refresh(stream))
 
     assert records == [
@@ -953,6 +985,7 @@ def test_stream_commit_comment_reactions_incremental_read():
         json=[{"id": 154935433, "created_at": "2022-02-01T17:00:00Z"}],
     )
 
+    stream._parent_stream._session.cache.clear()
     records = read_incremental(stream, stream_state)
 
     assert records == [
@@ -1078,6 +1111,107 @@ def test_stream_workflow_runs_read_incremental(monkeypatch):
     ]
 
     assert len(responses.calls) == 4
+
+
+@responses.activate
+def test_stream_workflow_jobs_read():
+
+    repository_args = {
+        "repositories": ["org/repo"],
+        "page_size_for_large_streams": 100,
+    }
+    repository_args_with_start_date = {**repository_args, "start_date": "2022-09-02T09:05:00Z"}
+
+    workflow_runs_stream = WorkflowRuns(**repository_args_with_start_date)
+    stream = WorkflowJobs(workflow_runs_stream, **repository_args_with_start_date)
+
+    workflow_runs = [
+        {
+            "id": 1,
+            "created_at": "2022-09-02T09:00:00Z",
+            "updated_at": "2022-09-02T09:10:02Z",
+            "repository": {"full_name": "org/repo"},
+        },
+        {
+            "id": 2,
+            "created_at": "2022-09-02T09:06:00Z",
+            "updated_at": "2022-09-02T09:08:00Z",
+            "repository": {"full_name": "org/repo"},
+        },
+    ]
+
+    workflow_jobs_1 = [
+        {"id": 1, "completed_at": "2022-09-02T09:02:00Z", "run_id": 1},
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1},
+        {"id": 5, "completed_at": None, "run_id": 1},
+    ]
+
+    workflow_jobs_2 = [
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repo/actions/runs",
+        json={"total_count": len(workflow_runs), "workflow_runs": workflow_runs},
+    )
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": workflow_jobs_1})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/2/jobs", json={"jobs": workflow_jobs_2})
+
+    state = {}
+    records = read_incremental(stream, state)
+    assert state == {"org/repo": {"completed_at": "2022-09-02T09:10:00Z"}}
+
+    assert records == [
+        {"completed_at": "2022-09-02T09:10:00Z", "id": 4, "repository": "org/repo", "run_id": 1},
+        {"completed_at": "2022-09-02T09:07:00Z", "id": 2, "repository": "org/repo", "run_id": 2},
+        {"completed_at": "2022-09-02T09:08:00Z", "id": 3, "repository": "org/repo", "run_id": 2},
+    ]
+
+    assert len(responses.calls) == 3
+
+    workflow_jobs_1[2]["completed_at"] = "2022-09-02T09:12:00Z"
+    workflow_runs[0]["updated_at"] = "2022-09-02T09:12:01Z"
+    workflow_runs.append(
+        {
+            "id": 3,
+            "created_at": "2022-09-02T09:14:00Z",
+            "updated_at": "2022-09-02T09:15:00Z",
+            "repository": {"full_name": "org/repo"},
+        }
+    )
+    workflow_jobs_3 = [
+        {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3},
+        {"id": 7, "completed_at": None, "run_id": 3},
+    ]
+
+    responses.add(
+        "GET",
+        "https://api.github.com/repos/org/repo/actions/runs",
+        json={"total_count": len(workflow_runs), "workflow_runs": workflow_runs},
+    )
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/1/jobs", json={"jobs": workflow_jobs_1})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/2/jobs", json={"jobs": workflow_jobs_2})
+    responses.add("GET", "https://api.github.com/repos/org/repo/actions/runs/3/jobs", json={"jobs": workflow_jobs_3})
+
+    responses.calls.reset()
+    records = read_incremental(stream, state)
+
+    assert state == {"org/repo": {"completed_at": "2022-09-02T09:15:00Z"}}
+    assert records == [
+        {"completed_at": "2022-09-02T09:12:00Z", "id": 5, "repository": "org/repo", "run_id": 1},
+        {"completed_at": "2022-09-02T09:15:00Z", "id": 6, "repository": "org/repo", "run_id": 3},
+    ]
+
+    records = list(read_full_refresh(stream))
+    assert records == [
+        {"id": 4, "completed_at": "2022-09-02T09:10:00Z", "run_id": 1, "repository": "org/repo"},
+        {"id": 5, "completed_at": "2022-09-02T09:12:00Z", "run_id": 1, "repository": "org/repo"},
+        {"id": 2, "completed_at": "2022-09-02T09:07:00Z", "run_id": 2, "repository": "org/repo"},
+        {"id": 3, "completed_at": "2022-09-02T09:08:00Z", "run_id": 2, "repository": "org/repo"},
+        {"id": 6, "completed_at": "2022-09-02T09:15:00Z", "run_id": 3, "repository": "org/repo"},
+    ]
 
 
 @responses.activate

@@ -25,6 +25,7 @@ export class SourceService extends AirbyteRequestService {
     params: {
       sourceId?: string;
       connectionConfiguration?: ConnectionConfiguration;
+      workspaceId?: string;
     },
     requestParams?: RequestInit
   ) {
@@ -78,8 +79,8 @@ export class SourceService extends AirbyteRequestService {
     return deleteSource({ sourceId }, this.requestOptions);
   }
 
-  public async discoverSchema(sourceId: string) {
-    const result = await discoverSchemaForSource({ sourceId }, this.requestOptions);
+  public async discoverSchema(sourceId: string, disableCache?: boolean) {
+    const result = await discoverSchemaForSource({ sourceId, disable_cache: disableCache }, this.requestOptions);
 
     if (!result.jobInfo?.succeeded || !result.catalog) {
       // @ts-expect-error TODO: address this case

@@ -27,7 +27,6 @@ public class ConfigurationUpdate {
 
   public ConfigurationUpdate(final ConfigRepository configRepository, final SecretsRepositoryReader secretsRepositoryReader) {
     this(configRepository, secretsRepositoryReader, JsonSecretsProcessor.builder()
-        .maskSecrets(true)
         .copySecrets(true)
         .build());
   }

@@ -2,6 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
+from copy import deepcopy
+
 from pytest import fixture
 
 
@@ -10,10 +13,20 @@ def config():
     return {
         "client_id": "test_client_id",
         "client_secret": "test_client_secret",
-        "scope": "test_scope",
         "refresh_token": "test_refresh",
         "region": "NA",
     }
+
+
+@fixture
+def config_gen(config):
+    def inner(**kwargs):
+        new_config = deepcopy(config)
+        # WARNING, no support deep dictionaries
+        new_config.update(kwargs)
+        return {k: v for k, v in new_config.items() if v is not ...}
+
+    return inner
 
 
 @fixture
@@ -49,3 +62,121 @@ def targeting_response():
     return """
 [{"targetId":123,"adGroupId":321,"state":"enabled","expressionType":"manual","bid":1.5,"expression":{"type":"asinSameAs","value":"B0123456789"},"resolvedExpression":{"type":"views","values":{"type":"asinCategorySameAs","value":"B0123456789"}}}]
 """
+
+
+@fixture
+def attribution_report_response():
+    def _internal(report_type: str):
+        responses = {
+            "PRODUCTS": {
+                "reports": [
+                    {
+                        "date": "20220829",
+                        "attributedDetailPageViewsClicks14d": "0",
+                        "attributedPurchases14d": "0",
+                        "adGroupId": "bestselling_fan-dusters",
+                        "advertiserName": "name",
+                        "productName": "some product name",
+                        "productCategory": "Chemicals",
+                        "productSubcategory": "Applicators",
+                        "brandHaloAttributedPurchases14d": "0",
+                        "brandHaloUnitsSold14d": "0",
+                        "attributedNewToBrandSales14d": "0",
+                        "attributedAddToCartClicks14d": "0",
+                        "brandHaloNewToBrandPurchases14d": "0",
+                        "brandName": "name",
+                        "marketplace": "AMAZON.COM",
+                        "brandHaloAttributedSales14d": "0",
+                        "campaignId": "my-campaign",
+                        "brandHaloNewToBrandUnitsSold14d": "0",
+                        "productAsin": "AAAAAAA",
+                        "productConversionType": "Brand Halo",
+                        "attributedNewToBrandUnitsSold14d": "0",
+                        "brandHaloAttributedAddToCartClicks14d": "0",
+                        "attributedNewToBrandPurchases14d": "0",
+                        "unitsSold14d": "0",
+                        "productGroup": "Automotive",
+                        "brandHaloNewToBrandSales14d": "0",
+                        "publisher": "Display - Other",
+                        "brandHaloDetailPageViewsClicks14d": "0",
+                        "attributedSales14d": "0",
+                    }
+                ]
+            },
+            "PERFORMANCE_ADGROUP": {
+                "reports": [
+                    {
+                        "date": "20220829",
+                        "attributedAddToCartClicks14d": "5",
+                        "brb_bonus_amount": "14.280000000000001",
+                        "campaignId": "16719043411",
+                        "attributedDetailPageViewsClicks14d": "30",
+                        "attributedPurchases14d": "3",
+                        "attributedTotalAddToCartClicks14d": "5",
+                        "attributedTotalPurchases14d": "3",
+                        "adGroupId": "135021988277",
+                        "advertiserName": "Eversprout",
+                        "totalUnitsSold14d": "4",
+                        "unitsSold14d": "4",
+                        "Click-throughs": "30",
+                        "publisher": "Google Ads",
+                        "attributedTotalDetailPageViewsClicks14d": "30",
+                        "attributedSales14d": "191.95999999999998",
+                        "totalAttributedSales14d": "191.95999999999998",
+                    }
+                ]
+            },
+            "PERFORMANCE_CAMPAIGN": {
+                "reports": [
+                    {
+                        "date": "20220830",
+                        "attributedAddToCartClicks14d": "1",
+                        "brb_bonus_amount": "0",
+                        "campaignId": "3936789099315437-B082P9Y919",
+                        "attributedDetailPageViewsClicks14d": "9",
+                        "attributedPurchases14d": "0",
+                        "attributedTotalAddToCartClicks14d": "1",
+                        "attributedTotalPurchases14d": "0",
+                        "advertiserName": "Eversprout",
+                        "totalUnitsSold14d": "0",
+                        "unitsSold14d": "0",
+                        "Click-throughs": "12",
+                        "attributedTotalDetailPageViewsClicks14d": "16",
+                        "attributedSales14d": "0",
+                        "totalAttributedSales14d": "0",
+                    }
+                ]
+            },
+            "PERFORMANCE_CREATIVE": {
+                "reports": [
+                    {
+                        "date": "20220830",
+                        "attributedAddToCartClicks14d": "0",
+                        "campaignId": "16719043411",
+                        "attributedDetailPageViewsClicks14d": "0",
+                        "attributedPurchases14d": "0",
+                        "attributedTotalAddToCartClicks14d": "0",
+                        "attributedTotalPurchases14d": "0",
+                        "adGroupId": "135021988277",
+                        "advertiserName": "Eversprout",
+                        "creativeId": "135021988277",
+                        "totalUnitsSold14d": "0",
+                        "unitsSold14d": "0",
+                        "Click-throughs": "1",
+                        "publisher": "Google Ads",
+                        "attributedTotalDetailPageViewsClicks14d": "0",
+                        "attributedSales14d": "0",
+                        "totalAttributedSales14d": "0",
+                    }
+                ]
+            },
+        }
+
+        return json.dumps(responses[report_type])
+
+    return _internal
+
+
+@fixture
+def attribution_report_bad_response():
+    return "bad response"

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/linkedin-ads",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/linkedin-ads",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Linkedin Ads Spec",
@@ -8,7 +8,7 @@
     "additionalProperties": true,
     "properties": {
       "credentials": {
-        "title": "Authentication *",
+        "title": "Authentication",
         "type": "object",
         "oneOf": [
           {
@@ -67,7 +67,7 @@
         "examples": ["2021-05-17"]
       },
       "account_ids": {
-        "title": "Account IDs (Optional)",
+        "title": "Account IDs",
         "type": "array",
         "description": "Specify the account IDs separated by a space, to pull the data from. Leave empty, if you want to pull the data from all associated accounts. See the <a href=\"https://www.linkedin.com/help/linkedin/answer/a424270/find-linkedin-ads-account-details?lang=en\">LinkedIn Ads docs</a> for more info.",
         "items": {

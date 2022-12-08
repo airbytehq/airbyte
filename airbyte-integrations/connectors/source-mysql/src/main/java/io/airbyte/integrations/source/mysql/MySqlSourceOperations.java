@@ -51,20 +51,19 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Set;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
-import java.time.OffsetTime;
 import java.time.format.DateTimeParseException;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
-  private static Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
+  private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
@@ -90,7 +89,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         }
       }
       case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, TINYINT_UNSIGNED -> {
+      case TINYINT -> {
         if (field.getLength() == 1L) {
           // TINYINT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
@@ -98,6 +97,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           putShortInt(json, columnName, resultSet, colIndex);
         }
       }
+      case TINYINT_UNSIGNED -> putShortInt(json, columnName, resultSet, colIndex);
       case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
       case INT, INT_UNSIGNED -> {
         if (field.isUnsigned()) {
@@ -185,7 +185,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
       switch (literalType) {
         // BIT(1) and TINYINT(1) are interpreted as boolean
-        case BIT, TINYINT, TINYINT_UNSIGNED -> {
+        case BIT, TINYINT -> {
           if (columnSize == 1) {
             return MysqlType.BOOLEAN;
           }
@@ -252,7 +252,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for date column the new way, trying the old way", e);
       super.setDate(preparedStatement, parameterIndex, value);
     }
@@ -263,7 +264,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for datetime column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     }
@@ -273,7 +275,8 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     try {
       preparedStatement.setObject(parameterIndex, OffsetDateTime.parse(value));
     } catch (final DateTimeParseException e) {
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       LOGGER.warn("Exception occurred while trying to parse value for timestamp column the new way, trying the old way", e);
       preparedStatement.setObject(parameterIndex, LocalDateTime.parse(value));
     }
@@ -285,8 +288,10 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
       preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
     } catch (final DateTimeParseException e) {
       LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
-      // This is just for backward compatibility for connectors created on versions before PR https://github.com/airbytehq/airbyte/pull/15504
+      // This is just for backward compatibility for connectors created on versions before PR
+      // https://github.com/airbytehq/airbyte/pull/15504
       super.setTime(preparedStatement, parameterIndex, value);
     }
   }
+
 }

@@ -4,25 +4,19 @@ kind: Deployment
 metadata:
   name: {{ include "common.names.fullname" . }}-pod-sweeper
   labels:
-    app.kubernetes.io/name: {{ include "airbyte.name" . }}
-    app.kubernetes.io/instance: {{ .Release.Name }}
-    helm.sh/chart: {{ include "airbyte.chart" . }}
-    app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-    app.kubernetes.io/managed-by: {{ .Release.Service }}
-    app.airbyte.io/fullname: {{ include "airbyte.fullname" . }}
-  annotations:
-    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    {{- include "airbyte.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      airbyte: pod-sweeper
+      {{- include "airbyte.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels:
-        airbyte: pod-sweeper
-      {{- if .Values.podAnnotations }}
+        {{- include "airbyte.selectorLabels" . | nindent 8 }}
       annotations:
+        checksum/sweep-pod-script: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+      {{- if .Values.podAnnotations }}
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
       {{- end }}
     spec:

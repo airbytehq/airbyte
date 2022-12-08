@@ -1,0 +1,5 @@
+{ "stream": "deletions-data", "emitted_at": "1", "data": { "ref": "338836293305763911", "ts": 1659398359360000, "deleted_at": "2022-08-01T23:59:19.360000" } }
+{ "stream": "deletions-data", "emitted_at": "2", "data": { "ref": "338836293305761863", "ts": 1659398366330000, "deleted_at": "2022-08-01T23:59:26.330000" } }
+{ "stream": "deletions-data", "emitted_at": "3", "data": { "ref": "338836293305765959", "ts": 1659398371330000, "deleted_at": "2022-08-01T23:59:31.330000" } }
+{ "stream": "deletions-data", "emitted_at": "5", "data": { "ref": "338836293305762887", "ts": 1659398320430000, "data": { "a": 6, "nested": { "value": 20 } }, "ttl": null } }
+{ "stream": "deletions-data", "emitted_at": "7", "data": { "ref": "338836293305764935", "ts": 1659398320430000, "data": { "a": 8, "nested": { "value": 30 } }, "ttl": null } }

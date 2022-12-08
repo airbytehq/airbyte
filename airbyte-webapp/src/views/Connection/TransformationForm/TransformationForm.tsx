@@ -3,35 +3,23 @@ import type { FormikErrors } from "formik/dist/types";
 import { getIn, useFormik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import styled from "styled-components";
-import * as yup from "yup";
 
-import { Button, ControlLabels, DropDown, Input, ModalBody, ModalFooter } from "components";
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { useConfig } from "config";
 import { OperationService } from "core/domain/connection";
 import { OperationCreate, OperationRead } from "core/request/AirbyteClient";
 import { useGetService } from "core/servicesProvider";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
+import { links } from "utils/links";
 import { equal } from "utils/objects";
 
-const Content = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
-
-const Column = styled.div`
-  flex: 1 0 0;
-
-  &:first-child {
-    margin-right: 18px;
-  }
-`;
-
-const Label = styled(ControlLabels)`
-  margin-bottom: 20px;
-`;
+import styles from "./TransformationForm.module.scss";
+import { validationSchema } from "./utils";
 
 interface TransformationProps {
   transformation: OperationCreate;
@@ -39,18 +27,6 @@ interface TransformationProps {
   onDone: (tr: OperationCreate) => void;
   isNewTransformation?: boolean;
 }
-
-const validationSchema = yup.object({
-  name: yup.string().required("form.empty.error"),
-  operatorConfiguration: yup.object({
-    dbt: yup.object({
-      gitRepoUrl: yup.string().required("form.empty.error"),
-      dockerImage: yup.string().required("form.empty.error"),
-      dbtArguments: yup.string().required("form.empty.error"),
-      gitRepoBranch: yup.string().nullable(),
-    }),
-  }),
-});
 
 function prepareLabelFields(
   errors: FormikErrors<OperationRead>,
@@ -78,7 +54,6 @@ const TransformationForm: React.FC<TransformationProps> = ({
   isNewTransformation,
 }) => {
   const { formatMessage } = useIntl();
-  const config = useConfig();
   const operationService = useGetService<OperationService>("OperationService");
   const { clearFormChange } = useFormChangeTrackerService();
   const formId = useUniqueFormId();
@@ -102,61 +77,74 @@ const TransformationForm: React.FC<TransformationProps> = ({
     <>
       <FormChangeTracker changed={isNewTransformation || formik.dirty} formId={formId} />
       <ModalBody maxHeight={400}>
-        <Content>
-          <Column>
-            <Label
+        <div className={styles.content}>
+          <div className={styles.column}>
+            <ControlLabels
+              className={styles.label}
               {...prepareLabelFields(formik.errors, "name")}
               label={<FormattedMessage id="form.transformationName" />}
             >
               <Input {...formik.getFieldProps("name")} />
-            </Label>
+            </ControlLabels>
 
-            <Label
+            <ControlLabels
+              className={styles.label}
               {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.dockerImage")}
               label={<FormattedMessage id="form.dockerUrl" />}
             >
               <Input {...formik.getFieldProps("operatorConfiguration.dbt.dockerImage")} />
-            </Label>
-            <Label
+            </ControlLabels>
+            <ControlLabels
+              className={styles.label}
               {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.gitRepoUrl")}
               label={<FormattedMessage id="form.repositoryUrl" />}
             >
               <Input
                 {...formik.getFieldProps("operatorConfiguration.dbt.gitRepoUrl")}
-                placeholder={formatMessage({
-                  id: "form.repositoryUrl.placeholder",
-                })}
+                placeholder={formatMessage(
+                  {
+                    id: "form.repositoryUrl.placeholder",
+                  },
+                  { angle: (node: React.ReactNode) => `<${node}>` }
+                )}
               />
-            </Label>
-          </Column>
+            </ControlLabels>
+          </div>
 
-          <Column>
-            <Label label={<FormattedMessage id="form.transformationType" />}>
+          <div className={styles.column}>
+            <ControlLabels className={styles.label} label={<FormattedMessage id="form.transformationType" />}>
               <DropDown
                 options={TransformationTypes}
                 value="custom"
                 placeholder={formatMessage({ id: "form.selectType" })}
               />
-            </Label>
-            <Label
-              label={<FormattedMessage id="form.entrypoint" />}
+            </ControlLabels>
+            <ControlLabels
+              className={styles.label}
               {...prepareLabelFields(formik.errors, "operatorConfiguration.dbt.dbtArguments")}
-              message={
-                <a href={config.links.dbtCommandsReference} target="_blank" rel="noreferrer">
-                  <FormattedMessage id="form.entrypoint.docs" />
-                </a>
+              label={
+                <FormattedMessage
+                  id="form.entrypoint.linked"
+                  values={{
+                    a: (node: React.ReactNode) => (
+                      <a href={links.dbtCommandsReference} target="_blank" rel="noreferrer">
+                        {node}
+                      </a>
+                    ),
+                  }}
+                />
               }
             >
               <Input {...formik.getFieldProps("operatorConfiguration.dbt.dbtArguments")} />
-            </Label>
-            <Label label={<FormattedMessage id="form.gitBranch" />}>
+            </ControlLabels>
+            <ControlLabels className={styles.label} label={<FormattedMessage id="form.gitBranch" />}>
               <Input {...formik.getFieldProps("operatorConfiguration.dbt.gitRepoBranch")} />
-            </Label>
-          </Column>
-        </Content>
+            </ControlLabels>
+          </div>
+        </div>
       </ModalBody>
       <ModalFooter>
-        <Button onClick={onFormCancel} type="button" secondary>
+        <Button onClick={onFormCancel} type="button" variant="secondary">
           <FormattedMessage id="form.cancel" />
         </Button>
         <Button
@@ -164,7 +152,7 @@ const TransformationForm: React.FC<TransformationProps> = ({
           type="button"
           data-testid="done-button"
           isLoading={formik.isSubmitting}
-          disabled={!formik.dirty || equal(transformation, formik.values)}
+          disabled={!formik.isValid || !formik.dirty || equal(transformation, formik.values)}
         >
           <FormattedMessage id="form.saveTransformation" />
         </Button>

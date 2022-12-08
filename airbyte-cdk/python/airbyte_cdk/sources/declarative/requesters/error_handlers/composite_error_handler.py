@@ -26,13 +26,13 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
                 - predicate: "{{ 'codase' in response }}"
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 5
             - response_filters:
                 - http_codes: [ 403 ]
                   action: RETRY
               backoff_strategies:
-                - type: "ConstantBackoffStrategy"
+                - type: "ConstantBackoff"
                   backoff_time_in_seconds: 10
     Attributes:
         error_handlers (List[ErrorHandler]): list of error handlers
@@ -49,10 +49,10 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     def max_retries(self) -> Union[int, None]:
         return self.error_handlers[0].max_retries
 
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response(self, response: requests.Response) -> ResponseStatus:
         should_retry = None
         for retrier in self.error_handlers:
-            should_retry = retrier.should_retry(response)
+            should_retry = retrier.interpret_response(response)
             if should_retry.action == ResponseAction.SUCCESS:
                 return response_status.SUCCESS
             if should_retry == response_status.IGNORE or should_retry.action == ResponseAction.RETRY:

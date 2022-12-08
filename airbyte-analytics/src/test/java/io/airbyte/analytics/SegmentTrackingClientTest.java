@@ -6,7 +6,9 @@ package io.airbyte.analytics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -135,11 +137,19 @@ class SegmentTrackingClientTest {
     assertEquals(metadata, filterTrackedAtProperty(Objects.requireNonNull(actual.properties())));
   }
 
+  @Test
+  void testTrackNullWorkspace() {
+    segmentTrackingClient.track(null, JUMP);
+
+    verify(analytics, never()).enqueue(any());
+  }
+
   private static ImmutableMap<String, Object> filterTrackedAtProperty(final Map<String, ?> properties) {
-    assertTrue(properties.containsKey("tracked_at"));
+    final String trackedAtKey = "tracked_at";
+    assertTrue(properties.containsKey(trackedAtKey));
     final Builder<String, Object> builder = ImmutableMap.builder();
     properties.forEach((key, value) -> {
-      if (!"tracked_at".equals(key)) {
+      if (!trackedAtKey.equals(key)) {
         builder.put(key, value);
       }
     });

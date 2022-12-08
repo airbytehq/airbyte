@@ -3,6 +3,7 @@ plugins {
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
     id 'airbyte-performance-test-java'
+    id 'airbyte-source-acceptance-test'
 }
 
 application {
@@ -12,8 +13,10 @@ application {
 
 dependencies {
     implementation project(':airbyte-db:db-lib')
+    implementation 'io.debezium:debezium-api:1.9.6.Final'
+    implementation 'io.debezium:debezium-embedded:1.9.6.Final'
     implementation project(':airbyte-integrations:bases:base-java')
-    implementation project(':airbyte-integrations:bases:debezium-v1-9-2')
+    implementation project(':airbyte-integrations:bases:debezium-v1-9-6')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:connectors:source-jdbc')
     implementation project(':airbyte-integrations:connectors:source-relational-db')
@@ -21,12 +24,13 @@ dependencies {
     implementation 'org.apache.commons:commons-lang3:3.11'
     implementation libs.postgresql
 
-    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-2'))
+    testImplementation testFixtures(project(':airbyte-integrations:bases:debezium-v1-9-6'))
     testImplementation testFixtures(project(':airbyte-integrations:connectors:source-jdbc'))
     testImplementation project(":airbyte-json-validation")
     testImplementation project(':airbyte-test-utils')
     testImplementation libs.connectors.testcontainers.jdbc
     testImplementation libs.connectors.testcontainers.postgresql
+    testImplementation 'uk.org.webcompere:system-stubs-jupiter:2.0.1'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')
     performanceTestJavaImplementation project(':airbyte-integrations:bases:standard-source-test')

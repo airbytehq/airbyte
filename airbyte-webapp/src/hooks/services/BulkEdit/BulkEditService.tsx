@@ -1,13 +1,13 @@
-import { setIn } from "formik";
-import React, { useContext, useMemo, useState } from "react";
+import { setIn, useFormikContext } from "formik";
+import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useSet } from "react-use";
 
 import { SyncSchemaStream } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 
-const Context = React.createContext<BatchContext | null>(null);
+const Context = React.createContext<BulkEditServiceContext | null>(null);
 
-interface BatchContext {
+export interface BulkEditServiceContext {
   isActive: boolean;
   toggleNode: (id: string | undefined) => void;
   onCheckAll: () => void;
@@ -28,12 +28,22 @@ const defaultOptions: Partial<AirbyteStreamConfiguration> = {
   selected: false,
 };
 
-const BatchEditProvider: React.FC<{
-  nodes: SyncSchemaStream[];
-  update: (streams: SyncSchemaStream[]) => void;
-}> = ({ children, nodes, update }) => {
+export const BulkEditServiceProvider: React.FC<
+  React.PropsWithChildren<{
+    nodes: SyncSchemaStream[];
+    update: (streams: SyncSchemaStream[]) => void;
+  }>
+> = ({ children, nodes, update }) => {
+  const { setStatus, status } = useFormikContext();
   const [selectedBatchNodes, { reset, toggle, add }] = useSet<string | undefined>(new Set());
   const [options, setOptions] = useState<Partial<AirbyteStreamConfiguration>>(defaultOptions);
+
+  const isActive = selectedBatchNodes.size > 0;
+  useEffect(() => {
+    if (status && status.editControlsVisible !== !isActive) {
+      setStatus({ ...status, editControlsVisible: !isActive });
+    }
+  }, [setStatus, isActive, status]);
 
   const resetBulk = () => {
     reset();
@@ -53,11 +63,9 @@ const BatchEditProvider: React.FC<{
     reset();
     resetBulk();
   };
-
-  const isActive = selectedBatchNodes.size > 0;
   const allChecked = selectedBatchNodes.size === nodes.length;
 
-  const ctx: BatchContext = {
+  const ctx: BulkEditServiceContext = {
     isActive,
     toggleNode: toggle,
     onCheckAll: () => (allChecked ? reset() : nodes.forEach((n) => add(n.id))),
@@ -73,7 +81,7 @@ const BatchEditProvider: React.FC<{
   return <Context.Provider value={ctx}>{children}</Context.Provider>;
 };
 
-const useBulkEdit = (): BatchContext => {
+export const useBulkEditService = (): BulkEditServiceContext => {
   const ctx = useContext(Context);
 
   if (!ctx) {
@@ -83,12 +91,9 @@ const useBulkEdit = (): BatchContext => {
   return ctx;
 };
 
-const useBulkEditSelect = (id: string | undefined): [boolean, () => void] => {
-  const { selectedBatchNodeIds, toggleNode } = useBulkEdit();
+export const useBulkEditSelect = (id: string | undefined): [boolean, () => void] => {
+  const { selectedBatchNodeIds, toggleNode } = useBulkEditService();
   const isIncluded = id !== undefined && selectedBatchNodeIds.includes(id);
 
   return useMemo(() => [isIncluded, () => toggleNode(id)], [isIncluded, toggleNode, id]);
 };
-
-export type { BatchContext };
-export { useBulkEditSelect, useBulkEdit, BatchEditProvider };

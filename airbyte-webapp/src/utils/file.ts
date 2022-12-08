@@ -6,3 +6,5 @@ export const downloadFile = (blob: Blob, name: string) => {
   element.click();
   document.body.removeChild(element);
 };
+
+export const fileizeString = (name: string) => name.replace(/[^a-z0-9]/gi, "_").toLowerCase();

@@ -7,7 +7,7 @@ interface IProps {
   highlighted?: boolean;
 }
 
-export const H1 = styled.h1<IProps>`
+const H1 = styled.h1<IProps>`
   font-size: ${({ theme }) => theme.h1?.fontSize || "28px"};
   line-height: ${({ theme }) => theme.h1?.lineHeight || "34px"};
   font-style: normal;
@@ -19,27 +19,14 @@ export const H1 = styled.h1<IProps>`
   margin: 0;
 `;
 
-export const H2 = styled(H1).attrs({ as: "h2" })`
-  font-size: 26px;
-  line-height: 32px;
-`;
-
+/** @deprecated Use `<Heading as="h1 | h2 | h3 | h4 | h5" size="md" />` */
 export const H3 = styled(H1).attrs({ as: "h3" })`
   font-size: 20px;
   line-height: 24px;
 `;
 
-export const H4 = styled(H1).attrs({ as: "h4" })`
-  font-size: 18px;
-  line-height: 22px;
-`;
-
+/** @deprecated Use `<Heading as="h1 | h2 | h3 | h4 | h5" size="sm" />` */
 export const H5 = styled(H1).attrs({ as: "h5" })`
   font-size: ${({ theme }) => theme.h5?.fontSize || "16px"};
   line-height: ${({ theme }) => theme.h5?.lineHeight || "28px"};
-`;
-
-export const H6 = styled(H1).attrs({ as: "h6" })`
-  font-size: ${({ theme }) => theme.h5?.fontSize || "14px"};
-  line-height: ${({ theme }) => theme.h5?.lineHeight || "17px"};
 `;

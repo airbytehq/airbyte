@@ -7,7 +7,7 @@
       "format": "date"
     },
     "AD_ACCOUNT_ID": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "AD_ID": {
       "type": ["null", "string"]

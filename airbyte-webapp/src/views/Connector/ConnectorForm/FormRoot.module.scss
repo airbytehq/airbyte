@@ -1,0 +1,13 @@
+@use "scss/variables" as vars;
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 22px 0 23px;
+}
+
+.loadingMessage {
+  margin-top: vars.$spacing-md;
+  margin-left: vars.$spacing-lg;
+}

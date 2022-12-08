@@ -1,0 +1,60 @@
+{
+  "type": "object",
+  "properties": {
+    "CAD": { "type": ["null", "number"] },
+    "HKD": { "type": ["null", "number"] },
+    "ISK": { "type": ["null", "number"] },
+    "PHP": { "type": ["null", "number"] },
+    "DKK": { "type": ["null", "number"] },
+    "HUF": { "type": ["null", "number"] },
+    "文": { "type": ["null", "number"] },
+    "something": {
+      "type": ["null", "object"],
+      "properties": {
+        "somekey": {
+          "type": ["null", "object"],
+          "properties": {
+            "nestedkey": {
+              "type": ["null", "number"]
+            }
+          }
+        }
+      },
+      "patternProperties": {
+        ".+": {}
+      }
+    },
+    "something2": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "oneOfOne": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "oneOfTwo": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "someArray": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "oldName": {
+            "type": ["string", "null"],
+            "maxLength": 100
+          }
+        }
+      }
+    }
+  }
+}

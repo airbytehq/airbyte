@@ -155,3 +155,7 @@ Additionally, this sync mode is only supported for destinations where dbt/normal
 
 If you are not satisfied with how transformations are applied on top of the appended data, you can find more relevant SQL transformations you might need to do on your data in the [Connecting EL with T using SQL \(part 1/2\)](../../operator-guides/transformation-and-normalization/transformations-with-sql.md)
 
+## Related information
+
+- [An overview of Airbyte’s replication modes](https://airbyte.com/blog/understanding-data-replication-modes).
+- [Explore Airbyte’s incremental data synchronization](https://airbyte.com/tutorials/incremental-data-synchronization).

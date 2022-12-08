@@ -22,7 +22,12 @@ from source_facebook_marketing.streams.common import retry_pattern
 logger = logging.getLogger("airbyte")
 
 
-backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=5, factor=5)
+# `FacebookBadObjectError` occurs in FB SDK when it fetches an inconsistent or corrupted data.
+# It still has http status 200 but the object can not be constructed from what was fetched from API.
+# Also, it does not happen while making a call to the API, but later - when parsing the result,
+# that's why a retry is added to `get_results()` instead of extending the existing retry of `api.call()` with `FacebookBadObjectError`.
+
+backoff_policy = retry_pattern(backoff.expo, FacebookBadObjectError, max_tries=10, factor=5)
 
 
 def update_in_batch(api: FacebookAdsApi, jobs: List["AsyncJob"]):
@@ -184,6 +189,7 @@ class InsightAsyncJob(AsyncJob):
 
     job_timeout = pendulum.duration(hours=1)
     page_size = 100
+    INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
     def __init__(self, edge_object: Union[AdAccount, Campaign, AdSet, Ad], params: Mapping[str, Any], **kwargs):
         """Initialize
@@ -236,6 +242,8 @@ class InsightAsyncJob(AsyncJob):
         params = dict(copy.deepcopy(self._params))
         # get objects from attribution window as well (28 day + 1 current day)
         new_start = self._interval.start - pendulum.duration(days=28 + 1)
+        oldest_date = pendulum.today().date() - self.INSIGHTS_RETENTION_PERIOD
+        new_start = max(new_start, oldest_date)
         params.update(fields=[pk_name], level=level)
         params["time_range"].update(since=new_start.to_date_string())
         params.pop("time_increment")  # query all days

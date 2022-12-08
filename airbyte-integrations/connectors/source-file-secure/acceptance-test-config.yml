@@ -1,4 +1,4 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 
 # Here we tries to test a basic tests only.
@@ -15,7 +15,7 @@ tests:
       status: "succeed"
     # for local should be failed
     - config_path: "integration_tests/local_config.json"
-      status: "exception"
+      status: "failed"
 
   discovery:
     # for https

@@ -1,31 +1,30 @@
-import { SegmentAnalytics } from "core/analytics/types";
-
-import { OutboundLinks } from "./links";
-
 declare global {
   interface Window {
     TRACKING_STRATEGY?: string;
     AIRBYTE_VERSION?: string;
     API_URL?: string;
-    IS_DEMO?: string;
+    CONNECTOR_BUILDER_API_URL?: string;
     CLOUD?: string;
+    REACT_APP_DATADOG_APPLICATION_ID: string;
+    REACT_APP_DATADOG_CLIENT_TOKEN: string;
+    REACT_APP_DATADOG_SITE: string;
+    REACT_APP_DATADOG_SERVICE: string;
     REACT_APP_SENTRY_DSN?: string;
     REACT_APP_WEBAPP_TAG?: string;
     REACT_APP_INTERCOM_APP_ID?: string;
     REACT_APP_INTEGRATION_DOCS_URLS?: string;
     SEGMENT_TOKEN?: string;
     LAUNCHDARKLY_KEY?: string;
-    analytics: SegmentAnalytics;
+    analytics: SegmentAnalytics.AnalyticsJS;
   }
 }
 
 export interface Config {
-  links: OutboundLinks;
   segment: { token: string; enabled: boolean };
   apiUrl: string;
+  connectorBuilderApiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
-  isDemo: boolean;
   version?: string;
   integrationUrl: string;
   launchDarkly?: string;

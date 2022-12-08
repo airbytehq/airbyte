@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/sendgrid",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/sendgrid",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Sendgrid Spec",
@@ -9,15 +9,21 @@
     "properties": {
       "apikey": {
         "title": "Sendgrid API key",
+        "airbyte_secret": true,
         "type": "string",
         "description": "API Key, use <a href=\"https://app.sendgrid.com/settings/api_keys/\">admin</a> to generate this key.",
         "order": 0
       },
       "start_time": {
         "title": "Start time",
-        "type": "integer",
-        "description": "Start time in timestamp integer format. Any data before this timestamp will not be replicated.",
-        "examples": [1558359837],
+        "type": ["integer", "string"],
+        "description": "Start time in ISO8601 format. Any data before this time point will not be replicated.",
+        "examples": [
+          "2021-12-12",
+          "2021-02-01 13:30:00",
+          "2020-07-18T13:30:00.000Z",
+          "2020-07-18 13:30:00+02:00"
+        ],
         "order": 1
       }
     }

@@ -152,18 +152,6 @@
     },
     {
       "stream": {
-        "name": "feedback_submissions",
-        "json_schema": {},
-        "supported_sync_modes": ["full_refresh", "incremental"],
-        "source_defined_cursor": true,
-        "default_cursor_field": ["updatedAt"]
-      },
-      "sync_mode": "full_refresh",
-      "cursor_field": ["updatedAt"],
-      "destination_sync_mode": "append"
-    },
-    {
-      "stream": {
         "name": "forms",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh"]

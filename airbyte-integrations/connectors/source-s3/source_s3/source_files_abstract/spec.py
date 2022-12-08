@@ -66,7 +66,7 @@ class SourceFilesAbstractSpec(BaseModel):
     )
 
     user_schema: str = Field(
-        title="Manually enforced data schema (Optional)",
+        title="Manually enforced data schema",
         alias="schema",
         default="{}",
         description="Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of "

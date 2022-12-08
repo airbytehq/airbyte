@@ -1,6 +1,6 @@
 # Python CDK Speedrun: Creating a Source
 
-## CDK Speedrun \(HTTP API Source Creation [Any%](https://en.wikipedia.org/wiki/Speedrun#:~:text=Any%25%2C%20or%20fastest%20completion%2C,the%20game%20to%20its%20fullest.&text=Specific%20requirements%20for%20a%20100,different%20depending%20on%20the%20game.) Route\)
+## CDK Speedrun \(HTTP API Source Creation Any Route\)
 
 This is a blazing fast guide to building an HTTP source connector. Think of it as the TL;DR version of [this tutorial.](cdk-tutorial-python-http/getting-started.md)
 
@@ -18,7 +18,7 @@ If you are a visual learner and want to see a video version of this guide going 
 
 ```bash
 # # clone the repo if you havent already
-# git clone -–depth 1 https://github.com/airbytehq/airbyte/ 
+# git clone --depth 1 https://github.com/airbytehq/airbyte/ 
 # cd airbyte # start from repo root
 cd airbyte-integrations/connector-templates/generator 
 ./generate.sh

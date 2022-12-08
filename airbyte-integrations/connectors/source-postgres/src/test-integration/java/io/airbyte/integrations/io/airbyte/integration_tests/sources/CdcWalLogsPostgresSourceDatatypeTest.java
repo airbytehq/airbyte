@@ -34,7 +34,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   private JsonNode stateAfterFirstSync;
 
   @Override
-  protected List<AirbyteMessage> runRead(ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
+  protected List<AirbyteMessage> runRead(final ConfiguredAirbyteCatalog configuredCatalog) throws Exception {
     if (stateAfterFirstSync == null) {
       throw new RuntimeException("stateAfterFirstSync is null");
     }
@@ -42,7 +42,7 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
   }
 
   @Override
-  protected void setupEnvironment(TestDestinationEnv environment) throws Exception {
+  protected void postSetup() throws Exception {
     final Database database = setupDatabase();
     initTests();
     for (final TestDataHolder test : testDataHolders) {
@@ -163,6 +163,25 @@ public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSource
               // so 13:00:01 is returned as 13:00:01-07.
               .addExpectedValues(null, "20:00:01.000000Z", "05:00:00.000000Z", "21:00:03.000000Z", "13:00:04.000000Z", "21:00:05.012345Z",
                   "05:00:06.000000Z")
+              .build());
+    }
+  }
+
+  @Override
+  protected void addTimestampWithInfinityValuesTest() {
+    // timestamp without time zone
+    for (final String fullSourceType : Set.of("timestamp", "timestamp without time zone", "timestamp without time zone not null default now()")) {
+      addDataTypeTestData(
+          TestDataHolder.builder()
+              .sourceType("timestamp")
+              .fullSourceDataType(fullSourceType)
+              .airbyteType(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)
+              .addInsertValues(
+                  "'infinity'",
+                  "'-infinity'")
+              .addExpectedValues(
+                  "+294247-01-10T04:00:25.200000",
+                  "+290309-12-21T19:59:27.600000 BC")
               .build());
     }
   }

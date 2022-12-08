@@ -189,7 +189,7 @@ public class RedshiftSqlOperations extends JdbcSqlOperations {
       LOGGER.info("Discovering NOT SUPER table types...");
       database.execute(String.format("set search_path to %s", schemaName));
       final List<JsonNode> tablesNameWithoutSuperDatatype = database.bufferedResultSetQuery(
-          conn -> conn.createStatement().executeQuery(String.format(SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT,
+          connection -> connection.createStatement().executeQuery(String.format(SELECT_ALL_TABLES_WITH_NOT_SUPER_TYPE_SQL_STATEMENT,
               schemaName,
               JavaBaseConstants.COLUMN_NAME_DATA,
               JavaBaseConstants.COLUMN_NAME_EMITTED_AT,

@@ -1,27 +1,48 @@
 import { submitButtonClick } from "./common";
-import { createTestDestination } from "./destination";
-import { createTestSource } from "./source";
+import { createLocalJsonDestination, createPostgresDestination } from "./destination";
+import { createPokeApiSource, createPostgresSource } from "./source";
+import { openAddSource } from "pages/destinationPage";
+import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage";
 
 export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
-  createTestSource(sourceName);
-  createTestDestination(destinationName);
-  cy.wait(3000);
+  switch (true) {
+    case sourceName.includes("PokeAPI"):
+      createPokeApiSource(sourceName, "luxray");
+      break;
 
-  cy.get("div[data-testid='select-source']").click();
+    case sourceName.includes("Postgres"):
+      createPostgresSource(sourceName);
+      break;
+    default:
+      createPostgresSource(sourceName);
+  }
+
+  switch (true) {
+    case destinationName.includes("Postgres"):
+      createPostgresDestination(destinationName);
+      break;
+    case destinationName.includes("JSON"):
+      createLocalJsonDestination(destinationName);
+      break;
+    default:
+      createLocalJsonDestination(destinationName);
+  }
+
+  cy.wait(5000);
+
+  openAddSource();
   cy.get("div").contains(sourceName).click();
 
   cy.wait("@discoverSchema");
 
-  cy.get("input[data-testid='connectionName']").type("Connection name");
-  cy.get("div[data-testid='schedule']").click();
-  cy.get("div[data-testid='Manual']").click();
+  enterConnectionName("Connection name");
+  selectSchedule("Manual");
 
-  cy.get("div[data-testid='namespaceDefinition']").click();
-  cy.get("div[data-testid='namespaceDefinition-source']").click();
+  setupDestinationNamespaceSourceFormat();
   submitButtonClick();
 
-  cy.wait("@createConnection");
+  cy.wait("@createConnection", { requestTimeout: 10000 });
 };

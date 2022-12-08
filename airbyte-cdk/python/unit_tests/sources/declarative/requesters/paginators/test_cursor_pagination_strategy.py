@@ -12,31 +12,39 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
 
 
 @pytest.mark.parametrize(
-    "test_name, template_string, stop_condition, expected_token",
+    "test_name, template_string, stop_condition, expected_token, page_size",
     [
-        ("test_static_token", "token", None, "token"),
-        ("test_token_from_config", "{{ config.config_key }}", None, "config_value"),
-        ("test_token_from_last_record", "{{ last_records[-1].id }}", None, 1),
-        ("test_token_from_response", "{{ response._metadata.content }}", None, "content_value"),
-        ("test_token_from_options", "{{ options.key }}", None, "value"),
-        ("test_token_not_found", "{{ response.invalid_key }}", None, None),
-        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", options={}), "token"),
-        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", options={}), None),
-        ("test_token_from_header", "{{ headers.next }}", InterpolatedBoolean("{{ not headers.has_more }}", options={}), "ready_to_go"),
+        ("test_static_token", "token", None, "token", None),
+        ("test_static_token_with_page_size", "token", None, "token", 5),
+        ("test_token_from_config", "{{ config.config_key }}", None, "config_value", None),
+        ("test_token_from_last_record", "{{ last_records[-1].id }}", None, 1, None),
+        ("test_token_from_response", "{{ response._metadata.content }}", None, "content_value", None),
+        ("test_token_from_options", "{{ options.key }}", None, "value", None),
+        ("test_token_not_found", "{{ response.invalid_key }}", None, None, None),
+        ("test_static_token_with_stop_condition_false", "token", InterpolatedBoolean("{{False}}", options={}), "token", None),
+        ("test_static_token_with_stop_condition_true", "token", InterpolatedBoolean("{{True}}", options={}), None, None),
+        (
+            "test_token_from_header",
+            "{{ headers.next }}",
+            InterpolatedBoolean("{{ not headers.has_more }}", options={}),
+            "ready_to_go",
+            None,
+        ),
         (
             "test_token_from_response_header_links",
             "{{ headers.link.next.url }}",
             InterpolatedBoolean("{{ not headers.link.next.url }}", options={}),
             "https://adventure.io/api/v1/records?page=2&per_page=100",
+            None,
         ),
     ],
 )
-def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token):
+def test_cursor_pagination_strategy(test_name, template_string, stop_condition, expected_token, page_size):
     decoder = JsonDecoder(options={})
     config = {"config_key": "config_value"}
     options = {"key": "value"}
     strategy = CursorPaginationStrategy(
-        cursor_value=template_string, config=config, stop_condition=stop_condition, decoder=decoder, options=options
+        page_size=page_size, cursor_value=template_string, config=config, stop_condition=stop_condition, decoder=decoder, options=options
     )
 
     response = requests.Response()
@@ -48,3 +56,4 @@ def test_cursor_pagination_strategy(test_name, template_string, stop_condition, 
 
     token = strategy.next_page_token(response, last_records)
     assert expected_token == token
+    assert page_size == strategy.get_page_size()

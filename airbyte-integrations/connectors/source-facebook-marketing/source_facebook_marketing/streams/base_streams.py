@@ -5,7 +5,9 @@
 import logging
 from abc import ABC, abstractmethod
 from datetime import datetime
-from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping
+from functools import partial
+from queue import Queue
+from typing import TYPE_CHECKING, Any, Iterable, List, Mapping, MutableMapping, Optional
 
 import pendulum
 from airbyte_cdk.models import SyncMode
@@ -22,6 +24,8 @@ if TYPE_CHECKING:  # pragma: no cover
     from source_facebook_marketing.api import API
 
 logger = logging.getLogger("airbyte")
+
+FACEBOOK_BATCH_ERROR_CODE = 960
 
 
 class FBMarketingStream(Stream, ABC):
@@ -58,24 +62,35 @@ class FBMarketingStream(Stream, ABC):
 
     def execute_in_batch(self, pending_requests: Iterable[FacebookRequest]) -> Iterable[MutableMapping[str, Any]]:
         """Execute list of requests in batches"""
+        requests_q = Queue()
         records = []
+        for r in pending_requests:
+            requests_q.put(r)
 
         def success(response: FacebookResponse):
             records.append(response.json())
 
-        def failure(response: FacebookResponse):
-            raise RuntimeError(f"Batch request failed with response: {response.body()}")
+        def failure(response: FacebookResponse, request: Optional[FacebookRequest] = None):
+            # although it is Optional in the signature for compatibility, we need it always
+            assert request, "Missing a request object"
+            resp_body = response.json()
+            if not isinstance(resp_body, dict) or resp_body.get("error", {}).get("code") != FACEBOOK_BATCH_ERROR_CODE:
+                # response body is not a json object or the error code is different
+                raise RuntimeError(f"Batch request failed with response: {resp_body}")
+            requests_q.put(request)
 
         api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
-        for request in pending_requests:
-            api_batch.add_request(request, success=success, failure=failure)
-            if len(api_batch) == self.max_batch_size:
+
+        while not requests_q.empty():
+            request = requests_q.get()
+            api_batch.add_request(request, success=success, failure=partial(failure, request=request))
+            if len(api_batch) == self.max_batch_size or requests_q.empty():
+                # make a call for every max_batch_size items or less if it is the last call
                 self._execute_batch(api_batch)
                 yield from records
                 records = []
                 api_batch: FacebookAdsApiBatch = self._api.api.new_batch()
 
-        self._execute_batch(api_batch)
         yield from records
 
     def read_records(

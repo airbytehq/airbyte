@@ -1,29 +1,50 @@
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
+import { Field, FieldProps, Form, Formik, FormikProps } from "formik";
+import React, { useRef, useState } from "react";
+import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
-import { Modal } from "components";
+import { ControlLabels } from "components/LabeledControl";
+import { Button } from "components/ui/Button";
+import { DropDown } from "components/ui/DropDown";
+import { Input } from "components/ui/Input";
+import { ModalBody, ModalFooter } from "components/ui/Modal";
 
 import useRequestConnector from "hooks/services/useRequestConnector";
-import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-import ConnectorForm from "./components/ConnectorForm";
+import styles from "./RequestConnectorModal.module.scss";
 import { Values } from "./types";
 
 interface RequestConnectorModalProps {
   onClose: () => void;
   connectorType: "source" | "destination";
-  initialName?: string;
+  workspaceEmail?: string;
+  searchedConnectorName?: string;
 }
-const Content = styled.div`
-  width: 492px;
-  padding: 22px 34px 36px 32px;
-`;
 
-const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({ onClose, connectorType, initialName }) => {
+const requestConnectorValidationSchema = yup.object().shape({
+  connectorType: yup.string().required("form.empty.error"),
+  name: yup.string().required("form.empty.error"),
+  additionalInfo: yup.string(),
+  email: yup.string().email("form.email.error").required("form.empty.error"),
+});
+
+const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({
+  onClose,
+  connectorType,
+  searchedConnectorName,
+  workspaceEmail,
+}) => {
   const [hasFeedback, setHasFeedback] = useState(false);
+  const formRef = useRef<FormikProps<Values>>(null);
   const { requestConnector } = useRequestConnector();
-  const workspace = useCurrentWorkspace();
+
+  // since we heed to handle onSubmit outside the <Formik> context
+  const handleSubmit = () => {
+    if (formRef.current) {
+      formRef.current.handleSubmit();
+    }
+  };
+
   const onSubmit = (values: Values) => {
     requestConnector(values);
     setHasFeedback(true);
@@ -34,22 +55,124 @@ const RequestConnectorModal: React.FC<RequestConnectorModalProps> = ({ onClose, 
     }, 2000);
   };
 
+  const { formatMessage } = useIntl();
+  const dropdownData = [
+    { value: "source", label: <FormattedMessage id="connector.source" /> },
+    {
+      value: "destination",
+      label: <FormattedMessage id="connector.destination" />,
+    },
+  ];
+
   return (
-    <Modal title={<FormattedMessage id="connector.requestConnector" />} onClose={onClose}>
-      <Content>
-        <ConnectorForm
-          onSubmit={onSubmit}
-          onCancel={onClose}
-          currentValues={{
-            connectorType,
-            name: initialName ?? "",
+    <>
+      <ModalBody className={styles.modalBody}>
+        <Formik
+          initialValues={{
+            connectorType: connectorType || "",
+            name: searchedConnectorName || "",
             additionalInfo: "",
-            email: workspace.email,
+            email: workspaceEmail || "",
           }}
-          hasFeedback={hasFeedback}
-        />
-      </Content>
-    </Modal>
+          validateOnBlur
+          validateOnChange
+          validationSchema={requestConnectorValidationSchema}
+          onSubmit={onSubmit}
+          innerRef={formRef}
+        >
+          {({ setFieldValue }) => (
+            <Form>
+              <Field name="connectorType">
+                {({ field, meta }: FieldProps<string>) => (
+                  <ControlLabels
+                    className={styles.controlLabel}
+                    error={!!meta.error && meta.touched}
+                    label={<FormattedMessage id="connector.type" />}
+                    message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}
+                  >
+                    <DropDown
+                      {...field}
+                      options={dropdownData}
+                      placeholder={formatMessage({
+                        id: "connector.type.placeholder",
+                      })}
+                      error={!!meta.error && meta.touched}
+                      onChange={(item) => {
+                        setFieldValue("connectorType", item.value);
+                      }}
+                    />
+                  </ControlLabels>
+                )}
+              </Field>
+              <Field name="name">
+                {({ field, meta, form }: FieldProps<string, Values>) => (
+                  <ControlLabels
+                    className={styles.controlLabel}
+                    error={!!meta.error && meta.touched}
+                    label={
+                      form.values.connectorType === "destination" ? (
+                        <FormattedMessage id="connector.requestConnector.destination.name" />
+                      ) : (
+                        <FormattedMessage id="connector.requestConnector.source.name" />
+                      )
+                    }
+                  >
+                    <Input {...field} error={!!meta.error && meta.touched} type="text" />
+                  </ControlLabels>
+                )}
+              </Field>
+              <Field name="additionalInfo">
+                {({ field, meta }: FieldProps<string>) => (
+                  <ControlLabels
+                    className={styles.controlLabel}
+                    error={!!meta.error && meta.touched}
+                    label={<FormattedMessage id="connector.additionalInfo" />}
+                    message={<FormattedMessage id="connector.additionalInfo.message" />}
+                  >
+                    <Input {...field} type="text" error={!!meta.error && meta.touched} />
+                  </ControlLabels>
+                )}
+              </Field>
+              {!workspaceEmail && (
+                <Field name="email">
+                  {({ field, meta }: FieldProps<string>) => (
+                    <ControlLabels
+                      className={styles.controlLabel}
+                      error={!!meta.error && meta.touched}
+                      label={<FormattedMessage id="connector.email" />}
+                      message={!!meta.error && meta.touched && <FormattedMessage id={meta.error} />}
+                    >
+                      <Input
+                        {...field}
+                        type="text"
+                        error={!!meta.error && meta.touched}
+                        placeholder={formatMessage({
+                          id: "connector.email.placeholder",
+                        })}
+                      />
+                    </ControlLabels>
+                  )}
+                </Field>
+              )}
+            </Form>
+          )}
+        </Formik>
+      </ModalBody>
+
+      <ModalFooter>
+        <Button type="button" variant="secondary" onClick={onClose} disabled={hasFeedback}>
+          <FormattedMessage id="form.cancel" />
+        </Button>
+        <Button
+          className={styles.requestButton}
+          // type="submit"
+          onClick={handleSubmit}
+          wasActive={hasFeedback}
+        >
+          {hasFeedback ? <FormattedMessage id="connector.requested" /> : <FormattedMessage id="connector.request" />}
+        </Button>
+      </ModalFooter>
+    </>
   );
 };
 

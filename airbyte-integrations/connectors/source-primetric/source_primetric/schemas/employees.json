@@ -1,0 +1,57 @@
+{
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "nick": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "assigned_manager_id": {
+      "type": ["null", "string"]
+    },
+    "assigned_finance_manager_ids": {
+      "type": ["null", "array"],
+      "items": {
+        "type": "string"
+      }
+    },
+    "summary": {
+      "type": ["null", "string"]
+    },
+    "seniority_id": {
+      "type": ["null", "string"]
+    },
+    "team_id": {
+      "type": ["null", "string"]
+    },
+    "department_id": {
+      "type": ["null", "string"]
+    },
+    "position_id": {
+      "type": ["null", "string"]
+    },
+    "hash_tag_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nationality": {
+      "type": ["null", "string"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "custom_attributes": {
+      "$ref": "custom_attributes.json"
+    }
+  }
+}

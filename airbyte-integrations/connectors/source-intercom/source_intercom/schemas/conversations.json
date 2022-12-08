@@ -121,7 +121,8 @@
     },
     "custom_attributes": {
       "type": ["null", "object"]
-    },"priority": {
+    },
+    "priority": {
       "type": ["null", "string"]
     },
     "conversation_message": {

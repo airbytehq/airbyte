@@ -5,6 +5,7 @@
 import ast
 from typing import Optional
 
+from airbyte_cdk.sources.declarative.interpolation.filters import filters
 from airbyte_cdk.sources.declarative.interpolation.interpolation import Interpolation
 from airbyte_cdk.sources.declarative.interpolation.macros import macros
 from airbyte_cdk.sources.declarative.types import Config
@@ -32,6 +33,7 @@ class JinjaInterpolation(Interpolation):
 
     def __init__(self):
         self._environment = Environment()
+        self._environment.filters.update(**filters)
         self._environment.globals.update(**macros)
 
     def eval(self, input_str: str, config: Config, default: Optional[str] = None, **additional_options):

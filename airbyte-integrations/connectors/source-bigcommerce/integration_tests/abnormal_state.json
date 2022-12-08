@@ -1,17 +1,79 @@
-{
-  "customers": {
-    "date_modified": "2080-07-30T22:16:46"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2080-07-30T22:16:46"
+      },
+      "stream_descriptor": {
+        "name": "customers"
+      }
+    }
   },
-  "orders": {
-    "date_modified": "2080-07-30T22:16:46+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2080-07-30T22:16:46+00:00"
+      },
+      "stream_descriptor": {
+        "name": "orders"
+      }
+    }
   },
-  "transactions": {
-    "id": 5783048848838997
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 5783048848838997
+      },
+      "stream_descriptor": {
+        "name": "transactions"
+      }
+    }
   },
-  "pages": {
-    "id": 9000002039398998
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 9000002039398998
+      },
+      "stream_descriptor": {
+        "name": "pages"
+      }
+    }
   },
-  "products": {
-    "date_modified": "2080-01-10T00:17:08+00:00"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2080-01-10T00:17:08+00:00"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified": "2080-01-10T00:17:08+00:00"
+      },
+      "stream_descriptor": {
+        "name": "channels"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "store_id": 99199991999999200
+      },
+      "stream_descriptor": {
+        "name": "store"
+      }
+    }
   }
-}
+]

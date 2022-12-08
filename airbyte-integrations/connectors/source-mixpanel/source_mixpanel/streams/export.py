@@ -3,9 +3,10 @@
 #
 
 import json
-from datetime import datetime
-from typing import Any, Iterable, Mapping
+from functools import cache
+from typing import Any, Iterable, Mapping, MutableMapping
 
+import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 
@@ -84,6 +85,32 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
     def path(self, **kwargs) -> str:
         return "export"
 
+    def iter_dicts(self, lines):
+        """
+        The incoming stream has to be JSON lines format.
+        From time to time for some reason, the one record can be split into multiple lines.
+        We try to combine such split parts into one record only if parts go nearby.
+        """
+        parts = []
+        for record_line in lines:
+            if record_line == "terminated early":
+                self.logger.warning(f"Couldn't fetch data from Export API. Response: {record_line}")
+                return
+            try:
+                yield json.loads(record_line)
+            except ValueError:
+                parts.append(record_line)
+            else:
+                parts = []
+
+            if len(parts) > 1:
+                try:
+                    yield json.loads("".join(parts))
+                except ValueError:
+                    pass
+                else:
+                    parts = []
+
     def process_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         """Export API return response in JSONL format but each line is a valid JSON object
         Raw item example:
@@ -103,14 +130,9 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 }
             }
         """
-        if response.text == "terminated early\n":
-            # no data available
-            self.logger.warn(f"Couldn't fetch data from Export API. Response: {response.text}")
-            return []
 
         # We prefer response.iter_lines() to response.text.split_lines() as the later can missparse text properties embeding linebreaks
-        for record_line in response.iter_lines():
-            record = json.loads(record_line)
+        for record in self.iter_dicts(response.iter_lines(decode_unicode=True)):
             # transform record into flat dict structure
             item = {"event": record["event"]}
             properties = record["properties"]
@@ -120,11 +142,11 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
                 item[result.transformed_name] = str(properties[result.source_name])
 
             # convert timestamp to datetime string
-            if item.get("time") and item["time"].isdigit():
-                item["time"] = datetime.fromtimestamp(int(item["time"])).isoformat()
+            item["time"] = pendulum.from_timestamp(int(item["time"]), tz="UTC").to_iso8601_string()
 
             yield item
 
+    @cache
     def get_json_schema(self) -> Mapping[str, Any]:
         """
         :return: A dict of the JSON schema representing this stream.
@@ -149,3 +171,17 @@ class Export(DateSlicesMixin, IncrementalMixpanelStream):
             schema["properties"][result.transformed_name] = {"type": ["null", "string"]}
 
         return schema
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        mapping = super().request_params(stream_state, stream_slice, next_page_token)
+        if stream_state and "date" in stream_state:
+            timestamp = int(pendulum.parse(stream_state["date"]).timestamp())
+            mapping["where"] = f'properties["$time"]>=datetime({timestamp})'
+        return mapping
+
+    def request_kwargs(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> Mapping[str, Any]:
+        return {"stream": True}

@@ -1,4 +1,4 @@
-# On Kubernetes using Helm (Beta)
+# Deploy Airbyte on Kubernetes using Helm (Beta)
 
 ## Overview
 
@@ -6,7 +6,8 @@ Airbyte allows scaling sync workloads horizontally using Kubernetes. The core co
 
 ## Quickstart
 
-If you don't want to configure your own K8s cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a K8s cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.
+If you don't want to configure your own Kubernetes cluster and Airbyte instance, you can use the free, open-source project [Plural](https://www.plural.sh/) to bring up a Kubernetes cluster and Airbyte for you. Use [this guide](on-plural.md) to get started.<br/>
+Alternatively, you can deploy Airbyte on [Restack](https://www.restack.io) to provision your Kubernetes cluster on AWS. Follow [this guide](on-restack.md) to get started.
 
 ## Getting Started
 
@@ -69,7 +70,7 @@ Where `airbyte` is the name of the repository that will be indexed locally.
 
 After adding the repo, perform the repo indexing process by running `helm repo update`.
 
-After this you can browse all charts uploaded to repository by running `helm search repo aribyte`
+After this you can browse all charts uploaded to repository by running `helm search repo airbyte`
 
 It'll produce the output below:
 

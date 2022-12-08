@@ -6,15 +6,16 @@ package io.airbyte.integrations.destination.bigquery;
 
 import io.airbyte.commons.string.Strings;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.bigquery.uploader.AbstractBigQueryUploader;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,12 +25,15 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
 
   private final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap;
   private final Consumer<AirbyteMessage> outputRecordCollector;
+  private final String datasetId;
   private AirbyteMessage lastStateMessage = null;
 
   public BigQueryRecordConsumer(final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap,
-                                final Consumer<AirbyteMessage> outputRecordCollector) {
+                                final Consumer<AirbyteMessage> outputRecordCollector,
+                                final String datasetId) {
     this.uploaderMap = uploaderMap;
     this.outputRecordCollector = outputRecordCollector;
+    this.datasetId = datasetId;
   }
 
   @Override
@@ -43,6 +47,9 @@ public class BigQueryRecordConsumer extends FailureTrackingAirbyteMessageConsume
       lastStateMessage = message;
       outputRecordCollector.accept(message);
     } else if (message.getType() == Type.RECORD) {
+      if (StringUtils.isEmpty(message.getRecord().getNamespace())) {
+        message.getRecord().setNamespace(datasetId);
+      }
       processRecord(message);
     } else {
       LOGGER.warn("Unexpected message: {}", message.getType());

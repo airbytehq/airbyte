@@ -11,6 +11,8 @@ required:
   - catalog
   - manual
   - namespaceDefinition
+  - geography
+  - breakingChange
 additionalProperties: false
 properties:
   namespaceDefinition:
@@ -40,6 +42,11 @@ properties:
     type: string
   catalog:
     existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+  fieldSelectionData:
+    type: object
+    description: A map of StreamDescriptor to an indicator of whether field selection is enabled for that stream.
+    additionalProperties:
+      type: boolean
   status:
     type: string
     enum:
@@ -114,3 +121,14 @@ properties:
     format: uuid
   resourceRequirements:
     "$ref": ResourceRequirements.yaml
+  geography:
+    "$ref": Geography.yaml
+  breakingChange:
+    type: boolean
+  notifySchemaChanges:
+    type: boolean
+  nonBreakingChangesPreference:
+    type: string
+    enum:
+      - ignore
+      - disable

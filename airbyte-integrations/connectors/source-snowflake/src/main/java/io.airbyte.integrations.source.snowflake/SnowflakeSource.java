@@ -16,7 +16,6 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import java.io.IOException;
@@ -32,19 +31,16 @@ import org.slf4j.LoggerFactory;
 public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SnowflakeSource.class);
+  private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
+
   public static final String DRIVER_CLASS = DatabaseDriver.SNOWFLAKE.getDriverClassName();
   public static final ScheduledExecutorService SCHEDULED_EXECUTOR_SERVICE = Executors.newScheduledThreadPool(1);
 
-  public SnowflakeSource() {
-    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new SnowflakeSourceOperations());
-  }
+  private final String airbyteEnvironment;
 
-  public static void main(final String[] args) throws Exception {
-    final Source source = new SnowflakeSource();
-    LOGGER.info("starting source: {}", SnowflakeSource.class);
-    new IntegrationRunner(source).run(args);
-    SCHEDULED_EXECUTOR_SERVICE.shutdownNow();
-    LOGGER.info("completed source: {}", SnowflakeSource.class);
+  public SnowflakeSource(final String airbyteEnvironment) {
+    super(DRIVER_CLASS, AdaptiveStreamingQueryConfig::new, new SnowflakeSourceOperations());
+    this.airbyteEnvironment = airbyteEnvironment;
   }
 
   @Override
@@ -57,14 +53,14 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
 
   @Override
   protected DataSource createDataSource(final JsonNode config) {
-    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config);
+    final DataSource dataSource = SnowflakeDataSourceUtils.createDataSource(config, airbyteEnvironment);
     dataSources.add(dataSource);
     return dataSource;
   }
 
   @Override
   public JsonNode toDatabaseConfig(final JsonNode config) {
-    final String jdbcUrl = SnowflakeDataSourceUtils.buildJDBCUrl(config);
+    final String jdbcUrl = SnowflakeDataSourceUtils.buildJDBCUrl(config, airbyteEnvironment);
 
     if (config.has("credentials")) {
       final JsonNode credentials = config.get("credentials");
@@ -85,6 +81,16 @@ public class SnowflakeSource extends AbstractJdbcSource<JDBCType> implements Sou
   public Set<String> getExcludedInternalNameSpaces() {
     return Set.of(
         "INFORMATION_SCHEMA");
+  }
+
+  @Override
+  protected int getStateEmissionFrequency() {
+    return INTERMEDIATE_STATE_EMISSION_FREQUENCY;
+  }
+
+  @Override
+  protected String getCountColumnName() {
+    return "RECORD_COUNT";
   }
 
   private JsonNode buildOAuthConfig(final JsonNode config, final String jdbcUrl) {

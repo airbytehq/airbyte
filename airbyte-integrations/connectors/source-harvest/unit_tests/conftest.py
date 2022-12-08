@@ -27,7 +27,10 @@ def from_date_fixture(replication_start_date):
 
 @fixture(name="mock_stream")
 def mock_stream_fixture(requests_mock):
-    def _mock_stream(path, response={}):
+    def _mock_stream(path, response=None):
+        if response is None:
+            response = {}
+
         url = f"https://api.harvestapp.com/v2/{path}"
         requests_mock.get(url, json=response)
 

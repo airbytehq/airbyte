@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -58,6 +59,10 @@ class DestinationHandlerTest {
   private JsonSecretsProcessor secretsProcessor;
   private ConnectorSpecification connectorSpecification;
 
+  // needs to match name of file in src/test/resources/icons
+  private static final String ICON = "test-destination.svg";
+  private static final String LOADED_ICON = DestinationDefinitionsHandler.loadIcon(ICON);
+
   @SuppressWarnings("unchecked")
   @BeforeEach
   void setUp() throws IOException {
@@ -78,7 +83,8 @@ class DestinationHandlerTest {
         .withDockerRepository("thebestrepo")
         .withDockerImageTag("thelatesttag")
         .withDocumentationUrl("https://wikipedia.org")
-        .withSpec(connectorSpecification);
+        .withSpec(connectorSpecification)
+        .withIcon(ICON);
 
     destinationDefinitionSpecificationRead = new DestinationDefinitionSpecificationRead()
         .connectionSpecification(connectorSpecification.getConnectionSpecification())
@@ -127,7 +133,8 @@ class DestinationHandlerTest {
         .workspaceId(destinationConnection.getWorkspaceId())
         .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(DestinationHelpers.getTestDestinationJson())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
 
@@ -187,7 +194,8 @@ class DestinationHandlerTest {
         .workspaceId(destinationConnection.getWorkspaceId())
         .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(destinationConnection.getConfiguration())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
     final DestinationIdRequestBody destinationIdRequestBody =
         new DestinationIdRequestBody().destinationId(expectedDestinationRead.getDestinationId());
 
@@ -201,6 +209,10 @@ class DestinationHandlerTest {
     final DestinationRead actualDestinationRead = destinationHandler.getDestination(destinationIdRequestBody);
 
     assertEquals(expectedDestinationRead, actualDestinationRead);
+
+    // make sure the icon was loaded into actual svg content
+    assertTrue(expectedDestinationRead.getIcon().startsWith("<svg>"));
+
     verify(secretsProcessor)
         .prepareSecretsForOutput(destinationConnection.getConfiguration(), destinationDefinitionSpecificationRead.getConnectionSpecification());
   }
@@ -213,11 +225,13 @@ class DestinationHandlerTest {
         .workspaceId(destinationConnection.getWorkspaceId())
         .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(destinationConnection.getConfiguration())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
     final WorkspaceIdRequestBody workspaceIdRequestBody = new WorkspaceIdRequestBody().workspaceId(destinationConnection.getWorkspaceId());
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
-    when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
+    when(configRepository.listWorkspaceDestinationConnection(destinationConnection.getWorkspaceId()))
+        .thenReturn(Lists.newArrayList(destinationConnection));
     when(configRepository.getStandardDestinationDefinition(standardDestinationDefinition.getDestinationDefinitionId()))
         .thenReturn(standardDestinationDefinition);
     when(secretsProcessor.prepareSecretsForOutput(destinationConnection.getConfiguration(),
@@ -239,7 +253,8 @@ class DestinationHandlerTest {
         .workspaceId(destinationConnection.getWorkspaceId())
         .destinationId(destinationConnection.getDestinationId())
         .connectionConfiguration(destinationConnection.getConfiguration())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
 
     when(configRepository.getDestinationConnection(destinationConnection.getDestinationId())).thenReturn(destinationConnection);
     when(configRepository.listDestinationConnection()).thenReturn(Lists.newArrayList(destinationConnection));
@@ -270,7 +285,8 @@ class DestinationHandlerTest {
         .workspaceId(clonedConnection.getWorkspaceId())
         .destinationId(clonedConnection.getDestinationId())
         .connectionConfiguration(clonedConnection.getConfiguration())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
     final DestinationRead destinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
@@ -309,7 +325,8 @@ class DestinationHandlerTest {
         .workspaceId(clonedConnection.getWorkspaceId())
         .destinationId(clonedConnection.getDestinationId())
         .connectionConfiguration(clonedConnection.getConfiguration())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(LOADED_ICON);
     final DestinationRead destinationRead = new DestinationRead()
         .name(destinationConnection.getName())
         .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())

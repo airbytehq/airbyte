@@ -13,8 +13,8 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
+    implementation project(':airbyte-integrations:bases:base-java-s3')
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
-    implementation project(':airbyte-integrations:connectors:destination-s3')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation platform('com.amazonaws:aws-java-sdk-bom:1.12.14')
@@ -43,5 +43,5 @@ dependencies {
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-gcs')
-    integrationTestJavaImplementation project(':airbyte-workers')
+    integrationTestJavaImplementation project(':airbyte-commons-worker')
 }

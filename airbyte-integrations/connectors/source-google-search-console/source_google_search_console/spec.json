@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-search-console",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-search-console",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Search Console Spec",
@@ -13,7 +13,7 @@
         },
         "title": "Website URL Property",
         "description": "The URLs of the website property attached to your GSC account. Read more <a href=\"https://support.google.com/webmasters/answer/34592?hl=en\">here</a>.",
-        "examples": ["https://example1.com", "https://example2.com"],
+        "examples": ["https://example1.com/", "https://example2.com/"],
         "order": 0
       },
       "start_date": {
@@ -29,7 +29,7 @@
         "title": "End Date",
         "description": "UTC date in the format 2017-01-25. Any data after this date will not be replicated. Must be greater or equal to the start date field.",
         "examples": ["2021-12-12"],
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "pattern": "^$|^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "order": 2
       },
       "authorization": {
@@ -95,7 +95,8 @@
                 "description": "The JSON key of the service account to use for authorization. Read more <a href=\"https://cloud.google.com/iam/docs/creating-managing-service-account-keys\">here</a>.",
                 "examples": [
                   "{ \"type\": \"service_account\", \"project_id\": YOUR_PROJECT_ID, \"private_key_id\": YOUR_PRIVATE_KEY, ... }"
-                ]
+                ],
+                "airbyte_secret": true
               },
               "email": {
                 "title": "Admin Email",
@@ -105,6 +106,12 @@
             }
           }
         ]
+      },
+      "custom_reports": {
+        "order": 4,
+        "type": "string",
+        "title": "Custom Reports",
+        "description": "A JSON array describing the custom reports you want to sync from Google Search Console. See <a href=\"https://docs.airbyte.com/integrations/sources/google-search-console#step-2-set-up-the-google-search-console-connector-in-airbyte\">the docs</a> for more information about the exact format you can use to fill out this field."
       }
     }
   },

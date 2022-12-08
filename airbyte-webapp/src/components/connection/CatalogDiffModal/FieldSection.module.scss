@@ -1,0 +1,39 @@
+@use "scss/colors";
+@use "scss/variables";
+@use "./DiffSection.module.scss";
+
+.fieldHeader {
+  @extend %sectionHeader;
+
+  padding: variables.$spacing-lg variables.$spacing-xl;
+}
+
+.fieldSubHeader {
+  @extend %sectionSubHeader;
+
+  padding: 0 variables.$spacing-sm 0 40px;
+
+  > div {
+    @extend %nameCell;
+
+    text-align: left;
+    font-weight: 400;
+    font-size: 10px;
+    color: colors.$grey;
+    line-height: 12px;
+  }
+}
+
+.fieldRowsContainer {
+  padding: 0 variables.$spacing-lg;
+
+  ul,
+  li {
+    list-style-type: none;
+    list-style-position: inside;
+    margin: 0;
+    padding: 0;
+    height: auto;
+    font-weight: 400;
+  }
+}

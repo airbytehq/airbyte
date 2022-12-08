@@ -1,9 +1,9 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import Modal, { ModalProps } from "components/Modal";
+import { Modal, ModalProps } from "components/ui/Modal";
 
-import { ConnectionFormMode } from "views/Connection/ConnectionForm/ConnectionForm";
+import { ConnectionFormMode } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import styles from "./ArrayOfObjectsEditor.module.scss";
 import { EditorHeader } from "./components/EditorHeader";
@@ -24,6 +24,7 @@ export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
   renderItemEditorForm: (item?: T) => React.ReactNode;
   onStartEdit: (n: number) => void;
   onRemove: (index: number) => void;
+  onCancel?: () => void;
   mode?: ConnectionFormMode;
   disabled?: boolean;
   editModalSize?: ModalProps["size"];
@@ -32,6 +33,7 @@ export interface ArrayOfObjectsEditorProps<T extends ItemBase> {
 export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
   onStartEdit,
   onRemove,
+  onCancel,
   renderItemName = (item) => item.name,
   renderItemDescription = (item) => item.description,
   renderItemEditorForm,
@@ -54,6 +56,7 @@ export const ArrayOfObjectsEditor = <T extends ItemBase = ItemBase>({
         title={<FormattedMessage id={item ? "form.edit" : "form.add"} />}
         size={editModalSize}
         testId="arrayOfObjects-editModal"
+        onClose={onCancel}
       >
         {renderItemEditorForm(item)}
       </Modal>

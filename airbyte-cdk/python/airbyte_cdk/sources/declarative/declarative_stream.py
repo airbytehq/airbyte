@@ -7,6 +7,7 @@ from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.retrievers.retriever import Retriever
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader
 from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 from airbyte_cdk.sources.declarative.transformations import RecordTransformation
 from airbyte_cdk.sources.declarative.types import Config, StreamSlice
@@ -31,14 +32,15 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         checkpoint_interval (Optional[int]): How often the stream will checkpoint state (i.e: emit a STATE message)
     """
 
-    schema_loader: SchemaLoader
     retriever: Retriever
     config: Config
     options: InitVar[Mapping[str, Any]]
     name: str
-    _name: str = field(init=False, repr=False, default="")
     primary_key: Optional[Union[str, List[str], List[List[str]]]]
+    schema_loader: Optional[SchemaLoader] = None
+    _name: str = field(init=False, repr=False, default="")
     _primary_key: str = field(init=False, repr=False, default="")
+    _schema_loader: SchemaLoader = field(init=False, repr=False, default=None)
     stream_cursor_field: Optional[Union[List[str], str]] = None
     transformations: List[RecordTransformation] = None
     checkpoint_interval: Optional[int] = None
@@ -46,6 +48,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         self.stream_cursor_field = self.stream_cursor_field or []
         self.transformations = self.transformations or []
+        self._schema_loader = self.schema_loader if self.schema_loader else DefaultSchemaLoader(config=self.config, options=options)
 
     @property
     def primary_key(self) -> Optional[Union[str, List[str], List[List[str]]]]:
@@ -126,7 +129,7 @@ class DeclarativeStream(Stream, JsonSchemaMixin):
         The default implementation of this method looks for a JSONSchema file with the same name as this stream's "name" property.
         Override as needed.
         """
-        return self.schema_loader.get_json_schema()
+        return self._schema_loader.get_json_schema()
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None

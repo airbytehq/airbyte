@@ -14,7 +14,7 @@ def test_check_connection(requests_mock):
     access_token = "token"
     mock_oauth_call = requests_mock.post("https://oauth2.googleapis.com/token", json={"access_token": access_token, "expires_in": 0})
 
-    mock_jobs_call = requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json={})
+    mock_jobs_call = requests_mock.get("https://youtubereporting.googleapis.com/v1/jobs", json={"jobs": [1, 2, 3]})
 
     source = SourceYoutubeAnalytics()
     logger_mock, config_mock = MagicMock(), MagicMock()

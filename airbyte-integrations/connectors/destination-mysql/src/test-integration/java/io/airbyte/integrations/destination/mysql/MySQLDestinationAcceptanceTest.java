@@ -5,8 +5,10 @@
 package io.airbyte.integrations.destination.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
@@ -19,6 +21,7 @@ import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
+import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
@@ -35,6 +38,9 @@ import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MySQLContainer;
 
 public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
+
+  protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
+  protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
 
   private MySQLContainer<?> db;
   private final ExtendedNameTransformer namingResolver = new MySQLNameTransformer();
@@ -259,6 +265,62 @@ public class MySQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTes
     } else {
       assertEquals(expectedValue, actualValue);
     }
+  }
+
+  @Test
+  void testCheckIncorrectPasswordFailure() {
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PASSWORD_KEY, "fake");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
+  }
+
+  @Test
+  public void testCheckIncorrectUsernameFailure() {
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, "fake");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 28000; Error code: 1045;"));
+  }
+
+  @Test
+  public void testCheckIncorrectHostFailure() {
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.HOST_KEY, "localhost2");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
+  }
+
+  @Test
+  public void testCheckIncorrectPortFailure() {
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.PORT_KEY, "0000");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 08S01;"));
+  }
+
+  @Test
+  public void testCheckIncorrectDataBaseFailure() {
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.DATABASE_KEY, "wrongdatabase");
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1049;"));
+  }
+
+  @Test
+  public void testUserHasNoPermissionToDataBase() {
+    executeQuery("create user '" + USERNAME_WITHOUT_PERMISSION + "'@'%' IDENTIFIED BY '" + PASSWORD_WITHOUT_PERMISSION + "';\n");
+    final JsonNode config = ((ObjectNode) getConfig()).put(JdbcUtils.USERNAME_KEY, USERNAME_WITHOUT_PERMISSION);
+    ((ObjectNode) config).put(JdbcUtils.PASSWORD_KEY, PASSWORD_WITHOUT_PERMISSION);
+    final MySQLDestination destination = new MySQLDestination();
+    final AirbyteConnectionStatus status = destination.check(config);
+    assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
+    assertTrue(status.getMessage().contains("State code: 42000; Error code: 1044;"));
   }
 
 }

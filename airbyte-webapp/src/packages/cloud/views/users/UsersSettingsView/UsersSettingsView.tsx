@@ -1,21 +1,27 @@
-import React from "react";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
-import { useToggle } from "react-use";
 
-import { Button, H5, LoadingButton } from "components";
-import Table from "components/Table";
+import { Button } from "components/ui/Button";
+import { Heading } from "components/ui/Heading";
+import { Table } from "components/ui/Table";
 
+import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { User } from "packages/cloud/lib/domain/users";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import {
+  InviteUsersModalServiceProvider,
+  useInviteUsersModalService,
+} from "packages/cloud/services/users/InviteUsersModalService";
 import { useListUsers, useUserHook } from "packages/cloud/services/users/UseUserHook";
-import { InviteUsersModal } from "packages/cloud/views/users/InviteUsersModal";
 
 import styles from "./UsersSettingsView.module.scss";
 
-const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ workspaceId, email }) => {
+const RemoveUserSection: React.VFC<{ workspaceId: string; email: string }> = ({ workspaceId, email }) => {
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { removeUserLogic } = useUserHook();
   const { isLoading, mutate: removeUser } = removeUserLogic;
@@ -34,21 +40,38 @@ const RemoveUserSection: React.FC<{ workspaceId: string; email: string }> = ({ w
   };
 
   return (
-    <LoadingButton secondary onClick={onRemoveUserButtonClick} isLoading={isLoading}>
+    <Button variant="secondary" onClick={onRemoveUserButtonClick} isLoading={isLoading}>
       <FormattedMessage id="userSettings.user.remove" />
-    </LoadingButton>
+    </Button>
   );
 };
 
-export const UsersSettingsView: React.FC = () => {
-  const [modalIsOpen, toggleModal] = useToggle(false);
+const Header: React.VFC = () => {
+  const { toggleInviteUsersModalOpen } = useInviteUsersModalService();
+  return (
+    <div className={styles.header}>
+      <Heading as="h1" size="sm">
+        <FormattedMessage id="userSettings.table.title" />
+      </Heading>
+      <Button
+        onClick={() => {
+          toggleInviteUsersModalOpen();
+        }}
+        icon={<FontAwesomeIcon icon={faPlus} />}
+        data-testid="userSettings.button.addNewUser"
+      >
+        <FormattedMessage id="userSettings.button.addNewUser" />
+      </Button>
+    </div>
+  );
+};
+
+export const UsersTable: React.FC = () => {
   const { workspaceId } = useCurrentWorkspace();
-
   const users = useListUsers();
-
   const { user } = useAuthService();
 
-  const columns = React.useMemo(
+  const columns = useMemo(
     () => [
       {
         Header: <FormattedMessage id="userSettings.table.column.fullname" />,
@@ -84,25 +107,22 @@ export const UsersSettingsView: React.FC = () => {
             user?.userId !== row.original.userId ? (
               <RemoveUserSection workspaceId={workspaceId} email={row.original.email} />
             ) : null,
-            // cell.value === "invited" && <Button secondary>send again</Button>,
           ].filter(Boolean),
       },
     ],
     [workspaceId, user]
   );
 
+  return <Table data={users ?? []} columns={columns} />;
+};
+
+export const UsersSettingsView: React.VFC = () => {
+  useTrackPage(PageTrackingCodes.SETTINGS_ACCESS_MANAGEMENT);
+
   return (
-    <>
-      <div className={styles.header}>
-        <H5>
-          <FormattedMessage id="userSettings.table.title" />
-        </H5>
-        <Button onClick={toggleModal} data-testid="userSettings.button.addNewUser">
-          + <FormattedMessage id="userSettings.button.addNewUser" />
-        </Button>
-      </div>
-      <Table data={users ?? []} columns={columns} />
-      {modalIsOpen && <InviteUsersModal onClose={toggleModal} />}
-    </>
+    <InviteUsersModalServiceProvider invitedFrom="user.settings">
+      <Header />
+      <UsersTable />
+    </InviteUsersModalServiceProvider>
   );
 };
