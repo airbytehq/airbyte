@@ -9,9 +9,9 @@ import { isDefined } from "utils/common";
 
 import { useConnectorForm } from "../../connectorFormContext";
 import { ConnectorFormValues } from "../../types";
-import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
+import { SectionContainer } from "./SectionContainer";
 
 interface ConditionSectionProps {
   formField: FormConditionItem;
@@ -63,13 +63,12 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
   );
 
   return (
-    <GroupControls
-      key={`form-field-group-${formField.fieldKey}`}
-      title={
-        <>
-          <GroupLabel formField={formField} />
+    <SectionContainer>
+      <GroupControls
+        key={`form-field-group-${formField.fieldKey}`}
+        label={<GroupLabel formField={formField} />}
+        dropdown={
           <DropDown
-            className={styles.groupDropdown}
             options={options}
             onChange={onOptionChange}
             value={currentlySelectedCondition}
@@ -77,15 +76,15 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             isDisabled={disabled}
             error={typeof meta.error === "string" && !!meta.error}
           />
-        </>
-      }
-    >
-      <FormSection
-        blocks={formField.conditions[currentlySelectedCondition]}
-        path={path}
-        disabled={disabled}
-        skipAppend
-      />
-    </GroupControls>
+        }
+      >
+        <FormSection
+          blocks={formField.conditions[currentlySelectedCondition]}
+          path={path}
+          disabled={disabled}
+          skipAppend
+        />
+      </GroupControls>
+    </SectionContainer>
   );
 };

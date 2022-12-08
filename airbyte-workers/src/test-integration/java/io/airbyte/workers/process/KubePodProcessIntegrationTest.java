@@ -430,7 +430,7 @@ public class KubePodProcessIntegrationTest {
 
   private Process getProcess(final Map<String, String> customLabels, final String entrypoint, final Map<String, String> files)
       throws WorkerException {
-    return processFactory.create("tester", "some-id", 0, Path.of("/tmp/job-root"), "busybox:latest", false, files, entrypoint,
+    return processFactory.create("tester", "some-id", 0, Path.of("/tmp/job-root"), "busybox:latest", false, false, files, entrypoint,
         DEFAULT_RESOURCE_REQUIREMENTS, customLabels, Collections.emptyMap(), Collections.emptyMap());
   }
 
