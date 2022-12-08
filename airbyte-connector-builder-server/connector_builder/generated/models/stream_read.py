@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.stream_read_slices import StreamReadSlices
 
 
@@ -21,7 +21,7 @@ class StreamRead(BaseModel):
         slices: The slices of this StreamRead.
     """
 
-    logs: List[object]
-    slices: List[StreamReadSlices]
+    logs: List[object] = Field(alias="logs")
+    slices: List[StreamReadSlices] = Field(alias="slices")
 
 StreamRead.update_forward_refs()

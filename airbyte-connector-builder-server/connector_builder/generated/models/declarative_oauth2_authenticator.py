@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.declarative_oauth2_authenticator_all_of import DeclarativeOauth2AuthenticatorAllOf
 
@@ -32,17 +32,17 @@ class DeclarativeOauth2Authenticator(BaseModel):
         grant_type: The grant_type of this DeclarativeOauth2Authenticator [Optional].
     """
 
-    token_refresh_endpoint: AnyOfInterpolatedStringstring
-    client_id: AnyOfInterpolatedStringstring
-    client_secret: AnyOfInterpolatedStringstring
-    refresh_token: AnyOfInterpolatedStringstring
-    config: Dict[str, Any]
-    scopes: Optional[List[str]] = None
-    token_expiry_date: Optional[AnyOfInterpolatedStringstring] = None
-    token_expiry_date: Optional[object] = None
-    access_token_name: Optional[AnyOfInterpolatedStringstring] = None
-    expires_in_name: Optional[AnyOfInterpolatedStringstring] = None
-    refresh_request_body: Optional[Dict[str, Any]] = None
-    grant_type: Optional[AnyOfInterpolatedStringstring] = None
+    token_refresh_endpoint: AnyOfInterpolatedStringstring = Field(alias="token_refresh_endpoint")
+    client_id: AnyOfInterpolatedStringstring = Field(alias="client_id")
+    client_secret: AnyOfInterpolatedStringstring = Field(alias="client_secret")
+    refresh_token: AnyOfInterpolatedStringstring = Field(alias="refresh_token")
+    config: Dict[str, Any] = Field(alias="config")
+    scopes: Optional[List[str]] = Field(alias="scopes", default=None)
+    token_expiry_date: Optional[AnyOfInterpolatedStringstring] = Field(alias="token_expiry_date", default=None)
+    token_expiry_date: Optional[object] = Field(alias="_token_expiry_date", default=None)
+    access_token_name: Optional[AnyOfInterpolatedStringstring] = Field(alias="access_token_name", default=None)
+    expires_in_name: Optional[AnyOfInterpolatedStringstring] = Field(alias="expires_in_name", default=None)
+    refresh_request_body: Optional[Dict[str, Any]] = Field(alias="refresh_request_body", default=None)
+    grant_type: Optional[AnyOfInterpolatedStringstring] = Field(alias="grant_type", default=None)
 
 DeclarativeOauth2Authenticator.update_forward_refs()
