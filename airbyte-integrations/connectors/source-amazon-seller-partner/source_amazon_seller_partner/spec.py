@@ -108,13 +108,11 @@ class AmazonSellerPartnerConfig(BaseModel):
     aws_environment: AWSEnvironment = Field(
         description="Select the AWS Environment.",
         title="AWS Environment",
-        order=13,
     )
 
     region: AWSRegion = Field(
         description="Select the AWS Region.",
         title="AWS Region",
-        order=14,
     )
 
 

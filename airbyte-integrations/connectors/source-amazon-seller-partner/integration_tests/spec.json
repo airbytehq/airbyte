@@ -105,7 +105,6 @@
         "title": "AWSEnvironment",
         "description": "An enumeration.",
         "enum": ["PRODUCTION", "SANDBOX"],
-        "order": 13,
         "type": "string"
       },
       "region": {
@@ -134,7 +133,6 @@
           "UK",
           "US"
         ],
-        "order": 14,
         "type": "string"
       }
     },
