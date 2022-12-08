@@ -287,11 +287,11 @@ export const useInitialValues = (
     .map((stream) => stream.streamDescriptor);
 
   // used to determine if we need to clear any primary keys or cursor fields that were removed
-  const breakingFieldChanges = useMemo(() => {
+  const streamTransformsWithBreakingChange = useMemo(() => {
     if (connection.schemaChange === SchemaChange.breaking) {
-      return catalogDiff?.transforms.filter((transform) => {
-        if (transform.transformType === "update_stream") {
-          return transform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
+      return catalogDiff?.transforms.filter((streamTransform) => {
+        if (streamTransform.transformType === "update_stream") {
+          return streamTransform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
         }
         return false;
       });
@@ -304,12 +304,12 @@ export const useInitialValues = (
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
-        breakingFieldChanges,
+        streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
       ),
     [
-      breakingFieldChanges,
+      streamTransformsWithBreakingChange,
       connection.syncCatalog,
       destDefinition?.supportedDestinationSyncModes,
       isNotCreateMode,
