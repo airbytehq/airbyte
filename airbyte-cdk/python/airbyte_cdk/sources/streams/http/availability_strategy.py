@@ -4,7 +4,7 @@
 
 import logging
 import typing
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Mapping, Optional, Tuple
 
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams import Stream
@@ -21,12 +21,13 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         Check stream availability by attempting to read the first record of the
         stream.
 
-        :param source: source
-        :param logger: source logger
         :param stream: stream
+        :param logger: source logger
+        :param source: (optional) source
         :return: A tuple of (boolean, str). If boolean is true, then the stream
-          is available. Otherwise, the stream is unavailable for some reason and
-          the str should describe what went wrong.
+          is available, and no str is required. Otherwise, the stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
         """
         try:
             # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
@@ -37,7 +38,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             return self.handle_http_error(stream, logger, source, error)
         return True, None
 
-    def _get_stream_slice(self, stream):
+    def _get_stream_slice(self, stream) -> Optional[Mapping[str, Any]]:
         # We wrap the return output of stream_slices() because some implementations return types that are iterable,
         # but not iterators such as lists or tuples
         slices = iter(
@@ -51,7 +52,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         except StopIteration:
             return {}
 
-    def handle_http_error(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError):
+    def handle_http_error(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    ) -> Tuple[bool, Optional[str]]:
         """
         Override this method to define error handling for various `HTTPError`s
         that are raised while attempting to check a stream's availability.
@@ -61,11 +64,12 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
         :param stream: stream
         :param logger: source logger
-        :param source: source
+        :param source: optional (source)
         :param error: HTTPError raised while checking stream's availability.
         :return: A tuple of (boolean, str). If boolean is true, then the stream
-          is available. Otherwise, the stream is unavailable for some reason and
-          the str should describe what went wrong.
+          is available, and no str is required. Otherwise, the stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
         """
         try:
             status_code = error.response.status_code
@@ -76,15 +80,16 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
 
     def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Dict[int, str]:
         """
-        Returns a dictionary of (status code, reason) where the 'reason' explains
-        why that error code may have occurred and how the user can resolve that
-        error, if applicable. Should return reasons for all errors listed in
-        self.unavailable_error_codes.
+        Returns a dictionary of HTTP status codes that indicate stream
+        unavailability and reasons explaining why a given status code may
+        have occurred and how the user can resolve that error, if applicable.
 
-        :param stream:
-        :param logger:
-        :param source:
-        :return:
+        :param stream: stream
+        :param logger: source logger
+        :param source: optional (source)
+        :return: A dictionary of (status code, reason) where the 'reason' explains
+        why 'status code' may have occurred and how the user can resolve that
+        error, if applicable.
         """
         forbidden_error_message = f"The endpoint to access stream '{stream.name}' returned 403: Forbidden. "
         forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
@@ -96,7 +101,12 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
     @staticmethod
     def _visit_docs_message(logger: logging.Logger, source: Optional["Source"]) -> str:
         """
-        :param source:
+        Creates a message indicicating where to look in the documentation for
+        more information on a given source by checking the spec of that source
+        (if provided) for a 'documentationUrl'.
+
+        :param logger: source logger
+        :param source: optional (source)
         :return: A message telling the user where to go to learn more about the source.
         """
         if not source:

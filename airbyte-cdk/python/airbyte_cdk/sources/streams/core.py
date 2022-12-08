@@ -8,7 +8,7 @@ import logging
 import typing
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 import airbyte_cdk.sources.utils.casing as casing
 from airbyte_cdk.models import AirbyteLogMessage, AirbyteStream, AirbyteTraceMessage, SyncMode
@@ -175,9 +175,16 @@ class Stream(ABC):
         """
         return True
 
-    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None):
+    def check_availability(self, logger: logging.Logger, source: Optional["Source"] = None) -> Tuple[bool, Optional[str]]:
         """
-        :return:
+        Checks whether this stream is available.
+
+        :param logger: source logger
+        :param source: (optional) source
+        :return: A tuple of (boolean, str). If boolean is true, then this stream
+          is available, and no str is required. Otherwise, this stream is unavailable
+          for some reason and the str should describe what went wrong and how to
+          resolve the unavailability, if possible.
         """
         if self.availability_strategy:
             return self.availability_strategy.check_availability(self, logger, source)
@@ -186,7 +193,7 @@ class Stream(ABC):
     @property
     def availability_strategy(self) -> Optional["AvailabilityStrategy"]:
         """
-        :return: The AvailabilityStrategy used to check whether this stream is available for reading.
+        :return: The AvailabilityStrategy used to check whether this stream is available.
         """
         return None
 
