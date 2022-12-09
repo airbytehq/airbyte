@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.request_option import RequestOption
 
 
@@ -23,9 +23,9 @@ class ParentStreamConfig(BaseModel):
         request_option: The request_option of this ParentStreamConfig [Optional].
     """
 
-    stream: object
-    parent_key: str
-    stream_slice_field: str
-    request_option: Optional[RequestOption] = None
+    stream: object = Field(alias="stream")
+    parent_key: str = Field(alias="parent_key")
+    stream_slice_field: str = Field(alias="stream_slice_field")
+    request_option: Optional[RequestOption] = Field(alias="request_option", default=None)
 
 ParentStreamConfig.update_forward_refs()
