@@ -176,4 +176,26 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     return new GetMaxAttemptOutput(syncJobMaxAttempts);
   }
 
+  @Override
+  public Optional<UUID> getSourceId(UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getSourceId());
+    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's Source ID: ", e);
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<Status> getStatus(UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getStatus());
+    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's status: ", e);
+      return Optional.empty();
+    }
+  }
+
 }
