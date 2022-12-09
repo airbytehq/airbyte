@@ -25,6 +25,10 @@ runs:
         distribution: "zulu"
         java-version: "17"
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: "lts/*"
+
     - uses: actions/setup-python@v4
       with:
         python-version: "3.9"

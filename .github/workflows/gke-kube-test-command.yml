@@ -70,6 +70,10 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "lts/*"
+
       - name: Fix EC-2 Runner
         run: |
           mkdir -p /home/runner
