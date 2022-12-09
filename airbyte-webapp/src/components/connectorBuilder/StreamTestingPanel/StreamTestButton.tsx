@@ -1,6 +1,5 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import flatten from "flat";
 import { useFormikContext } from "formik";
 import { FormattedMessage } from "react-intl";
 
@@ -11,7 +10,8 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { BuilderFormValues } from "../Builder/types";
+import { BuilderFormValues } from "../types";
+import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./StreamTestButton.module.scss";
 
 interface StreamTestButtonProps {
@@ -21,9 +21,19 @@ interface StreamTestButtonProps {
 
 export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStreamName, readStream }) => {
   const { editorView, yamlIsValid } = useConnectorBuilderState();
-  const { values, errors, setFieldTouched } = useFormikContext<BuilderFormValues>();
+  const { values } = useFormikContext<BuilderFormValues>();
+  const { hasErrors, validateAndTouch } = useBuilderErrors();
 
   const selectedStreamNum = values.streams.findIndex((stream) => stream.name === selectedStreamName);
+
+  const handleClick = () => {
+    if (editorView === "yaml") {
+      readStream();
+      return;
+    }
+
+    validateAndTouch(readStream, selectedStreamNum);
+  };
 
   let buttonDisabled = false;
   let tooltipContent = null;
@@ -33,34 +43,10 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStre
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  const formErrorKeys = Object.keys(errors);
-  if (editorView === "ui" && formErrorKeys.length > 0) {
+  if (editorView === "ui" && hasErrors(selectedStreamNum)) {
     buttonDisabled = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }
-
-  const handleClick = () => {
-    if (editorView === "yaml") {
-      readStream();
-      return;
-    }
-
-    const pathsToTouch = Object.keys(flatten(values.global)).map((path) => `global.${path}`);
-    if (selectedStreamNum >= 0) {
-      pathsToTouch.push(
-        ...Object.keys(flatten(values.streams[selectedStreamNum])).map(
-          (path) => `streams[${selectedStreamNum}].${path}`
-        )
-      );
-    }
-    console.log("pathsToTouch", pathsToTouch);
-
-    for (const path of pathsToTouch) {
-      setFieldTouched(path);
-    }
-
-    console.log("errors", errors);
-  };
 
   const testButton = (
     <Button
@@ -69,12 +55,12 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStre
       onClick={handleClick}
       disabled={buttonDisabled}
       icon={
-        !buttonDisabled ? (
+        buttonDisabled ? (
+          <FontAwesomeIcon icon={faWarning} />
+        ) : (
           <div>
             <RotateIcon width={styles.testIconHeight} height={styles.testIconHeight} />
           </div>
-        ) : (
-          <FontAwesomeIcon icon={faWarning} />
         )
       }
     >
@@ -84,11 +70,11 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStre
     </Button>
   );
 
-  return !buttonDisabled ? (
-    testButton
-  ) : (
+  return buttonDisabled ? (
     <Tooltip control={testButton} containerClassName={styles.testButtonTooltipContainer}>
       {tooltipContent}
     </Tooltip>
+  ) : (
+    testButton
   );
 };

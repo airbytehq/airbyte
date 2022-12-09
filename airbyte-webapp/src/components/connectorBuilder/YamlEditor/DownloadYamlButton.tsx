@@ -5,8 +5,10 @@ import { FormattedMessage } from "react-intl";
 import { Button } from "components/ui/Button";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { downloadFile } from "utils/file";
 
+import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./DownloadYamlButton.module.scss";
 
 interface DownloadYamlButtonProps {
@@ -16,18 +18,43 @@ interface DownloadYamlButtonProps {
 }
 
 export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ className, yaml, yamlIsValid }) => {
+  const { editorView } = useConnectorBuilderState();
+  const { hasErrors, validateAndTouch } = useBuilderErrors();
+
   const downloadYaml = () => {
     const file = new Blob([yaml], { type: "text/plain;charset=utf-8" });
     // TODO: pull name from connector name input or generate from yaml contents
     downloadFile(file, "connector_builder.yaml");
   };
 
+  const handleClick = () => {
+    if (editorView === "yaml") {
+      downloadYaml();
+      return;
+    }
+
+    validateAndTouch(downloadYaml);
+  };
+
+  let buttonDisabled = false;
+  let tooltipContent = null;
+
+  if (editorView === "yaml" && !yamlIsValid) {
+    buttonDisabled = true;
+    tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlDownload" />;
+  }
+
+  if (editorView === "ui" && hasErrors()) {
+    buttonDisabled = true;
+    tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsDownload" />;
+  }
+
   const downloadButton = (
     <Button
       className={styles.button}
-      onClick={downloadYaml}
-      disabled={!yamlIsValid}
-      icon={yamlIsValid ? <FontAwesomeIcon icon={faDownload} /> : <FontAwesomeIcon icon={faWarning} />}
+      onClick={handleClick}
+      disabled={buttonDisabled}
+      icon={buttonDisabled ? <FontAwesomeIcon icon={faWarning} /> : <FontAwesomeIcon icon={faDownload} />}
     >
       <FormattedMessage id="connectorBuilder.downloadYaml" />
     </Button>
@@ -35,12 +62,12 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
 
   return (
     <div className={className}>
-      {yamlIsValid ? (
-        downloadButton
-      ) : (
+      {buttonDisabled ? (
         <Tooltip control={downloadButton} placement="left">
-          <FormattedMessage id="connectorBuilder.invalidYamlDownload" />
+          {tooltipContent}
         </Tooltip>
+      ) : (
+        downloadButton
       )}
     </div>
   );
