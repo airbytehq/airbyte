@@ -60,7 +60,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
 
   const testButton = (
     <Button
-      className={styles.testButton}
+      full
       size="sm"
       onClick={() => {
         readStream();
