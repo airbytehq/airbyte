@@ -4,6 +4,8 @@ import { FormBlock } from "core/form/types";
 import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "core/jsonSchema";
 import { isDefined } from "utils/common";
 
+import { FormBuildError } from "./FormBuildError";
+
 /**
  * Returns {@link FormBlock} representation of jsonSchema
  *
@@ -39,7 +41,7 @@ export const jsonSchemaToFormBlock = (
     let possibleConditionSelectionKeys: Set<string> | null = null as Set<string> | null;
     const conditions = jsonSchema.oneOf.flatMap((condition) => {
       if (typeof condition === "boolean") {
-        throw new Error("Spec uses oneOf without using object types for all conditions");
+        throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
       }
       const uiWidget = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
       if (uiWidget._type !== "formGroup") {
@@ -63,7 +65,7 @@ export const jsonSchemaToFormBlock = (
 
     if (!possibleConditionSelectionKeys || possibleConditionSelectionKeys.size === 0) {
       // no shared const property in oneOf. This should never happen per specification, fail hard
-      throw new Error("Spec uses oneOf without a shared const property");
+      throw new FormBuildError("Spec uses oneOf without a shared const property");
     }
     const selectionKey = possibleConditionSelectionKeys.values().next().value;
     const selectionPath = `${path}.${selectionKey}`;

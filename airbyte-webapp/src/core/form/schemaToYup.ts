@@ -4,6 +4,8 @@ import * as yup from "yup";
 import { FormBlock, FormGroupItem, FormObjectArrayItem, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
+import { FormBuildError } from "./FormBuildError";
+
 /**
  * Returns yup.schema for validation
  *
@@ -41,7 +43,7 @@ export const buildYupFormForJsonSchema = (
     const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
     jsonSchema.oneOf.forEach((condition, index) => {
       if (typeof condition !== "object") {
-        throw new Error("Spec uses oneOf with a condition that's not an object type");
+        throw new FormBuildError("Spec uses oneOf with a condition that's not an object type");
       }
       const selectionConstValue = conditionFormField.selectionConstValues[index];
       const selectionFormField = conditionFormField.conditions[index];
@@ -148,7 +150,7 @@ export const buildYupFormForJsonSchema = (
           (property) => property.fieldKey === propertyKey
         );
         if (!correspondingFormField) {
-          throw new Error("mistmatch between form fields and schema");
+          throw new FormBuildError("mistmatch between form fields and schema");
         }
         return [
           propertyKey,

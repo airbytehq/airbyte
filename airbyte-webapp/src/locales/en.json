@@ -585,6 +585,7 @@
   "errorView.notFound": "Resource not found.",
   "errorView.notAuthorized": "You don’t have permission to access this page.",
   "errorView.title": "Oops! Something went wrong…",
+  "errorView.docLink": "Check out the documentation",
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",

@@ -5,6 +5,7 @@ import { NavigateFunction, useNavigate } from "react-router-dom";
 import { useLocation } from "react-use";
 import { LocationSensorState } from "react-use/lib/useLocation";
 
+import { isFormBuildError } from "core/form/FormBuildError";
 import { isVersionError } from "core/request/VersionError";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
@@ -21,6 +22,7 @@ interface ApiErrorBoundaryState {
 
 enum ErrorId {
   VersionMismatch = "version.mismatch",
+  FormBuild = "form.build",
   ServerUnavailable = "server.unavailable",
   UnknownError = "unknown",
 }
@@ -49,6 +51,10 @@ class ApiErrorBoundaryComponent extends React.Component<
     // Update state so the next render will show the fallback UI.
     if (isVersionError(error)) {
       return { errorId: ErrorId.VersionMismatch, message: error.message };
+    }
+
+    if (isFormBuildError(error)) {
+      return { errorId: ErrorId.FormBuild, message: error.message };
     }
 
     const isNetworkBoundaryMessage = error.message === "Failed to fetch";
@@ -87,6 +93,15 @@ class ApiErrorBoundaryComponent extends React.Component<
 
     if (errorId === ErrorId.VersionMismatch) {
       return <ErrorOccurredView message={message} />;
+    }
+
+    if (errorId === ErrorId.FormBuild) {
+      return (
+        <ErrorOccurredView
+          message={message}
+          docLink="https://docs.airbyte.com/connector-development/connector-specification-reference/#airbyte-modifications-to-jsonschema"
+        />
+      );
     }
 
     if (errorId === ErrorId.ServerUnavailable && !didRetry) {
