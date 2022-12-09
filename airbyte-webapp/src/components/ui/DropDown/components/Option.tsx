@@ -73,7 +73,9 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
               <CheckBox checked={props.isSelected} onChange={() => props.selectOption(props.data)} />{" "}
             </>
           )}
-          {props.label}
+          {Array.isArray(props.label)
+            ? props.label.map<React.ReactNode>((node) => <>{node}</>).reduce((prev, curr) => [prev, " | ", curr])
+            : props.label}
         </DropDownText>
         {props.data.img || null}
       </OptionView>

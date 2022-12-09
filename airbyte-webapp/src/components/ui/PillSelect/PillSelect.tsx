@@ -18,13 +18,8 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
       targetComponent={({ onOpen, isOpen, value }) => {
         const label = value
           ? isMulti
-            ? value.map(({ label }: { label: string }) => label).join(", ")
+            ? value.map(({ label }: { label: string }) => (Array.isArray(label) ? label.join(" | ") : label)).join(", ")
             : value.label
-          : "";
-        const pillLabel = value
-          ? isMulti
-            ? value.map(({ pillLabel }: { pillLabel: string }) => pillLabel).join(", ")
-            : value.pillLabel
           : "";
         return (
           <Tooltip
@@ -39,7 +34,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 active={isOpen}
                 className={className}
               >
-                {pillLabel}
+                {label}
               </PillButton>
             }
             placement="bottom-start"

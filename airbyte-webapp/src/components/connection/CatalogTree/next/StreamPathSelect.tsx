@@ -55,7 +55,6 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
   const options = props.paths.map((path) => ({
     value: path,
     label: pathDisplayName(path),
-    pillLabel: pathDisplayName(path),
   }));
 
   return (

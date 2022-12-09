@@ -31,14 +31,7 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, optio
     return options.map(({ value }) => {
       const { syncMode, destinationSyncMode } = value;
       return {
-        label: (
-          <>
-            <FormattedMessage id={`syncMode.${syncMode}`} />
-            {` | `}
-            <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />
-          </>
-        ),
-        pillLabel: [
+        label: [
           <FormattedMessage id={`syncMode.${syncMode}`} />,
           <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />,
         ],

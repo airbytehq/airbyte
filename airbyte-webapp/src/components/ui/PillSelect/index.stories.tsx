@@ -17,27 +17,22 @@ const options = [
   {
     value: "id",
     label: "id",
-    pillLabel: "id",
   },
   {
     value: "first_name",
     label: "first_name",
-    pillLabel: "first_name",
   },
   {
     value: "last_name",
     label: "last_name",
-    pillLabel: "last_name",
   },
   {
     value: "email",
     label: "email",
-    pillLabel: "email",
   },
   {
     value: "company",
     label: "company",
-    pillLabel: "company",
   },
 ];
 
@@ -57,23 +52,19 @@ Multi.args = {
 const optionsWithTwoValues = [
   {
     value: "test1",
-    label: "dog | cat",
-    pillLabel: ["dog", "cat"],
+    label: ["dog", "cat"],
   },
   {
     value: "test2",
-    label: "dog | cat | rat",
-    pillLabel: ["dog", "cat", "rat"],
+    label: ["dog", "cat", "rat"],
   },
   {
     value: "test3",
     label: "dog",
-    pillLabel: "dog",
   },
   {
     value: "test4",
-    label: "cat",
-    pillLabel: ["cat"],
+    label: ["cat"],
   },
 ];
 
@@ -81,4 +72,11 @@ export const PrimaryWithTwoValue = Template.bind({});
 PrimaryWithTwoValue.args = {
   options: optionsWithTwoValues,
   value: "test1",
+};
+
+export const PrimaryMultiWithTwoValue = Template.bind({});
+PrimaryMultiWithTwoValue.args = {
+  options: optionsWithTwoValues,
+  isMulti: true,
+  value: ["test1", "test2"],
 };
