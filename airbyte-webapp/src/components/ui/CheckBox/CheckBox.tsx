@@ -1,52 +1,38 @@
 import { faCheck, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
-import styled from "styled-components";
+import classNames from "classnames";
+import React, { InputHTMLAttributes } from "react";
 
-const CheckBoxInput = styled.input`
-  opacity: 0;
-  width: 0;
-  height: 0;
-  margin: 0;
-  position: absolute;
-`;
+import styles from "./CheckBox.module.scss";
 
-const CheckBoxContainer = styled.label<{
-  checked?: boolean;
+export interface CheckBoxProps extends InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
-  disabled?: boolean;
-}>`
-  height: 18px;
-  min-width: 18px;
-  border: 1px solid
-    ${({ theme, checked, indeterminate }) => (checked || indeterminate ? theme.primaryColor : theme.greyColor20)};
-  background: ${({ theme, checked, indeterminate }) =>
-    checked || indeterminate ? theme.primaryColor : theme.whiteColor};
-  color: ${({ theme }) => theme.whiteColor};
-  opacity: ${({ disabled }) => (disabled === true ? 0.5 : 1)};
-  text-align: center;
-  border-radius: 4px;
-  font-size: 13px;
-  line-height: 13px;
-  display: inline-block;
-  padding: 1px 0;
-  cursor: pointer;
-  vertical-align: top;
-  position: relative;
-`;
+  small?: boolean;
+}
 
-export const CheckBox: React.FC<React.InputHTMLAttributes<HTMLInputElement> & { indeterminate?: boolean }> = ({
-  indeterminate,
-  ...props
-}) => (
-  <CheckBoxContainer
-    onClick={(event: React.SyntheticEvent) => event.stopPropagation()}
-    className={props.className}
-    checked={props.checked}
-    indeterminate={indeterminate}
-    disabled={props.disabled}
-  >
-    <CheckBoxInput {...props} type="checkbox" />
-    {indeterminate ? <FontAwesomeIcon icon={faMinus} /> : props.checked && <FontAwesomeIcon icon={faCheck} />}
-  </CheckBoxContainer>
-);
+export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, small, ...inputProps }) => {
+  const { checked, disabled, className } = inputProps;
+  const iconSize = small ? "sm" : "lg";
+
+  return (
+    <label
+      className={classNames(
+        styles.container,
+        {
+          [styles.checked]: checked,
+          [styles.indeterminate]: indeterminate,
+          [styles.disabled]: disabled,
+          [styles.small]: small,
+        },
+        className
+      )}
+    >
+      <input type="checkbox" aria-checked={checked} {...inputProps} />
+      {indeterminate ? (
+        <FontAwesomeIcon size={iconSize} icon={faMinus} />
+      ) : (
+        checked && <FontAwesomeIcon size={iconSize} icon={faCheck} />
+      )}
+    </label>
+  );
+};

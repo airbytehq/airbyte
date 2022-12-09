@@ -1,25 +1,68 @@
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { action } from "@storybook/addon-actions";
+import { ComponentMeta } from "@storybook/react";
+import { ChangeEvent, useState } from "react";
 
-import { CheckBox } from "./CheckBox";
-import docs from "./Checkbox.docs.mdx";
+import { CheckBox, CheckBoxProps } from "./CheckBox";
 
 export default {
   title: "Ui/CheckBox",
   component: CheckBox,
-  parameters: {
-    docs: { page: docs },
-  },
   argTypes: {
-    disabled: { control: "select" },
-    checked: { control: "check" },
+    disabled: { control: "boolean" },
+    checked: { control: "boolean" },
     indeterminate: { control: "boolean" },
     small: { control: "boolean" },
   },
 } as ComponentMeta<typeof CheckBox>;
 
-const Template: ComponentStory<typeof CheckBox> = (args) => <CheckBox {...args} />;
+const CheckBoxWithState = ({ checked: initial = false, ...props }: CheckBoxProps) => {
+  const [checked, setChecked] = useState(initial);
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    action("Checkbox clicked")(event);
+    setChecked((prev) => !prev);
+  };
+  return <CheckBox {...props} checked={checked} onChange={handleChange} />;
+};
 
-export const Default = Template.bind({});
-Default.args = {
-  onChange: () => console.log("Clicked"),
+export const Base = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+Base.args = {};
+
+export const Checked = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+Checked.args = {
+  checked: true,
+};
+
+export const CheckedSmall = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+CheckedSmall.args = {
+  checked: true,
+  small: true,
+};
+
+export const Disabled = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+Disabled.args = {
+  disabled: true,
+};
+
+export const DisabledChecked = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+DisabledChecked.args = {
+  disabled: true,
+  checked: true,
+};
+
+export const Indeterminate = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+Indeterminate.args = {
+  indeterminate: true,
+};
+
+export const IndeterminateDisabled = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;
+
+IndeterminateDisabled.args = {
+  indeterminate: true,
+  disabled: true,
 };
