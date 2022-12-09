@@ -5,11 +5,9 @@
 package io.airbyte.commons.features;
 
 import java.util.function.Function;
-import org.elasticsearch.common.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
 public class EnvVariableFeatureFlags implements FeatureFlags {
 
   private static final Logger log = LoggerFactory.getLogger(EnvVariableFeatureFlags.class);
