@@ -297,7 +297,7 @@ public class ServerApp implements ServerRunnable {
         schemaValidator,
         connectionsHandler);
 
-    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
+    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler, configs);
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,

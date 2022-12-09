@@ -63,10 +63,14 @@ public class SourceDefinitionsHandler {
   private final SourceHandler sourceHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
 
+  // TODO: remove this contructor after the migration is done
+  @Deprecated(forRemoval = true)
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final SourceHandler sourceHandler) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler);
+                                  final SourceHandler sourceHandler,
+                                  final Configs configs) {
+    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler,
+        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax()));
   }
 
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
@@ -74,13 +78,13 @@ public class SourceDefinitionsHandler {
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore,
                                   final SourceHandler sourceHandler,
-                                  final AirbyteProtocolVersionRange airbyteProtocolVersionRange) {
+                                  final AirbyteProtocolVersionRange protocolVersionRange) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.sourceHandler = sourceHandler;
-    protocolVersionRange = airbyteProtocolVersionRange;
+    this.protocolVersionRange = protocolVersionRange;
   }
 
   @VisibleForTesting
