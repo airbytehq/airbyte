@@ -1,9 +1,10 @@
 import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
-import { useFormikContext } from "formik";
+import { useField, useFormikContext } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import Indicator from "components/Indicator";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
@@ -25,6 +26,7 @@ export type BuilderView = "global" | number;
 interface ViewSelectButtonProps {
   className?: string;
   selected: boolean;
+  path: string;
   onClick: () => void;
 }
 
@@ -32,8 +34,14 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   children,
   className,
   selected,
+  path,
   onClick,
 }) => {
+  const [, { error }] = useField(path);
+  // Formik type is incorrect here, necessitating a cast
+  const errorObject = error === undefined ? {} : (error as unknown as object);
+  const viewHasError = Object.keys(errorObject).length > 0;
+
   return (
     <button
       className={classnames(className, styles.viewButton, {
@@ -42,7 +50,8 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
       })}
       onClick={onClick}
     >
-      {children}
+      <div className={styles.viewLabel}>{children}</div>
+      {viewHasError && <Indicator className={styles.errorIndicator} />}
     </button>
   );
 };
@@ -97,6 +106,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <ViewSelectButton
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
+        path="global"
         onClick={() => onViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
@@ -116,7 +126,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
 
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
-          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => onViewSelect(num, name)}>
+          <ViewSelectButton
+            key={num}
+            selected={selectedView === num}
+            path={`streams[${num}]`}
+            onClick={() => onViewSelect(num, name)}
+          >
             {name}
           </ViewSelectButton>
         ))}
