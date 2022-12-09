@@ -28,12 +28,12 @@ import org.slf4j.LoggerFactory;
  * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
  * open API generators create a separate class per API "root-route". For example, if our API has two
  * routes "/v1/First/get" and "/v1/Second/get", OpenAPI generates (essentially) the following files:
- *
+ * <p>
  * ApiClient.java, FirstApi.java, SecondApi.java
- *
+ * <p>
  * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new
  * ApiClient()).get(), which can get cumbersome if we're interacting with many pieces of the API.
- *
+ * <p>
  * This is currently manually maintained. We could look into autogenerating it if needed.
  */
 public class AirbyteApiClient {
@@ -62,19 +62,19 @@ public class AirbyteApiClient {
 
   public AirbyteApiClient(final ApiClient apiClient, final ApiClient micronautApiClient) {
     connectionApi = new ConnectionApi(micronautApiClient);
-    destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
-    destinationApi = new DestinationApi(apiClient);
+    destinationDefinitionApi = new DestinationDefinitionApi(micronautApiClient);
+    destinationApi = new DestinationApi(micronautApiClient);
     destinationSpecificationApi = new DestinationDefinitionSpecificationApi(apiClient);
     jobsApi = new JobsApi(apiClient);
     logsApi = new PatchedLogsApi(apiClient);
-    operationApi = new OperationApi(apiClient);
+    operationApi = new OperationApi(micronautApiClient);
     sourceDefinitionApi = new SourceDefinitionApi(apiClient);
-    sourceApi = new SourceApi(apiClient);
+    sourceApi = new SourceApi(micronautApiClient);
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(micronautApiClient);
     attemptApi = new AttemptApi(micronautApiClient);
-    stateApi = new StateApi(apiClient);
+    stateApi = new StateApi(micronautApiClient);
   }
 
   public ConnectionApi getConnectionApi() {
