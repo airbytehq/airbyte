@@ -14,7 +14,7 @@ from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-from .utils import call_once, read_full_refresh, safe_max
+from .utils import call_once, read_full_refresh, read_incremental, safe_max
 
 API_VERSION = 3
 
@@ -456,6 +456,16 @@ class IssueComments(IncrementalJiraStream):
     primary_key = "id"
     cursor_field = "updated"
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
+            additional_fields=[],
+            authenticator=self.authenticator,
+            domain=self._domain,
+            projects=self._projects,
+            start_date=self._start_date,
+        )
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
         return f"issue/{key}/comment"
@@ -463,15 +473,30 @@ class IssueComments(IncrementalJiraStream):
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(
-            additional_fields=[],
-            authenticator=self.authenticator,
-            domain=self._domain,
-            projects=self._projects,
-            start_date=self._start_date,
-        )
-        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
-            yield from super().read_records(stream_slice={"key": issue["key"]}, stream_state=stream_state, **kwargs)
+        start_point = self.get_starting_point(stream_state=stream_state)
+        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
+            stream_slice = {"key": issue["key"]}
+            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
+                cursor_value = pendulum.parse(record[self.cursor_field])
+                if not start_point or cursor_value >= start_point:
+                    yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state
+        return current_stream_state
+
+    @call_once
+    def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if stream_state:
+            stream_state_value = stream_state.get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value)
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
 
 
 class IssueFields(JiraStream):
