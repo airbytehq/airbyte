@@ -613,11 +613,15 @@ jobs:
 
       #- name: Ensure no file change
       #  run: git --no-pager diff && test -z "$(git --no-pager diff)"
+      - name: Generate OSS version for Cloud build
+        id: generate-version
+        shell: bash
+        run: short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_ENV ; 
 
       - name: Build
         uses: Wandalen/wretry.action@master
         with:
-          command: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
+          command: VERSION=${{ env.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
@@ -721,10 +725,7 @@ jobs:
       #    key: ${{ secrets.BUILDPULSE_ACCESS_KEY_ID }}
       #    secret: ${{ secrets.BUILDPULSE_SECRET_ACCESS_KEY }}
       
-      - name: Generate OSS version for Cloud build
-        id: generate-version
-        shell: bash
-        run: short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_ENV ; 
+
 
       - name: Publish to Maven Local for Cloud build
         run: VERSION=${{ env.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew publishToMavenLocal
