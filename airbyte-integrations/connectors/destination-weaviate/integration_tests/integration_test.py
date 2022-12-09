@@ -46,11 +46,16 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
+
+def load_json_file(path: str) -> Mapping:
+    dirname = os.path.dirname(__file__)
+    file = open(os.path.join(dirname, path))
+    return json.load(file)
+
+
 @pytest.fixture(name="pokemon_catalog")
 def pokemon_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    dirname = os.path.dirname(__file__)
-    file = open(os.path.join(dirname, "pokemon-schema.json"))
-    stream_schema = json.load(file)
+    stream_schema = load_json_file("pokemon-schema.json")
 
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="pokemon", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
@@ -122,8 +127,7 @@ def _record(stream: str, title: str, word_count: int) -> AirbyteMessage:
 
 
 def _pokemon_record(pokemon: str):
-    url = f"https://pokeapi.co/api/v2/pokemon/{pokemon}"
-    data = requests.get(url).json()
+    data = load_json_file("pokemon-pikachu.json")
     return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="pokemon", data=data, emitted_at=0))
 
 
