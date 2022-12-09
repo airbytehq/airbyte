@@ -1371,7 +1371,7 @@ class FormSubmissions(IncrementalStream):
 
             # Email is a required field on all forms. Might as well add it to the top level
             # I have to pull the email from their value properties to do that
-            if "email" not in keys:
+            if "email" not in keys and "values" in record:
                 for val in record["values"]:
                     if val["name"] == "email":
                         record["email"] = val["value"]
@@ -1433,9 +1433,11 @@ class FormSubmissions(IncrementalStream):
                 # Look through the records to check for the earliest date
                 for record in records:
                     record["formId"] = stream_slice["form_id"]
-                    if self._earliest_date is None:
+                    if self._earliest_date is None and "submittedAt" in record:
                         self._earliest_date = record["submittedAt"]
-                    self._earliest_date = min(self._earliest_date, record["submittedAt"])
+                        
+                    if "submittedAt" in record:
+                        self._earliest_date = min(self._earliest_date, record["submittedAt"])
                     yield record
 
                 # I overwrote the next_page_token function so it won't return a token if
