@@ -626,7 +626,7 @@ class SchedulerHandlerTest {
 
     final ConnectionRead connectionRead =
         new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
-            NonBreakingChangesPreference.DISABLE);
+            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.ACTIVE);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
@@ -729,7 +729,8 @@ class SchedulerHandlerTest {
         CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
-    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
+    final ConnectionRead connectionRead =
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).status(ConnectionStatus.ACTIVE);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
@@ -837,7 +838,7 @@ class SchedulerHandlerTest {
 
     final ConnectionRead connectionRead =
         new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
-            NonBreakingChangesPreference.DISABLE);
+            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.INACTIVE);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
 
@@ -854,7 +855,7 @@ class SchedulerHandlerTest {
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
     assertEquals(actual.getCatalogDiff(), catalogDiff);
     assertEquals(actual.getCatalog(), expectedActorCatalog);
-    assertEquals(actual.getConnectionStatus(), ConnectionStatus.ACTIVE);
+    assertEquals(actual.getConnectionStatus(), ConnectionStatus.INACTIVE);
   }
 
   @Test
