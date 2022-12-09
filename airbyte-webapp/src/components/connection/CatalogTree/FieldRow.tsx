@@ -64,16 +64,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
               <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
             )}
             {isNestedField && (
-              <Tooltip
-                control={
-                  <Switch
-                    small
-                    disabled
-                    checked={isSelected}
-                    onChange={() => onToggleFieldSelected(field.path, !isSelected)}
-                  />
-                }
-              >
+              <Tooltip control={<Switch small disabled checked={isSelected} />}>
                 <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
               </Tooltip>
             )}{" "}
