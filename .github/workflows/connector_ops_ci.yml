@@ -39,7 +39,6 @@ jobs:
       - name: Check if the changes require a review from Connector team
         id: requires-connector-team-review
         run: requires-connector-team-review
-        continue-on-error: true
       - name: Check if team reviewed
         if: ${{ failure() }}
         uses: Automattic/action-required-review@v3
