@@ -34,8 +34,8 @@ export const buildYupFormForJsonSchema = (
   if (jsonSchema.oneOf && propertyPath) {
     const conditionFormField = formField as FormConditionItem;
     // for all keys in all of the possible objects from the oneOf, collect the sub yup-schema in a map.
-    // the key of the map is the key of the property, the value is an array of the selection const value
-    // for the condition plus the sub schema.
+    // the keys of the map are the keys of the property, the value is an array of the selection const value
+    // for the condition plus the sub schema for that property in that condition.
     // As not all keys will show up in every condition, there can be a different number of possible sub schemas
     // per key; at least one and at max the number of conditions (if a key is part of every oneOf)
     const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
