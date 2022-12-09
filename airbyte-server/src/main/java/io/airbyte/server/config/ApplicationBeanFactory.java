@@ -13,6 +13,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
@@ -83,6 +84,13 @@ public class ApplicationBeanFactory {
   @Named("workspaceRoot")
   public Path workspaceRoot(@Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return Path.of(workspaceRoot);
+  }
+
+  @Singleton
+  public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
+    return JsonSecretsProcessor.builder()
+        .copySecrets(false)
+        .build();
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
