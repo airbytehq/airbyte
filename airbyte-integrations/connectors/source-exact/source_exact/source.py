@@ -395,8 +395,8 @@ class SyncSubscriptionSubscriptions(ExactStream):
 # Source
 class SourceExact(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-        access_token = config.get("access_token")
-        refresh_token = config.get("refresh_token")
+        access_token = config.get("credentials", {}).get("access_token")
+        refresh_token = config.get("credentials", {}).get("refresh_token")
 
         if not access_token or not refresh_token:
             return False, "Missing access or refresh token"
