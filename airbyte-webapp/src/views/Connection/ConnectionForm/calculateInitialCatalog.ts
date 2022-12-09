@@ -29,7 +29,7 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
     const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName);
 
     if (!removedFieldPaths?.length) {
-      return nodeStream;
+      continue;
     }
 
     // if there is a primary key in the config, and any of its field paths were removed, we'll be clearing it
