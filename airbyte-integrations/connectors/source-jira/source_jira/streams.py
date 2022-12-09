@@ -1190,16 +1190,18 @@ class Sprints(JiraStream):
     use_cache = True
     api_v1 = True
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for board in read_full_refresh(self.boards_stream):
             if board["type"] == "scrum":
                 yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
-        yield from []
 
 
 class SprintIssues(IncrementalJiraStream):
