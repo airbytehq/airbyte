@@ -47,7 +47,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   isPrimaryKeyEnabled,
   isSelected,
 }) => {
-  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", true);
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
   const dataType = useTranslateDataType(field);
   const name = pathDisplayName(field.path);
 

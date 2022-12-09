@@ -6,7 +6,7 @@ import { useExperiment } from "hooks/services/Experiment";
 import { HeaderCell, SyncHeaderContainer, NameContainer } from "./styles";
 
 const FieldHeaderInner: React.FC = () => {
-  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", true);
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
 
   return (
     <>
