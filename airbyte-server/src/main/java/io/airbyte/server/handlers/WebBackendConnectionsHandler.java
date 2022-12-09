@@ -355,16 +355,18 @@ public class WebBackendConnectionsHandler {
       diff = refreshedCatalog.get().getCatalogDiff();
       connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
       connection.setStatus(refreshedCatalog.get().getConnectionStatus());
-    } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
-      // reconstructs a full picture of the full schema at the time the catalog was configured.
-      syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
-      // diff not relevant if there was no refresh.
-      diff = null;
     } else {
-      // fallback. over time this should be rarely used because source_catalog_id should always be set.
-      syncCatalog = configuredCatalog;
+      // Since there was no schema refresh before this update, there is no breaking change
+      connection.setBreakingChange(false);
       // diff not relevant if there was no refresh.
       diff = null;
+      if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
+        // reconstructs a full picture of the full schema at the time the catalog was configured.
+        syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
+      } else {
+        // fallback. over time this should be rarely used because source_catalog_id should always be set.
+        syncCatalog = configuredCatalog;
+      }
     }
 
     connection.setSyncCatalog(syncCatalog);
