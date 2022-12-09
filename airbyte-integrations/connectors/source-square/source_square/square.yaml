@@ -66,7 +66,6 @@ definitions:
         request_options_provider:
           request_body_json:
             sort_order: "ASC"
-            begin_time: "{{ stream_slice.begin_time }}"
             sort_field: "CREATED_AT"
       paginator:
         type: DefaultPaginator
@@ -83,11 +82,19 @@ definitions:
           field_name: "limit"
           inject_into: "body_json"
       stream_slicer:
-        class_name: source_square.components.SquareSlicer
+        type: DatetimeStreamSlicer
+        start_datetime:
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_datetime:
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: 30d
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_field: "created_at"
-        request_cursor_field: "begin_time"
-        parent_key: "id"
-
+        start_time_option:
+          field_name: begin_time
+          inject_into: body_json
   base_catalog_objects_stream:
     $ref: "*ref(definitions.base_incremental_stream)"
     stream_cursor_field: "updated_at"
@@ -107,7 +114,6 @@ definitions:
             include_related_objects: "{{ False }}"
             include_deleted_objects: "{{ config['include_deleted_objects'] }}"
             object_types: "{{ [options['object_type']] }}"
-            begin_time:  "{{ stream_slice.begin_time }}"
       paginator:
         type: DefaultPaginator
         url_base: "*ref(definitions.requester.url_base)"
@@ -123,12 +129,19 @@ definitions:
           field_name: "limit"
           inject_into: "body_json"
       stream_slicer:
-        class_name: source_square.components.SquareSlicer
+        type: DatetimeStreamSlicer
+        start_datetime:
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_datetime:
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: 30d
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         cursor_field: "updated_at"
-        request_cursor_field: "begin_time"
-        parent_key: "id"
-
-
+        start_time_option:
+          field_name: begin_time
+          inject_into: body_json
   base_stream_page_json_limit:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -266,11 +279,17 @@ definitions:
             limit: "{{ 500 }}"
       stream_slicer:
         class_name: source_square.components.SquareSubstreamSlicer
+        start_datetime:
+          datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        end_datetime:
+          datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%fZ') }}"
+          datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
+        step: 30d
+        datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         parent_stream: "*ref(definitions.locations_stream)"
         cursor_field: "updated_at"
         parent_key: "id"
-        request_cursor_field: "begin_time"
-
 
 streams:
   - "*ref(definitions.customers_stream)"
