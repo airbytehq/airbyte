@@ -65,7 +65,7 @@ def test_no_availability_strategy():
     assert stream_1.availability_strategy is None
 
     stream_1_is_available, _ = stream_1.check_availability(logger)
-    assert stream_1_is_available is True
+    assert stream_1_is_available
 
 
 def test_availability_strategy():
@@ -87,10 +87,10 @@ def test_availability_strategy():
         assert isinstance(stream.availability_strategy, MockAvailabilityStrategy)
 
     stream_1_is_available, _ = stream_1.check_availability(logger)
-    assert stream_1_is_available is True
+    assert stream_1_is_available
 
     stream_2_is_available, reason = stream_2.check_availability(logger)
-    assert stream_2_is_available is False
+    assert not stream_2_is_available
     assert "Could not reach stream 'unavailable_stream'" in reason
 
 
@@ -128,10 +128,10 @@ def test_scoped_availability_strategy():
     stream_2 = MockStreamWithScopedAvailabilityStrategy(name="projectV2", availability_strategy=availability_strategy_2)
 
     stream_1_is_available, _ = stream_1.check_availability(logger)
-    assert stream_1_is_available is True
+    assert stream_1_is_available
 
     stream_2_is_available, reason = stream_2.check_availability(logger)
-    assert stream_2_is_available is False
+    assert not stream_2_is_available
     assert "Missing required scopes: ['read:project']" in reason
 
 
@@ -144,7 +144,7 @@ def test_default_http_availability_strategy(mocker):
     mocker.patch.object(requests.Session, "send", return_value=req)
 
     stream_is_available, reason = http_stream.check_availability(logger)
-    assert stream_is_available is False
+    assert not stream_is_available
 
     expected_messages = [
         "This is most likely due to insufficient permissions on the credentials in use.",
@@ -157,7 +157,7 @@ def test_default_http_availability_strategy(mocker):
     mocker.patch.object(requests.Session, "send", return_value=req)
 
     stream_is_available, _ = http_stream.check_availability(logger)
-    assert stream_is_available is True
+    assert stream_is_available
 
 
 def test_http_availability_connector_specific_docs(mocker):
@@ -182,7 +182,7 @@ def test_http_availability_connector_specific_docs(mocker):
     mocker.patch.object(requests.Session, "send", return_value=req)
 
     stream_is_available, reason = http_stream.check_availability(logger, source)
-    assert stream_is_available is False
+    assert not stream_is_available
 
     expected_messages = [
         f"The endpoint to access stream '{http_stream.name}' returned 403: Forbidden.",

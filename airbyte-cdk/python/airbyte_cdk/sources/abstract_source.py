@@ -107,7 +107,7 @@ class AbstractSource(Source, ABC):
                         f" Available streams: {stream_instances.keys()}"
                     )
                 stream_is_available, error = stream_instance.check_availability(logger, self)
-                if stream_is_available is False:
+                if not stream_is_available:
                     logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
                     continue
                 try:
