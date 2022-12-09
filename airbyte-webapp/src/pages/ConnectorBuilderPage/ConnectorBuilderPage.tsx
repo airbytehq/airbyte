@@ -4,7 +4,6 @@ import { useIntl } from "react-intl";
 import { useToggle } from "react-use";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
-import { BuilderFormValues } from "components/connectorBuilder/Builder/types";
 import { StreamTestingPanel } from "components/connectorBuilder/StreamTestingPanel";
 import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
@@ -23,12 +22,7 @@ const ConnectorBuilderPageInner: React.FC = () => {
   const { builderFormValues } = useConnectorBuilderState();
 
   return (
-    <Formik
-      initialValues={builderFormValues}
-      onSubmit={(values: BuilderFormValues) => {
-        console.log(values);
-      }}
-    >
+    <Formik initialValues={builderFormValues} onSubmit={() => undefined}>
       {({ values }) => (
         <ResizablePanels
           className={classnames({ [styles.gradientBg]: showYamlEditor, [styles.solidBg]: !showYamlEditor })}

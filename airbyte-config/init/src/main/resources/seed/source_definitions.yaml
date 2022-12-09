@@ -77,7 +77,7 @@
 - name: Amplitude
   sourceDefinitionId: fa9f58c6-2d03-4237-aaa4-07d75e0c1396
   dockerRepository: airbyte/source-amplitude
-  dockerImageTag: 0.1.17
+  dockerImageTag: 0.1.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/amplitude
   icon: amplitude.svg
   sourceType: api
@@ -546,8 +546,9 @@
 - name: Gridly
   sourceDefinitionId: 6cbea164-3237-433b-9abb-36d384ee4cbf
   dockerRepository: airbyte/source-gridly
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/gridly
+  icon: gridly.svg
   sourceType: api
   releaseStage: alpha
 - name: GitHub

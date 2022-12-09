@@ -10,6 +10,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
 
   return (
     <BuilderCard>
+      {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderField type="text" path={streamPath("name")} label="Stream Name" tooltip="Name of the stream" />
       <BuilderField
         type="text"

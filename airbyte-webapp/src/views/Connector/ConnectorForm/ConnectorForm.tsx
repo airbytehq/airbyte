@@ -6,6 +6,7 @@ import { useDeepCompareEffect } from "react-use";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { FormikPatch } from "core/form/FormikPatch";
 import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -20,13 +21,7 @@ import {
   useBuildInitialSchema,
   useBuildUiWidgetsContext,
   useConstructValidationSchema,
-  usePatchFormik,
 } from "./useBuildForm";
-
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
 
 /**
  * This function sets all initial const values in the form to current values
@@ -87,14 +82,12 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
+  selectedConnectorDefinition: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
-  isLoading?: boolean;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
   hasSuccess?: boolean;
-  fetchingConnectorError?: Error | null;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
@@ -112,7 +105,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formType,
     formValues,
     onSubmit,
-    isLoading,
     isEditMode,
     isTestConnectionInProgress,
     onStopTesting,
@@ -132,13 +124,13 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
         ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
         ...Object.fromEntries(
           Object.entries({
-            connectionConfiguration: isLoading ? null : specifications,
+            connectionConfiguration: specifications,
           }).filter(([, v]) => !!v)
         ),
       },
       required: ["name"],
     }),
-    [isLoading, selectedConnectorDefinitionSpecification, specifications]
+    [selectedConnectorDefinitionSpecification, specifications]
   );
 
   const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
@@ -199,7 +191,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
-          isLoadingSchema={isLoading}
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
@@ -209,7 +200,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
-            selectedConnector={selectedConnectorDefinitionSpecification}
             formFields={formFields}
             errorMessage={errorMessage}
             isTestConnectionInProgress={isTestConnectionInProgress}

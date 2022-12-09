@@ -1,14 +1,16 @@
 import classNames from "classnames";
-import { Form, Formik, useFormikContext } from "formik";
+import { Form, Formik, useField } from "formik";
 import { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
+import { FormikPatch } from "core/form/FormikPatch";
+
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
+import { BuilderStream } from "../types";
 import styles from "./AddStreamButton.module.scss";
-import { FormikPatch } from "./Builder";
 import { BuilderField } from "./BuilderField";
 
 interface AddStreamValues {
@@ -18,13 +20,14 @@ interface AddStreamValues {
 
 interface AddStreamButtonProps {
   className?: string;
-  numStreams: number;
   onAddStream: (addedStreamNum: number, addedStreamName: string) => void;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, numStreams, onAddStream }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onAddStream }) => {
+  const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
-  const { setFieldValue } = useFormikContext();
+  const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
+  const numStreams = streamsField.value.length;
 
   return (
     <>
@@ -33,18 +36,21 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, num
         onClick={() => {
           setIsOpen(true);
         }}
-        icon={<PlusIcon className={styles.plus} />}
+        icon={<PlusIcon />}
       />
       {isOpen && (
         <Formik
           initialValues={{ streamName: "", urlPath: "" }}
           onSubmit={(values: AddStreamValues) => {
-            setFieldValue(`streams[${numStreams}]`, {
-              name: values.streamName,
-              urlPath: values.urlPath,
-              fieldPointer: [],
-              httpMethod: "GET",
-            });
+            helpers.setValue([
+              ...streamsField.value,
+              {
+                name: values.streamName,
+                urlPath: values.urlPath,
+                fieldPointer: [],
+                httpMethod: "GET",
+              },
+            ]);
             setIsOpen(false);
             onAddStream(numStreams, values.streamName);
           }}
@@ -60,12 +66,17 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, num
             >
               <Form>
                 <ModalBody className={styles.body}>
-                  <BuilderField path="streamName" type="text" label="Stream name" tooltip="Name of the new stream" />
+                  <BuilderField
+                    path="streamName"
+                    type="text"
+                    label={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameLabel" })}
+                    tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameTooltip" })}
+                  />
                   <BuilderField
                     path="urlPath"
                     type="text"
-                    label="URL Path"
-                    tooltip="URL path of the endpoint for this stream"
+                    label={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathLabel" })}
+                    tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathTooltip" })}
                   />
                 </ModalBody>
                 <ModalFooter>
