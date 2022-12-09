@@ -11,7 +11,6 @@ import com.networknt.schema.SchemaValidatorsConfig;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import io.airbyte.commons.string.Strings;
-import jakarta.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
@@ -23,7 +22,6 @@ import me.andrz.jackson.JsonReferenceProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Singleton
 public class JsonSchemaValidator {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(JsonSchemaValidator.class);
