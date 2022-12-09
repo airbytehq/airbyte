@@ -38,7 +38,7 @@ import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.MessageTracker;
+import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;

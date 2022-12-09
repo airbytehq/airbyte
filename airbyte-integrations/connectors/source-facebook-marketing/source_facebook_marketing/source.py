@@ -32,13 +32,14 @@ from source_facebook_marketing.streams import (
     Videos,
 )
 
-from .utils import read_full_refresh, validate_end_date, validate_start_date
+from .utils import validate_end_date, validate_start_date
 
 logger = logging.getLogger("airbyte")
 
 
 class SourceFacebookMarketing(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
         config = ConnectorConfig.parse_obj(config)
@@ -63,11 +64,10 @@ class SourceFacebookMarketing(AbstractSource):
         except requests.exceptions.RequestException as e:
             return False, e
 
-        # read one record from all custom insights streams
-        # to ensure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
+        # make sure that we have valid combination of "action_breakdowns" and "breakdowns" parameters
         for stream in self.get_custom_insights_streams(api, config):
             try:
-                next(read_full_refresh(stream), None)
+                stream.check_breakdowns()
             except facebook_business.exceptions.FacebookRequestError as e:
                 return False, e._api_error_message
         return True, None
@@ -189,6 +189,7 @@ class SourceFacebookMarketing(AbstractSource):
                 fields=list(set(insight.fields)),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
+                action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,

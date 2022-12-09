@@ -6,7 +6,8 @@ import { CellProps } from "react-table";
 
 import { Table, SortableTableHeader } from "components/ui/Table";
 
-import { ConnectionScheduleType } from "core/request/AirbyteClient";
+import { ConnectionScheduleType, SchemaChange } from "core/request/AirbyteClient";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useQuery } from "hooks/useQuery";
 
@@ -15,7 +16,7 @@ import ConnectorCell from "./components/ConnectorCell";
 import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
 import NameCell from "./components/NameCell";
-import StatusCell from "./components/StatusCell";
+import { StatusCell } from "./components/StatusCell";
 import { ITableDataItem, SortOrderEnum } from "./types";
 
 interface IProps {
@@ -28,6 +29,7 @@ interface IProps {
 const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync }) => {
   const navigate = useNavigate();
   const query = useQuery<{ sortBy?: string; order?: SortOrderEnum }>();
+  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
   const allowSync = useFeature(FeatureItem.AllowSync);
 
   const sortBy = query.sortBy || "entityName";
@@ -156,11 +158,13 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         customWidth: 1,
         Cell: ({ cell, row }: CellProps<ITableDataItem>) => (
           <StatusCell
+            schemaChange={row.original.schemaChange}
             enabled={cell.value}
             id={row.original.connectionId}
             isSyncing={row.original.isSyncing}
             isManual={row.original.scheduleType === ConnectionScheduleType.manual}
             onSync={onSync}
+            hasBreakingChange={isSchemaChangesEnabled && row.original.schemaChange === SchemaChange.breaking}
             allowSync={allowSync}
           />
         ),
@@ -172,7 +176,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
         Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
       },
     ],
-    [allowSync, entity, onSync, onSortClick, sortBy, sortOrder]
+    [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, isSchemaChangesEnabled]
   );
 
   return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;

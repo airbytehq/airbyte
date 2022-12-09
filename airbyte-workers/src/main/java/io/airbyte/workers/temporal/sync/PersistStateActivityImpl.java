@@ -12,7 +12,6 @@ import static io.airbyte.workers.helper.StateConverter.convertClientStateTypeToI
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStateCreateOrUpdate;
@@ -54,8 +53,10 @@ public class PersistStateActivityImpl implements PersistStateActivity {
       try {
         final Optional<StateWrapper> maybeStateWrapper = StateMessageHelper.getTypedState(state.getState(), featureFlags.useStreamCapableState());
         if (maybeStateWrapper.isPresent()) {
-          final ConnectionState previousState = airbyteApiClient.getStateApi()
-              .getState(new ConnectionIdRequestBody().connectionId(connectionId));
+          final ConnectionState previousState =
+              AirbyteApiClient.retryWithJitter(
+                  () -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)),
+                  "get state");
           if (featureFlags.needStateValidation() && previousState != null) {
             final StateType newStateType = maybeStateWrapper.get().getStateType();
             final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
@@ -65,12 +66,17 @@ public class PersistStateActivityImpl implements PersistStateActivity {
             }
           }
 
-          airbyteApiClient.getStateApi().createOrUpdateState(
-              new ConnectionStateCreateOrUpdate()
-                  .connectionId(connectionId)
-                  .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+          AirbyteApiClient.retryWithJitter(
+              () -> {
+                airbyteApiClient.getStateApi().createOrUpdateState(
+                    new ConnectionStateCreateOrUpdate()
+                        .connectionId(connectionId)
+                        .connectionState(StateConverter.toClient(connectionId, maybeStateWrapper.orElse(null))));
+                return null;
+              },
+              "create or update state");
         }
-      } catch (final ApiException e) {
+      } catch (final Exception e) {
         throw new RuntimeException(e);
       }
       return true;
