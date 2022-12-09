@@ -12,7 +12,6 @@ import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.exceptions.ConnectionErrorException;
 import java.sql.SQLException;
 import java.sql.SQLSyntaxErrorException;
-
 import org.junit.jupiter.api.Test;
 
 class ConnectorExceptionUtilTest {

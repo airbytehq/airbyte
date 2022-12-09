@@ -24,7 +24,7 @@ public class ConnectorExceptionUtil {
           "Please see https://docs.airbyte.com/integrations/sources/postgres/#sync-data-from-postgres-hot-standby-server for options and workarounds";
   private static final List<Predicate<Throwable>> configErrorPredicates =
       List.of(getConfigErrorPredicate(), getConnectionErrorPredicate(),
-              isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException());
+          isRecoveryConnectionExceptionPredicate(), isUnknownColumnInFieldListException());
 
   public static boolean isConfigError(final Throwable e) {
     return configErrorPredicates.stream().anyMatch(predicate -> predicate.test(e));
@@ -77,10 +77,10 @@ public class ConnectorExceptionUtil {
 
   private static Predicate<Throwable> isUnknownColumnInFieldListException() {
     return e -> e instanceof SQLSyntaxErrorException
-            && e.getMessage()
+        && e.getMessage()
             .toLowerCase(Locale.ROOT)
             .contains("unknown column")
-            && e.getMessage()
+        && e.getMessage()
             .toLowerCase(Locale.ROOT)
             .contains("in 'field list'");
   }
