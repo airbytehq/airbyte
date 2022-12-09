@@ -11,7 +11,6 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Get;
 import java.io.IOException;
 import java.util.List;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller("/standardSync")
@@ -24,10 +23,10 @@ public class StandardSyncController {
     this.standardSyncPersistence = standardSyncPersistence;
   }
 
-  @Get("/{id}")
-  public StandardSync byId(UUID connectionId) throws ConfigNotFoundException, IOException {
-    return standardSyncPersistence.getStandardSync(connectionId);
-  }
+  // @Get("/{id}")
+  // public StandardSync byId(UUID connectionId) throws ConfigNotFoundException, IOException {
+  // return standardSyncPersistence.getStandardSync(connectionId);
+  // }
 
   @Get("/")
   public List<StandardSync> findAll() throws ConfigNotFoundException, IOException {

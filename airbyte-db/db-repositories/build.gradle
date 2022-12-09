@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+//    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.minimal.application") version "3.6.3"
     id("io.micronaut.test-resources") version "3.6.3"
 }

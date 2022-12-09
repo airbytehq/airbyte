@@ -5,15 +5,10 @@
 package io.airbyte.db.repositories.persistence;
 
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.db.repositories.models.StandardSyncModel;
 import io.airbyte.db.repositories.repositories.StandardSyncRepository;
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 public class StandardSyncPersistence {
 
@@ -31,25 +26,23 @@ public class StandardSyncPersistence {
 
   }
 
-  public StandardSync getStandardSync(final UUID connectionId) throws IOException,
-      ConfigNotFoundException {
-    return toStandardSync(standardSyncRepository.findById(connectionId));
-  }
+  // public StandardSync getStandardSync(final UUID connectionId) throws IOException,
+  // ConfigNotFoundException {
+  // return toStandardSync(standardSyncRepository.findById(connectionId));
+  // }
 
   public List<StandardSync> getStandardSyncs() {
     Iterable<StandardSyncModel> syncModels = standardSyncRepository.findAll();
-    return StreamSupport.stream(syncModels.spliterator(), false).map((StandardSyncModel model) -> toStandardSync(Optional.ofNullable(model)))
-        .collect(Collectors.toList());
+    List<StandardSync> list = new ArrayList<>();
+    for (StandardSyncModel model : syncModels) {
+      StandardSync standardSync = toStandardSync(model);
+      list.add(standardSync);
+    }
+    return list;
   }
 
-  private StandardSync toStandardSync(Optional<StandardSyncModel> model) {
-    return new StandardSync() {
-
-      {
-        model.ifPresent(standardSyncModel -> setConnectionId(standardSyncModel.connection_id()));
-      }
-
-    };
+  private StandardSync toStandardSync(StandardSyncModel model) {
+    return new StandardSync().withConnectionId(model.connection_id());
   }
 
   // public static StandardSync toStandardSync(StandardSyncModel standardSyncModel) {
