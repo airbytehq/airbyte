@@ -346,7 +346,8 @@ public class WebBackendConnectionsHandler {
        * constructs a full picture of all existing configured + all new / updated streams in the newest
        * catalog.
        */
-      syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get(), refreshedCatalog.get().getCatalog());
+      syncCatalog = updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get(),
+          refreshedCatalog.get().getCatalog());
       /*
        * Diffing the catalog used to make the configured catalog gives us the clearest diff between the
        * schema when the configured catalog was made and now. In the case where we do not have the
@@ -360,7 +361,7 @@ public class WebBackendConnectionsHandler {
       connection.setStatus(refreshedCatalog.get().getConnectionStatus());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
-      syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get(), catalogUsedToMakeConfiguredCatalog.get());
+      syncCatalog = updateSchemaWithOriginalDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
       // diff not relevant if there was no refresh.
       diff = null;
     } else {
@@ -372,6 +373,11 @@ public class WebBackendConnectionsHandler {
 
     connection.setSyncCatalog(syncCatalog);
     return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
+  }
+
+  private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(AirbyteCatalog configuredCatalog, AirbyteCatalog originalDiscoveredCatalog) {
+    // We pass the original discovered catalog in as the "new" discovered catalog.
+    return updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, originalDiscoveredCatalog, originalDiscoveredCatalog);
   }
 
   private Optional<SourceDiscoverSchemaRead> getRefreshedSchema(final UUID sourceId, final UUID connectionId)
@@ -397,9 +403,9 @@ public class WebBackendConnectionsHandler {
    *         catalog
    */
   @VisibleForTesting
-  protected static AirbyteCatalog updateSchemaWithDiscovery(final AirbyteCatalog originalConfigured,
-                                                            AirbyteCatalog originalDiscovered,
-                                                            final AirbyteCatalog discovered) {
+  protected static AirbyteCatalog updateSchemaWithRefreshedDiscoveredCatalog(final AirbyteCatalog originalConfigured,
+                                                                             AirbyteCatalog originalDiscovered,
+                                                                             final AirbyteCatalog discovered) {
     /*
      * We can't directly use s.getStream() as the key, because it contains a bunch of other fields, so
      * we just define a quick-and-dirty record class.
@@ -529,8 +535,9 @@ public class WebBackendConnectionsHandler {
         .getConnectionAirbyteCatalog(connectionId);
     if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // Update the Catalog returned to include all streams, including disabled ones
-      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(updatedConnectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get(),
-          catalogUsedToMakeConfiguredCatalog.get());
+      final AirbyteCatalog syncCatalog =
+          updateSchemaWithRefreshedDiscoveredCatalog(updatedConnectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get(),
+              catalogUsedToMakeConfiguredCatalog.get());
       updatedConnectionRead.setSyncCatalog(syncCatalog);
     }
 

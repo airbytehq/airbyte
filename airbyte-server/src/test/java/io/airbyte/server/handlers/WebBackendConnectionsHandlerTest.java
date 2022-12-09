@@ -759,7 +759,8 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.ofNullable(fullAirbyteCatalog));
 
     final AirbyteCatalog expectedCatalogReturned =
-        WebBackendConnectionsHandler.updateSchemaWithDiscovery(expected.getSyncCatalog(), expected.getSyncCatalog(), fullAirbyteCatalog);
+        WebBackendConnectionsHandler.updateSchemaWithRefreshedDiscoveredCatalog(expected.getSyncCatalog(), expected.getSyncCatalog(),
+            fullAirbyteCatalog);
     final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedCatalogReturned, connectionRead.getSyncCatalog());
@@ -1076,7 +1077,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithRefreshedDiscoveredCatalog(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1126,7 +1127,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithRefreshedDiscoveredCatalog(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1203,7 +1204,7 @@ class WebBackendConnectionsHandlerTest {
         .setSelected(false);
     expected.getStreams().add(expectedNewStream);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithRefreshedDiscoveredCatalog(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1251,7 +1252,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithRefreshedDiscoveredCatalog(original, original, discovered);
 
     assertEquals(expected, actual);
   }
