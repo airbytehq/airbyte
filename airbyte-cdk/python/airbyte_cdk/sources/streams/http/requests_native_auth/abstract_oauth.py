@@ -77,7 +77,7 @@ class AbstractOauth2Authenticator(AuthBase):
         """
         try:
             response_json = self._get_refresh_access_token_response()
-            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
+            return response_json[self.get_access_token_name()], int(response_json[self.get_expires_in_name()])
         except Exception as e:
             raise Exception(f"Error while refreshing access token: {e}") from e
 
