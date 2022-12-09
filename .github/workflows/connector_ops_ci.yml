@@ -40,8 +40,8 @@ jobs:
         id: requires-connector-team-review
         run: requires-connector-team-review
         continue-on-error: true
-      - name: Check on failures
-        if: steps.requires-connector-team-review.outputs.status == 'failure'
+      - name: Check if team reviewed
+        if: ${{ failure() }}
         uses: Automattic/action-required-review@v3
         with:
           status: Required review
