@@ -13,10 +13,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
-<<<<<<< HEAD
-=======
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
->>>>>>> db0633894e975b9ddd27f80650900fc25bfd0b22
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
@@ -28,10 +25,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
-<<<<<<< HEAD
-=======
 import java.net.http.HttpClient;
->>>>>>> db0633894e975b9ddd27f80650900fc25bfd0b22
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.UUID;
