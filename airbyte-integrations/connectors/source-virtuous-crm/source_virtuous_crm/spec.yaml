@@ -1,0 +1,13 @@
+documentationUrl: https://docs.virtuoussoftware.com/
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Virtuous CRM Spec
+  type: object
+  required:
+    - api_key
+  additionalProperties: false
+  properties:
+    api_key:
+      type: string
+      title: API Key
+      description: API key found at https://app.virtuoussoftware.com/Generosity/People/ApiKeys

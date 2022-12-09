@@ -1,0 +1,623 @@
+{
+  "streams": [
+    {
+      "name": "gifts",
+      "supported_sync_modes": ["full_refresh", "incremental"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "giftDate",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "id": { "type": "integer" },
+          "transactionSource": { "type": ["null", "string"] },
+          "transactionId": { "type": ["null", "string"] },
+          "contactId": { "type": "integer" },
+          "contactName": { "type": ["null", "string"] },
+          "contactUrl": { "type": ["null", "string"] },
+          "giftType": { "type": ["null", "string"] },
+          "giftTypeFormatted": { "type": ["null", "string"] },
+          "giftDate": { "type":  "string", "format": "date-time" },
+          "giftDateFormatted": { "type": "string" },
+          "amount": { "type":  "number" },
+          "amountFormatted": { "type": "string" },
+          "batch": { "type": ["null", "string"] },
+          "segmentId": { "type": ["null", "integer"] },
+          "segment": { "type": ["null", "string"] },
+          "segmentCode": { "type": ["null", "string"] },
+          "segmentUrl": { "type": ["null", "string"] },
+          "mediaOutletId": { "type": ["null", "integer"] },
+          "mediaOutlet": { "type": ["null", "string"] },
+          "grantId": { "type": ["null", "integer"] },
+          "grant": { "type": ["null", "string"] },
+          "grantUrl": { "type": ["null", "integer"] },
+          "notes": {
+            "type": ["null", "string"]
+          },
+          "tribute": {
+            "type": ["null", "string"]
+          },
+          "tributeId": {
+            "type": ["null", "integer"]
+          },
+          "tributeType": {
+            "type": ["null", "string"]
+          },
+          "acknowledgeeIndividualId": {
+            "type": ["null", "integer"]
+          },
+          "receiptDate": {
+            "type":  "string",
+            "format": "date-time"
+          },
+          "receiptDateFormatted": {
+            "type": ["null", "string"]
+          },
+          "contactPassthroughId": {
+            "type": ["null", "integer"]
+          },
+          "contactPassthroughUrl": {
+            "type": ["null", "string"]
+          },
+          "contactIndividualId": {
+            "type": ["null", "integer"]
+          },
+          "cashAccountingCode": {
+            "type": ["null", "string"]
+          },
+          "giftAskId": {
+            "type": ["null", "integer"]
+          },
+          "contactMembershipId": {
+            "type": ["null", "integer"]
+          },
+
+          "giftDesignations": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "projectId": {
+                  "type": ["null", "integer"]
+                },
+                "project": {
+                  "type": ["null", "string"]
+                },
+                "projectCode": {
+                  "type": ["null", "string"]
+                },
+                "externalAccountingCode": {
+                  "type": ["null", "string"]
+                },
+                "projectType": {
+                  "type": ["null", "string"]
+                },
+                "projectLocation": {
+                  "type": ["null", "string"]
+                },
+                "projectUrl": {
+                  "type": ["null", "string"]
+                },
+                "amountDesignated": {
+                  "type": "number"
+                },
+                "display": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+
+          "giftPremiums": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "premiumId": {
+                  "type": ["null", "integer"]
+                },
+                "premium": {
+                  "type": ["null", "string"]
+                },
+                "premiumUrl": {
+                  "type": ["null", "string"]
+                },
+                "quantity": {
+                  "type": ["null", "integer"]
+                },
+                "display": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          },
+
+          "pledgePayments": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+                "expectedPaymentDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "expectedAmount": {
+                  "type": ["null", "number"]
+                },
+                "giftId": {
+                  "type": ["null", "integer"]
+                },
+                "actualAmount": {
+                  "type": ["null", "number"]
+                }
+              }
+            }
+          },
+
+          "recurringGiftPayments": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["object", "null"],
+              "properties": {
+                "id": {
+                  "type": "integer"
+                },
+
+                "gift": {
+                  "type": ["object", "null"],
+                  "properties": {
+                    "id": {
+                      "type": "integer"
+                    },
+                    "contactId": {
+                      "type": ["integer", "null"]
+                    },
+                    "giftDate": {
+                      "type": "string",
+                      "format": "date-time"
+                    },
+                    "amount": {
+                      "type":  "number"
+                    }
+                  }
+                },
+
+                "expectedAmount": {
+                  "type": ["null", "number"]
+                },
+                "expectedPaymentDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "dismissPaymentDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                },
+                "fulfillPaymentDate": {
+                  "type": ["null", "string"],
+                  "format": "date-time"
+                }
+              }
+            }
+          },
+          "giftUrl": {
+            "type": ["null", "string"]
+          },
+          "isPrivate": {
+            "type": ["null", "boolean"]
+          },
+          "isTaxDeductible": {
+            "type": ["null", "boolean"]
+          },
+
+          "customFields": {
+            "type": ["array", "null"],
+            "items": {
+              "type": ["object", "null"],
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": ["null", "string"]
+                },
+                "displayName": {
+                  "type": ["null", "string"]
+                }
+              }
+            }
+          }
+
+        }
+      }
+      
+    },
+    {
+      "name": "contacts",
+      "supported_sync_modes": ["full_refresh"],
+      "source_defined_cursor": true,
+      "default_cursor_field": "modifiedDateTimeUtc",
+    	"json_schema": {
+			  "$schema": "http://json-schema.org/draft-07/schema#",
+			  "type": "object",
+			  "properties": {
+			    "id": {
+			      "type": "integer"
+			    },
+			    "contactType": {
+			      "type": ["null", "string"]
+			    },
+			    "isPrivate": {
+			      "type": ["null", "boolean"]
+			    },
+			    "name": {
+			      "type": ["null", "string"]
+			    },
+			    "informalName": {
+			      "type": ["null", "string"]
+			    },
+			    "description": {
+			      "type": ["null", "string"]
+			    },
+			    "website": {
+			      "type": ["null", "string"]
+			    },
+			    "maritalStatus": {
+			      "type": ["null", "string"]
+			    },
+			    "anniversaryMonth": {
+			      "type": ["null", "integer"]
+			    },
+			    "anniversaryDay": {
+			      "type": ["null", "integer"]
+			    },
+			    "anniversaryYear": {
+			      "type": ["null", "integer"]
+			    },
+			    "mergedIntoContactId": {
+			      "type": ["null", "integer"]
+			    },
+
+			    "address": {
+			      "type": ["object", "null"],
+			      "properties": {
+			        "id": {
+			          "type": ["null", "integer"]
+			        },
+			        "label": {
+			          "type": ["null", "string"]
+			        },
+			        "address1": {
+			          "type": ["null", "string"]
+			        },
+			        "address2": {
+			          "type": ["null", "string"]
+			        },
+			        "city": {
+			          "type": ["null", "string"]
+			        },
+			        "state": {
+			          "type": ["null", "string"]
+			        },
+			        "postal": {
+			          "type": ["null", "string"]
+			        },
+			        "country": {
+			          "type": ["null", "string"]
+			        },
+			        "isPrimary": {
+			          "type": ["null", "boolean"]
+			        },
+			        "canBePrimary": {
+			          "type": ["null", "boolean"]
+			        },
+			        "startMonth": {
+			          "type": ["null", "integer"]
+			        },
+			        "startDay": {
+			          "type": ["null", "integer"]
+			        },
+			        "endMonth": {
+			          "type": ["null", "integer"]
+			        },
+			        "endDay": {
+			          "type": ["null", "integer"]
+			        }
+			      }
+			    },
+			    "giftAskAmount": {
+			      "type": ["null", "string"]
+			    },
+			    "giftAskType": {
+			      "type": ["null", "string"]
+			    },
+			    "lifeToDateGiving": {
+			      "type": ["null", "string"]
+			    },
+			    "yearToDateGiving": {
+			      "type": ["null", "string"]
+			    },
+			    "lastGiftAmount": {
+			      "type": ["null", "string"]
+			    },
+			    "lastGiftDate": {
+			      "type": ["null", "string"]
+			    },
+
+			    "contactIndividuals": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "id": {
+			            "type": "integer"
+			          },
+			          "contactId": {
+			            "type": ["null", "integer"]
+			          },
+			          "prefix": {
+			            "type": ["null", "string"]
+			          },
+			          "firstName": {
+			            "type": ["null", "string"]
+			          },
+			          "middleName": {
+			            "type": ["null", "string"]
+			          },
+			          "lastName": {
+			            "type": ["null", "string"]
+			          },
+			          "suffix": {
+			            "type": ["null", "string"]
+			          },
+			          "gender": {
+			            "type": ["null", "string"]
+			          },
+				        "isPrimary": {
+				          "type": ["null", "boolean"]
+				        },
+				        "canBePrimary": {
+				          "type": ["null", "boolean"]
+				        },
+				        "isSecondary": {
+				          "type": ["null", "boolean"]
+				        },
+				        "canBeSecondary": {
+				          "type": ["null", "boolean"]
+				        },
+			          "birthMonth": {
+			            "type": ["null", "integer"]
+			          },
+			          "birthDay": {
+			            "type": ["null", "integer"]
+			          },
+			          "birthYear": {
+			            "type": ["null", "integer"]
+			          },
+			          "birthDate": {
+			            "type": ["null", "string"]
+			          },
+			          "approximateAge": {
+			            "type": ["null", "integer"]
+			          },
+			          "isDeceased": {
+			            "type": ["null", "boolean"]
+			          },
+			          "passion": {
+			            "type": ["null", "string"]
+			          },
+			          "avatarUrl": {
+			            "type": ["null", "string"]
+			          },
+			          "contactMethods": {
+						      "type": ["array", "null"],
+						      "items": {
+						        "type": ["object", "null"],
+						        "properties": {
+						          "id": {
+						            "type": "integer"
+						          },
+						          "type": {
+						            "type": ["null", "string"]
+						          },
+						          "value": {
+						            "type": ["null", "string"]
+						          },
+						          "isOptedIn": {
+						            "type": ["null", "boolean"]
+						          },
+						          "isPrimary": {
+						            "type": ["null", "boolean"]
+						          },
+						          "canBePrimary": {
+						            "type": ["null", "boolean"]
+						          }
+						        }
+						      }
+						    },
+						    "createDateTimeUtc": {
+						      "type":  "string"
+						    },
+						    "modifiedDateTimeUtc": {
+						      "type":  ["null", "string"]
+						    },
+						    "customFields": {
+						      "type": ["array", "null"],
+						      "items": {
+						        "type": ["object", "null"],
+						        "properties": {
+						          "name": {
+						            "type": "string"
+						          },
+						          "value": {
+						            "type": ["null", "string"]
+						          },
+						          "displayName": {
+						            "type": ["null", "string"]
+						          }
+						        }
+						      }
+						    },
+						    "customCollections": {
+						      "type": ["array", "null"],
+						      "items": {
+						        "type": ["object", "null"],
+						        "properties": {
+						          "customCollectionId": {
+						            "type": "integer"
+						          },
+						          "customCollectionName": {
+						            "type": ["null", "string"]
+						          },
+						          "collectionInstanceId": {
+						            "type": ["null", "integer"]
+						          },
+						          "fields": {
+									      "type": ["array", "null"],
+									      "items": {
+									        "type": ["object", "null"],
+									        "properties": {
+									          "name": {
+									            "type": ["null", "string"]
+									          },
+									          "value": {
+									            "type": ["null", "string"]
+									          }
+									        }
+									      }
+									    }
+						        }
+						      }
+						    }
+			        }
+			      }
+			    },
+			    "contactGiftsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactPassthroughGiftsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactPlannedGiftsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactRecurringGiftsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactImportantNotesUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactNotesUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactTagsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactRelationshipsUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "primaryAvatarUrl": {
+			      "type": ["null", "string"]
+			    },
+			    "contactReferences": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "source": {
+			            "type": ["null", "string"]
+			          },
+			          "id": {
+			            "type": ["null", "string"]
+			          }
+			        }
+			      }
+			    },
+			    "originSegmentId": {
+			      "type": ["null", "integer"]
+			    },
+			    "originSegment": {
+			      "type": ["null", "string"]
+			    },
+			    "createDateTimeUtc": {
+			      "type":  "string",
+			      "format": "date-time"
+			    },
+			    "modifiedDateTimeUtc": {
+			      "type":  "string",
+			      "format": "date-time"
+			    },
+			    "tags": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["string", "null"]
+			      }
+			    },
+			    "organizationGroups": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["string", "null"]
+			      }
+			    },
+			    "customFields": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "name": {
+			            "type": "string"
+			          },
+			          "value": {
+			            "type": ["null", "string"]
+			          },
+			          "displayName": {
+			            "type": ["null", "string"]
+			          }
+			        }
+			      }
+			    },
+			    "customCollections": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "customCollectionId": {
+			            "type": "integer"
+			          },
+			          "customCollectionName": {
+			            "type": ["null", "string"]
+			          },
+			          "collectionInstanceId": {
+			            "type": ["null", "integer"]
+			          },
+			          "fields": {
+						      "type": ["array", "null"],
+						      "items": {
+						        "type": ["object", "null"],
+						        "properties": {
+						          "name": {
+						            "type": "string"
+						          },
+						          "value": {
+						            "type": ["null", "string"]
+						          }
+						        }
+						      }
+						    }
+			        }
+			      }
+			    }
+			  }
+			}
+    }
+  ]
+}

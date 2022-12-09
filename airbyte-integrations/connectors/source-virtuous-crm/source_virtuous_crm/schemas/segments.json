@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "integer" },
+    "name": { "type": "string" },
+    "description": { "type": ["null","string"]},
+    "code": { "type": ["null","string"] },
+    "communicationId": { "type": ["null","integer"] },
+    "communicationName": { "type": ["null","string"] },
+    "campaignId": { "type": ["null","integer"] },
+    "campaignName": { "type": ["null","string"] },
+    "segmentOrganizerId": { "type": ["null","integer"] }
+
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "communicationId": { "type": "integer" },
+    "name": { "type": "string" },
+    "campaignId": { "type": "integer" },
+    "channelType": { "type": ["null","string"] },
+    "communicationType": { "type": ["null","string"] }
+  }
+}

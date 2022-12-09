@@ -1,0 +1,372 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "contactType": {
+      "type": ["null", "string"]
+    },
+    "isPrivate": {
+      "type": ["null", "boolean"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "informalName": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "website": {
+      "type": ["null", "string"]
+    },
+    "maritalStatus": {
+      "type": ["null", "string"]
+    },
+    "anniversaryMonth": {
+      "type": ["null", "integer"]
+    },
+    "anniversaryDay": {
+      "type": ["null", "integer"]
+    },
+    "anniversaryYear": {
+      "type": ["null", "integer"]
+    },
+    "mergedIntoContactId": {
+      "type": ["null", "integer"]
+    },
+
+    "address": {
+      "type": ["object", "null"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "label": {
+          "type": ["null", "string"]
+        },
+        "address1": {
+          "type": ["null", "string"]
+        },
+        "address2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "state": {
+          "type": ["null", "string"]
+        },
+        "postal": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "isPrimary": {
+          "type": ["null", "boolean"]
+        },
+        "canBePrimary": {
+          "type": ["null", "boolean"]
+        },
+        "startMonth": {
+          "type": ["null", "integer"]
+        },
+        "startDay": {
+          "type": ["null", "integer"]
+        },
+        "endMonth": {
+          "type": ["null", "integer"]
+        },
+        "endDay": {
+          "type": ["null", "integer"]
+        }
+      }
+    },
+    "giftAskAmount": {
+      "type": ["null", "string"]
+    },
+    "giftAskType": {
+      "type": ["null", "string"]
+    },
+    "lifeToDateGiving": {
+      "type": ["null", "string"]
+    },
+    "yearToDateGiving": {
+      "type": ["null", "string"]
+    },
+    "lastGiftAmount": {
+      "type": ["null", "string"]
+    },
+    "lastGiftDate": {
+      "type": ["null", "string"]
+    },
+
+    "contactIndividuals": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "contactId": {
+            "type": ["null", "integer"]
+          },
+          "prefix": {
+            "type": ["null", "string"]
+          },
+          "firstName": {
+            "type": ["null", "string"]
+          },
+          "middleName": {
+            "type": ["null", "string"]
+          },
+          "lastName": {
+            "type": ["null", "string"]
+          },
+          "suffix": {
+            "type": ["null", "string"]
+          },
+          "gender": {
+            "type": ["null", "string"]
+          },
+	        "isPrimary": {
+	          "type": ["null", "boolean"]
+	        },
+	        "canBePrimary": {
+	          "type": ["null", "boolean"]
+	        },
+	        "isSecondary": {
+	          "type": ["null", "boolean"]
+	        },
+	        "canBeSecondary": {
+	          "type": ["null", "boolean"]
+	        },
+          "birthMonth": {
+            "type": ["null", "integer"]
+          },
+          "birthDay": {
+            "type": ["null", "integer"]
+          },
+          "birthYear": {
+            "type": ["null", "integer"]
+          },
+          "birthDate": {
+            "type": ["null", "string"]
+          },
+          "approximateAge": {
+            "type": ["null", "integer"]
+          },
+          "isDeceased": {
+            "type": ["null", "boolean"]
+          },
+          "passion": {
+            "type": ["null", "string"]
+          },
+          "avatarUrl": {
+            "type": ["null", "string"]
+          },
+          "contactMethods": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "id": {
+			            "type": "integer"
+			          },
+			          "type": {
+			            "type": ["null", "string"]
+			          },
+			          "value": {
+			            "type": ["null", "string"]
+			          },
+			          "isOptedIn": {
+			            "type": ["null", "boolean"]
+			          },
+			          "isPrimary": {
+			            "type": ["null", "boolean"]
+			          },
+			          "canBePrimary": {
+			            "type": ["null", "boolean"]
+			          }
+			        }
+			      }
+			    },
+			    "createDateTimeUtc": {
+			      "type":  "string"
+			    },
+			    "modifiedDateTimeUtc": {
+			      "type":  ["null", "string"]
+			    },
+			    "customFields": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "name": {
+			            "type": "string"
+			          },
+			          "value": {
+			            "type": ["null", "string"]
+			          },
+			          "displayName": {
+			            "type": ["null", "string"]
+			          }
+			        }
+			      }
+			    },
+			    "customCollections": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "customCollectionId": {
+			            "type": "integer"
+			          },
+			          "customCollectionName": {
+			            "type": ["null", "string"]
+			          },
+			          "collectionInstanceId": {
+			            "type": ["null", "integer"]
+			          },
+			          "fields": {
+						      "type": ["array", "null"],
+						      "items": {
+						        "type": ["object", "null"],
+						        "properties": {
+						          "name": {
+						            "type": ["null", "string"]
+						          },
+						          "value": {
+						            "type": ["null", "string"]
+						          }
+						        }
+						      }
+						    }
+			        }
+			      }
+			    }
+        }
+      }
+    },
+    "contactGiftsUrl": {
+      "type": ["null", "string"]
+    },
+    "contactPassthroughGiftsUrl": {
+      "type": ["null", "string"]
+    },
+    "contactPlannedGiftsUrl": {
+      "type": ["null", "string"]
+    },
+    "contactRecurringGiftsUrl": {
+      "type": ["null", "string"]
+    },
+    "contactImportantNotesUrl": {
+      "type": ["null", "string"]
+    },
+    "contactNotesUrl": {
+      "type": ["null", "string"]
+    },
+    "contactTagsUrl": {
+      "type": ["null", "string"]
+    },
+    "contactRelationshipsUrl": {
+      "type": ["null", "string"]
+    },
+    "primaryAvatarUrl": {
+      "type": ["null", "string"]
+    },
+    "contactReferences": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "source": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "originSegmentId": {
+      "type": ["null", "integer"]
+    },
+    "originSegment": {
+      "type": ["null", "string"]
+    },
+    "createDateTimeUtc": {
+      "type":  "string",
+      "format": "date-time"
+    },
+    "modifiedDateTimeUtc": {
+      "type":  "string",
+      "format": "date-time"
+    },
+    "tags": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "organizationGroups": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["string", "null"]
+      }
+    },
+    "customFields": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "displayName": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "customCollections": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "customCollectionId": {
+            "type": "integer"
+          },
+          "customCollectionName": {
+            "type": ["null", "string"]
+          },
+          "collectionInstanceId": {
+            "type": ["null", "integer"]
+          },
+          "fields": {
+			      "type": ["array", "null"],
+			      "items": {
+			        "type": ["object", "null"],
+			        "properties": {
+			          "name": {
+			            "type": "string"
+			          },
+			          "value": {
+			            "type": ["null", "string"]
+			          }
+			        }
+			      }
+			    }
+        }
+      }
+    }
+  }
+}

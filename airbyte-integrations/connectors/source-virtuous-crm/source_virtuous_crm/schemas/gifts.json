@@ -1,0 +1,279 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "transactionSource": {
+      "type": ["null", "string"]
+    },
+    "transactionId": {
+      "type": ["null", "string"]
+    },
+    "contactId": {
+      "type": "integer"
+    },
+    "contactName": {
+      "type": ["null", "string"]
+    },
+    "contactUrl": {
+      "type": ["null", "string"]
+    },
+    "giftType": {
+      "type": ["null", "string"]
+    },
+    "giftTypeFormatted": {
+      "type": ["null", "string"]
+    },
+    "giftDate": {
+      "type":  "string",
+      "format": "date-time"
+    },
+    "giftDateFormatted": {
+      "type": "string"
+    },
+    "amount": {
+      "type":  "number"
+    },
+    "amountFormatted": {
+      "type": "string"
+    },
+    "batch": {
+      "type": ["null", "string"]
+    },
+    "segmentId": {
+      "type": ["null", "integer"]
+    },
+    "segment": {
+      "type": ["null", "string"]
+    },
+    "segmentCode": {
+      "type": ["null", "string"]
+    },
+    "segmentUrl": {
+      "type": ["null", "string"]
+    },
+    "mediaOutletId": {
+      "type": ["null", "integer"]
+    },
+    "mediaOutlet": {
+      "type": ["null", "string"]
+    },
+    "grantId": {
+      "type": ["null", "integer"]
+    },
+    "grant": {
+      "type": ["null", "string"]
+    },
+    "grantUrl": {
+      "type": ["null", "integer"]
+    },
+    "notes": {
+      "type": ["null", "string"]
+    },
+    "tribute": {
+      "type": ["null", "string"]
+    },
+    "tributeId": {
+      "type": ["null", "integer"]
+    },
+    "tributeType": {
+      "type": ["null", "string"]
+    },
+    "acknowledgeeIndividualId": {
+      "type": ["null", "integer"]
+    },
+    "receiptDate": {
+      "type":  ["null", "string"],
+      "format": "date-time"
+    },
+    "receiptDateFormatted": {
+      "type": ["null", "string"]
+    },
+    "contactPassthroughId": {
+      "type": ["null", "integer"]
+    },
+    "contactPassthroughUrl": {
+      "type": ["null", "string"]
+    },
+    "contactIndividualId": {
+      "type": ["null", "integer"]
+    },
+    "cashAccountingCode": {
+      "type": ["null", "string"]
+    },
+    "giftAskId": {
+      "type": ["null", "integer"]
+    },
+    "contactMembershipId": {
+      "type": ["null", "integer"]
+    },
+
+    "giftDesignations": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "projectId": {
+            "type": ["null", "integer"]
+          },
+          "project": {
+            "type": ["null", "string"]
+          },
+          "projectCode": {
+            "type": ["null", "string"]
+          },
+          "externalAccountingCode": {
+            "type": ["null", "string"]
+          },
+          "projectType": {
+            "type": ["null", "string"]
+          },
+          "projectLocation": {
+            "type": ["null", "string"]
+          },
+          "projectUrl": {
+            "type": ["null", "string"]
+          },
+          "amountDesignated": {
+            "type": "number"
+          },
+          "display": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+
+    "giftPremiums": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "premiumId": {
+            "type": ["null", "integer"]
+          },
+          "premium": {
+            "type": ["null", "string"]
+          },
+          "premiumUrl": {
+            "type": ["null", "string"]
+          },
+          "quantity": {
+            "type": ["null", "integer"]
+          },
+          "display": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+
+    "pledgePayments": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+          "expectedPaymentDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "expectedAmount": {
+            "type": ["null", "number"]
+          },
+          "giftId": {
+            "type": ["null", "integer"]
+          },
+          "actualAmount": {
+            "type": ["null", "number"]
+          }
+        }
+      }
+    },
+
+    "recurringGiftPayments": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": "integer"
+          },
+
+          "gift": {
+		        "type": ["object", "null"],
+		        "properties": {
+		          "id": {
+		            "type": "integer"
+		          },
+		          "contactId": {
+		            "type": ["integer", "null"]
+		          },
+		          "giftDate": {
+		            "type": "string",
+		            "format": "date-time"
+		          },
+		          "amount": {
+		            "type":  "number"
+		          }
+		        }
+		      },
+
+          "expectedAmount": {
+            "type": ["null", "number"]
+          },
+          "expectedPaymentDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "dismissPaymentDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          },
+          "fulfillPaymentDate": {
+            "type": ["null", "string"],
+            "format": "date-time"
+          }
+        }
+      }
+    },
+    "giftUrl": {
+      "type": ["null", "string"]
+    },
+    "isPrivate": {
+      "type": ["null", "boolean"]
+    },
+    "isTaxDeductible": {
+      "type": ["null", "boolean"]
+    },
+
+    "customFields": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "value": {
+            "type": ["null", "string"]
+          },
+          "displayName": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+
+  }
+}
