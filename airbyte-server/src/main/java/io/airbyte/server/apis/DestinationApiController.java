@@ -20,7 +20,6 @@ import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destinations")
@@ -31,35 +30,35 @@ public class DestinationApiController implements DestinationApi {
   private final SchedulerHandler schedulerHandler;
 
   @Post(uri = "/check_connection",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public CheckConnectionRead checkConnectionToDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationId(destinationIdRequestBody));
   }
 
   @Post(uri = "/check_connection_for_update",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public CheckConnectionRead checkConnectionToDestinationForUpdate(@Body final DestinationUpdate destinationUpdate) {
     return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationIdForUpdate(destinationUpdate));
   }
 
   @Post(uri = "/clone",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationRead cloneDestination(@Body final DestinationCloneRequestBody destinationCloneRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.cloneDestination(destinationCloneRequestBody));
   }
 
   @Post(uri = "/create",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationRead createDestination(@Body final DestinationCreate destinationCreate) {
     return ApiHelper.execute(() -> destinationHandler.createDestination(destinationCreate));
   }
 
   @Post(uri = "/delete",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public void deleteDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     ApiHelper.execute(() -> {
@@ -69,28 +68,28 @@ public class DestinationApiController implements DestinationApi {
   }
 
   @Post(uri = "/get",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationRead getDestination(@Body final DestinationIdRequestBody destinationIdRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.getDestination(destinationIdRequestBody));
   }
 
   @Post(uri = "/list",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationReadList listDestinationsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> destinationHandler.listDestinationsForWorkspace(workspaceIdRequestBody));
   }
 
   @Post(uri = "/search",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationReadList searchDestinations(@Body final DestinationSearch destinationSearch) {
     return ApiHelper.execute(() -> destinationHandler.searchDestinations(destinationSearch));
   }
 
   @Post(uri = "/update",
-      processes = MediaType.APPLICATION_JSON)
+        processes = MediaType.APPLICATION_JSON)
   @Override
   public DestinationRead updateDestination(@Body final DestinationUpdate destinationUpdate) {
     return ApiHelper.execute(() -> destinationHandler.updateDestination(destinationUpdate));
