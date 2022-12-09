@@ -4,3 +4,4 @@
 !source_exact
 !setup.py
 !secrets
+!airbyte-cdk/

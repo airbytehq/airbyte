@@ -11,6 +11,10 @@ RUN apk --no-cache upgrade \
 
 
 COPY setup.py ./
+
+COPY airbyte-cdk airbyte-cdk
+RUN pip install -e ./airbyte-cdk
+
 # install necessary packages to a temporary folder
 RUN pip install --prefix=/install .
 
