@@ -12,7 +12,6 @@ export const useBuilderErrors = () => {
     const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
 
     const invalidViews = Object.keys(errorsToCheck);
-    console.log("invalidViews", invalidViews);
     if (invalidViews.length === 0) {
       return false;
     }

@@ -52,24 +52,6 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
 };
 
 export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
-  // let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
-  // if (!optional) {
-  //   yupSchema = yupSchema.required("form.empty.error");
-  // }
-  // const fieldConfig = {
-  //   name: path,
-  //   validate: (value: string) => {
-  //     try {
-  //       yupSchema.validateSync(value);
-  //       return undefined;
-  //     } catch (err) {
-  //       if (err instanceof yup.ValidationError) {
-  //         return err.errors.join(", ");
-  //       }
-  //       throw err;
-  //     }
-  //   },
-  // };
   const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 

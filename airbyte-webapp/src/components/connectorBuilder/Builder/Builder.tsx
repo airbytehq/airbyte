@@ -16,24 +16,13 @@ interface BuilderProps {
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
   const { setBuilderFormValues, setSelectedStream } = useConnectorBuilderState();
-  // const { setFieldTouched } = useFormikContext();
   useEffect(() => {
     setBuilderFormValues(values);
   }, [values, setBuilderFormValues]);
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
-  // const handleConfigViewBlur = () => {
-
-  // }
-
   const handleViewSelect = (newSelectedView: BuilderView, streamName?: string) => {
-    // if (selectedView === "global") {
-    //   setFieldTouched("global");
-    // } else {
-    //   setFieldTouched(`streams[${selectedView}]`);
-    // }
-
     setSelectedView(newSelectedView);
     if (newSelectedView !== "global" && streamName !== undefined) {
       setSelectedStream(streamName);
