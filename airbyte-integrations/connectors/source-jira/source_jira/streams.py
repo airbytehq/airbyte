@@ -453,7 +453,6 @@ class IssueComments(IncrementalJiraStream):
     """
 
     parse_response_root = "comments"
-    primary_key = "id"
     cursor_field = "updated"
 
     def __init__(self, **kwargs):
