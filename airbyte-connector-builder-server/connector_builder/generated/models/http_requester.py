@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_composite_error_handler_default_error_handler import AnyOfCompositeErrorHandlerDefaultErrorHandler
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.any_of_no_auth_declarative_oauth2_authenticator_api_key_authenticator_bearer_authenticator_basic_http_authenticator import AnyOfNoAuthDeclarativeOauth2AuthenticatorApiKeyAuthenticatorBearerAuthenticatorBasicHttpAuthenticator
@@ -33,13 +33,13 @@ class HttpRequester(BaseModel):
         error_handler: The error_handler of this HttpRequester [Optional].
     """
 
-    name: str
-    url_base: AnyOfInterpolatedStringstring
-    path: AnyOfInterpolatedStringstring
-    config: Dict[str, Any]
-    http_method: Optional[AnyOfstringstring] = None
-    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
-    authenticator: Optional[AnyOfNoAuthDeclarativeOauth2AuthenticatorApiKeyAuthenticatorBearerAuthenticatorBasicHttpAuthenticator] = None
-    error_handler: Optional[AnyOfCompositeErrorHandlerDefaultErrorHandler] = None
+    name: str = Field(alias="name")
+    url_base: AnyOfInterpolatedStringstring = Field(alias="url_base")
+    path: AnyOfInterpolatedStringstring = Field(alias="path")
+    config: Dict[str, Any] = Field(alias="config")
+    http_method: Optional[AnyOfstringstring] = Field(alias="http_method", default=None)
+    request_options_provider: Optional[InterpolatedRequestOptionsProvider] = Field(alias="request_options_provider", default=None)
+    authenticator: Optional[AnyOfNoAuthDeclarativeOauth2AuthenticatorApiKeyAuthenticatorBearerAuthenticatorBasicHttpAuthenticator] = Field(alias="authenticator", default=None)
+    error_handler: Optional[AnyOfCompositeErrorHandlerDefaultErrorHandler] = Field(alias="error_handler", default=None)
 
 HttpRequester.update_forward_refs()

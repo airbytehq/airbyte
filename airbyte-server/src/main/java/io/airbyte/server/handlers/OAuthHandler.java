@@ -4,6 +4,10 @@
 
 package io.airbyte.server.handlers;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DEFINITION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DEFINITION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.WORKSPACE_ID_KEY;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.TrackingClient;
@@ -26,6 +30,7 @@ import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.oauth.OAuthFlowImplementation;
 import io.airbyte.oauth.OAuthImplementationFactory;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
@@ -65,6 +70,8 @@ public class OAuthHandler {
 
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
+        sourceOauthConsentRequest.getSourceDefinitionId()));
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(sourceOauthConsentRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
@@ -107,6 +114,9 @@ public class OAuthHandler {
 
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
+        destinationOauthConsentRequest.getDestinationDefinitionId()));
+
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(destinationOauthConsentRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
@@ -150,6 +160,9 @@ public class OAuthHandler {
 
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
+        completeSourceOauthRequest.getSourceDefinitionId()));
+
     final StandardSourceDefinition sourceDefinition =
         configRepository.getStandardSourceDefinition(completeSourceOauthRequest.getSourceDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(sourceDefinition);
@@ -195,6 +208,9 @@ public class OAuthHandler {
 
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
+        completeDestinationOAuthRequest.getDestinationDefinitionId()));
+
     final StandardDestinationDefinition destinationDefinition =
         configRepository.getStandardDestinationDefinition(completeDestinationOAuthRequest.getDestinationDefinitionId());
     final OAuthFlowImplementation oAuthFlowImplementation = oAuthImplementationFactory.create(destinationDefinition);
