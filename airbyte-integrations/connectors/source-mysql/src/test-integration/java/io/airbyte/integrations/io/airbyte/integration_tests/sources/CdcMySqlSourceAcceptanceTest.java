@@ -8,6 +8,7 @@ import static io.airbyte.integrations.io.airbyte.integration_tests.sources.utils
 import static io.airbyte.protocol.models.SyncMode.INCREMENTAL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -99,6 +100,33 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
                     Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
   }
 
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s", STREAM_NAME),
+                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                    Field.of("id", JsonSchemaType.NUMBER)
+                    /* no name field */)
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(INCREMENTAL)
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    String.format("%s", STREAM_NAME2),
+                    String.format("%s", config.get(JdbcUtils.DATABASE_KEY).asText()),
+                    /* no id field */
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSourceDefinedCursor(true)
+                .withSourceDefinedPrimaryKey(List.of(List.of("id")))
+                .withSupportedSyncModes(
+                    Lists.newArrayList(SyncMode.FULL_REFRESH, INCREMENTAL)))));
+  }
   @Override
   protected JsonNode getState() {
     return null;
@@ -203,4 +231,23 @@ public class CdcMySqlSourceAcceptanceTest extends SourceAcceptanceTest {
     return true;
   }
 
+  @Test
+  public void testIncrementalReadSelectedColumns() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithPartialColumns();
+    final List<AirbyteMessage> allMessages = runRead(catalog);
+
+    final List<AirbyteRecordMessage> records = filterRecords(allMessages);
+    assertFalse(records.isEmpty(), "Expected a incremental sync to produce records");
+    verifyFieldNotExist(records, STREAM_NAME, "name");
+    verifyFieldNotExist(records, STREAM_NAME2, "id");
+  }
+
+  private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
+    assertTrue(records.stream()
+        .filter(r -> {
+          return r.getStream().equals(stream)
+              && r.getData().get(field) != null;})
+        .collect(Collectors.toList())
+        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
+  }
 }
