@@ -126,7 +126,7 @@ export const Routing: React.FC = () => {
 
   return (
     <>
-      {user && (
+      {user.token && (
         <Routes>
           {/* {OldRoutes} */}
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
@@ -136,7 +136,7 @@ export const Routing: React.FC = () => {
           <Route path="*" element={<AutoSelectFirstWorkspace />} />
         </Routes>
       )}
-      {!user && <AuthRoutes />}
+      {!user.token && <AuthRoutes />}
     </>
   );
 };
