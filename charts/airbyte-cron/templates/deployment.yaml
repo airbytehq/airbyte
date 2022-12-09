@@ -90,6 +90,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: WORKSPACE_DOCKER_MOUNT
+          - name: TEMPORAL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-airbyte-env
+                key: TEMPORAL_HOST
           - name: WORKSPACE_ROOT
             valueFrom:
               configMapKeyRef:
