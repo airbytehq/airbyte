@@ -4,20 +4,22 @@ connectionSpecification:
   title: Exact Spec
   type: object
   required:
-    - access_token
-    - refresh_token
-    - client_id
-    - client_secret
+    - credentials
   properties:
-    access_token:
-      type: string
-      description: The latest refresh token from Exact.
-    refresh_token:
-      type: string
-      description: The latest refresh token from Exact.
-    client_id:
-      type: string
-      description: OAuth client_id, can be found at apps.exactonline.com.
-    client_secret:
-      type: string
-      description: OAuth client_secret, can be found at apps.exactonline.com.
+    credentials:
+      title: OAuth Credentials
+      type: object
+      required:
+      - client_id
+      - client_secret
+      - refresh_token
+      properties:
+        refresh_token:
+          type: string
+          description: The latest refresh token from Exact.
+        client_id:
+          type: string
+          description: OAuth client_id, can be found at apps.exactonline.com.
+        client_secret:
+          type: string
+          description: OAuth client_secret, can be found at apps.exactonline.com.

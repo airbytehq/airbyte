@@ -12,43 +12,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.requests_native_auth import Oauth2Authenticator
-
-
-class SingleRefreshOauth2Authenticator(Oauth2Authenticator):
-    def refresh_access_token(self) -> Tuple[str, int]:
-        """
-        Returns the refresh token and its lifespan in seconds
-
-        :return: a tuple of (access_token, token_lifespan_in_seconds)
-        """
-        try:
-            response = requests.post(
-                url=self.get_token_refresh_endpoint(),
-                data=self.build_refresh_request_body(),
-            )
-            response.raise_for_status()
-
-            response_json = response.json()
-            self._refresh_token = response_json["refresh_token"]
-
-            return response_json[self.get_access_token_name()], response_json[self.get_expires_in_name()]
-        except Exception as e:
-            raise Exception(f"Error while refreshing access token: {e}") from e
-
-    def get_auth_fields(self):
-        return dict(
-            access_token=self._access_token,
-            refresh_token=self._refresh_token,
-            token_expiry_date=self._token_expiry_date.isoformat(),
-        )
-
-    def set_auth_fields(self, token: dict):
-        self._access_token = token["access_token"]
-        self._refresh_token = token["refresh_token"]
-
-        if "token_expiry_date" in token:
-            self.token_expiry_date = pendulum.parser.parse(token["token_expiry_date"])
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 
 
 class ExactStream(HttpStream, IncrementalMixin):
@@ -59,16 +23,9 @@ class ExactStream(HttpStream, IncrementalMixin):
     _cursor_value = None
 
     @property
-    def auth(self) -> SingleRefreshOauth2Authenticator:
-        """Helper property to return the Authenticator in the right type."""
-
-        return self._session.auth
-
-    @property
     def state(self) -> MutableMapping[str, Any]:
         return {
             self.cursor_field: self._cursor_value,
-            "auth": self.auth.get_auth_fields(),
         }
 
     @state.setter
@@ -78,8 +35,7 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         if self.cursor_field in value:
             self._cursor_value = value[self.cursor_field]
-        if "auth" in value:
-            self.auth.set_auth_fields(value["auth"])
+
 
     def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
         for record in super().read_records(*args, **kwargs):
@@ -163,6 +119,12 @@ class ExactStream(HttpStream, IncrementalMixin):
             return next_page_token["next_url"]
 
         return self.endpoint
+
+    @property
+    def _auth(self) -> SingleUseRefreshTokenOauth2Authenticator:
+        """Helper property to return the Authenticator in the right type."""
+
+        return self._session.auth
 
     def _is_token_expired(self, response: requests.Response):
         if response.status_code == 401:
@@ -404,17 +366,13 @@ class SourceExact(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         token_endpoint = "https://start.exactonline.nl/api/oauth2/token"
 
-        auth = SingleRefreshOauth2Authenticator(
+        auth = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config=config,
             token_refresh_endpoint=token_endpoint,
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-            # We don't know when the token is expired in this context. We just set it to a future time,
-            # upon 401 we will trigger refresh manually.
-            token_expiry_date=pendulum.now().add(minutes=10),
+            token_expiry_date=pendulum.now().add(minutes=11),
         )
 
-        auth._access_token = config["access_token"]
+        auth.access_token = config["credentials"]["access_token"]
 
         return [
             SyncCashflowPaymentTerms(authenticator=auth),
