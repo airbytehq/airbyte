@@ -43,7 +43,7 @@
 
 .streamsHeading {
   color: colors.$blue;
-  flex: 1;
+  flex-grow: 1;
 }
 
 .downloadButton {
@@ -59,7 +59,8 @@
 .viewButton {
   border: none;
   width: 100%;
-  flex: 0 0 34px;
+  height: 34px;
+  flex-shrink: 0;
   cursor: pointer;
   border-radius: variables.$border-radius-md;
   padding: variables.$spacing-md;
@@ -88,7 +89,7 @@
 }
 
 .streamList {
-  flex: 1;
+  flex-grow: 1;
   width: 100%;
   margin: variables.$spacing-md 0;
   display: flex;
