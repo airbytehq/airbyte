@@ -216,10 +216,6 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
@@ -397,10 +393,6 @@ jobs:
           distribution: "zulu"
           java-version: "17"
 
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
-
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
@@ -455,10 +447,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
 
       - uses: actions/setup-python@v4
         with:
@@ -584,10 +572,6 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.9"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
 
       - name: Set up CI Gradle Properties
         run: |
@@ -809,10 +793,6 @@ jobs:
         with:
           distribution: "zulu"
           java-version: "17"
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: "lts/gallium"
 
       - uses: actions/setup-python@v4
         with:
@@ -1057,10 +1037,6 @@ jobs:
       - uses: actions/setup-java@v1
         with:
           java-version: "17"
-
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "lts/gallium"
 
       - name: Install unzip
         shell: bash
