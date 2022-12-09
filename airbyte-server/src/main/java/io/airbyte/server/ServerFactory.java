@@ -13,6 +13,7 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
 import io.airbyte.server.apis.JobsApiController;
@@ -33,7 +34,6 @@ import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.OperationApiBinder;
 import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
@@ -42,13 +42,11 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
-import io.airbyte.server.apis.factories.OperationApiFactory;
 import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
@@ -157,8 +155,6 @@ public interface ServerFactory {
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
-
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
       DestinationOauthApiFactory.setValues(oAuthHandler);
@@ -170,8 +166,6 @@ public interface ServerFactory {
       LogsApiFactory.setValues(logsHandler);
 
       NotificationsApiFactory.setValues(workspacesHandler);
-
-      OperationApiFactory.setValues(operationsHandler);
 
       SchedulerApiFactory.setValues(schedulerHandler);
 
@@ -211,7 +205,6 @@ public interface ServerFactory {
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new OperationApiBinder(),
           new SchedulerApiBinder(),
           new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
