@@ -56,10 +56,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   public DefaultNormalizationRunner(final ProcessFactory processFactory,
                                     final String normalizationImage,
-                                    final String destinationType) {
+                                    final String integrationType) {
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImage;
-    this.integrationType = destinationType;
+    this.integrationType = integrationType;
   }
 
   @Override
