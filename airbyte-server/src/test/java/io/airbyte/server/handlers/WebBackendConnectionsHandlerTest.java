@@ -562,29 +562,9 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(catalog)
         .geography(Geography.US)
         .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
-        .notifySchemaChanges(false)
-        .breakingChange(false);
+        .notifySchemaChanges(false);
 
     final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
-
-    assertEquals(expected, actual);
-  }
-
-  @Test
-  void testToConnectionPatchNoSyncCatalogChange() {
-    final UUID connectionId = UUID.randomUUID();
-    final String connectionName = "New Connection Name";
-
-    final WebBackendConnectionUpdate input = new WebBackendConnectionUpdate()
-        .connectionId(connectionId)
-        .name(connectionName);
-
-    final ConnectionUpdate expected = new ConnectionUpdate()
-        .connectionId(connectionId)
-        .name(connectionName)
-        .operationIds(List.of());
-
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, List.of());
 
     assertEquals(expected, actual);
   }
