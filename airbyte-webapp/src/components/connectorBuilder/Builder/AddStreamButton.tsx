@@ -1,4 +1,3 @@
-import classNames from "classnames";
 import { Form, Formik, useField } from "formik";
 import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -19,11 +18,10 @@ interface AddStreamValues {
 }
 
 interface AddStreamButtonProps {
-  className?: string;
   onAddStream: (addedStreamNum: number, addedStreamName: string) => void;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onAddStream }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream }) => {
   const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
@@ -32,7 +30,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onA
   return (
     <>
       <Button
-        className={classNames(className, styles.addButton)}
+        className={styles.addButton}
         onClick={() => {
           setIsOpen(true);
         }}

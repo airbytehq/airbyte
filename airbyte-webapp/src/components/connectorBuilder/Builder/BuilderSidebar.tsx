@@ -109,7 +109,6 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
         </Text>
 
         <AddStreamButton
-          className={styles.addStreamButton}
           onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
         />
       </div>

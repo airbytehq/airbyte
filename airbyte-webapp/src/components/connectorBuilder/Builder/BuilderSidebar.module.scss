@@ -37,18 +37,13 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0;
+  padding: 0 variables.$spacing-sm 0 variables.$spacing-md;
   margin-top: variables.$spacing-2xl;
 }
 
 .streamsHeading {
-  margin-left: variables.$spacing-md;
   color: colors.$blue;
-}
-
-.addStreamButton {
-  margin-left: auto;
-  margin-right: variables.$spacing-sm;
+  flex: 1;
 }
 
 .downloadButton {
