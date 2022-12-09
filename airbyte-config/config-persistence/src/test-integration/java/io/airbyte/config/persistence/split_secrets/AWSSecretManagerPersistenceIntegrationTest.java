@@ -21,7 +21,6 @@ public class AWSSecretManagerPersistenceIntegrationTest {
   private AWSSecretManagerPersistence persistence;
   private final Configs configs = new EnvConfigs();
 
-
   @BeforeEach
   void setup() {
     persistence = new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey());
