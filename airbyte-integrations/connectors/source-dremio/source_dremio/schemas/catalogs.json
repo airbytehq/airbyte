@@ -8,29 +8,20 @@
     "id": {
       "type": "string"
     },
-    "type":{
-      "type": "string"
-    },
     "path": {
       "type": "array"
     },
-    "createdAt":{
+    "type":{
       "type": "string"
     },
     "tag": {
       "type": "string"
     },
-    "sql": {
-      "type": "array"
+    "datasetType": {
+      "type": "string"
     },
-    "sqlContext": {
-      "type": "array"
-    },
-    "accessControlList": {
-      "type": "object"
-    },
-    "fields": {
-      "type": "array"
+    "containerType": {
+      "type": "string"
     }
   }
 }

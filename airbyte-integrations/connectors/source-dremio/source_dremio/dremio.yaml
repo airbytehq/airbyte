@@ -25,6 +25,7 @@ definitions:
     $options:
       name: "catalog"
       path: "/catalog"
+      primary_key: "id"
 
 streams:
   - "*ref(definitions.catalog_stream)"
@@ -34,7 +35,7 @@ check:
     - "catalog"
 
 spec:
-  documentation_url: "https://docs.dremio.com/software/rest-api/"
+  documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
   connection_specification:
     title: Dremio Spec
     type: object

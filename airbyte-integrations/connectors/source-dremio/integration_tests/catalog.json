@@ -2,45 +2,9 @@
   "streams": [
     {
       "name": "catalogs",
-      "supported_sync_modes": ["full_refresh", "incremental"],
+      "supported_sync_modes": ["full_refresh"],
       "source_defined_cursor": true,
-      "default_cursor_field": "",
-      "json_schema": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "type": "object",
-        "properties": {
-          "entityType": {
-            "type": "string"
-          },
-          "id": {
-            "type": "string"
-          },
-          "type":{
-            "type": "string"
-          },
-          "path": {
-            "type": "array"
-          },
-          "createdAt":{
-            "type": "string"
-          },
-          "tag": {
-            "type": "string"
-          },
-          "sql": {
-            "type": "array"
-          },
-          "sqlContext": {
-            "type": "array"
-          },
-          "accessControlList": {
-            "type": "object"
-          },
-          "fields": {
-            "type": "array"
-          }
-        }
-      }
+      "default_cursor_field": ""
     }
   ]
 }
