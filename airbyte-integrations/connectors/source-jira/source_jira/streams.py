@@ -202,6 +202,10 @@ class BoardIssues(IncrementalJiraStream):
     parse_response_root = "issues"
     api_v1 = True
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         board_id = stream_slice["board_id"]
         return f"board/{board_id}/issue"
@@ -212,7 +216,6 @@ class BoardIssues(IncrementalJiraStream):
         stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        stream_state = stream_state or {}
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
         params["fields"] = ["key", "updated"]
         jql = self.jql_compare_date(stream_state)
@@ -220,10 +223,39 @@ class BoardIssues(IncrementalJiraStream):
             params["jql"] = jql
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for board in boards_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        start_point = self.get_starting_point(stream_state=stream_state)
+        for board in read_full_refresh(self.boards_stream):
+            stream_slice = {"board_id": board["id"]}
+            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
+                cursor_value = pendulum.parse(record[self.cursor_field])
+                if not start_point or cursor_value >= start_point:
+                    yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
+        compare_date = self.get_starting_point(stream_state)
+        if compare_date:
+            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} >= '{compare_date}'"
+
+    @call_once
+    def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if stream_state:
+            stream_state_value = stream_state.get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value)
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
