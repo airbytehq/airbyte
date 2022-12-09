@@ -29,11 +29,14 @@ $icon-size: 15px;
   // A hard-coded px is bad, but it works.
   // Ideally this table will be converted away from div's and
   // flexbox into react-table and this will go away.
-  flex: 0 0 807px;
+  flex: 2 1 547px;
 }
 
 .destination {
-  flex: 0 0 auto;
+  display: flex;
+
+  // justify-self: flex-end;
+  flex: 1 1 120px;
 }
 
 .icon {

@@ -32,15 +32,18 @@ export const StreamConnectionHeader: React.FC = () => {
           <FormattedMessage id="connectionForm.sourceTitle" />
         </Heading>
       </div>
-      <div className={styles.arrowContainer}>
-        <FontAwesomeIcon icon={faArrowRight} />
+      <div className={styles.destination}>
+        <div className={styles.arrowContainer}>
+          <FontAwesomeIcon icon={faArrowRight} />
+        </div>
+        <div className={destinationStyles}>
+          {renderIcon(destinationDefinition.icon)}{" "}
+          <Heading as="h5" size="sm">
+            <FormattedMessage id="connectionForm.destinationTitle" />
+          </Heading>
+        </div>
       </div>
-      <div className={destinationStyles}>
-        {renderIcon(destinationDefinition.icon)}{" "}
-        <Heading as="h5" size="sm">
-          <FormattedMessage id="connectionForm.destinationTitle" />
-        </Heading>
-      </div>
+      <div />
     </div>
   );
 };
