@@ -12,7 +12,6 @@ import static org.mockito.Mockito.when;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
@@ -30,8 +29,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class RefreshSchemaActivityTest {
 
   static private ConfigRepository mConfigRepository;
+
   static private SourceApi mSourceApi;
-  static private EnvVariableFeatureFlags mEnvVariableFeatureFlags;
 
   static private RefreshSchemaActivityImpl refreshSchemaActivity;
 
@@ -39,12 +38,9 @@ class RefreshSchemaActivityTest {
 
   @BeforeEach
   void setUp() {
-    mSourceApi = mock(SourceApi.class);
     mConfigRepository = mock(ConfigRepository.class);
-    mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
     mSourceApi = mock(SourceApi.class);
-    when(mEnvVariableFeatureFlags.autoDetectSchema()).thenReturn(true);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi, mEnvVariableFeatureFlags);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi);
   }
 
   @Test
@@ -72,10 +68,9 @@ class RefreshSchemaActivityTest {
   @Test
   void testRefreshSchema() throws ApiException {
     UUID sourceId = UUID.randomUUID();
-    UUID connectionId = UUID.randomUUID();
-    refreshSchemaActivity.refreshSchema(sourceId, connectionId);
+    refreshSchemaActivity.refreshSchema(sourceId);
     SourceDiscoverSchemaRequestBody requestBody =
-        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true).connectionId(connectionId);
+        new SourceDiscoverSchemaRequestBody().sourceId(sourceId).disableCache(true);
     verify(mSourceApi, times(1)).discoverSchemaForSource(requestBody);
   }
 

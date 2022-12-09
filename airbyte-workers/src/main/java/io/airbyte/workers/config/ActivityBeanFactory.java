@@ -24,7 +24,6 @@ import io.airbyte.workers.temporal.sync.DbtTransformationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationActivity;
 import io.airbyte.workers.temporal.sync.NormalizationSummaryCheckActivity;
 import io.airbyte.workers.temporal.sync.PersistStateActivity;
-import io.airbyte.workers.temporal.sync.RefreshSchemaActivity;
 import io.airbyte.workers.temporal.sync.ReplicationActivity;
 import io.airbyte.workers.temporal.sync.WebhookOperationActivity;
 import io.micronaut.context.annotation.Factory;
@@ -111,11 +110,9 @@ public class ActivityBeanFactory {
                                      final DbtTransformationActivity dbtTransformationActivity,
                                      final PersistStateActivity persistStateActivity,
                                      final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity,
-                                     final WebhookOperationActivity webhookOperationActivity,
-                                     final ConfigFetchActivity configFetchActivity,
-                                     final RefreshSchemaActivity refreshSchemaActivity) {
+                                     final WebhookOperationActivity webhookOperationActivity) {
     return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity,
-        webhookOperationActivity, configFetchActivity, refreshSchemaActivity);
+        webhookOperationActivity);
   }
 
   @Singleton
