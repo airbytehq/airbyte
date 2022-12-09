@@ -6,7 +6,7 @@ import { useDebounce, useLocalStorage } from "react-use";
 
 import { CodeEditor } from "components/ui/CodeEditor";
 
-import { ConnectorManifest } from "core/request/ConnectorBuilderClient";
+import { StreamsListRequestBodyManifest } from "core/request/ConnectorBuilderClient";
 import { useManifestTemplate } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -30,7 +30,7 @@ export const YamlEditor: React.FC = () => {
       const yamlEditorModel = yamlEditorRef.current.getModel();
 
       try {
-        const json = load(yamlValue) as ConnectorManifest;
+        const json = load(yamlValue) as StreamsListRequestBodyManifest;
         setJsonManifest(json);
         setYamlIsValid(true);
 
