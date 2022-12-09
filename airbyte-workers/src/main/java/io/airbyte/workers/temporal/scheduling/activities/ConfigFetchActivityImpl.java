@@ -41,7 +41,6 @@ import org.quartz.CronExpression;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
@@ -177,22 +176,22 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   }
 
   @Override
-  public Optional<UUID> getSourceId(UUID connectionId) {
+  public Optional<UUID> getSourceId(final UUID connectionId) {
     try {
       final StandardSync standardSync = getStandardSync(connectionId);
       return Optional.ofNullable(standardSync.getSourceId());
-    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
       log.info("Encountered an error fetching the connection's Source ID: ", e);
       return Optional.empty();
     }
   }
 
   @Override
-  public Optional<Status> getStatus(UUID connectionId) {
+  public Optional<Status> getStatus(final UUID connectionId) {
     try {
       final StandardSync standardSync = getStandardSync(connectionId);
       return Optional.ofNullable(standardSync.getStatus());
-    } catch (JsonValidationException | ConfigNotFoundException | IOException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
       log.info("Encountered an error fetching the connection's status: ", e);
       return Optional.empty();
     }
