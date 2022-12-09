@@ -745,7 +745,7 @@ public class EnvConfigs implements Configs {
    * repositories. The empty string is a no-op value.
    */
   @Override
-  public List<String> getJobKubeMainContainerImagePullSecret() {
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
     String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
     return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
