@@ -1,5 +1,3 @@
-import { faSortDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import capitalize from "lodash/capitalize";
 
@@ -9,6 +7,7 @@ import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { ReactComponent as CaretDownIcon } from "../../ui/ListBox/CaretDownIcon.svg";
 import styles from "./StreamSelector.module.scss";
 
 interface StreamSelectorProps {
@@ -23,7 +22,7 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
       <Heading as="h1" size="sm">
         {selectedOption.label}
       </Heading>
-      <FontAwesomeIcon className={styles.arrow} icon={faSortDown} />
+      <CaretDownIcon className={styles.arrow} />
     </>
   );
 };
