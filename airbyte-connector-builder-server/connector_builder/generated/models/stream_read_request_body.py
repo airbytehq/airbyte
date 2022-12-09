@@ -7,7 +7,6 @@ import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
 from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
-from connector_builder.generated.models.connector_manifest import ConnectorManifest
 
 
 class StreamReadRequestBody(BaseModel):
@@ -23,7 +22,7 @@ class StreamReadRequestBody(BaseModel):
         state: The state of this StreamReadRequestBody [Optional].
     """
 
-    manifest: ConnectorManifest
+    manifest: Dict[str, Any]
     stream: str
     config: Dict[str, Any]
     state: Optional[Dict[str, Any]] = None
