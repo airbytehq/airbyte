@@ -1,4 +1,5 @@
 import React, { memo } from "react";
+import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Cell } from "components/SimpleTableComponents";
@@ -73,7 +74,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
                   />
                 }
               >
-                This field will be synced if <code>{field.path[0]}</code> is enabled
+                <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
               </Tooltip>
             )}{" "}
           </SyncCheckboxContainer>
