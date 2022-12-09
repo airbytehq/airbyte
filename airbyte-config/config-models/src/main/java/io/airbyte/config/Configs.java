@@ -464,7 +464,7 @@ public interface Configs {
   /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
    */
-  String getJobKubeMainContainerImagePullSecret();
+  List<String> getJobKubeMainContainerImagePullSecrets();
 
   /**
    * Define the Memory request for the Sidecar
