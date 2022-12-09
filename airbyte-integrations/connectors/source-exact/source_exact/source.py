@@ -2,16 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
+import random
 import re
+import time
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import unquote
 
-import logging
 import pendulum
 import requests
-import time
-import random
-
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -39,7 +38,6 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         if self.cursor_field in value:
             self._cursor_value = value[self.cursor_field]
-
 
     def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
         for record in super().read_records(*args, **kwargs):
@@ -87,7 +85,6 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return params
 
-
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """
         Overwrite the default _send_request. This allows to automatically refresh the access token when it is
@@ -108,7 +105,7 @@ class ExactStream(HttpStream, IncrementalMixin):
 
                 # Retry on server exceptions
                 if 500 <= response.status_code < 600:
-                    time.sleep(2 ** num_retry + random.random())
+                    time.sleep(2**num_retry + random.random())
                     continue
 
                 # Check for expired access token
@@ -117,7 +114,7 @@ class ExactStream(HttpStream, IncrementalMixin):
                     error_reason = unquote(error_reason)
 
                     if "access token expired" in error_reason:
-                        logger.info(f"Access token expired: will retry after refresh")
+                        logger.info("Access token expired: will retry after refresh")
 
                         # mark the token as expired and overwrite thea authorization header
                         self._auth.set_token_expiry_date(pendulum.now().subtract(minutes=1))
@@ -126,7 +123,6 @@ class ExactStream(HttpStream, IncrementalMixin):
                         continue
 
                 raise exc
-                
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
