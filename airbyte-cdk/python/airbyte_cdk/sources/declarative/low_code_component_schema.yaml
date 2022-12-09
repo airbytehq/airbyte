@@ -6,20 +6,19 @@ description: Low Code connector components
 version: 1.0.0
 required:
   - check
-  - spec
   - streams
   - version
 properties:
   check:
     "$ref": "#/definitions/CheckStream"
-  spec:
-    "$ref": "#/definitions/Spec"
   streams:
     type: array
     items:
       "$ref": "#/definitions/DeclarativeStream"
   version:
     type: string
+  spec:
+    "$ref": "#/definitions/Spec"
 definitions:
   AddedFieldDefinition:
     description: Defines the field to add on a record
@@ -66,7 +65,7 @@ definitions:
         type: string
       header:
         type: string
-  BackoffStrategy:
+  BackoffStrategy: # maybe delete this since it was intended to be just an interface
     type: object
     anyOf:
       - "$ref": "#/definitions/ConstantBackoffStrategy"
@@ -111,6 +110,7 @@ definitions:
         type: array
         items:
           anyOf:
+            - "$ref": "#/definitions/CustomStreamSlicer"
             - "$ref": "#/definitions/DatetimeStreamSlicer"
             - "$ref": "#/definitions/ListStreamSlicer"
             - "$ref": "#/definitions/SingleSlice"
@@ -164,7 +164,7 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  CursorPaginationStrategy:
+  CursorPagination:
     description: Pagination strategy that evaluates an interpolated string to define the next page token
     type: object
     required:
@@ -172,7 +172,7 @@ definitions:
       - cursor_value
     properties:
       type:
-        enum: [CursorPaginationStrategy]
+        enum: [CursorPagination]
       cursor_value:
         type: string
       page_size:
@@ -211,6 +211,34 @@ definitions:
       additional_parameters:
         type: object
         additionalProperties: true
+      $options:
+        type: object
+        additionalProperties: true
+  CustomPaginationStrategy:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomPaginationStrategy]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomStreamSlicer:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomStreamSlicer]
+      class_name:
+        type: string
       $options:
         type: object
         additionalProperties: true
@@ -372,7 +400,8 @@ definitions:
         enum: [DefaultPaginator]
       pagination_strategy:
         anyOf:
-          - "$ref": "#/definitions/CursorPaginationStrategy"
+          - "$ref": "#/definitions/CursorPagination"
+          - "$ref": "#/definitions/CustomPaginationStrategy"
           - "$ref": "#/definitions/OffsetIncrement"
           - "$ref": "#/definitions/PageIncrement"
       url_base:
@@ -717,17 +746,14 @@ definitions:
           items:
             type: string
   RequestOption:
-    description:
+    description: Describes an option to set on a request
     type: object
     required:
       - type
-      - field_name
       - inject_into
     properties:
       type:
-        enum: [RequestOptions]
-      field_name:
-        type: string
+        enum: [RequestOption]
       inject_into:
         enum:
           - request_parameter
@@ -735,6 +761,8 @@ definitions:
           - path
           - body_data
           - body_json
+      field_name:
+        type: string
   SimpleRetriever:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
     type: object
@@ -771,6 +799,7 @@ definitions:
       stream_slicer:
         anyOf:
           - "$ref": "#/definitions/CartesianProductStreamSlicer"
+          - "$ref": "#/definitions/CustomStreamSlicer"
           - "$ref": "#/definitions/DatetimeStreamSlicer"
           - "$ref": "#/definitions/ListStreamSlicer"
           - "$ref": "#/definitions/SingleSlice"
