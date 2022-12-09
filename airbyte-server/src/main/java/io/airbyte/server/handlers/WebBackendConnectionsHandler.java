@@ -654,7 +654,7 @@ public class WebBackendConnectionsHandler {
                                                       final List<UUID> finalOperationIds) {
     final ConnectionUpdate connectionPatch = new ConnectionUpdate();
 
-    if(webBackendConnectionPatch.getSyncCatalog() != null) {
+    if (webBackendConnectionPatch.getSyncCatalog() != null) {
       // the user has updated their sync catalog, so there is no breaking change
       connectionPatch.breakingChange(false);
     }
