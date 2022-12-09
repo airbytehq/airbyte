@@ -32,8 +32,11 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, optio
       const { syncMode, destinationSyncMode } = value;
       return {
         label: [
-          <FormattedMessage id={`syncMode.${syncMode}`} />,
-          <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />,
+          <FormattedMessage key={`syncMode.${syncMode}`} id={`syncMode.${syncMode}`} />,
+          <FormattedMessage
+            key={`destinationSyncMode.${destinationSyncMode}`}
+            id={`destinationSyncMode.${destinationSyncMode}`}
+          />,
         ],
         value,
       };

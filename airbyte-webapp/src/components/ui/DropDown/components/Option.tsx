@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Fragment } from "react";
 import { components, OptionProps } from "react-select";
 import styled from "styled-components";
 
@@ -74,7 +74,9 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
             </>
           )}
           {Array.isArray(props.label)
-            ? props.label.map<React.ReactNode>((node) => <>{node}</>).reduce((prev, curr) => [prev, " | ", curr])
+            ? props.label
+                .map<React.ReactNode>((node, index) => <Fragment key={index}>{node}</Fragment>)
+                .reduce((prev, curr) => [prev, " | ", curr])
             : props.label}
         </DropDownText>
         {props.data.img || null}
