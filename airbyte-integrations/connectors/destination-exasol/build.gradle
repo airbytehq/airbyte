@@ -4,12 +4,6 @@ plugins {
     id 'airbyte-integration-test-java'
 }
 
-repositories {
-    maven {
-        url "https://maven.exasol.com/artifactory/exasol-releases/"
-    }
-}
-
 application {
     mainClass = 'io.airbyte.integrations.destination.exasol.ExasolDestination'
 }
@@ -22,8 +16,9 @@ dependencies {
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
     implementation project(':airbyte-integrations:connectors:destination-jdbc')
 
-    implementation 'com.exasol:exasol-jdbc:7.1.11'
+    implementation 'com.exasol:exasol-jdbc:7.1.16'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-exasol')
+    integrationTestJavaImplementation 'com.exasol:exasol-testcontainers:6.4.0'
 }
