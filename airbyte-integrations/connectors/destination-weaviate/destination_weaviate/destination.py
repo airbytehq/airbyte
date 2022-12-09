@@ -6,10 +6,25 @@
 from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
+import logging
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
 
 from .client import Client
+
+
+def get_schema(configured_catalog: ConfiguredAirbyteCatalog) -> Mapping[str, Mapping[str, str]]:
+    schema = {}
+    for stream in configured_catalog.streams:
+        stream_schema = {}
+        for k, v in stream.stream.json_schema.get("properties").items():
+            stream_schema[k] = "default"
+            if "array" in v.get("type", []) and "object" in v.get("items", {}).get("type", []):
+                stream_schema[k] = "jsonify"
+            if "object" in v.get("type", []):
+                stream_schema[k] = "jsonify"
+        schema[stream.stream.name] = stream_schema
+    return schema
 
 
 class DestinationWeaviate(Destination):
@@ -32,7 +47,7 @@ class DestinationWeaviate(Destination):
         :param input_messages: The stream of input messages received from the source
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
-        client = Client(config)
+        client = Client(config, get_schema(configured_catalog))
         # TODO add support for overwrite mode
         # for configured_stream in configured_catalog.streams:
         #    if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:

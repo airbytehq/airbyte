@@ -51,7 +51,7 @@ def pokemon_catalog_fixture() -> ConfiguredAirbyteCatalog:
                                  "/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json").json()
 
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name="Pokemon", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
+        stream=AirbyteStream(name="pokemon", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
@@ -83,7 +83,7 @@ def setup_teardown(config: Mapping):
     retries = 3
     while retries > 0:
         try:
-            Client(config)
+            Client(config, {})
             break
         except Exception as e:
             logging.info(f"error connecting to weaviate with client. Retrying in 1 second. Exception: {e}")
@@ -96,7 +96,7 @@ def setup_teardown(config: Mapping):
 
 @pytest.fixture(name="client")
 def client_fixture(config) -> Client:
-    return Client(config)
+    return Client(config, {})
 
 
 def test_check_valid_config(config: Mapping):

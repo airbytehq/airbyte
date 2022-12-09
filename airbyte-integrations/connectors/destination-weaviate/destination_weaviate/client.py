@@ -11,10 +11,11 @@ import weaviate
 
 
 class Client:
-    def __init__(self, config: Mapping[str, Any]):
+    def __init__(self, config: Mapping[str, Any], schema: Mapping[str, str]):
         self.client = self.get_weaviate_client(config)
         self.config = config
         self.batch_size = 100
+        self.schema = schema
 
     def queue_write_operation(self, stream_name: str, record: Mapping):
         # TODO need to handle case where original DB ID is not a UUID
@@ -27,24 +28,20 @@ class Client:
         else:
             id = uuid.uuid4()
 
-        # TODO support nested objects instead of converting to json string
+        # TODO support nested objects instead of converting to json string when weaviate supports this
         for k, v in record.items():
-            # TODO better support empty list by inferring from catalog
-            if isinstance(v, list) and len(v) == 0:
+            if self.schema[stream_name].get(k, "") == "jsonify":
                 record[k] = json.dumps(v)
-            if isinstance(v, list) and len(v) > 0 and isinstance(v[0], dict):
-                record[k] = json.dumps(v)
-            if isinstance(v, dict):
-                record[k] = json.dumps(v)
-
-        logging.info(record.get("past_types"))
+            # Handling of empty list that's not part of defined schema otherwise Weaviate throws invalid string property
+            if isinstance(v, list) and len(v) == 0 and k not in self.schema[stream_name]:
+                record[k] = ""
 
         self.client.batch.add_data_object(record, stream_name.title(), id)
         if self.client.batch.num_objects() >= self.batch_size:
             self.flush()
 
     def flush(self):
-        # TODO add error handling
+        # TODO add error handling instead of just logging
         results = self.client.batch.create_objects()
         for result in results:
             errors = result.get("result", {}).get("errors", [])
