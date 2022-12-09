@@ -7,7 +7,6 @@ import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
 from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
-from connector_builder.generated.models.connector_manifest import ConnectorManifest
 
 
 class StreamsListRequestBody(BaseModel):
@@ -21,7 +20,7 @@ class StreamsListRequestBody(BaseModel):
         config: The config of this StreamsListRequestBody.
     """
 
-    manifest: ConnectorManifest
+    manifest: Dict[str, Any]
     config: Dict[str, Any]
 
 StreamsListRequestBody.update_forward_refs()
