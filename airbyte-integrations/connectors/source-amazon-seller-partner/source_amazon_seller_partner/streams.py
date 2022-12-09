@@ -404,6 +404,11 @@ class FbaInventoryPlanningReports(ReportsAmazonSPStream):
     cursor_field = "sku"
     name = "GET_FBA_INVENTORY_PLANNING_DATA"
 
+class FBAInboundPerformanceReport(ReportsAmazonSPStream):
+    name = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
+
+
+
 class LedgerDetailViewDataReports(ReportsAmazonSPStream):
     """
     Field definitions: https://sellercentral.amazon.com/gp/help/help.html?itemID=200453120
