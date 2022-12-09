@@ -4,22 +4,14 @@ import { useIntl } from "react-intl";
 import {
   StreamReadRequestBodyConfig,
   StreamsListReadStreamsItem,
-  ConnectorManifest,
+  StreamsListRequestBodyManifest,
 } from "core/request/ConnectorBuilderClient";
 import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
-const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
-  version: "0.1.0",
-  check: {
-    stream_names: [],
-  },
-  streams: [],
-};
-
 interface Context {
-  jsonManifest: ConnectorManifest;
+  jsonManifest: StreamsListRequestBodyManifest;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
@@ -27,7 +19,7 @@ interface Context {
   selectedStream?: StreamsListReadStreamsItem;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
@@ -40,7 +32,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const { formatMessage } = useIntl();
 
   // json manifest
-  const [jsonManifest, setJsonManifest] = useState<ConnectorManifest>(DEFAULT_JSON_MANIFEST_VALUES);
+  const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(false);
 

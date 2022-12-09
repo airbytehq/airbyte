@@ -92,7 +92,7 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()))
         .sourceCatalogId(standardSync.getSourceCatalogId())
         .breakingChange(standardSync.getBreakingChange())
         .geography(Enums.convertTo(standardSync.getGeography(), Geography.class))

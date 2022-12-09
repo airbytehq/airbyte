@@ -464,7 +464,7 @@ public interface Configs {
   /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
    */
-  String getJobKubeMainContainerImagePullSecret();
+  List<String> getJobKubeMainContainerImagePullSecrets();
 
   /**
    * Define the Memory request for the Sidecar
@@ -660,11 +660,6 @@ public interface Configs {
   Set<Integer> getTemporalWorkerPorts();
 
   // Container Orchestrator
-
-  /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only.
-   */
-  boolean getContainerOrchestratorEnabled();
 
   /**
    * Get the name of the container orchestrator secret. Internal-use only.
