@@ -31,7 +31,7 @@ shutdown_cmd="docker-compose down -v || docker kill \$(docker ps -a -f volume=ai
 echo "Waiting for services to begin"
 starttime=`get_epoch_time`
 maxtime=300
-while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8000/api/v1/health)" != "200" ]];
+while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:8080/api/v1/health)" != "200" ]];
 do
   echo "Waiting for docker deployment.."
   currenttime=`get_epoch_time`

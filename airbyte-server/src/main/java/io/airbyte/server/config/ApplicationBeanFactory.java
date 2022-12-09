@@ -13,7 +13,7 @@ import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.oauth.OAuthImplementationFactory;
+import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
@@ -90,6 +90,13 @@ public class ApplicationBeanFactory {
   @Singleton
   public HttpClient httpClient() {
     return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+  }
+
+  @Singleton
+  public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
+    return JsonSecretsProcessor.builder()
+        .copySecrets(false)
+        .build();
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
