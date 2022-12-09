@@ -6,7 +6,7 @@ definitions:
     extractor:
       field_pointer: ["data"]
   requester:
-    url_base: "https://api.surveysparrow.com/v3"
+    url_base: "{{ config['region']['url_base'] }}"
     http_method: "GET"
     authenticator:
       type: BearerAuthenticator
