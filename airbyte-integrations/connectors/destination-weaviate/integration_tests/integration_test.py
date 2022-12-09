@@ -6,6 +6,7 @@ import json
 import logging
 import time
 from typing import Any, Dict, List, Mapping
+import os
 
 import docker
 import pytest
@@ -47,8 +48,9 @@ def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
 
 @pytest.fixture(name="pokemon_catalog")
 def pokemon_catalog_fixture() -> ConfiguredAirbyteCatalog:
-    stream_schema = requests.get("https://raw.githubusercontent.com/airbytehq/airbyte/master/airbyte-integrations"
-                                 "/connectors/source-pokeapi/source_pokeapi/schemas/pokemon.json").json()
+    dirname = os.path.dirname(__file__)
+    file = open(os.path.join(dirname, "pokemon-schema.json"))
+    stream_schema = json.load(file)
 
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name="pokemon", json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
