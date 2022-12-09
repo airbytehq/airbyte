@@ -347,7 +347,6 @@ secrets: {}
 #   JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY:
 
 #   # Launch a separate pod to orchestrate sync steps
-#   CONTAINER_ORCHESTRATOR_ENABLED: true
 #   CONTAINER_ORCHESTRATOR_IMAGE:
 
 #   # Open Telemetry Configuration

@@ -20,8 +20,6 @@ To use Airbyte Cloud:
    A workspace lets you collaborate with team members and share resources across your team under a shared billing account.
    :::
 
-You will be greeted with an onboarding tutorial to help you set up your first connection. If you haven’t set up a connection on Airbyte Cloud before, we highly recommend following the tutorial. If you are familiar with the connection setup process, click **Skip Onboarding** and follow this guide to set up your next connection.
-
 ## Set up a source
 
 :::info
@@ -190,6 +188,11 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
 
 ### European Union
 
@@ -203,6 +206,11 @@ Some workflows still run in the US, even when the data residency is in the EU. I
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
 
 #### AWS region: eu-west-3
 * 13.37.4.46

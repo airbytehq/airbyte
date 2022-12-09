@@ -1,4 +1,4 @@
-import { merge } from "lodash";
+import merge from "lodash/merge";
 import { InferType, ValidationError } from "yup";
 
 import { validationSchema } from "./utils";

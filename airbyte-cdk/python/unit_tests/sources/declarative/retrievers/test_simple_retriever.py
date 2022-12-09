@@ -221,6 +221,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
         name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}, config={}
     )
     response = requests.Response()
+    response.request = requests.Request()
     response.status_code = status_code
     requester.interpret_response_status.return_value = response_status
     if len_expected_records is None:
@@ -228,7 +229,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
             retriever.parse_response(response, stream_state={})
             assert False
         except ReadException as actual_exception:
-            assert type(expected_error) is type(actual_exception) and expected_error.args == actual_exception.args
+            assert type(expected_error) is type(actual_exception)
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records

@@ -25,6 +25,7 @@ import io.airbyte.api.model.generated.OperationCreate;
 import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.SchemaChange;
+import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -353,6 +354,7 @@ public class WebBackendConnectionsHandler {
        */
       diff = refreshedCatalog.get().getCatalogDiff();
       connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
+      connection.setStatus(refreshedCatalog.get().getConnectionStatus());
     } else if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // reconstructs a full picture of the full schema at the time the catalog was configured.
       syncCatalog = updateSchemaWithDiscovery(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get());
@@ -432,6 +434,17 @@ public class WebBackendConnectionsHandler {
 
         outputStreamConfig.setAliasName(originalStreamConfig.getAliasName());
         outputStreamConfig.setSelected(originalStream.getConfig().getSelected());
+
+        outputStreamConfig.setFieldSelectionEnabled(originalStreamConfig.getFieldSelectionEnabled());
+        if (outputStreamConfig.getFieldSelectionEnabled()) {
+          // TODO(mfsiega-airbyte): support nested fields.
+          // If field selection is enabled, populate the selected columns.
+          final List<String> selectedFields = new ArrayList<>();
+          originalStream.getStream().getJsonSchema().findValue("properties").fieldNames().forEachRemaining((name) -> selectedFields.add(name));
+          outputStreamConfig.setSelectedFields(
+              selectedFields.stream().map((fieldName) -> new SelectedFieldInfo().addFieldPathItem(fieldName)).collect(Collectors.toList()));
+        }
+
       } else {
         outputStreamConfig = discoveredStream.getConfig();
         outputStreamConfig.setSelected(false);
@@ -464,24 +477,24 @@ public class WebBackendConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
-    ConnectionRead connectionRead = connectionsHandler.getConnection(connectionId);
+    final ConnectionRead originalConnectionRead = connectionsHandler.getConnection(connectionId);
 
     // before doing any updates, fetch the existing catalog so that it can be diffed
     // with the final catalog to determine which streams might need to be reset.
     final ConfiguredAirbyteCatalog oldConfiguredCatalog =
         configRepository.getConfiguredCatalogForConnection(connectionId);
 
-    final List<UUID> newAndExistingOperationIds = createOrUpdateOperations(connectionRead, webBackendConnectionPatch);
+    final List<UUID> newAndExistingOperationIds = createOrUpdateOperations(originalConnectionRead, webBackendConnectionPatch);
 
     // pass in operationIds because the patch object doesn't include operationIds that were just created
     // above.
     final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, newAndExistingOperationIds);
 
     // persist the update and set the connectionRead to the updated form.
-    connectionRead = connectionsHandler.updateConnection(connectionPatch);
+    final ConnectionRead updatedConnectionRead = connectionsHandler.updateConnection(connectionPatch);
 
     // detect if any streams need to be reset based on the patch and initial catalog, if so, reset them
-    resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, connectionRead);
+    resetStreamsIfNeeded(webBackendConnectionPatch, oldConfiguredCatalog, updatedConnectionRead, originalConnectionRead);
     /*
      * This catalog represents the full catalog that was used to create the configured catalog. It will
      * have all streams that were present at the time. It will have no configuration set.
@@ -490,12 +503,12 @@ public class WebBackendConnectionsHandler {
         .getConnectionAirbyteCatalog(connectionId);
     if (catalogUsedToMakeConfiguredCatalog.isPresent()) {
       // Update the Catalog returned to include all streams, including disabled ones
-      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(connectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
-      connectionRead.setSyncCatalog(syncCatalog);
+      final AirbyteCatalog syncCatalog = updateSchemaWithDiscovery(updatedConnectionRead.getSyncCatalog(), catalogUsedToMakeConfiguredCatalog.get());
+      updatedConnectionRead.setSyncCatalog(syncCatalog);
     }
 
-    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connectionRead.getSourceCatalogId());
-    return buildWebBackendConnectionRead(connectionRead, currentSourceCatalogId);
+    final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(updatedConnectionRead.getSourceCatalogId());
+    return buildWebBackendConnectionRead(updatedConnectionRead, currentSourceCatalogId);
   }
 
   /**
@@ -504,13 +517,15 @@ public class WebBackendConnectionsHandler {
    */
   private void resetStreamsIfNeeded(final WebBackendConnectionUpdate webBackendConnectionPatch,
                                     final ConfiguredAirbyteCatalog oldConfiguredCatalog,
-                                    final ConnectionRead updatedConnectionRead)
+                                    final ConnectionRead updatedConnectionRead,
+                                    final ConnectionRead oldConnectionRead)
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     final Boolean skipReset = webBackendConnectionPatch.getSkipReset() != null ? webBackendConnectionPatch.getSkipReset() : false;
     if (!skipReset) {
-      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog);
+      final AirbyteCatalog apiExistingCatalog = CatalogConverter.toApi(oldConfiguredCatalog,
+          CatalogConverter.getFieldSelectionData(oldConnectionRead.getSyncCatalog()));
       final AirbyteCatalog upToDateAirbyteCatalog = updatedConnectionRead.getSyncCatalog();
       final CatalogDiff catalogDiff =
           connectionsHandler.getDiff(apiExistingCatalog, upToDateAirbyteCatalog, CatalogConverter.toProtocol(upToDateAirbyteCatalog));
@@ -621,6 +636,7 @@ public class WebBackendConnectionsHandler {
     connectionCreate.resourceRequirements(webBackendConnectionCreate.getResourceRequirements());
     connectionCreate.sourceCatalogId(webBackendConnectionCreate.getSourceCatalogId());
     connectionCreate.geography(webBackendConnectionCreate.getGeography());
+    connectionCreate.nonBreakingChangesPreference(webBackendConnectionCreate.getNonBreakingChangesPreference());
 
     return connectionCreate;
   }

@@ -542,7 +542,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION);
+        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION, "");
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -848,7 +848,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -926,7 +926,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1169,13 +1169,13 @@ public abstract class DestinationAcceptanceTest {
 
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
   }
@@ -1184,7 +1184,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
@@ -1196,7 +1196,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -1273,7 +1273,7 @@ public abstract class DestinationAcceptanceTest {
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
         processFactory,
-        NORMALIZATION_VERSION);
+        NORMALIZATION_VERSION, "");
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,
