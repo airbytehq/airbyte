@@ -738,12 +738,15 @@ public class EnvConfigs implements Configs {
 
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * injected in the KubePodProcess class and used in the job pod templates.
+   *
+   * Can provide multiple strings seperated by comma(,) to indicate pulling from different
+   * repositories. The empty string is a no-op value.
    */
   @Override
-  public String getJobKubeMainContainerImagePullSecret() {
-    return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
+    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
 
   @Override
