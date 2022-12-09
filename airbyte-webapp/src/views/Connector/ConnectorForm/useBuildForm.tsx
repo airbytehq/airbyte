@@ -78,11 +78,9 @@ export function useBuildForm(
             setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
             break;
           case "formCondition":
-            // only implicitly select the first option if there is no default set on the condition node
-            if (!property.default) {
-              values[property.fieldKey] = {};
-              setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
-            }
+            // implicitly select the first option (do not respect a potential default value)
+            values[property.fieldKey] = {};
+            setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
         }
       });
     }
