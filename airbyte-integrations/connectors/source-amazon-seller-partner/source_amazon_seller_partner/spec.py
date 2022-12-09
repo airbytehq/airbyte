@@ -93,8 +93,7 @@ class AmazonSellerPartnerConfig(BaseModel):
     report_options: str = Field(
         None,
         description="Additional information passed to reports. This varies by report type. Must be a valid json string.",
-        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}',
-                  '{"GET_SOME_REPORT": {"custom": "true"}}'],
+        examples=['{"GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT": {"reportPeriod": "WEEK"}}', '{"GET_SOME_REPORT": {"custom": "true"}}'],
         order=11,
     )
     max_wait_seconds: int = Field(
