@@ -21,43 +21,42 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
     return nodeStream;
   }
 
-  return breakingChangesByStream.reduce((nodeStream, streamTransformation) => {
-    // get all of the removed field paths
+  let clearPrimaryKey = false;
+  let clearCursorField = false;
+
+  for (const streamTransformation of breakingChangesByStream) {
+    // get all of the removed field paths for this transformation
     const removedFieldPaths = streamTransformation.updateStream?.map((update) => update.fieldName);
 
     if (!removedFieldPaths?.length) {
       return nodeStream;
     }
 
-    // if any of the field paths in the primary key match any of the field paths that were removed, clear the entire primaryKey property
+    // if there is a primary key in the config, and any of its field paths were removed, we'll be clearing it
     if (
+      !!nodeStream.config?.primaryKey?.length &&
       nodeStream.config?.primaryKey?.some((key) => removedFieldPaths.some((removedPath) => isEqual(key, removedPath)))
     ) {
-      nodeStream = {
-        ...nodeStream,
-        config: {
-          ...nodeStream.config,
-          primaryKey: [],
-        },
-      };
+      clearPrimaryKey = true;
     }
 
-    // if the cursor field path is one of the removed field paths, clear the entire cursorField property
+    // if there is a cursor field, and any of its field path was removed, we'll be clearing it
     if (
-      nodeStream.config?.cursorField?.length &&
+      !!nodeStream.config?.cursorField?.length &&
       removedFieldPaths.some((removedPath) => isEqual(removedPath, nodeStream?.config?.cursorField))
     ) {
-      nodeStream = {
-        ...nodeStream,
-        config: {
-          ...nodeStream.config,
-          cursorField: [],
-        },
-      };
+      clearCursorField = true;
     }
+  }
 
-    return nodeStream;
-  }, nodeStream);
+  return {
+    ...nodeStream,
+    config: {
+      ...nodeStream.config,
+      primaryKey: clearPrimaryKey ? [] : nodeStream.config?.primaryKey,
+      cursorField: clearCursorField ? [] : nodeStream.config?.cursorField,
+    },
+  };
 };
 
 const verifySourceDefinedProperties = (streamNode: SyncSchemaStream, isEditMode: boolean) => {
