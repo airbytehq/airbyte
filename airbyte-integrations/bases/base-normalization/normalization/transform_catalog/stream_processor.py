@@ -645,7 +645,7 @@ where 1 = 1
                 )
             elif data_type.ONE_OF_VAR_NAME in definition:
                 print(
-                    f"WARN: Unknown onOf simple type {definition[data_type.ONE_OF_VAR_NAME]} for column {property_name} at {self.current_json_path()}"
+                    f"WARN: Unknown oneOf simple type {definition[data_type.ONE_OF_VAR_NAME]} for column {property_name} at {self.current_json_path()}"
                 )
             else:
                 print(f"WARN: Unknown type {definition[data_type.TYPE_VAR_NAME]} for column {property_name} at {self.current_json_path()}")
