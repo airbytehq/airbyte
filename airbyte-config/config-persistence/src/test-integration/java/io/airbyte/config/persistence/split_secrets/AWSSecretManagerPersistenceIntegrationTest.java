@@ -7,6 +7,8 @@ package io.airbyte.config.persistence.split_secrets;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import java.util.Optional;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -17,10 +19,12 @@ public class AWSSecretManagerPersistenceIntegrationTest {
 
   public String coordinate_base;
   private AWSSecretManagerPersistence persistence;
+  private final Configs configs = new EnvConfigs();
+
 
   @BeforeEach
   void setup() {
-    persistence = new AWSSecretManagerPersistence();
+    persistence = new AWSSecretManagerPersistence(configs.getAwsAccessKey(), configs.getAwsSecretAccessKey());
     coordinate_base = "aws/airbyte/secret/integration/" + RandomUtils.nextInt() % 20000;
   }
 

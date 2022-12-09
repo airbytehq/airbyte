@@ -7,6 +7,8 @@ package io.airbyte.config.persistence.split_secrets;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.secretsmanager.caching.SecretCache;
 import com.amazonaws.services.secretsmanager.AWSSecretsManager;
 import com.amazonaws.services.secretsmanager.AWSSecretsManagerClientBuilder;
@@ -36,8 +38,9 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
   protected final SecretCache cache;
 
   /**
-   * Creates a AWSSecretManagerPersistence using the defaults client and region from the current AWS
-   * credentials. This implementation makes use of SecretCache as optimization to access secrets
+   * Creates a AWSSecretManagerPersistence using the default client and region from the current AWS
+   * credentials. Recommended way based on <a href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">this</a>
+   * This implementation makes use of SecretCache as optimization to access secrets.
    *
    * @see SecretCache
    */
@@ -50,7 +53,7 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
    * Creates a AWSSecretManagerPersistence overriding the current region. This implementation makes
    * use of SecretCache as optimization to access secrets
    *
-   * @param region AWS region to use
+   * @param region AWS region to use.
    * @see SecretCache
    */
   public AWSSecretManagerPersistence(final String region) {
@@ -59,6 +62,24 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
     this.client = AWSSecretsManagerClientBuilder
         .standard()
         .withRegion(region)
+        .build();
+    this.cache = new SecretCache(this.client);
+  }
+
+  /**
+   * Creates a new AWSSecretManagerPersistence using the provided explicitly passed credentials.
+   * @param awsAccessKey The AWS access key.
+   * @param awsSecretAccessKey The AWS secret access key.
+   */
+  public AWSSecretManagerPersistence(final String awsAccessKey, final String awsSecretAccessKey) {
+    checkNotNull(awsAccessKey, "awsAccessKey cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkNotNull(awsSecretAccessKey, "awsSecretAccessKey cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkArgument(!awsAccessKey.isEmpty(), "awsAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkArgument(!awsSecretAccessKey.isEmpty(), "awsSecretAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    BasicAWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretAccessKey);
+    this.client = AWSSecretsManagerClientBuilder
+        .standard()
+        .withCredentials(new AWSStaticCredentialsProvider(credentials))
         .build();
     this.cache = new SecretCache(this.client);
   }
