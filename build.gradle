@@ -20,8 +20,6 @@ buildscript {
         // The alternative is to import the openapi plugin for all modules.
         // This might need to be updated when we change openapi plugin versions.
         classpath 'com.fasterxml.jackson.core:jackson-core:2.13.0'
-
-        classpath 'org.codehaus.groovy:groovy-yaml:3.0.3'
     }
 }
 

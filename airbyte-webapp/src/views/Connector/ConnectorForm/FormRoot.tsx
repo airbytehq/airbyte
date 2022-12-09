@@ -1,17 +1,12 @@
 import { Form, useFormikContext } from "formik";
 import React from "react";
 
-import { Spinner } from "components/ui/Spinner";
-
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
 import { FormBlock } from "core/form/types";
 
 import CreateControls from "./components/CreateControls";
 import EditControls from "./components/EditControls";
 import { FormSection } from "./components/Sections/FormSection";
-import ShowLoadingMessage from "./components/ShowLoadingMessage";
 import { useConnectorForm } from "./connectorFormContext";
-import styles from "./FormRoot.module.scss";
 import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
@@ -19,11 +14,9 @@ interface FormRootProps {
   hasSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
-  fetchingConnectorError?: Error | null;
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
-  selectedConnector: ConnectorDefinitionSpecification | undefined;
 }
 
 export const FormRoot: React.FC<FormRootProps> = ({
@@ -32,26 +25,15 @@ export const FormRoot: React.FC<FormRootProps> = ({
   formFields,
   successMessage,
   errorMessage,
-  fetchingConnectorError,
   hasSuccess,
   onStopTestingConnector,
-  selectedConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
-  const { resetConnectorForm, isLoadingSchema, selectedConnectorDefinition, isEditMode, formType } = useConnectorForm();
+  const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
 
   return (
     <Form>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isLoadingSchema && (
-        <div className={styles.loaderContainer}>
-          <Spinner />
-          <div className={styles.loadingMessage}>
-            <ShowLoadingMessage connector={selectedConnectorDefinition?.name} />
-          </div>
-        </div>
-      )}
-
       {isEditMode ? (
         <EditControls
           isTestConnectionInProgress={isTestConnectionInProgress}
@@ -68,18 +50,14 @@ export const FormRoot: React.FC<FormRootProps> = ({
           successMessage={successMessage}
         />
       ) : (
-        selectedConnector && (
-          <CreateControls
-            isTestConnectionInProgress={isTestConnectionInProgress}
-            onCancelTesting={onStopTestingConnector}
-            isSubmitting={isSubmitting || isTestConnectionInProgress}
-            errorMessage={errorMessage}
-            formType={formType}
-            isLoadSchema={isLoadingSchema}
-            fetchingConnectorError={fetchingConnectorError}
-            hasSuccess={hasSuccess}
-          />
-        )
+        <CreateControls
+          isTestConnectionInProgress={isTestConnectionInProgress}
+          onCancelTesting={onStopTestingConnector}
+          isSubmitting={isSubmitting || isTestConnectionInProgress}
+          errorMessage={errorMessage}
+          formType={formType}
+          hasSuccess={hasSuccess}
+        />
       )}
     </Form>
   );

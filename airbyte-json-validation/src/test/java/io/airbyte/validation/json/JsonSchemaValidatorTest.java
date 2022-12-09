@@ -5,7 +5,6 @@
 package io.airbyte.validation.json;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,10 +15,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
 import java.nio.file.Files;
-import java.util.Set;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
@@ -104,41 +100,6 @@ class JsonSchemaValidatorTest {
     assertFalse(JsonSchemaValidator.getSchema(schemaFile, "InnerObject").get(PROPERTIES).has("field1"));
     // non-existent object
     assertNull(JsonSchemaValidator.getSchema(schemaFile, "NonExistentObject"));
-  }
-
-  @SneakyThrows
-  @Test
-  void testResolveReferences() throws IOException {
-    String referencableSchemas = """
-                                 {
-                                   "definitions": {
-                                     "ref1": {"type": "string"},
-                                     "ref2": {"type": "boolean"}
-                                   }
-                                 }
-                                 """;
-    final File schemaFile = IOs.writeFile(Files.createTempDirectory("test"), "WellKnownTypes.json", referencableSchemas).toFile();
-    JsonSchemaValidator jsonSchemaValidator =
-        new JsonSchemaValidator(new URI("file://" + schemaFile.getParentFile().getAbsolutePath() + "/foo.json"));
-
-    Set<String> validationResult = jsonSchemaValidator.validate(
-        Jsons.deserialize("""
-                          {
-                            "type": "object",
-                            "properties": {
-                              "prop1": {"$ref": "WellKnownTypes.json#/definitions/ref1"},
-                              "prop2": {"$ref": "WellKnownTypes.json#/definitions/ref2"}
-                            }
-                          }
-                          """),
-        Jsons.deserialize("""
-                          {
-                            "prop1": "foo",
-                            "prop2": "false"
-                          }
-                          """));
-
-    assertEquals(Set.of("$.prop2: string found, boolean expected"), validationResult);
   }
 
 }

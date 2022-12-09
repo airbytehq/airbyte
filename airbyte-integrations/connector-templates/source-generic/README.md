@@ -1,7 +1,7 @@
 # {{capitalCase name}} Source
 
 This is the repository for the {{capitalCase name}} source connector.
-For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}}).
+For information about how to use this connector within Airbyte, see [the documentation](https://docs.airbyte.com/integrations/sources/{{dashCase name}}).
 
 ## Local development
 
@@ -38,7 +38,7 @@ docker run --rm -v $(pwd)/secrets:/secrets -v $(pwd)/sample_files:/sample_files 
 ```
 
 #### Create credentials
-**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.io/integrations/sources/{{dashCase name}})
+**If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/{{dashCase name}})
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `spec.json` file. `secrets` is gitignored by default.
 
 **If you are an Airbyte core member**, copy the credentials from Lastpass under the secret name `source {{dashCase name}} test creds`
