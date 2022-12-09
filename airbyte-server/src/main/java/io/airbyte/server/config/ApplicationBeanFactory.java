@@ -87,7 +87,6 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
         .copySecrets(false)
