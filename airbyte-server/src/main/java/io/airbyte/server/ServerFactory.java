@@ -33,7 +33,6 @@ import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.DestinationApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
-import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
@@ -49,7 +48,6 @@ import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.DestinationApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
-import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
@@ -168,8 +166,6 @@ public interface ServerFactory {
 
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
-      DestinationOauthApiFactory.setValues(oAuthHandler);
-
       SourceOauthApiFactory.setValues(oAuthHandler);
 
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
@@ -218,7 +214,6 @@ public interface ServerFactory {
           new DestinationApiBinder(),
           new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
-          new DestinationOauthApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
