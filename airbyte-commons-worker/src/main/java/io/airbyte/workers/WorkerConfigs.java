@@ -21,7 +21,7 @@ public class WorkerConfigs {
   private final Map<String, String> workerKubeNodeSelectors;
   private final Optional<Map<String, String>> workerIsolatedKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
-  private final List<String> jobImagePullSecret;
+  private final List<String> jobImagePullSecrets;
   private final String jobImagePullPolicy;
   private final String sidecarImagePullPolicy;
   private final String jobSocatImage;
@@ -195,8 +195,8 @@ public class WorkerConfigs {
     return workerKubeAnnotations;
   }
 
-  public List<String> getJobImagePullSecret() {
-    return jobImagePullSecret;
+  public List<String> getJobImagePullSecrets() {
+    return jobImagePullSecrets;
   }
 
   public String getJobImagePullPolicy() {

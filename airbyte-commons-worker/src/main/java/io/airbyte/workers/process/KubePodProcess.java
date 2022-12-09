@@ -521,7 +521,7 @@ public class KubePodProcess extends Process implements KubePod {
         .collect(Collectors.toList());
 
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
-        .withImagePullSecrets(pullSecrets) // An empty string turns this into a no-op setting.
+        .withImagePullSecrets(pullSecrets) // An empty list or an empty LocalObjectReference turns this into a no-op setting.
         .withNodeSelector(nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
