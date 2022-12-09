@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/source-**"
+  pull_request_review:
 jobs:
   test-strictness-level:
     name: "Check test strictness level"
@@ -21,3 +22,32 @@ jobs:
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Check test strictness level
         run: check-test-strictness-level
+  requires-connector-team-review:
+    name: "Check if a review is required from Connector teams"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+      - name: Install ci-connector-ops package
+        run: pip install --quiet -e ./tools/ci_connector_ops
+      - name: Check if the changes require a review from Connector team
+        id: requires-connector-team-review
+        run: requires-connector-team-review
+        continue-on-error: true
+      - name: Check on failures
+        if: steps.requires-connector-team-review.outputs.status == 'failure'
+        uses: Automattic/action-required-review@v3
+        with:
+          status: Required review
+          fail: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+          requirements: |
+            - paths: unmatched
+              teams:
+                - connector-operations
