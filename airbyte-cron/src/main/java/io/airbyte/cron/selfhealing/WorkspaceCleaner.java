@@ -52,6 +52,7 @@ public class WorkspaceCleaner {
    * NOTE: this is currently only intended to work for docker
    */
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
+  @Scheduled(fixedRate = "1d")
   public void deleteOldFiles() throws IOException {
     final Date oldestAllowed = getDateFromDaysAgo(maxAgeFilesInDays);
     log.info("Deleting files older than {} days ({})", maxAgeFilesInDays, oldestAllowed);
