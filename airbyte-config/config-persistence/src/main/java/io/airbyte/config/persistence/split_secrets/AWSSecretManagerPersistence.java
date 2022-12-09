@@ -39,7 +39,8 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
 
   /**
    * Creates a AWSSecretManagerPersistence using the default client and region from the current AWS
-   * credentials. Recommended way based on <a href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">this</a>
+   * credentials. Recommended way based on
+   * <a href="https://docs.aws.amazon.com/sdk-for-java/v1/developer-guide/credentials.html">this</a>
    * This implementation makes use of SecretCache as optimization to access secrets.
    *
    * @see SecretCache
@@ -68,14 +69,18 @@ public class AWSSecretManagerPersistence implements SecretPersistence {
 
   /**
    * Creates a new AWSSecretManagerPersistence using the provided explicitly passed credentials.
+   *
    * @param awsAccessKey The AWS access key.
    * @param awsSecretAccessKey The AWS secret access key.
    */
   public AWSSecretManagerPersistence(final String awsAccessKey, final String awsSecretAccessKey) {
     checkNotNull(awsAccessKey, "awsAccessKey cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
-    checkNotNull(awsSecretAccessKey, "awsSecretAccessKey cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
-    checkArgument(!awsAccessKey.isEmpty(), "awsAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
-    checkArgument(!awsSecretAccessKey.isEmpty(), "awsSecretAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkNotNull(awsSecretAccessKey,
+        "awsSecretAccessKey cannot be null, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkArgument(!awsAccessKey.isEmpty(),
+        "awsAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
+    checkArgument(!awsSecretAccessKey.isEmpty(),
+        "awsSecretAccessKey cannot be empty, to use a default region call AWSSecretManagerPersistence.AWSSecretManagerPersistence()");
     BasicAWSCredentials credentials = new BasicAWSCredentials(awsAccessKey, awsSecretAccessKey);
     this.client = AWSSecretsManagerClientBuilder
         .standard()
