@@ -40,6 +40,7 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation 'io.opentelemetry:opentelemetry-api'
+    implementation 'io.opentelemetry:opentelemetry-extension-annotations'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
 
     testImplementation project(':airbyte-test-utils')
