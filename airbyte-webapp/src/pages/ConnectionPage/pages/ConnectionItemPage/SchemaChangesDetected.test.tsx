@@ -20,18 +20,14 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
   useRefreshSourceSchemaWithConfirmationOnDirty: mockUseRefreshSourceSchemaWithConfirmationOnDirty,
 }));
 
+jest.mock("hooks/connection/useIsAutoDetectSchemaChangesEnabled", () => ({
+  useIsAutoDetectSchemaChangesEnabled: () => true,
+}));
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SchemaChangesDetected } = require("./SchemaChangesDetected");
 
 describe("<SchemaChangesDetected />", () => {
-  beforeAll(() => {
-    process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES = "true";
-  });
-
-  afterAll(() => {
-    delete process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES;
-  });
-
   beforeEach(() => {
     mockUseConnectionEditService.mockReturnValue({
       connection: mockConnection,
