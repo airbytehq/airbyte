@@ -17,6 +17,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -25,6 +26,7 @@ import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.ConnectionReadList;
 import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
@@ -94,6 +96,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("unchecked")
 class SchedulerHandlerTest {
@@ -412,6 +415,10 @@ class SchedulerHandlerTest {
     when(discoverResponse.getMetadata()).thenReturn(metadata);
     when(metadata.isSucceeded()).thenReturn(true);
 
+    final ConnectionRead connectionRead = new ConnectionRead();
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
+
     when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
         .thenReturn(new StandardSourceDefinition()
             .withDockerRepository(SOURCE_DOCKER_REPO)
@@ -574,9 +581,11 @@ class SchedulerHandlerTest {
         CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
-    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
+    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -626,9 +635,11 @@ class SchedulerHandlerTest {
 
     final ConnectionRead connectionRead =
         new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
-            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.ACTIVE);
+            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.ACTIVE).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -679,9 +690,11 @@ class SchedulerHandlerTest {
 
     final ConnectionRead connectionRead =
         new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
-            NonBreakingChangesPreference.DISABLE);
+            NonBreakingChangesPreference.DISABLE).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -730,9 +743,11 @@ class SchedulerHandlerTest {
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
     final ConnectionRead connectionRead =
-        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).status(ConnectionStatus.ACTIVE);
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).status(ConnectionStatus.ACTIVE).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -784,9 +799,11 @@ class SchedulerHandlerTest {
         CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
         CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
 
-    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent));
+    final ConnectionRead connectionRead = new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -838,9 +855,11 @@ class SchedulerHandlerTest {
 
     final ConnectionRead connectionRead =
         new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
-            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.INACTIVE);
+            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.INACTIVE).connectionId(connectionId);
     when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead);
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
 
     final ActorCatalog actorCatalog = new ActorCatalog()
         .withCatalog(Jsons.jsonNode(airbyteCatalog))
@@ -856,6 +875,89 @@ class SchedulerHandlerTest {
     assertEquals(actual.getCatalogDiff(), catalogDiff);
     assertEquals(actual.getCatalog(), expectedActorCatalog);
     assertEquals(actual.getConnectionStatus(), ConnectionStatus.INACTIVE);
+  }
+
+  @Test
+  void testDiscoverSchemaForSourceMultipleConnectionsFeatureFlagOn() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
+    final UUID connectionId = UUID.randomUUID();
+    final UUID connectionId2 = UUID.randomUUID();
+    final UUID connectionId3 = UUID.randomUUID();
+    final UUID discoveredCatalogId = UUID.randomUUID();
+    final SynchronousResponse<UUID> discoverResponse = (SynchronousResponse<UUID>) jobResponse;
+    final SourceDiscoverSchemaRequestBody request =
+        new SourceDiscoverSchemaRequestBody().sourceId(source.getSourceId()).connectionId(connectionId).disableCache(true);
+
+    // 3 connections use the same source. 2 will generate catalog diffs that are non-breaking, 1 will
+    // generate a breaking catalog diff
+    final StreamTransform nonBreakingStreamTransform = new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM)
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name(DOGS)).addUpdateStreamItem(new FieldTransform().transformType(
+            FieldTransform.TransformTypeEnum.REMOVE_FIELD).breaking(false));
+    final StreamTransform breakingStreamTransform = new StreamTransform().transformType(TransformTypeEnum.UPDATE_STREAM)
+        .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name(DOGS)).addUpdateStreamItem(new FieldTransform().transformType(
+            FieldTransform.TransformTypeEnum.REMOVE_FIELD).breaking(true));
+
+    final CatalogDiff catalogDiff1 = new CatalogDiff().addTransformsItem(nonBreakingStreamTransform);
+    final CatalogDiff catalogDiff2 = new CatalogDiff().addTransformsItem(nonBreakingStreamTransform);
+    final CatalogDiff catalogDiff3 = new CatalogDiff().addTransformsItem(breakingStreamTransform);
+
+    when(envVariableFeatureFlags.autoDetectSchema()).thenReturn(true);
+    when(configRepository.getStandardSourceDefinition(source.getSourceDefinitionId()))
+        .thenReturn(new StandardSourceDefinition()
+            .withDockerRepository(SOURCE_DOCKER_REPO)
+            .withDockerImageTag(SOURCE_DOCKER_TAG)
+            .withProtocolVersion(SOURCE_PROTOCOL_VERSION)
+            .withSourceDefinitionId(source.getSourceDefinitionId()));
+    when(configRepository.getSourceConnection(source.getSourceId())).thenReturn(source);
+    when(synchronousSchedulerClient.createDiscoverSchemaJob(source, SOURCE_DOCKER_IMAGE, SOURCE_DOCKER_TAG, new Version(SOURCE_PROTOCOL_VERSION),
+        false))
+            .thenReturn(discoverResponse);
+
+    when(discoverResponse.isSuccess()).thenReturn(true);
+    when(discoverResponse.getOutput()).thenReturn(discoveredCatalogId);
+
+    final AirbyteCatalog airbyteCatalogCurrent = new AirbyteCatalog().withStreams(Lists.newArrayList(
+        CatalogHelpers.createAirbyteStream(SHOES, Field.of(SKU, JsonSchemaType.STRING)),
+        CatalogHelpers.createAirbyteStream(DOGS, Field.of(NAME, JsonSchemaType.STRING))));
+
+    final ConnectionRead connectionRead =
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
+            NonBreakingChangesPreference.IGNORE).status(ConnectionStatus.ACTIVE).connectionId(connectionId);
+
+    final ConnectionRead connectionRead2 =
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
+            NonBreakingChangesPreference.IGNORE).status(ConnectionStatus.ACTIVE).connectionId(connectionId2);
+
+    final ConnectionRead connectionRead3 =
+        new ConnectionRead().syncCatalog(CatalogConverter.toApi(airbyteCatalogCurrent)).nonBreakingChangesPreference(
+            NonBreakingChangesPreference.DISABLE).status(ConnectionStatus.ACTIVE).connectionId(connectionId3);
+
+    when(connectionsHandler.getConnection(request.getConnectionId())).thenReturn(connectionRead, connectionRead2, connectionRead3);
+    when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff1, catalogDiff2, catalogDiff3);
+    final ConnectionReadList connectionReadList = new ConnectionReadList().connections(List.of(connectionRead, connectionRead2, connectionRead3));
+    when(connectionsHandler.listConnectionsForSource(source.getSourceId(), false)).thenReturn(connectionReadList);
+
+    final ActorCatalog actorCatalog = new ActorCatalog()
+        .withCatalog(Jsons.jsonNode(airbyteCatalog))
+        .withCatalogHash("")
+        .withId(discoveredCatalogId);
+    when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
+
+    final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
+        io.airbyte.protocol.models.AirbyteCatalog.class);
+    final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
+
+    final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
+    assertEquals(catalogDiff1, actual.getCatalogDiff());
+    assertEquals(expectedActorCatalog, actual.getCatalog());
+    assertEquals(ConnectionStatus.ACTIVE, actual.getConnectionStatus());
+
+    ArgumentCaptor<ConnectionUpdate> expectedArgumentCaptor = ArgumentCaptor.forClass(ConnectionUpdate.class);
+    verify(connectionsHandler, times(3)).updateConnection(expectedArgumentCaptor.capture());
+    List<ConnectionUpdate> connectionUpdateValues = expectedArgumentCaptor.getAllValues();
+    assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(0).getStatus());
+    assertEquals(ConnectionStatus.ACTIVE, connectionUpdateValues.get(1).getStatus());
+    assertEquals(ConnectionStatus.INACTIVE, connectionUpdateValues.get(2).getStatus());
   }
 
   @Test
