@@ -38,6 +38,9 @@ import io.airbyte.persistence.job.tracker.TrackingMetadata;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import io.airbyte.validation.json.JsonValidationException;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
+import io.opentelemetry.extension.annotations.WithSpan;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.util.HashMap;
@@ -68,8 +71,10 @@ public class OAuthHandler {
     this.secretsRepositoryReader = secretsRepositoryReader;
   }
 
+  @WithSpan
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Span span = Span.current();
     ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
         sourceOauthConsentRequest.getSourceDefinitionId()));
     final StandardSourceDefinition sourceDefinition =
@@ -106,15 +111,20 @@ public class OAuthHandler {
     }
     try {
       trackingClient.track(sourceOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+      span.setStatus(StatusCode.OK);
+
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
-      ApmTraceUtils.addExceptionToTrace(e);
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR);
     }
     return result;
   }
 
+  @WithSpan
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Span span = Span.current();
     ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
         destinationOauthConsentRequest.getDestinationDefinitionId()));
 
@@ -153,15 +163,19 @@ public class OAuthHandler {
     }
     try {
       trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+      span.setStatus(StatusCode.OK);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
-      ApmTraceUtils.addExceptionToTrace(e);
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR);
     }
     return result;
   }
 
+  @WithSpan
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Span span = Span.current();
     ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
         completeSourceOauthRequest.getSourceDefinitionId()));
 
@@ -202,15 +216,19 @@ public class OAuthHandler {
     }
     try {
       trackingClient.track(completeSourceOauthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+      span.setStatus(StatusCode.OK);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
-      ApmTraceUtils.addExceptionToTrace(e);
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR);
     }
     return result;
   }
 
+  @WithSpan
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
+    final Span span = Span.current();
     ApmTraceUtils.addTagsToTrace(Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
         completeDestinationOAuthRequest.getDestinationDefinitionId()));
 
@@ -252,9 +270,11 @@ public class OAuthHandler {
     }
     try {
       trackingClient.track(completeDestinationOAuthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+      span.setStatus(StatusCode.OK);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
-      ApmTraceUtils.addExceptionToTrace(e);
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR);
     }
     return result;
   }
