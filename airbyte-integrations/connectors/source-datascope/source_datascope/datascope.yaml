@@ -106,7 +106,6 @@ streams:
   - "*ref(definitions.lists_stream)"
   - "*ref(definitions.notifications_stream)"
 
-
 check:
   stream_names:
     - "locations"

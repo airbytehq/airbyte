@@ -1,37 +1,31 @@
 {
-  "streams" : [
+  "streams": [
     {
-      "stream" : {
-        "name" : "project",
-        "json_schema" : {},
-        "supported_sync_modes" : [
-          "full_refresh"
-        ]
+      "stream": {
+        "name": "project",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode" : "full_refresh",
-      "destination_sync_mode" : "overwrite"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "stream" : {
-        "name" : "release",
-        "json_schema" : {},
-        "supported_sync_modes" : [
-          "full_refresh"
-        ]
+      "stream": {
+        "name": "release",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode" : "full_refresh",
-      "destination_sync_mode" : "overwrite"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     },
     {
-      "stream" : {
-        "name" : "stats",
-        "json_schema" : {},
-        "supported_sync_modes" : [
-          "full_refresh"
-        ]
+      "stream": {
+        "name": "stats",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh"]
       },
-      "sync_mode" : "full_refresh",
-      "destination_sync_mode" : "overwrite"
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
     }
   ]
 }

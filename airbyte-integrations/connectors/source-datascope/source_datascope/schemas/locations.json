@@ -24,7 +24,7 @@
       "type": ["string", "null"]
     },
     "latitude": {
-      "type":  ["number", "null"]
+      "type": ["number", "null"]
     },
     "longitude": {
       "type": ["number", "null"]

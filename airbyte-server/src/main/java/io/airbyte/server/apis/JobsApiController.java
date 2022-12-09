@@ -26,32 +26,32 @@ public class JobsApiController implements JobsApi {
 
   @Override
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
   }
 
   @Override
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
-    return ConfigurationApi.execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
+    return ApiHelper.execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
   @Override
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
-    return ConfigurationApi.execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
+    return ApiHelper.execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
   }
 
   @Override
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
-    return ConfigurationApi.execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
+    return ApiHelper.execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
   }
 
   @Override
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
-    return ConfigurationApi.execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
+    return ApiHelper.execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
   }
 
   @Override
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
-    return ConfigurationApi.execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
+    return ApiHelper.execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
   }
 
 }

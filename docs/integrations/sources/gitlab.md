@@ -61,13 +61,15 @@ GitLab source is working with GitLab API v4. It can also work with self-hosted G
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject |
-|:--------|:-----------|:---------------------------------------------------------| :--- |
-| 0.1.6   | 2022-06-23 | [13252](https://github.com/airbytehq/airbyte/pull/13252) | Add GroupIssueBoards stream |
-| 0.1.5   | 2022-05-02 | [11907](https://github.com/airbytehq/airbyte/pull/11907) | Fix null projects param and `container_expiration_policy` |
-| 0.1.4   | 2022-03-23 | [11140](https://github.com/airbytehq/airbyte/pull/11140) | Ingest All Accessible Groups if not Specified in Config |
-| 0.1.3   | 2021-12-21 | [8991](https://github.com/airbytehq/airbyte/pull/8991)   | Update connector fields title/description |
-| 0.1.2   | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108)   | Allow all domains to be used as `api_url` |
+| Version | Date       | Pull Request                                             | Subject                                                                                    |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
+| 0.1.8   | 2022-12-02 | [20023](https://github.com/airbytehq/airbyte/pull/20023) | Fix duplicated records issue for `Projects` stream                                         |
+| 0.1.7   | 2022-12-01 | [19986](https://github.com/airbytehq/airbyte/pull/19986) | Fix `GroupMilestones` stream schema                                                        |
+| 0.1.6   | 2022-06-23 | [13252](https://github.com/airbytehq/airbyte/pull/13252) | Add GroupIssueBoards stream                                                                |
+| 0.1.5   | 2022-05-02 | [11907](https://github.com/airbytehq/airbyte/pull/11907) | Fix null projects param and `container_expiration_policy`                                  |
+| 0.1.4   | 2022-03-23 | [11140](https://github.com/airbytehq/airbyte/pull/11140) | Ingest All Accessible Groups if not Specified in Config                                    |
+| 0.1.3   | 2021-12-21 | [8991](https://github.com/airbytehq/airbyte/pull/8991)   | Update connector fields title/description                                                  |
+| 0.1.2   | 2021-10-18 | [7108](https://github.com/airbytehq/airbyte/pull/7108)   | Allow all domains to be used as `api_url`                                                  |
 | 0.1.1   | 2021-10-12 | [6932](https://github.com/airbytehq/airbyte/pull/6932)   | Fix pattern field in spec file, remove unused fields from config files, use cache from CDK |
-| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)   | Initial Release |
+| 0.1.0   | 2021-07-06 | [4174](https://github.com/airbytehq/airbyte/pull/4174)   | Initial Release                                                                            |
 

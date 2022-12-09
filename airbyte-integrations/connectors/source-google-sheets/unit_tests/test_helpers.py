@@ -27,18 +27,14 @@ class TestHelpers(unittest.TestCase):
         sheet_name = "sheet1"
         header_values = ["h1", "h2", "h3"]
 
-        props = {header: {"type": "string"} for header in header_values}
-        props["row_id"] = {"type": "integer"}
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": props,
+                "properties": {header: {"type": "string"} for header in header_values},
             },
-            source_defined_primary_key=[["row_id"]],
             supported_sync_modes=[SyncMode.full_refresh],
         )
 
@@ -61,20 +57,15 @@ class TestHelpers(unittest.TestCase):
         header_values = ["h1", "h1", "h3"]
 
         # h1 is ignored because it is duplicate
-        props = {
-            "h3": {"type": "string"},
-            "row_id": {"type": "integer"},
-        }
+        expected_stream_header_values = ["h3"]
         expected_stream = AirbyteStream(
             name=sheet_name,
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": props,
+                "properties": {header: {"type": "string"} for header in expected_stream_header_values},
             },
-            source_defined_primary_key=[["row_id"]],
             supported_sync_modes=[SyncMode.full_refresh],
         )
 
@@ -90,11 +81,9 @@ class TestHelpers(unittest.TestCase):
             json_schema={
                 "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
-                "required": ["row_id"],
                 # For simplicity, the type of every cell is a string
-                "properties": {"h1": {"type": "string"}, "row_id": {"type": "integer"}},
+                "properties": {"h1": {"type": "string"}},
             },
-            source_defined_primary_key=[["row_id"]],
             supported_sync_modes=[SyncMode.full_refresh],
         )
         actual_stream = Helpers.headers_to_airbyte_stream(logger, sheet_name, header_values)
@@ -154,11 +143,10 @@ class TestHelpers(unittest.TestCase):
         sheet = "my_sheet"
         cell_values = ["v1", "v2", "v3", "v4"]
         column_index_to_name = {0: "c1", 3: "c4"}
-        row_id = 1
 
-        actual = Helpers.row_data_to_record_message(sheet, row_id, cell_values, column_index_to_name)
+        actual = Helpers.row_data_to_record_message(sheet, cell_values, column_index_to_name)
 
-        expected = AirbyteRecordMessage(stream=sheet, data={"row_id": row_id, "c1": "v1", "c4": "v4"}, emitted_at=1)
+        expected = AirbyteRecordMessage(stream=sheet, data={"c1": "v1", "c4": "v4"}, emitted_at=1)
         self.assertEqual(expected.stream, actual.stream)
         self.assertEqual(expected.data, actual.data)
 

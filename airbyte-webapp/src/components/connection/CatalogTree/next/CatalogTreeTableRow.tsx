@@ -1,4 +1,4 @@
-import { faArrowRight, faMinus, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React, { useMemo } from "react";
@@ -7,14 +7,17 @@ import { FormattedMessage } from "react-intl";
 import { Cell, Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
+import { Text } from "components/ui/Text";
 
 import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 
 import { StreamHeaderProps } from "../StreamHeader";
-import { HeaderCell } from "../styles";
+// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./CatalogTreeTableRow.module.scss";
+import { CatalogTreeTableRowIcon } from "./CatalogTreeTableRowIcon";
 import { StreamPathSelect } from "./StreamPathSelect";
 import { SyncModeSelect } from "./SyncModeSelect";
+import { useCatalogTreeTableRowProps } from "./useCatalogTreeTableRowProps";
 
 export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   stream,
@@ -31,12 +34,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   // isRowExpanded,
   fields,
   onExpand,
-  changedSelected,
-  hasError,
   disabled,
 }) => {
-  const { primaryKey, syncMode, cursorField, destinationSyncMode } = stream.config ?? {};
-  const isStreamEnabled = stream.config?.selected;
+  const { primaryKey, cursorField, syncMode, destinationSyncMode } = stream.config ?? {};
 
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
@@ -53,17 +53,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   const fieldCount = fields?.length ?? 0;
   const onRowClick = fieldCount > 0 ? () => onExpand() : undefined;
 
-  const iconStyle = classnames(styles.icon, {
-    [styles.plus]: isStreamEnabled,
-    [styles.minus]: !isStreamEnabled,
-  });
-
-  const streamHeaderContentStyle = classnames(styles.streamHeaderContent, {
-    [styles.enabledChange]: changedSelected && isStreamEnabled,
-    [styles.disabledChange]: changedSelected && !isStreamEnabled,
-    [styles.selected]: isSelected,
-    [styles.error]: hasError,
-  });
+  const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
   const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
 
@@ -71,46 +61,53 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
       {!disabled && (
         <div className={checkboxCellCustomStyle}>
-          {changedSelected && (
-            <div>
-              {isStreamEnabled ? (
-                <FontAwesomeIcon icon={faPlus} size="2x" className={iconStyle} />
-              ) : (
-                <FontAwesomeIcon icon={faMinus} size="2x" className={iconStyle} />
-              )}
-            </div>
-          )}
+          <CatalogTreeTableRowIcon stream={stream} />
           <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
         </div>
       )}
-      <Cell>
+      <Cell flex={0.5} flush>
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </Cell>
-      <Cell>{fieldCount}</Cell>
-      <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
-        {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
-      </HeaderCell>
-      <Cell>{stream.stream?.name}</Cell>
-      <Cell>
-        {disabled ? (
-          <HeaderCell ellipsis title={syncSchema.syncMode}>
-            {syncSchema.syncMode}
-          </HeaderCell>
-        ) : (
-          <SyncModeSelect options={availableSyncModes} onChange={onSelectSyncMode} value={syncSchema} />
-        )}
+      {/* <Cell>{fieldCount}</Cell> */}
+      <Cell flex={1} title={stream.stream?.namespace || ""}>
+        <Text size="md" className={styles.cellText}>
+          {stream.stream?.namespace || <FormattedMessage id="form.noNamespace" />}
+        </Text>
       </Cell>
-      <HeaderCell>
+      <Cell flex={1} title={stream.stream?.name || ""}>
+        <Text size="md" className={styles.cellText}>
+          {stream.stream?.name}
+        </Text>
+      </Cell>
+      <div className={styles.syncModeCell}>
+        {disabled ? (
+          <Cell title={syncSchema.syncMode}>
+            <Text size="md" className={styles.cellText}>
+              {syncSchema.syncMode}
+            </Text>
+          </Cell>
+        ) : (
+          // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
+          <SyncModeSelect
+            options={availableSyncModes}
+            onChange={onSelectSyncMode}
+            value={syncSchema}
+            variant={pillButtonVariant}
+          />
+        )}
+      </div>
+      <Cell flex={1}>
         {cursorType && (
           <StreamPathSelect
             pathType={cursorType}
             paths={paths}
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
+            variant={pillButtonVariant}
           />
         )}
-      </HeaderCell>
-      <HeaderCell ellipsis>
+      </Cell>
+      <Cell flex={1}>
         {pkType && (
           <StreamPathSelect
             pathType={pkType}
@@ -118,27 +115,20 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={primaryKey}
             isMulti
             onPathChange={onPrimaryKeyChange}
+            variant={pillButtonVariant}
           />
         )}
-      </HeaderCell>
-      <Cell>
-        <FontAwesomeIcon icon={faArrowRight} />
       </Cell>
-      <HeaderCell ellipsis title={destNamespace}>
-        {destNamespace}
-      </HeaderCell>
-      <HeaderCell ellipsis title={destName}>
-        {destName}
-      </HeaderCell>
-      <Cell>
-        {disabled ? (
-          <HeaderCell ellipsis title={syncSchema.destinationSyncMode}>
-            {syncSchema.destinationSyncMode}
-          </HeaderCell>
-        ) : (
-          // TODO: Replace with Dropdown/Popout
-          syncSchema.destinationSyncMode
-        )}
+      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
+      <Cell flex={1} title={destNamespace}>
+        <Text size="md" className={styles.cellText}>
+          {destNamespace}
+        </Text>
+      </Cell>
+      <Cell flex={1} title={destName}>
+        <Text size="md" className={styles.cellText}>
+          {destName}
+        </Text>
       </Cell>
     </Row>
   );

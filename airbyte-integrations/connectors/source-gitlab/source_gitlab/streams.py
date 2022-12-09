@@ -193,9 +193,9 @@ class GroupProjects(Projects):
         for slice in self.parent_stream.stream_slices(sync_mode=SyncMode.full_refresh):
             for record in self.parent_stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=slice):
                 group_project_ids.update({i["path_with_namespace"] for i in record["projects"]})
-            for pid in group_project_ids:
-                if not self.project_ids or self.project_ids and pid in self.project_ids:
-                    yield {"id": pid.replace("/", "%2F")}
+        for pid in group_project_ids:
+            if not self.project_ids or self.project_ids and pid in self.project_ids:
+                yield {"id": pid.replace("/", "%2F")}
 
 
 class GroupMilestones(GitlabChildStream):

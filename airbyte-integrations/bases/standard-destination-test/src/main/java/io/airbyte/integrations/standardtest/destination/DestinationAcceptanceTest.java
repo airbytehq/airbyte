@@ -4,6 +4,11 @@
 
 package io.airbyte.integrations.standardtest.destination;
 
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INFINITY_TYPE_MESSAGE;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.INTEGER_TYPE_CATALOG;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NAN_TYPE_MESSAGE;
+import static io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider.NUMBER_TYPE_CATALOG;
+import static io.airbyte.integrations.standardtest.destination.argproviders.util.ArgumentProviderUtil.prefixFileNameByVersion;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -27,6 +32,8 @@ import io.airbyte.config.StandardCheckConnectionOutput;
 import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
+import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.AirbyteCatalog;
@@ -71,6 +78,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.Builder;
+import lombok.Getter;
 import org.joda.time.DateTime;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -429,13 +438,13 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -446,7 +455,7 @@ public abstract class DestinationAcceptanceTest {
     // So let's create a dummy data that will be checked after all sync. It should remain the same
     final AirbyteCatalog dummyCatalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     dummyCatalog.getStreams().get(0).setName(DUMMY_CATALOG_NAME);
     final ConfiguredAirbyteCatalog configuredDummyCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
@@ -495,7 +504,7 @@ public abstract class DestinationAcceptanceTest {
   public void testLineBreakCharacters() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -533,7 +542,7 @@ public abstract class DestinationAcceptanceTest {
     if (normalizationFromSpec) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
-        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION);
+        NormalizationRunnerFactory.create(getImageName(), processFactory, NORMALIZATION_VERSION, "");
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -560,7 +569,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -570,7 +579,7 @@ public abstract class DestinationAcceptanceTest {
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -651,7 +660,7 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
@@ -665,7 +674,7 @@ public abstract class DestinationAcceptanceTest {
     });
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -754,12 +763,12 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     // Add a big message that barely fits into the limits of the destination
@@ -839,7 +848,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -917,7 +926,7 @@ public abstract class DestinationAcceptanceTest {
         NormalizationRunnerFactory.create(
             getImageName(),
             processFactory,
-            NORMALIZATION_VERSION));
+            NORMALIZATION_VERSION, ""));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -946,7 +955,7 @@ public abstract class DestinationAcceptanceTest {
     // TODO(davin): make these tests part of the catalog file.
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final String namespace = "sourcenamespace";
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
@@ -954,7 +963,7 @@ public abstract class DestinationAcceptanceTest {
         catalog);
 
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
@@ -978,7 +987,7 @@ public abstract class DestinationAcceptanceTest {
     // TODO(davin): make these tests part of the catalog file.
     final var catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final var namespace1 = "sourcenamespace";
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace1));
@@ -995,14 +1004,12 @@ public abstract class DestinationAcceptanceTest {
     catalog.getStreams().addAll(diffNamespaceStreams);
 
     final var configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
-
-    final var ns1Messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var messageFile = DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion());
+    final var ns1Messages = MoreResources.readResource(messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final var ns1MessagesAtNamespace1 = getRecordMessagesWithNewNamespace(ns1Messages, namespace1);
-    final var ns2Messages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+    final var ns2Messages = MoreResources.readResource(messageFile).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final var ns2MessagesAtNamespace2 = getRecordMessagesWithNewNamespace(ns2Messages, namespace2);
@@ -1014,23 +1021,6 @@ public abstract class DestinationAcceptanceTest {
     final String defaultSchema = getDefaultSchema(config);
     runSyncAndVerifyStateOutput(config, allMessages, configuredCatalog, false);
     retrieveRawRecordsAndAssertSameMessages(catalog, allMessages, defaultSchema);
-  }
-
-  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
-
-    @Override
-    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
-        throws Exception {
-      final JsonNode testCases =
-          Jsons.deserialize(MoreResources.readResource("namespace_test_cases.json"));
-      return MoreIterators.toList(testCases.elements()).stream()
-          .filter(testCase -> testCase.get("enabled").asBoolean())
-          .map(testCase -> Arguments.of(
-              testCase.get("id").asText(),
-              testCase.get("namespace").asText(),
-              testCase.get("normalized").asText()));
-    }
-
   }
 
   @ParameterizedTest
@@ -1049,14 +1039,14 @@ public abstract class DestinationAcceptanceTest {
     }
 
     final AirbyteCatalog catalog = Jsons.deserialize(
-        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.catalogFile),
+        MoreResources.readResource(DataArgumentsProvider.NAMESPACE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
         AirbyteCatalog.class);
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> messages = MoreResources.readResource(
-        DataArgumentsProvider.NAMESPACE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.NAMESPACE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final List<AirbyteMessage> messagesWithNewNamespace = getRecordMessagesWithNewNamespace(
@@ -1105,13 +1095,13 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog =
         Jsons.deserialize(
-            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.catalogFile),
+            MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
 
     final List<AirbyteMessage> firstSyncMessages = MoreResources.readResource(
-        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.messageFile).lines()
+        DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getMessageFileVersion(getProtocolVersion())).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
     final JsonNode config = getConfig();
@@ -1179,13 +1169,13 @@ public abstract class DestinationAcceptanceTest {
 
   private ConnectorSpecification runSpec() throws WorkerException {
     return new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
     return new DefaultCheckConnectionWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
             .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
             .getCheckConnection();
   }
@@ -1194,7 +1184,7 @@ public abstract class DestinationAcceptanceTest {
                                                                               final JsonNode config) {
     try {
       final StandardCheckConnectionOutput standardCheckConnectionOutput = new DefaultCheckConnectionWorker(
-          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null))
+          new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
               .run(new StandardCheckConnectionInput().withConnectionConfiguration(config), jobRoot)
               .getCheckConnection();
       return standardCheckConnectionOutput.getStatus();
@@ -1206,7 +1196,7 @@ public abstract class DestinationAcceptanceTest {
 
   protected AirbyteDestination getDestination() {
     return new DefaultAirbyteDestination(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null));
+        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false));
   }
 
   protected void runSyncAndVerifyStateOutput(final JsonNode config,
@@ -1283,7 +1273,7 @@ public abstract class DestinationAcceptanceTest {
     final NormalizationRunner runner = NormalizationRunnerFactory.create(
         getImageName(),
         processFactory,
-        NORMALIZATION_VERSION);
+        NORMALIZATION_VERSION, "");
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,
@@ -1563,6 +1553,38 @@ public abstract class DestinationAcceptanceTest {
     return false;
   }
 
+  /**
+   * NaN and Infinity test are not supported by default. Please override this method to specify
+   * NaN/Infinity types support example:
+   *
+   * <pre>
+   *
+   * protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+   *   return SpecialNumericTypes.builder()
+   *       .supportNumberNan(true)
+   *       .supportIntegerNan(true)
+   *       .build();
+   * }
+   * </pre>
+   *
+   * @return SpecialNumericTypes with support flags
+   */
+  protected SpecialNumericTypes getSpecialNumericTypesSupportTest() {
+    return SpecialNumericTypes.builder().build();
+  }
+
+  /**
+   * The method should be overridden if destination connector support newer protocol version otherwise
+   * {@link io.airbyte.integrations.standardtest.destination.ProtocolVersion#V0} is used
+   * <p>
+   * NOTE: Method should be public in a sake of java reflection
+   *
+   * @return
+   */
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V0;
+  }
+
   private boolean checkTestCompatibility(
                                          final DataTypeTestArgumentProvider.TestCompatibility testCompatibility) {
     return testCompatibility.isTestCompatible(supportBasicDataTypeTest(),
@@ -1584,6 +1606,74 @@ public abstract class DestinationAcceptanceTest {
         catalog);
     final List<AirbyteMessage> messages = readMessagesFromFile(messagesFilename);
 
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncNumberNanDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberNan()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncIntegerNanDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerNan()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(NAN_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncNumberInfinityDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportNumberInfinity()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(NUMBER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  @Test
+  public void testSyncIntegerInfinityDataType() throws Exception {
+    // NaN/Infinity protocol supports started from V1 version or higher
+    SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
+    if (getProtocolVersion().equals(ProtocolVersion.V0) || !numericTypesSupport.isSupportIntegerInfinity()) {
+      return;
+    }
+    final AirbyteCatalog catalog = readCatalogFromFile(prefixFileNameByVersion(INTEGER_TYPE_CATALOG, getProtocolVersion()));
+    final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(catalog);
+    final List<AirbyteMessage> messages = readMessagesFromFile(prefixFileNameByVersion(INFINITY_TYPE_MESSAGE, getProtocolVersion()));
+    final JsonNode config = getConfig();
+    final String defaultSchema = getDefaultSchema(config);
+
+    runAndCheck(catalog, configuredCatalog, messages);
+  }
+
+  private void runAndCheck(AirbyteCatalog catalog, ConfiguredAirbyteCatalog configuredCatalog, List<AirbyteMessage> messages) throws Exception {
     if (supportsNormalization()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
@@ -1637,6 +1727,41 @@ public abstract class DestinationAcceptanceTest {
       }
     });
     return airbyteMessages;
+  }
+
+  /**
+   * Can be used in overridden {@link #getSpecialNumericTypesSupportTest()
+   * getSpecialNumericTypesSupportTest()} method to specify if connector supports Integer/Number NaN
+   * or Integer/Number Infinity types
+   */
+  @Builder
+  @Getter
+  public static class SpecialNumericTypes {
+
+    boolean supportIntegerNan = false;
+    boolean supportNumberNan = false;
+    boolean supportIntegerInfinity = false;
+    boolean supportNumberInfinity = false;
+
+  }
+
+  public static class NamespaceTestCaseProvider implements ArgumentsProvider {
+
+    public static final String NAMESPACE_TEST_CASES_JSON = "namespace_test_cases.json";
+
+    @Override
+    public Stream<? extends Arguments> provideArguments(final ExtensionContext context)
+        throws Exception {
+      final JsonNode testCases =
+          Jsons.deserialize(MoreResources.readResource(NAMESPACE_TEST_CASES_JSON));
+      return MoreIterators.toList(testCases.elements()).stream()
+          .filter(testCase -> testCase.get("enabled").asBoolean())
+          .map(testCase -> Arguments.of(
+              testCase.get("id").asText(),
+              testCase.get("namespace").asText(),
+              testCase.get("normalized").asText()));
+    }
+
   }
 
 }

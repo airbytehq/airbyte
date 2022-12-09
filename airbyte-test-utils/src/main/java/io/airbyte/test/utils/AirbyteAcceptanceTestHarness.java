@@ -25,6 +25,8 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.api.client.model.generated.ConnectionUpdate;
+import io.airbyte.api.client.model.generated.CustomDestinationDefinitionCreate;
+import io.airbyte.api.client.model.generated.CustomSourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -33,6 +35,7 @@ import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationSyncMode;
 import io.airbyte.api.client.model.generated.JobConfigType;
+import io.airbyte.api.client.model.generated.JobDebugInfoRead;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.api.client.model.generated.JobListRequestBody;
 import io.airbyte.api.client.model.generated.JobRead;
@@ -92,6 +95,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -643,20 +647,24 @@ public class AirbyteAcceptanceTestHarness {
     return dbConfig;
   }
 
-  public SourceDefinitionRead createE2eSourceDefinition() throws ApiException {
-    return apiClient.getSourceDefinitionApi().createSourceDefinition(new SourceDefinitionCreate()
-        .name("E2E Test Source")
-        .dockerRepository("airbyte/source-e2e-test")
-        .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+  public SourceDefinitionRead createE2eSourceDefinition(final UUID workspaceId) throws ApiException {
+    return apiClient.getSourceDefinitionApi().createCustomSourceDefinition(new CustomSourceDefinitionCreate()
+        .workspaceId(workspaceId)
+        .sourceDefinition(new SourceDefinitionCreate()
+            .name("E2E Test Source")
+            .dockerRepository("airbyte/source-e2e-test")
+            .dockerImageTag(SOURCE_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com"))));
   }
 
-  public DestinationDefinitionRead createE2eDestinationDefinition() throws ApiException {
-    return apiClient.getDestinationDefinitionApi().createDestinationDefinition(new DestinationDefinitionCreate()
-        .name("E2E Test Destination")
-        .dockerRepository("airbyte/destination-e2e-test")
-        .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
-        .documentationUrl(URI.create("https://example.com")));
+  public DestinationDefinitionRead createE2eDestinationDefinition(final UUID workspaceId) throws ApiException {
+    return apiClient.getDestinationDefinitionApi().createCustomDestinationDefinition(new CustomDestinationDefinitionCreate()
+        .workspaceId(workspaceId)
+        .destinationDefinition(new DestinationDefinitionCreate()
+            .name("E2E Test Destination")
+            .dockerRepository("airbyte/destination-e2e-test")
+            .dockerImageTag(DESTINATION_E2E_TEST_CONNECTOR_VERSION)
+            .documentationUrl(URI.create("https://example.com"))));
   }
 
   public SourceRead createPostgresSource(final boolean isLegacy) throws ApiException {
@@ -795,6 +803,23 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   @SuppressWarnings("BusyWait")
+  public static void waitWhileJobIsRunning(final JobsApi jobsApi, final JobRead job, final Duration maxWaitTime)
+      throws ApiException, InterruptedException {
+    final Instant waitStart = Instant.now();
+    JobDebugInfoRead jobDebugInfoRead = jobsApi.getJobDebugInfo(new JobIdRequestBody().id(job.getId()));
+    LOGGER.info("workflow state: {}", jobDebugInfoRead.getWorkflowState());
+    while (jobDebugInfoRead.getWorkflowState() != null && jobDebugInfoRead.getWorkflowState().getRunning()) {
+      if (Duration.between(waitStart, Instant.now()).compareTo(maxWaitTime) > 0) {
+        LOGGER.info("Max wait time of {} has been reached. Stopping wait.", maxWaitTime);
+        break;
+      }
+      LOGGER.info("waiting: job id: {}, workflowState.isRunning is still true", job.getId());
+      sleep(1000);
+      jobDebugInfoRead = jobsApi.getJobDebugInfo(new JobIdRequestBody().id(job.getId()));
+    }
+  }
+
+  @SuppressWarnings("BusyWait")
   public static ConnectionState waitForConnectionState(final AirbyteApiClient apiClient, final UUID connectionId)
       throws ApiException, InterruptedException {
     ConnectionState connectionState = apiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -814,10 +839,19 @@ public class AirbyteAcceptanceTestHarness {
     }
 
     JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+    int count = 0;
+    while (count < 60 && mostRecentSyncJob.getId().equals(lastJob.getId())) {
       Thread.sleep(Duration.ofSeconds(1).toMillis());
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+      ++count;
     }
+    final boolean exceeded60seconds = count >= 60;
+    if (exceeded60seconds) {
+      // Fail because taking more than 60seconds to start a job is not expected
+      // Returning the current mostRecencSyncJob here could end up hiding some issues
+      Assertions.fail("unable to find the next job within 60seconds");
+    }
+
     return mostRecentSyncJob;
   }
 

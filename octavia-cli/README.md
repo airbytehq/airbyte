@@ -43,7 +43,7 @@ Feel free to share your use cases with the community in [#octavia-cli](https://a
 
 ### 1. Generate local YAML files for sources or destinations
 
-1. Retrieve the _definition id_ of the connector you want to use using `octavia list command`.
+1. Retrieve the _definition id_ of the connector you want to use using `octavia list` command.
 2. Generate YAML configuration running `octavia generate source <DEFINITION_ID> <SOURCE_NAME>` or `octavia generate destination <DEFINITION_ID> <DESTINATION_NAME>`.
 
 ### 2. Edit your local YAML configurations
@@ -104,7 +104,7 @@ This script:
 ```bash
 touch ~/.octavia # Create a file to store env variables that will be mapped the octavia-cli container
 mkdir my_octavia_project_directory # Create your octavia project directory where YAML configurations will be stored.
-docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.18
+docker run --name octavia-cli -i --rm -v my_octavia_project_directory:/home/octavia-project --network host --user $(id -u):$(id -g) --env-file ~/.octavia airbyte/octavia-cli:0.40.25
 ```
 
 ### Using `docker-compose`
@@ -712,7 +712,7 @@ You can disable telemetry by setting the `OCTAVIA_ENABLE_TELEMETRY` environment 
 | Version | Date       | Description                                                                           | PR                                                          |
 | ------- | ---------- | ------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
 | 0.41.0  | 2022-10-13 | Use Basic Authentication for making API requests                                      | [#17982](https://github.com/airbytehq/airbyte/pull/17982)   |
-| 0.40.18 | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
+| 0.40.25 | 2022-08-10 | Enable cron and basic scheduling                                                      | [#15253](https://github.com/airbytehq/airbyte/pull/15253)   |
 | 0.39.33 | 2022-07-05 | Add `octavia import all` command                                                      | [#14374](https://github.com/airbytehq/airbyte/pull/14374)   |
 | 0.39.32 | 2022-06-30 | Create import command to import and manage existing Airbyte resource from octavia-cli | [#14137](https://github.com/airbytehq/airbyte/pull/14137)   |
 | 0.39.27 | 2022-06-24 | Create get command to retrieve resources JSON representation                          | [#13254](https://github.com/airbytehq/airbyte/pull/13254)   |

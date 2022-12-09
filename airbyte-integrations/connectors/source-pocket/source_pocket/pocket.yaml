@@ -24,10 +24,10 @@ definitions:
       type: "DefaultErrorHandler"
       error_handlers:
         - response_filters:
-          - http_codes: [ 401 ] # User authentication error
-            action: FAIL
-          - http_codes: [ 403 ] # Access denied due to lack of permission or rate limiting
-            action: RETRY
+            - http_codes: [401] # User authentication error
+              action: FAIL
+            - http_codes: [403] # Access denied due to lack of permission or rate limiting
+              action: RETRY
           backoff_strategies:
             - type: "WaitTimeFromHeader"
               header: "X-Limit-User-Reset"
@@ -51,7 +51,7 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-    schema_loader: 
+    schema_loader:
       type: "JsonSchema"
   retrieve_stream:
     $ref: "*ref(definitions.base_stream)"

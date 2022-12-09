@@ -1,8 +1,9 @@
+import classNames from "classnames";
 import { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { DropDownOptionDataItem } from "components/ui/DropDown";
-import { PillSelect } from "components/ui/PillSelect";
+import { PillSelect, PillButtonVariant } from "components/ui/PillSelect";
 
 import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
 
@@ -13,17 +14,19 @@ interface SyncModeValue {
   destinationSyncMode: DestinationSyncMode;
 }
 
-interface SyncModeOption {
+export interface SyncModeOption {
   value: SyncModeValue;
 }
 
 interface SyncModeSelectProps {
+  className?: string;
+  onChange?: (option: DropDownOptionDataItem<SyncModeValue>) => void;
   options: SyncModeOption[];
   value: Partial<SyncModeValue>;
-  onChange?: (option: DropDownOptionDataItem<SyncModeValue>) => void;
+  variant?: PillButtonVariant;
 }
 
-export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ options, onChange, value }) => {
+export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, options, onChange, value, variant }) => {
   const pillSelectOptions = useMemo(() => {
     return options.map(({ value }) => {
       const { syncMode, destinationSyncMode } = value;
@@ -40,5 +43,13 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ options, onChang
     });
   }, [options]);
 
-  return <PillSelect options={pillSelectOptions} value={value} onChange={onChange} className={styles.pillSelect} />;
+  return (
+    <PillSelect
+      options={pillSelectOptions}
+      value={value}
+      onChange={onChange}
+      className={classNames(styles.pillSelect, className)}
+      variant={variant}
+    />
+  );
 };

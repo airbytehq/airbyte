@@ -77,7 +77,7 @@ class DefaultCheckConnectionWorkerTest {
         .withConnectionStatus(new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.FAILED).withMessage("failed to connect"));
     failureStreamFactory = noop -> Lists.newArrayList(failureMessage).stream();
 
-    final AirbyteMessage traceMessage = AirbyteMessageUtils.createTraceMessage("some error from the connector", 123.0);
+    final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
     traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
   }
 

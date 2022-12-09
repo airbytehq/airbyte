@@ -13,11 +13,13 @@ import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
+import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import { Section } from "./components/Section";
 import { SyncCatalogField } from "./components/SyncCatalogField";
@@ -32,6 +34,8 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
+  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
+
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -46,6 +50,8 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
     clearFormChange(formId);
   });
 
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   return (
     <>
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
@@ -53,76 +59,87 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
+          {isSchemaChangesEnabled && (
+            <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
+          )}
         </Section>
-        <Section>
-          <Heading as="h2" size="sm">
-            <FormattedMessage id="connection.streams" />
-          </Heading>
-          <span className={readonlyClass}>
-            <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
-          </span>
-          {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
-            <Field name="namespaceFormat">
-              {({ field, meta }: FieldProps<string>) => (
+        {!isNewStreamsTableEnabled && (
+          <Section>
+            <Heading as="h2" size="sm">
+              <FormattedMessage id="connection.streams" />
+            </Heading>
+            <span className={readonlyClass}>
+              <Field name="namespaceDefinition" component={NamespaceDefinitionField} />
+            </span>
+            {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
+              <Field name="namespaceFormat">
+                {({ field, meta }: FieldProps<string>) => (
+                  <div className={styles.flexRow}>
+                    <div className={styles.leftFieldCol}>
+                      <ControlLabels
+                        className={styles.namespaceFormatLabel}
+                        nextLine
+                        error={!!meta.error}
+                        label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
+                        message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                      />
+                    </div>
+                    <div className={classNames(styles.rightFieldCol, readonlyClass)}>
+                      <Input
+                        {...field}
+                        error={!!meta.error}
+                        placeholder={formatMessage({
+                          id: "connectionForm.namespaceFormat.placeholder",
+                        })}
+                      />
+                    </div>
+                  </div>
+                )}
+              </Field>
+            )}
+            <Field name="prefix">
+              {({ field }: FieldProps<string>) => (
                 <div className={styles.flexRow}>
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
-                      className={styles.namespaceFormatLabel}
                       nextLine
-                      error={!!meta.error}
-                      label={<FormattedMessage id="connectionForm.namespaceFormat.title" />}
-                      message={<FormattedMessage id="connectionForm.namespaceFormat.subtitle" />}
+                      label={formatMessage({
+                        id: "form.prefix",
+                      })}
+                      message={formatMessage({
+                        id: "form.prefix.message",
+                      })}
                     />
                   </div>
-                  <div className={classNames(styles.rightFieldCol, readonlyClass)}>
+                  <div className={styles.rightFieldCol}>
                     <Input
                       {...field}
-                      error={!!meta.error}
+                      type="text"
                       placeholder={formatMessage({
-                        id: "connectionForm.namespaceFormat.placeholder",
+                        id: `form.prefix.placeholder`,
                       })}
+                      data-testid="prefixInput"
+                      style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
                 </div>
               )}
             </Field>
-          )}
-          <Field name="prefix">
-            {({ field }: FieldProps<string>) => (
-              <div className={styles.flexRow}>
-                <div className={styles.leftFieldCol}>
-                  <ControlLabels
-                    nextLine
-                    label={formatMessage({
-                      id: "form.prefix",
-                    })}
-                    message={formatMessage({
-                      id: "form.prefix.message",
-                    })}
-                  />
-                </div>
-                <div className={styles.rightFieldCol}>
-                  <Input
-                    {...field}
-                    type="text"
-                    placeholder={formatMessage({
-                      id: `form.prefix.placeholder`,
-                    })}
-                    data-testid="prefixInput"
-                    style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
-                  />
-                </div>
-              </div>
-            )}
-          </Field>
-        </Section>
-        <Section>
+          </Section>
+        )}
+        <Section className={styles.flush}>
           <Field
             name="syncCatalog.streams"
             component={SyncCatalogField}
             isSubmitting={isSubmitting}
             additionalControl={
-              <Button onClick={refreshSchema} type="button" variant="secondary" disabled={isSubmitting}>
+              <Button
+                onClick={refreshSchema}
+                type="button"
+                variant="secondary"
+                data-testid="refresh-source-schema-btn"
+                disabled={isSubmitting}
+              >
                 <FontAwesomeIcon icon={faSyncAlt} className={styles.tryArrow} />
                 <FormattedMessage id="connection.updateSchema" />
               </Button>
