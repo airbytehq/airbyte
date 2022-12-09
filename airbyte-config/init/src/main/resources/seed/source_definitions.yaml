@@ -1895,7 +1895,7 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   sourceType: api
   releaseStage: beta
