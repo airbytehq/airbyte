@@ -1,13 +1,19 @@
-$small: 60px;
+$xsmall: 20px;
+$small: 50px;
 $medium: 120px;
 $large: 200px;
 
 .tableCell {
-  flex: 0 0 $medium;
+  flex: 1 0 $medium;
   min-width: $medium;
   word-break: break-word;
   overflow: hidden;
   text-overflow: ellipsis;
+
+  &.xsmall {
+    flex-basis: $xsmall;
+    min-width: $xsmall;
+  }
 
   &.small {
     flex-basis: $small;

@@ -6,14 +6,14 @@
 }
 
 .headerContainer {
-  margin: variables.$spacing-md 0 variables.$spacing-sm variables.$spacing-md;
+  margin: variables.$spacing-md 0 variables.$spacing-sm 0;
   gap: variables.$spacing-sm;
   overflow: hidden;
   scrollbar-gutter: stable;
   min-height: 33px;
 
   &.newTable {
-    overflow: visible;
+    overflow: unset;
   }
 }
 
@@ -25,9 +25,5 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  padding-left: calc(#{variables.$spacing-xl} + #{variables.$spacing-sm});
-}
-
-.arrowPlaceholder {
-  flex: 0 0 20px;
+  padding-left: variables.$spacing-xl + variables.$spacing-sm;
 }

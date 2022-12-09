@@ -7,15 +7,10 @@ import { BulkEditServiceProvider } from "hooks/services/BulkEdit/BulkEditService
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { naturalComparatorBy } from "utils/objects";
 
-import { BulkHeader } from "./BulkHeader";
 import styles from "./CatalogTree.module.scss";
 import { CatalogTreeBody } from "./CatalogTreeBody";
-import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
-import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
 import { BulkEditPanel } from "./next/BulkEditPanel";
-import { CatalogTreeTableHeader } from "./next/CatalogTreeTableHeader";
-import { StreamConnectionHeader } from "./next/StreamConnectionHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
@@ -67,18 +62,6 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
         <div className={isNewStreamsTableEnabled ? styles.newCatalogTreeTable : styles.catalogTreeTable}>
-          {isNewStreamsTableEnabled ? (
-            <>
-              <StreamConnectionHeader />
-              <CatalogTreeTableHeader />
-            </>
-          ) : (
-            <>
-              <CatalogTreeHeader />
-              <CatalogTreeSubheader />
-              <BulkHeader />
-            </>
-          )}
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}

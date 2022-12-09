@@ -1,10 +1,9 @@
 import { faArrowRight } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import classnames from "classnames";
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Cell, Row } from "components/SimpleTableComponents";
+import { Row } from "components/SimpleTableComponents";
 import { CheckBox } from "components/ui/CheckBox";
 import { Switch } from "components/ui/Switch";
 import { Text } from "components/ui/Text";
@@ -55,16 +54,16 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
 
   const { streamHeaderContentStyle, pillButtonVariant } = useCatalogTreeTableRowProps(stream);
 
-  const checkboxCellCustomStyle = classnames(styles.checkboxCell, styles.streamRowCheckboxCell);
-
   return (
     <Row onClick={onRowClick} className={streamHeaderContentStyle}>
-      {!disabled && (
-        <div className={checkboxCellCustomStyle}>
-          <CatalogTreeTableRowIcon stream={stream} />
-          <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
-        </div>
-      )}
+      <CatalogTreeTableCell size="small" className={styles.streamRowCheckboxCell}>
+        {!disabled && (
+          <>
+            <CatalogTreeTableRowIcon stream={stream} />
+            <CheckBox checked={isSelected} onChange={selectForBulkEdit} />
+          </>
+        )}
+      </CatalogTreeTableCell>
       <CatalogTreeTableCell size="small">
         <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
       </CatalogTreeTableCell>
@@ -81,11 +80,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
       </CatalogTreeTableCell>
       <CatalogTreeTableCell size="large">
         {disabled ? (
-          <Cell>
-            <Text size="md" className={styles.cellText}>
-              {syncSchema.syncMode}
-            </Text>
-          </Cell>
+          <Text size="md" className={styles.cellText}>
+            {syncSchema.syncMode}
+          </Text>
         ) : (
           // todo: SyncModeSelect should probably have a Tooltip, append/dedupe ends up ellipsing
           <SyncModeSelect
@@ -119,7 +116,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </CatalogTreeTableCell>
-      <FontAwesomeIcon icon={faArrowRight} className={styles.arrowCell} />
+      <CatalogTreeTableCell size="xsmall">
+        <FontAwesomeIcon icon={faArrowRight} />
+      </CatalogTreeTableCell>
       <CatalogTreeTableCell>
         <Text size="md" className={styles.cellText}>
           {destNamespace}

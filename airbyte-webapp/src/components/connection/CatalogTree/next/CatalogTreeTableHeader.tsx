@@ -68,7 +68,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
 
   return (
     <Header className={classNames(styles.headerContainer, { [styles.newTable]: !!isNewStreamsTableEnabled })}>
-      <div className={styles.checkboxCell}>
+      <CatalogTreeTableCell size="small" className={styles.checkboxCell}>
         {mode !== "readonly" && (
           <CheckBox
             onChange={onCheckAll}
@@ -76,7 +76,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
             checked={allChecked}
           />
         )}
-      </div>
+      </CatalogTreeTableCell>
       <HeaderCell size="small">
         <FormattedMessage id="sources.sync" />
       </HeaderCell>
@@ -105,7 +105,7 @@ export const CatalogTreeTableHeader: React.FC = () => {
       <HeaderCell>
         <FormattedMessage id="form.primaryKey" />
       </HeaderCell>
-      <div className={styles.arrowPlaceholder} />
+      <CatalogTreeTableCell size="xsmall" />
       <HeaderCell>
         <FormattedMessage id="form.namespace" />
         <Button
