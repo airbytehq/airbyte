@@ -67,7 +67,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
               <Tooltip control={<Switch small disabled checked={isSelected} />}>
                 <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
               </Tooltip>
-            )}{" "}
+            )}
           </SyncCheckboxContainer>
         </Cell>
       )}
