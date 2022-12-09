@@ -228,6 +228,20 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  CustomRecordExtractor:
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomRecordExtractor]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
   CustomStreamSlicer:
     type: object
     additionalProperties: true
