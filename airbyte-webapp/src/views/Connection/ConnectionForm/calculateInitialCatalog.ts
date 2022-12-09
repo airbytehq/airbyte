@@ -183,7 +183,7 @@ const calculateInitialCatalog = (
       // if the stream is new since a refresh, verify cursor and get optimal sync modes
       const isStreamNew = newStreamDescriptors?.some(
         (streamIdFromDiff) =>
-          streamIdFromDiff.name === nodeStream?.stream?.name &&
+          streamIdFromDiff.name === nodeStream.stream?.name &&
           streamIdFromDiff.namespace === nodeStream.stream?.namespace
       );
 
@@ -192,7 +192,7 @@ const calculateInitialCatalog = (
         streamsWithBreakingFieldChanges && streamsWithBreakingFieldChanges.length > 0
           ? streamsWithBreakingFieldChanges.filter((streamTransformFromDiff) => {
               return (
-                streamTransformFromDiff.streamDescriptor.name === nodeStream?.stream?.name &&
+                streamTransformFromDiff.streamDescriptor.name === nodeStream.stream?.name &&
                 streamTransformFromDiff.streamDescriptor.namespace === nodeStream.stream?.namespace
               );
             })
