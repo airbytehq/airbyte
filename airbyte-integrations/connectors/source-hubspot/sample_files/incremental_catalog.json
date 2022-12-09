@@ -80,6 +80,16 @@
     },
     {
       "stream": {
+        "name": "form_submissions",
+        "json_schema": {},
+        "supported_sync_modes": ["full_refresh", "incremental"]
+      },
+      "sync_mode": "incremental",
+      "cursor_field": ["updatedAt"],
+      "destination_sync_mode": "append"
+    },
+    {
+      "stream": {
         "name": "engagements",
         "json_schema": {},
         "supported_sync_modes": ["full_refresh", "incremental"],
