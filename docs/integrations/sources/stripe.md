@@ -53,6 +53,7 @@ The Stripe source connector supports the following streams:
 - [Coupons](https://stripe.com/docs/api/coupons/list) \(Incremental\)
 - [Customer Balance Transactions](https://stripe.com/docs/api/customer_balance_transactions/list)
 - [Customers](https://stripe.com/docs/api/customers/list) \(Incremental\)
+   - This endpoint does not include deleted customers 
 - [Disputes](https://stripe.com/docs/api/disputes/list) \(Incremental\)
 - [Events](https://stripe.com/docs/api/events/list) \(Incremental\)
    - The Stripe API does not guarantee access to events older than 30 days, so this stream will only pull events created from the 30 days prior to the initial sync and not from the Replication start date.

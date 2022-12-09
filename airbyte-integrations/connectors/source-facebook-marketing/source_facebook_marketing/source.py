@@ -39,6 +39,7 @@ logger = logging.getLogger("airbyte")
 
 class SourceFacebookMarketing(AbstractSource):
     def _validate_and_transform(self, config: Mapping[str, Any]):
+        config.setdefault("action_breakdowns_allow_empty", False)
         if config.get("end_date") == "":
             config.pop("end_date")
         config = ConnectorConfig.parse_obj(config)
@@ -188,6 +189,7 @@ class SourceFacebookMarketing(AbstractSource):
                 fields=list(set(insight.fields)),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
+                action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
                 time_increment=insight.time_increment,
                 start_date=insight.start_date or config.start_date,
                 end_date=insight.end_date or config.end_date,
