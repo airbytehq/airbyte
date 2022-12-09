@@ -73,16 +73,14 @@ public class SourceDefinitionsHandler {
                                   final Supplier<UUID> uuidSupplier,
                                   final SynchronousSchedulerClient schedulerSynchronousClient,
                                   final AirbyteGithubStore githubStore,
-                                  final SourceHandler sourceHandler) {
+                                  final SourceHandler sourceHandler,
+                                  final AirbyteProtocolVersionRange airbyteProtocolVersionRange) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.sourceHandler = sourceHandler;
-
-    // TODO inject protocol min and max once this handler is being converted to micronaut
-    final Configs configs = new EnvConfigs();
-    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
+    protocolVersionRange = airbyteProtocolVersionRange;
   }
 
   @VisibleForTesting

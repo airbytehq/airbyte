@@ -9,6 +9,7 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
@@ -19,6 +20,7 @@ import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
@@ -103,6 +105,16 @@ public class ApplicationBeanFactory {
   @Singleton
   public JsonSchemaValidator jsonSchemaValidator() {
     return new JsonSchemaValidator();
+  }
+
+  @Singleton
+  public AirbyteGithubStore airbyteGithubStore() {
+    return AirbyteGithubStore.production();
+  }
+
+  @Singleton
+  public AirbyteProtocolVersionRange airbyteProtocolVersionRange() {
+    return new AirbyteProtocolVersionRange();
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
