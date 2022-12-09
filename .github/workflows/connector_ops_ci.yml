@@ -49,4 +49,4 @@ jobs:
           requirements: |
             - paths: unmatched
               teams:
-                - connector-operations
+                - @alafanechere
