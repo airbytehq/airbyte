@@ -26,6 +26,7 @@ public interface ProcessFactory {
    * @param attempt attempt Id
    * @param jobPath Workspace directory to run the process from.
    * @param imageName Docker image name to start the process from.
+   * @param usesIsolatedPool whether to use isolated pool to run the jobs.
    * @param files File name to contents map that will be written into the working dir of the process
    *        prior to execution.
    * @param entrypoint If not null, the default entrypoint program of the docker image can be changed
@@ -43,6 +44,7 @@ public interface ProcessFactory {
                  int attempt,
                  final Path jobPath,
                  final String imageName,
+                 final boolean usesIsolatedPool,
                  final boolean usesStdin,
                  final Map<String, String> files,
                  final String entrypoint,
