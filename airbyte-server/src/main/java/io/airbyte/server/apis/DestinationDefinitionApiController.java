@@ -15,10 +15,8 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
-import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destination_definitions")
