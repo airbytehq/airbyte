@@ -7,13 +7,11 @@ import { isDefined } from "utils/common";
 /**
  * Returns yup.schema for validation
  *
- * This method builds yup schema based on jsonSchema ${@link JSONSchema7} and widgetConfig ${@link WidgetConfigMap}.
+ * This method builds yup schema based on jsonSchema ${@link JSONSchema7} and the derived ${@link FormBlock}.
  * Every property is walked through recursively in case it is condition | object | array.
  *
- * uiConfig is used to select currently selected oneOf conditions to build proper schema
- * As uiConfig widget paths are .dot based (key1.innerModule1.innerModule2) propertyKey is provided recursively
  * @param jsonSchema
- * @param uiConfig uiConfig of widget currently selected in form
+ * @param formField The corresponding {@link FormBlock} to the given schema
  * @param parentSchema used in recursive schema building as required fields can be described in parentSchema
  * @param propertyKey used in recursive schema building for building path for uiConfig
  * @param propertyPath constructs path of property
@@ -35,9 +33,14 @@ export const buildYupFormForJsonSchema = (
 
   if (jsonSchema.oneOf && propertyPath) {
     const conditionFormField = formField as FormConditionItem;
+    // for all keys in all of the possible objects from the oneOf, collect the sub yup-schema in a map.
+    // the key of the map is the key of the property, the value is an array of the selection const value
+    // for the condition plus the sub schema.
+    // As not all keys will show up in every condition, there can be a different number of possible sub schemas
+    // per key; at least one and at max the number of conditions (if a key is part of every oneOf)
     const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
     jsonSchema.oneOf.forEach((condition, index) => {
-      if (typeof condition !== "object" || condition.type !== "object") {
+      if (typeof condition !== "object") {
         throw new Error("Spec uses oneOf with a condition that's not an object type");
       }
       const selectionConstValue = conditionFormField.selectionConstValues[index];
@@ -62,16 +65,18 @@ export const buildYupFormForJsonSchema = (
           ]);
       });
     });
-    const selectionKey = conditionFormField.selectionPath.split(".").pop();
-    if (!selectionKey) {
-      throw new Error("");
-    }
+    const selectionKey = conditionFormField.selectionKey;
 
+    // build the final object with all the keys - add "when" clauses to apply the
+    // right sub-schema depending on which selection const value is defined.
+    // if a key doesn't have a sub schema for a selection const value, set it to "strip"
+    // so it's removed before the form is sent to the server
     return yup.object().shape(
       Object.fromEntries(
         Array.from(flattenedKeys.entries()).map(([key, schemaByCondition]) => {
           let mergedSchema = yup.mixed();
           if (key === selectionKey) {
+            // do not validate the selectionKey itself, as the user can't change it it doesnt matter
             return [key, mergedSchema];
           }
           const allSelectionConstValuesWithThisKey = schemaByCondition.map(([constValue]) => constValue);

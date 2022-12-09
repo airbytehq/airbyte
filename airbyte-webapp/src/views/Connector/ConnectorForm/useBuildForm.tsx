@@ -6,9 +6,9 @@ import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
+import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
 import { FormBlock, FormGroupItem } from "core/form/types";
-import { jsonSchemaToUiWidget } from "core/jsonSchema/schemaToUiWidget";
-import { buildYupFormForJsonSchema } from "core/jsonSchema/schemaToYup";
 
 import { ConnectorFormValues } from "./types";
 
@@ -43,7 +43,7 @@ export function useBuildForm(
     [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
   );
 
-  const formFields = useMemo<FormBlock>(() => jsonSchemaToUiWidget(jsonSchema), [jsonSchema]);
+  const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
   if (formFields._type !== "formGroup") {
     throw new Error("Top level configuration has to be an object");

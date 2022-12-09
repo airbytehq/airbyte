@@ -1,7 +1,7 @@
 import { FormGroupItem } from "core/form/types";
+import { AirbyteJSONSchemaDefinition } from "core/jsonSchema";
 
-import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
-import { AirbyteJSONSchemaDefinition } from "./types";
+import { jsonSchemaToFormBlock } from "./schemaToFormBlock";
 
 it("should reformat jsonSchema to internal widget representation", () => {
   const schema: AirbyteJSONSchemaDefinition = {
@@ -26,40 +26,13 @@ it("should reformat jsonSchema to internal widget representation", () => {
     },
   };
 
-  const builtSchema = jsonSchemaToUiWidget(schema, "key");
+  const builtSchema = jsonSchemaToFormBlock(schema, "key");
 
   const expected = {
     _type: "formGroup",
     path: "key",
     fieldKey: "key",
     isRequired: false,
-    jsonSchema: {
-      properties: {
-        dbname: {
-          description: "Name of the database.",
-          type: "string",
-        },
-        host: {
-          description: "Hostname of the database.",
-          type: "string",
-        },
-        password: {
-          airbyte_secret: true,
-          description: "Password associated with the username.",
-          type: "string",
-        },
-        port: {
-          description: "Port of the database.",
-          type: "integer",
-        },
-        user: {
-          description: "Username to use to access the database.",
-          type: "string",
-        },
-      },
-      required: ["host", "port", "user", "dbname"],
-      type: "object",
-    },
     properties: [
       {
         _type: "formItem",
@@ -128,7 +101,7 @@ it("should turn single enum into const but keep multi value enum", () => {
     },
   };
 
-  const builtSchema = jsonSchemaToUiWidget(schema, "key");
+  const builtSchema = jsonSchemaToFormBlock(schema, "key");
 
   const expectedProperties = [
     {
@@ -176,7 +149,7 @@ it("should reformat jsonSchema to internal widget representation with parent sch
     },
   };
 
-  const builtSchema = jsonSchemaToUiWidget(schema, "key", undefined, {
+  const builtSchema = jsonSchemaToFormBlock(schema, "key", undefined, {
     required: ["key"],
   });
 
@@ -185,17 +158,6 @@ it("should reformat jsonSchema to internal widget representation with parent sch
     fieldKey: "key",
     path: "key",
     isRequired: true,
-    jsonSchema: {
-      properties: {
-        host: {
-          description: "Hostname of the database.",
-          type: "string",
-        },
-      },
-      required: ["host", "port", "user", "dbname"],
-      title: "Postgres Source Spec",
-      type: "object",
-    },
     properties: [
       {
         _type: "formItem",
@@ -235,6 +197,11 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
               api_key: {
                 type: "string",
               },
+              type: {
+                type: "string",
+                const: "api",
+                default: "api",
+              },
             },
           },
           {
@@ -245,6 +212,11 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
                 type: "string",
                 examples: ["https://api.hubspot.com/"],
               },
+              type: {
+                type: "string",
+                const: "oauth",
+                default: "oauth",
+              },
             },
           },
         ],
@@ -252,42 +224,12 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
     },
   };
 
-  const builtSchema = jsonSchemaToUiWidget(schema, "key", undefined, {
+  const builtSchema = jsonSchemaToFormBlock(schema, "key", undefined, {
     required: ["key"],
   });
 
   const expected = {
     _type: "formGroup",
-    jsonSchema: {
-      type: "object",
-      required: ["start_date", "credentials"],
-      properties: {
-        start_date: { type: "string" },
-        credentials: {
-          type: "object",
-          description: "Credentials Condition Description",
-          title: "Credentials Condition",
-          order: 0,
-          oneOf: [
-            {
-              title: "api key",
-              required: ["api_key"],
-              properties: { api_key: { type: "string" } },
-            },
-            {
-              title: "oauth",
-              required: ["redirect_uri"],
-              properties: {
-                redirect_uri: {
-                  type: "string",
-                  examples: ["https://api.hubspot.com/"],
-                },
-              },
-            },
-          ],
-        },
-      },
-    },
     path: "key",
     fieldKey: "key",
     properties: [
@@ -307,16 +249,13 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
         title: "Credentials Condition",
         order: 0,
         fieldKey: "credentials",
-        conditions: {
-          "api key": {
+        selectionConstValues: ["api", "oauth"],
+        selectionKey: "type",
+        selectionPath: "key.credentials.type",
+        conditions: [
+          {
             title: "api key",
             _type: "formGroup",
-            jsonSchema: {
-              title: "api key",
-              required: ["api_key"],
-              type: "object",
-              properties: { api_key: { type: "string" } },
-            },
             path: "key.credentials",
             fieldKey: "credentials",
             properties: [
@@ -329,23 +268,24 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
                 multiline: false,
                 type: "string",
               },
+              {
+                _type: "formItem",
+                const: "api",
+                default: "api",
+                fieldKey: "type",
+                format: undefined,
+                isRequired: false,
+                isSecret: false,
+                multiline: false,
+                path: "key.credentials.type",
+                type: "string",
+              },
             ],
             isRequired: false,
           },
-          oauth: {
+          {
             title: "oauth",
             _type: "formGroup",
-            jsonSchema: {
-              title: "oauth",
-              required: ["redirect_uri"],
-              type: "object",
-              properties: {
-                redirect_uri: {
-                  type: "string",
-                  examples: ["https://api.hubspot.com/"],
-                },
-              },
-            },
             path: "key.credentials",
             fieldKey: "credentials",
             properties: [
@@ -359,10 +299,22 @@ it("should reformat jsonSchema to internal widget representation when has oneOf"
                 multiline: false,
                 type: "string",
               },
+              {
+                _type: "formItem",
+                const: "oauth",
+                default: "oauth",
+                fieldKey: "type",
+                format: undefined,
+                isRequired: false,
+                isSecret: false,
+                multiline: false,
+                path: "key.credentials.type",
+                type: "string",
+              },
             ],
             isRequired: false,
           },
-        },
+        ],
         isRequired: true,
       },
     ],

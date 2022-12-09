@@ -38,16 +38,18 @@ const propTwoFormBlock: FormBlock = {
 };
 
 const conditionFormField: FormConditionItem = {
-  conditions: {
-    ChoiceOne: {
+  conditions: [
+    {
       isRequired: true,
       _type: "formGroup",
       fieldKey: "choice_one_key",
       path: "section.conditional.choice_one",
-      jsonSchema: {},
       properties: [propOneFormBlock, propTwoFormBlock],
     },
-  },
+  ],
+  selectionPath: "section.conditional.choice_one.type",
+  selectionKey: "type",
+  selectionConstValues: ["one"],
   isRequired: true,
   _type: "formCondition",
   fieldKey: "field_key",

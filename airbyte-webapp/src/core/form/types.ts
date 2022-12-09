@@ -41,7 +41,17 @@ export interface FormGroupItem extends FormItem {
 export interface FormConditionItem extends FormItem {
   _type: "formCondition";
   conditions: FormGroupItem[];
+  /**
+   * The full path to the const property describing which condition is selected (e.g. connectionConfiguration.a.deep.path.type)
+   */
   selectionPath: string;
+  /**
+   * The key of the const property describing which condition is selected (e.g. type)
+   */
+  selectionKey: string;
+  /**
+   * The possible values of the selectionKey property ordered in the same way as the conditions
+   */
   selectionConstValues: unknown[];
 }
 
@@ -51,10 +61,3 @@ export interface FormObjectArrayItem extends FormItem {
 }
 
 export type FormBlock = FormGroupItem | FormBaseItem | FormConditionItem | FormObjectArrayItem;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type WidgetConfig = Record<string, any>;
-export type WidgetConfigMap = Record<string, WidgetConfig>;
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type FormComponentOverrideProps = Record<string, any>;

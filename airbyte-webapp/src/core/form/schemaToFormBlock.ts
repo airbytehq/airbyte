@@ -1,9 +1,8 @@
 import pick from "lodash/pick";
 
 import { FormBlock } from "core/form/types";
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "core/jsonSchema";
 import { isDefined } from "utils/common";
-
-import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -16,7 +15,7 @@ import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
  * @param path
  * @param parentSchema
  */
-export const jsonSchemaToUiWidget = (
+export const jsonSchemaToFormBlock = (
   jsonSchema: AirbyteJSONSchemaDefinition,
   key = "",
   path: string = key,
@@ -42,7 +41,7 @@ export const jsonSchemaToUiWidget = (
       if (typeof condition === "boolean") {
         throw new Error("Spec uses oneOf without using object types for all conditions");
       }
-      const uiWidget = jsonSchemaToUiWidget({ ...condition, type: jsonSchema.type }, key, path);
+      const uiWidget = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
       if (uiWidget._type !== "formGroup") {
         return [];
       }
@@ -66,7 +65,8 @@ export const jsonSchemaToUiWidget = (
       // no shared const property in oneOf. This should never happen per specification, fail hard
       throw new Error("Spec uses oneOf without a shared const property");
     }
-    const selectionPath = `${path}.${possibleConditionSelectionKeys.values().next().value}`;
+    const selectionKey = possibleConditionSelectionKeys.values().next().value;
+    const selectionPath = `${path}.${selectionKey}`;
     const selectionConstValues = conditions.map(
       (condition) => condition.properties.find((property) => property.path === selectionPath)?.const
     );
@@ -77,6 +77,7 @@ export const jsonSchemaToUiWidget = (
       path: path || key,
       fieldKey: key,
       selectionPath,
+      selectionKey,
       selectionConstValues,
       conditions,
       isRequired,
@@ -94,14 +95,14 @@ export const jsonSchemaToUiWidget = (
       _type: "objectArray",
       path: path || key,
       fieldKey: key,
-      properties: jsonSchemaToUiWidget(jsonSchema.items, key, path),
+      properties: jsonSchemaToFormBlock(jsonSchema.items, key, path),
       isRequired,
     };
   }
 
   if (jsonSchema.type === "object") {
     const properties = Object.entries(jsonSchema.properties || []).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
+      jsonSchemaToFormBlock(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
 
     return {
