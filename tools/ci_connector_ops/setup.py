@@ -19,7 +19,8 @@ setup(
     python_requires=">=3.9",
     entry_points={
         "console_scripts": [
-            "check-test-strictness-level = ci_connector_ops.check_test_strictness_level:main",
+            "check-test-strictness-level = ci_connector_ops.sat_config_checks:check_test_strictness_level",
+            "requires-connector-team-review = ci_connector_ops.sat_config_checks:requires_connector_team_review"
         ],
     },
 )
