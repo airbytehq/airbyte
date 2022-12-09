@@ -1,4 +1,4 @@
-import { AirbyteRequestService } from "../../core/request/AirbyteRequestService";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 export interface Signup {
   firstName: string;

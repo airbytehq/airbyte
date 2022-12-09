@@ -4,6 +4,7 @@ import styled from "styled-components";
 import { NumberNaming } from "core/functions/numberFormatter";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
+import { useListProducts } from "services/products/ProductsService";
 
 import { PaymentRoute } from "../../PaymentPage";
 import FeaturesCard from "./components/FeaturesCard";
@@ -19,6 +20,10 @@ const SelectPlanPage: React.FC = () => {
   const { push } = useRouter();
 
   const [selectedDataRow, setDataRow] = useState<IDataRow | undefined>();
+
+  const products = useListProducts();
+
+  console.log(products);
 
   const dataRows: IDataRow[] = [
     { id: "1", numberOfRows: 1 * NumberNaming.M },

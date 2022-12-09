@@ -18,7 +18,8 @@ import { BottomBlock, FieldItem, Form } from "packages/cloud/views/auth/componen
 
 // import { OAuthLogin } from "../OAuthLogin";
 // import { Disclaimer } from "../SignupPage/components/SignupForm";
-import { useAuthenticationService } from "../../../services/auth/AuthSpecificationService";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
+
 import { RoutePaths } from "../../routePaths";
 import styles from "./LoginPage.module.scss";
 // import {CloudRoutes} from "../../../packages/cloud/cloudRoutes";
