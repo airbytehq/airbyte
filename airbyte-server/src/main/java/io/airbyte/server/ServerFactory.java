@@ -28,7 +28,6 @@ import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
-import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.ConnectionApiBinder;
@@ -45,7 +44,6 @@ import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
-import io.airbyte.server.apis.binders.StateApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.ConnectionApiFactory;
@@ -62,7 +60,6 @@ import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
-import io.airbyte.server.apis.factories.StateApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.apis.factories.WorkspaceApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
@@ -78,7 +75,6 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
-import io.airbyte.server.handlers.StateHandler;
 import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
@@ -123,7 +119,6 @@ public interface ServerFactory {
                         final SchedulerHandler schedulerHandler,
                         final SourceHandler sourceHandler,
                         final SourceDefinitionsHandler sourceDefinitionsHandler,
-                        final StateHandler stateHandler,
                         final WorkspacesHandler workspacesHandler,
                         final WebBackendConnectionsHandler webBackendConnectionsHandler,
                         final WebBackendGeographiesHandler webBackendGeographiesHandler,
@@ -161,7 +156,6 @@ public interface ServerFactory {
                                  final SchedulerHandler schedulerHandler,
                                  final SourceHandler sourceHandler,
                                  final SourceDefinitionsHandler sourceDefinitionsHandler,
-                                 final StateHandler stateHandler,
                                  final WorkspacesHandler workspacesHandler,
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
@@ -200,8 +194,6 @@ public interface ServerFactory {
 
       SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
-      StateApiFactory.setValues(stateHandler);
-
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
       WorkspaceApiFactory.setValues(workspacesHandler);
@@ -223,7 +215,6 @@ public interface ServerFactory {
           SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
-          StateApiController.class,
           WebBackendApiController.class,
           WorkspaceApiController.class);
 
@@ -243,7 +234,6 @@ public interface ServerFactory {
           new SourceDefinitionApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
-          new StateApiBinder(),
           new WebBackendApiBinder(),
           new WorkspaceApiBinder());
 

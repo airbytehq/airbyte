@@ -25,14 +25,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all
- * open API generators create a separate class per API "root-route". For example, if our API has two
- * routes "/v1/First/get" and "/v1/Second/get", OpenAPI generates (essentially) the following files:
+ * This class is meant to consolidate all our API endpoints into a fluent-ish client. Currently, all open API generators create a separate class per
+ * API "root-route". For example, if our API has two routes "/v1/First/get" and "/v1/Second/get", OpenAPI generates (essentially) the following
+ * files:
  * <p>
  * ApiClient.java, FirstApi.java, SecondApi.java
  * <p>
- * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new
- * ApiClient()).get(), which can get cumbersome if we're interacting with many pieces of the API.
+ * To call the API type-safely, we'd do new FirstApi(new ApiClient()).get() or new SecondApi(new ApiClient()).get(), which can get cumbersome if we're
+ * interacting with many pieces of the API.
  * <p>
  * This is currently manually maintained. We could look into autogenerating it if needed.
  */
@@ -74,7 +74,7 @@ public class AirbyteApiClient {
     workspaceApi = new WorkspaceApi(apiClient);
     healthApi = new HealthApi(micronautApiClient);
     attemptApi = new AttemptApi(micronautApiClient);
-    stateApi = new StateApi(apiClient);
+    stateApi = new StateApi(micronautApiClient);
   }
 
   public ConnectionApi getConnectionApi() {
@@ -134,35 +134,32 @@ public class AirbyteApiClient {
   }
 
   /**
-   * Default to 4 retries with a randomised 1 - 10 seconds interval between the first two retries and
-   * an 10-minute wait for the last retry.
+   * Default to 4 retries with a randomised 1 - 10 seconds interval between the first two retries and an 10-minute wait for the last retry.
    */
   public static <T> T retryWithJitter(final Callable<T> call, final String desc) {
     return retryWithJitter(call, desc, DEFAULT_RETRY_INTERVAL_SECS, DEFAULT_FINAL_INTERVAL_SECS, DEFAULT_MAX_RETRIES);
   }
 
   /**
-   * Provides a simple retry wrapper for api calls. This retry behaviour is slightly different from
-   * generally available retries libraries - the last retry is able to wait an interval inconsistent
-   * with regular intervals/exponential backoff.
+   * Provides a simple retry wrapper for api calls. This retry behaviour is slightly different from generally available retries libraries - the last
+   * retry is able to wait an interval inconsistent with regular intervals/exponential backoff.
    * <p>
-   * Since the primary retries use case is long-running workflows, the benefit of waiting a couple of
-   * minutes as a last ditch effort to outlast networking disruption outweighs the cost of slightly
-   * longer jobs.
+   * Since the primary retries use case is long-running workflows, the benefit of waiting a couple of minutes as a last ditch effort to outlast
+   * networking disruption outweighs the cost of slightly longer jobs.
    *
-   * @param call method to execute
-   * @param desc short readable explanation of why this method is executed
+   * @param call                  method to execute
+   * @param desc                  short readable explanation of why this method is executed
    * @param jitterMaxIntervalSecs upper limit of the randomised retry interval. Minimum value is 1.
-   * @param finalIntervalSecs retry interval before the last retry.
+   * @param finalIntervalSecs     retry interval before the last retry.
    */
   @VisibleForTesting
   // This is okay since we are logging the stack trace, which PMD is not detecting.
   @SuppressWarnings("PMD.PreserveStackTrace")
   public static <T> T retryWithJitter(final Callable<T> call,
-                                      final String desc,
-                                      final int jitterMaxIntervalSecs,
-                                      final int finalIntervalSecs,
-                                      final int maxTries) {
+      final String desc,
+      final int jitterMaxIntervalSecs,
+      final int finalIntervalSecs,
+      final int maxTries) {
     int currRetries = 0;
     boolean keepTrying = true;
 
