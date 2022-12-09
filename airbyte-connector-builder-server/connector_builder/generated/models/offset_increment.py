@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.offset_increment_all_of import OffsetIncrementAllOf
 
 
@@ -20,6 +20,6 @@ class OffsetIncrement(BaseModel):
         page_size: The page_size of this OffsetIncrement.
     """
 
-    page_size: int
+    page_size: int = Field(alias="page_size")
 
 OffsetIncrement.update_forward_refs()

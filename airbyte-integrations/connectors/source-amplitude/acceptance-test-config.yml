@@ -2,6 +2,8 @@ connector_image: airbyte/source-amplitude:dev
 tests:
   spec:
     - spec_path: "source_amplitude/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.17"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
