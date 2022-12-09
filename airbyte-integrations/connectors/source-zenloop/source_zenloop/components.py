@@ -3,14 +3,10 @@
 #
 
 
-import math
 from dataclasses import dataclass
-from typing import Any, Iterable, List, Mapping, Optional
+from typing import Iterable
 
-import requests
 from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
-from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import SubstreamSlicer
 from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
