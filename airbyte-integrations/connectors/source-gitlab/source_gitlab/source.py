@@ -52,9 +52,9 @@ class GitlabOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
         token_valid, access_token_info = self.get_access_token_info(api_url, access_token)
         if not token_valid:
             return
-        t0 = pendulum.now()
+        now = pendulum.now()
         self.access_token = access_token
-        self.set_token_expiry_date(t0.add(seconds=access_token_info["expires_in"]))
+        self.set_token_expiry_date(now.add(seconds=access_token_info["expires_in"]))
 
     @staticmethod
     def get_access_token_info(api_url: str, access_token: str) -> Tuple[bool, MutableMapping]:
