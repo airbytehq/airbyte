@@ -17,7 +17,7 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
 };
 
 const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChangesByStream: StreamTransform[]) => {
-  if (!breakingChangesByStream?.length) {
+  if (!breakingChangesByStream?.length || !nodeStream.config) {
     return nodeStream;
   }
 
@@ -53,8 +53,8 @@ const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChanges
     ...nodeStream,
     config: {
       ...nodeStream.config,
-      primaryKey: clearPrimaryKey ? [] : nodeStream.config?.primaryKey,
-      cursorField: clearCursorField ? [] : nodeStream.config?.cursorField,
+      primaryKey: clearPrimaryKey ? [] : nodeStream.config.primaryKey,
+      cursorField: clearCursorField ? [] : nodeStream.config.cursorField,
     },
   };
 };
