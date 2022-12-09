@@ -17,7 +17,7 @@ const getDefaultCursorField = (streamNode: SyncSchemaStream): string[] => {
 };
 
 const clearBreakingFieldChanges = (nodeStream: SyncSchemaStream, breakingChangesByStream: StreamTransform[]) => {
-  if (!breakingChangesByStream?.length || !nodeStream.config) {
+  if (!breakingChangesByStream.length || !nodeStream.config) {
     return nodeStream;
   }
 
