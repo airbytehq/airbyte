@@ -1183,7 +1183,7 @@ class ScreenSchemes(JiraStream):
 
 class Sprints(JiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-sprint-get
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get
     """
 
     parse_response_root = "values"
@@ -1206,12 +1206,17 @@ class Sprints(JiraStream):
 
 class SprintIssues(IncrementalJiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-agile-1-0-sprint-sprintid-issue-get
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-sprint/#api-rest-agile-1-0-sprint-sprintid-issue-get
     """
 
     cursor_field = "updated"
     parse_response_root = "issues"
     api_v1 = True
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.sprints_stream = Sprints(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         sprint_id = stream_slice["sprint_id"]
@@ -1230,16 +1235,44 @@ class SprintIssues(IncrementalJiraStream):
             params["jql"] = jql
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        stream_args = {"authenticator": self.authenticator, "domain": self._domain, "projects": self._projects}
-        field_ids_by_name = IssueFields(**stream_args).field_ids_by_name()
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         fields = ["key", "status", "updated"]
         for name in ["Story Points", "Story point estimate"]:
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
-        sprints_stream = Sprints(**stream_args)
-        for sprints in sprints_stream.read_records(sync_mode=SyncMode.full_refresh):
-            yield from super().read_records(stream_slice={"sprint_id": sprints["id"], "fields": fields}, **kwargs)
+        start_point = self.get_starting_point(stream_state=stream_state)
+        for sprints in read_full_refresh(self.sprints_stream):
+            stream_slice = {"sprint_id": sprints["id"], "fields": fields}
+            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
+                cursor_value = pendulum.parse(record[self.cursor_field])
+                if not start_point or cursor_value >= start_point:
+                    yield record
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state
+        return current_stream_state
+
+    def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
+        compare_date = self.get_starting_point(stream_state)
+        if compare_date:
+            compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
+            return f"{self.cursor_field} >= '{compare_date}'"
+
+    @call_once
+    def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if stream_state:
+            stream_state_value = stream_state.get(self.cursor_field)
+            if stream_state_value:
+                stream_state_value = pendulum.parse(stream_state_value)
+                return safe_max(stream_state_value, self._start_date)
+        return self._start_date
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["issueId"] = record["id"]
