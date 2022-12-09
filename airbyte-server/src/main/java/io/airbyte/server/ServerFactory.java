@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
-import io.airbyte.server.apis.DestinationOauthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
@@ -28,7 +27,6 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
-import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
@@ -40,7 +38,6 @@ import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
-import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
@@ -150,8 +147,6 @@ public interface ServerFactory {
 
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
-      DestinationOauthApiFactory.setValues(oAuthHandler);
-
       SourceOauthApiFactory.setValues(oAuthHandler);
 
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
@@ -175,7 +170,6 @@ public interface ServerFactory {
       // server configuration
       final Set<Class<?>> componentClasses = Set.of(
           DestinationDefinitionSpecificationApiController.class,
-          DestinationOauthApiController.class,
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
@@ -191,7 +185,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new DestinationDefinitionSpecificationApiBinder(),
-          new DestinationOauthApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),

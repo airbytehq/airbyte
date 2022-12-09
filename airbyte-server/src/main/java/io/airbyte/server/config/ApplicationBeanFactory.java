@@ -25,6 +25,7 @@ import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.UUID;
@@ -84,6 +85,11 @@ public class ApplicationBeanFactory {
   @Named("workspaceRoot")
   public Path workspaceRoot(@Value("${airbyte.workspace.root}") final String workspaceRoot) {
     return Path.of(workspaceRoot);
+  }
+
+  @Singleton
+  public HttpClient httpClient() {
+    return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
   }
 
   @Singleton
