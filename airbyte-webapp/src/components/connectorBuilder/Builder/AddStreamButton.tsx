@@ -59,7 +59,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ className, onA
             <FormikPatch />
             <Modal
               size="sm"
-              title={<FormattedMessage id="connectorBuilder.newStream" />}
+              title={<FormattedMessage id="connectorBuilder.addStreamModal.title" />}
               onClose={() => {
                 setIsOpen(false);
               }}
