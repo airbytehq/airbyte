@@ -296,7 +296,7 @@ export const useInitialValues = (
         return false;
       });
     }
-    return [];
+    return undefined;
   }, [catalogDiff?.transforms, connection]);
 
   const initialSchema = useMemo(
