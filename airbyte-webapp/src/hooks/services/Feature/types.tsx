@@ -15,4 +15,4 @@ export enum FeatureItem {
   AllowFieldSelection = "ALLOW_FIELD_SELECTION",
 }
 
-export type FeatureSet = Record<FeatureItem, boolean>;
+export type FeatureSet = Partial<Record<FeatureItem, boolean>>;
