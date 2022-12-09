@@ -495,7 +495,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "campaign_name": "CampaignVadimTraffic",
     "clicks": 20,
     "dpa_target_audience_type": null,
-    "mobile_app_id": 0,
+    "mobile_app_id": "0",
     "promotion_type": "Website",
     "conversion_rate": 0,
     "cpm": 3.9,
@@ -550,6 +550,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 1.0.0   | 2022-12-05 | [19758](https://github.com/airbytehq/airbyte/pull/19758) | Convert `mobile_app_id` from integer to string in AudienceReport streams.                     |
 | 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                             |
 | 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |                                               
 | 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |                                               

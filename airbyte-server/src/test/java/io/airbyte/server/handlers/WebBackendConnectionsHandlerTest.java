@@ -76,6 +76,7 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.ConfigRepository.DestinationAndDefinition;
@@ -173,9 +174,10 @@ class WebBackendConnectionsHandlerTest {
     final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, destinationDefinition);
 
     final StandardSync standardSync =
-        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false);
+        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), false, Status.ACTIVE);
     final StandardSync brokenStandardSync =
-        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true);
+        ConnectionHelpers.generateSyncWithSourceAndDestinationId(source.getSourceId(), destination.getDestinationId(), true, Status.INACTIVE);
+
     when(configRepository.listWorkspaceStandardSyncs(sourceRead.getWorkspaceId(), false))
         .thenReturn(Collections.singletonList(standardSync));
     when(configRepository.getSourceAndDefinitionsFromSourceIds(Collections.singletonList(source.getSourceId())))
@@ -277,7 +279,7 @@ class WebBackendConnectionsHandlerTest {
                     .streamDescriptor(new io.airbyte.api.model.generated.StreamDescriptor().name("users-data1"))
                     .updateStream(null))));
 
-    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(connectionRead, sourceRead, destinationRead,
+    expectedWithNewSchemaAndBreakingChange = expectedWebBackendConnectionReadObject(brokenConnectionRead, sourceRead, destinationRead,
         new OperationReadList().operations(expected.getOperations()), SchemaChange.BREAKING, now, modifiedCatalog, null)
             .catalogDiff(new CatalogDiff().transforms(List.of(
                 new StreamTransform().transformType(TransformTypeEnum.ADD_STREAM)
@@ -416,9 +418,9 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
-    SourceDiscoverSchemaRead schemaRead =
+    final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
-            .breakingChange(false);
+            .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
@@ -433,12 +435,12 @@ class WebBackendConnectionsHandlerTest {
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
         .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
     when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
-    SourceDiscoverSchemaRead schemaRead =
+    final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
-            .breakingChange(true);
+            .breakingChange(true).connectionStatus(ConnectionStatus.INACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
-    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, brokenConnectionRead,
         operationReadList);
     assertEquals(expectedWithNewSchemaAndBreakingChange, result);
   }
@@ -1161,13 +1163,13 @@ class WebBackendConnectionsHandlerTest {
     final List<StreamDescriptor> resultList = WebBackendConnectionsHandler.getStreamsToReset(catalogDiff);
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "added_stream"));
+            streamDescriptor -> "added_stream".equalsIgnoreCase(streamDescriptor.getName())));
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "removed_stream"));
+            streamDescriptor -> "removed_stream".equalsIgnoreCase(streamDescriptor.getName())));
     assertTrue(
         resultList.stream().anyMatch(
-            streamDescriptor -> streamDescriptor.getName() == "updated_stream"));
+            streamDescriptor -> "updated_stream".equalsIgnoreCase(streamDescriptor.getName())));
   }
 
   @Test

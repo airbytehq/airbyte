@@ -107,7 +107,6 @@
         <exclude name="ReturnEmptyCollectionRatherThanNull"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
         <exclude name="SingletonClassReturningNewInstance"/>
-        <exclude name="UseEqualsToCompareStrings"/>
         <exclude name="UseProperClassLoader"/>
     </rule>
     <rule ref="category/java/errorprone.xml/AssignmentInOperand">
