@@ -19,7 +19,6 @@ export const CatalogTreeBody: React.FC<CatalogTreeBodyProps> = ({ streams, chang
   const { mode } = useConnectionFormService();
 
   const onUpdateStream = useCallback(
-    // TODO (josephkmh): selectedFields should be defined by orval/backend
     (id: string | undefined, newConfig: Partial<AirbyteStreamConfiguration>) => {
       const streamNode = streams.find((streamNode) => streamNode.id === id);
 
