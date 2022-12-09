@@ -33,13 +33,20 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
         if len(streams) == 0:
             return False, f"No streams to connect to from source {source}"
         for stream_name in self.stream_names:
-            if stream_name in stream_name_to_stream.keys():
-                stream = stream_name_to_stream[stream_name]
-                try:
+            if stream_name not in stream_name_to_stream.keys():
+                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
+
+            stream = stream_name_to_stream[stream_name]
+            try:
+                if stream.availability_strategy is not None:
+                    stream_is_available, reason = stream.check_availability(logger, source)
+                    if not stream_is_available:
+                        return False, reason
+                else:
                     stream_helper = StreamHelper()
                     stream_helper.get_first_record(stream)
-                except Exception as error:
-                    return False, f"Unable to connect to stream {stream_name} - {error}"
-            else:
-                raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}")
+            except Exception as error:
+                raise error
+                return False, f"Unable to connect to stream {stream_name} - {error}"
+
         return True, None

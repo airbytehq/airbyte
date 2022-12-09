@@ -60,7 +60,8 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             reason = self.reasons_for_unavailable_status_codes(stream, logger, source)[status_code]
             return False, reason
         except KeyError:
-            return True, None
+            # If the HTTPError is not in the dictionary of errors we know how to handle, don't except it
+            raise error
 
     def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Dict[int, str]:
         """

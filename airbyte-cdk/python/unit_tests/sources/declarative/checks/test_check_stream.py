@@ -27,6 +27,7 @@ record = MagicMock()
 def test_check_stream_with_slices_as_list(test_name, record, streams_to_check, stream_slice, expectation, slices_as_list):
     stream = MagicMock()
     stream.name = "s1"
+    stream.availability_strategy = None
     if slices_as_list:
         stream.stream_slices.return_value = [stream_slice]
     else:
