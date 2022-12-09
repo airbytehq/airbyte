@@ -14,7 +14,6 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
-import io.airbyte.server.apis.DestinationOauthApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
@@ -24,25 +23,22 @@ import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
-import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
-import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
-import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
@@ -74,76 +70,74 @@ import org.flywaydb.core.Flyway;
 public interface ServerFactory {
 
   ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
-                        final ConfigRepository configRepository,
-                        final SecretsRepositoryReader secretsRepositoryReader,
-                        final SecretsRepositoryWriter secretsRepositoryWriter,
-                        final JobPersistence jobPersistence,
-                        final Database configsDatabase,
-                        final Database jobsDatabase,
-                        final TrackingClient trackingClient,
-                        final WorkerEnvironment workerEnvironment,
-                        final LogConfigs logConfigs,
-                        final AirbyteVersion airbyteVersion,
-                        final Path workspaceRoot,
-                        final HttpClient httpClient,
-                        final EventRunner eventRunner,
-                        final Flyway configsFlyway,
-                        final Flyway jobsFlyway,
-                        final AttemptHandler attemptHandler,
-                        final ConnectionsHandler connectionsHandler,
-                        final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                        final DestinationHandler destinationApiHandler,
-                        final HealthCheckHandler healthCheckHandler,
-                        final JobHistoryHandler jobHistoryHandler,
-                        final LogsHandler logsHandler,
-                        final OAuthHandler oAuthHandler,
-                        final OperationsHandler operationsHandler,
-                        final SchedulerHandler schedulerHandler,
-                        final SourceHandler sourceHandler,
-                        final SourceDefinitionsHandler sourceDefinitionsHandler,
-                        final WorkspacesHandler workspacesHandler,
-                        final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                        final WebBackendGeographiesHandler webBackendGeographiesHandler,
-                        final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler);
+      final ConfigRepository configRepository,
+      final SecretsRepositoryReader secretsRepositoryReader,
+      final SecretsRepositoryWriter secretsRepositoryWriter,
+      final JobPersistence jobPersistence,
+      final Database configsDatabase,
+      final Database jobsDatabase,
+      final TrackingClient trackingClient,
+      final WorkerEnvironment workerEnvironment,
+      final LogConfigs logConfigs,
+      final AirbyteVersion airbyteVersion,
+      final Path workspaceRoot,
+      final HttpClient httpClient,
+      final EventRunner eventRunner,
+      final Flyway configsFlyway,
+      final Flyway jobsFlyway,
+      final AttemptHandler attemptHandler,
+      final ConnectionsHandler connectionsHandler,
+      final DestinationDefinitionsHandler destinationDefinitionsHandler,
+      final DestinationHandler destinationApiHandler,
+      final HealthCheckHandler healthCheckHandler,
+      final JobHistoryHandler jobHistoryHandler,
+      final LogsHandler logsHandler,
+      final OAuthHandler oAuthHandler,
+      final OperationsHandler operationsHandler,
+      final SchedulerHandler schedulerHandler,
+      final SourceHandler sourceHandler,
+      final SourceDefinitionsHandler sourceDefinitionsHandler,
+      final WorkspacesHandler workspacesHandler,
+      final WebBackendConnectionsHandler webBackendConnectionsHandler,
+      final WebBackendGeographiesHandler webBackendGeographiesHandler,
+      final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler);
 
   class Api implements ServerFactory {
 
     @Override
     public ServerRunnable create(final SynchronousSchedulerClient synchronousSchedulerClient,
-                                 final ConfigRepository configRepository,
-                                 final SecretsRepositoryReader secretsRepositoryReader,
-                                 final SecretsRepositoryWriter secretsRepositoryWriter,
-                                 final JobPersistence jobPersistence,
-                                 final Database configsDatabase,
-                                 final Database jobsDatabase,
-                                 final TrackingClient trackingClient,
-                                 final WorkerEnvironment workerEnvironment,
-                                 final LogConfigs logConfigs,
-                                 final AirbyteVersion airbyteVersion,
-                                 final Path workspaceRoot,
-                                 final HttpClient httpClient,
-                                 final EventRunner eventRunner,
-                                 final Flyway configsFlyway,
-                                 final Flyway jobsFlyway,
-                                 final AttemptHandler attemptHandler,
-                                 final ConnectionsHandler connectionsHandler,
-                                 final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                                 final DestinationHandler destinationApiHandler,
-                                 final HealthCheckHandler healthCheckHandler,
-                                 final JobHistoryHandler jobHistoryHandler,
-                                 final LogsHandler logsHandler,
-                                 final OAuthHandler oAuthHandler,
-                                 final OperationsHandler operationsHandler,
-                                 final SchedulerHandler schedulerHandler,
-                                 final SourceHandler sourceHandler,
-                                 final SourceDefinitionsHandler sourceDefinitionsHandler,
-                                 final WorkspacesHandler workspacesHandler,
-                                 final WebBackendConnectionsHandler webBackendConnectionsHandler,
-                                 final WebBackendGeographiesHandler webBackendGeographiesHandler,
-                                 final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
+        final ConfigRepository configRepository,
+        final SecretsRepositoryReader secretsRepositoryReader,
+        final SecretsRepositoryWriter secretsRepositoryWriter,
+        final JobPersistence jobPersistence,
+        final Database configsDatabase,
+        final Database jobsDatabase,
+        final TrackingClient trackingClient,
+        final WorkerEnvironment workerEnvironment,
+        final LogConfigs logConfigs,
+        final AirbyteVersion airbyteVersion,
+        final Path workspaceRoot,
+        final HttpClient httpClient,
+        final EventRunner eventRunner,
+        final Flyway configsFlyway,
+        final Flyway jobsFlyway,
+        final AttemptHandler attemptHandler,
+        final ConnectionsHandler connectionsHandler,
+        final DestinationDefinitionsHandler destinationDefinitionsHandler,
+        final DestinationHandler destinationApiHandler,
+        final HealthCheckHandler healthCheckHandler,
+        final JobHistoryHandler jobHistoryHandler,
+        final LogsHandler logsHandler,
+        final OAuthHandler oAuthHandler,
+        final OperationsHandler operationsHandler,
+        final SchedulerHandler schedulerHandler,
+        final SourceHandler sourceHandler,
+        final SourceDefinitionsHandler sourceDefinitionsHandler,
+        final WorkspacesHandler workspacesHandler,
+        final WebBackendConnectionsHandler webBackendConnectionsHandler,
+        final WebBackendGeographiesHandler webBackendGeographiesHandler,
+        final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
-
-      DestinationOauthApiFactory.setValues(oAuthHandler);
 
       SourceOauthApiFactory.setValues(oAuthHandler);
 
@@ -152,8 +146,6 @@ public interface ServerFactory {
       LogsApiFactory.setValues(logsHandler);
 
       NotificationsApiFactory.setValues(workspacesHandler);
-
-      SourceApiFactory.setValues(schedulerHandler, sourceHandler);
 
       SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
 
@@ -166,7 +158,6 @@ public interface ServerFactory {
       // server configuration
       final Set<Class<?>> componentClasses = Set.of(
           DestinationDefinitionSpecificationApiController.class,
-          DestinationOauthApiController.class,
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
@@ -176,16 +167,15 @@ public interface ServerFactory {
           SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
+          StateApiController.class,
           WebBackendApiController.class,
           WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
           new DestinationDefinitionSpecificationApiBinder(),
-          new DestinationOauthApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),

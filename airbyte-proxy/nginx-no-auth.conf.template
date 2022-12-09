@@ -20,7 +20,7 @@ http {
       proxy_pass "${PROXY_PASS_MICRONAUT_API}";
     }
 
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|operations|scheduler|state)/.* {
+    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_oauths|operations|scheduler|sources|state)/.* {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -48,7 +48,7 @@ http {
       proxy_pass "${PROXY_PASS_MICRONAUT_API}";
     }
 
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|operations|scheduler|state)/.* {
+    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_oauths|operations|scheduler|sources|state)/.* {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

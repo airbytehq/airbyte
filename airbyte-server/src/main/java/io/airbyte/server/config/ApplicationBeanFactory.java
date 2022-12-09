@@ -19,12 +19,14 @@ import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.core.util.StringUtils;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import java.net.http.HttpClient;
 import java.nio.file.Path;
 import java.util.Locale;
 import java.util.UUID;
@@ -87,10 +89,20 @@ public class ApplicationBeanFactory {
   }
 
   @Singleton
+  public HttpClient httpClient() {
+    return HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
+  }
+
+  @Singleton
   public JsonSecretsProcessor jsonSecretsProcessor(final FeatureFlags featureFlags) {
     return JsonSecretsProcessor.builder()
         .copySecrets(false)
         .build();
+  }
+
+  @Singleton
+  public JsonSchemaValidator jsonSchemaValidator() {
+    return new JsonSchemaValidator();
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
