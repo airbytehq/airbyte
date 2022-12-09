@@ -9,7 +9,7 @@ MAIN_REQUIREMENTS = ["requests", "PyYAML~=6.0", "GitPython~=3.1.29"]
 
 
 setup(
-    version="0.1.0",
+    version="0.1.1",
     name="ci_connector_ops",
     description="Packaged maintained by the connector operations team to perform CI for connectors",
     author="Airbyte",
