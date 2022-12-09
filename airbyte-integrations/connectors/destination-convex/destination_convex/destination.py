@@ -3,16 +3,24 @@
 #
 
 
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, TypedDict
 
+import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
 
+ConvexConfig = TypedDict(
+    "ConvexConfig",
+    {
+        "deployment_url": str,
+        "access_key": str,
+    },
+)
 
 class DestinationConvex(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -33,7 +41,7 @@ class DestinationConvex(Destination):
 
         pass
 
-    def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
+    def check(self, logger: AirbyteLogger, config: ConvexConfig) -> AirbyteConnectionStatus:
         """
         Tests if the input configuration can be used to successfully connect to the destination with the needed permissions
             e.g: if a provided API token or password can be used to connect and write to the destination.
@@ -45,9 +53,12 @@ class DestinationConvex(Destination):
 
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
-        try:
-            # TODO
-
+        deployment_url = config["deployment_url"]
+        access_key = config["access_key"]
+        url = f"{deployment_url}/version"
+        headers = {"Authorization": f"Convex {access_key}"}
+        resp = requests.get(url, headers=headers)
+        if resp.status_code == 200:
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
-        except Exception as e:
-            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+        else:
+            return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(resp)}")
