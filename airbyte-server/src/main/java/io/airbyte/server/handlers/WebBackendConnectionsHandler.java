@@ -460,9 +460,6 @@ public class WebBackendConnectionsHandler {
           originalDiscoveredStream.getStream().getJsonSchema().findPath("properties").fieldNames()
               .forEachRemaining((name) -> originallyDiscovered.add(name));
           stream.getJsonSchema().findPath("properties").fieldNames().forEachRemaining((name) -> refreshDiscovered.add(name));
-          LOGGER.info("originallySelected: {}", String.join(", ", originallySelected));
-          LOGGER.info("originallyDiscovered: {}", String.join(", ", originallyDiscovered));
-          LOGGER.info("refreshDiscovered: {}", String.join(", ", refreshDiscovered));
           // We include a selected field if it:
           // (is in the newly discovered schema) AND (it was either originally selected OR not in the
           // originally discovered schema at all)
