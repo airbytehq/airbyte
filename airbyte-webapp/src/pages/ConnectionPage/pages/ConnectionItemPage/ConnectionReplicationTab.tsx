@@ -38,7 +38,7 @@ const ValidateFormOnSchemaRefresh: React.FC = () => {
 
   useEffect(() => {
     if (schemaHasBeenRefreshed) {
-      setTouched(true, true);
+      setTouched({ syncCatalog: true }, true);
     }
   }, [setTouched, schemaHasBeenRefreshed]);
 
