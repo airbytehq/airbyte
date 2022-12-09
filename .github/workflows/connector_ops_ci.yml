@@ -25,6 +25,10 @@ jobs:
   requires-connector-team-review:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
+
+    # GitHub should provide a "pull_request_review_target", but they don't and
+    # the action will fail if run on a forked PR.
+    if: github.event.pull_request.head.repo.full_name == github.event.pull_request.base.repo.full_name
     steps:
       - name: Checkout Airbyte
         uses: actions/checkout@v3
@@ -36,11 +40,11 @@ jobs:
           python-version: "3.9"
       - name: Install ci-connector-ops package
         run: pip install --quiet -e ./tools/ci_connector_ops
-      - name: Check if the changes require a review from Connector team
-        id: requires-connector-team-review
-        run: requires-connector-team-review
-      - name: Check if team reviewed
-        if: ${{ failure() }}
+      - name: Check if the PR requires a connector team review
+        id: check-requires-connector-team-review
+        run: check-requires-connector-team-review >> $GITHUB_OUTPUT
+      - name: Check if the required teams reviewed
+        if: steps.check-requires-connector-team-review.outputs.REQUIRES_CONNECTOR_TEAM_REVIEW == 'True'
         uses: Automattic/action-required-review@v3
         with:
           status: Required review

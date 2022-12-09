@@ -37,16 +37,16 @@ def find_connectors_with_bad_strictness_level() -> List[str]:
                 connectors_with_bad_strictness_level.append(connector_name)
     return connectors_with_bad_strictness_level
 
-def find_connectors_with_backward_incompatibility_declaration() -> List[str]:
+def find_acceptance_test_config_files_requiring_reviews() -> List[str]:
     """Check if connectors that changed their acceptance-test-config.yml disabled backward compatibility tests"""
     changed_connector_names = utils.get_changed_acceptance_test_config()
-    connectors_disabling_backward_compatibility_tests = []
+    files_requiring_reviews = []
     for connector_name in changed_connector_names:
-        _, acceptance_test_config = utils.get_acceptance_test_config(connector_name)
+        acceptance_test_config_file_path, acceptance_test_config = utils.get_acceptance_test_config(connector_name)
         #TODO done is better than perfect: we should install SAT package and parse the config into a Config object for a cleaner check.
         if "disable_for_version" in json.dumps(acceptance_test_config):
-            connectors_disabling_backward_compatibility_tests.append(connector_name)
-    return connectors_disabling_backward_compatibility_tests
+            files_requiring_reviews.append(acceptance_test_config_file_path)
+    return files_requiring_reviews
 
 def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
@@ -58,10 +58,8 @@ def check_test_strictness_level():
     else:
         sys.exit(0)
 
-def requires_connector_team_review() -> bool:
-    connectors_disabling_compatibility_tests = find_connectors_with_backward_incompatibility_declaration()
-    if connectors_disabling_compatibility_tests:
-        print(f"The following connectors disabled their backward compatibility tests: {','.join(connectors_disabling_compatibility_tests)}")
-        sys.exit(1)
-    else:
-        sys.exit(0)
+def check_if_requires_connector_team_review() -> bool:
+    files_requiring_connector_team_review = find_acceptance_test_config_files_requiring_reviews()
+    requires_connector_team_review = len(files_requiring_connector_team_review) > 0
+    print(f"REQUIRES_CONNECTOR_TEAM_REVIEW={requires_connector_team_review}")
+
