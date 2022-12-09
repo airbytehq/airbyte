@@ -11,9 +11,10 @@ import styles from "./Input.module.scss";
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
   light?: boolean;
+  focusedStyle?: boolean;
 }
 
-export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
+export const Input: React.FC<InputProps> = ({ light, error, focusedStyle, ...props }) => {
   const { formatMessage } = useIntl();
 
   const inputRef = useRef<HTMLInputElement | null>(null);
@@ -71,7 +72,7 @@ export const Input: React.FC<InputProps> = ({ light, error, ...props }) => {
     <div
       className={classNames(styles.container, {
         [styles.disabled]: props.disabled,
-        [styles.focused]: focused,
+        [styles.focused]: focused && focusedStyle,
         [styles.light]: light,
         [styles.error]: error,
       })}

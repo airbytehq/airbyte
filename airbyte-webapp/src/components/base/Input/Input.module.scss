@@ -5,7 +5,7 @@
   position: relative;
   background-color: colors.$grey-50;
   border: 1px solid colors.$grey-50;
-  border-radius: 4px;
+  border-radius: 6px;
 
   &.light {
     background-color: colors.$white;
@@ -18,7 +18,8 @@
 
   &:not(.disabled, .focused):hover {
     background-color: colors.$grey-100;
-    border-color: colors.$grey-100;
+
+    // border-color: colors.$grey-100;
 
     &.light {
       background-color: colors.$white;
@@ -48,8 +49,9 @@
   font-weight: normal;
   border: none;
   background: none;
-  color: colors.$dark-blue;
-  caret-color: colors.$blue;
+  color: colors.$black300;
+
+  // caret-color: colors.$blue;
 
   &:not(.disabled).password {
     width: calc(100% - 22px);

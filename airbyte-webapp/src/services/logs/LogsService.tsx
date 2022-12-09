@@ -1,5 +1,6 @@
 import { useMutation } from "react-query";
 
+import { useUser } from "core/AuthContext";
 import { LogsService } from "core/domain/logs/LogsService";
 import { useInitService } from "services/useInitService";
 
@@ -15,10 +16,11 @@ export const logsKeys = {
 
 function useGetLogsService(): LogsService {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new LogsService(process.env.REACT_APP_API_URL as string, middlewares),
-    [process.env.REACT_APP_API_URL as string, middlewares]
+    () => new LogsService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+    [process.env.REACT_APP_API_URL as string, middlewares, removeUser]
   );
 }
 

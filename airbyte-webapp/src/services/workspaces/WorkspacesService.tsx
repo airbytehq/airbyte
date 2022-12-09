@@ -1,11 +1,13 @@
 import React, { useCallback, useContext, useMemo } from "react";
 import { useMutation, useQueryClient } from "react-query";
 
+import { useUser } from "core/AuthContext";
 import { Workspace, WorkspaceService } from "core/domain/workspace";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 
 // import { useConfig } from "../../config";
+
 import { WorkspaceUpdate } from "../../core/request/AirbyteClient";
 import { useSuspenseQuery } from "../connector/useSuspenseQuery";
 import { SCOPE_USER, SCOPE_WORKSPACE } from "../Scope";
@@ -71,17 +73,22 @@ export const useWorkspaceService = (): Context => {
 
 function useWorkspaceApiService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new WorkspaceService(process.env.REACT_APP_API_URL as string, middlewares),
-    [process.env.REACT_APP_API_URL as string, middlewares]
+    () => new WorkspaceService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+    [process.env.REACT_APP_API_URL as string, middlewares, removeUser]
   );
 }
 
 export const useCurrentWorkspaceId = () => {
-  const { params } = useRouter<unknown, { workspaceId: string }>();
+  const { user } = useUser();
 
-  return params.workspaceId;
+  return user.workspaceId;
+  // TODO: Xuan Ma told me to remove workspaceId from URLs
+  // const { params } = useRouter<unknown, { workspaceId: string }>();
+
+  // return params.workspaceId;
 };
 
 export const useCurrentWorkspace = () => {

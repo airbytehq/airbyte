@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { JobsService } from "core/domain/job/JobsService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
@@ -25,10 +26,11 @@ export const jobsKeys = {
 
 function useGetJobService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new JobsService(process.env.REACT_APP_API_URL as string, middlewares),
-    [process.env.REACT_APP_API_URL as string, middlewares]
+    () => new JobsService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+    [process.env.REACT_APP_API_URL as string, middlewares, removeUser]
   );
 }
 

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "react-query";
 
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { useInitService } from "services/useInitService";
@@ -35,9 +36,10 @@ interface ConnectorProps {
 
 function useDestinationService() {
   // const { process.env.REACT_APP_API_URL as string } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new DestinationService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 }

@@ -2,8 +2,10 @@ import React from "react";
 import { FormattedRelativeTime } from "react-intl";
 import styled from "styled-components";
 
+// TODO: @Abi mention this to make font style same even in diabled mode
+// color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
 const Content = styled.div<{ enabled?: boolean }>`
-  color: ${({ theme, enabled }) => (!enabled ? theme.greyColor40 : "inherit")};
+  color: inherit;
 `;
 
 interface IProps {

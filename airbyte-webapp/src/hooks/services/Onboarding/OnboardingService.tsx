@@ -2,9 +2,7 @@ import React, { useContext, useMemo } from "react";
 import { useLocalStorage } from "react-use";
 
 import casesConfig from "config/casesConfig.json";
-
-// import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { getAuthenticatedUser } from "../../../services/auth/AuthService";
+import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 interface Context {
   feedbackPassed?: boolean;
@@ -17,10 +15,12 @@ interface Context {
 export const OnboardingServiceContext = React.createContext<Context | null>(null);
 
 export const OnboardingServiceProvider: React.FC = ({ children }) => {
-  // const workspace = useCurrentWorkspace();
-  const user = getAuthenticatedUser();
-  const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(`${user.workspaceId}/passFeedback`, false);
-  const [skippedUseCases, setSkippedUseCases] = useLocalStorage<string[]>(`${user.workspaceId}/skippedUseCases`, []);
+  const workspace = useCurrentWorkspace();
+  const [feedbackPassed, setFeedbackPassed] = useLocalStorage<boolean>(`${workspace.workspaceId}/passFeedback`, false);
+  const [skippedUseCases, setSkippedUseCases] = useLocalStorage<string[]>(
+    `${workspace.workspaceId}/skippedUseCases`,
+    []
+  );
 
   const ctx = useMemo<Context>(
     () => ({

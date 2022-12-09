@@ -16,6 +16,10 @@
 .content {
   overflow-y: auto;
   height: 100%;
-  padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
   min-width: variables.$main-page-content-min-width;
+}
+
+.withPadding {
+  // padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-page-bottom variables.$spacing-xl;
+  padding: variables.$spacing-lg variables.$spacing-xl variables.$spacing-lg variables.$spacing-xl;
 }
