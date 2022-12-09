@@ -143,8 +143,8 @@ requester:
     response_filters:
         - http_codes: [ 404 ]
           action: IGNORE
-                    - http_codes: [ 429 ]
-                    action: RETRY
+        - http_codes: [ 429 ]
+          action: RETRY
 ```
 
 ## Backoff Strategies
