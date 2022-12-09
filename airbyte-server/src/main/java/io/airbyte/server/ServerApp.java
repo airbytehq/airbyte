@@ -8,6 +8,7 @@ import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
@@ -50,7 +51,6 @@ import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
@@ -205,7 +205,7 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+    final FeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
 
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
@@ -320,8 +320,6 @@ public class ServerApp implements ServerRunnable {
         destinationHandler,
         sourceHandler);
 
-    final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
-
     final StatePersistence statePersistence = new StatePersistence(configsDatabase);
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
@@ -369,7 +367,6 @@ public class ServerApp implements ServerRunnable {
         jobHistoryHandler,
         logsHandler,
         oAuthHandler,
-        openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
         sourceHandler,
