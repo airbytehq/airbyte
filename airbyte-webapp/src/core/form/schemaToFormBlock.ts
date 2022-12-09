@@ -43,13 +43,13 @@ export const jsonSchemaToFormBlock = (
       if (typeof condition === "boolean") {
         throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
       }
-      const uiWidget = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
-      if (uiWidget._type !== "formGroup") {
+      const formBlock = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
+      if (formBlock._type !== "formGroup") {
         return [];
       }
 
       const constProperties = new Set(
-        uiWidget.properties.filter((property) => property.const).map((property) => property.fieldKey)
+        formBlock.properties.filter((property) => property.const).map((property) => property.fieldKey)
       );
       if (!possibleConditionSelectionKeys) {
         // if this is the first condition, all const properties are candidates
@@ -60,7 +60,7 @@ export const jsonSchemaToFormBlock = (
           Array.from(possibleConditionSelectionKeys.values()).filter((x) => constProperties.has(x))
         );
       }
-      return [uiWidget];
+      return [formBlock];
     });
 
     if (!possibleConditionSelectionKeys || possibleConditionSelectionKeys.size === 0) {
