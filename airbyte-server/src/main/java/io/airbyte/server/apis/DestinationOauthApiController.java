@@ -14,15 +14,16 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import java.util.Map;
-import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destination_oauths")
-@AllArgsConstructor
 @Context
 public class DestinationOauthApiController implements DestinationOauthApi {
 
   private final OAuthHandler oAuthHandler;
+
+  public DestinationOauthApiController(final OAuthHandler oAuthHandler) {
+    this.oAuthHandler = oAuthHandler;
+  }
 
   @Post("/complete_oauth")
   @Override
