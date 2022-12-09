@@ -385,6 +385,11 @@ public class SchedulerHandler {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
+  // Find all connections that use the source from the SourceDiscoverSchemaRequestBody. For each one,
+  // determine whether 1. the source schema change resulted in a broken connection or 2. the user
+  // wants the connection disabled when non-breaking changes are detected. If so, disable that
+  // connection. Modify the current discoveredSchema object to add a CatalogDiff,
+  // containsBreakingChange paramter, and connectionStatus parameter.
   private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
                                                                  SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
