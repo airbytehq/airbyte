@@ -92,20 +92,13 @@ class StartDateJiraStream(JiraStream, ABC):
 
 
 class IncrementalJiraStream(StartDateJiraStream, ABC):
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        cursor_field = self.cursor_field
-        if isinstance(cursor_field, str):
-            latest_record = latest_record.get(self.cursor_field)
-        elif isinstance(cursor_field, list):
-            for cursor_part in cursor_field:
-                latest_record = latest_record.get(cursor_part, {})
-            cursor_field = cursor_field[-1]
-        latest_record_date = pendulum.parse(latest_record)
-        stream_state = current_stream_state.get(cursor_field)
-        if stream_state:
-            return {cursor_field: str(max(latest_record_date, pendulum.parse(stream_state)))}
-        else:
-            return {cursor_field: str(latest_record_date)}
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = latest_record[self.cursor_field]
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state
+        return current_stream_state
 
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         issues_state = None
@@ -234,14 +227,6 @@ class BoardIssues(IncrementalJiraStream):
                 if not start_point or cursor_value >= start_point:
                     yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
-
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
         if compare_date:
@@ -323,14 +308,6 @@ class Epics(IncrementalJiraStream):
                 cursor_value = pendulum.parse(record[self.cursor_field])
                 if not start_point or cursor_value >= start_point:
                     yield record
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
 
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
@@ -483,14 +460,6 @@ class Issues(IncrementalJiraStream):
                 if not start_point or cursor_value >= start_point:
                     yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
-
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
         if compare_date:
@@ -547,14 +516,6 @@ class IssueComments(IncrementalJiraStream):
                 cursor_value = pendulum.parse(record[self.cursor_field])
                 if not start_point or cursor_value >= start_point:
                     yield record
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
 
     @call_once
     def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
@@ -856,14 +817,6 @@ class IssueWorklogs(IncrementalJiraStream):
                 if not start_point or cursor_value >= start_point:
                     yield record
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
-
     @call_once
     def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
         if stream_state:
@@ -1103,7 +1056,7 @@ class PullRequests(IncrementalJiraStream):
     ) -> Iterable[Mapping[str, Any]]:
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         dev_field_ids = field_ids_by_name.get("Development", [])
-        for issue in self.issues_stream.read_records(sync_mode=SyncMode.full_refresh, stream_state=stream_state):
+        for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             for dev_field_id in dev_field_ids:
                 if self.has_pull_requests(issue["fields"][dev_field_id]):
                     yield from super().read_records(
@@ -1250,14 +1203,6 @@ class SprintIssues(IncrementalJiraStream):
                 cursor_value = pendulum.parse(record[self.cursor_field])
                 if not start_point or cursor_value >= start_point:
                     yield record
-
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
-        updated_state = latest_record[self.cursor_field]
-        stream_state_value = current_stream_state.get(self.cursor_field)
-        if stream_state_value:
-            updated_state = max(updated_state, stream_state_value)
-        current_stream_state[self.cursor_field] = updated_state
-        return current_stream_state
 
     def jql_compare_date(self, stream_state: Mapping[str, Any]) -> Optional[str]:
         compare_date = self.get_starting_point(stream_state)
