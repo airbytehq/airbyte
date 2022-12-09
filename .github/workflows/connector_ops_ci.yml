@@ -45,8 +45,8 @@ jobs:
         with:
           status: Required review
           fail: true
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
           requirements: |
             - paths: unmatched
               teams:
-                - @alafanechere
+                - connector-operations
