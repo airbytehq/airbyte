@@ -15,15 +15,19 @@ import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
 import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
+import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/destination_definitions")
-@AllArgsConstructor
+@Context
 public class DestinationDefinitionApiController implements DestinationDefinitionApi {
 
   private final DestinationDefinitionsHandler destinationDefinitionsHandler;
+
+  public DestinationDefinitionApiController(final DestinationDefinitionsHandler destinationDefinitionsHandler) {
+    this.destinationDefinitionsHandler = destinationDefinitionsHandler;
+  }
 
   @Post(uri = "/create_custom")
   @Override
