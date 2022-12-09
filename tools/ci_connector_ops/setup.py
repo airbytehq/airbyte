@@ -20,7 +20,7 @@ setup(
     entry_points={
         "console_scripts": [
             "check-test-strictness-level = ci_connector_ops.sat_config_checks:check_test_strictness_level",
-            "check-require-connector-team-review = ci_connector_ops.sat_config_checks:check_if_requires_connector_team_review"
+            "check-requires-connector-team-review = ci_connector_ops.sat_config_checks:check_if_requires_connector_team_review"
         ],
     },
 )
