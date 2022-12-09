@@ -108,6 +108,7 @@ public class OAuthHandler {
       trackingClient.track(sourceOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
+      ApmTraceUtils.addExceptionToTrace(e);
     }
     return result;
   }
@@ -154,6 +155,7 @@ public class OAuthHandler {
       trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
+      ApmTraceUtils.addExceptionToTrace(e);
     }
     return result;
   }
@@ -202,6 +204,7 @@ public class OAuthHandler {
       trackingClient.track(completeSourceOauthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
+      ApmTraceUtils.addExceptionToTrace(e);
     }
     return result;
   }
@@ -251,6 +254,7 @@ public class OAuthHandler {
       trackingClient.track(completeDestinationOAuthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
     } catch (final Exception e) {
       LOGGER.error(ERROR_MESSAGE, e);
+      ApmTraceUtils.addExceptionToTrace(e);
     }
     return result;
   }
