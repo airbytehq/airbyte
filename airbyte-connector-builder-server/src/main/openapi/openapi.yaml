@@ -83,6 +83,7 @@ components:
           description: The LOG AirbyteMessages that were emitted during the read of this slice
           items:
             type: object
+            # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteLogMessage"
         slices:
           type: array
           description: The stream slices returned from the read command. If no stream slicer is configured, this should contain a single item containing all of the results.
@@ -104,6 +105,7 @@ components:
                       description: The RECORD AirbyteMessages coming from the read operation for this page
                       items:
                         type: object
+                        # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteRecordMessage"
                     request:
                       $ref: "#/components/schemas/HttpRequest"
                     response:
@@ -120,6 +122,7 @@ components:
               state:
                 type: object
                 description: The STATE AirbyteMessage emitted at the end of this slice. This can be omitted if a stream slicer is not configured.
+                # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
     StreamReadRequestBody:
       type: object
       required:
@@ -128,7 +131,9 @@ components:
         - config
       properties:
         manifest:
-          $ref: "#/components/schemas/ConnectorManifest"
+          type: object
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
         stream:
           type: string
           description: Name of the stream to read
@@ -138,6 +143,7 @@ components:
         state:
           type: object
           description: The AirbyteStateMessage object to use as the starting state for this read
+          # $ref: "#/components/schemas/AirbyteProtocol/definitions/AirbyteStateMessage"
         # --- Potential addition for a later phase ---
         # numPages:
         #   type: integer
@@ -179,8 +185,11 @@ components:
         headers:
           type: object
           description: The headers of the HTTP response, if any
-    ConnectorManifest:
-      $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    # --- Commenting out for now since they do not work with our orval openapi client generator ---
+    # ConnectorManifest:
+    #   $ref: ../../../../airbyte-cdk/python/airbyte_cdk/sources/declarative/config_component_schema.json
+    # AirbyteProtocol:
+    #   $ref: ../../../../airbyte-protocol/protocol-models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
     StreamsListRequestBody:
       type: object
       required:
@@ -188,7 +197,9 @@ components:
         - config
       properties:
         manifest:
-          $ref: "#/components/schemas/ConnectorManifest"
+          type: object
+          description: The config-based connector manifest contents
+          # $ref: "#/components/schemas/ConnectorManifest"
         config:
           type: object
           description: The config blob containing the user inputs for testing
