@@ -14,4 +14,4 @@ export enum FeatureItem {
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
 }
 
-export type FeatureSet = Record<FeatureItem, boolean>;
+export type FeatureSet = Partial<Record<FeatureItem, boolean>>;
