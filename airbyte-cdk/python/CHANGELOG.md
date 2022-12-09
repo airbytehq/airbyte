@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.12.4
+Lookback window should applied when a state is supplied as well
+
 ## 0.12.3
 Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
 

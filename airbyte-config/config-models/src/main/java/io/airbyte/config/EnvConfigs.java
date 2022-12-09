@@ -115,7 +115,6 @@ public class EnvConfigs implements Configs {
   private static final String CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS = "CONFIGS_DATABASE_INITIALIZATION_TIMEOUT_MS";
   private static final String JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION = "JOBS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION";
   private static final String JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS = "JOBS_DATABASE_INITIALIZATION_TIMEOUT_MS";
-  private static final String CONTAINER_ORCHESTRATOR_ENABLED = "CONTAINER_ORCHESTRATOR_ENABLED";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_NAME = "CONTAINER_ORCHESTRATOR_SECRET_NAME";
   private static final String CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH = "CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH";
   private static final String CONTAINER_ORCHESTRATOR_IMAGE = "CONTAINER_ORCHESTRATOR_IMAGE";
@@ -739,12 +738,15 @@ public class EnvConfigs implements Configs {
 
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * injected in the KubePodProcess class and used in the job pod templates.
+   *
+   * Can provide multiple strings seperated by comma(,) to indicate pulling from different
+   * repositories. The empty string is a no-op value.
    */
   @Override
-  public String getJobKubeMainContainerImagePullSecret() {
-    return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
+    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
   }
 
   @Override
@@ -1041,11 +1043,6 @@ public class EnvConfigs implements Configs {
       return new HashSet<>();
     }
     return Arrays.stream(ports.split(",")).map(Integer::valueOf).collect(Collectors.toSet());
-  }
-
-  @Override
-  public boolean getContainerOrchestratorEnabled() {
-    return getEnvOrDefault(CONTAINER_ORCHESTRATOR_ENABLED, false, Boolean::valueOf);
   }
 
   @Override
