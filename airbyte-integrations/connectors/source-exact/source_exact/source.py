@@ -19,11 +19,26 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefre
 
 
 class ExactStream(HttpStream, IncrementalMixin):
-    url_base = "https://start.exactonline.nl/api/v1/3361923/"
     cursor_field = "Timestamp"
     state_checkpoint_interval = 1000
 
     _cursor_value = None
+
+    def __init__(self, config: Mapping[str, Any]):
+        self._url_base = f"https://start.exactonline.nl/api/v1/{config['division']}/"
+
+        auth = SingleUseRefreshTokenOauth2Authenticator(
+            connector_config=config,
+            token_refresh_endpoint="https://start.exactonline.nl/api/oauth2/token",
+            token_expiry_date=pendulum.now().add(minutes=11),
+        )
+        auth.access_token = config["credentials"]["access_token"]
+
+        super().__init__(auth)
+
+    @property
+    def url_base(self) -> str:
+        return self._url_base
 
     @property
     def state(self) -> MutableMapping[str, Any]:
@@ -389,52 +404,42 @@ class SourceExact(AbstractSource):
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        token_endpoint = "https://start.exactonline.nl/api/oauth2/token"
-
-        auth = SingleUseRefreshTokenOauth2Authenticator(
-            connector_config=config,
-            token_refresh_endpoint=token_endpoint,
-            token_expiry_date=pendulum.now().add(minutes=11),
-        )
-
-        auth.access_token = config["credentials"]["access_token"]
-
         return [
-            SyncCashflowPaymentTerms(authenticator=auth),
-            SyncCRMAccounts(authenticator=auth),
-            SyncCRMAddresses(authenticator=auth),
-            SyncCRMContacts(authenticator=auth),
-            SyncCRMQuotationHeaders(authenticator=auth),
-            SyncCRMQuotationLines(authenticator=auth),
-            SyncCRMQuotations(authenticator=auth),
-            SyncDeleted(authenticator=auth),
-            SyncDocumentsDocumentAttachments(authenticator=auth),
-            SyncDocumentsDocuments(authenticator=auth),
-            SyncFinancialGLAccounts(authenticator=auth),
-            SyncFinancialGLClassifications(authenticator=auth),
-            SyncFinancialTransactionLines(authenticator=auth),
-            SyncHRMLeaveAbsenceHoursByDay(authenticator=auth),
-            SyncInventoryItemWarehouses(authenticator=auth),
-            SyncInventorySerialBatchNumbers(authenticator=auth),
-            SyncInventoryStockPositions(authenticator=auth),
-            SyncInventoryStockSerialBatchNumbers(authenticator=auth),
-            SyncInventoryStorageLocationStockPositions(authenticator=auth),
-            SyncLogisticsItems(authenticator=auth),
-            SyncLogisticsPurchaseItemPrices(authenticator=auth),
-            SyncLogisticsSalesItemPrices(authenticator=auth),
-            SyncLogisticsSupplierItem(authenticator=auth),
-            SyncProjectProjectPlanning(authenticator=auth),
-            SyncProjectProjects(authenticator=auth),
-            SyncProjectProjectWBS(authenticator=auth),
-            SyncProjectTimeCostTransactions(authenticator=auth),
-            SyncPurchaseOrderPurchaseOrders(authenticator=auth),
-            SyncSalesSalesPriceListVolumeDiscounts(authenticator=auth),
-            SyncSalesInvoiceSalesInvoices(authenticator=auth),
-            SyncSalesOrderGoodsDeliveries(authenticator=auth),
-            SyncSalesOrderGoodsDeliveryLines(authenticator=auth),
-            SyncSalesOrderSalesOrderHeaders(authenticator=auth),
-            SyncSalesOrderSalesOrderLines(authenticator=auth),
-            SyncSalesOrderSalesOrders(authenticator=auth),
-            SyncSubscriptionSubscriptionLines(authenticator=auth),
-            SyncSubscriptionSubscriptions(authenticator=auth),
+            SyncCashflowPaymentTerms(config),
+            SyncCRMAccounts(config),
+            SyncCRMAddresses(config),
+            SyncCRMContacts(config),
+            SyncCRMQuotationHeaders(config),
+            SyncCRMQuotationLines(config),
+            SyncCRMQuotations(config),
+            SyncDeleted(config),
+            SyncDocumentsDocumentAttachments(config),
+            SyncDocumentsDocuments(config),
+            SyncFinancialGLAccounts(config),
+            SyncFinancialGLClassifications(config),
+            SyncFinancialTransactionLines(config),
+            SyncHRMLeaveAbsenceHoursByDay(config),
+            SyncInventoryItemWarehouses(config),
+            SyncInventorySerialBatchNumbers(config),
+            SyncInventoryStockPositions(config),
+            SyncInventoryStockSerialBatchNumbers(config),
+            SyncInventoryStorageLocationStockPositions(config),
+            SyncLogisticsItems(config),
+            SyncLogisticsPurchaseItemPrices(config),
+            SyncLogisticsSalesItemPrices(config),
+            SyncLogisticsSupplierItem(config),
+            SyncProjectProjectPlanning(config),
+            SyncProjectProjects(config),
+            SyncProjectProjectWBS(config),
+            SyncProjectTimeCostTransactions(config),
+            SyncPurchaseOrderPurchaseOrders(config),
+            SyncSalesSalesPriceListVolumeDiscounts(config),
+            SyncSalesInvoiceSalesInvoices(config),
+            SyncSalesOrderGoodsDeliveries(config),
+            SyncSalesOrderGoodsDeliveryLines(config),
+            SyncSalesOrderSalesOrderHeaders(config),
+            SyncSalesOrderSalesOrderLines(config),
+            SyncSalesOrderSalesOrders(config),
+            SyncSubscriptionSubscriptionLines(config),
+            SyncSubscriptionSubscriptions(config),
         ]

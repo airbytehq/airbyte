@@ -4,19 +4,27 @@ connectionSpecification:
   title: Exact Spec
   type: object
   required:
+    - division
     - credentials
   properties:
+    division:
+      type: integer
+      description: Division code from Exact. Used to identify which administration to use.
     credentials:
       title: OAuth Credentials
       type: object
       required:
       - client_id
       - client_secret
+      - access_token
       - refresh_token
       properties:
+        access_token:
+          type: string
+          description: Access token from Exact.
         refresh_token:
           type: string
-          description: The latest refresh token from Exact.
+          description: Refresh token from Exact.
         client_id:
           type: string
           description: OAuth client_id, can be found at apps.exactonline.com.
