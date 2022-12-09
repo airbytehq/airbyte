@@ -185,7 +185,9 @@ definitions:
         type: object
         additionalProperties: true
   CustomAuthenticator:
+    description: Authenticator component whose behavior is derived from a custom code implementation of the connector
     type: object
+    additionalProperties: true
     required:
       - type
       - class_name
@@ -194,13 +196,12 @@ definitions:
         enum: [CustomAuthenticator]
       class_name:
         type: string
-      additional_parameters:
-        type: object
         additionalProperties: true
       $options:
         type: object
         additionalProperties: true
   CustomBackoffStrategy:
+    description: Backoff strategy component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -215,6 +216,7 @@ definitions:
         type: object
         additionalProperties: true
   CustomPaginationStrategy:
+    description: Pagination strategy component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -229,6 +231,7 @@ definitions:
         type: object
         additionalProperties: true
   CustomRecordExtractor:
+    description: Record extractor component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
@@ -243,6 +246,7 @@ definitions:
         type: object
         additionalProperties: true
   CustomStreamSlicer:
+    description: Stream slicer component whose behavior is derived from a custom code implementation of the connector
     type: object
     additionalProperties: true
     required:
