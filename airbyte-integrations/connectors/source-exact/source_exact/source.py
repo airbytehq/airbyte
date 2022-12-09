@@ -6,8 +6,12 @@ import re
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import unquote
 
+import logging
 import pendulum
 import requests
+import time
+import random
+
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.core import StreamData
@@ -83,21 +87,46 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return params
 
-    def should_retry(self, response: requests.Response) -> bool:
-        # Test whether token is expired -> refresh and then retry
-        if self._is_token_expired(response):
-            self.auth.refresh_access_token()
-            return True
 
-        # TODO: handle the rate limiting?
-        return super().should_retry(response)
+    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
+        """
+        Overwrite the default _send_request. This allows to automatically refresh the access token when it is
+        expired.
+        """
 
-    def backoff_time(self, response: requests.Response) -> Optional[float]:
-        # Trigger user backoff
-        return 1 if self._is_token_expired(response) else None
+        logger = logging.getLogger("airbyte")
 
-    def error_message(self, response: requests.Response) -> str:
-        return "Access token expired" if self._is_token_expired(response) else ""
+        for num_retry in range(self.max_retries):
+            try:
+                response = self._send(request, request_kwargs)
+                return response
+
+            except requests.RequestException as exc:
+                response: requests.Response = exc.response
+                if response is None:
+                    raise exc
+
+                # Retry on server exceptions
+                if 500 <= response.status_code < 600:
+                    time.sleep(2 ** num_retry + random.random())
+                    continue
+
+                # Check for expired access token
+                if response.status_code == 401:
+                    error_reason = response.headers.get("WWW-Authenticate", "")
+                    error_reason = unquote(error_reason)
+
+                    if "access token expired" in error_reason:
+                        logger.info(f"Access token expired: will retry after refresh")
+
+                        # mark the token as expired and overwrite thea authorization header
+                        self._auth.set_token_expiry_date(pendulum.now().subtract(minutes=1))
+                        request.headers.update(self._auth.get_auth_header())
+
+                        continue
+
+                raise exc
+                
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         # Parse the results array from returned object
