@@ -7,7 +7,7 @@ export const useBuilderErrors = () => {
   const { errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
 
   // Returns true if the global config fields or any stream config fields have errors in the provided formik errors, and false otherwise.
-  // If streamNums is provided, the error check is limited to global and the list of provided stream nums.
+  // If limitToStream is provided, the error check is limited to global and the provided stream number.
   const hasErrors = (limitToStream?: number, inputErrors?: FormikErrors<BuilderFormValues>) => {
     const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
 
