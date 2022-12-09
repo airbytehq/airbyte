@@ -39,6 +39,7 @@ import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.FieldAdd;
+import io.airbyte.api.model.generated.FieldRemove;
 import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobConfigType;
@@ -455,7 +456,7 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
-  void testWebBackendGetConnectionWithDiscoveryAndFieldSelection() throws ConfigNotFoundException,
+  void testWebBackendGetConnectionWithDiscoveryAndFieldSelectionAddField() throws ConfigNotFoundException,
       IOException, JsonValidationException {
     // Mock this because the API uses it to determine whether there was a schema change.
     when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
@@ -499,6 +500,52 @@ class WebBackendConnectionsHandlerTest {
     final AirbyteCatalog expectedNewCatalog = Jsons.clone(newCatalogToDiscover);
     expectedNewCatalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).selectedFields(
         List.of(new SelectedFieldInfo().addFieldPathItem(ConnectionHelpers.FIELD_NAME), new SelectedFieldInfo().addFieldPathItem("a-new-field")));
+    expectedWithNewSchema.catalogDiff(schemaRead.getCatalogDiff()).syncCatalog(expectedNewCatalog);
+    assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionWithDiscoveryAndFieldSelectionRemoveField() throws ConfigNotFoundException,
+      IOException, JsonValidationException {
+    // Mock this because the API uses it to determine whether there was a schema change.
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+
+    // Original configured catalog has two fields, and both of them are selected.
+    final AirbyteCatalog originalConfiguredCatalog = ConnectionHelpers.generateApiCatalogWithTwoFields();
+    originalConfiguredCatalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
+        .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(
+            ConnectionHelpers.FIELD_NAME), new SelectedFieldInfo().addFieldPathItem(ConnectionHelpers.FIELD_NAME + "2")));
+    connectionRead.syncCatalog(originalConfiguredCatalog);
+
+    // Original discovered catalog has the same two fields but no selection info because it's a
+    // discovered catalog.
+    when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(
+        Optional.of(ConnectionHelpers.generateApiCatalogWithTwoFields()));
+
+    // Newly-discovered catalog has one of the fields removed. There is no field selection info because
+    // it's a
+    // discovered catalog.
+    final AirbyteCatalog newCatalogToDiscover = ConnectionHelpers.generateBasicApiCatalog();
+    final JsonNode removedFieldSchema = Jsons.deserialize("{\"type\": \"string\"}");
+    final SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead()
+            .catalogDiff(new CatalogDiff().addTransformsItem(new StreamTransform().addUpdateStreamItem(
+                new FieldTransform().transformType(FieldTransform.TransformTypeEnum.REMOVE_FIELD).addFieldNameItem(ConnectionHelpers.FIELD_NAME + "2")
+                    .breaking(false).removeField(new FieldRemove().schema(removedFieldSchema)))))
+            .catalog(newCatalogToDiscover)
+            .breakingChange(false)
+            .connectionStatus(ConnectionStatus.ACTIVE);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
+
+    // We expect the discovered catalog with two fields selected: the one that was originally selected,
+    // plus the newly-discovered field.
+    final AirbyteCatalog expectedNewCatalog = Jsons.clone(newCatalogToDiscover);
+    expectedNewCatalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).selectedFields(
+        List.of(new SelectedFieldInfo().addFieldPathItem(ConnectionHelpers.FIELD_NAME)));
     expectedWithNewSchema.catalogDiff(schemaRead.getCatalogDiff()).syncCatalog(expectedNewCatalog);
     assertEquals(expectedWithNewSchema, result);
   }
