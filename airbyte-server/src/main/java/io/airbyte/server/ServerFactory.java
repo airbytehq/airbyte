@@ -13,7 +13,6 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.DestinationDefinitionApiController;
 import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.DestinationOauthApiController;
 import io.airbyte.server.apis.JobsApiController;
@@ -28,7 +27,6 @@ import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.DestinationDefinitionApiBinder;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.DestinationOauthApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
@@ -41,7 +39,6 @@ import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.DestinationDefinitionApiFactory;
 import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.DestinationOauthApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
@@ -151,8 +148,6 @@ public interface ServerFactory {
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      DestinationDefinitionApiFactory.setValues(destinationDefinitionsHandler);
-
       DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
       DestinationOauthApiFactory.setValues(oAuthHandler);
@@ -179,7 +174,6 @@ public interface ServerFactory {
 
       // server configuration
       final Set<Class<?>> componentClasses = Set.of(
-          DestinationDefinitionApiController.class,
           DestinationDefinitionSpecificationApiController.class,
           DestinationOauthApiController.class,
           JobsApiController.class,
@@ -196,7 +190,6 @@ public interface ServerFactory {
           WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
-          new DestinationDefinitionApiBinder(),
           new DestinationDefinitionSpecificationApiBinder(),
           new DestinationOauthApiBinder(),
           new JobsApiBinder(),
