@@ -8,7 +8,6 @@ import tempfile
 from collections import defaultdict
 from contextlib import nullcontext as does_not_raise
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from unittest.mock import MagicMock
 
 import pytest
 import requests
@@ -86,30 +85,30 @@ def abstract_source(mocker):
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(MagicMock, HttpStream):
+    class MockHttpStream(mocker.MagicMock, HttpStream):
         url_base = "http://example.com"
         path = "/dummy/path"
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
         def supports_incremental(self):
             return True
 
         def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
+            mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
-            self.read_records = MagicMock()
+            self.read_records = mocker.MagicMock()
 
         @property
         def availability_strategy(self):
             return None
 
-    class MockStream(MagicMock, Stream):
+    class MockStream(mocker.MagicMock, Stream):
         page_size = None
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
         def __init__(self, **kwargs):
-            MagicMock.__init__(self)
-            self.read_records = MagicMock()
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
 
     streams = [MockHttpStream(), MockStream()]
 
@@ -396,8 +395,8 @@ def test_internal_config(abstract_source, catalog):
     assert not non_http_stream.page_size
 
 
-def test_internal_config_limit(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_internal_config_limit(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     del catalog.streams[1]
     STREAM_LIMIT = 2
@@ -434,8 +433,8 @@ def test_internal_config_limit(abstract_source, catalog):
 SCHEMA = {"type": "object", "properties": {"value": {"type": "string"}}}
 
 
-def test_source_config_no_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_no_transform(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
@@ -448,8 +447,8 @@ def test_source_config_no_transform(abstract_source, catalog):
     assert non_http_stream.get_json_schema.call_count == 5
 
 
-def test_source_config_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_transform(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
@@ -462,8 +461,8 @@ def test_source_config_transform(abstract_source, catalog):
     assert [r.record.data for r in records] == [{"value": "23"}] * 2
 
 
-def test_source_config_transform_and_no_transform(abstract_source, catalog):
-    logger_mock = MagicMock()
+def test_source_config_transform_and_no_transform(mocker, abstract_source, catalog):
+    logger_mock = mocker.MagicMock()
     logger_mock.level = logging.DEBUG
     streams = abstract_source.streams(None)
     http_stream, non_http_stream = streams
@@ -479,26 +478,26 @@ def test_read_default_http_availability_strategy_stream_available(catalog, mocke
     mocker.patch.multiple(HttpStream, __abstractmethods__=set())
     mocker.patch.multiple(Stream, __abstractmethods__=set())
 
-    class MockHttpStream(MagicMock, HttpStream):
+    class MockHttpStream(mocker.MagicMock, HttpStream):
         url_base = "http://example.com"
         path = "/dummy/path"
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
         def supports_incremental(self):
             return True
 
         def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
+            mocker.MagicMock.__init__(self)
             HttpStream.__init__(self, *args, kvargs)
-            self.read_records = MagicMock()
+            self.read_records = mocker.MagicMock()
 
-    class MockStream(MagicMock, Stream):
+    class MockStream(mocker.MagicMock, Stream):
         page_size = None
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
         def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
-            self.read_records = MagicMock()
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
 
     streams = [MockHttpStream(), MockStream()]
     http_stream, non_http_stream = streams
@@ -545,13 +544,13 @@ def test_read_default_http_availability_strategy_stream_unavailable(catalog, moc
             self.resp_counter += 1
             yield stub_response
 
-    class MockStream(MagicMock, Stream):
+    class MockStream(mocker.MagicMock, Stream):
         page_size = None
-        get_json_schema = MagicMock()
+        get_json_schema = mocker.MagicMock()
 
         def __init__(self, *args, **kvargs):
-            MagicMock.__init__(self)
-            self.read_records = MagicMock()
+            mocker.MagicMock.__init__(self)
+            self.read_records = mocker.MagicMock()
 
     streams = [MockHttpStream(), MockStream()]
     http_stream, non_http_stream = streams
