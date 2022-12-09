@@ -24,6 +24,7 @@ import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
+import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
@@ -31,7 +32,6 @@ import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.SchedulerApiBinder;
-import io.airbyte.server.apis.binders.SourceApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
@@ -42,7 +42,6 @@ import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.SchedulerApiFactory;
-import io.airbyte.server.apis.factories.SourceApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
@@ -157,8 +156,6 @@ public interface ServerFactory {
 
       SchedulerApiFactory.setValues(schedulerHandler);
 
-      SourceApiFactory.setValues(schedulerHandler, sourceHandler);
-
       SourceDefinitionApiFactory.setValues(sourceDefinitionsHandler);
 
       SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
@@ -180,6 +177,7 @@ public interface ServerFactory {
           SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
+          StateApiController.class,
           WebBackendApiController.class,
           WorkspaceApiController.class);
 
@@ -189,7 +187,6 @@ public interface ServerFactory {
           new LogsApiBinder(),
           new NotificationApiBinder(),
           new SchedulerApiBinder(),
-          new SourceApiBinder(),
           new SourceDefinitionApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),

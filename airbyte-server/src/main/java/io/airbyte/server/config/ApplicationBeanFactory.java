@@ -19,6 +19,7 @@ import io.airbyte.persistence.job.WebUrlHelper;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.validation.json.JsonSchemaValidator;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
@@ -97,6 +98,11 @@ public class ApplicationBeanFactory {
     return JsonSecretsProcessor.builder()
         .copySecrets(false)
         .build();
+  }
+
+  @Singleton
+  public JsonSchemaValidator jsonSchemaValidator() {
+    return new JsonSchemaValidator();
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {
