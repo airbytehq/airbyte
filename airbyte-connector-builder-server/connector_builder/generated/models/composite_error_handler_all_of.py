@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_composite_error_handler_default_error_handler import AnyOfCompositeErrorHandlerDefaultErrorHandler
 
 
@@ -20,6 +20,6 @@ class CompositeErrorHandlerAllOf(BaseModel):
         error_handlers: The error_handlers of this CompositeErrorHandlerAllOf.
     """
 
-    error_handlers: List[AnyOfCompositeErrorHandlerDefaultErrorHandler]
+    error_handlers: List[AnyOfCompositeErrorHandlerDefaultErrorHandler] = Field(alias="error_handlers")
 
 CompositeErrorHandlerAllOf.update_forward_refs()

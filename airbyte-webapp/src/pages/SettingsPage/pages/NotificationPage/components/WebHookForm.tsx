@@ -9,11 +9,12 @@ import * as yup from "yup";
 import { Label, LabeledSwitch } from "components";
 import { DocsIcon } from "components/icons/DocsIcon";
 import { PlayIcon } from "components/icons/PlayIcon";
-import { Row, Cell } from "components/SimpleTableComponents";
+import { Cell, Row } from "components/SimpleTableComponents";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 import { Text } from "components/ui/Text";
+import { ToastType } from "components/ui/Toast";
 import { Tooltip } from "components/ui/Tooltip";
 
 import useWorkspace, { WebhookPayload } from "hooks/services/useWorkspace";
@@ -59,16 +60,16 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
         case true: {
           registerNotification({
             id: "settings.webhook.test.passed",
-            title: formatMessage({ id: "settings.webhook.test.passed" }),
-            isError: false,
+            text: formatMessage({ id: "settings.webhook.test.passed" }),
+            type: ToastType.SUCCESS,
           });
           break;
         }
         case false: {
           registerNotification({
             id: "settings.webhook.test.failed",
-            title: formatMessage({ id: "settings.webhook.test.failed" }),
-            isError: true,
+            text: formatMessage({ id: "settings.webhook.test.failed" }),
+            type: ToastType.ERROR,
           });
           break;
         }
@@ -83,8 +84,8 @@ export const WebHookForm: React.FC<WebHookFormProps> = ({ webhook }) => {
         case false: {
           registerNotification({
             id: "settings.webhook.save.failed",
-            title: formatMessage({ id: "settings.webhook.save.failed" }),
-            isError: true,
+            text: formatMessage({ id: "settings.webhook.save.failed" }),
+            type: ToastType.ERROR,
           });
           break;
         }
