@@ -1,3 +1,4 @@
+import isEqual from "lodash/isEqual";
 import React, { useCallback } from "react";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
@@ -12,14 +13,14 @@ import { TreeRowWrapper } from "./TreeRowWrapper";
 interface StreamFieldTableProps {
   config: AirbyteStreamConfiguration | undefined;
   onCursorSelect: (cursorPath: string[]) => void;
-  onFirstFieldDeselected: (fieldName: string) => void;
+  onFirstFieldDeselected: (fieldName: string[]) => void;
   onPkSelect: (pkPath: string[]) => void;
   onSelectedFieldsUpdate: (selectedFields: SelectedFieldInfo[]) => void;
   onAllFieldsSelected: () => void;
   shouldDefineCursor: boolean;
   shouldDefinePk: boolean;
   syncSchemaFields: SyncSchemaField[];
-  numberOfFieldsInStream: number;
+  numberOfSelectableFields: number;
 }
 
 export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
@@ -32,20 +33,20 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
   shouldDefineCursor,
   shouldDefinePk,
   syncSchemaFields,
-  numberOfFieldsInStream,
+  numberOfSelectableFields,
 }) => {
-  const handleFieldToggle = (fieldName: string, isSelected: boolean) => {
+  const handleFieldToggle = (fieldPath: string[], isSelected: boolean) => {
     const previouslySelectedFields = config?.selectedFields || [];
 
     if (!config?.fieldSelectionEnabled && !isSelected) {
-      onFirstFieldDeselected(fieldName);
-    } else if (isSelected && previouslySelectedFields.length === numberOfFieldsInStream - 1) {
+      onFirstFieldDeselected(fieldPath);
+    } else if (isSelected && previouslySelectedFields.length === numberOfSelectableFields - 1) {
       // In this case we are selecting the only unselected field
       onAllFieldsSelected();
     } else if (isSelected) {
-      onSelectedFieldsUpdate([...previouslySelectedFields, { fieldName }]);
+      onSelectedFieldsUpdate([...previouslySelectedFields, { fieldPath }]);
     } else {
-      onSelectedFieldsUpdate(previouslySelectedFields.filter((f) => f.fieldName !== fieldName) || []);
+      onSelectedFieldsUpdate(previouslySelectedFields.filter((f) => !isEqual(f.fieldPath, fieldPath)) || []);
     }
   };
 
@@ -57,7 +58,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = ({
       }
 
       // path[0] is the top-level field name for all nested fields
-      return !!config?.selectedFields?.find((sf) => sf.fieldName === field.path[0]);
+      return !!config?.selectedFields?.find((f) => isEqual(f.fieldPath, [field.path[0]]));
     },
     [config]
   );

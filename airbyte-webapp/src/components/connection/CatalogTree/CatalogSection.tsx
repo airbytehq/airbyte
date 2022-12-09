@@ -1,4 +1,5 @@
 import { FormikErrors, getIn } from "formik";
+import isEqual from "lodash/isEqual";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
@@ -98,19 +99,18 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   );
 
   const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
-  const arrayOfStreamProperties = Object.keys(streamNode?.stream?.jsonSchema?.properties) || [];
 
   const onSelectedFieldsUpdate = (selectedFields: SelectedFieldInfo[]) => {
     updateStreamWithConfig({
       selectedFields,
-      fieldSelectionEnabled: selectedFields.length < numberOfFieldsInStream,
+      fieldSelectionEnabled: true,
     });
   };
 
   // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
-  const onFirstFieldDeselected = (fieldName: string) => {
-    const allOtherFields = arrayOfStreamProperties.filter((property: string) => property !== fieldName) ?? [];
-    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((fieldName) => ({ fieldName }));
+  const onFirstFieldDeselected = (fieldPath: string[]) => {
+    const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
+    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
     updateStreamWithConfig({
       selectedFields,
       fieldSelectionEnabled: true,
@@ -210,7 +210,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             <StreamFieldTable
               config={config}
               syncSchemaFields={flattenedFields}
-              numberOfFieldsInStream={numberOfFieldsInStream}
+              numberOfSelectableFields={numberOfFieldsInStream}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
               onSelectedFieldsUpdate={onSelectedFieldsUpdate}

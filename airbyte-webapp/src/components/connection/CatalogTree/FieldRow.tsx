@@ -23,7 +23,7 @@ interface FieldRowProps {
   isSelected: boolean;
   onPrimaryKeyChange: (pk: string[]) => void;
   onCursorChange: (cs: string[]) => void;
-  onToggleFieldSelected: (fieldName: string, isSelected: boolean) => void;
+  onToggleFieldSelected: (fieldPath: string[], isSelected: boolean) => void;
   field: SyncSchemaField;
   config: AirbyteStreamConfiguration | undefined;
 }
@@ -46,11 +46,9 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   isPrimaryKeyEnabled,
   isSelected,
 }) => {
-  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", false);
+  const isColumnSelectionEnabled = useExperiment("connection.columnSelection", true);
   const dataType = useTranslateDataType(field);
   const name = pathDisplayName(field.path);
-
-  console.log("isColumnSelectionEnabled", isColumnSelectionEnabled);
 
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
@@ -62,11 +60,7 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
         <Cell flex={0}>
           <SyncCheckboxContainer>
             {!isNestedField && (
-              <Switch
-                small
-                checked={isSelected}
-                onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
-              />
+              <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
             )}
             {isNestedField && (
               <Tooltip
@@ -75,13 +69,13 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
                     small
                     disabled
                     checked={isSelected}
-                    onChange={() => onToggleFieldSelected(field.cleanedName, !isSelected)}
+                    onChange={() => onToggleFieldSelected(field.path, !isSelected)}
                   />
                 }
               >
                 This field will be synced if <code>{field.path[0]}</code> is enabled
               </Tooltip>
-            )}
+            )}{" "}
           </SyncCheckboxContainer>
         </Cell>
       )}
