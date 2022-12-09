@@ -1,0 +1,64 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "gifts",
+        "json_schema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "PersonId": {
+				      "type": "integer"
+				    },
+				    "DonorType": {
+				      "type": ["null", "string"]
+				    },
+				    "Email": {
+				      "type": ["null", "string"]
+				    },
+				    "Street1": {
+				      "type": ["null", "string"]
+				    },
+				    "City": {
+				      "type": ["null", "string"]
+				    },
+				    "State": {
+				      "type": ["null", "string"]
+				    },
+				    "Country": {
+				      "type": ["null", "string"]
+				    },
+				    "TransactionDateTime": {
+				      "type":  "string",
+				      "format": "date-time"
+				    },
+				    "TransactionId": {
+				      "type": "integer"
+				    },
+				    "Amount": {
+				      "type":  "number"
+				    },
+				    "Source": {
+				      "type": ["null", "string"]
+				    },
+				    "GlCode": {
+				      "type": ["null", "string"]
+				    },
+				    "AccountType": {
+				      "type": ["null", "string"]
+				    },
+				    "AccountName": {
+				      "type": ["null", "string"]
+				    },
+				    "MarketingCode": {
+				      "type": ["null", "string"]
+				    }
+				  }
+				},
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}
