@@ -9,7 +9,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy, ScopedAvailabilityStrategy
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -92,47 +92,6 @@ def test_availability_strategy():
     stream_2_is_available, reason = stream_2.check_availability(logger)
     assert not stream_2_is_available
     assert "Could not reach stream 'unavailable_stream'" in reason
-
-
-def test_scoped_availability_strategy():
-    class MockScopedAvailabilityStrategy(ScopedAvailabilityStrategy):
-        def __init__(self, granted_scopes, required_scopes):
-            self._granted_scopes = granted_scopes
-            self._required_scopes = required_scopes
-
-        def get_granted_scopes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> List[str]:
-            return self._granted_scopes
-
-        def required_scopes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> List[str]:
-            return self._required_scopes
-
-    class MockStreamWithScopedAvailabilityStrategy(MockStream):
-        def __init__(self, availability_strategy, **kwargs):
-            super().__init__(**kwargs)
-            self._availability_strategy = availability_strategy
-
-        @property
-        def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-            return self._availability_strategy
-
-    availability_strategy_1 = MockScopedAvailabilityStrategy(
-        granted_scopes=["repo"],
-        required_scopes=["repo"],
-    )
-    availability_strategy_2 = MockScopedAvailabilityStrategy(
-        granted_scopes=["repo"],
-        required_scopes=["read:project"],
-    )
-
-    stream_1 = MockStreamWithScopedAvailabilityStrategy(name="repos", availability_strategy=availability_strategy_1)
-    stream_2 = MockStreamWithScopedAvailabilityStrategy(name="projectV2", availability_strategy=availability_strategy_2)
-
-    stream_1_is_available, _ = stream_1.check_availability(logger)
-    assert stream_1_is_available
-
-    stream_2_is_available, reason = stream_2.check_availability(logger)
-    assert not stream_2_is_available
-    assert "Missing required scopes: ['read:project']" in reason
 
 
 def test_default_http_availability_strategy(mocker):
