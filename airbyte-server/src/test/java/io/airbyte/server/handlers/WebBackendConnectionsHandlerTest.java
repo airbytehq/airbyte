@@ -17,6 +17,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
@@ -36,6 +38,8 @@ import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.DestinationSyncMode;
+import io.airbyte.api.model.generated.FieldAdd;
+import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobInfoRead;
@@ -49,6 +53,7 @@ import io.airbyte.api.model.generated.OperationReadList;
 import io.airbyte.api.model.generated.OperationUpdate;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.api.model.generated.SchemaChange;
+import io.airbyte.api.model.generated.SelectedFieldInfo;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
@@ -68,6 +73,7 @@ import io.airbyte.api.model.generated.WebBackendOperationCreateOrUpdate;
 import io.airbyte.api.model.generated.WebBackendWorkspaceState;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
@@ -422,6 +428,7 @@ class WebBackendConnectionsHandlerTest {
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.of(connectionRead.getSyncCatalog()));
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
@@ -439,10 +446,61 @@ class WebBackendConnectionsHandlerTest {
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(true).connectionStatus(ConnectionStatus.INACTIVE);
     when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(connectionsHandler.getConnectionAirbyteCatalog(brokenConnectionRead.getConnectionId()))
+        .thenReturn(Optional.of(connectionRead.getSyncCatalog()));
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, brokenConnectionRead,
         operationReadList);
     assertEquals(expectedWithNewSchemaAndBreakingChange, result);
+  }
+
+  @Test
+  void testWebBackendGetConnectionWithDiscoveryAndFieldSelection() throws ConfigNotFoundException,
+      IOException, JsonValidationException {
+    // Mock this because the API uses it to determine whether there was a schema change.
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID())));
+
+    // Original configured catalog has two fields, and only one of them is selected.
+    final AirbyteCatalog originalConfiguredCatalog = ConnectionHelpers.generateApiCatalogWithTwoFields();
+    originalConfiguredCatalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true)
+        .selectedFields(List.of(new SelectedFieldInfo().addFieldPathItem(
+            ConnectionHelpers.FIELD_NAME)));
+    connectionRead.syncCatalog(originalConfiguredCatalog);
+
+    // Original discovered catalog has the same two fields but no selection info because it's a
+    // discovered catalog.
+    when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(
+        Optional.of(ConnectionHelpers.generateApiCatalogWithTwoFields()));
+
+    // Newly-discovered catalog has an extra field. There is no field selection info because it's a
+    // discovered catalog.
+    final AirbyteCatalog newCatalogToDiscover = ConnectionHelpers.generateApiCatalogWithTwoFields();
+    final JsonNode newFieldSchema = Jsons.deserialize("{\"type\": \"string\"}");
+    ((ObjectNode) newCatalogToDiscover.getStreams().get(0).getStream().getJsonSchema().findPath("properties"))
+        .putObject("a-new-field")
+        .put("type", "string");
+    final SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead()
+            .catalogDiff(
+                new CatalogDiff().addTransformsItem(new StreamTransform().addUpdateStreamItem(new FieldTransform().transformType(
+                    FieldTransform.TransformTypeEnum.ADD_FIELD).addFieldNameItem("a-new-field").breaking(false)
+                    .addField(new FieldAdd().schema(newFieldSchema)))))
+            .catalog(newCatalogToDiscover)
+            .breakingChange(false)
+            .connectionStatus(ConnectionStatus.ACTIVE);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
+
+    // We expect the discovered catalog with two fields selected: the one that was originally selected,
+    // plus the newly-discovered field.
+    final AirbyteCatalog expectedNewCatalog = Jsons.clone(newCatalogToDiscover);
+    expectedNewCatalog.getStreams().get(0).getConfig().fieldSelectionEnabled(true).selectedFields(
+        List.of(new SelectedFieldInfo().addFieldPathItem(ConnectionHelpers.FIELD_NAME), new SelectedFieldInfo().addFieldPathItem("a-new-field")));
+    expectedWithNewSchema.catalogDiff(schemaRead.getCatalogDiff()).syncCatalog(expectedNewCatalog);
+    assertEquals(expectedWithNewSchema, result);
   }
 
   @Test
@@ -654,7 +712,7 @@ class WebBackendConnectionsHandlerTest {
     when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.ofNullable(fullAirbyteCatalog));
 
     final AirbyteCatalog expectedCatalogReturned =
-        WebBackendConnectionsHandler.updateSchemaWithDiscovery(expected.getSyncCatalog(), fullAirbyteCatalog);
+        WebBackendConnectionsHandler.updateSchemaWithDiscovery(expected.getSyncCatalog(), expected.getSyncCatalog(), fullAirbyteCatalog);
     final WebBackendConnectionRead connectionRead = wbHandler.webBackendUpdateConnection(updateBody);
 
     assertEquals(expectedCatalogReturned, connectionRead.getSyncCatalog());
@@ -971,7 +1029,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1021,7 +1079,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1098,7 +1156,7 @@ class WebBackendConnectionsHandlerTest {
         .setSelected(false);
     expected.getStreams().add(expectedNewStream);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
 
     assertEquals(expected, actual);
   }
@@ -1146,7 +1204,7 @@ class WebBackendConnectionsHandlerTest {
         .aliasName(STREAM1)
         .setSelected(false);
 
-    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, discovered);
+    final AirbyteCatalog actual = WebBackendConnectionsHandler.updateSchemaWithDiscovery(original, original, discovered);
 
     assertEquals(expected, actual);
   }
