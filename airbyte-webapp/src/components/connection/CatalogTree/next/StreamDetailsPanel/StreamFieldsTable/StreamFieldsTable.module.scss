@@ -86,8 +86,3 @@ $cell-left-padding: variables.$spacing-xl + variables.$spacing-sm;
   overflow: unset;
   padding-left: 0;
 }
-
-// need to fix styled-component z-index issue
-.checkbox {
-  position: unset !important;
-}
