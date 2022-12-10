@@ -115,6 +115,15 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
                 return safe_max(stream_state_value, self._start_date)
         return self._start_date
 
+    def read_records(
+        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        start_point = self.get_starting_point(stream_state=stream_state)
+        for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
+            cursor_value = pendulum.parse(record[self.cursor_field])
+            if not start_point or cursor_value >= start_point:
+                yield record
+
 
 class ApplicationRoles(JiraStream):
     """
@@ -210,16 +219,10 @@ class BoardIssues(IncrementalJiraStream):
             params["jql"] = jql
         return params
 
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state)
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
             stream_slice = {"board_id": board["id"]}
-            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
@@ -271,22 +274,10 @@ class Epics(IncrementalJiraStream):
             params["expand"] = "renderedFields"
         return params
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state)
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for project in read_full_refresh(self.projects_stream):
             stream_slice = {"project_id": project["id"], "project_key": project["key"]}
-            for record in super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            ):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
@@ -381,13 +372,7 @@ class Issues(IncrementalJiraStream):
             params["expand"] = ",".join(expand)
         return params
 
-    def read_records(
-        self,
-        sync_mode: SyncMode,
-        cursor_field: List[str] = None,
-        stream_slice: Mapping[str, Any] = None,
-        stream_state: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         fields = [
             "assignee",
@@ -414,15 +399,9 @@ class Issues(IncrementalJiraStream):
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
 
-        start_point = self.get_starting_point(stream_state=stream_state)
-        for project in self.projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for project in read_full_refresh(self.projects_stream):
             stream_slice = {"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}
-            for record in super().read_records(
-                sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state
-            ):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["projectId"] = stream_slice["project_id"]
@@ -458,13 +437,9 @@ class IssueComments(IncrementalJiraStream):
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state)
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             stream_slice = {"key": issue["key"]}
-            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
 
 class IssueFields(JiraStream):
@@ -749,13 +724,9 @@ class IssueWorklogs(IncrementalJiraStream):
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        start_point = self.get_starting_point(stream_state=stream_state)
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             stream_slice = {"key": issue["key"]}
-            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+            yield from super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs)
 
 
 class JiraSettings(JiraStream):
@@ -1119,21 +1090,15 @@ class SprintIssues(IncrementalJiraStream):
             params["jql"] = jql
         return params
 
-    def read_records(
-        self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
-    ) -> Iterable[Mapping[str, Any]]:
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         fields = ["key", "status", "updated"]
         for name in ["Story Points", "Story point estimate"]:
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
-        start_point = self.get_starting_point(stream_state=stream_state)
-        for sprints in read_full_refresh(self.sprints_stream):
-            stream_slice = {"sprint_id": sprints["id"], "fields": fields}
-            for record in super().read_records(stream_slice=stream_slice, stream_state=stream_state, **kwargs):
-                cursor_value = pendulum.parse(record[self.cursor_field])
-                if not start_point or cursor_value >= start_point:
-                    yield record
+        for sprint in read_full_refresh(self.sprints_stream):
+            stream_slice = {"sprint_id": sprint["id"], "fields": fields}
+            yield from super().read_records(stream_slice=stream_slice, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["issueId"] = record["id"]
