@@ -97,6 +97,7 @@ def createJavaLicenseWith = { license ->
     return createLicenseWith(license, '/*', ' */', ' * ', false)
 }
 
+
 // We are the spotless exclusions rules using file tree. It seems the excludeTarget option is super finicky in a
 // monorepo setup and it doesn't actually exclude directories reliably. This code makes the behavior predictable.
 def createSpotlessTarget = { pattern ->
