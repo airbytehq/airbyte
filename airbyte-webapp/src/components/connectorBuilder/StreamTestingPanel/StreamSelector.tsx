@@ -36,7 +36,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className, strea
 
   return (
     <ListBox
-      className={classNames(className, styles.centered)}
+      className={classNames(className, styles.container)}
       options={options}
       selectedValue={selectedStream.name}
       onSelect={setSelectedStream}
