@@ -52,7 +52,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -61,7 +61,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -70,7 +70,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -79,7 +79,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -88,7 +88,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -97,7 +97,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 },
@@ -106,7 +106,7 @@
                   "items": {
                     "type": ["null", "array"],
                     "items": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 }
@@ -141,7 +141,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -150,7 +150,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -159,7 +159,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -168,7 +168,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -177,7 +177,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -186,7 +186,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         },
@@ -195,7 +195,7 @@
                           "items": {
                             "type": ["null", "array"],
                             "items": {
-                              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                              "$ref": "WellKnownTypes.json#/definitions/Integer"
                             }
                           }
                         }

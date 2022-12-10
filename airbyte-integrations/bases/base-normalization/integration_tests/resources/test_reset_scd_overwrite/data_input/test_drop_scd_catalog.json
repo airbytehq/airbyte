@@ -7,7 +7,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "date": {
               "$ref": "WellKnownTypes.json#/definitions/Date"
@@ -25,7 +25,7 @@
               "$ref": "WellKnownTypes.json#/definitions/Number"
             },
             "int_to_number": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             }
           }
         },

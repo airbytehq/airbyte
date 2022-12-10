@@ -8,8 +8,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "date": {
@@ -62,8 +62,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "date": {
@@ -87,8 +87,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "date": {
@@ -114,8 +114,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "date": {
@@ -139,8 +139,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "conflict_stream_name": {
@@ -159,7 +159,7 @@
                       "items": {
                         "properties": {
                           "id": {
-                            "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                            "$ref": "WellKnownTypes.json#/definitions/Integer"
                           },
                           "value": {}
                         },
@@ -168,7 +168,7 @@
                       "type": ["null", "array"]
                     },
                     "conflict_stream_name": {
-                      "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                      "$ref": "WellKnownTypes.json#/definitions/Integer"
                     }
                   }
                 }
@@ -192,12 +192,12 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "conflict_stream_scalar": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             }
           }
         },
@@ -217,8 +217,8 @@
           "properties": {
             "id": {
               "oneOf": [
-                {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                {"$ref": "WellKnownTypes.json#/definitions/String"}
+                { "$ref": "WellKnownTypes.json#/definitions/Number" },
+                { "$ref": "WellKnownTypes.json#/definitions/String" }
               ]
             },
             "conflict_stream_array": {
@@ -229,7 +229,7 @@
                   "items": {
                     "properties": {
                       "id": {
-                        "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                       }
                     }
                   }
@@ -253,7 +253,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "children": {
               "type": ["null", "array"],
@@ -261,13 +261,13 @@
                 "type": "object",
                 "properties": {
                   "ab_id": {
-                    "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                    "$ref": "WellKnownTypes.json#/definitions/Integer"
                   },
                   "owner": {
                     "type": ["null", "object"],
                     "properties": {
                       "owner_id": {
-                        "$ref" : "WellKnownTypes.json#/definitions/Integer"
+                        "$ref": "WellKnownTypes.json#/definitions/Integer"
                       },
                       "column`_'with\"_quotes": {
                         "type": ["null", "array"],
