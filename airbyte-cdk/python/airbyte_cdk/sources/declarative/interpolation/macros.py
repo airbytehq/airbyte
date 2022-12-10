@@ -5,7 +5,7 @@
 import builtins
 import datetime
 import numbers
-from typing import Union
+from typing import Union, Optional
 
 from dateutil import parser
 from dateutil import tz as dateutil_tz
@@ -84,7 +84,7 @@ def max(*args):
     return builtins.max(*args)
 
 
-def day_delta(num_days: int, from_date: Union[str, datetime.datetime] = None) -> str:
+def day_delta(num_days: int, from_date: Optional[Union[str, datetime.datetime]] = None) -> str:
     """
     Returns datetime of now() + num_days if not from_date is provided, otherwise returns datetime of from_date + num_days
 
