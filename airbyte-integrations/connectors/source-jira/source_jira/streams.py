@@ -25,7 +25,7 @@ class JiraStream(HttpStream, ABC):
     """
 
     primary_key: Optional[str] = "id"
-    parse_response_root: Optional[str] = None
+    extract_field: Optional[str] = None
     api_v1 = False
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
@@ -74,7 +74,7 @@ class JiraStream(HttpStream, ABC):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        records = response_json if not self.parse_response_root else response_json.get(self.parse_response_root, [])
+        records = response_json if not self.extract_field else response_json.get(self.extract_field, [])
         if isinstance(records, list):
             for record in records:
                 yield self.transform(record=record, **kwargs)
@@ -141,7 +141,7 @@ class Avatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-avatars/#api-rest-api-3-avatar-type-system-get
     """
 
-    parse_response_root = "system"
+    extract_field = "system"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         avatar_type = stream_slice["avatar_type"]
@@ -158,7 +158,7 @@ class Boards(JiraStream):
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-other-operations/#api-agile-1-0-board-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     use_cache = True
     api_v1 = True
 
@@ -195,7 +195,7 @@ class BoardIssues(IncrementalJiraStream):
     """
 
     cursor_field = "updated"
-    parse_response_root = "issues"
+    extract_field = "issues"
     api_v1 = True
 
     def __init__(self, **kwargs):
@@ -237,7 +237,7 @@ class Dashboards(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-dashboards/#api-rest-api-3-dashboard-get
     """
 
-    parse_response_root = "dashboards"
+    extract_field = "dashboards"
 
     def path(self, **kwargs) -> str:
         return "dashboard"
@@ -249,7 +249,7 @@ class Epics(IncrementalJiraStream):
     """
 
     cursor_field = "updated"
-    parse_response_root = "issues"
+    extract_field = "issues"
 
     def __init__(self, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
@@ -293,7 +293,7 @@ class Filters(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     use_cache = True
 
     def path(self, **kwargs) -> str:
@@ -325,7 +325,7 @@ class Groups(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-groups/#api-rest-api-3-group-bulk-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     primary_key = "groupId"
 
     def path(self, **kwargs) -> str:
@@ -338,7 +338,7 @@ class Issues(IncrementalJiraStream):
     """
 
     cursor_field = "updated"
-    parse_response_root = "issues"
+    extract_field = "issues"
     use_cache = True
 
     def __init__(self, additional_fields: List[str], expand_changelog: bool = False, render_fields: bool = False, **kwargs):
@@ -417,7 +417,7 @@ class IssueComments(IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-comments/#api-rest-api-3-issue-issueidorkey-comment-get
     """
 
-    parse_response_root = "comments"
+    extract_field = "comments"
     cursor_field = "updated"
 
     def __init__(self, **kwargs):
@@ -466,7 +466,7 @@ class IssueFieldConfigurations(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-field-configurations/#api-rest-api-3-fieldconfiguration-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "fieldconfiguration"
@@ -477,7 +477,7 @@ class IssueCustomFieldContexts(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-custom-field-contexts/#api-rest-api-3-field-fieldid-context-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         field_id = stream_slice["field_id"]
@@ -501,7 +501,7 @@ class IssueLinkTypes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-link-types/#api-rest-api-3-issuelinktype-get
     """
 
-    parse_response_root = "issueLinkTypes"
+    extract_field = "issueLinkTypes"
 
     def path(self, **kwargs) -> str:
         return "issueLinkType"
@@ -523,7 +523,7 @@ class IssueNotificationSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-notification-schemes/#api-rest-api-3-notificationscheme-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "notificationscheme"
@@ -543,7 +543,7 @@ class IssuePropertyKeys(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-properties/#api-rest-api-3-issue-issueidorkey-properties-get
     """
 
-    parse_response_root = "key"
+    extract_field = "key"
     use_cache = True
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -616,7 +616,7 @@ class IssueSecuritySchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-security-schemes/#api-rest-api-3-issuesecurityschemes-get
     """
 
-    parse_response_root = "issueSecuritySchemes"
+    extract_field = "issueSecuritySchemes"
 
     def path(self, **kwargs) -> str:
         return "issuesecurityschemes"
@@ -627,7 +627,7 @@ class IssueTypeSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-schemes/#api-rest-api-3-issuetypescheme-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "issuetypescheme"
@@ -638,7 +638,7 @@ class IssueTypeScreenSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-type-screen-schemes/#api-rest-api-3-issuetypescreenscheme-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "issuetypescreenscheme"
@@ -648,13 +648,13 @@ class IssueVotes(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-votes/#api-rest-api-3-issue-issueidorkey-votes-get
 
-    parse_response_root voters is commented, since it contains the <Users>
+    extract_field voters is commented, since it contains the <Users>
     objects but does not contain information about exactly votes. The
     original schema self, votes (number), hasVoted (bool) and list of voters.
-    The schema is correct but parse_response_root should not be applied.
+    The schema is correct but extract_field should not be applied.
     """
 
-    # parse_response_root = "voters"
+    # extract_field = "voters"
     primary_key = None
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -677,10 +677,10 @@ class IssueWatchers(StartDateJiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-watchers/#api-rest-api-3-issue-issueidorkey-watchers-get
 
-    parse_response_root is commented for the same reason as issue_voters.
+    extract_field is commented for the same reason as issue_voters.
     """
 
-    # parse_response_root = "watchers"
+    # extract_field = "watchers"
     primary_key = None
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
@@ -704,7 +704,7 @@ class IssueWorklogs(IncrementalJiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-worklogs/#api-rest-api-3-issue-issueidorkey-worklog-get
     """
 
-    parse_response_root = "worklogs"
+    extract_field = "worklogs"
     cursor_field = "updated"
 
     def __init__(self, **kwargs):
@@ -752,7 +752,7 @@ class Permissions(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permissions/#api-rest-api-3-permissions-get
     """
 
-    parse_response_root = "permissions"
+    extract_field = "permissions"
     primary_key = None
 
     def path(self, **kwargs) -> str:
@@ -760,7 +760,7 @@ class Permissions(JiraStream):
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        records = response_json.get(self.parse_response_root, {}).values()
+        records = response_json.get(self.extract_field, {}).values()
         yield from records
 
 
@@ -769,7 +769,7 @@ class PermissionSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-permission-schemes/#api-rest-api-3-permissionscheme-get
     """
 
-    parse_response_root = "permissionSchemes"
+    extract_field = "permissionSchemes"
 
     def path(self, **kwargs) -> str:
         return "permissionscheme"
@@ -780,7 +780,7 @@ class Projects(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-projects/#api-rest-api-3-project-search-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     use_cache = True
 
     def path(self, **kwargs) -> str:
@@ -832,7 +832,7 @@ class ProjectComponents(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-components/#api-rest-api-3-project-projectidorkey-component-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
@@ -866,7 +866,7 @@ class ProjectPermissionSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-permission-schemes/#api-rest-api-3-project-projectkeyorid-securitylevel-get
     """
 
-    parse_response_root = "levels"
+    extract_field = "levels"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
@@ -894,7 +894,7 @@ class ProjectVersions(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-versions/#api-rest-api-3-project-projectidorkey-version-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         key = stream_slice["key"]
@@ -916,7 +916,7 @@ class PullRequests(IncrementalJiraStream):
     """
 
     cursor_field = "updated"
-    parse_response_root = "detail"
+    extract_field = "detail"
     raise_on_http_errors = False
 
     pr_regex = r"(?P<prDetails>PullRequestOverallDetails{openCount=(?P<open>[0-9]+), mergedCount=(?P<merged>[0-9]+), declinedCount=(?P<declined>[0-9]+)})|(?P<pr>pullrequest={dataType=pullrequest, state=(?P<state>[a-zA-Z]+), stateCount=(?P<count>[0-9]+)})"
@@ -977,7 +977,7 @@ class Screens(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screens/#api-rest-api-3-screens-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     use_cache = True
 
     def path(self, **kwargs) -> str:
@@ -1030,7 +1030,7 @@ class ScreenSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-screen-schemes/#api-rest-api-3-screenscheme-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
@@ -1041,7 +1041,7 @@ class Sprints(JiraStream):
     https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-sprint-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
     use_cache = True
     api_v1 = True
 
@@ -1065,7 +1065,7 @@ class SprintIssues(IncrementalJiraStream):
     """
 
     cursor_field = "updated"
-    parse_response_root = "issues"
+    extract_field = "issues"
     api_v1 = True
 
     def __init__(self, **kwargs):
@@ -1175,7 +1175,7 @@ class Workflows(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflows/#api-rest-api-3-workflow-search-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "workflow/search"
@@ -1186,7 +1186,7 @@ class WorkflowSchemes(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-workflow-schemes/#api-rest-api-3-workflowscheme-get
     """
 
-    parse_response_root = "values"
+    extract_field = "values"
 
     def path(self, **kwargs) -> str:
         return "workflowscheme"
