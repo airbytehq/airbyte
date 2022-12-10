@@ -8,7 +8,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "properties": {
             "id": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "name": {
               "$ref": "WellKnownTypes.json#/definitions/String"

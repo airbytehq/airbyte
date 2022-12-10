@@ -71,7 +71,7 @@
               "$ref": "WellKnownTypes.json#/definitions/Number"
             },
             "USD": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             }
           }
         },
@@ -91,7 +91,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "name": {
               "$ref": "WellKnownTypes.json#/definitions/String"
@@ -123,7 +123,7 @@
           "type": ["null", "object"],
           "properties": {
             "id": {
-              "$ref" : "WellKnownTypes.json#/definitions/Integer"
+              "$ref": "WellKnownTypes.json#/definitions/Integer"
             },
             "name": {
               "$ref": "WellKnownTypes.json#/definitions/String"

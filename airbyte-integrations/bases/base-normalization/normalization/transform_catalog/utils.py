@@ -43,16 +43,20 @@ def is_datetime(definition: dict) -> bool:
 
 def is_datetime_without_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE
-                   for option in definition[data_type.ONE_OF_VAR_NAME])
+        return any(
+            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE
+            for option in definition[data_type.ONE_OF_VAR_NAME]
+        )
     else:
         return data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
 
 
 def is_datetime_with_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITH_TIMEZONE_TYPE
-                   for option in definition[data_type.ONE_OF_VAR_NAME])
+        return any(
+            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITH_TIMEZONE_TYPE
+            for option in definition[data_type.ONE_OF_VAR_NAME]
+        )
     else:
         return data_type.TIMESTAMP_WITH_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
 
@@ -70,16 +74,18 @@ def is_time(definition: dict) -> bool:
 
 def is_time_with_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITH_TIME_ZONE_TYPE
-                   for option in definition[data_type.ONE_OF_VAR_NAME])
+        return any(
+            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITH_TIME_ZONE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]
+        )
     else:
         return data_type.TIME_WITH_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
 
 
 def is_time_without_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITHOUT_TIME_ZONE_TYPE
-                   for option in definition[data_type.ONE_OF_VAR_NAME])
+        return any(
+            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITHOUT_TIME_ZONE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]
+        )
     else:
         return data_type.TIME_WITHOUT_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
 
