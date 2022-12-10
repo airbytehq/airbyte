@@ -127,13 +127,21 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
 
 class ApplicationRoles(JiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-key-get
+    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-application-roles/#api-rest-api-3-applicationrole-get
     """
 
-    primary_key = None
+    primary_key = "key"
 
     def path(self, **kwargs) -> str:
         return "applicationrole"
+
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except HTTPError as e:
+            # Application access permissions can only be edited or viewed by administrators.
+            if e.response.status_code != requests.codes.FORBIDDEN:
+                raise e
 
 
 class Avatars(JiraStream):
@@ -142,15 +150,14 @@ class Avatars(JiraStream):
     """
 
     extract_field = "system"
+    avatar_types = ("issuetype", "project", "user")
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        avatar_type = stream_slice["avatar_type"]
-        return f"avatar/{avatar_type}/system"
+        return f"avatar/{stream_slice['avatar_type']}/system"
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        avatar_types = ("issuetype", "project", "user")
-        for avatar_type in avatar_types:
-            yield from super().read_records(stream_slice={"avatar_type": avatar_type}, **kwargs)
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        for avatar_type in self.avatar_types:
+            yield {"avatar_type": avatar_type}
 
 
 class Boards(JiraStream):
