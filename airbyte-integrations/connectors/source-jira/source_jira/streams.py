@@ -802,7 +802,6 @@ class Projects(JiraStream):
         for project in super().read_records(**kwargs):
             if not self._projects or project["key"] in self._projects:
                 yield project
-        yield from []
 
 
 class ProjectAvatars(JiraStream):
