@@ -1,25 +1,22 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+import asyncio
+import json
+import sys
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from connector_builder.generated.models.stream_read_request_body import StreamReadRequestBody
+from connector_builder.generated.models.streams_list_request_body import StreamsListRequestBody
+from impl.default_api import DefaultApiImpl
 
-from connector_builder.generated.apis.default_api_interface import initialize_router
-from connector_builder.impl.default_api import DefaultApiImpl
+op = sys.argv[1]
+arg = sys.argv[2]
 
-app = FastAPI(
-    title="Connector Builder Server API",
-    description="Connector Builder Server API ",
-    version="1.0.0",
-)
+api = DefaultApiImpl()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(initialize_router(DefaultApiImpl()))
+if op == "read":
+    print(asyncio.run(api.read_stream(StreamReadRequestBody.parse_obj(json.loads(arg)))))
+elif op == "list":
+    print(asyncio.run(api.list_streams(StreamsListRequestBody.parse_obj(json.loads(arg)))))
+else:
+    print("error")

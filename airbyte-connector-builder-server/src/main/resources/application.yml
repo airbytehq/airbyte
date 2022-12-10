@@ -1,0 +1,65 @@
+micronaut:
+  application:
+    name: airbyte-connector-builder-server
+  security:
+    intercept-url-map:
+      - pattern: /**
+        httpMethod: POST
+        access:
+          - isAnonymous()
+      - pattern: /**
+        httpMethod: GET
+        access:
+          - isAnonymous()
+  server:
+    port: 80
+
+  endpoints:
+    "v1/manifest_template":
+      enabled: true
+      sensitive: false
+    "v1/streams/list":
+      enabled: true
+      sensitive: false
+    "v1/streams/read":
+      enabled: true
+      sensitive: false
+
+airbyte:
+  deployment-mode: ${DEPLOYMENT_MODE:OSS}
+  local:
+    docker-mount: ${LOCAL_DOCKER_MOUNT:}
+    root: ${LOCAL_ROOT}
+  remote-connector-catalog-url: ${REMOTE_CONNECTOR_CATALOG_URL:}
+  role: ${AIRBYTE_ROLE:}
+  temporal:
+    worker:
+      ports: ${TEMPORAL_WORKER_PORTS:}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  version: ${AIRBYTE_VERSION}
+  workflow:
+    failure:
+      restart-delay: ${WORKFLOW_FAILURE_RESTART_DELAY_SECONDS:600}
+  workspace:
+    docker-mount: ${WORKSPACE_DOCKER_MOUNT:}
+    root: ${WORKSPACE_ROOT}
+
+docker:
+  network: ${DOCKER_NETWORK:host}
+
+temporal:
+  cloud:
+    client:
+      cert: ${TEMPORAL_CLOUD_CLIENT_CERT:}
+      key: ${TEMPORAL_CLOUD_CLIENT_KEY:}
+    enabled: ${TEMPORAL_CLOUD_ENABLED:false}
+    host: ${TEMPORAL_CLOUD_HOST:}
+    namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
+  host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
+  retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
+
+logger:
+  levels:
+    io.airbyte.bootloader: DEBUG
+# Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG
