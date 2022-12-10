@@ -1,7 +1,14 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+from destination_timeplus import DestinationTimeplus
 
-
-def test_example_method():
-    assert True
+def test_type_mapping():
+    expected={
+        "float": {"type":"number"}, 
+        "bool": {"type":"boolean"}, 
+        "string": {"type":"string"}, 
+        "integer": {"type":"integer"}, 
+        "array(integer)": {"type":"array","items": {"type": "integer"}}}
+    for k,v in expected.items():
+        assert k==DestinationTimeplus.type_mapping(v)
