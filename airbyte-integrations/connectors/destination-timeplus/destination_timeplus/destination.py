@@ -61,7 +61,7 @@ class DestinationTimeplus(Destination):
             elif message.type == Type.RECORD:
                 record = message.record
                 
-                batch_body=timeplus_client.IngestData(columns=[timeplus_client.ColumnDef(name='raw',type='string')],data=[[json.dumps(record.data)]])
+                batch_body=timeplus_client.IngestData(columns=['raw'],data=[[json.dumps(record.data)]])
                 # TODO: check the stream name, if same, then batch upload data
 
                 stream_api.v1beta1_streams_name_ingest_post(batch_body,record.stream)
