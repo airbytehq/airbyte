@@ -1304,7 +1304,7 @@ public class ConfigRepository {
 
     return records.stream().findFirst().map(DbConverter::buildActorCatalog);
   }
-  
+
   public Optional<ActorCatalog> getMostRecentActorCatalogForSource(final UUID sourceId) throws IOException {
     final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
         .from(ACTOR_CATALOG)
@@ -1316,7 +1316,6 @@ public class ConfigRepository {
   }
 
   public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
-
 
     final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
