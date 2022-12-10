@@ -10,6 +10,7 @@ import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import {
+  BuilderView,
   DEFAULT_BUILDER_FORM_VALUES,
   useConnectorBuilderState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -19,8 +20,6 @@ import { BuilderFormValues } from "../types";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
-
-export type BuilderView = "global" | number;
 
 interface ViewSelectButtonProps {
   className?: string;
@@ -50,19 +49,12 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
 interface BuilderSidebarProps {
   className?: string;
   toggleYamlEditor: () => void;
-  onViewSelect: (selected: BuilderView, streamName?: string) => void;
-  selectedView: BuilderView;
 }
 
-export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
-  className,
-  toggleYamlEditor,
-  onViewSelect,
-  selectedView,
-}) => {
+export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest } = useConnectorBuilderState();
+  const { yamlManifest, selectedView, setSelectedView, setSelectedStream } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
@@ -71,10 +63,16 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       submitButtonText: "connectorBuilder.resetModal.submitButton",
       onSubmit: () => {
         setValues(DEFAULT_BUILDER_FORM_VALUES);
-        onViewSelect("global");
+        setSelectedView("global");
         closeConfirmationModal();
       },
     });
+  };
+  const handleViewSelect = (selectedView: BuilderView, selectedStreamName?: string) => {
+    setSelectedView(selectedView);
+    if (selectedView !== "global" && selectedStreamName !== undefined) {
+      setSelectedStream(selectedStreamName);
+    }
   };
 
   return (
@@ -97,7 +95,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       <ViewSelectButton
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
-        onClick={() => onViewSelect("global")}
+        onClick={() => handleViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
@@ -109,13 +107,13 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
         </Text>
 
         <AddStreamButton
-          onAddStream={(addedStreamNum, addedStreamName) => onViewSelect(addedStreamNum, addedStreamName)}
+          onAddStream={(addedStreamNum, addedStreamName) => handleViewSelect(addedStreamNum, addedStreamName)}
         />
       </div>
 
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
-          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => onViewSelect(num, name)}>
+          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num, name)}>
             {name}
           </ViewSelectButton>
         ))}

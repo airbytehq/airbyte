@@ -29,17 +29,28 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 };
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className, streams, selectedStream }) => {
-  const { setSelectedStream } = useConnectorBuilderState();
+  const { selectedView, setSelectedView, setSelectedStream } = useConnectorBuilderState();
   const options = streams.map((stream) => {
     return { label: capitalize(stream.name), value: stream.name };
   });
+
+  const handleStreamSelect = (selectedStreamName: string) => {
+    setSelectedStream(selectedStreamName);
+
+    if (selectedView !== "global") {
+      const selectedStreamIndex = streams.findIndex((stream) => stream.name === selectedStreamName);
+      if (selectedStreamIndex >= 0) {
+        setSelectedView(selectedStreamIndex);
+      }
+    }
+  };
 
   return (
     <ListBox
       className={classNames(className, styles.container)}
       options={options}
       selectedValue={selectedStream.name}
-      onSelect={setSelectedStream}
+      onSelect={handleStreamSelect}
       buttonClassName={styles.button}
       controlButton={ControlButton}
     />

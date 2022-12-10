@@ -27,6 +27,8 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
+export type BuilderView = "global" | number;
+
 interface Context {
   builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
@@ -36,6 +38,7 @@ interface Context {
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
   selectedStream?: StreamsListReadStreamsItem;
+  selectedView: BuilderView;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
@@ -43,6 +46,7 @@ interface Context {
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setSelectedStream: (streamName: string) => void;
+  setSelectedView: (view: BuilderView) => void;
   setConfigString: (configString: string) => void;
 }
 
@@ -104,6 +108,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const streams = useMemo(() => {
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
+
   const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
   const [selectedStreamName, setSelectedStream] = useState(firstStreamName);
@@ -114,8 +119,20 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
         : firstStreamName
     );
   }, [streams, firstStreamName]);
-
   const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
+
+  const [selectedView, setSelectedView] = useState<BuilderView>("global");
+  // useEffect(() => {
+  //   if (selectedView !== "global") {
+  //     const selectedViewStreamName = streams[selectedView].name;
+  //     if (selectedViewStreamName !== selectedStreamName) {
+  //       const selectedStreamIndex = streams.findIndex((stream) => stream.name === selectedStreamName);
+  //       if (selectedStreamIndex !== undefined && selectedStreamIndex !== selectedView) {
+  //         setSelectedView(selectedStreamIndex);
+  //       }
+  //     }
+  //   }
+  // }, [selectedView, streams, selectedStreamName]);
 
   const ctx = {
     builderFormValues: formValues,
@@ -126,6 +143,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     streams,
     streamListErrorMessage,
     selectedStream,
+    selectedView,
     configString,
     configJson,
     setBuilderFormValues,
@@ -133,6 +151,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     setYamlIsValid,
     setYamlEditorIsMounted,
     setSelectedStream,
+    setSelectedView,
     setConfigString,
   };
 
