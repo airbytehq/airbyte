@@ -114,7 +114,13 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
           <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num, name)}>
-            {name}
+            {name && name.trim() ? (
+              <Text className={styles.streamViewText}>{name}</Text>
+            ) : (
+              <Text className={styles.emptyStreamViewText}>
+                <FormattedMessage id="connectorBuilder.emptyViewName" />
+              </Text>
+            )}
           </ViewSelectButton>
         ))}
       </div>

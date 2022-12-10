@@ -94,3 +94,11 @@
   flex-direction: column;
   overflow-y: auto;
 }
+
+.streamViewText {
+  color: inherit;
+}
+
+.emptyStreamViewText {
+  color: colors.$grey-300;
+}
