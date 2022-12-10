@@ -28,7 +28,9 @@ def get_plain_list_from_one_of_array(one_of_definition) -> list:
 
 def is_string(property_type) -> bool:
     if data_type.ONE_OF_VAR_NAME in property_type:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.STRING_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        return bool(
+            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.STRING_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        )
     else:
         return property_type == data_type.STRING_TYPE or data_type.STRING_TYPE in property_type
 
@@ -43,29 +45,33 @@ def is_datetime(definition: dict) -> bool:
 
 def is_datetime_without_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(
-            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE
-            for option in definition[data_type.ONE_OF_VAR_NAME]
+        return bool(
+            any(
+                option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE
+                for option in definition[data_type.ONE_OF_VAR_NAME]
+            )
         )
     else:
-        return data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        return bool(data_type.TIMESTAMP_WITHOUT_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
 def is_datetime_with_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(
-            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITH_TIMEZONE_TYPE
-            for option in definition[data_type.ONE_OF_VAR_NAME]
+        return bool(
+            any(
+                option[data_type.REF_TYPE_VAR_NAME] == data_type.TIMESTAMP_WITH_TIMEZONE_TYPE
+                for option in definition[data_type.ONE_OF_VAR_NAME]
+            )
         )
     else:
-        return data_type.TIMESTAMP_WITH_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        return bool(data_type.TIMESTAMP_WITH_TIMEZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
 def is_date(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.DATE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME])
+        return bool(any(option[data_type.REF_TYPE_VAR_NAME] == data_type.DATE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
-        return data_type.DATE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        return bool(data_type.DATE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
 def is_time(definition: dict) -> bool:
@@ -74,20 +80,26 @@ def is_time(definition: dict) -> bool:
 
 def is_time_with_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(
-            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITH_TIME_ZONE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]
+        return bool(
+            any(
+                option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITH_TIME_ZONE_TYPE
+                for option in definition[data_type.ONE_OF_VAR_NAME]
+            )
         )
     else:
-        return data_type.TIME_WITH_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        return bool(data_type.TIME_WITH_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
 def is_time_without_timezone(definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(
-            option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITHOUT_TIME_ZONE_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]
+        return bool(
+            any(
+                option[data_type.REF_TYPE_VAR_NAME] == data_type.TIME_WITHOUT_TIME_ZONE_TYPE
+                for option in definition[data_type.ONE_OF_VAR_NAME]
+            )
         )
     else:
-        return data_type.TIME_WITHOUT_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        return bool(data_type.TIME_WITHOUT_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
 def is_number(property_type) -> bool:
@@ -95,7 +107,9 @@ def is_number(property_type) -> bool:
         # Handle union type, give priority to wider scope types
         return False
     if data_type.ONE_OF_VAR_NAME in property_type:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.NUMBER_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        return bool(
+            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.NUMBER_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        )
     else:
         return property_type == data_type.NUMBER_TYPE or data_type.NUMBER_TYPE in property_type
 
@@ -107,7 +121,9 @@ def is_big_integer(definition: dict) -> bool:
 
 def is_long(property_type, definition: dict) -> bool:
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.INTEGER_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        return bool(
+            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.INTEGER_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        )
     else:
         return property_type == data_type.INTEGER_TYPE or data_type.INTEGER_TYPE in property_type
 
@@ -117,7 +133,9 @@ def is_boolean(property_type, definition: dict) -> bool:
         # Handle union type, give priority to wider scope types
         return False
     if data_type.ONE_OF_VAR_NAME in definition:
-        return any(option[data_type.REF_TYPE_VAR_NAME] == data_type.BOOLEAN_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        return bool(
+            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.BOOLEAN_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
+        )
     else:
         return property_type == data_type.BOOLEAN_TYPE or data_type.BOOLEAN_TYPE in property_type
 
