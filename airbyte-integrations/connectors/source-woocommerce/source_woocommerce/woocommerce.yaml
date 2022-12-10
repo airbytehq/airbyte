@@ -269,4 +269,4 @@ streams:
 
 check:
   stream_names:
-    - "product_reviews"
+    - "system_status_tools"
