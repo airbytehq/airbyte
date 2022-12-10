@@ -21,8 +21,9 @@ $small-size: 14px;
     display: none;
   }
 
-  .disabled {
+  &.disabled {
     border-color: colors.$grey-30;
+    cursor: not-allowed;
   }
 }
 
