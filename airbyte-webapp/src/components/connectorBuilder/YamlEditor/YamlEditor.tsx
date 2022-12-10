@@ -12,8 +12,8 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
+import { DownloadYamlButton } from "../DownloadYamlButton";
 import { convertToManifest } from "../types";
-import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {

@@ -1,4 +1,4 @@
-import { faRotateLeft, faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
@@ -14,8 +14,8 @@ import {
   useConnectorBuilderState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
+import { DownloadYamlButton } from "../DownloadYamlButton";
 import { BuilderFormValues } from "../types";
-import { DownloadYamlButton } from "../YamlEditor/DownloadYamlButton";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
@@ -122,13 +122,8 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({
       </div>
 
       <DownloadYamlButton className={styles.downloadButton} yamlIsValid yaml={yamlManifest} />
-      <Button
-        className={styles.resetButton}
-        variant="secondary"
-        onClick={() => handleResetForm()}
-        icon={<FontAwesomeIcon icon={faRotateLeft} />}
-      >
-        Reset Builder
+      <Button className={styles.resetButton} full variant="clear" onClick={() => handleResetForm()}>
+        <FormattedMessage id="connectorBuilder.resetAll" />
       </Button>
     </div>
   );
