@@ -10,7 +10,7 @@ import { NavLink } from "react-router-dom";
 import { Link } from "components";
 import { CreditsIcon } from "components/icons/CreditsIcon";
 import { DocsIcon } from "components/icons/DocsIcon";
-import { DropdownMenu } from "components/ui/DropdownMenu";
+import { DropdownMenu, DropdownMenuOptionType } from "components/ui/DropdownMenu";
 import { Text } from "components/ui/Text";
 
 import { FeatureItem, IfFeatureEnabled } from "hooks/services/Feature";
@@ -39,7 +39,7 @@ const SideBar: React.FC = () => {
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
   const { show } = useIntercom();
   const { formatMessage } = useIntl();
-  const handleChatUs = () => show();
+  const handleChatUs = (data: DropdownMenuOptionType) => data.value === "chatUs" && show();
 
   return (
     <nav className={styles.nav}>
@@ -149,7 +149,7 @@ const SideBar: React.FC = () => {
                 displayName: formatMessage({ id: "sidebar.chat" }),
               },
             ]}
-            onChange={(data) => data.value === "chatUs" && handleChatUs}
+            onChange={handleChatUs}
           >
             {({ open }) => (
               <button className={classNames(styles.dropdownMenuButton, { [styles.open]: open })}>

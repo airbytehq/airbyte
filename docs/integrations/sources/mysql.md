@@ -255,7 +255,8 @@ WHERE actor_definition_id ='435bb9a5-7887-4809-aa58-28c27df0d7ad' AND (configura
 ## Changelog
 
 | Version | Date       | Pull Request                                               | Subject                                                                                                                                          |
-| :------ | :--------- | :--------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+|:--------|:-----------| :--------------------------------------------------------- |:-------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.15  | 2022-12-06 | [20000](https://github.com/airbytehq/airbyte/pull/20000)   | Add check and better messaging when user does not have permission to access binary log in CDC mode                                               |
 | 1.0.14  | 2022-11-22 | [19514](https://github.com/airbytehq/airbyte/pull/19514)   | Adjust batch selection memory limits databases.                                                                                                  |
 | 1.0.13  | 2022-11-14 | [18956](https://github.com/airbytehq/airbyte/pull/18956)   | Clean up Tinyint Unsigned data type identification                                                                                               |
 | 1.0.12  | 2022-11-07 | [19025](https://github.com/airbytehq/airbyte/pull/19025)   | Stop enforce SSL if ssl mode is disabled                                                                                                         |

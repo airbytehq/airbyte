@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.2.22
+Capture control messages to store and use updated configurations. [#19979](https://github.com/airbytehq/airbyte/pull/19979).
+
 ## 0.2.21
 Optionally disable discovered catalog caching. [#19806](https://github.com/airbytehq/airbyte/pull/19806).
 
