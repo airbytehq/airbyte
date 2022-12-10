@@ -6,15 +6,12 @@ import capitalize from "lodash/capitalize";
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
-import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./StreamSelector.module.scss";
 
 interface StreamSelectorProps {
   className?: string;
-  streams: StreamsListReadStreamsItem[];
-  selectedStream: StreamsListReadStreamsItem;
 }
 
 const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOption }) => {
@@ -28,18 +25,18 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
   );
 };
 
-export const StreamSelector: React.FC<StreamSelectorProps> = ({ className, streams, selectedStream }) => {
-  const { selectedView, setSelectedView, setSelectedStream } = useConnectorBuilderState();
+export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
+  const { streams, selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const options = streams.map((stream) => {
     return { label: capitalize(stream.name), value: stream.name };
   });
 
   const handleStreamSelect = (selectedStreamName: string) => {
-    setSelectedStream(selectedStreamName);
+    const selectedStreamIndex = streams.findIndex((stream) => selectedStreamName === stream.name);
+    if (selectedStreamIndex >= 0) {
+      setTestStreamIndex(selectedStreamIndex);
 
-    if (selectedView !== "global") {
-      const selectedStreamIndex = streams.findIndex((stream) => stream.name === selectedStreamName);
-      if (selectedStreamIndex >= 0) {
+      if (selectedView !== "global" && selectedStreamIndex >= 0) {
         setSelectedView(selectedStreamIndex);
       }
     }
@@ -49,7 +46,7 @@ export const StreamSelector: React.FC<StreamSelectorProps> = ({ className, strea
     <ListBox
       className={classNames(className, styles.container)}
       options={options}
-      selectedValue={selectedStream.name}
+      selectedValue={streams[testStreamIndex]?.name}
       onSelect={handleStreamSelect}
       buttonClassName={styles.button}
       controlButton={ControlButton}

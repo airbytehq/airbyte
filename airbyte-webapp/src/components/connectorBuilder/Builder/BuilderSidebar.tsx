@@ -54,7 +54,7 @@ interface BuilderSidebarProps {
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest, selectedView, setSelectedView, setSelectedStream } = useConnectorBuilderState();
+  const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({
@@ -68,10 +68,10 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       },
     });
   };
-  const handleViewSelect = (selectedView: BuilderView, selectedStreamName?: string) => {
+  const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global" && selectedStreamName !== undefined) {
-      setSelectedStream(selectedStreamName);
+    if (selectedView !== "global") {
+      setTestStreamIndex(selectedView);
     }
   };
 
@@ -106,14 +106,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
           <FormattedMessage id="connectorBuilder.streamsHeading" values={{ number: values.streams.length }} />
         </Text>
 
-        <AddStreamButton
-          onAddStream={(addedStreamNum, addedStreamName) => handleViewSelect(addedStreamNum, addedStreamName)}
-        />
+        <AddStreamButton onAddStream={(addedStreamNum) => handleViewSelect(addedStreamNum)} />
       </div>
 
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
-          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num, name)}>
+          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num)}>
             {name && name.trim() ? (
               <Text className={styles.streamViewText}>{name}</Text>
             ) : (

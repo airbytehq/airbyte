@@ -18,7 +18,7 @@ interface AddStreamValues {
 }
 
 interface AddStreamButtonProps {
-  onAddStream: (addedStreamNum: number, addedStreamName: string) => void;
+  onAddStream: (addedStreamNum: number) => void;
 }
 
 export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream }) => {
@@ -50,7 +50,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream })
               },
             ]);
             setIsOpen(false);
-            onAddStream(numStreams, values.streamName);
+            onAddStream(numStreams);
           }}
         >
           <>
