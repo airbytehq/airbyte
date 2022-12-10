@@ -27,7 +27,6 @@ import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
-import io.airbyte.server.apis.binders.DestinationDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
@@ -37,7 +36,6 @@ import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
-import io.airbyte.server.apis.factories.DestinationDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
@@ -144,8 +142,6 @@ public interface ServerFactory {
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
-      DestinationDefinitionSpecificationApiFactory.setValues(schedulerHandler);
-
       SourceOauthApiFactory.setValues(oAuthHandler);
 
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
@@ -166,7 +162,6 @@ public interface ServerFactory {
 
       // server configuration
       final Set<Class<?>> componentClasses = Set.of(
-          DestinationDefinitionSpecificationApiController.class,
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
@@ -182,7 +177,6 @@ public interface ServerFactory {
           WorkspaceApiController.class);
 
       final Set<Object> components = Set.of(
-          new DestinationDefinitionSpecificationApiBinder(),
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
