@@ -7,7 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type, AirbyteStream
 
 import json
 import timeplus_client
@@ -38,7 +38,8 @@ class DestinationTimeplus(Destination):
         configuration = timeplus_client.Configuration()
         configuration.api_key['X-Api-Key'] = apikey
         configuration.host=endpoint+"/api"
-        stream_api = timeplus_client.StreamsV1beta1Api(timeplus_client.ApiClient(configuration))
+        api_client=timeplus_client.ApiClient(configuration)
+        stream_api = timeplus_client.StreamsV1beta1Api(api_client)
         stream_list = stream_api.v1beta1_streams_get()
         all_streams = {s.name for s in stream_list}
 
@@ -51,8 +52,8 @@ class DestinationTimeplus(Destination):
                 stream_api.v1beta1_streams_name_delete(configured_stream.stream.name)
             if is_overwrite or not stream_exists:
                 # create a new stream
-                stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=configured_stream.stream.name, columns=[timeplus_client.ColumnDef(name='raw',type='string')]))
-
+                DestinationTimeplus.create_stream(stream_api, configured_stream.stream)
+                
         for message in input_messages:
             if message.type == Type.STATE:
                 # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
@@ -61,16 +62,53 @@ class DestinationTimeplus(Destination):
             elif message.type == Type.RECORD:
                 record = message.record
                 
-                batch_body=timeplus_client.IngestData(columns=['raw'],data=[[json.dumps(record.data)]])
-                # TODO: check the stream name, if same, then batch upload data
+                # this code is to send data to a single-column stream
+                # batch_body=timeplus_client.IngestData(columns=['raw'],data=[[json.dumps(record.data)]])
+                # stream_api.v1beta1_streams_name_ingest_post(batch_body,record.stream)
 
-                stream_api.v1beta1_streams_name_ingest_post(batch_body,record.stream)
-
+                # using a hacking way to send JSON objects directly to Timeplus, without using the default compact mode.
+                api_client.call_api(
+                    f"/v1beta1/streams/{record.stream}/ingest",
+                    "POST",
+                    {},
+                    {"format":"streaming"},
+                    {},
+                    body=record.data,
+                    post_params=[],
+                    files={},
+                    response_type=None,
+                    auth_settings=["ApiKeyAuth"],
+                    async_req=False,
+                    _return_http_data_only=False,
+                    _preload_content=True,
+                    _request_timeout=False,
+                    collection_formats={},
+                )
             else:
                 # ignore other message types for now
                 continue
-
         pass
+
+    @staticmethod
+    def create_stream(stream_api,stream: AirbyteStream):
+        # singlel-column stream
+        # stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=stream.name, columns=[timeplus_client.ColumnDef(name='raw',type='string')]))
+        
+        columns=[]
+        for name,v in stream.json_schema['properties'].items():
+            columns.append(timeplus_client.ColumnDef(name=name,type=DestinationTimeplus.type_mapping(v)))
+        stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=stream.name,columns=columns))
+
+    @staticmethod
+    def type_mapping(v) -> str:
+        airbyte_type=v['type']
+        if airbyte_type=='number':return 'float'
+        elif airbyte_type=='integer':return 'integer'
+        elif airbyte_type=='boolean':return 'bool'
+        elif airbyte_type=='object':return 'string'
+        elif airbyte_type=='array':
+            return f"array({DestinationTimeplus.type_mapping(v['items'])})"
+        else:return 'string'
 
     def check(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> AirbyteConnectionStatus:
         """
