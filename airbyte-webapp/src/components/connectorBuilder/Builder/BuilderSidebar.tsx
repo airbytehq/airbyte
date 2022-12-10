@@ -116,7 +116,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
               <Text className={styles.streamViewText}>{name}</Text>
             ) : (
               <Text className={styles.emptyStreamViewText}>
-                <FormattedMessage id="connectorBuilder.emptyViewName" />
+                <FormattedMessage id="connectorBuilder.emptyName" />
               </Text>
             )}
           </ViewSelectButton>

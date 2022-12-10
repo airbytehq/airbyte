@@ -110,7 +110,9 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
   const [testStreamIndex, setTestStreamIndex] = useState(0);
   useEffect(() => {
-    setTestStreamIndex((prevIndex) => (prevIndex >= streams.length ? streams.length - 1 : prevIndex));
+    setTestStreamIndex((prevIndex) =>
+      prevIndex >= streams.length && streams.length > 0 ? streams.length - 1 : prevIndex
+    );
   }, [streams]);
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");

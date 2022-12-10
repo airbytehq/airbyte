@@ -2,6 +2,7 @@ import { faSortDown } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import capitalize from "lodash/capitalize";
+import { useIntl } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
@@ -26,9 +27,12 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 };
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
+  const { formatMessage } = useIntl();
   const { streams, selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const options = streams.map((stream) => {
-    return { label: capitalize(stream.name), value: stream.name };
+    const label =
+      stream.name && stream.name.trim() ? capitalize(stream.name) : formatMessage({ id: "connectorBuilder.emptyName" });
+    return { label, value: stream.name };
   });
 
   const handleStreamSelect = (selectedStreamName: string) => {

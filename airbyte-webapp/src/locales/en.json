@@ -658,7 +658,7 @@
   "connectorBuilder.uiYamlToggle.ui": "UI",
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
-  "connectorBuilder.emptyViewName": "(empty)",
+  "connectorBuilder.emptyName": "(empty)",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
