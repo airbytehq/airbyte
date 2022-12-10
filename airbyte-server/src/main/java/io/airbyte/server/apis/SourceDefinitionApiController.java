@@ -20,7 +20,7 @@ import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import javax.ws.rs.Path;
 
-@Controller("/v1/source_definitions")
+@Controller("/api/v1/source_definitions")
 @Context
 public class SourceDefinitionApiController implements SourceDefinitionApi {
 
