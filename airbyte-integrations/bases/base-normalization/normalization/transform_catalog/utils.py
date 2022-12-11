@@ -22,12 +22,10 @@ def is_string(definition: dict) -> bool:
         return bool(any(option[data_type.REF_TYPE_VAR_NAME] == data_type.STRING_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
         return data_type.REF_TYPE_VAR_NAME in definition and data_type.STRING_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
-        # return definition == data_type.STRING_TYPE or data_type.STRING_TYPE in definition
 
 
 def is_binary_datatype(definition: dict) -> bool:
     return data_type.REF_TYPE_VAR_NAME in definition and data_type.BINARY_DATA_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
-    # return property_type == data_type.BINARY_DATA_TYPE or data_type.BINARY_DATA_TYPE in property_type
 
 
 def is_datetime(definition: dict) -> bool:
@@ -101,7 +99,6 @@ def is_number(definition: dict) -> bool:
         return bool(any(option[data_type.REF_TYPE_VAR_NAME] == data_type.NUMBER_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
         return data_type.REF_TYPE_VAR_NAME in definition and data_type.NUMBER_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
-        # return property_type == data_type.NUMBER_TYPE or data_type.NUMBER_TYPE in property_type
 
 
 # this is obsolete type that will not be used in new datatypes
@@ -161,8 +158,9 @@ def is_simple_property(definition: dict) -> bool:
 
 def is_combining_node(properties: dict) -> Set[str]:
     # this case appears when we have analog of old protocol like id: {type:[number, string]} and it's handled separately
-    if data_type.ONE_OF_VAR_NAME in properties and len(properties[data_type.ONE_OF_VAR_NAME]) > 0:
-        if data_type.REF_TYPE_VAR_NAME in properties[data_type.ONE_OF_VAR_NAME][0]:
-            return set()
+    if data_type.ONE_OF_VAR_NAME in properties and any(
+        data_type.WELL_KNOWN_TYPE_VAR_NAME in option[data_type.REF_TYPE_VAR_NAME] for option in properties[data_type.ONE_OF_VAR_NAME]
+    ):
+        return set()
     else:
         return set(properties).intersection({"anyOf", "oneOf", "allOf"})

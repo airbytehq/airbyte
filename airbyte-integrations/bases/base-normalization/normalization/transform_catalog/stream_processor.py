@@ -596,7 +596,7 @@ where 1 = 1
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
         elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)  # TODO DO WE NEED ONE_OF HERE FOR BINARY ?!?!??!?!?!?!?!?!?!?!?
+            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)
         ):
             if self.destination_type.value == DestinationType.POSTGRES.value:
                 # sql_type = "bytea"

@@ -2,6 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+WELL_KNOWN_TYPE_VAR_NAME = "WellKnownTypes.json"
+
 REF_TYPE_VAR_NAME = "$ref"
 TYPE_VAR_NAME = "type"
 ONE_OF_VAR_NAME = "oneOf"
