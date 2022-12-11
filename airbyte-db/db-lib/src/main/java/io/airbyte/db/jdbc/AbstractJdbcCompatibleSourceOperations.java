@@ -184,14 +184,10 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
+      final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
+      preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
+    } catch (final ParseException e) {
       preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
-    } catch (final Exception e) {
-      try {
-        final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
-        preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
-      } catch (final ParseException ex) {
-        throw new RuntimeException(ex);
-      }
     }
   }
 
