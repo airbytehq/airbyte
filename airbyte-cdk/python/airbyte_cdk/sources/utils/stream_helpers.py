@@ -18,12 +18,12 @@ class StreamHelper:
         :return: StreamData containing the first record in the stream
         """
         # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
-        stream_slice = self.get_stream_slice(stream)
+        stream_slice = self._get_stream_slice(stream)
         records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
         next(records)
 
     @staticmethod
-    def get_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
+    def _get_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
         """
         Gets the first stream_slice from a given stream's stream_slices.
 
