@@ -17,13 +17,16 @@
     "location": {
       "type": ["null", "string"]
     },
+    "assignment": {
+      "type": ["null", "string"]
+    },
     "date": {
       "type": ["null", "string"]
     },
     "position": {
       "type": ["null", "string"]
     },
-    "personel_input_type": {
+    "personnel_input_type": {
       "type": ["null", "string"]
     },
     "version": {
