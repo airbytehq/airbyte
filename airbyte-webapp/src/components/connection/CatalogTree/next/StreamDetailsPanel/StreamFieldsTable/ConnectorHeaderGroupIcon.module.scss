@@ -1,0 +1,13 @@
+$connector-icon-size: 28px;
+
+.connectorIconContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+}
+
+.icon {
+  height: $connector-icon-size;
+  width: $connector-icon-size;
+}

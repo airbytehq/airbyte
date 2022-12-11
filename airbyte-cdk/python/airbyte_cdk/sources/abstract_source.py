@@ -106,11 +106,10 @@ class AbstractSource(Source, ABC):
                         f"The requested stream {configured_stream.stream.name} was not found in the source."
                         f" Available streams: {stream_instances.keys()}"
                     )
-                if stream_instance.availability_strategy is not None:
-                    stream_is_available, error = stream_instance.availability_strategy.check_availability(logger, stream_instance)
-                    if not stream_is_available:
-                        logger.info(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
-                        continue
+                stream_is_available, error = stream_instance.check_availability(logger, self)
+                if not stream_is_available:
+                    logger.warning(f"Skipped syncing stream '{stream_instance.name}' because it was unavailable. Error: {error}")
+                    continue
                 try:
                     timer.start_event(f"Syncing stream {configured_stream.stream.name}")
                     yield from self._read_stream(
@@ -231,7 +230,7 @@ class AbstractSource(Source, ABC):
             sync_mode=SyncMode.incremental,
             stream_state=stream_state,
         )
-        logger.debug(f"Processing stream slices for {stream_name}", extra={"stream_slices": slices})
+        logger.debug(f"Processing stream slices for {stream_name} (sync_mode: incremental)", extra={"stream_slices": slices})
 
         total_records_counter = 0
         has_slices = False
@@ -281,7 +280,9 @@ class AbstractSource(Source, ABC):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(f"Processing stream slices for {configured_stream.stream.name}", extra={"stream_slices": slices})
+        logger.debug(
+            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
+        )
         total_records_counter = 0
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})

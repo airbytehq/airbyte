@@ -66,7 +66,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  it("should select 'Incremental(cursor defined) => Append Dedup'", () => {
+  it("should not select Incremental | Append Dedup if no source defined primary key is available", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -79,7 +79,8 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: undefined,
             },
             config: {
               ...config,
@@ -94,7 +95,64 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.full_refresh,
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup, DestinationSyncMode.overwrite],
+      false
+    );
+
+    values.streams.forEach((stream) => {
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.full_refresh);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.overwrite);
+    });
+  });
+
+  it("should select 'Incremental(cursor defined) => Append Dedup'", () => {
+    const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
+
+    const values = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["id"],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.full_refresh,
+            },
+          },
+          {
+            id: "2",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["updated_at"],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
             },
             config: {
               ...config,
@@ -110,6 +168,10 @@ describe("calculateInitialCatalog", () => {
               sourceDefinedCursor: true,
               defaultCursorField: ["name"],
               supportedSyncModes: [SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
             },
             config: {
               ...config,

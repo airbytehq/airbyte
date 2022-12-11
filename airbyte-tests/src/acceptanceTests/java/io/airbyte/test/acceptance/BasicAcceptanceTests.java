@@ -371,7 +371,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(7)
   void testCancelSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -763,7 +763,7 @@ class BasicAcceptanceTests {
   void testManualSyncRepairsWorkflowWhenWorkflowUnreachable() throws Exception {
     // This test only covers the specific behavior of updating a connection that does not have an
     // underlying temporal workflow.
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
         workspaceId,
@@ -837,7 +837,7 @@ class BasicAcceptanceTests {
   @Test
   @Order(18)
   void testResetCancelsRunningSync() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
@@ -1476,8 +1476,8 @@ class BasicAcceptanceTests {
   @Test
   @Disabled
   void testFailureTimeout() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         E2E_TEST_SOURCE + UUID.randomUUID(),
