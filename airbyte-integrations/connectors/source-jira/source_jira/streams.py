@@ -458,10 +458,8 @@ class IssueFields(JiraStream):
 
     def field_ids_by_name(self) -> Mapping[str, List[str]]:
         results = {}
-        for f in self.read_records(sync_mode=SyncMode.full_refresh):
-            if f["name"] not in results:
-                results[f["name"]] = []
-            results[f["name"]].append(f["id"])
+        for f in read_full_refresh(self):
+            results.setdefault(f["name"], []).append(f["id"])
         return results
 
 
