@@ -1124,10 +1124,8 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 if data_type.REF_TYPE_VAR_NAME in self.properties[field] or data_type.ONE_OF_VAR_NAME in self.properties[field]:
                     if data_type.ONE_OF_VAR_NAME in self.properties[field]:
                         property_type = data_type.ONE_OF_VAR_NAME
-                        # property_type = get_plain_list_from_one_of_array(self.properties[field])
                     else:
                         property_type = data_type.REF_TYPE_VAR_NAME
-                        # property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
                 else:
                     property_type = "object"
                 if is_number(self.properties[field]) or is_object(property_type):
