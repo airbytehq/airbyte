@@ -54,9 +54,10 @@ class Data:
             "account_code": self.account_code,
             "level": self.level_name,
             "location": self.location,
+            "assignment": self.assignment,
             "date": self.date,
             "position": self.position,
-            "personel_input_type": self.personnel_input_type,
+            "personnel_input_type": self.personnel_input_type,
             "version": self.version,
             "headcount": self.headcount,
         }
