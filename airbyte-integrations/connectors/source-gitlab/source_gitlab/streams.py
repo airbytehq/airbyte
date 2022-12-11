@@ -61,6 +61,8 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 403:
+            return []
         response_data = response.json()
         if isinstance(response_data, list):
             for record in response_data:
@@ -327,16 +329,14 @@ class Users(GitlabChildStream):
     pass
 
 
-# TODO: We need to upgrade the plan for these feature (epics) to be available
 class Epics(GitlabChildStream):
     primary_key = "iid"
     flatten_id_keys = ["author"]
 
 
-# TODO: We need to upgrade the plan for these feature (epics) to be available
 class EpicIssues(GitlabChildStream):
     primary_key = "epic_issue_id"
-    path_list = ["group_id", "id"]
+    path_list = ["group_id", "iid"]
     flatten_id_keys = ["milestone", "assignee", "author"]
     flatten_list_keys = ["assignees"]
-    path_template = "groups/{group_id}/epics/{id}/issues"
+    path_template = "groups/{group_id}/epics/{iid}/issues"
