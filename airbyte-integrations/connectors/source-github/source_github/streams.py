@@ -5,7 +5,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib import parse
 
 import pendulum
@@ -30,27 +30,28 @@ class GithubOrganizationAvailabilityStrategy(HttpAvailabilityStrategy):
     """
     Availability Strategy for organization-based streams.
     """
-    def handle_http_error(
+
+    def reasons_for_unavailable_status_codes(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> Dict[int, str]:
         stream_slice = StreamHelper().get_stream_slice(stream)
         organisation = stream_slice.get("organization", "")
+        response_error_msg = str(error.response.json().get("message"))
 
-        if error.response.status_code == requests.codes.NOT_FOUND:
-            error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-        elif error.response.status_code == requests.codes.FORBIDDEN:
+        reasons_for_codes = {
+            requests.codes.NOT_FOUND: f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`.",
             # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
             # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-            error_msg = str(error.response.json().get("message"))
-            error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
-
-        return False, error_msg
+            requests.codes.FORBIDDEN: f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {response_error_msg}",
+        }
+        return reasons_for_codes
 
 
 class GithubRepositoryAvailabilityStrategy(HttpAvailabilityStrategy):
     """
     Availability Strategy for repository-based streams.
     """
+
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
     ) -> Tuple[bool, Optional[str]]:
