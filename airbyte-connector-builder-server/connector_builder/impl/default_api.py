@@ -177,7 +177,13 @@ spec:
             url = urlparse(request.get("url", ""))
             full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
             parameters = parse_qs(url.query) or None
-            return HttpRequest(url=full_path, headers=request.get("headers"), parameters=parameters, body=request.get("body"))
+            return HttpRequest(
+                url=full_path,
+                http_method=request.get("http_method", ""),
+                headers=request.get("headers"),
+                parameters=parameters,
+                body=request.get("body"),
+            )
         except JSONDecodeError as error:
             self.logger.warning(f"Failed to parse log message into request object with error: {error}")
             return None

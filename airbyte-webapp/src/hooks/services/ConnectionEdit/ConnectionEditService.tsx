@@ -68,11 +68,19 @@ const useConnectionEdit = ({ connectionId }: ConnectionEditProps): ConnectionEdi
       const connectionPatch = pick(updatedConnection, updatedKeys);
       const wasSyncCatalogUpdated = !!connectionPatch.syncCatalog;
 
+      // Ensure that the catalog diff cleared and that the schemaChange status has been updated
+      const syncCatalogUpdates: Partial<WebBackendConnectionRead> | undefined = wasSyncCatalogUpdated
+        ? {
+            catalogDiff: undefined,
+            schemaChange: updatedConnection.schemaChange,
+          }
+        : undefined;
+
       // Mutate the current connection state only with the values that were updated
       setConnection((connection) => ({
         ...connection,
         ...connectionPatch,
-        catalogDiff: wasSyncCatalogUpdated ? undefined : connection.catalogDiff,
+        ...syncCatalogUpdates,
       }));
 
       if (wasSyncCatalogUpdated) {
