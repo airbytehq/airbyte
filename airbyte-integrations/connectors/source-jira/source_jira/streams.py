@@ -185,7 +185,7 @@ class Boards(JiraStream):
 
 class BoardIssues(IncrementalJiraStream):
     """
-    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-agile-1-0-board-boardid-issue-get
+    https://developer.atlassian.com/cloud/jira/software/rest/api-group-board/#api-rest-agile-1-0-board-boardid-issue-get
     """
 
     cursor_field = "updated"
@@ -197,8 +197,7 @@ class BoardIssues(IncrementalJiraStream):
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        board_id = stream_slice["board_id"]
-        return f"board/{board_id}/issue"
+        return f"board/{stream_slice['board_id']}/issue"
 
     def request_params(
         self,
@@ -207,7 +206,7 @@ class BoardIssues(IncrementalJiraStream):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = ["key", "updated"]
+        params["fields"] = ["key", "created", "updated"]
         jql = self.jql_compare_date(stream_state)
         if jql:
             params["jql"] = jql
@@ -215,14 +214,12 @@ class BoardIssues(IncrementalJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
-            stream_slice = {"board_id": board["id"]}
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
+            yield from super().read_records(stream_slice={"board_id": board["id"]}, **kwargs)
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         record["boardId"] = stream_slice["board_id"]
-        issue_fields = record["fields"]
-        record["created"] = issue_fields.get("created")
-        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
+        record["created"] = record["fields"]["created"]
+        record["updated"] = record["fields"]["updated"]
         return record
 
 
