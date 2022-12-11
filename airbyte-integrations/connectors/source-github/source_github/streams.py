@@ -26,43 +26,53 @@ from .utils import getter
 DEFAULT_PAGE_SIZE = 100
 
 
-class GithubAvailabilityStrategy(HttpAvailabilityStrategy):
+class GithubOrganizationAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Availability Strategy for organization-based streams.
+    """
     def handle_http_error(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
     ) -> Tuple[bool, Optional[str]]:
-        # get out the stream_slice parts for later use.
         stream_slice = StreamHelper().get_stream_slice(stream)
+        organisation = stream_slice.get("organization", "")
 
-        # Organization-based streams
-        if isinstance(stream, Organizations) or isinstance(stream, Teams) or isinstance(stream, Users):
-            organisation = stream_slice.get("organization", "")
-            if error.response.status_code == requests.codes.NOT_FOUND:
-                error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-            elif error.response.status_code == requests.codes.FORBIDDEN:
-                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-                error_msg = str(error.response.json().get("message"))
-                error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
+        if error.response.status_code == requests.codes.NOT_FOUND:
+            error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
+        elif error.response.status_code == requests.codes.FORBIDDEN:
+            # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
+            # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
+            error_msg = str(error.response.json().get("message"))
+            error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
 
-        # Repository-based streams
-        else:
-            repository = stream_slice.get("repository", "")
-            if error.response.status_code == requests.codes.NOT_FOUND:
-                error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif error.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(error.response.json().get("message"))
-                error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-            elif error.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif error.response.status_code == requests.codes.CONFLICT:
-                error_msg = (
-                    f"`{stream.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
-                )
-            elif error.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
-                error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+        return False, error_msg
+
+
+class GithubRepositoryAvailabilityStrategy(HttpAvailabilityStrategy):
+    """
+    Availability Strategy for repository-based streams.
+    """
+    def handle_http_error(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    ) -> Tuple[bool, Optional[str]]:
+        stream_slice = StreamHelper().get_stream_slice(stream)
+        repository = stream_slice.get("repository", "")
+
+        if error.response.status_code == requests.codes.NOT_FOUND:
+            error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
+        elif error.response.status_code == requests.codes.FORBIDDEN:
+            error_msg = str(error.response.json().get("message"))
+            error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
+        elif error.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
+            # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+            # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+            error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
+        elif error.response.status_code == requests.codes.CONFLICT:
+            error_msg = (
+                f"`{stream.name}` stream isn't available for repository "
+                f"`{stream_slice['repository']}`, it seems like this repository is empty."
+            )
+        elif error.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
+            error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
 
         return False, error_msg
 
@@ -206,7 +216,7 @@ class GithubStream(HttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return GithubAvailabilityStrategy()
+        return GithubRepositoryAvailabilityStrategy()
 
 
 class SemiIncrementalMixin:
@@ -380,6 +390,10 @@ class Organizations(GithubStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return GithubOrganizationAvailabilityStrategy()
 
 
 class Repositories(SemiIncrementalMixin, Organizations):
