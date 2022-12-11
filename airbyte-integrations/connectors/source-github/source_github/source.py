@@ -5,14 +5,11 @@
 
 from typing import Any, Dict, List, Mapping, Tuple
 
-import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth.token import MultipleTokenAuthenticator
-from requests.exceptions import HTTPError
 
 from .streams import (
     Assignees,
@@ -176,10 +173,6 @@ class SourceGithub(AbstractSource):
 
             return False, message
 
-    @property
-    def availability_strategy(self):
-        return GithubAvailabilityStrategy()
-
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         authenticator = self._get_authenticator(config)
         organizations, repositories = self._get_org_repositories(config=config, authenticator=authenticator)
@@ -236,44 +229,3 @@ class SourceGithub(AbstractSource):
             WorkflowJobs(parent=workflow_runs_stream, **repository_args_with_start_date),
             TeamMemberships(parent=team_members_stream, **repository_args),
         ]
-
-
-class GithubAvailabilityStrategy(HTTPAvailabilityStrategy):
-    def handle_http_error(self, stream: Stream, error: HTTPError):
-        stream_slice = self._get_stream_slice(stream)
-        # get out the stream_slice parts for later use.
-        organisation = stream_slice.get("organization", "")
-        repository = stream_slice.get("repository", "")
-
-        if error.response.status_code == requests.codes.NOT_FOUND:
-            # A lot of streams are not available for repositories owned by a user instead of an organization.
-            if isinstance(stream, Organizations):
-                error_msg = f"`{stream.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-            else:
-                error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
-        elif error.response.status_code == requests.codes.FORBIDDEN:
-            error_msg = str(error.response.json().get("message"))
-            # When using the `check_availability` method, we should raise an error if we do not have access to the repository.
-            if isinstance(stream, Repositories):
-                raise error
-            # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-            # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-            # For all `Organization` based streams
-            elif isinstance(stream, Organizations) or isinstance(stream, Teams) or isinstance(stream, Users):
-                error_msg = f"`{stream.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
-            # For all other `Repository` base streams
-            else:
-                error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-        elif error.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
-            # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-            # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-            error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
-        elif error.response.status_code == requests.codes.CONFLICT:
-            error_msg = (
-                f"`{stream.name}` stream isn't available for repository "
-                f"`{stream_slice['repository']}`, it seems like this repository is empty."
-            )
-        elif error.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
-            error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
-
-        return False, error_msg
