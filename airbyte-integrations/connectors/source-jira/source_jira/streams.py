@@ -169,30 +169,17 @@ class Boards(JiraStream):
     use_cache = True
     api_v1 = True
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
     def path(self, **kwargs) -> str:
         return "board"
 
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["projectKeyOrId"] = stream_slice["project_id"]
-        return params
-
-    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
-        for project in read_full_refresh(self.projects_stream):
-            yield {"project_id": project["id"], "project_key": project["key"]}
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for board in super().read_records(**kwargs):
+            if not self._projects or board["location"]["projectKey"] in self._projects:
+                yield board
 
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = stream_slice["project_id"]
-        record["projectKey"] = stream_slice["project_key"]
+        record["projectId"] = str(record["location"]["projectId"])
+        record["projectKey"] = record["location"]["projectKey"]
         return record
 
 
