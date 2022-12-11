@@ -3,6 +3,7 @@
 #
 
 import logging
+import requests
 import typing
 from typing import Dict, Optional, Tuple
 
@@ -57,13 +58,13 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         """
         try:
             status_code = error.response.status_code
-            reason = self.reasons_for_unavailable_status_codes(stream, logger, source)[status_code]
+            reason = self.reasons_for_unavailable_status_codes(stream, logger, source, error)[status_code]
             return False, reason
         except KeyError:
             # If the HTTPError is not in the dictionary of errors we know how to handle, don't except it
             raise error
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"]) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError) -> Dict[int, str]:
         """
         Returns a dictionary of HTTP status codes that indicate stream
         unavailability and reasons explaining why a given status code may
@@ -80,7 +81,7 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         forbidden_error_message += "This is most likely due to insufficient permissions on the credentials in use. "
         forbidden_error_message += self._visit_docs_message(logger, source)
 
-        reasons_for_codes: Dict[int, str] = {403: forbidden_error_message}
+        reasons_for_codes: Dict[int, str] = {requests.codes.FORBIDDEN: forbidden_error_message}
         return reasons_for_codes
 
     @staticmethod
