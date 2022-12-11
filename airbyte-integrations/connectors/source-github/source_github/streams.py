@@ -76,12 +76,10 @@ class WorkflowRunsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
     ) -> Dict[int, str]:
         stream_slice = StreamHelper().get_stream_slice(stream)
-        repository_based_reasons_for_codes = super().reasons_for_unavailable_status_codes(stream, logger, source, error).copy()
-
-        workflow_runs_reasons_for_codes = {
-            requests.codes.SERVER_ERROR: f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
-        }
-        return repository_based_reasons_for_codes.update(workflow_runs_reasons_for_codes)
+        workflow_runs_reasons_for_codes = super().reasons_for_unavailable_status_codes(stream, logger, source, error).copy()
+        server_error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+        workflow_runs_reasons_for_codes[requests.codes.SERVER_ERROR] = server_error_msg
+        return workflow_runs_reasons_for_codes
 
 
 class ProjectsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
@@ -97,9 +95,8 @@ class ProjectsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
 
         # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
         # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-        projects_reasons_for_codes[
-            requests.codes.GONE
-        ] = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
+        gone_error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
+        projects_reasons_for_codes[requests.codes.GONE] = gone_error_msg
 
         return projects_reasons_for_codes
 
