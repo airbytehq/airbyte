@@ -3,12 +3,15 @@
 #
 
 from abc import abstractmethod
+from dataclasses import dataclass
 from typing import Optional
 
 import requests
+from dataclasses_jsonschema import JsonSchemaMixin
 
 
-class BackoffStrategy:
+@dataclass
+class BackoffStrategy(JsonSchemaMixin):
     """
     Backoff strategy defining how long to wait before retrying a request that resulted in an error.
     """

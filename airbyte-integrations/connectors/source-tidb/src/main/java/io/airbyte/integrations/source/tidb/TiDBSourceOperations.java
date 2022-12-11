@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.tidb;
 
+import static com.mysql.cj.MysqlType.*;
 import static io.airbyte.db.jdbc.JdbcConstants.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -19,12 +20,17 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(TiDBSourceOperations.class);
+  private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
+      SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED, FLOAT,
+      FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP, TIME,
+      YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
   @Override
   public void setJsonField(ResultSet resultSet, int colIndex, ObjectNode json) throws SQLException {
@@ -135,6 +141,11 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
           field.get(INTERNAL_COLUMN_TYPE_NAME)));
       return MysqlType.VARCHAR;
     }
+  }
+
+  @Override
+  public boolean isCursorType(MysqlType type) {
+    return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
   @Override

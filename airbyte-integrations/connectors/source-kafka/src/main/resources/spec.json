@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/kafka",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/kafka",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -9,8 +9,53 @@
     "title": "Kafka Source Spec",
     "type": "object",
     "required": ["bootstrap_servers", "subscription", "protocol"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
+      "MessageFormat": {
+        "title": "MessageFormat",
+        "type": "object",
+        "description": "The serialization used based on this ",
+        "oneOf": [
+          {
+            "title": "JSON",
+            "properties": {
+              "deserialization_type": {
+                "type": "string",
+                "const": "JSON"
+              }
+            }
+          },
+          {
+            "title": "AVRO",
+            "properties": {
+              "deserialization_type": {
+                "const": "AVRO"
+              },
+              "deserialization_strategy": {
+                "type": "string",
+                "enum": [
+                  "TopicNameStrategy",
+                  "RecordNameStrategy",
+                  "TopicRecordNameStrategy"
+                ],
+                "default": "TopicNameStrategy"
+              },
+              "schema_registry_url": {
+                "type": "string",
+                "examples": ["http://localhost:8081"]
+              },
+              "schema_registry_username": {
+                "type": "string",
+                "default": ""
+              },
+              "schema_registry_password": {
+                "type": "string",
+                "default": ""
+              }
+            }
+          }
+        ]
+      },
       "bootstrap_servers": {
         "title": "Bootstrap Servers",
         "description": "A list of host/port pairs to use for establishing the initial connection to the Kafka cluster. The client will make use of all servers irrespective of which servers are specified here for bootstrapping&mdash;this list only impacts the initial hosts used to discover the full set of servers. This list should be in the form <code>host1:port1,host2:port2,...</code>. Since these servers are just used for the initial connection to discover the full cluster membership (which may change dynamically), this list need not contain the full set of servers (you may want more than one, though, in case a server is down).",
@@ -29,9 +74,7 @@
               "subscription_type": {
                 "description": "Manually assign a list of partitions to this consumer. This interface does not allow for incremental assignment and will replace the previous assignment (if there is one).\nIf the given list of topic partitions is empty, it is treated the same as unsubscribe().",
                 "type": "string",
-                "const": "assign",
-                "enum": ["assign"],
-                "default": "assign"
+                "const": "assign"
               },
               "topic_partitions": {
                 "title": "List of topic:partition Pairs",
@@ -47,9 +90,7 @@
               "subscription_type": {
                 "description": "The Topic pattern from which the records will be read.",
                 "type": "string",
-                "const": "subscribe",
-                "enum": ["subscribe"],
-                "default": "subscribe"
+                "const": "subscribe"
               },
               "topic_pattern": {
                 "title": "Topic Pattern",
@@ -95,8 +136,7 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["PLAINTEXT"],
-                "default": "PLAINTEXT"
+                "const": "PLAINTEXT"
               }
             }
           },
@@ -110,15 +150,13 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["SASL_PLAINTEXT"],
-                "default": "SASL_PLAINTEXT"
+                "const": "SASL_PLAINTEXT"
               },
               "sasl_mechanism": {
                 "title": "SASL Mechanism",
                 "description": "The SASL mechanism used for client connections. This may be any mechanism for which a security provider is available.",
                 "type": "string",
-                "default": "PLAIN",
-                "enum": ["PLAIN"]
+                "const": "PLAIN"
               },
               "sasl_jaas_config": {
                 "title": "SASL JAAS Config",
@@ -139,8 +177,7 @@
             "properties": {
               "security_protocol": {
                 "type": "string",
-                "enum": ["SASL_SSL"],
-                "default": "SASL_SSL"
+                "const": "SASL_SSL"
               },
               "sasl_mechanism": {
                 "title": "SASL Mechanism",
@@ -225,6 +262,12 @@
         "description": "The number of repeated calls to poll() if no messages were received.",
         "type": "integer",
         "default": 3
+      },
+      "max_records_process": {
+        "title": "Maximum Records",
+        "description": "The Maximum to be processed per execution",
+        "type": "integer",
+        "default": 100000
       }
     }
   }

@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/shopify",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/shopify",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Shopify Source CDK Specifications",
@@ -20,37 +20,6 @@
         "order": 2,
         "oneOf": [
           {
-            "type": "object",
-            "title": "OAuth2.0",
-            "description": "OAuth2.0",
-            "required": ["auth_method"],
-            "properties": {
-              "auth_method": {
-                "type": "string",
-                "const": "oauth2.0",
-                "order": 0
-              },
-              "client_id": {
-                "type": "string",
-                "title": "Client ID",
-                "description": "The Client ID of the Shopify developer application.",
-                "airbyte_secret": true
-              },
-              "client_secret": {
-                "type": "string",
-                "title": "Client Secret",
-                "description": "The Client Secret of the Shopify developer application.",
-                "airbyte_secret": true
-              },
-              "access_token": {
-                "type": "string",
-                "title": "Access Token",
-                "description": "The Access Token for making authenticated requests.",
-                "airbyte_secret": true
-              }
-            }
-          },
-          {
             "title": "API Password",
             "description": "API Password Auth",
             "type": "object",
@@ -65,7 +34,42 @@
                 "type": "string",
                 "title": "API Password",
                 "description": "The API Password for your private application in the `Shopify` store.",
-                "airbyte_secret": true
+                "airbyte_secret": true,
+                "order": 1
+              }
+            }
+          },
+          {
+            "type": "object",
+            "title": "OAuth2.0",
+            "description": "OAuth2.0",
+            "required": ["auth_method"],
+            "properties": {
+              "auth_method": {
+                "type": "string",
+                "const": "oauth2.0",
+                "order": 0
+              },
+              "client_id": {
+                "type": "string",
+                "title": "Client ID",
+                "description": "The Client ID of the Shopify developer application.",
+                "airbyte_secret": true,
+                "order": 1
+              },
+              "client_secret": {
+                "type": "string",
+                "title": "Client Secret",
+                "description": "The Client Secret of the Shopify developer application.",
+                "airbyte_secret": true,
+                "order": 2
+              },
+              "access_token": {
+                "type": "string",
+                "title": "Access Token",
+                "description": "The Access Token for making authenticated requests.",
+                "airbyte_secret": true,
+                "order": 3
               }
             }
           }

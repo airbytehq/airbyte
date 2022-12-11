@@ -72,6 +72,11 @@
     IF(lower({{ field }}) = 'true', true, false)
 {%- endmacro %}
 
+{# TiDB does not support cast string to boolean #}
+{% macro tidb__cast_to_boolean(field) -%}
+    IF(lower({{ field }}) = 'true', true, false)
+{%- endmacro %}
+
 {# -- Redshift does not support converting string directly to boolean, it must go through int first #}
 {% macro redshift__cast_to_boolean(field) -%}
   {% if redshift_super_type() -%}

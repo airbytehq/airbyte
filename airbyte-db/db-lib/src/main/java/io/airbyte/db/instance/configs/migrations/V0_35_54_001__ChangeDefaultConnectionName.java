@@ -24,12 +24,13 @@ import org.slf4j.LoggerFactory;
 public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(V0_35_54_001__ChangeDefaultConnectionName.class);
+  private static final String NAME = "name";
 
   public static void defaultConnectionName(final DSLContext ctx) {
     LOGGER.info("Updating connection name column");
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
-    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
-    List<Connection> connections = getConnections(ctx);
+    final Field<String> name = DSL.field(NAME, SQLDataType.VARCHAR(256).nullable(false));
+    final List<Connection> connections = getConnections(ctx);
 
     for (final Connection connection : connections) {
       final Actor sourceActor = getActor(connection.getSourceId(), ctx);
@@ -45,12 +46,12 @@ public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration
 
   static <T> List<Connection> getConnections(final DSLContext ctx) {
     LOGGER.info("Get connections having name default");
-    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
+    final Field<String> name = DSL.field(NAME, SQLDataType.VARCHAR(36).nullable(false));
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
     final Field<UUID> sourceId = DSL.field("source_id", SQLDataType.UUID.nullable(false));
     final Field<UUID> destinationId = DSL.field("destination_id", SQLDataType.UUID.nullable(false));
 
-    final Field<String> connectionName = DSL.field("name", SQLDataType.VARCHAR(256).nullable(false));
+    final Field<String> connectionName = DSL.field(NAME, SQLDataType.VARCHAR(256).nullable(false));
     final Result<Record> results = ctx.select(asterisk()).from(table("connection")).where(connectionName.eq("default")).fetch();
 
     return results.stream().map(record -> new Connection(
@@ -62,7 +63,7 @@ public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration
   }
 
   static <T> Actor getActor(final UUID actorDefinitionId, final DSLContext ctx) {
-    final Field<String> name = DSL.field("name", SQLDataType.VARCHAR(36).nullable(false));
+    final Field<String> name = DSL.field(NAME, SQLDataType.VARCHAR(36).nullable(false));
     final Field<UUID> id = DSL.field("id", SQLDataType.UUID.nullable(false));
 
     final Result<Record> results = ctx.select(asterisk()).from(table("actor")).where(id.eq(actorDefinitionId)).fetch();
@@ -83,7 +84,7 @@ public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration
 
     private final String name;
 
-    public <T> Actor(String name) {
+    public <T> Actor(final String name) {
       this.name = name;
     }
 
@@ -100,7 +101,7 @@ public class V0_35_54_001__ChangeDefaultConnectionName extends BaseJavaMigration
     private final UUID sourceId;
     private final UUID destinationId;
 
-    public <T> Connection(String name, UUID id, UUID sourceId, UUID destinationId) {
+    public <T> Connection(final String name, final UUID id, final UUID sourceId, final UUID destinationId) {
       this.name = name;
       this.connectionId = id;
       this.sourceId = sourceId;

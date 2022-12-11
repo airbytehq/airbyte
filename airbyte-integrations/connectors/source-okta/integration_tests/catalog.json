@@ -66,6 +66,15 @@
       "sync_mode": "full_refresh",
       "destination_sync_mode": "overwrite",
       "primary_key": [["id"]]
+    },
+    {
+      "stream": {
+        "name": "permissions",
+        "json_schema": {}
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite",
+      "primary_key": [["label"]]
     }
   ]
 }

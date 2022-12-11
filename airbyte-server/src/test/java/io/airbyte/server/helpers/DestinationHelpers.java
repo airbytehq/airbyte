@@ -9,6 +9,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,7 +62,8 @@ public class DestinationHelpers {
         .destinationId(destination.getDestinationId())
         .connectionConfiguration(destination.getConfiguration())
         .name(destination.getName())
-        .destinationName(standardDestinationDefinition.getName());
+        .destinationName(standardDestinationDefinition.getName())
+        .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }
 
 }

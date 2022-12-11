@@ -38,6 +38,10 @@ public class MssqlStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAccept
 
   @BeforeAll
   static void init() {
+    // In mssql, timestamp is generated automatically, so we need to use
+    // the datetime type instead so that we can set the value manually.
+    COL_TIMESTAMP_TYPE = "DATETIME";
+
     dbContainer = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-latest").acceptLicense();
     dbContainer.start();
   }

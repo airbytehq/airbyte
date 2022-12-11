@@ -5,7 +5,7 @@
     "title": "RKI Covid Spec",
     "type": "object",
     "required": ["start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "start_date": {
         "type": "string",

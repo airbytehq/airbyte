@@ -12,11 +12,9 @@ import com.google.common.collect.Streams;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerUtils;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -133,7 +131,7 @@ public class PythonSourceAcceptanceTest extends SourceAcceptanceTest {
     LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
     LineGobbler.gobble(process.getInputStream(), LOGGER::info);
 
-    WorkerUtils.gentleClose(new WorkerConfigs(new EnvConfigs()), process, 1, TimeUnit.MINUTES);
+    WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
 
     final int exitCode = process.exitValue();
     if (exitCode != 0) {

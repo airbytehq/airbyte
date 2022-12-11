@@ -1,0 +1,46 @@
+@use "../../../scss/colors";
+@use "../../../scss/variables";
+
+.container {
+  background: colors.$white;
+  display: inline-block;
+  position: relative;
+  width: 100%;
+}
+
+.titleContainer {
+  min-height: variables.$spacing-lg;
+  margin-bottom: variables.$spacing-md;
+}
+
+%arrow {
+  position: absolute;
+  border: none;
+  background-color: colors.$white;
+  top: 0;
+  font-size: 11px;
+  width: 17px;
+  height: 17px;
+  color: colors.$dark-blue-900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: variables.$transition;
+  border-radius: variables.$border-radius-xs;
+}
+
+.leftArrow {
+  @extend %arrow;
+
+  right: 35px;
+}
+
+.rightArrow {
+  @extend %arrow;
+
+  right: 0;
+}
+
+.arrowDisabled {
+  color: colors.$grey-200;
+}

@@ -19,6 +19,8 @@ dependencies {
     implementation 'com.azure:azure-storage-blob:12.12.0'
     implementation 'org.apache.commons:commons-csv:1.4'
 
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')

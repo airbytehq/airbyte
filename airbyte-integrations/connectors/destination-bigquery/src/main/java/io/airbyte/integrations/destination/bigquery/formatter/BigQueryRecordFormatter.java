@@ -23,10 +23,11 @@ public abstract class BigQueryRecordFormatter {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryRecordFormatter.class);
 
-  private Schema bigQuerySchema;
-  private final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
+  protected Schema bigQuerySchema;
+  protected final Map<String, Set<String>> mapOfFailedFields = new HashMap<>();
   protected final StandardNameTransformer namingResolver;
-  protected final JsonNode jsonSchema;
+  protected final JsonNode originalJsonSchema;
+  protected JsonNode jsonSchema;
 
   /**
    * These parameters are required for the correct operation of denormalize version of the connector.
@@ -36,6 +37,7 @@ public abstract class BigQueryRecordFormatter {
 
   public BigQueryRecordFormatter(final JsonNode jsonSchema, final StandardNameTransformer namingResolver) {
     this.namingResolver = namingResolver;
+    this.originalJsonSchema = jsonSchema.deepCopy();
     this.jsonSchema = formatJsonSchema(jsonSchema.deepCopy());
   }
 

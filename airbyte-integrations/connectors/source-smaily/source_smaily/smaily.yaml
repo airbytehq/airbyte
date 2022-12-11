@@ -1,0 +1,99 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://{{config['api_subdomain']}}.sendsmaily.net/api"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{config['api_username']}}"
+      password: "{{config['api_password']}}"
+  increment_paginator:
+    type: DefaultPaginator
+    url_base: "*ref(definitions.requester.url_base)"
+    page_size_option:
+      inject_into: "request_parameter"
+      field_name: "limit"
+    pagination_strategy:
+      type: PageIncrement
+      page_size: 250
+    page_token_option:
+      inject_into: "request_parameter"
+      field_name: "page"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  # API Docs: https://smaily.com/help/api/organizations/list-users-of-an-organization/
+  users_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "users"
+      primary_key: "id"
+      path: "/organizations/users.php"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+  # API Docs: https://smaily.com/help/api/segments/list-segments/
+  segments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "segments"
+      primary_key: "id"
+      path: "/list.php"
+  # API Docs: https://smaily.com/help/api/campaigns-3/list-campaigns/
+  campaigns_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "campaigns"
+      primary_key: "id"
+      path: "/campaign.php"
+  # API Docs: https://smaily.com/help/api/templates-2/list-templates/
+  templates_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "templates"
+      primary_key: "id"
+      path: "/templates.php"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        $ref: "*ref(definitions.increment_paginator)"
+        pagination_strategy:
+          type: PageIncrement
+          page_size: 1000
+  # API Docs: https://smaily.com/help/api/automations-2/list-automation-workflows/
+  automations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "automations"
+      primary_key: "id"
+      path: "/autoresponder.php"
+  # API Docs: https://smaily.com/help/api/a-b-tests/list-a-b-tests/
+  ab_tests_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "ab_tests"
+      primary_key: "id"
+      path: "/split.php"
+
+streams:
+  - "*ref(definitions.users_stream)"
+  - "*ref(definitions.segments_stream)"
+  - "*ref(definitions.campaigns_stream)"
+  - "*ref(definitions.templates_stream)"
+  - "*ref(definitions.automations_stream)"
+  - "*ref(definitions.ab_tests_stream)"
+
+check:
+  stream_names: ["users"]

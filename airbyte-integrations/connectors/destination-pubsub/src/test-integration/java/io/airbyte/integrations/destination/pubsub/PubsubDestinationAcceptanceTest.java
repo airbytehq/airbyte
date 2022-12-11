@@ -5,11 +5,13 @@
 package io.airbyte.integrations.destination.pubsub;
 
 import static com.google.common.base.Strings.nullToEmpty;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_CREDS;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_PROJECT_ID;
-import static io.airbyte.integrations.destination.pubsub.PubsubDestination.CONFIG_TOPIC_ID;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.NAMESPACE;
 import static io.airbyte.integrations.destination.pubsub.PubsubDestination.STREAM;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_BATCHING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_CREDS;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_ORDERING_ENABLED;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_PROJECT_ID;
+import static io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig.CONFIG_TOPIC_ID;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -35,11 +37,11 @@ import com.google.pubsub.v1.Topic;
 import com.google.pubsub.v1.TopicName;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -202,6 +204,8 @@ public class PubsubDestinationAcceptanceTest extends DestinationAcceptanceTest {
         .put(CONFIG_PROJECT_ID, projectId)
         .put(CONFIG_CREDS, credentialsJsonString)
         .put(CONFIG_TOPIC_ID, topicId)
+        .put(CONFIG_BATCHING_ENABLED, true)
+        .put(CONFIG_ORDERING_ENABLED, true)
         .build());
 
     credentials =

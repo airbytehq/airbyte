@@ -34,6 +34,7 @@ public class S3DestinationTest {
 
   private AmazonS3 s3;
   private S3DestinationConfig config;
+  private S3DestinationConfigFactory factoryConfig;
 
   @BeforeEach
   public void setup() {
@@ -48,6 +49,18 @@ public class S3DestinationTest {
         .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
         .withS3Client(s3)
         .get();
+
+    factoryConfig = new S3DestinationConfigFactory() {
+
+      public S3DestinationConfig getS3DestinationConfig(final JsonNode config, final StorageProvider storageProvider) {
+        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
+            .withEndpoint("https://s3.example.com")
+            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
+            .withS3Client(s3)
+            .get();
+      }
+
+    };
   }
 
   @Test
@@ -55,17 +68,7 @@ public class S3DestinationTest {
    * Test that check will fail if IAM user does not have listObjects permission
    */
   public void checksS3WithoutListObjectPermission() {
-    final S3Destination destinationFail = new S3Destination(new S3DestinationConfigFactory() {
-
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("fake-endpoint")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-
-    });
+    final S3Destination destinationFail = new S3Destination(factoryConfig);
     doThrow(new AmazonS3Exception("Access Denied")).when(s3).listObjects(any(ListObjectsRequest.class));
     final AirbyteConnectionStatus status = destinationFail.check(null);
     assertEquals(Status.FAILED, status.getStatus(), "Connection check should have failed");
@@ -77,24 +80,14 @@ public class S3DestinationTest {
    * Test that check will succeed when IAM user has all required permissions
    */
   public void checksS3WithListObjectPermission() {
-    final S3Destination destinationSuccess = new S3Destination(new S3DestinationConfigFactory() {
-
-      public S3DestinationConfig getS3DestinationConfig(final JsonNode config) {
-        return S3DestinationConfig.create("fake-bucket", "fake-bucketPath", "fake-region")
-            .withEndpoint("fake-endpoint")
-            .withAccessKeyCredential("fake-accessKeyId", "fake-secretAccessKey")
-            .withS3Client(s3)
-            .get();
-      }
-
-    });
+    final S3Destination destinationSuccess = new S3Destination(factoryConfig);
     final AirbyteConnectionStatus status = destinationSuccess.check(null);
     assertEquals(Status.SUCCEEDED, status.getStatus(), "Connection check should have succeeded");
   }
 
   @Test
   public void createsThenDeletesTestFile() {
-    S3Destination.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
+    S3BaseChecks.attemptS3WriteAndDelete(mock(S3StorageOperations.class), config, "fake-fileToWriteAndDelete", s3);
 
     // We want to enforce that putObject happens before deleteObject, so use inOrder.verify()
     final InOrder inOrder = Mockito.inOrder(s3);

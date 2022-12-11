@@ -6,6 +6,7 @@ package io.airbyte.commons.yaml;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SequenceWriter;
@@ -23,6 +24,7 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.Iterator;
 
+@SuppressWarnings("PMD.AvoidBranchingStatementAsLastInLoop")
 public class Yamls {
 
   private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
@@ -62,6 +64,14 @@ public class Yamls {
   public static <T> T deserialize(final String yamlString, final Class<T> klass) {
     try {
       return OBJECT_MAPPER.readValue(yamlString, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final String yamlString, final TypeReference<T> typeReference) {
+    try {
+      return OBJECT_MAPPER.readValue(yamlString, typeReference);
     } catch (final IOException e) {
       throw new RuntimeException(e);
     }

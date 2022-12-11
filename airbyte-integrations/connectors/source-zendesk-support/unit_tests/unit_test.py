@@ -130,6 +130,25 @@ def test_check(response, check_passed):
         assert check_passed == result
 
 
+@pytest.mark.parametrize(
+    "ticket_forms_response, status_code, expected_n_streams, expected_warnings",
+    [
+        ({"ticket_forms": [{"id": 1, "updated_at": "2021-07-08T00:05:45Z"}]}, 200, 18, []),
+        ({"error": "Not sufficient permissions"}, 403, 17, [
+            "An exception occurred while trying to access TicketForms stream: 403 Client"
+        ]),
+    ],
+    ids=["forms_accessible", "forms_inaccessible"],
+)
+def test_full_access_streams(caplog, requests_mock, ticket_forms_response, status_code, expected_n_streams, expected_warnings):
+    requests_mock.get("/api/v2/ticket_forms", status_code=status_code, json=ticket_forms_response)
+    result = SourceZendeskSupport().streams(config=TEST_CONFIG)
+    assert len(result) == expected_n_streams
+    logged_warnings = iter([record for record in caplog.records if record.levelname == "WARNING"])
+    for msg in expected_warnings:
+        assert msg in next(logged_warnings).message
+
+
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):
     time_mock = mocker.patch("time.sleep", lambda x: None)
@@ -265,10 +284,12 @@ class TestAllStreams:
         ],
     )
     def test_streams(self, expected_stream_cls):
-        streams = SourceZendeskSupport().streams(TEST_CONFIG)
-        for stream in streams:
-            if expected_stream_cls in streams:
-                assert isinstance(stream, expected_stream_cls)
+        with patch.object(TicketForms, "read_records", return_value=[{}]) as mocked_records:
+            streams = SourceZendeskSupport().streams(TEST_CONFIG)
+            mocked_records.assert_called()
+            for stream in streams:
+                if expected_stream_cls in streams:
+                    assert isinstance(stream, expected_stream_cls)
 
     @pytest.mark.parametrize(
         "stream_cls, expected",

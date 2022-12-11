@@ -16,8 +16,8 @@ import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.base.ssh.SshBastionContainer;
 import io.airbyte.integrations.base.ssh.SshTunnel;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
-import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
-import java.util.ArrayList;
+import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -29,7 +29,7 @@ import org.testcontainers.containers.Network;
  * Abstract class that allows us to avoid duplicating testing logic for testing SSH with a key file
  * or with a password.
  */
-public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public abstract class SshMSSQLDestinationAcceptanceTest extends JdbcDestinationAcceptanceTest {
 
   private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
 
@@ -73,7 +73,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
       throws Exception {
     return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
         .stream()
-        .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+        .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA))
         .collect(Collectors.toList());
   }
 
@@ -90,19 +90,6 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   @Override
   protected boolean supportsNormalization() {
     return true;
-  }
-
-  @Override
-  protected List<String> resolveIdentifier(final String identifier) {
-    final List<String> result = new ArrayList<>();
-    final String resolved = namingResolver.getIdentifier(identifier);
-    result.add(identifier);
-    result.add(resolved);
-    if (!resolved.startsWith("\"")) {
-      result.add(resolved.toLowerCase());
-      result.add(resolved.toUpperCase());
-    }
-    return result;
   }
 
   private static Database getDatabaseFromConfig(final JsonNode config) {
@@ -132,8 +119,7 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
                         database, schema, tableName.toLowerCase(),
                         JavaBaseConstants.COLUMN_NAME_EMITTED_AT))
                     .stream()
-                    .map(r -> r.formatJSON(JdbcUtils.getDefaultJSONFormat()))
-                    .map(Jsons::deserialize)
+                    .map(this::getJsonFromRecord)
                     .collect(Collectors.toList())));
   }
 
@@ -164,13 +150,34 @@ public abstract class SshMSSQLDestinationAcceptanceTest extends DestinationAccep
   private void initAndStartJdbcContainer() {
     db = new MSSQLServerContainer<>("mcr.microsoft.com/mssql/server:2019-CU16-ubuntu-20.04")
         .withNetwork(network)
-        .acceptLicense();
+        .acceptLicense()
+        .dependsOn(bastion.getContainer());
     db.start();
   }
 
   @Override
   protected void tearDown(final TestDestinationEnv testEnv) {
     bastion.stopAndCloseContainers(db);
+  }
+
+  @Override
+  protected TestDataComparator getTestDataComparator() {
+    return new MSSQLTestDataComparator();
+  }
+
+  @Override
+  protected boolean supportBasicDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportArrayDataTypeTest() {
+    return true;
+  }
+
+  @Override
+  protected boolean supportObjectDataTypeTest() {
+    return true;
   }
 
 }

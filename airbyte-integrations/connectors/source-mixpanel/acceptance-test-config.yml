@@ -1,16 +1,24 @@
-# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-mixpanel:dev
 tests:
   spec:
     - spec_path: "source_mixpanel/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.23"
   connection:
+    - config_path: "secrets/config_old.json"
+      status: "succeed"
+    - config_path: "secrets/config_project_secret.json"
+      status: "succeed"
     - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
   discovery:
     - config_path: "secrets/config.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.23"
       timeout_seconds: 60
   basic_read:
     - config_path: "secrets/config.json"
@@ -22,16 +30,13 @@ tests:
       configured_catalog_path: "integration_tests/configured_catalog.json"
       timeout_seconds: 3600
   incremental:
-    # incremental streams Funnels, Revenue, Export
-    # Funnels - fails because it has complex state, like {'funnel_idX': {'date': 'dateX'}}
-    # Export - fails because it could return a few previous records for the date of previous sync
     - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog_incremental.json"
-      # Test is skipped because requests fails when start_date is in the future
-      # Incremental streams Funnels, Revenue always return data for any valid date
-      # future_state_path: "integration_tests/abnormal_state.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      future_state_path: "integration_tests/abnormal_state.json"
       cursor_paths:
+        cohorts: ["created"]
+        export: ["time"]
+        funnels: ["8901755", "date"]
         revenue: ["date"]
-        export: ["date"]
+        cohort_members": ["last_seen"]
       timeout_seconds: 3600
-

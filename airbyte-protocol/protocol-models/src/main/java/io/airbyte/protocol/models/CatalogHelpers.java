@@ -12,16 +12,17 @@ import com.google.common.collect.Sets;
 import io.airbyte.commons.json.JsonSchemas;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.commons.util.MoreLists;
 import io.airbyte.protocol.models.transform_models.FieldTransform;
 import io.airbyte.protocol.models.transform_models.StreamTransform;
 import io.airbyte.protocol.models.transform_models.UpdateFieldSchemaTransform;
 import io.airbyte.protocol.models.transform_models.UpdateStreamTransform;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -34,8 +35,10 @@ public class CatalogHelpers {
 
   private static final String ITEMS_KEY = "items";
 
-  public static AirbyteCatalog createAirbyteCatalog(final String streamName, final Field... fields) {
-    return new AirbyteCatalog().withStreams(Lists.newArrayList(createAirbyteStream(streamName, fields)));
+  public static AirbyteCatalog createAirbyteCatalog(final String streamName,
+                                                    final Field... fields) {
+    return new AirbyteCatalog().withStreams(
+        Lists.newArrayList(createAirbyteStream(streamName, fields)));
   }
 
   public static AirbyteStream createAirbyteStream(final String streamName, final Field... fields) {
@@ -43,29 +46,47 @@ public class CatalogHelpers {
     return createAirbyteStream(streamName, null, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final Field... fields) {
+  public static AirbyteStream createAirbyteStream(final String streamName,
+                                                  final String namespace,
+                                                  final Field... fields) {
     return createAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static AirbyteStream createAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
-    return new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields));
+  public static AirbyteStream createAirbyteStream(final String streamName,
+                                                  final String namespace,
+                                                  final List<Field> fields) {
+    return new AirbyteStream().withName(streamName).withNamespace(namespace)
+        .withJsonSchema(fieldsToJsonSchema(fields))
+        .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final Field... fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName,
+                                                                        final String namespace,
+                                                                        final Field... fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(
+        Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
-  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName, final String namespace, final List<Field> fields) {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
+  public static ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(final String streamName,
+                                                                        final String namespace,
+                                                                        final List<Field> fields) {
+    return new ConfiguredAirbyteCatalog().withStreams(
+        Lists.newArrayList(createConfiguredAirbyteStream(streamName, namespace, fields)));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final Field... fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName,
+                                                                      final String namespace,
+                                                                      final Field... fields) {
     return createConfiguredAirbyteStream(streamName, namespace, Arrays.asList(fields));
   }
 
-  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName, final String namespace, final List<Field> fields) {
+  public static ConfiguredAirbyteStream createConfiguredAirbyteStream(final String streamName,
+                                                                      final String namespace,
+                                                                      final List<Field> fields) {
     return new ConfiguredAirbyteStream()
-        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace).withJsonSchema(fieldsToJsonSchema(fields)))
+        .withStream(new AirbyteStream().withName(streamName).withNamespace(namespace)
+            .withJsonSchema(fieldsToJsonSchema(fields))
+            .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)))
         .withSyncMode(SyncMode.FULL_REFRESH).withDestinationSyncMode(DestinationSyncMode.OVERWRITE);
   }
 
@@ -76,7 +97,8 @@ public class CatalogHelpers {
    * @param configuredCatalog - catalog to convert
    * @return - airbyte catalog
    */
-  public static AirbyteCatalog configuredCatalogToCatalog(final ConfiguredAirbyteCatalog configuredCatalog) {
+  public static AirbyteCatalog configuredCatalogToCatalog(
+                                                          final ConfiguredAirbyteCatalog configuredCatalog) {
     return new AirbyteCatalog().withStreams(
         configuredCatalog.getStreams()
             .stream()
@@ -101,7 +123,8 @@ public class CatalogHelpers {
    * @return stream descriptor
    */
   public static StreamDescriptor extractDescriptor(final AirbyteStream airbyteStream) {
-    return new StreamDescriptor().withName(airbyteStream.getName()).withNamespace(airbyteStream.getNamespace());
+    return new StreamDescriptor().withName(airbyteStream.getName())
+        .withNamespace(airbyteStream.getNamespace());
   }
 
   /**
@@ -110,7 +133,8 @@ public class CatalogHelpers {
    * @param configuredCatalog catalog
    * @return list of stream descriptors
    */
-  public static List<StreamDescriptor> extractStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
+  public static List<StreamDescriptor> extractStreamDescriptors(
+                                                                final ConfiguredAirbyteCatalog configuredCatalog) {
     return extractStreamDescriptors(configuredCatalogToCatalog(configuredCatalog));
   }
 
@@ -121,7 +145,8 @@ public class CatalogHelpers {
    * @param configuredCatalog catalog
    * @return list of stream descriptors
    */
-  public static List<StreamDescriptor> extractIncrementalStreamDescriptors(final ConfiguredAirbyteCatalog configuredCatalog) {
+  public static List<StreamDescriptor> extractIncrementalStreamDescriptors(
+                                                                           final ConfiguredAirbyteCatalog configuredCatalog) {
     return configuredCatalog.getStreams()
         .stream()
         .filter(configuredStream -> configuredStream.getSyncMode() == SyncMode.INCREMENTAL)
@@ -203,7 +228,8 @@ public class CatalogHelpers {
   @SuppressWarnings("unchecked")
   public static Set<String> getTopLevelFieldNames(final ConfiguredAirbyteStream stream) {
     // it is json, so the key has to be a string.
-    final Map<String, Object> object = Jsons.object(stream.getStream().getJsonSchema().get("properties"), Map.class);
+    final Map<String, Object> object = Jsons.object(
+        stream.getStream().getJsonSchema().get("properties"), Map.class);
     return object.keySet();
   }
 
@@ -217,9 +243,19 @@ public class CatalogHelpers {
         .stream()
         .map(Pair::getLeft)
         // only need field name, not fully qualified name
-        .map(MoreLists::last)
+        .map(CatalogHelpers::last)
         .flatMap(Optional::stream)
         .collect(Collectors.toSet());
+  }
+
+  /**
+   * @return returns empty optional if the list is empty or if the last element in the list is null.
+   */
+  private static Optional<String> last(final List<String> list) {
+    if (list.isEmpty()) {
+      return Optional.empty();
+    }
+    return Optional.ofNullable(list.get(list.size() - 1));
   }
 
   /**
@@ -232,19 +268,23 @@ public class CatalogHelpers {
    *         preorder.
    */
   @VisibleForTesting
-  protected static List<Pair<List<String>, JsonNode>> getFullyQualifiedFieldNamesWithTypes(final JsonNode jsonSchema) {
+  protected static List<Pair<List<String>, JsonNode>> getFullyQualifiedFieldNamesWithTypes(
+                                                                                           final JsonNode jsonSchema) {
     // if this were ever a performance issue, it could be replaced with a trie. this seems unlikely
     // however.
     final Set<List<String>> fieldNamesThatAreOneOfs = new HashSet<>();
 
     return JsonSchemas.traverseJsonSchemaWithCollector(jsonSchema, (node, basicPath) -> {
-      final List<String> fieldName = basicPath.stream().map(fieldOrList -> fieldOrList.isList() ? ITEMS_KEY : fieldOrList.getFieldName()).toList();
+      final List<String> fieldName = basicPath.stream()
+          .map(fieldOrList -> fieldOrList.isList() ? ITEMS_KEY : fieldOrList.getFieldName())
+          .toList();
       return Pair.of(fieldName, node);
     })
         .stream()
         // first node is the original object.
         .skip(1)
-        .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(), fieldWithSchema.getRight(), fieldNamesThatAreOneOfs))
+        .filter(fieldWithSchema -> filterChildrenOfFoneOneOf(fieldWithSchema.getLeft(),
+            fieldWithSchema.getRight(), fieldNamesThatAreOneOfs))
         .toList();
   }
 
@@ -287,14 +327,17 @@ public class CatalogHelpers {
   }
 
   private static boolean isObjectWithSubFields(final Field field) {
-    return field.getType() == JsonSchemaType.OBJECT && field.getSubFields() != null && !field.getSubFields().isEmpty();
+    return field.getType().equals(JsonSchemaType.OBJECT) && field.getSubFields() != null
+        && !field.getSubFields().isEmpty();
   }
 
   public static StreamDescriptor extractStreamDescriptor(final AirbyteStream airbyteStream) {
-    return new StreamDescriptor().withName(airbyteStream.getName()).withNamespace(airbyteStream.getNamespace());
+    return new StreamDescriptor().withName(airbyteStream.getName())
+        .withNamespace(airbyteStream.getNamespace());
   }
 
-  private static Map<StreamDescriptor, AirbyteStream> streamDescriptorToMap(final AirbyteCatalog catalog) {
+  private static Map<StreamDescriptor, AirbyteStream> streamDescriptorToMap(
+                                                                            final AirbyteCatalog catalog) {
     return catalog.getStreams()
         .stream()
         .collect(Collectors.toMap(CatalogHelpers::extractStreamDescriptor, s -> s));
@@ -307,22 +350,35 @@ public class CatalogHelpers {
    * @param newCatalog - new catalog
    * @return difference between old and new catalogs
    */
-  public static Set<StreamTransform> getCatalogDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog) {
+  public static Set<StreamTransform> getCatalogDiff(final AirbyteCatalog oldCatalog,
+                                                    final AirbyteCatalog newCatalog,
+                                                    final ConfiguredAirbyteCatalog configuredCatalog) {
     final Set<StreamTransform> streamTransforms = new HashSet<>();
 
-    final Map<StreamDescriptor, AirbyteStream> descriptorToStreamOld = streamDescriptorToMap(oldCatalog);
-    final Map<StreamDescriptor, AirbyteStream> descriptorToStreamNew = streamDescriptorToMap(newCatalog);
+    final Map<StreamDescriptor, AirbyteStream> descriptorToStreamOld = streamDescriptorToMap(
+        oldCatalog);
+    final Map<StreamDescriptor, AirbyteStream> descriptorToStreamNew = streamDescriptorToMap(
+        newCatalog);
 
     Sets.difference(descriptorToStreamOld.keySet(), descriptorToStreamNew.keySet())
-        .forEach(descriptor -> streamTransforms.add(StreamTransform.createRemoveStreamTransform(descriptor)));
+        .forEach(descriptor -> streamTransforms.add(
+            StreamTransform.createRemoveStreamTransform(descriptor)));
     Sets.difference(descriptorToStreamNew.keySet(), descriptorToStreamOld.keySet())
-        .forEach(descriptor -> streamTransforms.add(StreamTransform.createAddStreamTransform(descriptor)));
+        .forEach(descriptor -> streamTransforms.add(
+            StreamTransform.createAddStreamTransform(descriptor)));
     Sets.intersection(descriptorToStreamOld.keySet(), descriptorToStreamNew.keySet())
         .forEach(descriptor -> {
           final AirbyteStream streamOld = descriptorToStreamOld.get(descriptor);
           final AirbyteStream streamNew = descriptorToStreamNew.get(descriptor);
+
+          final Optional<ConfiguredAirbyteStream> stream = configuredCatalog.getStreams().stream()
+              .filter(s -> Objects.equals(s.getStream().getNamespace(), descriptor.getNamespace())
+                  && s.getStream().getName().equals(descriptor.getName()))
+              .findFirst();
+
           if (!streamOld.equals(streamNew)) {
-            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor, getStreamDiff(streamOld, streamNew)));
+            streamTransforms.add(StreamTransform.createUpdateStreamTransform(descriptor,
+                getStreamDiff(streamOld, streamNew, stream)));
           }
         });
 
@@ -330,28 +386,91 @@ public class CatalogHelpers {
   }
 
   private static UpdateStreamTransform getStreamDiff(final AirbyteStream streamOld,
-                                                     final AirbyteStream streamNew) {
+                                                     final AirbyteStream streamNew,
+                                                     final Optional<ConfiguredAirbyteStream> configuredStream) {
     final Set<FieldTransform> fieldTransforms = new HashSet<>();
-    final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(streamOld.getJsonSchema())
-        .stream()
-        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
-    final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(streamNew.getJsonSchema())
-        .stream()
-        .collect(Collectors.toMap(Pair::getLeft, Pair::getRight));
+    final Map<List<String>, JsonNode> fieldNameToTypeOld = getFullyQualifiedFieldNamesWithTypes(
+        streamOld.getJsonSchema())
+            .stream()
+            .collect(
+                HashMap::new,
+                CatalogHelpers::collectInHashMap,
+                CatalogHelpers::combineAccumulator);
+    final Map<List<String>, JsonNode> fieldNameToTypeNew = getFullyQualifiedFieldNamesWithTypes(
+        streamNew.getJsonSchema())
+            .stream()
+            .collect(
+                HashMap::new,
+                CatalogHelpers::collectInHashMap,
+                CatalogHelpers::combineAccumulator);
 
     Sets.difference(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
-        .forEach(fieldName -> fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName, fieldNameToTypeOld.get(fieldName))));
+        .forEach(fieldName -> {
+          fieldTransforms.add(FieldTransform.createRemoveFieldTransform(fieldName,
+              fieldNameToTypeOld.get(fieldName),
+              transformBreaksConnection(configuredStream, fieldName)));
+        });
     Sets.difference(fieldNameToTypeNew.keySet(), fieldNameToTypeOld.keySet())
-        .forEach(fieldName -> fieldTransforms.add(FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName))));
-    Sets.intersection(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet()).forEach(fieldName -> {
-      final JsonNode oldType = fieldNameToTypeOld.get(fieldName);
-      final JsonNode newType = fieldNameToTypeNew.get(fieldName);
+        .forEach(fieldName -> fieldTransforms.add(
+            FieldTransform.createAddFieldTransform(fieldName, fieldNameToTypeNew.get(fieldName))));
+    Sets.intersection(fieldNameToTypeOld.keySet(), fieldNameToTypeNew.keySet())
+        .forEach(fieldName -> {
+          final JsonNode oldType = fieldNameToTypeOld.get(fieldName);
+          final JsonNode newType = fieldNameToTypeNew.get(fieldName);
 
-      if (!oldType.equals(newType)) {
-        fieldTransforms.add(FieldTransform.createUpdateFieldTransform(fieldName, new UpdateFieldSchemaTransform(oldType, newType)));
+          if (!oldType.equals(newType)) {
+            fieldTransforms.add(FieldTransform.createUpdateFieldTransform(fieldName,
+                new UpdateFieldSchemaTransform(oldType, newType)));
+          }
+        });
+
+    return new UpdateStreamTransform(fieldTransforms);
+  }
+
+  @VisibleForTesting
+  static final JsonNode DUPLICATED_SCHEMA = Jsons.jsonNode("Duplicated Schema");
+
+  @VisibleForTesting
+  static void collectInHashMap(final Map<List<String>, JsonNode> accumulator,
+                               final Pair<List<String>, JsonNode> value) {
+    if (accumulator.containsKey(value.getKey())) {
+      accumulator.put(value.getKey(), DUPLICATED_SCHEMA);
+    } else {
+      accumulator.put(value.getKey(), value.getValue());
+    }
+  }
+
+  @VisibleForTesting
+  static void combineAccumulator(final Map<List<String>, JsonNode> accumulatorLeft,
+                                 final Map<List<String>, JsonNode> accumulatorRight) {
+    accumulatorRight.forEach((key, value) -> {
+      if (accumulatorLeft.containsKey(key)) {
+        accumulatorLeft.put(key, DUPLICATED_SCHEMA);
+      } else {
+        accumulatorLeft.put(key, value);
       }
     });
-    return new UpdateStreamTransform(fieldTransforms);
+  }
+
+  static boolean transformBreaksConnection(final Optional<ConfiguredAirbyteStream> configuredStream,
+                                           final List<String> fieldName) {
+    if (configuredStream.isEmpty()) {
+      return false;
+    }
+
+    final ConfiguredAirbyteStream streamConfig = configuredStream.get();
+
+    final SyncMode syncMode = streamConfig.getSyncMode();
+    if (SyncMode.INCREMENTAL == syncMode && streamConfig.getCursorField().equals(fieldName)) {
+      return true;
+    }
+
+    final DestinationSyncMode destinationSyncMode = streamConfig.getDestinationSyncMode();
+    if (DestinationSyncMode.APPEND_DEDUP == destinationSyncMode && streamConfig.getPrimaryKey()
+        .contains(fieldName)) {
+      return true;
+    }
+    return false;
   }
 
 }

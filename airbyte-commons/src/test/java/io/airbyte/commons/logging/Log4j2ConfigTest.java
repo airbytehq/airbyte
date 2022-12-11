@@ -23,6 +23,7 @@ import org.slf4j.MDC;
 class Log4j2ConfigTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
+  private static final String LOG_FILENAME = "logs.log";
   private Path root;
 
   @BeforeEach
@@ -35,12 +36,10 @@ class Log4j2ConfigTest {
   void testWorkerDispatch() throws InterruptedException {
     final Logger logger = LoggerFactory.getLogger("testWorkerDispatch");
 
-    final String filename = "logs.log";
-
     final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
       MDC.put("context", "worker");
-      MDC.put("job_log_path", root + "/" + filename);
+      MDC.put("job_log_path", root + "/" + LOG_FILENAME);
       logger.error("random message testWorkerDispatch");
       MDC.clear();
     });
@@ -48,40 +47,37 @@ class Log4j2ConfigTest {
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
-    assertTrue(IOs.readFile(root, filename).contains("random message testWorkerDispatch"));
+    assertTrue(IOs.readFile(root, LOG_FILENAME).contains("random message testWorkerDispatch"));
   }
 
   @Test
   void testLogSeparateFiles() throws InterruptedException {
     final Logger logger = LoggerFactory.getLogger("testLogSeparateFiles");
 
-    final String filename = "logs.log";
     final Path root1 = root.resolve("1");
     final Path root2 = root.resolve("2");
 
     final ExecutorService executor = Executors.newFixedThreadPool(2);
     executor.submit(() -> {
-      MDC.put("job_log_path", root1 + "/" + filename);
+      MDC.put("job_log_path", root1 + "/" + LOG_FILENAME);
       logger.error("random message 1");
     });
 
     executor.submit(() -> {
-      MDC.put("job_log_path", root2 + "/" + filename);
+      MDC.put("job_log_path", root2 + "/" + LOG_FILENAME);
       logger.error("random message 2");
     });
 
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
-    assertTrue(IOs.readFile(root1, filename).contains("random message 1"));
-    assertTrue(IOs.readFile(root2, filename).contains("random message 2"));
+    assertTrue(IOs.readFile(root1, LOG_FILENAME).contains("random message 1"));
+    assertTrue(IOs.readFile(root2, LOG_FILENAME).contains("random message 2"));
   }
 
   @Test
   void testLogNoJobRoot() throws InterruptedException {
     final Logger logger = LoggerFactory.getLogger("testWorkerDispatch");
-
-    final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
@@ -92,14 +88,12 @@ class Log4j2ConfigTest {
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
-    assertFalse(Files.exists(root.resolve(filename)));
+    assertFalse(Files.exists(root.resolve(LOG_FILENAME)));
   }
 
   @Test
   void testAppDispatch() throws InterruptedException {
     final Logger logger = LoggerFactory.getLogger("testAppDispatch");
-
-    final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
@@ -111,14 +105,12 @@ class Log4j2ConfigTest {
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
-    assertTrue(IOs.readFile(root, filename).contains("random message testAppDispatch"));
+    assertTrue(IOs.readFile(root, LOG_FILENAME).contains("random message testAppDispatch"));
   }
 
   @Test
   void testLogNoAppRoot() throws InterruptedException {
     final Logger logger = LoggerFactory.getLogger("testAppDispatch");
-
-    final String filename = "logs.log";
 
     final ExecutorService executor = Executors.newFixedThreadPool(1);
     executor.submit(() -> {
@@ -129,7 +121,7 @@ class Log4j2ConfigTest {
     executor.shutdown();
     executor.awaitTermination(10, TimeUnit.SECONDS);
 
-    assertFalse(Files.exists(root.resolve(filename)));
+    assertFalse(Files.exists(root.resolve(LOG_FILENAME)));
   }
 
 }

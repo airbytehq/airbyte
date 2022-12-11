@@ -85,6 +85,10 @@ public class MqttDestinationConfig {
       options.setPassword(config.get("password").asText().toCharArray());
     }
 
+    if (config.has("max_in_flight") && !config.get("max_in_flight").asText().isBlank()) {
+      options.setMaxInflight(config.get("max_in_flight").asInt());
+    }
+
     return options;
   }
 

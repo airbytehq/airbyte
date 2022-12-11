@@ -42,7 +42,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("bigint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("-9223372036854775808", "9223372036854775807", "0", "null")
             .addExpectedValues("-9223372036854775808", "9223372036854775807", "0", null)
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -51,7 +51,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("int")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-2147483648", "2147483647")
             .addExpectedValues(null, "-2147483648", "2147483647")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -60,7 +60,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("smallint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-32768", "32767")
             .addExpectedValues(null, "-32768", "32767")
             .createTablePatternSql(CREATE_TABLE_SQL)
@@ -69,7 +69,7 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
-            .airbyteType(JsonSchemaType.NUMBER)
+            .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "0", "255")
             .addExpectedValues(null, "0", "255")
             .createTablePatternSql(CREATE_TABLE_SQL)

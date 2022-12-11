@@ -40,7 +40,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
   @Override
   protected Database setupDatabase(final String dbName) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_type", "Standard")
+        .put("method", "Standard")
         .build());
 
     config = Jsons.jsonNode(ImmutableMap.builder()
@@ -49,7 +49,7 @@ public class FillMsSqlTestDbScriptTest extends AbstractSourceFillDbWithTestData 
         .put(JdbcUtils.DATABASE_KEY, dbName) // set your db name
         .put(JdbcUtils.USERNAME_KEY, "your_username")
         .put(JdbcUtils.PASSWORD_KEY, "your_pass")
-        .put("replication", replicationMethod)
+        .put("replication_method", replicationMethod)
         .build());
 
     dslContext = DSLContextFactory.create(

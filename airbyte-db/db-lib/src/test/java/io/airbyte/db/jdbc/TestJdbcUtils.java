@@ -45,6 +45,7 @@ import org.testcontainers.utility.MountableFile;
 class TestJdbcUtils {
 
   private String dbName;
+  private static final String ONE_POINT_0 = "1.0,";
 
   private static final List<JsonNode> RECORDS_AS_JSON = Lists.newArrayList(
       Jsons.jsonNode(ImmutableMap.of("id", 1, "name", "picard")),
@@ -209,6 +210,42 @@ class TestJdbcUtils {
     assertTrue(sslSet);
   }
 
+  @Test
+  void testUseSslWithEmptySslKeyAndSslModeVerifyFull() {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "verify-full")
+            .put("ca_certificate", "test_ca_cert")
+            .put("client_certificate", "test_client_cert")
+            .put("client_key", "test_client_key")
+            .put("client_key_password", "test_pass")
+            .build())
+        .build());
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertTrue(sslSet);
+  }
+
+  @Test
+  void testUseSslWithEmptySslKeyAndSslModeDisable() {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("host", PSQL_DB.getHost())
+        .put("port", PSQL_DB.getFirstMappedPort())
+        .put("database", dbName)
+        .put("username", PSQL_DB.getUsername())
+        .put("password", PSQL_DB.getPassword())
+        .put("ssl_mode", ImmutableMap.builder()
+            .put("mode", "disable")
+            .build())
+        .build());
+    final boolean sslSet = JdbcUtils.useSsl(config);
+    assertFalse(sslSet);
+  }
+
   private static void createTableWithAllTypes(final Connection connection) throws SQLException {
     // jdbctype not included because they are not directly supported in postgres: TINYINT, LONGVARCHAR,
     // VARBINAR, LONGVARBINARY
@@ -261,11 +298,11 @@ class TestJdbcUtils {
         + "1,"
         + "1,"
         + "1,"
-        + "1.0,"
-        + "1.0,"
-        + "1.0,"
+        + ONE_POINT_0
+        + ONE_POINT_0
+        + ONE_POINT_0
         + "1,"
-        + "1.0,"
+        + ONE_POINT_0
         + "'a',"
         + "'a',"
         + "'2020-11-01',"

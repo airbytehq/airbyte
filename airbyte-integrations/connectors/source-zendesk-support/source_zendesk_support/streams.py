@@ -47,7 +47,7 @@ class SourceZendeskException(Exception):
 
 class SourceZendeskSupportFuturesSession(FuturesSession):
     """
-    Check the docs at https://github.com/ross/requests-futures.
+    Check the docs at https://github.com/ross/requests-futures
     Used to async execute a set of requests.
     """
 
@@ -486,6 +486,13 @@ class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     sideload_param = "comment_events"
     event_type = "Comment"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            # https://github.com/airbytehq/oncall/issues/1001
+            if type(record.get("via")) is not dict:
+                record["via"] = None
+            yield record
+
 
 class Groups(SourceZendeskSupportStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
@@ -534,7 +541,7 @@ class TicketFields(SourceZendeskSupportStream):
 
 
 class TicketForms(SourceZendeskSupportCursorPaginationStream):
-    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms/"""
+    """TicketForms stream: https://developer.zendesk.com/api-reference/ticketing/tickets/ticket_forms"""
 
 
 class TicketMetrics(SourceZendeskSupportCursorPaginationStream):

@@ -15,7 +15,7 @@ module.exports = (app) => {
   });
   // Serve the doc markdowns and assets that are also bundled into the docker image
   app.use("/docs/integrations", express.static(`${__dirname}/../../docs/integrations`));
-  //workaround for adblockers to serve google ads docs in development
+  // workaround for adblockers to serve google ads docs in development
   app.use(
     "/docs/integrations/sources/gglad.md",
     express.static(`${__dirname}/../../docs/integrations/sources/google-ads.md`)

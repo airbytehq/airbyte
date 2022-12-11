@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -153,9 +154,10 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
    */
   @Test
   public void testDiscover() throws Exception {
-    final AirbyteCatalog discoverOutput = runDiscover();
-    assertNotNull(discoverOutput, "Expected discover to produce a catalog");
-    verifyCatalog(discoverOutput);
+    final UUID discoverOutput = runDiscover();
+    final AirbyteCatalog discoveredCatalog = getLastPersistedCatalog();
+    assertNotNull(discoveredCatalog, "Expected discover to produce a catalog");
+    verifyCatalog(discoveredCatalog);
   }
 
   /**
@@ -311,7 +313,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     return clone;
   }
 
-  private ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {

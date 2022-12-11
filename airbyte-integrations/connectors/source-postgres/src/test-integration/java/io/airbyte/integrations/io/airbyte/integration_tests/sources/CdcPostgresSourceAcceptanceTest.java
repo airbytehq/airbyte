@@ -4,6 +4,9 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -16,6 +19,8 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -26,8 +31,10 @@ import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -40,15 +47,15 @@ import org.testcontainers.utility.MountableFile;
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String NAMESPACE = "public";
+  protected static final String SLOT_NAME_BASE = "debezium_slot";
+  protected static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String PUBLICATION = "publication";
-  private static final int INITIAL_WAITING_SECONDS = 5;
+  protected static final String PUBLICATION = "publication";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
 
-  private PostgreSQLContainer<?> container;
-  private JsonNode config;
+  protected PostgreSQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -77,6 +84,7 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
         .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
 
     try (final DSLContext dslContext = DSLContextFactory.create(
@@ -142,19 +150,51 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
-                    STREAM_NAME,
-                    NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
-                    Field.of("name", JsonSchemaType.STRING))
+                STREAM_NAME,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
             .withCursorField(Lists.newArrayList("id"))
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
+                STREAM_NAME2,
+                NAMESPACE,
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+  }
+
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
+    /**
+     * This catalog config is incorrect for CDC replication. We specify
+     * withCursorField(Lists.newArrayList("id")) but with CDC customers can't/shouldn't be able to
+     * specify cursor field for INCREMENTAL tables Take a look at
+     * {@link io.airbyte.integrations.source.postgres.PostgresSource#setIncrementalToSourceDefined(AirbyteStream)}
+     * We should also specify the primary keys for INCREMENTAL tables checkout
+     * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
+     */
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME,
+                    NAMESPACE,
+                    Field.of("id", JsonSchemaType.INTEGER)
+                    /*no name field */)
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("name"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
                     STREAM_NAME2,
                     NAMESPACE,
-                    Field.of("id", JsonSchemaType.INTEGER),
+                    /* no id field */
                     Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
@@ -162,6 +202,37 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
+  }
+
+  @Test
+  public void testFullRefreshReadSelectedColumns() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalogWithPartialColumns());
+    final List<AirbyteMessage> allMessages = runRead(catalog);
+
+    final List<AirbyteRecordMessage> records = filterRecords(allMessages);
+    assertFalse(records.isEmpty(), "Expected a full refresh sync to produce records");
+    verifyFieldNotExist(records, STREAM_NAME, "name");
+    verifyFieldNotExist(records, STREAM_NAME2, "id");
+  }
+
+  @Test
+  public void testIncrementalReadSelectedColumns() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithPartialColumns();
+    final List<AirbyteMessage> allMessages = runRead(catalog);
+
+    final List<AirbyteRecordMessage> records = filterRecords(allMessages);
+    assertFalse(records.isEmpty(), "Expected a incremental sync to produce records");
+    verifyFieldNotExist(records, STREAM_NAME, "name");
+    verifyFieldNotExist(records, STREAM_NAME2, "id");
+  }
+
+  private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
+    assertTrue(records.stream()
+        .filter(r -> {
+          return r.getStream().equals(stream)
+              && r.getData().get(field) != null;})
+        .collect(Collectors.toList())
+        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
 }

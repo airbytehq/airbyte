@@ -8,13 +8,13 @@ The goal of the `AirbyteCatalog` is to describe _what_ data is available in a so
 
 ## Contents
 
-This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](beginners-guide-to-catalog.md#Database-Example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
+This article will illustrate how to use `AirbyteCatalog` via a series of examples. We recommend reading the [Database Example](#database-example) first. The other examples, will refer to knowledge described in that section. After that, jump around to whichever example is most pertinent to your inquiry.
 
-* [Postgres Example](beginners-guide-to-catalog.md#Database-Example)
-* [API Example](beginners-guide-to-catalog.md#API-Examples)
-  * [Static Streams Example](beginners-guide-to-catalog.md#Static-Streams-Example)
-  * [Dynamic Streams Example](beginners-guide-to-catalog.md#Dynamic-Streams-Example)
-* [Nested Schema Example](beginners-guide-to-catalog.md#Nested-Schema-Example)
+* [Postgres Example](#database-example)
+* [API Example](#api-examples)
+  * [Static Streams Example](#static-streams-example)
+  * [Dynamic Streams Example](#dynamic-streams-example)
+* [Nested Schema Example](#nested-schema-example)
 
 In order to understand in depth how to configure incremental data replication, head over to the [incremental replication docs](connections/incremental-append.md).
 
@@ -190,7 +190,7 @@ This catalog looks pretty similar to the `AirbyteCatalog` that we created for th
 
 The `ConfiguredAirbyteCatalog` follows the same rules as we described in the [Database Example](beginners-guide-to-catalog.md#Database-Example). It just wraps the `AirbyteCatalog` described above.
 
-## Dynamic Streams Example
+### Dynamic Streams Example
 
 Now let's build a stock ticker source that handles returning ticker data for _multiple_ stocks. The name of each stream will be the stock symbol that it represents.
 

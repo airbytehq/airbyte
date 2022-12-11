@@ -178,7 +178,7 @@ def test_credits_ledger_entries_transform_record(mocker):
         "customer": {
             "id": "foo-customer-id",
         },
-        "credit_block": {"expiry_date": "2023-01-25T12:00:00+00:00", "per_unit_cost_basis": "2.50"},
+        "credit_block": {"expiry_date": "2023-01-25T12:00:00+00:00", "id": "2k6hj0s8dfhj0d7h", "per_unit_cost_basis": "2.50"},
     }
 
     # Validate that calling transform record unwraps nested customer and credit block fields.
@@ -187,6 +187,7 @@ def test_credits_ledger_entries_transform_record(mocker):
         "entry_type": "decrement",
         "customer_id": "foo-customer-id",
         "block_expiry_date": "2023-01-25T12:00:00+00:00",
+        "credit_block_id": "2k6hj0s8dfhj0d7h",
         "credit_block_per_unit_cost_basis": "2.50",
     }
 
@@ -257,6 +258,32 @@ def test_credits_ledger_entries_enriches_selected_property_keys(
     assert enriched_entries[0] == {"entry_type": "decrement", "event": {"id": "foo-event-id", "properties": resulting_properties}}
     # Does not enrich, but still passes back, irrelevant (for enrichment purposes) ledger entry
     assert enriched_entries[1] == original_entry_1
+
+
+@responses.activate
+def test_credits_ledger_entries_enriches_with_multiple_entries_per_event(mocker):
+    stream = CreditsLedgerEntries(string_event_properties_keys=["ping"])
+    ledger_entries = [{"event_id": "foo-event-id", "entry_type": "decrement"}, {"event_id": "foo-event-id", "entry_type": "decrement"}]
+    mock_response = {
+        "data": [
+            {
+                "customer_id": "foo-customer-id",
+                "event_name": "foo-name",
+                "id": "foo-event-id",
+                "properties": {"ping": "pong"},
+                "timestamp": "2022-02-21T07:00:00+00:00",
+            }
+        ],
+        "pagination_metadata": {"has_more": False, "next_cursor": None},
+    }
+    responses.add(responses.POST, f"{stream.url_base}events", json=mock_response, status=200)
+    enriched_entries = stream.enrich_ledger_entries_with_event_data(ledger_entries)
+
+    # We expect both events are enriched correctly
+    assert enriched_entries == [
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
+        {"event": {"id": "foo-event-id", "properties": {"ping": "pong"}}, "entry_type": "decrement"},
+    ]
 
 
 def test_supports_incremental(patch_incremental_base_class, mocker):

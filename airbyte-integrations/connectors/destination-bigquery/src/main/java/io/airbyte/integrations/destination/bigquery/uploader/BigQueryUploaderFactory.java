@@ -17,7 +17,6 @@ import com.google.cloud.bigquery.TableDataWriteChannel;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.WriteChannelConfiguration;
 import io.airbyte.integrations.destination.bigquery.BigQueryUtils;
-import io.airbyte.integrations.destination.bigquery.UploadingMethod;
 import io.airbyte.integrations.destination.bigquery.formatter.BigQueryRecordFormatter;
 import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConfig;
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
@@ -37,10 +36,7 @@ public class BigQueryUploaderFactory {
     final String datasetLocation = BigQueryUtils.getDatasetLocation(uploaderConfig.getConfig());
     final Set<String> existingSchemas = new HashSet<>();
 
-    final boolean isGcsUploadingMode = BigQueryUtils.getLoadingMethod(uploaderConfig.getConfig()) == UploadingMethod.GCS;
-    final BigQueryRecordFormatter recordFormatter = isGcsUploadingMode
-        ? uploaderConfig.getFormatterMap().get(UploaderType.AVRO)
-        : uploaderConfig.getFormatterMap().get(UploaderType.STANDARD);
+    final BigQueryRecordFormatter recordFormatter = uploaderConfig.getFormatter();
     final Schema bigQuerySchema = recordFormatter.getBigQuerySchema();
 
     final TableId targetTable = TableId.of(schemaName, uploaderConfig.getTargetTableName());
@@ -57,7 +53,7 @@ public class BigQueryUploaderFactory {
     final JobInfo.WriteDisposition syncMode = BigQueryUtils.getWriteDisposition(
         uploaderConfig.getConfigStream().getDestinationSyncMode());
 
-    return (isGcsUploadingMode
+    return (uploaderConfig.isGcsUploadingMode()
         ? getGcsBigQueryUploader(
             uploaderConfig.getConfig(),
             uploaderConfig.getConfigStream(),

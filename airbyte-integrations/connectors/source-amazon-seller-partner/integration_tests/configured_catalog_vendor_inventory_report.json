@@ -1,0 +1,100 @@
+{
+  "streams": [
+    {
+      "stream": {
+        "name": "GET_VENDOR_INVENTORY_REPORT",
+        "json_schema": {
+          "title": "Vendor Inventory Reports",
+          "description": "Vendor Inventory Reports",
+          "type": "object",
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "properties": {
+            "startDate": {
+              "type": ["null", "string"]
+            },
+            "endDate": {
+              "type": ["null", "string"]
+            },
+            "asin": {
+              "type": ["null", "string"]
+            },
+            "vendorConfirmationRate": {
+              "type": ["null", "number"]
+            },
+            "netReceivedAmount": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currencyCode": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "netReceivedUnits": {
+              "type": ["null", "number"]
+            },
+            "openPurchaseOrderQuantity": {
+              "type": ["null", "number"]
+            },
+            "overallVendorLeadTime": {
+              "type": ["null", "number"]
+            },
+            "sellThroughRate": {
+              "type": ["null", "number"]
+            },
+            "sellableOnHandInventory": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currencyCode": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "sellableOnHandUnits": {
+              "type": ["null", "number"]
+            },
+            "unfilledCustomerOrderedUnits": {
+              "type": ["null", "number"]
+            },
+            "unsellableOnHandInventory": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currencyCode": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "aged90PlusDaysSellableUnits": {
+              "type": ["null", "number"]
+            },
+            "unhealthyInventory": {
+              "type": "object",
+              "properties": {
+                "amount": {
+                  "type": ["null", "number"]
+                },
+                "currencyCode": {
+                  "type": ["null", "string"]
+                }
+              }
+            },
+            "unhealthyUnits": {
+              "type": ["null", "number"]
+            }
+          }
+        },
+        "supported_sync_modes": ["full_refresh"]
+      },
+      "sync_mode": "full_refresh",
+      "destination_sync_mode": "overwrite"
+    }
+  ]
+}

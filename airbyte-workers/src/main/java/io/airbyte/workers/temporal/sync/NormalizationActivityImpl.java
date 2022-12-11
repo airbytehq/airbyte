@@ -4,80 +4,110 @@
 
 package io.airbyte.workers.temporal.sync;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DESTINATION_DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+
+import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
 import io.airbyte.config.ConfigSchema;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.ResourceRequirements;
+import io.airbyte.config.StandardSyncInput;
+import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.scheduler.persistence.JobPersistence;
+import io.airbyte.metrics.lib.ApmTraceUtils;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
-import io.airbyte.workers.temporal.CancellationHandler;
+import io.airbyte.workers.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
-import io.airbyte.workers.temporal.TemporalUtils;
+import io.micronaut.context.annotation.Value;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
-import java.io.IOException;
+import jakarta.inject.Named;
+import jakarta.inject.Singleton;
 import java.nio.file.Path;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+@Singleton
 public class NormalizationActivityImpl implements NormalizationActivity {
 
+  private final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig;
   private final WorkerConfigs workerConfigs;
-  private final ProcessFactory jobProcessFactory;
+  private final ProcessFactory processFactory;
   private final SecretsHydrator secretsHydrator;
   private final Path workspaceRoot;
-  private final AirbyteConfigValidator validator;
   private final WorkerEnvironment workerEnvironment;
   private final LogConfigs logConfigs;
-  private final JobPersistence jobPersistence;
   private final String airbyteVersion;
-  private final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig;
+  private final Integer serverPort;
+  private final AirbyteConfigValidator airbyteConfigValidator;
+  private final TemporalUtils temporalUtils;
+  private final ResourceRequirements normalizationResourceRequirements;
+  private final AirbyteApiClient airbyteApiClient;
 
-  public NormalizationActivityImpl(final Optional<WorkerApp.ContainerOrchestratorConfig> containerOrchestratorConfig,
-                                   final WorkerConfigs workerConfigs,
-                                   final ProcessFactory jobProcessFactory,
+  public NormalizationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
+                                   @Named("defaultWorkerConfigs") final WorkerConfigs workerConfigs,
+                                   @Named("defaultProcessFactory") final ProcessFactory processFactory,
                                    final SecretsHydrator secretsHydrator,
-                                   final Path workspaceRoot,
+                                   @Named("workspaceRoot") final Path workspaceRoot,
                                    final WorkerEnvironment workerEnvironment,
                                    final LogConfigs logConfigs,
-                                   final JobPersistence jobPersistence,
-                                   final String airbyteVersion) {
+                                   @Value("${airbyte.version}") final String airbyteVersion,
+                                   @Value("${micronaut.server.port}") final Integer serverPort,
+                                   final AirbyteConfigValidator airbyteConfigValidator,
+                                   final TemporalUtils temporalUtils,
+                                   @Named("normalizationResourceRequirements") final ResourceRequirements normalizationResourceRequirements,
+                                   final AirbyteApiClient airbyteApiClient) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.workerConfigs = workerConfigs;
-    this.jobProcessFactory = jobProcessFactory;
+    this.processFactory = processFactory;
     this.secretsHydrator = secretsHydrator;
     this.workspaceRoot = workspaceRoot;
-    this.validator = new AirbyteConfigValidator();
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;
-    this.jobPersistence = jobPersistence;
     this.airbyteVersion = airbyteVersion;
+    this.serverPort = serverPort;
+    this.airbyteConfigValidator = airbyteConfigValidator;
+    this.temporalUtils = temporalUtils;
+    this.normalizationResourceRequirements = normalizationResourceRequirements;
+    this.airbyteApiClient = airbyteApiClient;
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   @Override
   public NormalizationSummary normalize(final JobRunConfig jobRunConfig,
                                         final IntegrationLauncherConfig destinationLauncherConfig,
                                         final NormalizationInput input) {
+    ApmTraceUtils.addTagsToTrace(
+        Map.of(ATTEMPT_NUMBER_KEY, jobRunConfig.getAttemptId(), JOB_ID_KEY, jobRunConfig.getJobId(), DESTINATION_DOCKER_IMAGE_KEY,
+            destinationLauncherConfig.getDockerImage()));
     final ActivityExecutionContext context = Activity.getExecutionContext();
-    return TemporalUtils.withBackgroundHeartbeat(() -> {
+    return temporalUtils.withBackgroundHeartbeat(() -> {
       final var fullDestinationConfig = secretsHydrator.hydrate(input.getDestinationConfiguration());
       final var fullInput = Jsons.clone(input).withDestinationConfiguration(fullDestinationConfig);
 
       final Supplier<NormalizationInput> inputSupplier = () -> {
-        validator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
+        airbyteConfigValidator.ensureAsRuntime(ConfigSchema.NORMALIZATION_INPUT, Jsons.jsonNode(fullInput));
         return fullInput;
       };
 
@@ -87,7 +117,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         workerFactory = getContainerLauncherWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig,
             () -> context);
       } else {
-        workerFactory = getLegacyWorkerFactory(workerConfigs, destinationLauncherConfig, jobRunConfig);
+        workerFactory = getLegacyWorkerFactory(destinationLauncherConfig, jobRunConfig);
       }
 
       final TemporalAttemptExecution<NormalizationInput, NormalizationSummary> temporalAttemptExecution = new TemporalAttemptExecution<>(
@@ -96,7 +126,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
           workerFactory,
           inputSupplier,
           new CancellationHandler.TemporalCancellationHandler(context),
-          jobPersistence,
+          airbyteApiClient,
           airbyteVersion,
           () -> context);
 
@@ -105,18 +135,26 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         () -> context);
   }
 
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Override
+  public NormalizationInput generateNormalizationInput(final StandardSyncInput syncInput, final StandardSyncOutput syncOutput) {
+    return new NormalizationInput()
+        .withDestinationConfiguration(syncInput.getDestinationConfiguration())
+        .withCatalog(syncOutput.getOutputCatalog())
+        .withResourceRequirements(normalizationResourceRequirements);
+  }
+
   private CheckedSupplier<Worker<NormalizationInput, NormalizationSummary>, Exception> getLegacyWorkerFactory(
-                                                                                                              final WorkerConfigs workerConfigs,
                                                                                                               final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                               final JobRunConfig jobRunConfig) {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
         NormalizationRunnerFactory.create(
-            workerConfigs,
             destinationLauncherConfig.getDockerImage(),
-            jobProcessFactory,
-            NormalizationRunnerFactory.NORMALIZATION_VERSION),
+            processFactory,
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
+            destinationLauncherConfig.getNormalizationDockerImage()),
         workerEnvironment);
   }
 
@@ -124,18 +162,22 @@ public class NormalizationActivityImpl implements NormalizationActivity {
                                                                                                                          final WorkerConfigs workerConfigs,
                                                                                                                          final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                                          final JobRunConfig jobRunConfig,
-                                                                                                                         final Supplier<ActivityExecutionContext> activityContext)
-      throws IOException {
-    final var jobScope = jobPersistence.getJob(Long.parseLong(jobRunConfig.getJobId())).getScope();
+                                                                                                                         final Supplier<ActivityExecutionContext> activityContext) {
+    final JobIdRequestBody id = new JobIdRequestBody();
+    id.setId(Long.valueOf(jobRunConfig.getJobId()));
+    final var jobScope = AirbyteApiClient.retryWithJitter(
+        () -> airbyteApiClient.getJobsApi().getJobInfo(id).getJob().getConfigId(),
+        "get job scope");
     final var connectionId = UUID.fromString(jobScope);
-
     return () -> new NormalizationLauncherWorker(
         connectionId,
         destinationLauncherConfig,
         jobRunConfig,
         workerConfigs,
         containerOrchestratorConfig.get(),
-        activityContext);
+        activityContext,
+        serverPort,
+        temporalUtils);
   }
 
 }

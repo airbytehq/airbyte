@@ -1,5 +1,6 @@
 {
   "type": ["object", "null"],
+  "additionalProperties": true,
   "properties": {
     "published_at": {
       "type": ["null", "string"],

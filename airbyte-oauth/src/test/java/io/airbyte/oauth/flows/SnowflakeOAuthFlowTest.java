@@ -15,6 +15,9 @@ import org.junit.jupiter.api.Test;
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
+  public static final String STRING = "string";
+  public static final String TYPE = "type";
+
   @Override
   protected BaseOAuthFlow getOAuthFlow() {
     return new SourceSnowflakeOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
@@ -22,7 +25,7 @@ class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected String getExpectedConsentUrl() {
-    return "https://account.aws.snowflakecomputing.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state";
+    return "https://account.aws.snowflakecomputing.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&response_type=code&state=state&scope=session%3Arole%3Asome_role";
   }
 
   @Override
@@ -35,7 +38,7 @@ class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
 
   @Override
   protected JsonNode getCompleteOAuthOutputSpecification() {
-    return getJsonSchema(Map.of("access_token", Map.of("type", "string"), "refresh_token", Map.of("type", "string")));
+    return getJsonSchema(Map.of("access_token", Map.of(TYPE, STRING), "refresh_token", Map.of(TYPE, STRING)));
   }
 
   @Override
@@ -58,12 +61,13 @@ class SnowflakeOAuthFlowTest extends BaseOAuthFlowTest {
   protected JsonNode getInputOAuthConfiguration() {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put("host", "account.aws.snowflakecomputing.com")
+        .put("role", "some_role")
         .build());
   }
 
   @Override
   protected JsonNode getUserInputFromConnectorConfigSpecification() {
-    return getJsonSchema(Map.of("host", Map.of("type", "string")));
+    return getJsonSchema(Map.of("host", Map.of(TYPE, STRING), "role", Map.of(TYPE, STRING)));
   }
 
   @Test

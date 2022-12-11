@@ -14,18 +14,18 @@ public interface MetricClient {
    *
    * @param metric
    * @param val to record.
-   * @param tags
+   * @param attributes
    */
-  void count(MetricsRegistry metric, long val, final String... tags);
+  void count(MetricsRegistry metric, long val, final MetricAttribute... attributes);
 
   /**
    * Record the latest value for a gauge.
    *
    * @param metric
    * @param val to record.
-   * @param tags
+   * @param attributes
    */
-  void gauge(MetricsRegistry metric, double val, final String... tags);
+  void gauge(MetricsRegistry metric, double val, final MetricAttribute... attributes);
 
   /*
    * Accepts value on the metrics, and report the distribution of these values. Useful to analysis how
@@ -35,9 +35,9 @@ public interface MetricClient {
    *
    * @param val to record.
    *
-   * @param tags
+   * @param attributes
    */
-  void distribution(MetricsRegistry metric, double val, final String... tags);
+  void distribution(MetricsRegistry metric, double val, final MetricAttribute... attributes);
 
   /*
    * Reset initialization. Can be used in a unit test to reset metric client state.

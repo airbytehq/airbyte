@@ -3,7 +3,12 @@ plugins {
     id 'airbyte-integration-test-java'
 }
 
+configurations.all {
+    exclude group: 'io.micronaut.flyway'
+}
+
 dependencies {
+    implementation project(':airbyte-commons')
     implementation project(':airbyte-commons-docker')
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-db:db-lib')

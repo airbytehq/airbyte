@@ -46,6 +46,7 @@ public class DogStatsDMetricSingleton {
         .prefix(app.getApplicationName())
         .hostname(config.ddAgentHost)
         .port(Integer.parseInt(config.ddPort))
+        .constantTags(config.constantTags.toArray(new String[0]))
         .build();
   }
 

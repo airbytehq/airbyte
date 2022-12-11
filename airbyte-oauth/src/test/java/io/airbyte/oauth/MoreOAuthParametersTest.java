@@ -18,14 +18,17 @@ import org.junit.jupiter.api.Test;
 
 class MoreOAuthParametersTest {
 
+  private static final String FIELD = "field";
+  private static final String OAUTH_CREDS = "oauth_credentials";
+
   @Test
   void testFlattenConfig() {
     final JsonNode nestedConfig = Jsons.jsonNode(Map.of(
-        "field", "value1",
+        FIELD, "value1",
         "top-level", Map.of(
             "nested_field", "value2")));
     final JsonNode expectedConfig = Jsons.jsonNode(Map.of(
-        "field", "value1",
+        FIELD, "value1",
         "nested_field", "value2"));
     final JsonNode actualConfig = MoreOAuthParameters.flattenOAuthConfig(nestedConfig);
     assertEquals(expectedConfig, actualConfig);
@@ -34,10 +37,10 @@ class MoreOAuthParametersTest {
   @Test
   void testFailureFlattenConfig() {
     final JsonNode nestedConfig = Jsons.jsonNode(Map.of(
-        "field", "value1",
+        FIELD, "value1",
         "top-level", Map.of(
             "nested_field", "value2",
-            "field", "value3")));
+            FIELD, "value3")));
     assertThrows(IllegalStateException.class, () -> MoreOAuthParameters.flattenOAuthConfig(nestedConfig));
   }
 
@@ -59,13 +62,13 @@ class MoreOAuthParametersTest {
   void testInjectNewNestedNode() {
     final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     final ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("oauth_credentials", oauthParams)
+        .put(OAUTH_CREDS, oauthParams)
         .build());
 
     // nested node does not exist in actual object
     final ObjectNode actual = generateJsonConfig();
     final ObjectNode expected = Jsons.clone(actual);
-    expected.putObject("oauth_credentials").setAll(oauthParams);
+    expected.putObject(OAUTH_CREDS).setAll(oauthParams);
 
     MoreOAuthParameters.mergeJsons(actual, nestedConfig);
 
@@ -77,14 +80,14 @@ class MoreOAuthParametersTest {
   void testInjectedPartiallyExistingNestedNode() {
     final ObjectNode oauthParams = (ObjectNode) Jsons.jsonNode(generateOAuthParameters());
     final ObjectNode nestedConfig = (ObjectNode) Jsons.jsonNode(ImmutableMap.builder()
-        .put("oauth_credentials", oauthParams)
+        .put(OAUTH_CREDS, oauthParams)
         .build());
 
     // nested node partially exists in actual object
     final ObjectNode actual = generateJsonConfig();
-    actual.putObject("oauth_credentials").put("irrelevant_field", "_");
+    actual.putObject(OAUTH_CREDS).put("irrelevant_field", "_");
     final ObjectNode expected = Jsons.clone(actual);
-    ((ObjectNode) expected.get("oauth_credentials")).setAll(oauthParams);
+    ((ObjectNode) expected.get(OAUTH_CREDS)).setAll(oauthParams);
 
     MoreOAuthParameters.mergeJsons(actual, nestedConfig);
 

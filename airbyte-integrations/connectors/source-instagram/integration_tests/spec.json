@@ -1,6 +1,6 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/instagram",
-  "changelogUrl": "https://docs.airbyte.io/integrations/sources/instagram",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/instagram",
+  "changelogUrl": "https://docs.airbyte.com/integrations/sources/instagram",
   "connectionSpecification": {
     "title": "Source Instagram",
     "type": "object",
@@ -15,7 +15,7 @@
       },
       "access_token": {
         "title": "Access Token",
-        "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.io/integrations/sources/instagram\">docs</a> for more information",
+        "description": "The value of the access token generated. See the <a href=\"https://docs.airbyte.com/integrations/sources/instagram\">docs</a> for more information",
         "airbyte_secret": true,
         "type": "string"
       }

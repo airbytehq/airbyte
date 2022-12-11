@@ -53,6 +53,10 @@ public abstract class AbstractBigQueryUploader<T extends DestinationWriter> {
     this.recordFormatter = recordFormatter;
   }
 
+  public BigQueryRecordFormatter getRecordFormatter() {
+    return recordFormatter;
+  }
+
   protected void postProcessAction(final boolean hasFailed) throws Exception {
     // Do nothing by default
   }

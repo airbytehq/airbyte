@@ -2,11 +2,13 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import logging
 from abc import ABC, abstractmethod
 from enum import Enum
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import parse_qsl, urlparse
 
+import backoff
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
@@ -15,6 +17,7 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.core import IncrementalMixin, package_name_from_class
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
+from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
@@ -93,6 +96,9 @@ METRICS_NOT_HOURLY = [
     "total_reach",
     "earned_reach",
 ]
+
+
+logger = logging.getLogger("airbyte")
 
 
 class GranularityType(Enum):
@@ -722,39 +728,35 @@ class CampaignsStatsLifetime(Lifetime, Stats):
     parent = Campaigns
 
 
-class SnapchatAdsOauth2Authenticator(Oauth2Authenticator):
-    """Request example for API token extraction:
-    curl -X POST https://accounts.snapchat.com/login/oauth2/access_token \
-      -d "refresh_token={refresh_token}" \
-      -d "client_id={client_id}" \
-      -d "client_secret={client_secret}"  \
-      -d "grant_type=refresh_token"  \
-    """
-
-    def __init__(self, config):
-        super().__init__(
-            token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
-            client_id=config["client_id"],
-            client_secret=config["client_secret"],
-            refresh_token=config["refresh_token"],
-        )
-
+class SnapchatOauth2Authenticator(Oauth2Authenticator):
+    @backoff.on_exception(
+        backoff.expo,
+        DefaultBackoffException,
+        on_backoff=lambda details: logger.info(
+            f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} seconds then retrying..."
+        ),
+        max_time=300,
+    )
     def refresh_access_token(self) -> Tuple[str, int]:
-        response_json = None
+        """
+        returns a tuple of (access_token, token_lifespan_in_seconds)
+        """
         try:
-            response = requests.request(method="POST", url=self.token_refresh_endpoint, data=self.get_refresh_request_body())
-            response_json = response.json()
+            response = requests.request(
+                method="POST",
+                url=self.token_refresh_endpoint,
+                data=self.get_refresh_request_body(),
+                headers=self.get_refresh_access_token_headers(),
+            )
             response.raise_for_status()
-        except requests.exceptions.RequestException as e:
-            if response_json and "error" in response_json:
-                raise Exception(
-                    "Error refreshing access token. Error: {}; Error details: {}; Exception: {}".format(
-                        response_json["error"], response_json["error_description"], e
-                    )
-                ) from e
-            raise Exception(f"Error refreshing access token: {e}") from e
-        else:
+            response_json = response.json()
             return response_json["access_token"], response_json["expires_in"]
+        except requests.exceptions.RequestException as e:
+            if e.response.status_code == 429 or e.response.status_code >= 500:
+                raise DefaultBackoffException(request=e.response.request, response=e.response)
+            raise
+        except Exception as e:
+            raise Exception(f"Error while refreshing access token: {e}") from e
 
 
 # Source
@@ -762,9 +764,13 @@ class SourceSnapchatMarketing(AbstractSource):
     """Source Snapchat Marketing helps to retrieve the different Ad data from Snapchat business account"""
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
-
         try:
-            auth = SnapchatAdsOauth2Authenticator(config)
+            auth = SnapchatOauth2Authenticator(
+                token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=config["refresh_token"],
+            )
             token = auth.get_access_token()
             url = f"{SnapchatMarketingStream.url_base}me"
 
@@ -776,7 +782,6 @@ class SourceSnapchatMarketing(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-
         # https://marketingapi.snapchat.com/docs/#core-metrics
         # IMPORTANT: Metrics are finalized 48 hours after the end of the day in the Ad Account’s timezone.
         DELAYED_DAYS = 2
@@ -786,7 +791,12 @@ class SourceSnapchatMarketing(AbstractSource):
         # 2. when timezone is not specified, default account's timezone will be used automatically
         default_end_date = pendulum.now().subtract(days=DELAYED_DAYS).to_date_string()
         kwargs = {
-            "authenticator": SnapchatAdsOauth2Authenticator(config),
+            "authenticator": SnapchatOauth2Authenticator(
+                token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",
+                client_id=config["client_id"],
+                client_secret=config["client_secret"],
+                refresh_token=config["refresh_token"],
+            ),
             "start_date": config["start_date"],
             "end_date": config.get("end_date", default_end_date),
         }

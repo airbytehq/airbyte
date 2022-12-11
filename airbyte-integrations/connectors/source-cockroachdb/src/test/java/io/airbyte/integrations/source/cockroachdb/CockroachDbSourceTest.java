@@ -60,7 +60,7 @@ class CockroachDbSourceTest {
           Field.of("id", JsonSchemaType.NUMBER),
           Field.of("name", JsonSchemaType.STRING),
           Field.of("power", JsonSchemaType.NUMBER),
-          Field.of(COL_ROW_ID, JsonSchemaType.NUMBER))
+          Field.of(COL_ROW_ID, JsonSchemaType.INTEGER))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of(COL_ROW_ID))),
       CatalogHelpers.createAirbyteStream(

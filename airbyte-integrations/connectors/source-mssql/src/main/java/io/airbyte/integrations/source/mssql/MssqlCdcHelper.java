@@ -5,8 +5,14 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.annotation.VisibleForTesting;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import org.codehaus.plexus.util.StringUtils;
 
 public class MssqlCdcHelper {
 
@@ -17,6 +23,7 @@ public class MssqlCdcHelper {
   // it is an oneOf object
   private static final String REPLICATION_FIELD = "replication";
   private static final String REPLICATION_TYPE_FIELD = "replication_type";
+  private static final String METHOD_FIELD = "method";
   private static final String CDC_SNAPSHOT_ISOLATION_FIELD = "snapshot_isolation";
   private static final String CDC_DATA_TO_SYNC_FIELD = "data_to_sync";
 
@@ -91,14 +98,19 @@ public class MssqlCdcHelper {
   @VisibleForTesting
   static boolean isCdc(final JsonNode config) {
     // new replication method config since version 0.4.0
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isObject()) {
+      final JsonNode replicationConfig = config.get(LEGACY_REPLICATION_FIELD);
+      return ReplicationMethod.valueOf(replicationConfig.get(METHOD_FIELD).asText()) == ReplicationMethod.CDC;
+    }
+    // legacy replication method config before version 0.4.0
+    if (config.hasNonNull(LEGACY_REPLICATION_FIELD) && config.get(LEGACY_REPLICATION_FIELD).isTextual()) {
+      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
+    }
     if (config.hasNonNull(REPLICATION_FIELD)) {
       final JsonNode replicationConfig = config.get(REPLICATION_FIELD);
       return ReplicationMethod.valueOf(replicationConfig.get(REPLICATION_TYPE_FIELD).asText()) == ReplicationMethod.CDC;
     }
-    // legacy replication method config before version 0.4.0
-    if (config.hasNonNull(LEGACY_REPLICATION_FIELD)) {
-      return ReplicationMethod.valueOf(config.get(LEGACY_REPLICATION_FIELD).asText()) == ReplicationMethod.CDC;
-    }
+
     return false;
   }
 
@@ -124,8 +136,7 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  @VisibleForTesting
-  static Properties getDebeziumProperties(final JsonNode config) {
+  static Properties getDebeziumProperties(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
@@ -140,7 +151,19 @@ public class MssqlCdcHelper {
     props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
+    props.setProperty("schema.include.list", getSchema(catalog));
+
     return props;
+  }
+
+  private static String getSchema(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getNamespace)
+        // debezium needs commas escaped to split properly
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .collect(Collectors.joining(","));
   }
 
 }

@@ -27,58 +27,54 @@ import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 
+/**
+ * Implementation of the {@link MetricClient} that sends the provided metric data to an
+ * OpenTelemetry compliant metrics store.
+ * <p>
+ * Any {@link MetricAttribute}s provided along with the metric data are passed as key/value pairs
+ * annotating the metric.
+ */
 public class OpenTelemetryMetricClient implements MetricClient {
 
   private Meter meter;
   private SdkMeterProvider meterProvider;
 
   @Override
-  public void count(MetricsRegistry metric, long val, String... tags) {
-    LongCounter counter = meter
+  public void count(final MetricsRegistry metric, final long val, final MetricAttribute... attributes) {
+    final LongCounter counter = meter
         .counterBuilder(metric.getMetricName())
         .setDescription(metric.getMetricDescription())
         .build();
 
-    AttributesBuilder attributesBuilder = Attributes.builder();
-    for (String tag : tags) {
-      attributesBuilder.put(stringKey(tag), tag);
-    }
-
+    final AttributesBuilder attributesBuilder = buildAttributes(attributes);
     counter.add(val, attributesBuilder.build());
   }
 
   @Override
-  public void gauge(MetricsRegistry metric, double val, String... tags) {
-    AttributesBuilder attributesBuilder = Attributes.builder();
-    for (String tag : tags) {
-      attributesBuilder.put(stringKey(tag), tag);
-    }
+  public void gauge(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
+    final AttributesBuilder attributesBuilder = buildAttributes(attributes);
     meter.gaugeBuilder(metric.getMetricName()).setDescription(metric.getMetricDescription())
         .buildWithCallback(measurement -> measurement.record(val, attributesBuilder.build()));
   }
 
   @Override
-  public void distribution(MetricsRegistry metric, double val, String... tags) {
-    DoubleHistogram histogramMeter = meter.histogramBuilder(metric.getMetricName()).setDescription(metric.getMetricDescription()).build();
-    AttributesBuilder attributesBuilder = Attributes.builder();
-
-    for (String tag : tags) {
-      attributesBuilder.put(stringKey(tag), tag);
-    }
+  public void distribution(final MetricsRegistry metric, final double val, final MetricAttribute... attributes) {
+    final DoubleHistogram histogramMeter = meter.histogramBuilder(metric.getMetricName()).setDescription(metric.getMetricDescription()).build();
+    final AttributesBuilder attributesBuilder = buildAttributes(attributes);
     histogramMeter.record(val, attributesBuilder.build());
   }
 
-  public void initialize(MetricEmittingApp metricEmittingApp, String otelEndpoint) {
-    Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, metricEmittingApp.getApplicationName()).build();
+  public void initialize(final MetricEmittingApp metricEmittingApp, final String otelEndpoint) {
+    final Resource resource = Resource.getDefault().toBuilder().put(SERVICE_NAME, metricEmittingApp.getApplicationName()).build();
 
-    SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
+    final SdkTracerProvider sdkTracerProvider = SdkTracerProvider.builder()
         .addSpanProcessor(
             BatchSpanProcessor
                 .builder(OtlpGrpcSpanExporter.builder().setEndpoint(otelEndpoint).build())
                 .build())
         .setResource(resource)
         .build();
-    MetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
+    final MetricExporter metricExporter = OtlpGrpcMetricExporter.builder()
         .setEndpoint(otelEndpoint).build();
     initialize(metricEmittingApp, metricExporter, sdkTracerProvider, resource);
   }
@@ -89,13 +85,17 @@ public class OpenTelemetryMetricClient implements MetricClient {
   }
 
   @VisibleForTesting
-  void initialize(MetricEmittingApp metricEmittingApp, MetricExporter metricExporter, SdkTracerProvider sdkTracerProvider, Resource resource) {
+  void initialize(
+                  final MetricEmittingApp metricEmittingApp,
+                  final MetricExporter metricExporter,
+                  final SdkTracerProvider sdkTracerProvider,
+                  final Resource resource) {
     meterProvider = SdkMeterProvider.builder()
         .registerMetricReader(PeriodicMetricReader.builder(metricExporter).build())
         .setResource(resource)
         .build();
 
-    OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
+    final OpenTelemetry openTelemetry = OpenTelemetrySdk.builder()
         .setTracerProvider(sdkTracerProvider)
         .setMeterProvider(meterProvider)
         .setPropagators(ContextPropagators.create(W3CTraceContextPropagator.getInstance()))
@@ -108,6 +108,14 @@ public class OpenTelemetryMetricClient implements MetricClient {
   @Override
   public void shutdown() {
     resetForTest();
+  }
+
+  private AttributesBuilder buildAttributes(final MetricAttribute... attributes) {
+    final AttributesBuilder attributesBuilder = Attributes.builder();
+    for (final MetricAttribute attribute : attributes) {
+      attributesBuilder.put(stringKey(attribute.key()), attribute.value());
+    }
+    return attributesBuilder;
   }
 
 }

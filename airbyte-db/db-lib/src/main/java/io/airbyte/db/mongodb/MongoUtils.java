@@ -6,7 +6,15 @@ package io.airbyte.db.mongodb;
 
 import static java.util.Arrays.asList;
 import static org.bson.BsonType.ARRAY;
+import static org.bson.BsonType.DATE_TIME;
+import static org.bson.BsonType.DECIMAL128;
 import static org.bson.BsonType.DOCUMENT;
+import static org.bson.BsonType.DOUBLE;
+import static org.bson.BsonType.INT32;
+import static org.bson.BsonType.INT64;
+import static org.bson.BsonType.OBJECT_ID;
+import static org.bson.BsonType.STRING;
+import static org.bson.BsonType.TIMESTAMP;
 import static org.bson.codecs.configuration.CodecRegistries.fromProviders;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,6 +28,7 @@ import com.mongodb.client.MongoCollection;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.db.DataTypeUtils;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.TreeNode;
@@ -28,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.bson.BsonBinary;
 import org.bson.BsonDateTime;
 import org.bson.BsonDocument;
@@ -53,10 +63,34 @@ public class MongoUtils {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MongoUtils.class);
 
+  // Shared constants
+  public static final String MONGODB_SERVER_URL = "mongodb://%s%s:%s/%s?authSource=admin&ssl=%s";
+  public static final String MONGODB_CLUSTER_URL = "mongodb+srv://%s%s/%s?retryWrites=true&w=majority&tls=true";
+  public static final String MONGODB_REPLICA_URL = "mongodb://%s%s/%s?authSource=admin&directConnection=false&ssl=true";
+  public static final String USER = "user";
+  public static final String INSTANCE_TYPE = "instance_type";
+  public static final String INSTANCE = "instance";
+  public static final String CLUSTER_URL = "cluster_url";
+  public static final String SERVER_ADDRESSES = "server_addresses";
+  public static final String REPLICA_SET = "replica_set";
+
+  // MongodbDestination specific constants
+  public static final String AUTH_TYPE = "auth_type";
+  public static final String AUTHORIZATION = "authorization";
+  public static final String LOGIN_AND_PASSWORD = "login/password";
+  public static final String AIRBYTE_DATA_HASH = "_airbyte_data_hash";
+
+  // MongodbSource specific constants
+  public static final String AUTH_SOURCE = "auth_source";
+  public static final String PRIMARY_KEY = "_id";
+  public static final Set<BsonType> ALLOWED_CURSOR_TYPES = Set.of(DOUBLE, STRING, DOCUMENT, OBJECT_ID, DATE_TIME,
+      INT32, TIMESTAMP, INT64, DECIMAL128);
+
   private static final String MISSING_TYPE = "missing";
   private static final String NULL_TYPE = "null";
-  private static final String AIRBYTE_SUFFIX = "_aibyte_transform";
+  public static final String AIRBYTE_SUFFIX = "_aibyte_transform";
   private static final int DISCOVER_LIMIT = 10000;
+  private static final String ID = "_id";
 
   public static JsonSchemaType getType(final BsonType dataType) {
     return switch (dataType) {
@@ -135,11 +169,20 @@ public class MongoUtils {
     return jsonNodes;
   }
 
-  private static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
+  /**
+   * Determines whether TLS/SSL should be enabled for a standalone instance of MongoDB.
+   */
+  public static boolean tlsEnabledForStandaloneInstance(final JsonNode config, final JsonNode instanceConfig) {
+    return config.has(JdbcUtils.TLS_KEY) ? config.get(JdbcUtils.TLS_KEY).asBoolean()
+        : (instanceConfig.has(JdbcUtils.TLS_KEY) ? instanceConfig.get(JdbcUtils.TLS_KEY).asBoolean() : true);
+  }
+
+  public static void transformToStringIfMarked(final ObjectNode jsonNodes, final List<String> columnNames, final String fieldName) {
     if (columnNames.contains(fieldName + AIRBYTE_SUFFIX)) {
       final JsonNode data = jsonNodes.get(fieldName);
       if (data != null) {
-        jsonNodes.put(fieldName, data.asText());
+        jsonNodes.remove(fieldName);
+        jsonNodes.put(fieldName + AIRBYTE_SUFFIX, data.isTextual() ? data.asText() : data.toString());
       } else {
         LOGGER.debug("WARNING Field list out of sync, Document doesn't contain field: {}", fieldName);
       }
@@ -248,7 +291,7 @@ public class MongoUtils {
         new Document("$limit", DISCOVER_LIMIT),
         new Document("$project", new Document("arrayofkeyvalue", new Document("$objectToArray", "$" + fieldName))),
         new Document("$unwind", "$arrayofkeyvalue"),
-        new Document("$group", new Document("_id", null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
+        new Document("$group", new Document(ID, null).append("allkeys", new Document("$addToSet", "$arrayofkeyvalue.k")))));
     if (output.cursor().hasNext()) {
       return (List) output.cursor().next().get("allkeys");
     } else {
@@ -260,13 +303,13 @@ public class MongoUtils {
     final var fieldName = "$" + name;
     final AggregateIterable<Document> output = collection.aggregate(Arrays.asList(
         new Document("$limit", DISCOVER_LIMIT),
-        new Document("$project", new Document("_id", 0).append("fieldType", new Document("$type", fieldName))),
-        new Document("$group", new Document("_id", new Document("fieldType", "$fieldType"))
+        new Document("$project", new Document(ID, 0).append("fieldType", new Document("$type", fieldName))),
+        new Document("$group", new Document(ID, new Document("fieldType", "$fieldType"))
             .append("count", new Document("$sum", 1)))));
     final var listOfTypes = new ArrayList<String>();
     final var cursor = output.cursor();
     while (cursor.hasNext()) {
-      final var type = ((Document) cursor.next().get("_id")).get("fieldType").toString();
+      final var type = ((Document) cursor.next().get(ID)).get("fieldType").toString();
       if (!MISSING_TYPE.equals(type) && !NULL_TYPE.equals(type)) {
         listOfTypes.add(type);
       }
@@ -277,6 +320,7 @@ public class MongoUtils {
     return listOfTypes;
   }
 
+  @SuppressWarnings("PMD.AvoidLiteralsInIfCondition")
   private static BsonType getUniqueType(final List<String> types) {
     if (types.size() != 1) {
       return BsonType.STRING;

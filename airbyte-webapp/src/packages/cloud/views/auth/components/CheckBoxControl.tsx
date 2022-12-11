@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-import { CheckBox } from "components/base";
+import { CheckBox } from "components/ui/CheckBox";
 
 type IProps = {
   message?: React.ReactNode;

@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.lib;
 
+import java.util.Collections;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,7 +18,7 @@ class DogStatsDMetricClientTest {
   @BeforeEach
   void setUp() {
     dogStatsDMetricClient = new DogStatsDMetricClient();
-    dogStatsDMetricClient.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false));
+    dogStatsDMetricClient.initialize(MetricEmittingApps.WORKER, new DatadogClientConfiguration("localhost", "1000", false, Collections.emptyList()));
   }
 
   @AfterEach

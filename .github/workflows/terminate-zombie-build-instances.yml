@@ -13,7 +13,7 @@ jobs:
   terminate:
     runs-on: ubuntu-latest
     steps:
-      - name: List and Terminate Instances Older Than 3 Hours
+      - name: List and Terminate Instances Older Than 4 Hours
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
@@ -22,7 +22,7 @@ jobs:
         run: |
           set -euxo pipefail
 
-          TIME_LIMIT=10800 # 3 hours
+          export TIME_LIMIT=14400 # 4 hours
 
           aws configure set default.region us-east-2
 
@@ -31,7 +31,7 @@ jobs:
           export to_terminate=$(aws ec2 describe-instances --no-paginate --filters Name=instance-type,Values=c5.2xlarge Name=instance-state-name,Values=running \
             --query 'Reservations[*].Instances[*].{Instance:InstanceId,LaunchTime:LaunchTime}' --output json \
           | jq 'def toZ(str): str | (split("+")[0] + "Z") | fromdate ;
-              flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - $TIME_LIMIT) ) )')
+              flatten | map( { InstanceId: .Instance, LaunchTime: toZ(.LaunchTime) } ) | map( select ( .LaunchTime < (now - (env.TIME_LIMIT|tonumber)) ) )')
 
           echo "MARKED FOR TERMINATION: ${to_terminate}"
 
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: List and Terminate GH actions in status 'offline'
         env:
           GITHUB_PAT: ${{ secrets.OCTAVIA_PAT }}

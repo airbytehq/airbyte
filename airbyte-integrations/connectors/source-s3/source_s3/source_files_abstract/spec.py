@@ -12,6 +12,7 @@ from pydantic import BaseModel, Field
 
 from .formats.avro_spec import AvroFormat
 from .formats.csv_spec import CsvFormat
+from .formats.jsonl_spec import JsonlFormat
 from .formats.parquet_spec import ParquetFormat
 
 # To implement your provider specific spec, inherit from SourceFilesAbstractSpec and add provider-specific settings e.g.:
@@ -60,12 +61,12 @@ class SourceFilesAbstractSpec(BaseModel):
         order=10,
     )
 
-    format: Union[CsvFormat, ParquetFormat, AvroFormat] = Field(
+    format: Union[CsvFormat, ParquetFormat, AvroFormat, JsonlFormat] = Field(
         default="csv", title="File Format", description="The format of the files you'd like to replicate", order=20
     )
 
     user_schema: str = Field(
-        title="Manually enforced data schema (Optional)",
+        title="Manually enforced data schema",
         alias="schema",
         default="{}",
         description="Optionally provide a schema to enforce, as a valid JSON string. Ensure this is a mapping of "

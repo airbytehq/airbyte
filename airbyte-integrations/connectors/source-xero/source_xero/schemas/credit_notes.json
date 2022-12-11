@@ -1,0 +1,108 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Type": {
+      "type": ["null", "string"]
+    },
+    "Contact": {
+      "$ref": "contacts.json"
+    },
+    "Date": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "DueDate": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "DueDateString": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "LineItems": {
+      "items": {
+        "$ref": "line_items.json"
+      },
+      "type": ["null", "array"]
+    },
+    "SubTotal": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "AppliedAmount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalTax": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Total": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "UpdatedDateUTC": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "FullyPaidOnDate": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "CreditNoteID": {
+      "type": ["string"]
+    },
+    "CreditNoteNumber": {
+      "type": ["null", "string"]
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "SentToContact": {
+      "type": ["null", "boolean"]
+    },
+    "CurrencyRate": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "RemainingCredit": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Allocations": {
+      "items": {
+        "$ref": "allocations.json"
+      },
+      "type": ["null", "array"]
+    },
+    "BrandingThemeID": {
+      "type": ["null", "string"]
+    },
+    "HasAttachments": {
+      "type": ["null", "boolean"]
+    },
+    "DateString": {
+      "format": "date-time",
+      "type": ["null", "string"]
+    },
+    "ID": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}

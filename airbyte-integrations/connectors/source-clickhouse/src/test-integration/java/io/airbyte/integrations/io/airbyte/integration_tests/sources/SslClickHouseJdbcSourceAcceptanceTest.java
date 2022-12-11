@@ -4,8 +4,6 @@
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
-import static java.time.temporal.ChronoUnit.SECONDS;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
@@ -16,23 +14,14 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.clickhouse.ClickHouseSource;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
-import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
-import java.io.IOException;
-import java.sql.JDBCType;
-import java.time.Duration;
-import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.testcontainers.containers.BindMode;
 import org.testcontainers.containers.GenericContainer;
-import org.testcontainers.containers.wait.strategy.Wait;
-import org.testcontainers.images.builder.ImageFromDockerfile;
 
-public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+public class SslClickHouseJdbcSourceAcceptanceTest extends ClickHouseJdbcSourceAcceptanceTest {
 
   private static GenericContainer container;
   private static JdbcDatabase jdbcDatabase;
@@ -41,49 +30,13 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
   private String dbName;
 
   @BeforeAll
-  static void init() throws IOException, InterruptedException {
-    container = new GenericContainer<>(new ImageFromDockerfile("clickhouse-test")
-        .withFileFromClasspath("Dockerfile", "docker/Dockerfile")
-        .withFileFromClasspath("clickhouse_certs.sh", "docker/clickhouse_certs.sh"))
-            .withEnv("TZ", "UTC")
-            .withExposedPorts(8123, 8443)
-            .withClasspathResourceMapping("ssl_ports.xml", "/etc/clickhouse-server/config.d/ssl_ports.xml", BindMode.READ_ONLY)
-            .waitingFor(Wait.forHttp("/ping").forPort(8123)
-                .forStatusCode(200).withStartupTimeout(Duration.of(60, SECONDS)));
+  static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Array(UInt32)) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES([12, 13, 0, 1]);)";
+    CREATE_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s Nullable(VARCHAR(20))) ENGINE = MergeTree ORDER BY tuple();";
+    INSERT_TABLE_WITH_NULLABLE_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES('Hello world :)');";
+    container = new GenericContainer("etsybaev/clickhouse-with-ssl:dev").withExposedPorts(8443);
     container.start();
-  }
-
-  @AfterAll
-  public static void cleanUp() throws Exception {
-    DataSourceFactory.close(dataSource);
-    container.close();
-  }
-
-  @Override
-  public boolean supportsSchemas() {
-    return false;
-  }
-
-  @Override
-  public JsonNode getConfig() {
-    return Jsons.clone(config);
-  }
-
-  @Override
-  public String getDriverClass() {
-    return ClickHouseSource.DRIVER_CLASS;
-  }
-
-  @Override
-  public String createTableQuery(final String tableName,
-                                 final String columnClause,
-                                 final String primaryKeyClause) {
-    // ClickHouse requires Engine to be mentioned as part of create table query.
-    // Refer : https://clickhouse.tech/docs/en/engines/table-engines/ for more information
-    return String.format("CREATE TABLE %s(%s) %s",
-        dbName + "." + tableName, columnClause, primaryKeyClause.equals("") ? "Engine = TinyLog"
-            : "ENGINE = MergeTree() ORDER BY " + primaryKeyClause + " PRIMARY KEY "
-                + primaryKeyClause);
   }
 
   @BeforeEach
@@ -121,27 +74,10 @@ public class SslClickHouseJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceT
     super.tearDown();
   }
 
-  @Override
-  public String primaryKeyClause(final List<String> columns) {
-    if (columns.isEmpty()) {
-      return "";
-    }
-
-    final StringBuilder clause = new StringBuilder();
-    clause.append("(");
-    for (int i = 0; i < columns.size(); i++) {
-      clause.append(columns.get(i));
-      if (i != (columns.size() - 1)) {
-        clause.append(",");
-      }
-    }
-    clause.append(")");
-    return clause.toString();
-  }
-
-  @Override
-  public AbstractJdbcSource<JDBCType> getJdbcSource() {
-    return new ClickHouseSource();
+  @AfterAll
+  public static void cleanUp() throws Exception {
+    DataSourceFactory.close(dataSource);
+    container.close();
   }
 
 }

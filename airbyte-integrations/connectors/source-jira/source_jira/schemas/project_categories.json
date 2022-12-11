@@ -22,6 +22,6 @@
       "description": "The description of the project category. Required on create, optional on update."
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "A project category."
 }
