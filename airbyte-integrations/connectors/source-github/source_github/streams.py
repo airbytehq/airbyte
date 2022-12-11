@@ -5,7 +5,7 @@
 import logging
 import time
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 from urllib import parse
 
 import pendulum
@@ -26,7 +26,7 @@ from .utils import getter
 DEFAULT_PAGE_SIZE = 100
 
 
-class GithubOrganizationAvailabilityStrategy(HttpAvailabilityStrategy):
+class OrganizationBasedAvailabilityStrategy(HttpAvailabilityStrategy):
     """
     Availability Strategy for organization-based streams.
     """
@@ -47,35 +47,61 @@ class GithubOrganizationAvailabilityStrategy(HttpAvailabilityStrategy):
         return reasons_for_codes
 
 
-class GithubRepositoryAvailabilityStrategy(HttpAvailabilityStrategy):
+class RepositoryBasedAvailabilityStrategy(HttpAvailabilityStrategy):
     """
     Availability Strategy for repository-based streams.
     """
 
-    def handle_http_error(
+    def reasons_for_unavailable_status_codes(
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
-    ) -> Tuple[bool, Optional[str]]:
+    ) -> Dict[int, str]:
         stream_slice = StreamHelper().get_stream_slice(stream)
         repository = stream_slice.get("repository", "")
+        error_msg = str(error.response.json().get("message"))
 
-        if error.response.status_code == requests.codes.NOT_FOUND:
-            error_msg = f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
-        elif error.response.status_code == requests.codes.FORBIDDEN:
-            error_msg = str(error.response.json().get("message"))
-            error_msg = f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-        elif error.response.status_code == requests.codes.GONE and isinstance(stream, Projects):
-            # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-            # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-            error_msg = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
-        elif error.response.status_code == requests.codes.CONFLICT:
-            error_msg = (
-                f"`{stream.name}` stream isn't available for repository "
-                f"`{stream_slice['repository']}`, it seems like this repository is empty."
-            )
-        elif error.response.status_code == requests.codes.SERVER_ERROR and isinstance(stream, WorkflowRuns):
-            error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+        reasons_for_codes = {
+            requests.codes.NOT_FOUND: f"`{stream.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`.",
+            requests.codes.FORBIDDEN: f"`{stream.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}",
+            requests.codes.CONFLICT: f"`{stream.name}` stream isn't available for repository `{stream_slice['repository']}`, it seems like this repository is empty.",
+        }
+        return reasons_for_codes
 
-        return False, error_msg
+
+class WorkflowRunsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
+    """
+    AvailabilityStrategy for the 'WorkflowRuns' stream.
+    """
+
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    ) -> Dict[int, str]:
+        stream_slice = StreamHelper().get_stream_slice(stream)
+        repository_based_reasons_for_codes = super().reasons_for_unavailable_status_codes(stream, logger, source, error).copy()
+
+        workflow_runs_reasons_for_codes = {
+            requests.codes.SERVER_ERROR: f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+        }
+        return repository_based_reasons_for_codes.update(workflow_runs_reasons_for_codes)
+
+
+class ProjectsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
+    """
+    AvailabilityStrategy for the 'Projects' stream.
+    """
+
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    ) -> Dict[int, str]:
+        stream_slice = StreamHelper().get_stream_slice(stream)
+        projects_reasons_for_codes = super().reasons_for_unavailable_status_codes(stream, logger, source, error).copy()
+
+        # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
+        # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
+        projects_reasons_for_codes[
+            requests.codes.GONE
+        ] = f"`Projects` stream isn't available for repository `{stream_slice['repository']}`."
+
+        return projects_reasons_for_codes
 
 
 class GithubStream(HttpStream, ABC):
@@ -217,7 +243,7 @@ class GithubStream(HttpStream, ABC):
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return GithubRepositoryAvailabilityStrategy()
+        return RepositoryBasedAvailabilityStrategy()
 
 
 class SemiIncrementalMixin:
@@ -394,7 +420,7 @@ class Organizations(GithubStream):
 
     @property
     def availability_strategy(self) -> Optional[AvailabilityStrategy]:
-        return GithubOrganizationAvailabilityStrategy()
+        return OrganizationBasedAvailabilityStrategy()
 
 
 class Repositories(SemiIncrementalMixin, Organizations):
@@ -603,6 +629,10 @@ class Projects(SemiIncrementalMixin, GithubStream):
         headers = {"Accept": "application/vnd.github.inertia-preview+json"}
 
         return {**base_headers, **headers}
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return ProjectsAvailabilityStrategy()
 
 
 class IssueEvents(SemiIncrementalMixin, GithubStream):
@@ -1368,6 +1398,10 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 yield record
             if created_at < break_point:
                 break
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return WorkflowRunsAvailabilityStrategy()
 
 
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):
