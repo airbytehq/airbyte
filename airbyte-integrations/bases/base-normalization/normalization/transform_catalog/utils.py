@@ -17,26 +17,17 @@ def remove_jinja(command: str) -> str:
     return str(command).replace("{{ ", "").replace(" }}", "")
 
 
-# transform oneOf nested list ot plain types list
-def get_plain_list_from_one_of_array(one_of_definition) -> list:
-    one_of_property = one_of_definition[data_type.ONE_OF_VAR_NAME]
-    plain_datatypes_list = list()
-    for prop in one_of_property:
-        plain_datatypes_list.append(prop[data_type.REF_TYPE_VAR_NAME])
-    return plain_datatypes_list
-
-
-def is_string(property_type) -> bool:
-    if data_type.ONE_OF_VAR_NAME in property_type:
-        return bool(
-            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.STRING_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
-        )
+def is_string(definition: dict) -> bool:
+    if data_type.ONE_OF_VAR_NAME in definition:
+        return bool(any(option[data_type.REF_TYPE_VAR_NAME] == data_type.STRING_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
-        return property_type == data_type.STRING_TYPE or data_type.STRING_TYPE in property_type
+        return data_type.REF_TYPE_VAR_NAME in definition and data_type.STRING_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        # return definition == data_type.STRING_TYPE or data_type.STRING_TYPE in definition
 
 
-def is_binary_datatype(property_type) -> bool:
-    return property_type == data_type.BINARY_DATA_TYPE or data_type.BINARY_DATA_TYPE in property_type
+def is_binary_datatype(definition: dict) -> bool:
+    return data_type.REF_TYPE_VAR_NAME in definition and data_type.BINARY_DATA_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+    # return property_type == data_type.BINARY_DATA_TYPE or data_type.BINARY_DATA_TYPE in property_type
 
 
 def is_datetime(definition: dict) -> bool:
@@ -102,16 +93,15 @@ def is_time_without_timezone(definition: dict) -> bool:
         return bool(data_type.TIME_WITHOUT_TIME_ZONE_TYPE == definition[data_type.REF_TYPE_VAR_NAME])
 
 
-def is_number(property_type) -> bool:
-    if is_string(property_type):
+def is_number(definition: dict) -> bool:
+    if is_string(definition):
         # Handle union type, give priority to wider scope types
         return False
-    if data_type.ONE_OF_VAR_NAME in property_type:
-        return bool(
-            any(option[data_type.REF_TYPE_VAR_NAME] == data_type.NUMBER_TYPE for option in property_type[data_type.ONE_OF_VAR_NAME])
-        )
+    if data_type.ONE_OF_VAR_NAME in definition:
+        return bool(any(option[data_type.REF_TYPE_VAR_NAME] == data_type.NUMBER_TYPE for option in definition[data_type.ONE_OF_VAR_NAME]))
     else:
-        return property_type == data_type.NUMBER_TYPE or data_type.NUMBER_TYPE in property_type
+        return data_type.REF_TYPE_VAR_NAME in definition and data_type.NUMBER_TYPE == definition[data_type.REF_TYPE_VAR_NAME]
+        # return property_type == data_type.NUMBER_TYPE or data_type.NUMBER_TYPE in property_type
 
 
 # this is obsolete type that will not be used in new datatypes
@@ -129,7 +119,7 @@ def is_long(property_type, definition: dict) -> bool:
 
 
 def is_boolean(property_type, definition: dict) -> bool:
-    if is_string(property_type) or is_number(property_type) or is_big_integer(definition) or is_long(property_type, definition):
+    if is_string(definition) or is_number(definition) or is_big_integer(definition) or is_long(property_type, definition):
         # Handle union type, give priority to wider scope types
         return False
     if data_type.ONE_OF_VAR_NAME in definition:
@@ -156,15 +146,15 @@ def is_simple_property(definition: dict) -> bool:
     if data_type.REF_TYPE_VAR_NAME not in definition and data_type.ONE_OF_VAR_NAME not in definition:
         property_type = "object"
     elif data_type.ONE_OF_VAR_NAME in definition and data_type.ONE_OF_VAR_NAME in definition:
-        property_type = definition
+        property_type = data_type.ONE_OF_VAR_NAME
     else:
         property_type = definition[data_type.REF_TYPE_VAR_NAME]
     return (
-        is_string(property_type)
-        or is_binary_datatype(property_type)
+        is_string(definition)
+        or is_binary_datatype(definition)
         or is_big_integer(definition)
         or is_long(property_type, definition)
-        or is_number(property_type)
+        or is_number(definition)
         or is_boolean(property_type, definition)
     )
 
