@@ -434,8 +434,7 @@ class IssueComments(IncrementalJiraStream):
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        return f"issue/{key}/comment"
+        return f"issue/{stream_slice['key']}/comment"
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
