@@ -212,15 +212,19 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     return ALLOWED_CURSOR_TYPES.contains(type);
   }
 
-  @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index, LocalDate.class)));
-  }
+  // @Override
+  // protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet,
+  // final int index) throws SQLException {
+  // node.put(columnName, DateTimeConverter.convertToDate(getObject(resultSet, index,
+  // LocalDate.class)));
+  // }
 
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index, LocalTime.class)));
-  }
+  // @Override
+  // protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet,
+  // final int index) throws SQLException {
+  // node.put(columnName, DateTimeConverter.convertToTime(getObject(resultSet, index,
+  // LocalTime.class)));
+  // }
 
   @Override
   protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {

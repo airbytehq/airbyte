@@ -182,7 +182,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog, final Database database) throws SQLException {
+                                                       final ConfiguredAirbyteCatalog catalog,
+                                                       final Database database)
+      throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
@@ -231,14 +233,17 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   /**
    * Verify that cursor column allows syncing to go through.
+   *
    * @param database database
    * @return true if syncing can go through. false otherwise
    * @throws SQLException exception
    */
-  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     /* no-op */
     return true;
   }
+
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {

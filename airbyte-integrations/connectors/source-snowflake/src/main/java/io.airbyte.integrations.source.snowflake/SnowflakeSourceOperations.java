@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -113,7 +112,8 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)
+      throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }
@@ -123,18 +123,20 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
+  //
+  // @Override
+  // protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet,
+  // final int index) throws SQLException {
+  // final Date date = resultSet.getDate(index);
+  // node.put(columnName, DateTimeConverter.convertToDate(date));
+  // }
 
-  @Override
-  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    final Date date = resultSet.getDate(index);
-    node.put(columnName, DateTimeConverter.convertToDate(date));
-  }
-
-  @Override
-  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
-    // resultSet.getTime() will lose nanoseconds precision
-    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
-    node.put(columnName, DateTimeConverter.convertToTime(localTime));
-  }
+  // @Override
+  // protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet,
+  // final int index) throws SQLException {
+  // // resultSet.getTime() will lose nanoseconds precision
+  // final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
+  // node.put(columnName, DateTimeConverter.convertToTime(localTime));
+  // }
 
 }

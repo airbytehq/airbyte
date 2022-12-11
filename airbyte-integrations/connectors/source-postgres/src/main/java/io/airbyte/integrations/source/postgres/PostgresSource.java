@@ -517,7 +517,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     final String query;
     final String resultColName = "nullValue";
     // Query: Only if cursor column allows null values, query whether it contains one
@@ -536,4 +537,5 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     LOGGER.debug("null value exist: {}", nullValExist);
     return !nullValExist;
   }
+
 }
