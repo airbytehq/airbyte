@@ -543,8 +543,10 @@ class IssuePriorities(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-priorities/#api-rest-api-3-priority-get
     """
 
+    extract_field = "values"
+
     def path(self, **kwargs) -> str:
-        return "priority"
+        return "priority/search"
 
 
 class IssuePropertyKeys(JiraStream):
