@@ -337,6 +337,8 @@ class Issues(IncrementalJiraStream):
         self._additional_fields = additional_fields
         self._expand_changelog = expand_changelog
         self._render_fields = render_fields
+        self._fields = []
+        self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
@@ -349,10 +351,12 @@ class Issues(IncrementalJiraStream):
         stream_slice: Mapping[str, Any],
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
-        project_id = stream_slice["project_id"]
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = stream_slice["fields"]
-        jql_parts = [f"project = '{project_id}'", self.jql_compare_date(stream_state)]
+        params["fields"] = self._fields
+        jql_parts = [self.jql_compare_date(stream_state)]
+        if self._project_ids:
+            project_ids = ", ".join([f"'{project_id}'" for project_id in self._project_ids])
+            jql_parts.append(f"project in ({project_ids})")
         params["jql"] = " and ".join([p for p in jql_parts if p])
         expand = []
         if self._expand_changelog:
@@ -363,8 +367,26 @@ class Issues(IncrementalJiraStream):
             params["expand"] = ",".join(expand)
         return params
 
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        self._fields = self.get_fields()
+        self._project_ids = []
+        if self._projects:
+            self._project_ids = self.get_project_ids()
+            if not self._project_ids:
+                return
+        yield from super().read_records(**kwargs)
+
+    def transform(self, record: MutableMapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        record["projectId"] = record["fields"]["project"]["id"]
+        record["projectKey"] = record["fields"]["project"]["key"]
+        record["created"] = record["fields"]["created"]
+        record["updated"] = record["fields"]["updated"]
+        return record
+
+    def get_project_ids(self):
+        return [project["id"] for project in read_full_refresh(self.projects_stream)]
+
+    def get_fields(self):
         fields = [
             "assignee",
             "attachment",
@@ -385,22 +407,12 @@ class Issues(IncrementalJiraStream):
             "summary",
             "updated",
         ]
+        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
         additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
         for name in additional_field_names + self._additional_fields:
             if name in field_ids_by_name:
                 fields.extend(field_ids_by_name[name])
-
-        for project in read_full_refresh(self.projects_stream):
-            stream_slice = {"project_id": project["id"], "project_key": project["key"], "fields": list(set(fields))}
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = stream_slice["project_id"]
-        record["projectKey"] = stream_slice["project_key"]
-        issue_fields = record["fields"]
-        record["created"] = issue_fields.get("created")
-        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
-        return record
+        return fields
 
 
 class IssueComments(IncrementalJiraStream):
