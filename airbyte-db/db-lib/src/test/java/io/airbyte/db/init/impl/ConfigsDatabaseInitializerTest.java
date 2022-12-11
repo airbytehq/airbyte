@@ -25,7 +25,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
   @Test
   void testInitializingSchema() throws IOException {
     final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
     Assertions.assertDoesNotThrow(() -> initializer.initialize());
@@ -35,7 +35,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
   @Test
   void testInitializingSchemaAlreadyExists() throws IOException {
     final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
     dslContext.execute(initialSchema);
     final var initializer = new ConfigsDatabaseInitializer(databaseAvailabilityCheck, dslContext, initialSchema);
 
@@ -46,7 +46,7 @@ class ConfigsDatabaseInitializerTest extends CommonDatabaseInitializerTest {
   @Test
   void testInitializationException() throws IOException, DatabaseCheckException {
     final var databaseAvailabilityCheck = mock(ConfigsDatabaseAvailabilityCheck.class);
-    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_SCHEMA_PATH);
+    final var initialSchema = MoreResources.readResource(DatabaseConstants.CONFIGS_INITIAL_SCHEMA_PATH);
 
     doThrow(new DatabaseCheckException("test")).when(databaseAvailabilityCheck).check();
 

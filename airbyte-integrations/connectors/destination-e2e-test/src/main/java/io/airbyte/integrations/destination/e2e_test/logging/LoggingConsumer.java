@@ -6,11 +6,11 @@ package io.airbyte.integrations.destination.e2e_test.logging;
 
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.util.HashMap;
@@ -41,7 +41,7 @@ public class LoggingConsumer implements AirbyteMessageConsumer {
   public void start() {
     for (final ConfiguredAirbyteStream configuredStream : configuredCatalog.getStreams()) {
       final AirbyteStream stream = configuredStream.getStream();
-      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream);
+      final AirbyteStreamNameNamespacePair streamNamePair = AirbyteStreamNameNamespacePair.fromAirbyteStream(stream);
       final TestingLogger logger = loggerFactory.create(streamNamePair);
       loggers.put(streamNamePair, logger);
     }

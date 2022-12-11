@@ -93,44 +93,17 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
     };
   }
 
-  /**
-   * The only difference between this method and the one in {@link JdbcSourceOperations} is that the
-   * TIMESTAMP_WITH_TIMEZONE columns are also converted using the putTimestamp method. This is
-   * necessary after the JDBC upgrade from 3.13.9 to 3.13.22. This change may need to be added to
-   * {@link JdbcSourceOperations#setJsonField} in the future.
-   * <p/>
-   * See issue: https://github.com/airbytehq/airbyte/issues/16838.
-   */
   @Override
   public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
-    final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
-    final JDBCType columnType = safeGetJdbcType(columnTypeInt);
     // TIMESTAMPLTZ data type detected as JDBCType.TIMESTAMP which is not correct
     if ("TIMESTAMPLTZ".equalsIgnoreCase(columnTypeName)) {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    // https://www.cis.upenn.edu/~bcpierce/courses/629/jdkdocs/guide/jdbc/getstart/mapping.doc.html
-    switch (columnType) {
-      case BIT, BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-      case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-      case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
-      case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-      case REAL -> putFloat(json, columnName, resultSet, colIndex);
-      case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
-      case CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
-      case DATE -> putDate(json, columnName, resultSet, colIndex);
-      case TIME -> putTime(json, columnName, resultSet, colIndex);
-      case TIMESTAMP -> putTimestamp(json, columnName, resultSet, colIndex);
-      case TIMESTAMP_WITH_TIMEZONE -> putTimestampWithTimezone(json, columnName, resultSet, colIndex);
-      case BLOB, BINARY, VARBINARY, LONGVARBINARY -> putBinary(json, columnName, resultSet, colIndex);
-      case ARRAY -> putArray(json, columnName, resultSet, colIndex);
-      default -> putDefault(json, columnName, resultSet, colIndex);
-    }
+    super.setJsonField(resultSet, colIndex, json);
   }
 
   @Override
@@ -140,25 +113,25 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  protected void putTimestampWithTimezone(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putTimestampWithTimezone(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestampWithTimezone(timestamp));
   }
 
   @Override
-  protected void putTimestamp(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putTimestamp(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Timestamp timestamp = resultSet.getTimestamp(index);
     node.put(columnName, DateTimeConverter.convertToTimestamp(timestamp));
   }
 
   @Override
-  protected void putDate(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putDate(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final Date date = resultSet.getDate(index);
     node.put(columnName, DateTimeConverter.convertToDate(date));
   }
 
   @Override
-  protected void putTime(ObjectNode node, String columnName, ResultSet resultSet, int index) throws SQLException {
+  protected void putTime(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     // resultSet.getTime() will lose nanoseconds precision
     final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
     node.put(columnName, DateTimeConverter.convertToTime(localTime));

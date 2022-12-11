@@ -486,6 +486,13 @@ class TicketComments(SourceZendeskSupportTicketEventsExportStream):
     sideload_param = "comment_events"
     event_type = "Comment"
 
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        for record in super().parse_response(response, **kwargs):
+            # https://github.com/airbytehq/oncall/issues/1001
+            if type(record.get("via")) is not dict:
+                record["via"] = None
+            yield record
+
 
 class Groups(SourceZendeskSupportStream):
     """Groups stream: https://developer.zendesk.com/api-reference/ticketing/groups/groups/"""
@@ -646,23 +653,3 @@ class UserSettingsStream(SourceZendeskSupportFullRefreshStream):
         for resp in self.read_records(SyncMode.full_refresh):
             return resp
         raise SourceZendeskException("not found settings")
-
-
-class UserSubscriptionStream(SourceZendeskSupportFullRefreshStream):
-    """Stream for checking read permissions for streams"""
-
-    def path(self, *args, **kwargs) -> str:
-        return "/api/v2/account/subscription.json"
-
-    def next_page_token(self, *args, **kwargs) -> Optional[Mapping[str, Any]]:
-        return None
-
-    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        subscription_plan = response.json().get("subscription").get("plan_name")
-        if subscription_plan:
-            yield subscription_plan
-
-    def get_subscription_plan(self) -> Mapping[str, Any]:
-        for result in self.read_records(SyncMode.full_refresh):
-            return result
-        raise SourceZendeskException("Could not read User's Subscription Plan.")

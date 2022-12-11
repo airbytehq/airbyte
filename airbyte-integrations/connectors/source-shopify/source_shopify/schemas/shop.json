@@ -1,5 +1,6 @@
 {
   "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "address1": {
       "type": ["null", "string"]

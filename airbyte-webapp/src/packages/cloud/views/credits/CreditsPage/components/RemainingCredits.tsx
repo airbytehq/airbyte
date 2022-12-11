@@ -24,7 +24,7 @@ interface Props {
 }
 
 const Block = styled.div`
-  background: ${({ theme }) => theme.darkBeigeColor};
+  background: ${({ theme }) => theme.blue50};
   border-radius: 8px;
   padding: 18px 25px 22px;
   font-size: 13px;

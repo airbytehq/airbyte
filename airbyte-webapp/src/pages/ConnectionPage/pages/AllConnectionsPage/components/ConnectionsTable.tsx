@@ -6,7 +6,7 @@ import useSyncActions from "components/EntityTable/hooks";
 import { ITableDataItem } from "components/EntityTable/types";
 import { getConnectionTableData } from "components/EntityTable/utils";
 
-import { WebBackendConnectionListItem } from "../../../../../core/request/AirbyteClient";
+import { WebBackendConnectionListItem } from "core/request/AirbyteClient";
 
 interface IProps {
   connections: WebBackendConnectionListItem[];

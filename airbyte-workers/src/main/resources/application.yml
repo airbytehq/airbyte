@@ -52,7 +52,6 @@ airbyte:
     specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
   container:
     orchestrator:
-      enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
       secret-mount-path: ${CONTAINER_ORCHESTRATOR_SECRET_MOUNT_PATH:}
@@ -102,6 +101,10 @@ airbyte:
           memory:
             limit: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_LIMIT:}
             request: ${CHECK_JOB_MAIN_CONTAINER_MEMORY_REQUEST:}
+    isolated:
+      kube:
+        use-isolated-node-selector: ${USE_ISOLATED_NODE_SELECTOR:false}
+        node-selectors: ${ISOLATED_JOB_KUBE_NODE_SELECTORS:}
     connection:
       enabled: ${SHOULD_RUN_CONNECTION_MANAGER_WORKFLOWS:true}
     discover:
@@ -170,6 +173,9 @@ airbyte:
       max-workers: ${MAX_SYNC_WORKERS:5}
       max-attempts: ${SYNC_JOB_MAX_ATTEMPTS:3}
       max-timeout: ${SYNC_JOB_MAX_TIMEOUT_DAYS:3}
+    notify:
+      enabled: ${SHOULD_RUN_NOTIFY_WORKFLOWS:false}
+      max-workers: ${MAX_NOTIFY_WORKERS:5}
   role: ${AIRBYTE_ROLE:}
   secret:
     persistence: ${SECRET_PERSISTENCE:TESTING_CONFIG_DB_TABLE}

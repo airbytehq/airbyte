@@ -9,11 +9,11 @@
   z-index: 3;
   font-size: 12px;
   line-height: 15px;
-  color: colors.$black;
   padding: 8px;
   display: flex;
   align-items: center;
-  background-color: colors.$beige-100;
+  background-color: colors.$blue;
+  color: colors.$white;
 
   @media (min-width: 1280px) {
     height: 50px;
@@ -28,12 +28,13 @@
   justify-content: center;
   align-items: center;
   margin: auto;
+  color: colors.$white;
 }
 
 .linkCta {
-  color: colors.$dark-blue;
-}
+  color: colors.$white;
 
-.textDecorationNone {
-  text-decoration: none;
+  p {
+    color: inherit;
+  }
 }

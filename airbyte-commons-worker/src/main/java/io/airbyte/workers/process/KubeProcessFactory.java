@@ -85,6 +85,7 @@ public class KubeProcessFactory implements ProcessFactory {
                         final int attempt,
                         final Path jobRoot,
                         final String imageName,
+                        final boolean isCustomConnector,
                         final boolean usesStdin,
                         final Map<String, String> files,
                         final String entrypoint,
@@ -107,6 +108,12 @@ public class KubeProcessFactory implements ProcessFactory {
 
       final var allLabels = getLabels(jobId, attempt, customLabels);
 
+      // If using isolated pool, check workerConfigs has isolated pool set. If not set, fall back to use
+      // regular node pool.
+      final var nodeSelectors =
+          isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
+              : workerConfigs.getworkerKubeNodeSelectors();
+
       return new KubePodProcess(
           isOrchestrator,
           processRunnerHost,
@@ -123,9 +130,9 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          workerConfigs.getJobImagePullSecret(),
+          workerConfigs.getJobImagePullSecrets(),
           workerConfigs.getWorkerKubeTolerations(),
-          workerConfigs.getworkerKubeNodeSelectors(),
+          nodeSelectors,
           allLabels,
           workerConfigs.getWorkerKubeAnnotations(),
           workerConfigs.getJobSocatImage(),

@@ -1,0 +1,44 @@
+# See [Source Acceptance Tests](https://docs.airbyte.io/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-zoom:dev
+tests:
+  spec:
+    - spec_path: "source_zoom/spec.yaml"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      timeout_seconds: 3600
+      empty_streams:
+        - "meeting_registrants"
+        - "meeting_polls"
+        - "meeting_poll_results"
+        - "meeting_registration_questions"
+        - "webinars"
+        - "webinar_panelists"
+        - "webinar_registrants"
+        - "webinar_absentees"
+        - "webinar_polls"
+        - "webinar_poll_results"
+        - "webinar_registration_questions"
+        - "webinar_tracking_sources"
+        - "webinar_qna_results"
+        - "report_meetings"
+        - "report_meeting_participants"
+        - "report_webinars"
+        - "report_webinar_participants"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      ignored_fields:
+        "meetings":
+          - "start_url"
+        "webinars":
+          - "start_url"          
+      timeout_seconds: 3600

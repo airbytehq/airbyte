@@ -3,9 +3,8 @@ import type { FormikErrors } from "formik/dist/types";
 import { getIn, useFormik } from "formik";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import * as yup from "yup";
 
-import { FormChangeTracker } from "components/FormChangeTracker";
+import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { ControlLabels } from "components/LabeledControl";
 import { Button } from "components/ui/Button";
 import { DropDown } from "components/ui/DropDown";
@@ -20,6 +19,7 @@ import { links } from "utils/links";
 import { equal } from "utils/objects";
 
 import styles from "./TransformationForm.module.scss";
+import { validationSchema } from "./utils";
 
 interface TransformationProps {
   transformation: OperationCreate;
@@ -27,18 +27,6 @@ interface TransformationProps {
   onDone: (tr: OperationCreate) => void;
   isNewTransformation?: boolean;
 }
-
-const validationSchema = yup.object({
-  name: yup.string().required("form.empty.error"),
-  operatorConfiguration: yup.object({
-    dbt: yup.object({
-      gitRepoUrl: yup.string().required("form.empty.error"),
-      dockerImage: yup.string().required("form.empty.error"),
-      dbtArguments: yup.string().required("form.empty.error"),
-      gitRepoBranch: yup.string().nullable(),
-    }),
-  }),
-});
 
 function prepareLabelFields(
   errors: FormikErrors<OperationRead>,

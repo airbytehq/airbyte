@@ -220,11 +220,6 @@ spec:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
-            - name: CONTAINER_ORCHESTRATOR_ENABLED
-              valueFrom:
-                configMapKeyRef:
-                  name: airbyte-env
-                  key: CONTAINER_ORCHESTRATOR_ENABLED
             - name: CONTAINER_ORCHESTRATOR_IMAGE
               valueFrom:
                 configMapKeyRef:
@@ -270,11 +265,26 @@ spec:
                 configMapKeyRef:
                   name: airbyte-env
                   key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+            - name: AUTO_DETECT_SCHEMA
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AUTO_DETECT_SCHEMA
             - name: USE_STREAM_CAPABLE_STATE
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
                   key: USE_STREAM_CAPABLE_STATE
+            - name: SHOULD_RUN_NOTIFY_WORKFLOWS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: SHOULD_RUN_NOTIFY_WORKFLOWS
+            - name: MAX_NOTIFY_WORKERS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: MAX_NOTIFY_WORKERS
             - name: MICRONAUT_ENVIRONMENTS
               valueFrom:
                 configMapKeyRef:

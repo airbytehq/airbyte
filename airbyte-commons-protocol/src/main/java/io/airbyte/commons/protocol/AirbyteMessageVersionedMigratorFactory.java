@@ -23,4 +23,8 @@ public class AirbyteMessageVersionedMigratorFactory {
     return new AirbyteMessageVersionedMigrator<>(this.migrator, version);
   }
 
+  public Version getMostRecentVersion() {
+    return migrator.getMostRecentVersion();
+  }
+
 }

@@ -288,6 +288,14 @@ def test_read_state(source, incoming_state, expected_state, expected_error):
             assert actual == expected_state
 
 
+def test_read_invalid_state(source):
+    with tempfile.NamedTemporaryFile("w") as state_file:
+        state_file.write("invalid json content")
+        state_file.flush()
+        with pytest.raises(ValueError, match="Could not read json file"):
+            source.read_state(state_file.name)
+
+
 def test_read_state_sends_new_legacy_format_if_source_does_not_implement_read():
     expected_state = [
         AirbyteStateMessage(
@@ -425,8 +433,8 @@ def test_source_config_no_transform(abstract_source, catalog):
     records = [r for r in abstract_source.read(logger=logger_mock, config={}, catalog=catalog, state={})]
     assert len(records) == 2 * 5
     assert [r.record.data for r in records] == [{"value": 23}] * 2 * 5
-    assert http_stream.get_json_schema.call_count == 1
-    assert non_http_stream.get_json_schema.call_count == 1
+    assert http_stream.get_json_schema.call_count == 5
+    assert non_http_stream.get_json_schema.call_count == 5
 
 
 def test_source_config_transform(abstract_source, catalog):

@@ -70,6 +70,61 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 
 All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
 
+#### Building a connector with your local CDK
+
+When developing a new feature in the CDK, you may find it helpful to run a connector that uses that new feature. You can test this in one of two ways:
+* Running a connector locally
+* Building and running a source via Docker
+
+##### Installing your local CDK into a local Python connector
+
+In order to get a local Python connector running your local CDK, do the following.
+
+First, make sure you have your connector's virtual environment active:
+```bash
+# from the `airbyte/airbyte-integrations/connectors/<connector-directory>` directory
+source .venv/bin/activate
+
+# if you haven't installed dependencies for your connector already
+pip install -e .
+```
+
+Then, navigate to the CDK and install it in editable mode:
+```bash
+cd ../../../airbyte-cdk/python
+pip install -e .
+```
+
+You should see that `pip` has uninstalled the version of `airbyte-cdk` defined by your connector's `setup.py` and installed your local CDK. Any changes you make will be immediately reflected in your editor, so long as your editor's interpreter is set to your connector's virtual environment.
+
+##### Building a Python connector in Docker with your local CDK installed
+
+Create a symlink that connects `<connector-directory>/airbyte-cdk` to your local CDK installation:
+```bash
+# from the `airbyte/airbyte-integrations/connectors/<connector-directory>` directory
+ln -s ../../../airbyte-cdk/python airbyte-cdk
+```
+
+Add the following lines to your connector's `Dockerfile`, before the line that installs dependencies via `pip install -e .`:
+```Dockerfile
+COPY airbyte-cdk airbyte-cdk
+RUN pip install -e ./airbyte-cdk
+```
+
+Add the following to your connectors `build.gradle` file:
+```java
+airbyteDocker {
+    followSymlinks = true
+}
+```
+
+You should be able to build your connector with
+```bash
+# from the airbytehq/airbyte base directory
+./gradlew build :airbyte-integrations:connectors:<connector-directory>
+```
+and the installation should use your local CDK. Note that the local CDK is injected at build time, so if you make changes, you will have to run the build command again to see them reflected.
+**Note:** if your connector uses a `.dockerignore` file, it cannot have `exclude-all` or `exclude-except` patterns, i.e. the `.dockerignore` must specifically say which files to ignore without using any regex. 
 #### Publishing a new version to PyPi
 
 1. Bump the package version in `setup.py`

@@ -30,6 +30,7 @@ export const CatalogTreeSubheader: React.FC = () => {
 
   return (
     <Header className={catalogSubheaderStyle}>
+      <Cell flex={0.8} />
       <SubtitleCell>
         <FormattedMessage id="form.namespace" />
       </SubtitleCell>

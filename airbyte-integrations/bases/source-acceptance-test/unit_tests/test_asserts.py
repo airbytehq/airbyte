@@ -20,6 +20,7 @@ def record_schema_fixture():
         "properties": {
             "text_or_null": {"type": ["null", "string"]},
             "number_or_null": {"type": ["null", "number"]},
+            "integer_or_null": {"type": ["null", "integer"]},
             "text": {"type": ["string"]},
             "number": {"type": ["number"]},
         },
@@ -66,6 +67,8 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
             "text": "text",
             "number": "text",  # wrong format
         },
+        {"text_or_null": None, "number_or_null": None, "text": "text", "number": 10.3, "integer": 1},
+        {"text_or_null": None, "number_or_null": None, "text": "text", "number": 10.3, "integer_or_null": 1.0},  # wrong format
     ]
 
     records = [AirbyteRecordMessage(stream="my_stream", data=record, emitted_at=0) for record in records]
@@ -75,8 +78,13 @@ def test_verify_records_schema(configured_catalog: ConfiguredAirbyteCatalog):
 
     assert "my_stream" in streams_with_errors
     assert len(streams_with_errors) == 1, "only one stream"
-    assert len(streams_with_errors["my_stream"]) == 3, "only first error for each field"
-    assert errors == ["123 is not of type 'null', 'string'", "'text' is not of type 'number'", "None is not of type 'string'"]
+    assert len(streams_with_errors["my_stream"]) == 4, "only first error for each field"
+    assert errors == [
+        "123 is not of type 'null', 'string'",
+        "'text' is not of type 'number'",
+        "None is not of type 'string'",
+        "1.0 is not of type 'null', 'integer'",
+    ]
 
 
 @pytest.mark.parametrize(

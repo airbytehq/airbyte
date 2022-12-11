@@ -66,28 +66,26 @@
       "properties": {
         "cart_rows": {
           "type": "array",
-          "items": [
-            {
-              "type": "object",
-              "properties": {
-                "id_product": {
-                  "type": "string"
-                },
-                "id_product_attribute": {
-                  "type": "string"
-                },
-                "id_address_delivery": {
-                  "type": "string"
-                },
-                "id_customization": {
-                  "type": "string"
-                },
-                "quantity": {
-                  "type": "string"
-                }
+          "items": {
+            "type": "object",
+            "properties": {
+              "id_product": {
+                "type": "string"
+              },
+              "id_product_attribute": {
+                "type": "string"
+              },
+              "id_address_delivery": {
+                "type": "string"
+              },
+              "id_customization": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "string"
               }
             }
-          ]
+          }
         }
       }
     }

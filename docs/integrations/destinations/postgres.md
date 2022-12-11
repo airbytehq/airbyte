@@ -40,7 +40,7 @@ You need a Postgres user with the following permissions:
 You can create such a user by running:
 
 ```
-CREATE USER airbyte_user PASSWORD <password>;
+CREATE USER airbyte_user WITH PASSWORD '<password>';
 GRANT CREATE, TEMPORARY ON DATABASE <database> TO airbyte_user;
 ```
 

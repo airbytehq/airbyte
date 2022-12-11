@@ -19,7 +19,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "OAuth",
-                "default": "OAuth",
                 "order": 0
               },
               "client_id": {
@@ -61,7 +60,6 @@
               "auth_type": {
                 "type": "string",
                 "const": "username/password",
-                "default": "username/password",
                 "order": 0
               },
               "username": {

@@ -1,0 +1,22 @@
+.content {
+  height: 100%;
+  width: 100%;
+  padding: 34px 0 13px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logoImg {
+  width: 90px;
+  height: 94px;
+  margin-bottom: 20px;
+}
+
+.mainInfo {
+  min-width: 550px;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+}

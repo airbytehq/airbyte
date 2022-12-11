@@ -92,7 +92,8 @@ function deleteConnections {
     removeFirstLineFromFile $CONNECTION_CLEANUP_FILE
   done
 
-  if ! test -s $CONNECTION_CLEANUP_FILE
+  # if file exists and is empty
+  if test -e $CONNECTION_CLEANUP_FILE && ! test -s $CONNECTION_CLEANUP_FILE
   then
     rm $CONNECTION_CLEANUP_FILE
     echo "removed cleanup file $CONNECTION_CLEANUP_FILE"
@@ -110,7 +111,8 @@ function deleteSources {
     removeFirstLineFromFile $SOURCE_CLEANUP_FILE
   done
 
-  if ! test -s $SOURCE_CLEANUP_FILE
+  # if file exists and is empty
+  if test -e $SOURCE_CLEANUP_FILE && ! test -s $SOURCE_CLEANUP_FILE
   then
     rm $SOURCE_CLEANUP_FILE
     echo "removed cleanup file $SOURCE_CLEANUP_FILE"
@@ -128,7 +130,8 @@ function deleteDestinations {
     removeFirstLineFromFile $DESTINATION_CLEANUP_FILE
   done
 
-  if test -z $DESTINATION_CLEANUP_FILE
+  # if file exists and is empty
+  if test -e $DESTINATION_CLEANUP_FILE && ! test -s $DESTINATION_CLEANUP_FILE
   then
     rm $DESTINATION_CLEANUP_FILE
     echo "removed cleanup file $DESTINATION_CLEANUP_FILE"
