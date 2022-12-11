@@ -1129,7 +1129,6 @@ from dedup_data where {{ airbyte_row_num }} = 1
                 else:
                     property_type = "object"
                 if is_number(self.properties[field]) or is_object(property_type):
-                    # if is_number(property_type) or is_object(property_type):
                     # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
                     return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
