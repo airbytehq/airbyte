@@ -28,6 +28,7 @@ import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.OffsetTime;
 import java.time.chrono.IsoEra;
+import java.time.format.DateTimeParseException;
 import java.util.Collections;
 import java.util.List;
 import java.util.StringJoiner;
@@ -147,7 +148,11 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
   }
 
   protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    setTimestamp(preparedStatement, parameterIndex, value);
+    try {
+      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
+    } catch (final DateTimeParseException e) {
+      setTimestamp(preparedStatement, parameterIndex, value);
+    }
   }
 
   protected void setTimestamp(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
@@ -179,10 +184,14 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
 
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     try {
-      final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
-      preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
-    } catch (final ParseException e) {
-      throw new RuntimeException(e);
+      preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
+    } catch (final Exception e) {
+      try {
+        final Timestamp from = Timestamp.from(DataTypeUtils.getDateFormat().parse(value).toInstant());
+        preparedStatement.setDate(parameterIndex, new Date(from.getTime()));
+      } catch (final ParseException ex) {
+        throw new RuntimeException(ex);
+      }
     }
   }
 

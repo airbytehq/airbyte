@@ -163,8 +163,8 @@ class TestJdbcUtils {
       sourceOperations.setStatementField(ps, 10, JDBCType.DECIMAL, "1");
       sourceOperations.setStatementField(ps, 11, JDBCType.CHAR, "a");
       sourceOperations.setStatementField(ps, 12, JDBCType.VARCHAR, "a");
-      sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01T00:00:00Z");
-      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "1970-01-01T05:00:00.000Z");
+      sourceOperations.setStatementField(ps, 13, JDBCType.DATE, "2020-11-01");
+      sourceOperations.setStatementField(ps, 14, JDBCType.TIME, "05:00:00.000");
       sourceOperations.setStatementField(ps, 15, JDBCType.TIMESTAMP, "2001-09-29T03:00:00.000Z");
       sourceOperations.setStatementField(ps, 16, JDBCType.BINARY, "61616161");
 
@@ -391,9 +391,9 @@ class TestJdbcUtils {
     expected.put("char", "a");
     expected.put("varchar", "a");
     // todo (cgardens) we should parse this to a date string
-    expected.put("date", "2020-11-01T00:00:00Z");
+    expected.put("date", "2020-11-01");
     // todo (cgardens) we should parse this to a time string
-    expected.put("time", "1970-01-01T05:00:00Z");
+    expected.put("time", "05:00:00.000000");
     expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));
     return expected;
