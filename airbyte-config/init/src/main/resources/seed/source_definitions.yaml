@@ -6,6 +6,14 @@
   icon: activecampaign.svg
   sourceType: api
   releaseStage: alpha
+#- name: Adaptive Insights
+#  sourceDefinitionId: b5f5deff-8c24-497d-926a-e165ce940c76
+#  dockerRepository: airbyte/source-adaptive-insights
+#  dockerImageTag: 0.2.0
+#  documentationUrl: https://docs.airbyte.com/integrations/sources/adjust
+#  icon: adjust.svg
+#  sourceType: api
+#  releaseStage: alpha
 - name: Adjust
   sourceDefinitionId: d3b7fa46-111b-419a-998a-d7f046f6d66d
   dockerRepository: airbyte/source-adjust
