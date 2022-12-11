@@ -15,7 +15,6 @@ from normalization.transform_catalog import dbt_macro
 from normalization.transform_catalog.destination_name_transformer import DestinationNameTransformer, transform_json_naming
 from normalization.transform_catalog.table_name_registry import TableNameRegistry
 from normalization.transform_catalog.utils import (
-    get_plain_list_from_one_of_array,
     is_airbyte_column,
     is_array,
     is_big_integer,
@@ -539,7 +538,7 @@ where 1 = 1
             data_type.ONE_OF_VAR_NAME in definition and is_long(definition, definition)
         ):
             sql_type = jinja_call("dbt_utils.type_bigint()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition[data_type.REF_TYPE_VAR_NAME])) or (
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition)) or (
             data_type.ONE_OF_VAR_NAME in definition and is_number(definition)
         ):
             sql_type = jinja_call("dbt_utils.type_float()")
@@ -596,8 +595,8 @@ where 1 = 1
                 return f'nullif(cast({column_name} as {sql_type}), "") as {column_name}'
             replace_operation = jinja_call(f"empty_string_to_null({jinja_column})")
             return f"cast({replace_operation} as {sql_type}) as {column_name}"
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition[data_type.REF_TYPE_VAR_NAME])) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_binary_datatype(definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_binary_datatype(definition)  # TODO DO WE NEED ONE_OF HERE FOR BINARY ?!?!??!?!?!?!?!?!?!?!?
         ):
             if self.destination_type.value == DestinationType.POSTGRES.value:
                 # sql_type = "bytea"
@@ -627,7 +626,7 @@ where 1 = 1
             else:
                 sql_type = jinja_call("dbt_utils.type_string()")
 
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition[data_type.REF_TYPE_VAR_NAME])) or (
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition)) or (
             data_type.ONE_OF_VAR_NAME in definition and is_string(definition)
         ):
             sql_type = jinja_call("dbt_utils.type_string()")
@@ -874,7 +873,7 @@ where 1 = 1
         if (
             self.destination_type == DestinationType.BIGQUERY
             and self.get_cursor_field_property_name(column_names) != self.airbyte_emitted_at
-            and is_number(self.properties[self.get_cursor_field_property_name(column_names)][data_type.REF_TYPE_VAR_NAME])
+            and is_number(self.properties[self.get_cursor_field_property_name(column_names)])
         ):
             # partition by float columns is not allowed in BigQuery, cast it to string
             airbyte_start_at_string = (
@@ -1124,12 +1123,15 @@ from dedup_data where {{ airbyte_row_num }} = 1
             if not is_airbyte_column(field):
                 if data_type.REF_TYPE_VAR_NAME in self.properties[field] or data_type.ONE_OF_VAR_NAME in self.properties[field]:
                     if data_type.ONE_OF_VAR_NAME in self.properties[field]:
-                        property_type = get_plain_list_from_one_of_array(self.properties[field])
+                        property_type = data_type.ONE_OF_VAR_NAME
+                        # property_type = get_plain_list_from_one_of_array(self.properties[field])
                     else:
-                        property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
+                        property_type = data_type.REF_TYPE_VAR_NAME
+                        # property_type = self.properties[field][data_type.REF_TYPE_VAR_NAME]
                 else:
                     property_type = "object"
-                if is_number(property_type) or is_object(property_type):
+                if is_number(self.properties[field]) or is_object(property_type):
+                    # if is_number(property_type) or is_object(property_type):
                     # some destinations don't handle float columns (or complex types) as primary keys, turn them to string
                     return f"cast({column_names[field][0]} as {jinja_call('dbt_utils.type_string()')})"
                 else:
