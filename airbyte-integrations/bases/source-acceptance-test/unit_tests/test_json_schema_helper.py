@@ -3,7 +3,7 @@
 #
 
 from enum import Enum
-from typing import Union
+from typing import Any, List, Text, Union
 
 import pendulum
 import pytest
@@ -208,3 +208,52 @@ def test_get_object_strucutre(object, pathes):
 )
 def test_get_expected_schema_structure(schema, pathes):
     assert get_expected_schema_structure(schema) == pathes
+
+
+@pytest.mark.parametrize(
+    "keys, num_paths, last_value",
+    [
+        (["description"], 1, "Tests that keys can be found inside lists of dicts"),
+        (["option1"], 2, {"a_key": "a_value"}),
+        (["option2"], 1, ["value1", "value2"]),
+        (["nonexistent_key"], 0, None),
+        (["option1", "option2"], 3, ["value1", "value2"])
+    ],
+)
+def test_find_and_get_nodes(keys: List[Text], num_paths: int, last_value: Any):
+    schema = {
+        "title": "Key_inside_oneOf",
+        "description": "Tests that keys can be found inside lists of dicts",
+        "type": "object",
+        "properties": {
+            "credentials": {
+                "type": "object",
+                "oneOf": [
+                    {
+                        "type": "object",
+                        "properties": {
+                            "common": {"type": "string", "const": "option1", "default": "option1"},
+                            "option1": {"type": "string"},
+                        },
+                    },
+                    {
+                        "type": "object",
+                        "properties": {
+                            "common": {"type": "string", "const": "option2", "default": "option2"},
+                            "option1": {"a_key": "a_value"},
+                            "option2": ["value1", "value2"],
+                        },
+                    },
+                ],
+            }
+        },
+    }
+    schema_helper = JsonSchemaHelper(schema)
+    variant_paths = schema_helper.find_nodes(keys=keys)
+    assert len(variant_paths) == num_paths
+
+    if variant_paths:
+        values_at_nodes = []
+        for path in variant_paths:
+            values_at_nodes.append(schema_helper.get_node(path))
+        assert last_value in values_at_nodes

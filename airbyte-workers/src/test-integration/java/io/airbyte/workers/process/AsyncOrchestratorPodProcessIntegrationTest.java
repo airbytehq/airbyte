@@ -114,7 +114,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true"),
+        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true", EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, "false"),
         serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(
@@ -128,9 +128,11 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+    final WorkerConfigs workerConfigs = new WorkerConfigs(new EnvConfigs());
+
     asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
         OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
-        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
+        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap, workerConfigs.getworkerKubeNodeSelectors());
 
     // a final activity waits until there is output from the kube pod process
     asyncProcess.waitFor(10, TimeUnit.SECONDS);

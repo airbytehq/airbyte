@@ -13,7 +13,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: [ "{{ options['name']  }}s" ]
+      field_pointer: ["{{ options['name']  }}s"]
   requester:
     type: HttpRequester
     name: "{{ options['name'] }}"
@@ -126,11 +126,6 @@ streams:
           field_name: "page"
           inject_into: "request_parameter"
 
-
-
 check:
   type: CheckStream
   stream_names: ["user", "team", "space", "folder", "list", "task"]
-
-
-

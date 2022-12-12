@@ -3,27 +3,30 @@ plugins {
 }
 
 dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
     implementation 'io.fabric8:kubernetes-client:5.12.2'
-    implementation 'org.apache.commons:commons-lang3:3.11'
-    implementation 'org.apache.commons:commons-text:1.10.0'
-    implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
-    implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'
     implementation libs.bundles.datadog
 
     implementation project(':airbyte-api')
     implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-commons-protocol')
     implementation project(':airbyte-commons-temporal')
     implementation project(':airbyte-commons-worker')
     implementation project(':airbyte-config:init')
-    implementation project(':airbyte-db:db-lib')
     implementation project(':airbyte-json-validation')
     implementation project(':airbyte-protocol:protocol-models')
-    implementation project(':airbyte-persistence:job-persistence')
     implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-worker-models')
 
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    testImplementation libs.bundles.micronaut.test
     testImplementation 'org.mockito:mockito-inline:2.13.0'
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers
@@ -32,11 +35,9 @@ dependencies {
     testImplementation project(':airbyte-commons-docker')
 }
 
-
-mainClassName = 'io.airbyte.container_orchestrator.ContainerOrchestratorApp'
-
 application {
-    mainClass = mainClassName
+    applicationName = "airbyte-container-orchestrator"
+    mainClass = "io.airbyte.container_orchestrator.Application"
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

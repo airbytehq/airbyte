@@ -4,13 +4,10 @@
 
 ##  global -- Global params that are overwritten with umbrella chart
 global:
-  
-  
   ##  serviceAccountName -- Service Account name override
   serviceAccountName: &service-account-name "airbyte-admin"
   ##  deploymentMode -- Deployment mode, whether or not render the default env vars and volumes in deployment spec
   deploymentMode: "oss"
-
 
   ##  database [object] -- Object used to overrite database configuration(to use external DB)
   ##  database.secretName -- secret name where DB creds are stored
@@ -285,11 +282,12 @@ webapp:
   ##  webapp.api.url The webapp API url.
   api:
     url: /api/v1/
+  connectorBuilderServer:
+    url: /connector-builder-api
 
   ##  webapp.fullstory.enabled Whether or not to enable fullstory
   fullstory:
     enabled: false
-
 
   ##  webapp.extraVolumeMounts [array] Additional volumeMounts for webapp container(s).
   ## Examples (when using `webapp.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -382,10 +380,6 @@ webapp:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
-
-
-
-
 
 ## @section Pod Sweeper parameters
 
@@ -590,8 +584,6 @@ server:
   ##  server.log.level The log level to log at.
   log:
     level: "INFO"
-
-
 
   ##  server.extraVolumeMounts [array] Additional volumeMounts for server container(s).
   ## Examples (when using `server.containerSecurityContext.readOnlyRootFilesystem=true`):
@@ -803,14 +795,7 @@ worker:
 
   hpa:
     enabled: false
-  ## Container Orchestrator
-  ## enabled -- Enable or disable Orchestrator
-  ## image -- Orchestrator image
-
-  containerOrchestrator:
-    enabled: true
-    image: ""
-
+    
 ## @section Metrics parameters
 metrics:
   enabled: false
@@ -1234,7 +1219,6 @@ minio:
     rootUser: minio
     rootPassword: minio123
 
-
 ## @section cron parameters
 
 cron:
@@ -1332,8 +1316,6 @@ cron:
   log:
     level: "INFO"
 
-
-
   ##  cron.extraVolumeMounts [array] Additional volumeMounts for cron container(s).
   ## Examples (when using `cron.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraVolumeMounts:
@@ -1418,3 +1400,8 @@ cron:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
+
+connectorBuilderServer:
+  enabled: true
+  service:
+    port: 8003

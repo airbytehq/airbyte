@@ -1,0 +1,123 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "null"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "middle_name": {
+      "type": "null"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "suffix": {
+      "type": "null"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": ["string", "null"]
+        },
+        "state": {
+          "type": ["string", "null"]
+        },
+        "postal_code": {
+          "type": ["string", "null"]
+        },
+        "country": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "assignee_id": {
+      "type": "integer"
+    },
+    "company_id": {
+      "type": "integer"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "contact_type_id": {
+      "type": "integer"
+    },
+    "details": {
+      "type": "null"
+    },
+    "emails": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "phone_numbers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "number": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "title": {
+      "type": "null"
+    },
+    "websites": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "date_created": {
+      "type": "integer"
+    },
+    "date_modified": {
+      "type": ["integer", "null"]
+    },
+    "date_last_contacted": {
+      "type": ["integer", "null"]
+    },
+    "interaction_count": {
+      "type": "integer"
+    },
+    "date_lead_created": {
+      "type": ["integer", "null"]
+    }
+  },
+  "required": ["id"]
+}

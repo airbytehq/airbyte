@@ -27,6 +27,10 @@ def download_catalog(catalog_url):
 OSS_CATALOG = download_catalog(OSS_CATALOG_URL)
 
 
+class ConnectorNotFoundError(Exception):
+    pass
+
+
 def read_definitions(definitions_file_path: str) -> Dict:
     with open(definitions_file_path) as definitions_file:
         return yaml.safe_load(definitions_file)
@@ -71,6 +75,7 @@ def get_connector_definition(connector_name: str) -> Optional[Dict]:
     for definition in definitions:
         if definition["dockerRepository"].replace(f"{AIRBYTE_DOCKER_REPO}/", "") == connector_name:
             return definition
+    raise ConnectorNotFoundError(f"{connector_name} was not found in {DEFINITIONS_FILE_PATH[definition_type]}")
 
 
 def get_connector_release_stage(connector_name: str) -> Optional[str]:
@@ -82,8 +87,11 @@ def get_connector_release_stage(connector_name: str) -> Optional[str]:
     Returns:
         Optional[str]: The connector release stage if it was defined. Returns None otherwise.
     """
-    definition = get_connector_definition(connector_name)
-    return definition.get("releaseStage")
+    try:
+        definition = get_connector_definition(connector_name)
+        return definition.get("releaseStage")
+    except ConnectorNotFoundError as e:
+        logging.warning(str(e))
 
 
 def get_acceptance_test_config(connector_name: str) -> Tuple[str, Dict]:

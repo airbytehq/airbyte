@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.CustomDestinationDefinitionCreate;
+import io.airbyte.api.client.model.generated.CustomSourceDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionCreate;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -70,13 +72,15 @@ class VersioningAcceptanceTests {
   })
   void testCreateSourceSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
-    final SourceDefinitionCreate sourceDefinitionCreate = new SourceDefinitionCreate()
-        .dockerImageTag(dockerImageTag)
-        .dockerRepository("airbyte/source-e2e-test")
-        .documentationUrl(new URI("https://hub.docker.com/r/airbyte/source-e2e-test"))
-        .name("Source E2E Test Connector");
+    final CustomSourceDefinitionCreate sourceDefinitionCreate = new CustomSourceDefinitionCreate()
+        .workspaceId(workspaceId)
+        .sourceDefinition(new SourceDefinitionCreate()
+            .dockerImageTag(dockerImageTag)
+            .dockerRepository("airbyte/source-e2e-test")
+            .documentationUrl(new URI("https://hub.docker.com/r/airbyte/source-e2e-test"))
+            .name("Source E2E Test Connector"));
 
-    final SourceDefinitionRead sourceDefinitionRead = apiClient.getSourceDefinitionApi().createSourceDefinition(sourceDefinitionCreate);
+    final SourceDefinitionRead sourceDefinitionRead = apiClient.getSourceDefinitionApi().createCustomSourceDefinition(sourceDefinitionCreate);
     assertEquals(expectedProtocolVersion, sourceDefinitionRead.getProtocolVersion());
 
     final SourceDefinitionIdRequestBody sourceDefinitionReq = new SourceDefinitionIdRequestBody()
@@ -96,16 +100,19 @@ class VersioningAcceptanceTests {
   })
   void testCreateDestinationSpec(final String dockerImageTag, final String expectedProtocolVersion)
       throws ApiException, URISyntaxException {
-    final DestinationDefinitionCreate destDefinitionCreate = new DestinationDefinitionCreate()
-        .dockerImageTag(dockerImageTag)
-        // We are currently using source because the destination-e2e-test connector is facing a regression
-        // For the purpose of the test, at this moment, using source works because we only check version
-        .dockerRepository("airbyte/source-e2e-test")
-        .documentationUrl(new URI("https://hub.docker.com/r/airbyte/destination-e2e-test"))
-        .name("Dest E2E Test Connector");
+    final CustomDestinationDefinitionCreate destDefinitionCreate =
+        new CustomDestinationDefinitionCreate()
+            .workspaceId(workspaceId)
+            .destinationDefinition(new DestinationDefinitionCreate()
+                .dockerImageTag(dockerImageTag)
+                // We are currently using source because the destination-e2e-test connector is facing a regression
+                // For the purpose of the test, at this moment, using source works because we only check version
+                .dockerRepository("airbyte/source-e2e-test")
+                .documentationUrl(new URI("https://hub.docker.com/r/airbyte/destination-e2e-test"))
+                .name("Dest E2E Test Connector"));
 
     final DestinationDefinitionRead destDefinitionRead =
-        apiClient.getDestinationDefinitionApi().createDestinationDefinition(destDefinitionCreate);
+        apiClient.getDestinationDefinitionApi().createCustomDestinationDefinition(destDefinitionCreate);
     assertEquals(expectedProtocolVersion, destDefinitionRead.getProtocolVersion());
 
     final DestinationDefinitionIdRequestBody destDefinitionReq = new DestinationDefinitionIdRequestBody()

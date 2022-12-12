@@ -1,10 +1,28 @@
 # Low-code connector development
 
-Airbyte’s low-code framework enables you to build source connectors for REST APIs by modifying boilerplate YAML files.
+Airbyte’s low-code framework enables you to build source connectors for REST APIs via a [connector builder UI](connector-builder-ui.md) or by modifying boilerplate YAML files via terminal or text editor.
 
-:::warning
+:::caution
 The low-code framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha), which means it’s still in active development and may include backward-incompatible changes. Share feedback and requests with us on our [Slack channel](https://slack.airbyte.com/) or email us at [feedback@airbyte.io](mailto:feedback@airbyte.io)
 :::
+
+## Why low-code? 
+
+### API Connectors are common and formulaic
+In building and maintaining hundreds of connectors at Airbyte, we've observed that whereas API source connectors constitute the overwhelming majority of connectors, they are also the most formulaic. API connector code almost always solves small variations of these problems: 
+
+1. Making requests to various endpoints under the same API URL e.g: `https://api.stripe.com/customers`, `https://api.stripe.com/transactions`, etc.. 
+2. Authenticating using a common auth strategy such as Oauth or API keys
+3. Pagination using one of the 4 ubiquitous pagination strategies: limit-offset, page-number, cursor pagination, and header link pagination
+4. Gracefully handling rate limiting by implementing exponential backoff, fixed-time backoff, or variable-time backoff
+5. Describing the schema of the data returned by the API, so that downstream warehouses can create normalized tables
+6. Decoding the format of the data returned by the API (e.g JSON, XML, CSV, etc..) and handling compression (GZIP, BZIP, etc..) 
+7. Supporting incremental data exports by remembering what data was already synced, usually using date-based cursors
+
+and so on. 
+
+### A declarative, low-code paradigm commoditizes solving formulaic problems
+Given that these problems each have a very finite number of solutions, we can remove the need for writing the code to build these API connectors by providing configurable off-the-shelf components to solve them. In doing so, we significantly decrease development effort and bugs while improving maintainability and accessibility. In this paradigm, instead of having to write the exact lines of code to solve this problem over and over, a developer can pick the solution to each problem from an available component, and rely on the framework to run the logic for them. 
 
 ## What connectors can I build using the low-code framework?
 
@@ -48,15 +66,19 @@ If the answer to all questions is yes, you can use the low-code framework to bui
 
 To use the low-code framework to build an REST API Source connector:
 
-1. Generate the API key for the source you want to build a connector for
+1. Generate the API key or credentials for the source you want to build a connector for
 2. Set up the project on your local machine
 3. Set up your local development environment
-4. Update the connector spec and config​uration
-5. Update the connector definition
-6. Test the connector
-7. Add the connector to the Airbyte platform
+4. Use the connector builder UI to define the connector YAML manifest and test the connector
+5. Specify stream schemas
+6. Add the connector to the Airbyte platform
 
 For a step-by-step tutorial, refer to the [Getting Started tutorial](./tutorial/0-getting-started.md) or the [video tutorial](https://youtu.be/i7VSL2bDvmw)
+ 
+## Connector Builder UI
+The main concept powering the lowcode connector framework is the Connector Manifest, a YAML file which describes the features and functionality of the connector. The structure of this YAML file is described in more detail [here](./understanding-the-yaml-file/yaml-overview). 
+
+We recommend iterating on this YAML file is via the [connector builder UI](./connector-builder-ui) as it makes it easy to inspect and debug your connector in greater detail than you would be able to through the commandline. While you can still iterate via the commandline (and the docs contain instructions for how to do it), we're investing heavily in making the UI give you iteration superpowers, so we recommend you check it out!
 
 ## Configuring the YAML file
 
@@ -65,11 +87,13 @@ The low-code framework involves editing a boilerplate YAML file. The general str
 ```
 version: "0.1.0"
 definitions:
- <key-value pairs defining objects which will be reused in the YAML connector>
+  <key-value pairs defining objects which will be reused in the YAML connector>
 streams:
- <list stream definitions>
+  <list stream definitions>
 check:
- <definition of connection checker>
+  <definition of connection checker>
+spec: 
+  <connector spec>
 ```
 
 The following table describes the components of the YAML file:
@@ -80,6 +104,7 @@ The following table describes the components of the YAML file:
 | `definitions` | Describes the objects to be reused in the YAML connector                                                                                               |
 | `streams`     | Lists the streams of the source                                                                                                                        |
 | `check`       | Describes how to test the connection to the source by trying to read a record from a specified list of streams and failing if no records could be read |
+| `spec`       | A [connector specification](../../understanding-airbyte/airbyte-protocol#actor-specification) which describes the required and optional parameters which can be input by the end user to configure this connector |
 
 :::tip
 Streams define the schema of the data to sync, as well as how to read it from the underlying API source. A stream generally corresponds to a resource within the API. They are analogous to tables for a relational database source.

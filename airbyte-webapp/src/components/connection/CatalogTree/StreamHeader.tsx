@@ -117,7 +117,13 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
-          <Switch small checked={stream.config?.selected} onChange={onSelectStream} disabled={disabled} />
+          <Switch
+            small
+            checked={stream.config?.selected}
+            onChange={onSelectStream}
+            disabled={disabled}
+            data-testid={`${stream.stream?.name}-stream-sync-switch`}
+          />
         </HeaderCell>
         <HeaderCell ellipsis title={stream.stream?.namespace || ""}>
           {stream.stream?.namespace || (

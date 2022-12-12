@@ -139,7 +139,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      saveWorkflowIdForCancellation(airbyteApiClient);
+      AirbyteApiClient.retryWithJitter(() -> {
+        saveWorkflowIdForCancellation(airbyteApiClient);
+        return null;
+      }, "save workflow id for cancellation");
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();

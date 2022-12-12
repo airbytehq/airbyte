@@ -1,7 +1,3 @@
-#
-# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
-#
-
 # coding: utf-8
 
 from __future__ import annotations
@@ -24,11 +20,13 @@ class HttpRequest(BaseModel):
         parameters: The parameters of this HttpRequest [Optional].
         body: The body of this HttpRequest [Optional].
         headers: The headers of this HttpRequest [Optional].
+        http_method: The http_method of this HttpRequest.
     """
 
     url: str
     parameters: Optional[Dict[str, Any]] = None
     body: Optional[Dict[str, Any]] = None
     headers: Optional[Dict[str, Any]] = None
+    http_method: str
 
 HttpRequest.update_forward_refs()
