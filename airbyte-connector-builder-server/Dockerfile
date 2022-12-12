@@ -1,5 +1,5 @@
 ARG JDK_IMAGE=airbyte/airbyte-base-java-image:1.0
-FROM ${JDK_IMAGE} AS cron
+FROM ${JDK_IMAGE} AS connector-builder-server
 
 ARG VERSION=0.40.25
 
