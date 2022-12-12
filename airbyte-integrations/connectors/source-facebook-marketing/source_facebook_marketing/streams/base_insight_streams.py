@@ -50,9 +50,6 @@ class AdsInsights(FBMarketingIncrementalStream):
     # https://developers.facebook.com/docs/marketing-api/reference/ad-account/insights/#overview
     INSIGHTS_RETENTION_PERIOD = pendulum.duration(months=37)
 
-
-    level = "ad"
-
     action_attribution_windows = ALL_ACTION_ATTRIBUTION_WINDOWS
     time_increment = 1
 
