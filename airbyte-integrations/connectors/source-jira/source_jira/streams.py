@@ -978,8 +978,7 @@ class Sprints(JiraStream):
         self.boards_stream = Boards(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        board_id = stream_slice["board_id"]
-        return f"board/{board_id}/sprint"
+        return f"board/{stream_slice['board_id']}/sprint"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for board in read_full_refresh(self.boards_stream):
@@ -998,12 +997,11 @@ class SprintIssues(IncrementalJiraStream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.sprints_stream = Sprints(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+        self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        sprint_id = stream_slice["sprint_id"]
-        return f"sprint/{sprint_id}/issue"
+        return f"sprint/{stream_slice['sprint_id']}/issue"
 
     def request_params(
         self,
@@ -1019,11 +1017,7 @@ class SprintIssues(IncrementalJiraStream):
         return params
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
-        fields = ["key", "status", "updated"]
-        for name in ["Story Points", "Story point estimate"]:
-            if name in field_ids_by_name:
-                fields.extend(field_ids_by_name[name])
+        fields = self.get_fields()
         for sprint in read_full_refresh(self.sprints_stream):
             stream_slice = {"sprint_id": sprint["id"], "fields": fields}
             yield from super().read_records(stream_slice=stream_slice, **kwargs)
@@ -1032,10 +1026,17 @@ class SprintIssues(IncrementalJiraStream):
         record["issueId"] = record["id"]
         record["id"] = "-".join([str(stream_slice["sprint_id"]), record["id"]])
         record["sprintId"] = stream_slice["sprint_id"]
-        issue_fields = record["fields"]
-        record["created"] = issue_fields.get("created")
-        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
+        record["created"] = record["fields"]["created"]
+        record["updated"] = record["fields"]["updated"]
         return record
+
+    def get_fields(self):
+        fields = ["key", "status", "created", "updated"]
+        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
+        for name in ["Story Points", "Story point estimate"]:
+            if name in field_ids_by_name:
+                fields.extend(field_ids_by_name[name])
+        return fields
 
 
 class TimeTracking(JiraStream):
