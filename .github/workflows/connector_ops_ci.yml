@@ -1,6 +1,7 @@
 name: Connector Ops CI
 
 on:
+  workflow-dispatch:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/source-**"
