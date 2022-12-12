@@ -46,24 +46,31 @@ def get_changed_connector_names() -> Set[str]:
     """
     changed_source_connector_files = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff("--name-only", "origin/master...").split("\n")
+        for file_path in AIRBYTE_REPO.git.diff("--name-only", "origin/master").split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX)
     }
 
     return {get_connector_name_from_path(changed_file) for changed_file in changed_source_connector_files}
 
-def get_changed_acceptance_test_config() -> Set[str]:
+def get_changed_acceptance_test_config(diff_regex: Optional[str]=None) -> Set[str]:
     """Retrieve a list of connector names for which the acceptance_test_config file was changed in the current branch (compared to master).
+
+    Args:
+        diff_regex (str): Find the edited files that contain the following regex in their change.
 
     Returns:
         Set[str]: Set of connector names e.g {"source-pokeapi"}
     """
+    if diff_regex is None:
+        diff_command_args = ("--name-only", "origin/master")
+    else:
+        diff_command_args = ("--name-only", f'-G{diff_regex}', "origin/master")
+
     changed_acceptance_test_config_paths = {
         file_path
-        for file_path in AIRBYTE_REPO.git.diff("--name-only", "origin/master...").split("\n")
+        for file_path in AIRBYTE_REPO.git.diff(*diff_command_args).split("\n")
         if file_path.startswith(SOURCE_CONNECTOR_PATH_PREFIX) and file_path.endswith(ACCEPTANCE_TEST_CONFIG_FILE_NAME)
     }
-
     return {get_connector_name_from_path(changed_file) for changed_file in changed_acceptance_test_config_paths}
 
 def get_connector_definition(connector_name: str) -> Optional[Dict]:

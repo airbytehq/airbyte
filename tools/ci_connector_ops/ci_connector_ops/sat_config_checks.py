@@ -4,12 +4,14 @@
 
 import logging
 import sys
-import json
-from typing import List
+from typing import List, Set
 
 from ci_connector_ops import utils
 
 RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING = {"generally_available": "high"}
+BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
+TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
+GA_CONNECTOR_REVIEWERS = {"gl-python"}
 
 def find_connectors_with_bad_strictness_level() -> List[str]:
     """Check if changed connectors have the expected SAT test strictness level according to their release stage.
@@ -37,16 +39,27 @@ def find_connectors_with_bad_strictness_level() -> List[str]:
                 connectors_with_bad_strictness_level.append(connector_name)
     return connectors_with_bad_strictness_level
 
-def find_acceptance_test_config_files_requiring_reviews() -> List[str]:
-    """Check if connectors that changed their acceptance-test-config.yml disabled backward compatibility tests"""
-    changed_connector_names = utils.get_changed_acceptance_test_config()
-    files_requiring_reviews = []
-    for connector_name in changed_connector_names:
-        acceptance_test_config_file_path, acceptance_test_config = utils.get_acceptance_test_config(connector_name)
-        #TODO done is better than perfect: we should install SAT package and parse the config into a Config object for a cleaner check.
-        if "disable_for_version" in json.dumps(acceptance_test_config):
-            files_requiring_reviews.append(acceptance_test_config_file_path)
-    return files_requiring_reviews
+def find_changed_ga_connectors() -> List[str]:
+    """Find GA connectors modified on the current branch.
+
+    Returns:
+        List[str]: The list of GA connector that were modified on the current branch.
+    """
+    changed_connector_names = utils.get_changed_connector_names()
+    return [connector_name for connector_name in changed_connector_names if utils.get_connector_release_stage(connector_name) == "generally_available"]
+
+def find_mandatory_reviewers() -> Set[str]:
+    mandatory_reviewers = set()
+    ga_connector_changes = find_changed_ga_connectors()
+    backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
+    test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
+    if ga_connector_changes:
+        mandatory_reviewers.update(GA_CONNECTOR_REVIEWERS)
+    if backward_compatibility_changes:
+        mandatory_reviewers.update(BACKWARD_COMPATIBILITY_REVIEWERS)
+    if  test_strictness_level_changes:
+        mandatory_reviewers .update(TEST_STRICTNESS_LEVEL_REVIEWERS)
+    return mandatory_reviewers
 
 def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
@@ -58,8 +71,11 @@ def check_test_strictness_level():
     else:
         sys.exit(0)
 
-def check_if_requires_connector_team_review() -> bool:
-    files_requiring_connector_team_review = find_acceptance_test_config_files_requiring_reviews()
-    requires_connector_team_review = "true" if len(files_requiring_connector_team_review) > 0 else "false"
-    print(f"REQUIRES_CONNECTOR_TEAM_REVIEW={requires_connector_team_review}")
+def print_mandatory_reviewers() -> bool:
+    mandatory_reviewers = find_mandatory_reviewers()
+    if mandatory_reviewers:
+        print(f"MANDATORY_REVIEWERS={','.join(mandatory_reviewers)}")
+    else:
+        print('MANDATORY_REVIEWERS=""')
+
 
