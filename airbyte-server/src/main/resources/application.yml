@@ -35,6 +35,21 @@ airbyte:
         address: ${VAULT_ADDRESS:}
         prefix: ${VAULT_PREFIX:}
         token: ${VAULT_AUTH_TOKEN:}
+  role: ${AIRBYTE_ROLE:}
+  tracking-strategy: ${TRACKING_STRATEGY:LOGGING}
+  worker:
+    job:
+      error-reporting:
+        sentry:
+          dsn: ${JOB_ERROR_REPORTING_SENTRY_DSN}
+        strategy: ${JOB_ERROR_REPORTING_STRATEGY:LOGGING}
+  web-app:
+    url: ${WEBAPP_URL:}
+  workspace:
+    root: ${WORKSPACE_ROOT}
+  protocol:
+    min-version: ${AIRBYTE_PROTOCOL_VERSION_MIN:0.0.0}
+    max-version: ${AIRBYTE_PROTOCOL_VERSION_MAX:0.3.0}
 
 temporal:
   cloud:

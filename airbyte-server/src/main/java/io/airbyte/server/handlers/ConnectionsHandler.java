@@ -26,9 +26,11 @@ import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.FieldSelectionData;
 import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.Schedule;
@@ -55,6 +57,8 @@ import io.airbyte.server.handlers.helpers.SourceMatcher;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.helper.ConnectionHelper;
+import io.micronaut.context.annotation.Requires;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
@@ -69,6 +73,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Singleton
+@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConnectionsHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionsHandler.class);
@@ -95,6 +101,7 @@ public class ConnectionsHandler {
     this.connectionHelper = connectionHelper;
   }
 
+  @Deprecated(forRemoval = true)
   public ConnectionsHandler(final ConfigRepository configRepository,
                             final WorkspaceHelper workspaceHelper,
                             final TrackingClient trackingClient,
@@ -157,8 +164,10 @@ public class ConnectionsHandler {
     // TODO Undesirable behavior: sending a null configured catalog should not be valid?
     if (connectionCreate.getSyncCatalog() != null) {
       standardSync.withCatalog(CatalogConverter.toProtocol(connectionCreate.getSyncCatalog()));
+      standardSync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(connectionCreate.getSyncCatalog()));
     } else {
       standardSync.withCatalog(new ConfiguredAirbyteCatalog().withStreams(Collections.emptyList()));
+      standardSync.withFieldSelectionData(new FieldSelectionData());
     }
 
     if (connectionCreate.getSchedule() != null && connectionCreate.getScheduleType() != null) {
@@ -313,6 +322,7 @@ public class ConnectionsHandler {
 
     if (patch.getSyncCatalog() != null) {
       sync.setCatalog(CatalogConverter.toProtocol(patch.getSyncCatalog()));
+      sync.withFieldSelectionData(CatalogConverter.getFieldSelectionData(patch.getSyncCatalog()));
     }
 
     if (patch.getName() != null) {
@@ -422,6 +432,14 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList listConnectionsForSource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+    for (final StandardSync standardSync : configRepository.listConnectionsBySource(sourceId, includeDeleted)) {
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+    }
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
@@ -440,7 +458,8 @@ public class ConnectionsHandler {
     return buildConnectionRead(connectionId);
   }
 
-  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog) {
+  public CatalogDiff getDiff(final AirbyteCatalog oldCatalog, final AirbyteCatalog newCatalog, final ConfiguredAirbyteCatalog configuredCatalog)
+      throws JsonValidationException {
     return new CatalogDiff().transforms(CatalogHelpers.getCatalogDiff(
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(oldCatalog)),
         CatalogHelpers.configuredCatalogToCatalog(CatalogConverter.toProtocolKeepAllStreams(newCatalog)), configuredCatalog)

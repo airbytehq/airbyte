@@ -16,6 +16,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:specs')
+    implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-db:db-lib')
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-notification')
@@ -35,6 +36,7 @@ dependencies {
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson'
     implementation 'org.glassfish.jersey.ext:jersey-bean-validation'
     implementation 'org.quartz-scheduler:quartz:2.3.2'
+    implementation 'io.sentry:sentry:6.3.1'
     implementation 'io.swagger:swagger-annotations:1.6.2'
 
     annotationProcessor platform(libs.micronaut.bom)
@@ -55,6 +57,7 @@ dependencies {
     testImplementation libs.postgresql
     testImplementation libs.platform.testcontainers.postgresql
     testImplementation 'com.squareup.okhttp3:mockwebserver:4.9.1'
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
 }
 
 // we want to be able to access the generated db files from config/init when we build the server docker image.

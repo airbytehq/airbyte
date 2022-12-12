@@ -8,6 +8,7 @@ import io.airbyte.analytics.Deployment;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.analytics.TrackingClientSingleton;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
+import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.temporal.ConnectionManagerUtils;
 import io.airbyte.commons.temporal.StreamResetRecordsHelper;
@@ -50,18 +51,19 @@ import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
-import io.airbyte.server.handlers.OpenApiConfigHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -203,7 +205,7 @@ public class ServerApp implements ServerRunnable {
     final TrackingClient trackingClient = TrackingClientSingleton.get();
     final JobTracker jobTracker = new JobTracker(configRepository, jobPersistence, trackingClient);
 
-    final EnvVariableFeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
+    final FeatureFlags envVariableFeatureFlags = new EnvVariableFeatureFlags();
 
     final WebUrlHelper webUrlHelper = new WebUrlHelper(configs.getWebappUrl());
     final JobErrorReportingClient jobErrorReportingClient = JobErrorReportingClientFactory.getClient(configs.getJobErrorReportingStrategy(), configs);
@@ -295,7 +297,8 @@ public class ServerApp implements ServerRunnable {
         schemaValidator,
         connectionsHandler);
 
-    final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
+    final SourceDefinitionsHandler sourceDefinitionsHandler =
+        new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler, configs);
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,
@@ -318,8 +321,6 @@ public class ServerApp implements ServerRunnable {
         destinationHandler,
         sourceHandler);
 
-    final OpenApiConfigHandler openApiConfigHandler = new OpenApiConfigHandler();
-
     final StatePersistence statePersistence = new StatePersistence(configsDatabase);
 
     final StateHandler stateHandler = new StateHandler(statePersistence);
@@ -336,6 +337,9 @@ public class ServerApp implements ServerRunnable {
         configRepository);
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
+
+    final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
 
     LOGGER.info("Starting server...");
 
@@ -364,15 +368,14 @@ public class ServerApp implements ServerRunnable {
         jobHistoryHandler,
         logsHandler,
         oAuthHandler,
-        openApiConfigHandler,
         operationsHandler,
         schedulerHandler,
         sourceHandler,
         sourceDefinitionsHandler,
-        stateHandler,
         workspacesHandler,
         webBackendConnectionsHandler,
-        webBackendGeographiesHandler);
+        webBackendGeographiesHandler,
+        webBackendCheckUpdatesHandler);
   }
 
 }
