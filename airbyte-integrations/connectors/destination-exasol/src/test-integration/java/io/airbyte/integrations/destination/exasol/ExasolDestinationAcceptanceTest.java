@@ -67,7 +67,7 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put("password", "wrong password");
+    ((ObjectNode) clone).put(JdbcUtils.PASWORD_KEY, "wrong password");
     return clone;
   }
 
@@ -103,7 +103,7 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any setup actions needed before every test case
+    EXASOL.purgeDatabase();
   }
 
   @Override
