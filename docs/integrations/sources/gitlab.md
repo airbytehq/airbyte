@@ -63,7 +63,7 @@ GitLab source is working with GitLab API v4. It can also work with self-hosted G
 
 | Version | Date       | Pull Request                                             | Subject                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------|
-| 0.1.10  | 2022-12-12 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Fetch groups along with their subgroups                                                    |
+| 0.1.10  | 2022-12-12 | [20384](https://github.com/airbytehq/airbyte/pull/20384) | Fetch groups along with their subgroups                                                    |
 | 0.1.9   | 2022-12-11 | [20348](https://github.com/airbytehq/airbyte/pull/20348) | Fix 403 error when syncing `EpicIssues` stream                                             |
 | 0.1.8   | 2022-12-02 | [20023](https://github.com/airbytehq/airbyte/pull/20023) | Fix duplicated records issue for `Projects` stream                                         |
 | 0.1.7   | 2022-12-01 | [19986](https://github.com/airbytehq/airbyte/pull/19986) | Fix `GroupMilestones` stream schema                                                        |
