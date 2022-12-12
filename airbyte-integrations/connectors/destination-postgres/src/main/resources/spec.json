@@ -63,14 +63,14 @@
       },
       "ssl_mode": {
         "title": "SSL modes",
-        "description": "SSL connection modes. \n <b>disable</b> - Chose this mode to disable encryption of communication between Airbyte and destination database\n <b>allow</b> - Chose this mode to enable encryption only when required by the source database\n <b>prefer</b> - Chose this mode to allow unencrypted connection only if the source database does not support encryption\n <b>require</b> - Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail\n  <b>verify-ca</b> - Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate\n  <b>verify-full</b> - This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server\n See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
+        "description": "SSL connection modes. \n  See more information - <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"> in the docs</a>.",
         "type": "object",
         "order": 7,
         "oneOf": [
           {
             "title": "disable",
             "additionalProperties": false,
-            "description": "Disable SSL.",
+            "description": "Chose this mode to disable encryption of communication between Airbyte and destination database.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -85,7 +85,7 @@
           {
             "title": "allow",
             "additionalProperties": false,
-            "description": "Allow SSL mode.",
+            "description": "Chose this mode to enable encryption only when required by the source database.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -100,7 +100,7 @@
           {
             "title": "prefer",
             "additionalProperties": false,
-            "description": "Prefer SSL mode.",
+            "description": "Chose this mode to allow unencrypted connection only if the source database does not support encryption.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -115,7 +115,7 @@
           {
             "title": "require",
             "additionalProperties": false,
-            "description": "Require SSL mode.",
+            "description": "Chose this mode to always require encryption. If the source database server does not support encryption, connection will fail.",
             "required": ["mode"],
             "properties": {
               "mode": {
@@ -130,7 +130,7 @@
           {
             "title": "verify-ca",
             "additionalProperties": false,
-            "description": "Verify-ca SSL mode.",
+            "description": "Chose this mode to always require encryption and to verify that the source database server has a valid SSL certificate.",
             "required": ["mode", "ca_certificate"],
             "properties": {
               "mode": {
@@ -160,7 +160,7 @@
           {
             "title": "verify-full",
             "additionalProperties": false,
-            "description": "Verify-full SSL mode.",
+            "description": "This is the most secure mode. Chose this mode to always require encryption and to verify the identity of the source database server.",
             "required": [
               "mode",
               "ca_certificate",
