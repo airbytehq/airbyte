@@ -131,14 +131,18 @@ def test_parallel_discover(input_sandbox_config):
     sf = Salesforce(**input_sandbox_config)
     sf.login()
     stream_objects = sf.get_validated_streams(config=input_sandbox_config)
+        
+    # get the half of the streams for this test to reduce resource and time amount
+    # reference to: https://github.com/airbytehq/airbyte/actions/runs/3675171119/jobs/6214296865
+    stream_objects = dict(list(stream_objects.items())[len(stream_objects)//2:])
 
     # try to load all schema with the old consecutive logic
     consecutive_schemas = {}
     start_time = datetime.now()
     for stream_name, sobject_options in stream_objects.items():
         consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
-    # sec hardcoded, as upper-bound of discovery time
-    consecutive_loading_time = 100
+
+    consecutive_loading_time = (datetime.now() - start_time).total_seconds()
     start_time = datetime.now()
     parallel_schemas = sf.generate_schemas(stream_objects)
     parallel_loading_time = (datetime.now() - start_time).total_seconds()
