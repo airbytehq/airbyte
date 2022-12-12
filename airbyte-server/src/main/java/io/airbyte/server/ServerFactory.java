@@ -13,13 +13,11 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.DestinationDefinitionSpecificationApiController;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
 import io.airbyte.server.apis.OpenapiApiController;
 import io.airbyte.server.apis.OperationApiController;
-import io.airbyte.server.apis.SchedulerApiController;
 import io.airbyte.server.apis.SourceApiController;
 import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
@@ -30,7 +28,6 @@ import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.SchedulerApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
@@ -38,7 +35,6 @@ import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
-import io.airbyte.server.apis.factories.SchedulerApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
@@ -63,10 +59,8 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
-import java.util.Map;
 import java.util.Set;
 import org.flywaydb.core.Flyway;
-import org.slf4j.MDC;
 
 public interface ServerFactory {
 
@@ -138,7 +132,6 @@ public interface ServerFactory {
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
-      final Map<String, String> mdc = MDC.getCopyOfContextMap();
 
       SourceOauthApiFactory.setValues(oAuthHandler);
 
@@ -147,8 +140,6 @@ public interface ServerFactory {
       LogsApiFactory.setValues(logsHandler);
 
       NotificationsApiFactory.setValues(workspacesHandler);
-
-      SchedulerApiFactory.setValues(schedulerHandler);
 
       SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
@@ -163,7 +154,8 @@ public interface ServerFactory {
           NotificationsApiController.class,
           OpenapiApiController.class,
           OperationApiController.class,
-          SchedulerApiController.class,
+          SourceApiController.class,
+          SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
           StateApiController.class,
@@ -174,7 +166,6 @@ public interface ServerFactory {
           new JobsApiBinder(),
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new SchedulerApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
           new WebBackendApiBinder(),
