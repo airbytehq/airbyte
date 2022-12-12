@@ -132,9 +132,9 @@ def test_parallel_discover(input_sandbox_config):
     sf.login()
     stream_objects = sf.get_validated_streams(config=input_sandbox_config)
 
-    # get the half of the streams for this test to reduce resource and time amount
+    # get the 25% of the streams for this test to reduce resource and time amount
     # reference to: https://github.com/airbytehq/airbyte/actions/runs/3675171119/jobs/6214296865
-    stream_objects = dict(list(stream_objects.items())[len(stream_objects)//2:])
+    stream_objects = dict(list(stream_objects.items())[len(stream_objects)//4:]
 
     # try to load all schema with the old consecutive logic
     consecutive_schemas = {}
