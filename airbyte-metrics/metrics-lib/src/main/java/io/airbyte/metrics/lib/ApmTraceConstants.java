@@ -75,7 +75,7 @@ public final class ApmTraceConstants {
     public static final String FAILURE_ORIGINS_KEY = "failure_origins";
 
     /**
-     * Name of the APM trace tag that holds the failure origin(s) associated with the trace.
+     * Name of the APM trace tag that holds the failure type(s) associated with the trace.
      */
     public static final String FAILURE_TYPES_KEY = "failure_types";
 
