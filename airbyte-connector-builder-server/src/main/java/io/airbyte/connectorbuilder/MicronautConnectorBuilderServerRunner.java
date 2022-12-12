@@ -14,10 +14,10 @@ import io.micronaut.runtime.Micronaut;
  */
 public class MicronautConnectorBuilderServerRunner {
 
-    public static void main(final String[] args) {
-        Micronaut.build(args)
-                .mainClass(MicronautConnectorBuilderServerRunner.class)
-                .start();
-    }
+  public static void main(final String[] args) {
+    Micronaut.build(args)
+        .mainClass(MicronautConnectorBuilderServerRunner.class)
+        .start();
+  }
 
 }
