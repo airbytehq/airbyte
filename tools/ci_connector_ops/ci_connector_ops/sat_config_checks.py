@@ -4,7 +4,7 @@
 
 import logging
 import sys
-from typing import List, Dict, Set, Union
+from typing import List, Dict, Union
 import yaml
 
 from ci_connector_ops import utils

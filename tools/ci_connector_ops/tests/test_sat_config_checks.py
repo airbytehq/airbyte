@@ -1,7 +1,13 @@
-import pytest
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import shutil
-import yaml
 from typing import List
+import yaml
+
+import pytest
+
 from ci_connector_ops import sat_config_checks
 
 @pytest.fixture

@@ -1,3 +1,7 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from ci_connector_ops import utils
 
 def test_get_connector_definition():
