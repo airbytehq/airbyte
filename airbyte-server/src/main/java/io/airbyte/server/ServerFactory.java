@@ -125,9 +125,6 @@ public interface ServerFactory {
                                  final WebBackendConnectionsHandler webBackendConnectionsHandler,
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
-
-      SourceOauthApiFactory.setValues(oAuthHandler);
-
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
 
       LogsApiFactory.setValues(logsHandler);
