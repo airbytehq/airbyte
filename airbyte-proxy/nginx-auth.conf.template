@@ -14,6 +14,11 @@ http {
 
       proxy_pass "${PROXY_PASS_WEB}";
 
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
+
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
         alias /etc/nginx/$1;
@@ -34,6 +39,11 @@ http {
       auth_basic_user_file /etc/nginx/.htpasswd;
 
       proxy_pass "${PROXY_PASS_API}";
+
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
 
       error_page 401 /etc/nginx/401.html;
       location ~ (401.html)$ {
