@@ -639,7 +639,7 @@ public abstract class DestinationAcceptanceTest {
           List.of(List.of("id"), List.of("currency"), List.of("date"), List.of("NZD"), List.of("USD")));
     });
 
-    final List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
+    List<AirbyteMessage> messages = MoreResources.readResource(messagesFilename).lines()
         .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
         .collect(Collectors.toList());
 
@@ -656,15 +656,24 @@ public abstract class DestinationAcceptanceTest {
     ((ObjectNode) jsonSchema.findValue("properties")).remove("HKD");
     configuredCatalog.getStreams().get(0).getStream().setJsonSchema(jsonSchema);
     // insert more messages
+    // NOTE: we re-read the messages because `assertSameMessages` above pruned the emittedAt timestamps.
+    messages = MoreResources.readResource(messagesFilename).lines()
+        .map(record -> Jsons.deserialize(record, AirbyteMessage.class))
+        .collect(Collectors.toList());
     messages.add(Jsons.deserialize(
         "{\"type\": \"RECORD\", \"record\": {\"stream\": \"exchange_rate\", \"emitted_at\": 1602637989500, \"data\": { \"id\": 2, \"currency\": \"EUR\", \"date\": \"2020-09-02T00:00:00Z\", \"NZD\": 1.14, \"USD\": 10.16}}}\n",
         AirbyteMessage.class));
+
     runSyncAndVerifyStateOutput(config, messages, configuredCatalog, true);
+
     // assert the removed field is missing on the new messages
     actualMessages = retrieveNormalizedRecords(catalog, defaultSchema);
+
     // We expect all the of messages to be missing the removed column after normalization.
     final List<AirbyteMessage> expectedMessages = messages.stream().map((message) -> {
-      ((ObjectNode)message.getRecord().getData()).remove("HKD");
+      if (message.getRecord() != null) {
+        ((ObjectNode) message.getRecord().getData()).remove("HKD");
+      }
       return message;
     }).collect(Collectors.toList());
     assertSameMessages(expectedMessages, actualMessages, true);
