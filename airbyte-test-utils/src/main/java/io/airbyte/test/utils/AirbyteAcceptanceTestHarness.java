@@ -95,6 +95,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -838,10 +839,19 @@ public class AirbyteAcceptanceTestHarness {
     }
 
     JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+    int count = 0;
+    while (count < 60 && mostRecentSyncJob.getId().equals(lastJob.getId())) {
       Thread.sleep(Duration.ofSeconds(1).toMillis());
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+      ++count;
     }
+    final boolean exceeded60seconds = count >= 60;
+    if (exceeded60seconds) {
+      // Fail because taking more than 60seconds to start a job is not expected
+      // Returning the current mostRecencSyncJob here could end up hiding some issues
+      Assertions.fail("unable to find the next job within 60seconds");
+    }
+
     return mostRecentSyncJob;
   }
 

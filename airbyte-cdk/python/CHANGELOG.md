@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.1
+Low-code: Add `SessionTokenAuthenticator`
+
+## 0.13.0
+Add `Stream.check_availability` and `Stream.AvailabilityStrategy`. Make `HttpAvailabilityStrategy` the default `HttpStream.AvailabilityStrategy`.
+
+## 0.12.4
+Lookback window should applied when a state is supplied as well
+
 ## 0.12.3
 Low-code: Finally, make `OffsetIncrement.page_size` interpolated string or int
 
