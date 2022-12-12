@@ -63,12 +63,14 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.airbyte.server.handlers.SourceDefinitionsHandler;
 import io.airbyte.server.handlers.SourceHandler;
 import io.airbyte.server.handlers.StateHandler;
+import io.airbyte.server.handlers.WebBackendCheckUpdatesHandler;
 import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.airbyte.server.handlers.WorkspacesHandler;
 import io.airbyte.server.scheduler.DefaultSynchronousSchedulerClient;
 import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.TemporalEventRunner;
+import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.workers.helper.ConnectionHelper;
 import io.airbyte.workers.normalization.NormalizationRunnerFactory;
@@ -347,6 +349,9 @@ public class ServerApp implements ServerRunnable {
 
     final WebBackendGeographiesHandler webBackendGeographiesHandler = new WebBackendGeographiesHandler();
 
+    final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler =
+        new WebBackendCheckUpdatesHandler(configRepository, AirbyteGithubStore.production());
+
     LOGGER.info("Starting server...");
 
     return apiFactory.create(
@@ -382,7 +387,8 @@ public class ServerApp implements ServerRunnable {
         stateHandler,
         workspacesHandler,
         webBackendConnectionsHandler,
-        webBackendGeographiesHandler);
+        webBackendGeographiesHandler,
+        webBackendCheckUpdatesHandler);
   }
 
   public static void main(final String[] args) {

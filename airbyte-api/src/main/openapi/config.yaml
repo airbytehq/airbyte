@@ -1748,6 +1748,19 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/web_backend/check_updates:
+    post:
+      tags:
+        - web_backend
+      summary: Returns a summary of source and destination definitions that could be updated.
+      operationId: webBackendCheckUpdates
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendCheckUpdatesRead"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -3731,7 +3744,25 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
+          description: If this is true, the stream is selected with all of its properties.
           type: boolean
+        fieldSelectionEnabled:
+          description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
+          type: boolean
+        selectedFields:
+          description: Paths to the fields that will be included in the configured catalog. This must be set if `fieldSelectedEnabled` is set. An empty list indicates that no properties will be included.
+          type: array
+          items:
+            $ref: "#/components/schemas/SelectedFieldInfo"
+    SelectedFieldInfo:
+      type: object
+      # TODO(mfsiega-airbyte): point to thorough documentation on nested fields and paths.
+      description: Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called "foo", this will be ["foo"]. Use multiple path elements for nested schemas.
+      properties:
+        fieldPath:
+          type: array
+          items:
+            type: string
     DataType:
       type: string
       enum:
@@ -4580,6 +4611,17 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendCheckUpdatesRead:
+      type: object
+      description: Summary of source and destination definitions that could be updated
+      required:
+        - destinationDefinitions
+        - sourceDefinitions
+      properties:
+        destinationDefinitions:
+          type: integer
+        sourceDefinitions:
+          type: integer
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.
