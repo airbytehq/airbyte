@@ -4,18 +4,14 @@ import React, { useCallback } from "react";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 
 import { ConnectorFormContextProvider } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import { useBuildForm, useConstructValidationSchema, usePatchFormik } from "./useBuildForm";
-
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
+import { useBuildForm, useConstructValidationSchema } from "./useBuildForm";
 
 export interface ConnectorFormProps {
   formType: "source" | "destination";
