@@ -9,7 +9,6 @@ from .report_streams import RecordType, ReportStream
 
 METRICS_MAP = {
     "campaigns": [
-        "bidPlus",
         "campaignName",
         "campaignId",
         "campaignStatus",
@@ -163,7 +162,7 @@ METRICS_MAP = {
         "campaignBudget",
         "campaignBudgetType",
         "campaignStatus",
-        "sku",
+        "sku",  # seller only
     ],
     "asins_keywords": [
         "campaignName",
@@ -281,8 +280,8 @@ class SponsoredProductsReportStream(ReportStream):
             if profile.accountInfo.type == "vendor":
                 metrics_list = copy(metrics_list)
                 metrics_list.remove("sku")
-
-        if RecordType.PRODUCTADS == record_type and profile.accountInfo.type != "seller":
+        elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
+            # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
             metrics_list = copy(metrics_list)
             metrics_list.remove("sku")
 

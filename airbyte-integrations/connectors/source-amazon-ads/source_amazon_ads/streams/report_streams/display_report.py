@@ -3,6 +3,7 @@
 #
 
 from enum import Enum
+from copy import copy
 
 from .report_streams import RecordType, ReportStream
 
@@ -42,7 +43,7 @@ METRICS_MAP = {
         "campaignStatus",
         "attributedBrandedSearches14d",
         "attributedDetailPageView14d",
-        "viewAttributedBrandedSearches14d"
+        "viewAttributedBrandedSearches14d",
         "viewAttributedConversions14d",
         "viewAttributedDetailPageView14d",
         "viewAttributedOrdersNewToBrand14d",
@@ -82,7 +83,6 @@ METRICS_MAP = {
         "attributedSales14dSameSKU",
         "attributedSales30dSameSKU",
         "attributedOrdersNewToBrand14d",
-        "attributedSalesNewToBrand14d",
         "attributedUnitsOrderedNewToBrand14d",
         "attributedBrandedSearches14d",
         "attributedDetailPageView14d",
@@ -103,7 +103,7 @@ METRICS_MAP = {
         "adGroupName",
         "adGroupId",
         "asin",
-        "sku",
+        "sku",  # seller only
         "adId",
         "impressions",
         "clicks",
@@ -199,7 +199,7 @@ METRICS_MAP = {
         "adGroupId",
         "asin",
         "otherAsin",
-        "sku",
+        "sku",  # seller only
         "currency",
         "attributedUnitsOrdered1dOtherSKU",
         "attributedUnitsOrdered7dOtherSKU",
@@ -233,6 +233,11 @@ class SponsoredDisplayReportStream(ReportStream):
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
         if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
             return None
+        elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
+            # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
+            metrics_list = self.metrics_map[record_type]
+            metrics_list = copy(metrics_list)
+            metrics_list.remove("sku")
         return {
             "reportDate": report_date,
             # Only for most common T00020 tactic for now
