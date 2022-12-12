@@ -10,6 +10,8 @@ import pkgutil
 import uuid
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from time import sleep
+
 
 import requests
 from airbyte_cdk.models import SyncMode
@@ -198,7 +200,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
             if total_rows <= offset:
                 return None
 
-            return {"limit": limit, "offset": offset + limit}
+            return {"limit": limit, "offset": offset + limit, "returnPropertyQuota": "true"}
 
     def path(
         self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
@@ -223,16 +225,42 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         for row in r.get("rows", []):
             rows.append(
-                collections.ChainMap(
+                dict(collections.ChainMap(
                     *[
                         self.add_primary_key(),
                         self.add_property_id(self.config["property_id"]),
                         self.add_dimensions(dimensions, row),
                         self.add_metrics(metrics, metrics_type_map, row),
                     ]
-                )
+                ))
             )
         r["records"] = rows
+
+        MIN_REMAINING_QUOTA_LIMITS = {
+          "tokensPerDay": 500,
+          "tokensPerHour": 300,
+          "concurrentRequests": 2,
+          "serverErrorsPerProjectPerHour": 2,
+          "potentiallyThresholdedRequestsPerHour": 60,
+          "tokensPerProjectPerHour": 150,
+        }
+
+        limit_reached = False
+        for name, data in r["propertyQuota"].items():
+          consumed = data["consumed"]
+          remaining = data["remaining"]
+          min_limit = MIN_REMAINING_QUOTA_LIMITS[name] or 500
+          self.logger.info(f'[QUOTA] {name} quota: consumed {consumed}, remaining {remaining} with a min limit {min_limit}')
+
+          if remaining <= min_limit:
+            self.logger.warning(f'[QUOTA] MIN_REMAINING_QUOTA_LIMITS reached for {name}')
+            limit_reached = True
+
+        # Sleep if min quota limit was reached
+        if limit_reached:
+          sleep_time = 3600 # sleep for 1 hour by default
+          self.logger.warning(f"[QUOTA] Min quota limit was reached, pausing for {sleep_time} seconds")
+          sleep(sleep_time)
 
         yield r
 
@@ -271,6 +299,7 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
             "metrics": [{"name": m} for m in self.config["metrics"]],
             "dimensions": [{"name": d} for d in self.config["dimensions"]],
             "dateRanges": [stream_slice],
+            "returnPropertyQuota": "true",
         }
 
     def read_records(
