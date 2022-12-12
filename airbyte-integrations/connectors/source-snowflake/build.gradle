@@ -2,10 +2,11 @@ plugins {
     id 'application'
     id 'airbyte-docker'
     id 'airbyte-integration-test-java'
+    id 'airbyte-source-acceptance-test'
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSource'
+    mainClass = 'io.airbyte.integrations.source.snowflake.SnowflakeSourceRunner'
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 

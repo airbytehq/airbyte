@@ -13,7 +13,7 @@ get_epoch_time() {
 }
 
 check_success() {
-  docker-compose ps | grep "^$1" | grep 'Exit 0' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
+  docker-compose ps | grep "^$1" | grep -e 'Exit 0' -e 'exited (0)' >/dev/null || (echo "$1 didn't run successfully"; exit 1)
 }
 
 ##
@@ -21,7 +21,7 @@ check_success() {
 echo "Starting app..."
 
 # Detach so we can run subsequent commands
-VERSION=dev TRACKING_STRATEGY=logging USE_STREAM_CAPABLE_STATE=true docker-compose up -d
+VERSION=dev TRACKING_STRATEGY=logging USE_STREAM_CAPABLE_STATE=true BASIC_AUTH_USERNAME="" BASIC_AUTH_PASSWORD="" docker-compose -f docker-compose.yaml -f docker-compose.acceptance-test.yaml up -d
 
 # Sometimes source/dest containers using airbyte volumes survive shutdown, which need to be killed in order to shut down properly.
 shutdown_cmd="docker-compose down -v || docker kill \$(docker ps -a -f volume=airbyte_workspace -f volume=airbyte_data -f volume=airbyte_db -q) && docker-compose down -v"

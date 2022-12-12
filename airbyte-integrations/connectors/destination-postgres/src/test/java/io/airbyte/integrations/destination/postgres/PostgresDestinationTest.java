@@ -74,6 +74,7 @@ public class PostgresDestinationTest {
   }
 
   private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:postgresql://localhost:1337/db%2Ffoo?";
+
   private JsonNode buildConfigEscapingNeeded() {
     return Jsons.jsonNode(ImmutableMap.of(
         JdbcUtils.HOST_KEY, "localhost",

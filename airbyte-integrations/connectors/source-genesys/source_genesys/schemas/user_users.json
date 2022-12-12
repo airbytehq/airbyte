@@ -1,0 +1,114 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "division": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "selfUri": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "chat": {
+      "type": "object",
+      "properties": {
+        "jabberId": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "department": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "primaryContactInfo": {
+      "type": "array",
+      "properties": {
+        "address": {
+          "type": ["null", "string"]
+        },
+        "display": {
+          "type": ["null", "string"]
+        },
+        "mediaType": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "extension": {
+          "type": ["null", "string"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "integration": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "addresses": {
+      "type": "array",
+      "properties": {
+        "address": {
+          "type": ["null", "string"]
+        },
+        "display": {
+          "type": ["null", "string"]
+        },
+        "mediaType": {
+          "type": ["null", "string"]
+        },
+        "type": {
+          "type": ["null", "string"]
+        },
+        "extension": {
+          "type": ["null", "string"]
+        },
+        "countryCode": {
+          "type": ["null", "string"]
+        },
+        "integration": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "state": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "username": {
+      "type": ["null", "string"]
+    },
+    "version": {
+      "type": ["null", "number"]
+    },
+    "acdAutoAnswer": {
+      "type": ["null", "boolean"]
+    },
+    "dateLastLogin": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "selfUri": {
+      "type": ["null", "string"]
+    }
+  }
+}

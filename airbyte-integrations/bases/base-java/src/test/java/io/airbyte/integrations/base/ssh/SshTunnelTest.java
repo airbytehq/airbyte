@@ -4,11 +4,14 @@
 
 package io.airbyte.integrations.base.ssh;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.ssh.SshTunnel.TunnelMethod;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
@@ -70,19 +73,88 @@ class SshTunnelTest {
       + "5WlcOxfV1wZuaM0fOd+PBmIlFEE7Uf6AY/UahBAxaFV2+twgK9GCDcu1t4Ye9wZ9kZ4Nal\\n"
       + "0fkKD4uN4DRO8hAAAAFm10dWhhaUBrYnAxLWxocC1hMTQ1MzMBAgME\\n"
       + "-----END OPENSSH PRIVATE KEY-----";
-  private static final String CONFIG =
+  private static final String HOST_PORT_CONFIG =
       "{\"ssl\":true,\"host\":\"fakehost.com\",\"port\":5432,\"schema\":\"public\",\"database\":\"postgres\",\"password\":\"<dummyPassword>\",\"username\":\"postgres\",\"tunnel_method\":{\"ssh_key\":\""
           + "%s"
           + "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}";
 
+  private static final String URL_CONFIG_WITH_PORT =
+      "{\"ssl\":true,\"endpoint\":\"http://fakehost.com:9090/service\",\"password\":\"<dummyPassword>\",\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\""
+          + "%s"
+          + "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}";
+
+  private static final String URL_CONFIG_NO_PORT =
+      "{\"ssl\":true,\"endpoint\":\"http://fakehost.com/service\",\"password\":\"<dummyPassword>\",\"username\":\"restuser\",\"tunnel_method\":{\"ssh_key\":\""
+          + "%s"
+          + "\",\"tunnel_host\":\"faketunnel.com\",\"tunnel_port\":22,\"tunnel_user\":\"ec2-user\",\"tunnel_method\":\"SSH_KEY_AUTH\"}}";
+
+  /**
+   * This test verifies that OpenSsh correctly replaces values in connector configuration in a spec
+   * with host/port config and in a spec with endpoint URL config
+   *
+   * @param configString
+   * @throws Exception
+   */
+  @ParameterizedTest
+  @ValueSource(strings = {HOST_PORT_CONFIG, URL_CONFIG_WITH_PORT, URL_CONFIG_NO_PORT})
+  public void testConfigInTunnel(final String configString) throws Exception {
+    final JsonNode config = (new ObjectMapper()).readTree(String.format(configString, SSH_RSA_PRIVATE_KEY));
+    String endPointURL = Jsons.getStringOrNull(config, "endpoint");
+    final SshTunnel sshTunnel = new SshTunnel(
+        config,
+        endPointURL == null ? Arrays.asList(new String[] {"host"}) : null,
+        endPointURL == null ? Arrays.asList(new String[] {"port"}) : null,
+        endPointURL == null ? null : "endpoint",
+        endPointURL,
+        TunnelMethod.SSH_KEY_AUTH,
+        "faketunnel.com",
+        22,
+        "tunnelUser",
+        SSH_RSA_PRIVATE_KEY,
+        "tunnelUserPassword",
+        endPointURL == null ? "fakeHost.com" : null,
+        endPointURL == null ? 5432 : 0) {
+
+      @Override
+      ClientSession openTunnel(final SshClient client) {
+        tunnelLocalPort = 8080;
+        return null; // Prevent tunnel from attempting to connect
+      }
+
+    };
+
+    final JsonNode configInTunnel = sshTunnel.getConfigInTunnel();
+    if (endPointURL == null) {
+      assertTrue(configInTunnel.has("port"));
+      assertTrue(configInTunnel.has("host"));
+      assertFalse(configInTunnel.has("endpoint"));
+      assertEquals(8080, configInTunnel.get("port").asInt());
+      assertEquals("127.0.0.1", configInTunnel.get("host").asText());
+    } else {
+      assertFalse(configInTunnel.has("port"));
+      assertFalse(configInTunnel.has("host"));
+      assertTrue(configInTunnel.has("endpoint"));
+      assertEquals("http://127.0.0.1:8080/service", configInTunnel.get("endpoint").asText());
+    }
+  }
+
+  /**
+   * This test verifies that SshTunnel correctly extracts private key pairs from keys formatted as
+   * EdDSA and OpenSSH
+   *
+   * @param privateKey
+   * @throws Exception
+   */
   @ParameterizedTest
   @ValueSource(strings = {SSH_ED25519_PRIVATE_KEY, SSH_RSA_PRIVATE_KEY})
   public void getKeyPair(final String privateKey) throws Exception {
-    final JsonNode config = (new ObjectMapper()).readTree(String.format(CONFIG, privateKey));
+    final JsonNode config = (new ObjectMapper()).readTree(String.format(HOST_PORT_CONFIG, privateKey));
     final SshTunnel sshTunnel = new SshTunnel(
         config,
         Arrays.asList(new String[] {"host"}),
         Arrays.asList(new String[] {"port"}),
+        null,
+        null,
         TunnelMethod.SSH_KEY_AUTH,
         "faketunnel.com",
         22,

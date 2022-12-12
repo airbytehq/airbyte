@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.process.DockerProcessFactory;
 import io.airbyte.workers.process.KubeProcessFactory;

@@ -45,8 +45,8 @@ public class MySqlStrictEncryptSourceAcceptanceTest extends SourceAcceptanceTest
     container.start();
 
     var sslMode = ImmutableMap.builder()
-            .put(JdbcUtils.MODE_KEY, "required")
-            .build();
+        .put(JdbcUtils.MODE_KEY, "required")
+        .build();
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "STANDARD")
         .build());

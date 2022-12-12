@@ -1,4 +1,4 @@
-import { render, mockConnection } from "test-utils/testutils";
+import { mockConnection, render } from "test-utils/testutils";
 
 import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
 
@@ -23,28 +23,27 @@ jest.mock("hooks/services/Analytics/useAnalyticsService", () => {
   return analyticsService;
 });
 
-// Mocking the DeleteBlock component is a bit ugly, but it's simpler and less
-// brittle than mocking the providers it depends on; at least it's a direct,
-// visible dependency of the component under test here.
-//
-// This mock is intentionally trivial; if anything to do with this component is
-// to be tested, we'll have to bite the bullet and render it properly, within
-// the necessary providers.
-jest.mock("components/DeleteBlock", () => () => {
-  const MockDeleteBlock = () => <div>Does not actually delete anything</div>;
-  return <MockDeleteBlock />;
-});
+jest.mock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
+  useConnectionEditService: () => ({ connection: mockConnection }),
+}));
+
+jest.mock("components/common/DeleteBlock", () => ({
+  DeleteBlock: () => {
+    const MockDeleteBlock = () => <div>Does not actually delete anything</div>;
+    return <MockDeleteBlock />;
+  },
+}));
 
 describe("<SettingsView />", () => {
   it("only renders connection state when advanced mode is enabled", async () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);
-    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab />));
     expect(container.textContent).not.toContain("Connection State");
 
     setMockIsAdvancedMode(true);
-    ({ container } = await render(<ConnectionSettingsTab connection={mockConnection} />));
+    ({ container } = await render(<ConnectionSettingsTab />));
     expect(container.textContent).toContain("Connection State");
   });
 });

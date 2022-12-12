@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.source.alloydb;
 
 import static io.airbyte.integrations.source.relationaldb.state.StateManager.LOGGER;

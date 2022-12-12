@@ -1,5 +1,5 @@
 import { SyncSchema, SyncSchemaStream } from "core/domain/catalog";
-import { DestinationSyncMode, SyncMode } from "core/request/AirbyteClient";
+import { DestinationSyncMode, StreamDescriptor, SyncMode } from "core/request/AirbyteClient";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -11,6 +11,7 @@ const mockSyncSchemaStream: SyncSchemaStream = {
     sourceDefinedPrimaryKey: [["new_primary_key"]],
     jsonSchema: {},
     name: "test",
+    namespace: "namespace-test",
     supportedSyncModes: [],
   },
   config: {
@@ -65,7 +66,7 @@ describe("calculateInitialCatalog", () => {
     });
   });
 
-  it("should select 'Incremental(cursor defined) => Append Dedup'", () => {
+  it("should not select Incremental | Append Dedup if no source defined primary key is available", () => {
     const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
 
     const values = calculateInitialCatalog(
@@ -78,7 +79,8 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["id"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: undefined,
             },
             config: {
               ...config,
@@ -93,7 +95,64 @@ describe("calculateInitialCatalog", () => {
               name: "test",
               sourceDefinedCursor: true,
               defaultCursorField: ["updated_at"],
-              supportedSyncModes: [SyncMode.incremental],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.append_dedup,
+              syncMode: SyncMode.full_refresh,
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup, DestinationSyncMode.overwrite],
+      false
+    );
+
+    values.streams.forEach((stream) => {
+      expect(stream).toHaveProperty("config.syncMode", SyncMode.full_refresh);
+      expect(stream).toHaveProperty("config.destinationSyncMode", DestinationSyncMode.overwrite);
+    });
+  });
+
+  it("should select 'Incremental(cursor defined) => Append Dedup'", () => {
+    const { config, stream: sourceDefinedStream } = mockSyncSchemaStream;
+
+    const values = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["id"],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.full_refresh,
+            },
+          },
+          {
+            id: "2",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["updated_at"],
+              supportedSyncModes: [SyncMode.full_refresh, SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
             },
             config: {
               ...config,
@@ -109,6 +168,10 @@ describe("calculateInitialCatalog", () => {
               sourceDefinedCursor: true,
               defaultCursorField: ["name"],
               supportedSyncModes: [SyncMode.incremental],
+              sourceDefinedPrimaryKey: [
+                ["primary", "field1"],
+                ["primary", "field2"],
+              ],
             },
             config: {
               ...config,
@@ -534,5 +597,61 @@ describe("calculateInitialCatalog", () => {
 
     // cursor field
     expect(calculatedStreams[0].config?.cursorField).toEqual(config?.cursorField);
+  });
+
+  it("should calculate optimal sync mode if stream is new", () => {
+    const { stream: sourceDefinedStream, config } = mockSyncSchemaStream;
+
+    const newStreamDescriptors: StreamDescriptor[] = [{ name: "test", namespace: "namespace-test" }];
+
+    const { streams: calculatedStreams } = calculateInitialCatalog(
+      {
+        streams: [
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test",
+              namespace: "namespace-test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["id"],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.incremental,
+            },
+          },
+          {
+            id: "1",
+            stream: {
+              ...sourceDefinedStream,
+              name: "test2",
+              namespace: "namespace-test",
+              sourceDefinedCursor: true,
+              defaultCursorField: ["id"],
+              supportedSyncModes: [SyncMode.incremental],
+            },
+            config: {
+              ...config,
+              destinationSyncMode: DestinationSyncMode.overwrite,
+              syncMode: SyncMode.incremental,
+            },
+          },
+        ],
+      },
+      [DestinationSyncMode.append_dedup],
+      true,
+      newStreamDescriptors
+    );
+
+    // new stream has its sync mode calculated
+    expect(calculatedStreams[0].config?.syncMode).toEqual(SyncMode.incremental);
+    expect(calculatedStreams[0].config?.destinationSyncMode).toEqual(DestinationSyncMode.append_dedup);
+
+    // existing stream remains as-is
+    expect(calculatedStreams[1].config?.syncMode).toEqual(SyncMode.incremental);
+    expect(calculatedStreams[1].config?.destinationSyncMode).toEqual(DestinationSyncMode.overwrite);
   });
 });

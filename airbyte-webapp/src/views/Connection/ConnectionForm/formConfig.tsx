@@ -17,7 +17,9 @@ import {
   ConnectionScheduleType,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
+  Geography,
   NamespaceDefinitionType,
+  NonBreakingChangesPreference,
   OperationCreate,
   OperationRead,
   OperatorType,
@@ -27,6 +29,7 @@ import {
 import { ConnectionFormMode, ConnectionOrPartialConnection } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
+import { validateCronExpression, validateCronFrequencyOneHourOrMore } from "utils/cron";
 
 import calculateInitialCatalog from "./calculateInitialCatalog";
 
@@ -34,12 +37,14 @@ export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
+  nonBreakingChangesPreference?: NonBreakingChangesPreference | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
   namespaceFormat: string;
   transformations?: OperationRead[];
   normalization?: NormalizationType;
+  geography: Geography;
 }
 
 export type ConnectionFormValues = ValuesProps;
@@ -74,11 +79,22 @@ export function useDefaultTransformation(): OperationCreate {
   };
 }
 
-export const connectionValidationSchema = (mode: ConnectionFormMode) =>
+interface CreateConnectionValidationSchemaArgs {
+  allowSubOneHourCronExpressions: boolean;
+  mode: ConnectionFormMode;
+  isAutoDetectSchemaChangesEnabled: boolean;
+}
+
+export const createConnectionValidationSchema = ({
+  mode,
+  allowSubOneHourCronExpressions,
+  isAutoDetectSchemaChangesEnabled,
+}: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
       // The connection name during Editing is handled separately from the form
       name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
+      geography: yup.mixed<Geography>().oneOf(Object.values(Geography)),
       scheduleType: yup
         .string()
         .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
@@ -99,12 +115,25 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
         return yup.object({
           cron: yup
             .object({
-              cronExpression: yup.string().required("form.empty.error"),
+              cronExpression: yup
+                .string()
+                .trim()
+                .required("form.empty.error")
+                .test("validCron", "form.cronExpression.error", validateCronExpression)
+                .test(
+                  "validCronFrequency",
+                  "form.cronExpression.underOneHourNotAllowed",
+                  (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
+                ),
               cronTimeZone: yup.string().required("form.empty.error"),
             })
             .defined("form.empty.error"),
         });
       }),
+      nonBreakingChangesPreference: isAutoDetectSchemaChangesEnabled
+        ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+        : yup.mixed().notRequired(),
+
       namespaceDefinition: yup
         .string()
         .oneOf([
@@ -115,7 +144,7 @@ export const connectionValidationSchema = (mode: ConnectionFormMode) =>
         .required("form.empty.error"),
       namespaceFormat: yup.string().when("namespaceDefinition", {
         is: NamespaceDefinitionType.customformat,
-        then: yup.string().required("form.empty.error"),
+        then: yup.string().trim().required("form.empty.error"),
       }),
       prefix: yup.string(),
       syncCatalog: yup.object({
@@ -248,14 +277,22 @@ export const useInitialValues = (
   destDefinition: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
+  const workspace = useCurrentWorkspace();
+  const { catalogDiff } = connection;
+
+  const newStreamDescriptors = catalogDiff?.transforms
+    .filter((transform) => transform.transformType === "add_stream")
+    .map((stream) => stream.streamDescriptor);
+
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
-        isNotCreateMode
+        isNotCreateMode,
+        newStreamDescriptors
       ),
-    [connection.syncCatalog, destDefinition, isNotCreateMode]
+    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreamDescriptors]
   );
 
   return useMemo(() => {
@@ -263,9 +300,11 @@ export const useInitialValues = (
       syncCatalog: initialSchema,
       scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
+      nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.ignore,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
+      geography: connection.geography || workspace.defaultGeography || "auto",
     };
 
     // Is Create Mode
@@ -287,9 +326,11 @@ export const useInitialValues = (
   }, [
     connection.connectionId,
     connection.destination.name,
+    connection.geography,
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
+    connection.nonBreakingChangesPreference,
     connection.operations,
     connection.prefix,
     connection.scheduleData,
@@ -299,6 +340,7 @@ export const useInitialValues = (
     destDefinition.supportsNormalization,
     initialSchema,
     isNotCreateMode,
+    workspace,
   ]);
 };
 

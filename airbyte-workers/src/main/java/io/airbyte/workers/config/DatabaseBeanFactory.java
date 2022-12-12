@@ -4,12 +4,10 @@
 
 package io.airbyte.workers.config;
 
-import io.airbyte.config.persistence.ConfigPersistence;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.config.persistence.DatabaseConfigPersistence;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
-import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
 import io.airbyte.db.Database;
 import io.airbyte.db.check.DatabaseMigrationCheck;
 import io.airbyte.db.check.impl.JobsDatabaseAvailabilityCheck;
@@ -89,16 +87,8 @@ public class DatabaseBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public ConfigPersistence configPersistence(@Named("configDatabase") final Database configDatabase,
-                                             final JsonSecretsProcessor jsonSecretsProcessor) {
-    return DatabaseConfigPersistence.createWithValidation(configDatabase, jsonSecretsProcessor);
-  }
-
-  @Singleton
-  @Requires(env = WorkerMode.CONTROL_PLANE)
-  public ConfigRepository configRepository(@Named("configPersistence") final ConfigPersistence configPersistence,
-                                           @Named("configDatabase") final Database configDatabase) {
-    return new ConfigRepository(configPersistence, configDatabase);
+  public ConfigRepository configRepository(@Named("configDatabase") final Database configDatabase) {
+    return new ConfigRepository(configDatabase);
   }
 
   @Singleton

@@ -17,7 +17,7 @@ exports[`<GitBlock /> should render with default props 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="svg-inline--fa fa-github icon"
+            class="<removed-for-snapshot-test>"
             data-icon="github"
             data-prefix="fab"
             focusable="false"
@@ -66,7 +66,7 @@ exports[`<GitBlock /> should render with overwritten props 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="svg-inline--fa fa-github icon"
+            class="<removed-for-snapshot-test>"
             data-icon="github"
             data-prefix="fab"
             focusable="false"

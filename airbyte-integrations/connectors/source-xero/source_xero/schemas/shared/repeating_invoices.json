@@ -1,0 +1,91 @@
+{
+  "type": ["null", "object"],
+  "properties": {
+    "Type": {
+      "type": ["null", "string"]
+    },
+    "Contact": {
+      "$ref": "contacts.json"
+    },
+    "Schedule": {
+      "type": ["null", "object"],
+      "properties": {
+        "Unit": {
+          "type": ["null", "string"]
+        },
+        "DueDateType": {
+          "type": ["null", "string"]
+        },
+        "StartDate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "DueDate": {
+          "type": ["null", "integer"]
+        },
+        "EndDate": {
+          "type": ["null", "string"]
+        },
+        "NextScheduledDate": {
+          "type": ["null", "string"],
+          "format": "date-time"
+        },
+        "Period": {
+          "type": ["null", "integer"]
+        }
+      },
+      "additionalProperties": true
+    },
+    "LineItems": {
+      "items": {
+        "$ref": "line_items.json"
+      },
+      "type": ["null", "array"]
+    },
+    "LineAmountTypes": {
+      "type": ["null", "string"]
+    },
+    "Reference": {
+      "type": ["null", "string"]
+    },
+    "BrandingThemeID": {
+      "type": ["null", "string"]
+    },
+    "CurrencyCode": {
+      "type": ["null", "string"]
+    },
+    "Status": {
+      "type": ["null", "string"]
+    },
+    "SubTotal": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalTax": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "TotalDiscount": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "Total": {
+      "type": ["null", "number"],
+      "minimum": -1e33,
+      "maximum": 1e33
+    },
+    "RepeatingInvoiceID": {
+      "type": ["string"]
+    },
+    "HasAttachments": {
+      "type": ["null", "boolean"]
+    },
+    "ID": {
+      "type": ["null", "string"]
+    }
+  },
+  "additionalProperties": true
+}

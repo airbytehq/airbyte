@@ -30,7 +30,6 @@ import static com.mysql.cj.MysqlType.TINYINT_UNSIGNED;
 import static com.mysql.cj.MysqlType.TINYTEXT;
 import static com.mysql.cj.MysqlType.VARCHAR;
 import static com.mysql.cj.MysqlType.YEAR;
-import static io.airbyte.db.DataTypeUtils.TIME_FORMATTER;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_SIZE;
 import static io.airbyte.db.jdbc.JdbcConstants.INTERNAL_COLUMN_TYPE;
@@ -44,7 +43,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mysql.cj.MysqlType;
 import com.mysql.cj.jdbc.result.ResultSetMetaData;
 import com.mysql.cj.result.Field;
-import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.DataTypeUtils;
 import io.airbyte.db.SourceOperations;
 import io.airbyte.db.jdbc.AbstractJdbcCompatibleSourceOperations;
@@ -58,7 +56,6 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeParseException;
-import java.util.Collections;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,7 +89,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         }
       }
       case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, TINYINT_UNSIGNED -> {
+      case TINYINT -> {
         if (field.getLength() == 1L) {
           // TINYINT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
@@ -100,6 +97,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           putShortInt(json, columnName, resultSet, colIndex);
         }
       }
+      case TINYINT_UNSIGNED -> putShortInt(json, columnName, resultSet, colIndex);
       case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
       case INT, INT_UNSIGNED -> {
         if (field.isUnsigned()) {
@@ -187,7 +185,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
       switch (literalType) {
         // BIT(1) and TINYINT(1) are interpreted as boolean
-        case BIT, TINYINT, TINYINT_UNSIGNED -> {
+        case BIT, TINYINT -> {
           if (columnSize == 1) {
             return MysqlType.BOOLEAN;
           }

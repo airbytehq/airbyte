@@ -7,6 +7,10 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +21,6 @@ import com.microsoft.sqlserver.jdbc.SQLServerResultSetMetaData;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.AutoCloseableIterator;
-import io.airbyte.commons.util.AutoCloseableIterators;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
@@ -26,6 +29,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
 import io.airbyte.integrations.debezium.AirbyteDebeziumHandler;
+import io.airbyte.integrations.debezium.internals.FirstRecordWaitTimeUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.mssql.MssqlCdcHelper.SnapshotIsolation;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
@@ -37,19 +41,21 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.SyncMode;
 import java.io.File;
+import java.sql.Connection;
 import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Stream;
+import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -80,52 +86,11 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
                                                                final String tableName) {
     LOGGER.info("Queueing query for table: {}", tableName);
 
-    final List<String> newIdentifiersList = getWrappedColumn(database,
-        columnNames,
-        schemaName, tableName, "\"");
-    final String preparedSqlQuery = String
-        .format("SELECT %s FROM %s", String.join(",", newIdentifiersList),
-            getFullTableName(schemaName, tableName));
+    final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
+    final String preparedSqlQuery = String.format("SELECT %s FROM %s", newIdentifiers, getFullTableName(schemaName, tableName, getQuoteString()));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
-  }
-
-  @Override
-  public AutoCloseableIterator<JsonNode> queryTableIncremental(final JdbcDatabase database,
-                                                               final List<String> columnNames,
-                                                               final String schemaName,
-                                                               final String tableName,
-                                                               final String cursorField,
-                                                               final JDBCType cursorFieldType,
-                                                               final String cursorValue) {
-    LOGGER.info("Queueing query for table: {}", tableName);
-    return AutoCloseableIterators.lazyIterator(() -> {
-      try {
-        final Stream<JsonNode> stream = database.unsafeQuery(
-            connection -> {
-              LOGGER.info("Preparing query for table: {}", tableName);
-
-              final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
-              final List<String> newColumnNames = getWrappedColumn(database, columnNames, schemaName, tableName, identifierQuoteString);
-
-              final String sql = String.format("SELECT %s FROM %s WHERE %s > ?",
-                  String.join(",", newColumnNames),
-                  sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName),
-                  sourceOperations.enquoteIdentifier(connection, cursorField));
-              LOGGER.info("Prepared SQL query for queryTableIncremental is: " + sql);
-
-              final PreparedStatement preparedStatement = connection.prepareStatement(sql);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorValue);
-              LOGGER.info("Executing query for table: {}", tableName);
-              return preparedStatement;
-            },
-            sourceOperations::rowToJson);
-        return AutoCloseableIterators.fromStream(stream);
-      } catch (final SQLException e) {
-        throw new RuntimeException(e);
-      }
-    });
   }
 
   /**
@@ -137,18 +102,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
    *
    * @return the list with Column names updated to handle functions (if nay) properly
    */
-  private List<String> getWrappedColumn(final JdbcDatabase database,
-                                        final List<String> columnNames,
-                                        final String schemaName,
-                                        final String tableName,
-                                        final String enquoteSymbol) {
+  @Override
+  protected String getWrappedColumnNames(final JdbcDatabase database,
+                                         final Connection connection,
+                                         final List<String> columnNames,
+                                         final String schemaName,
+                                         final String tableName) {
     final List<String> hierarchyIdColumns = new ArrayList<>();
     try {
+      final String identifierQuoteString = database.getMetaData().getIdentifierQuoteString();
       final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
           .queryMetadata(String
               .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
-                  enquoteIdentifierList(columnNames),
-                  getFullTableName(schemaName, tableName)));
+                  enquoteIdentifierList(columnNames, getQuoteString()),
+                  getFullTableName(schemaName, tableName, getQuoteString())));
 
       // metadata will be null if table doesn't contain records
       if (sqlServerResultSetMetaData != null) {
@@ -159,20 +126,20 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
         }
       }
 
+      // iterate through names and replace Hierarchyid field for query is with toString() function
+      // Eventually would get columns like this: testColumn.toString as "testColumn"
+      // toString function in SQL server is the only way to get human readable value, but not mssql
+      // specific HEX value
+      return String.join(", ", columnNames.stream()
+          .map(
+              el -> hierarchyIdColumns.contains(el) ? String
+                  .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
+                  : getIdentifierWithQuoting(el, getQuoteString()))
+          .toList());
     } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);
+      throw new RuntimeException(e);
     }
-
-    // iterate through names and replace Hierarchyid field for query is with toString() function
-    // Eventually would get columns like this: testColumn.toString as "testColumn"
-    // toString function in SQL server is the only way to get human readable value, but not mssql
-    // specific HEX value
-    return columnNames.stream()
-        .map(
-            el -> hierarchyIdColumns.contains(el) ? String
-                .format("%s.ToString() as %s%s%s", el, enquoteSymbol, el, enquoteSymbol)
-                : getIdentifierWithQuoting(el))
-        .collect(toList());
   }
 
   @Override
@@ -245,15 +212,15 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
     final List<TableInfo<CommonField<JDBCType>>> internals = super.discoverInternal(database);
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly filtered (from UI) schemas
-      List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
+      final List<TableInfo<CommonField<JDBCType>>> resultInternals = internals
           .stream()
           .filter(this::isTableInRequestedSchema)
           .toList();
-      for (TableInfo<CommonField<JDBCType>> info : resultInternals) {
+      for (final TableInfo<CommonField<JDBCType>> info : resultInternals) {
         LOGGER.debug("Found table (schema: {}): {}", info.getNameSpace(), info.getName());
       }
       return resultInternals;
@@ -263,7 +230,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     }
   }
 
-  private boolean isTableInRequestedSchema(TableInfo<CommonField<JDBCType>> tableInfo) {
+  private boolean isTableInRequestedSchema(final TableInfo<CommonField<JDBCType>> tableInfo) {
     return schemas
         .stream()
         .anyMatch(schema -> schema.equals(tableInfo.getNameSpace()));
@@ -402,14 +369,19 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     final JsonNode sourceConfig = database.getSourceConfig();
     if (MssqlCdcHelper.isCdc(sourceConfig) && shouldUseCDC(catalog)) {
       LOGGER.info("using CDC: {}", true);
-      final Properties props = MssqlCdcHelper.getDebeziumProperties(sourceConfig);
-      final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
-          MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()),
-          props, catalog, true);
-      return handler.getIncrementalIterators(
+      final Duration firstRecordWaitTime = FirstRecordWaitTimeUtil.getFirstRecordWaitTime(sourceConfig);
+      final AirbyteDebeziumHandler handler =
+          new AirbyteDebeziumHandler(sourceConfig,
+              MssqlCdcTargetPosition.getTargetPosition(database, sourceConfig.get(JdbcUtils.DATABASE_KEY).asText()), true, firstRecordWaitTime);
+
+      final Supplier<AutoCloseableIterator<AirbyteMessage>> incrementalIteratorSupplier = () -> handler.getIncrementalIterators(catalog,
           new MssqlCdcSavedInfoFetcher(stateManager.getCdcStateManager().getCdcState()),
-          new MssqlCdcStateHandler(stateManager), new MssqlCdcConnectorMetadataInjector(),
+          new MssqlCdcStateHandler(stateManager),
+          new MssqlCdcConnectorMetadataInjector(),
+          MssqlCdcHelper.getDebeziumProperties(sourceConfig, catalog),
           emittedAt);
+
+      return Collections.singletonList(incrementalIteratorSupplier.get());
     } else {
       LOGGER.info("using CDC: {}", false);
       return super.getIncrementalIterators(database, catalog, tableNameToTable, stateManager, emittedAt);

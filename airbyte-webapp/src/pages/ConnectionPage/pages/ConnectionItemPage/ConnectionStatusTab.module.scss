@@ -37,6 +37,7 @@
     .iconRotate {
       display: flex;
       margin-right: 12px;
+      align-items: center;
     }
   }
 }
@@ -50,4 +51,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+:export {
+  syncIconHeight: 15px;
 }

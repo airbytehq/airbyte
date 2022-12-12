@@ -10,11 +10,13 @@ import static org.mockito.Mockito.mock;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.credential.GcsHmacKeyCredentialConfig;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -35,7 +37,7 @@ class GcsAvroWriterTest {
         new ConfiguredAirbyteStream()
             .withStream(new AirbyteStream()
                 .withNamespace("fake-namespace")
-                .withName("fake-stream")),
+                .withName("fake-stream").withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH))),
         Timestamp.from(Instant.ofEpochMilli(1234)),
         null);
 

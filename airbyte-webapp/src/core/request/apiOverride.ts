@@ -104,5 +104,5 @@ async function parseResponse<T>(response: Response, responseType?: "blob"): Prom
     }
   }
 
-  throw new CommonRequestError(response, resultJsonResponse?.message);
+  throw new CommonRequestError(response, resultJsonResponse?.message ?? JSON.stringify(resultJsonResponse?.detail));
 }

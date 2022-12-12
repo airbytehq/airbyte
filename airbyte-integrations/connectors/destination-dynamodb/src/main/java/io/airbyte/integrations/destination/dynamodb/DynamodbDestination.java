@@ -27,7 +27,10 @@ public class DynamodbDestination extends BaseConnector implements Destination {
   @Override
   public AirbyteConnectionStatus check(final JsonNode config) {
     try {
-      DynamodbChecker.attemptDynamodbWriteAndDelete(DynamodbDestinationConfig.getDynamodbDestinationConfig(config));
+      final DynamodbDestinationConfig dynamodbDestinationConfig =
+          DynamodbDestinationConfig.getDynamodbDestinationConfig(config);
+
+      DynamodbChecker.attemptDynamodbWriteAndDelete(dynamodbDestinationConfig);
       return new AirbyteConnectionStatus().withStatus(AirbyteConnectionStatus.Status.SUCCEEDED);
     } catch (final Exception e) {
       LOGGER.error("Exception attempting to access the DynamoDB table: ", e);

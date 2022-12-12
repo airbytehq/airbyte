@@ -16,5 +16,29 @@
   },
   "german_history_frozen_incidence": {
     "date": "2024-01-01T00:00:00.000Z"
+  },
+  "germany_states": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "germany_states_age_groups": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_cases": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_incidence": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_frozen_incidence": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_deaths": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_recovered": {
+    "date": "2024-01-01T00:00:00.000Z"
+  },
+  "states_history_hospitalization": {
+    "date": "2024-01-01T00:00:00.000Z"
   }
 }

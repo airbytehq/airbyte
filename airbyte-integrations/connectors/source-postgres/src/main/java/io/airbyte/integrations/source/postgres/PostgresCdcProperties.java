@@ -8,22 +8,24 @@ import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.CLIENT_KEY_STORE_URL;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SSL_MODE;
 import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_PASS;
-import static io.airbyte.integrations.source.jdbc.AbstractJdbcSource.TRUST_KEY_STORE_URL;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.debezium.internals.PostgresConverter;
-import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource.SslMode;
 import java.net.URI;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class PostgresCdcProperties {
+
+  private static final int HEARTBEAT_FREQUENCY_SEC = 10;
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresCdcProperties.class);
+
   static Properties getDebeziumDefaultProperties(final JdbcDatabase database) {
     final JsonNode sourceConfig = database.getSourceConfig();
     final Properties props = commonProperties(database);
@@ -54,6 +56,7 @@ public class PostgresCdcProperties {
     props.setProperty("converters", "datetime");
     props.setProperty("datetime.type", PostgresConverter.class.getName());
     props.setProperty("include.unknown.datatypes", "true");
+    props.setProperty("heartbeat.interval.ms", Long.toString(Duration.ofSeconds(HEARTBEAT_FREQUENCY_SEC).toMillis()));
 
     // Check params for SSL connection in config and add properties for CDC SSL connection
     // https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-property-database-sslmode

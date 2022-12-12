@@ -13,7 +13,7 @@ export const CustomSelect = styled(Select)<
     box-shadow: none;
     border: 1px solid
       ${({ theme, $withBorder, $error }) =>
-        $error ? theme.dangerColor : $withBorder ? theme.greyColor30 : theme.greyColor0};
+        $error ? theme.red100 : $withBorder ? theme.greyColor30 : theme.greyColor0};
     background: ${({ theme }) => theme.greyColor0};
     border-radius: 4px;
     font-size: 14px;
@@ -21,11 +21,16 @@ export const CustomSelect = styled(Select)<
     min-height: 36px;
     flex-wrap: nowrap;
 
-    &:hover {
-      border-color: ${({ theme, $error }) => ($error ? theme.dangerColor : theme.greyColor10)};
+    &:not(:focus-within, :disabled):hover {
+      border-color: ${({ theme, $error }) => ($error ? theme.red : undefined)};
     }
 
-    &.react-select__control--menu-is-open {
+    &:hover {
+      border-color: ${({ theme }) => theme.greyColor10};
+    }
+
+    &.react-select__control--menu-is-open,
+    &:focus-within {
       border: 1px solid ${({ theme }) => theme.primaryColor};
       box-shadow: none;
     }

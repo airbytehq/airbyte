@@ -103,6 +103,15 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("tinyint")
+            .fullSourceDataType("tinyint(1) unsigned")
+            .airbyteType(JsonSchemaType.INTEGER)
+            .addInsertValues("null", "0", "1", "2", "3")
+            .addExpectedValues(null, "0", "1", "2", "3")
+            .build());
+
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("tinyint")
             .fullSourceDataType("tinyint(2)")
             .airbyteType(JsonSchemaType.INTEGER)
             .addInsertValues("null", "-128", "127")
@@ -279,7 +288,7 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
-              .addInsertValues("'-22:59:59'","'23:59:59'", "'00:00:00'")
+              .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
               .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
               .build());
 

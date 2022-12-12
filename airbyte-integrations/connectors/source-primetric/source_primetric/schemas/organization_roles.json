@@ -1,14 +1,14 @@
 {
-  "type" : "object",
-  "properties" : {
-    "uuid" : {
-      "type" : "string",
-      "format" : "uuid"
+  "type": "object",
+  "properties": {
+    "uuid": {
+      "type": "string",
+      "format": "uuid"
     },
-    "text" : {
-      "type" : "string"
+    "text": {
+      "type": "string"
     },
-    "default_hour_rate" : {
+    "default_hour_rate": {
       "type": "string",
       "airbyte_type": "big_number"
     }

@@ -2,11 +2,10 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 
-import { EmptyResourceListView } from "components/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
-import { MainPageWithScroll } from "components/MainPageWithScroll";
+import { HeadTitle } from "components/common/HeadTitle";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";
 
@@ -38,7 +37,7 @@ const AllSourcesPage: React.FC = () => {
       <SourcesTable sources={sources} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListView resourceType="sources" onCreateClick={onCreateSource} />
+    <Navigate to={RoutePaths.SourceNew} />
   );
 };
 

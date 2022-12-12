@@ -14,6 +14,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import com.amazonaws.services.s3.AmazonS3Client;
+import com.google.common.collect.Lists;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
@@ -26,6 +27,7 @@ import io.airbyte.integrations.destination.s3.util.CompressionType;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.SyncMode;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -54,7 +56,8 @@ public class S3StreamCopierTest {
       .withDestinationSyncMode(DestinationSyncMode.APPEND)
       .withStream(new AirbyteStream()
           .withName("fake-stream")
-          .withNamespace("fake-namespace"));
+          .withNamespace("fake-namespace")
+          .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH)));
   private static final int UPLOAD_THREADS = 10;
   private static final int QUEUE_CAPACITY = 10;
   // equivalent to Thu, 09 Dec 2021 19:17:54 GMT

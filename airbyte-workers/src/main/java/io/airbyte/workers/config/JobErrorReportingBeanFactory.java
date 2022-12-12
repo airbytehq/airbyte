@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.config;
 
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WebUrlHelper;

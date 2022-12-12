@@ -406,6 +406,16 @@ public interface Configs {
   Map<String, String> getJobKubeNodeSelectors();
 
   /**
+   * Define an isolated kube node selectors, so we can run risky images in it.
+   */
+  Map<String, String> getIsolatedJobKubeNodeSelectors();
+
+  /**
+   * Define if we want to run custom connector related jobs in a separate node pool.
+   */
+  boolean getUseCustomKubeNodeSelector();
+
+  /**
    * Define node selectors for Spec job pods specifically. Each kv-pair is separated by a `,`.
    */
   Map<String, String> getSpecJobKubeNodeSelectors();
@@ -454,12 +464,42 @@ public interface Configs {
   /**
    * Define the Job pod connector image pull secret. Useful when hosting private images.
    */
-  String getJobKubeMainContainerImagePullSecret();
+  List<String> getJobKubeMainContainerImagePullSecrets();
+
+  /**
+   * Define the Memory request for the Sidecar
+   */
+  String getSidecarMemoryRequest();
+
+  /**
+   * Define the Memory limit for the Sidecar
+   */
+  String getSidecarKubeMemoryLimit();
+
+  /**
+   * Define the CPU request for the Sidecar
+   */
+  String getSidecarKubeCpuRequest();
+
+  /**
+   * Define the CPU limit for the Sidecar
+   */
+  String getSidecarKubeCpuLimit();
+
+  /**
+   * Define the CPU request for the SOCAT Sidecar
+   */
+  String getJobKubeSocatImage();
+
+  /**
+   * Define the CPU limit for the SOCAT Sidecar
+   */
+  String getSocatSidecarKubeCpuLimit();
 
   /**
    * Define the Job pod socat image.
    */
-  String getJobKubeSocatImage();
+  String getSocatSidecarKubeCpuRequest();
 
   /**
    * Define the Job pod busybox image.
@@ -579,15 +619,10 @@ public interface Configs {
    */
   boolean shouldRunConnectionManagerWorkflows();
 
-  // Worker - Control Plane configs
-
   /**
-   * TEMPORARY: Define a set of connection IDs that should run in Airbyte's MVP Data Plane. - This
-   * should only be set on Control-plane workers, since those workers decide which Data Plane task
-   * queue to use based on connectionId. - Will be removed in favor of the Routing Service in the
-   * future. Internal-use only.
+   * Define if the worker should run notification workflows. Defaults to true. Internal-use only.
    */
-  Set<String> connectionIdsForMvpDataPlane();
+  public boolean shouldRunNotifyWorkflows();
 
   // Worker - Data Plane configs
 
@@ -625,11 +660,6 @@ public interface Configs {
   Set<Integer> getTemporalWorkerPorts();
 
   // Container Orchestrator
-
-  /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only.
-   */
-  boolean getContainerOrchestratorEnabled();
 
   /**
    * Get the name of the container orchestrator secret. Internal-use only.
@@ -691,6 +721,8 @@ public interface Configs {
    * Get number of attempts of the non long running activities
    */
   int getActivityNumberOfAttempt();
+
+  boolean getAutoDetectSchema();
 
   enum TrackingStrategy {
     SEGMENT,

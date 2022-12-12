@@ -14,4 +14,5 @@ public class S3DestinationRunner {
         .withCloudDestination(S3DestinationStrictEncrypt::new)
         .run(args);
   }
+
 }
