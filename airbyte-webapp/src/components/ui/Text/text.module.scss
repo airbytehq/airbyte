@@ -4,6 +4,10 @@
   color: colors.$dark-blue;
   margin: 0;
   padding: 0;
+
+  &.inverse {
+    color: colors.$white;
+  }
 }
 
 .sm,
