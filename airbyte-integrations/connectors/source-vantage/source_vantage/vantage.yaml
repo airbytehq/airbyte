@@ -63,5 +63,6 @@ streams:
   - "*ref(definitions.reports_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "providers"

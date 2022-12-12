@@ -34,5 +34,6 @@ streams:
   - "*ref(definitions.data_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "data"

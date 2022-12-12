@@ -90,6 +90,7 @@ streams:
   - "*ref(definitions.beers_with_id_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "beers"
     - "beers_with_id"

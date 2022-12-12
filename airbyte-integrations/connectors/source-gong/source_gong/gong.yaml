@@ -92,5 +92,6 @@ streams:
   - "*ref(definitions.answered_scorecards_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "users"

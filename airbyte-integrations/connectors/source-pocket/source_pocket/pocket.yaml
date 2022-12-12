@@ -64,5 +64,6 @@ streams:
   - "*ref(definitions.retrieve_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "retrieve"

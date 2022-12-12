@@ -77,6 +77,7 @@ streams:
   - "*ref(definitions.recruiters_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "jobs"
     - "candidates"

@@ -147,5 +147,6 @@ streams:
   - "*ref(definitions.components_stream)"
   - "*ref(definitions.metrics_stream)"
 check:
+  type: CheckStream
   stream_names:
     - "pages"

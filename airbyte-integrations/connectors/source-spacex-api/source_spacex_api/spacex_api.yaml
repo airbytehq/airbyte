@@ -131,6 +131,7 @@ streams:
   - "*ref(definitions.starlink_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "launches"
     - "capsules"

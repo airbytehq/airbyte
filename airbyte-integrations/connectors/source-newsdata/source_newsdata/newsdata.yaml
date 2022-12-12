@@ -74,6 +74,7 @@ streams:
   - "*ref(definitions.sources_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "latest"
     - "sources"

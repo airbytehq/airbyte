@@ -77,5 +77,6 @@ streams:
   - "*ref(definitions.registrations_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "phones"

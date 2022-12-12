@@ -122,6 +122,7 @@ streams:
   - "*ref(definitions.translations_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "keys"
     - "languages"

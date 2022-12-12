@@ -78,6 +78,7 @@ streams:
   - "*ref(definitions.top_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "per-article"
     - "top"

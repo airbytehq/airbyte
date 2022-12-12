@@ -76,5 +76,6 @@ streams:
   - "*ref(definitions.dataset_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "dataset"

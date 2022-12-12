@@ -82,5 +82,6 @@ streams:
   - "*ref(definitions.exchange_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "categories"

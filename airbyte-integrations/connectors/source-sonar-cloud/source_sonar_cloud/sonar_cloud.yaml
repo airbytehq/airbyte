@@ -63,5 +63,6 @@ streams:
   - "*ref(definitions.metrics_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "components"

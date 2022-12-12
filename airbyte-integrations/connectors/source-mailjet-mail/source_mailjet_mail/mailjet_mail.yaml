@@ -94,5 +94,6 @@ streams:
   - "*ref(definitions.message_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "contactslist"

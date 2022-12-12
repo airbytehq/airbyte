@@ -71,6 +71,7 @@ streams:
   - "*ref(definitions.lists_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "campaigns"
     - "lists"

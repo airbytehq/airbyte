@@ -55,5 +55,6 @@ streams:
   - "*ref(definitions.sms_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "sms"

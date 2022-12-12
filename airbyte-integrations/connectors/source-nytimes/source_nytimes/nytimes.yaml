@@ -72,6 +72,7 @@ streams:
   - "*ref(definitions.most_popular_viewed_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "archive"
     - "most_popular_emailed"

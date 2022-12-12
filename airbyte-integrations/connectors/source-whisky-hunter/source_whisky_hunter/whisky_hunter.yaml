@@ -39,6 +39,7 @@ streams:
   - "*ref(definitions.distilleries_info_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "auctions_data"
     - "auctions_info"

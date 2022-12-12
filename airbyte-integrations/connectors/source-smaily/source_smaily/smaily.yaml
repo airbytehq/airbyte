@@ -96,4 +96,5 @@ streams:
   - "*ref(definitions.ab_tests_stream)"
 
 check:
+  type: CheckStream
   stream_names: ["users"]

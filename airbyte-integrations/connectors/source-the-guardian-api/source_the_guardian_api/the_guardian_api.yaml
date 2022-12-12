@@ -70,5 +70,6 @@ streams:
   - "*ref(definitions.content_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "content"

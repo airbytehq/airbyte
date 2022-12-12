@@ -81,4 +81,5 @@ streams:
   - "*ref(definitions.products_stream)"
 
 check:
+  type: CheckStream
   stream_names: ["contacts"]

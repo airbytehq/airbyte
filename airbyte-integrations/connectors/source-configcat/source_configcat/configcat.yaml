@@ -96,5 +96,6 @@ streams:
   - "*ref(definitions.environments_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "organizations"

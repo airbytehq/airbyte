@@ -68,5 +68,6 @@ streams:
   - "*ref(definitions.future_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "domestic"

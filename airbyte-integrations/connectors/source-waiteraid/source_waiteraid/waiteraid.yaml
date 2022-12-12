@@ -44,5 +44,6 @@ streams:
   - "*ref(definitions.booking_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "booking"

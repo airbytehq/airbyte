@@ -69,6 +69,7 @@ streams:
   - "*ref(definitions.top_headlines_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "everything"
     - "top_headlines"

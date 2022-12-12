@@ -108,5 +108,6 @@ streams:
   - "*ref(definitions.workspace_tasks_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "time_entries"

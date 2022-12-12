@@ -86,5 +86,6 @@ streams:
   - "*ref(definitions.templates_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "campaigns"

@@ -537,5 +537,6 @@ streams:
   - "*ref(definitions.zones_stream)"
 
 check:
+  type: CheckStream
   stream_names:
     - "shops"
