@@ -690,6 +690,8 @@ public interface Configs {
    */
   int getActivityNumberOfAttempt();
 
+  String getDaspireUrl();
+
   enum TrackingStrategy {
     SEGMENT,
     LOGGING

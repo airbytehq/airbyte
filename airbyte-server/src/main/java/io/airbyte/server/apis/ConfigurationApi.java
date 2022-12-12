@@ -5,101 +5,7 @@
 package io.airbyte.server.apis;
 
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.generated.CheckConnectionRead;
-import io.airbyte.api.model.generated.CheckOperationRead;
-import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
-import io.airbyte.api.model.generated.CompleteSourceOauthRequest;
-import io.airbyte.api.model.generated.ConnectionCreate;
-import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
-import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionState;
-import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
-import io.airbyte.api.model.generated.ConnectionStateType;
-import io.airbyte.api.model.generated.ConnectionUpdate;
-import io.airbyte.api.model.generated.CustomDestinationDefinitionCreate;
-import io.airbyte.api.model.generated.CustomDestinationDefinitionUpdate;
-import io.airbyte.api.model.generated.CustomSourceDefinitionCreate;
-import io.airbyte.api.model.generated.CustomSourceDefinitionUpdate;
-import io.airbyte.api.model.generated.DbMigrationExecutionRead;
-import io.airbyte.api.model.generated.DbMigrationReadList;
-import io.airbyte.api.model.generated.DbMigrationRequestBody;
-import io.airbyte.api.model.generated.DestinationCloneRequestBody;
-import io.airbyte.api.model.generated.DestinationCoreConfig;
-import io.airbyte.api.model.generated.DestinationCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionCreate;
-import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.generated.DestinationDefinitionRead;
-import io.airbyte.api.model.generated.DestinationDefinitionReadList;
-import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
-import io.airbyte.api.model.generated.DestinationDefinitionUpdate;
-import io.airbyte.api.model.generated.DestinationIdRequestBody;
-import io.airbyte.api.model.generated.DestinationOauthConsentRequest;
-import io.airbyte.api.model.generated.DestinationRead;
-import io.airbyte.api.model.generated.DestinationReadList;
-import io.airbyte.api.model.generated.DestinationSearch;
-import io.airbyte.api.model.generated.DestinationUpdate;
-import io.airbyte.api.model.generated.HealthCheckRead;
-import io.airbyte.api.model.generated.InternalOperationResult;
-import io.airbyte.api.model.generated.JobDebugInfoRead;
-import io.airbyte.api.model.generated.JobIdRequestBody;
-import io.airbyte.api.model.generated.JobInfoLightRead;
-import io.airbyte.api.model.generated.JobInfoRead;
-import io.airbyte.api.model.generated.JobListRequestBody;
-import io.airbyte.api.model.generated.JobReadList;
-import io.airbyte.api.model.generated.LogsRequestBody;
-import io.airbyte.api.model.generated.Notification;
-import io.airbyte.api.model.generated.NotificationRead;
-import io.airbyte.api.model.generated.OAuthConsentRead;
-import io.airbyte.api.model.generated.OperationCreate;
-import io.airbyte.api.model.generated.OperationIdRequestBody;
-import io.airbyte.api.model.generated.OperationRead;
-import io.airbyte.api.model.generated.OperationReadList;
-import io.airbyte.api.model.generated.OperationUpdate;
-import io.airbyte.api.model.generated.OperatorConfiguration;
-import io.airbyte.api.model.generated.PrivateDestinationDefinitionRead;
-import io.airbyte.api.model.generated.PrivateDestinationDefinitionReadList;
-import io.airbyte.api.model.generated.PrivateSourceDefinitionRead;
-import io.airbyte.api.model.generated.PrivateSourceDefinitionReadList;
-import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
-import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
-import io.airbyte.api.model.generated.SetWorkflowInAttemptRequestBody;
-import io.airbyte.api.model.generated.SlugRequestBody;
-import io.airbyte.api.model.generated.SourceCloneRequestBody;
-import io.airbyte.api.model.generated.SourceCoreConfig;
-import io.airbyte.api.model.generated.SourceCreate;
-import io.airbyte.api.model.generated.SourceDefinitionCreate;
-import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
-import io.airbyte.api.model.generated.SourceDefinitionRead;
-import io.airbyte.api.model.generated.SourceDefinitionReadList;
-import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
-import io.airbyte.api.model.generated.SourceDefinitionUpdate;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
-import io.airbyte.api.model.generated.SourceIdRequestBody;
-import io.airbyte.api.model.generated.SourceOauthConsentRequest;
-import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.SourceReadList;
-import io.airbyte.api.model.generated.SourceSearch;
-import io.airbyte.api.model.generated.SourceUpdate;
-import io.airbyte.api.model.generated.WebBackendConnectionCreate;
-import io.airbyte.api.model.generated.WebBackendConnectionRead;
-import io.airbyte.api.model.generated.WebBackendConnectionReadList;
-import io.airbyte.api.model.generated.WebBackendConnectionRequestBody;
-import io.airbyte.api.model.generated.WebBackendConnectionSearch;
-import io.airbyte.api.model.generated.WebBackendConnectionUpdate;
-import io.airbyte.api.model.generated.WebBackendWorkspaceState;
-import io.airbyte.api.model.generated.WebBackendWorkspaceStateResult;
-import io.airbyte.api.model.generated.WorkspaceCreate;
-import io.airbyte.api.model.generated.WorkspaceGiveFeedback;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
-import io.airbyte.api.model.generated.WorkspaceRead;
-import io.airbyte.api.model.generated.WorkspaceReadList;
-import io.airbyte.api.model.generated.WorkspaceUpdate;
-import io.airbyte.api.model.generated.WorkspaceUpdateName;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.io.FileTtlManager;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -561,6 +467,16 @@ public class ConfigurationApi implements io.airbyte.api.generated.V1Api {
   @Override
   public DestinationDefinitionRead updateCustomDestinationDefinition(final CustomDestinationDefinitionUpdate customDestinationDefinitionUpdate) {
     return execute(() -> destinationDefinitionsHandler.updateCustomDestinationDefinition(customDestinationDefinitionUpdate));
+  }
+
+  @Override
+  public ConnectionDisplayFlag connectionsDisabledAllForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> connectionsHandler.connectionsDisabledAllForWorkspace(workspaceIdRequestBody));
+  }
+
+  @Override
+  public ConnectionsCount connectionsCountForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) {
+    return execute(() -> connectionsHandler.connectionsCountForWorkspace(workspaceIdRequestBody));
   }
 
   @Override

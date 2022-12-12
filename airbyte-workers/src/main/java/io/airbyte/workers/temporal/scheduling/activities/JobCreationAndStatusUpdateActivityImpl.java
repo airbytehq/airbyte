@@ -39,6 +39,7 @@ import io.airbyte.scheduler.persistence.job_factory.SyncJobFactory;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker;
 import io.airbyte.scheduler.persistence.job_tracker.JobTracker.JobState;
 import io.airbyte.validation.json.JsonValidationException;
+import io.airbyte.workers.HttpUtil;
 import io.airbyte.workers.JobStatus;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.run.TemporalWorkerRunFactory;
@@ -47,6 +48,7 @@ import io.airbyte.workers.temporal.exception.RetryableException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -170,17 +172,26 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     try {
       final long jobId = input.getJobId();
       final int attemptId = input.getAttemptId();
-
+      final Job job = jobPersistence.getJob(jobId);
       if (input.getStandardSyncOutput() != null) {
         final JobOutput jobOutput = new JobOutput().withSync(input.getStandardSyncOutput());
         final SyncStats syncStats = jobOutput.getSync().getStandardSyncSummary().getTotalStats();
         jobPersistence.writeOutput(jobId, attemptId, jobOutput, syncStats);
+        if(syncStats.getRecordsCommitted() != 0 || syncStats.getBytesEmitted() != 0){
+            // 插入Daspire RPC调用
+            String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
+            Map<String, Object> param = Map.of("workspaceId", workspaceId,
+                "connectionId", job.getScope(),
+                "attemptId", attemptId,
+                "recordsCommitted", syncStats.getRecordsCommitted(),
+                "bytesCommitted", syncStats.getBytesEmitted());
+            HttpUtil.daspireConnectionCount(param);
+        }
       } else {
         log.warn("The job {} doesn't have any output for the attempt {}", jobId, attemptId);
       }
       jobPersistence.succeedAttempt(jobId, attemptId);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE, jobId);
-      final Job job = jobPersistence.getJob(jobId);
 
       jobNotifier.successJob(job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_SUCCEEDED_BY_RELEASE_STAGE, jobId);
