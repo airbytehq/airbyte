@@ -131,7 +131,8 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "title": title,
-        "description": soup.select_one("p#goodToKnow").text.strip(),
+        # NOTE: descriptions are really extensive, not sure if they add a lot so for now disabled them
+        # "description": soup.select_one("p#goodToKnow").text.strip(),
         "properties": json_properties,
     }
 
