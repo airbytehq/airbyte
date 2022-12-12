@@ -1334,6 +1334,54 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/disabled_all:
+    post:
+      tags:
+        - connection
+      summary: disabled all connections for workspace.
+      description: for workspace.
+      operationId: connectionsDisabledAllForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionDisplayFlag"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
+  /v1/connections/count:
+    post:
+      tags:
+        - connection
+      summary: connections count for workspace.
+      description: connections count for workspace.
+      operationId: connectionsCountForWorkspace
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WorkspaceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConnectionsCount"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/connections/list_all:
     post:
       tags:
@@ -3458,6 +3506,21 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ConnectionRead"
+    ConnectionDisplayFlag:
+      type: object
+      required:
+        - flag
+      properties:
+        flag:
+          type: boolean
+    ConnectionsCount:
+      type: object
+      required:
+        - count
+      properties:
+        count:
+          type: integer
+          format: int64
     ConnectionStatus:
       type: string
       description: Active means that data is flowing through the connection. Inactive means it is not. Deprecated means the connection is off and cannot be re-activated. the schema field describes the elements of the schema that will be synced.
