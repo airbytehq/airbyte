@@ -21,13 +21,11 @@ import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.JobsApiBinder;
-import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.JobsApiFactory;
-import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
@@ -127,8 +125,6 @@ public interface ServerFactory {
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
       JobsApiFactory.setValues(jobHistoryHandler, schedulerHandler);
 
-      LogsApiFactory.setValues(logsHandler);
-
       NotificationsApiFactory.setValues(workspacesHandler);
 
       SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
@@ -140,7 +136,6 @@ public interface ServerFactory {
       // server configuration
       final Set<Class<?>> componentClasses = Set.of(
           JobsApiController.class,
-          LogsApiController.class,
           NotificationsApiController.class,
           SourceDefinitionSpecificationApiController.class,
           StateApiController.class,
@@ -149,7 +144,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new JobsApiBinder(),
-          new LogsApiBinder(),
           new NotificationApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new WebBackendApiBinder(),
