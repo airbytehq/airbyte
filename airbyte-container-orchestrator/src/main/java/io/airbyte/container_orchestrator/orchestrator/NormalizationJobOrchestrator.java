@@ -73,7 +73,7 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
         new DefaultNormalizationRunner(
             processFactory,
             destinationLauncherConfig.getNormalizationDockerImage(),
-            destinationLauncherConfig.getIntegrationType()),
+            destinationLauncherConfig.getNormalizationIntegrationType()),
         configs.getWorkerEnvironment());
 
     log.info("Running normalization worker...");

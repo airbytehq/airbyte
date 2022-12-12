@@ -178,7 +178,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
             .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
-            .set(ACTOR_DEFINITION.INTEGRATION_TYPE, standardDestinationDefinition.getIntegrationType())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE, standardDestinationDefinition.getNormalizationIntegrationType())
             .where(Tables.ACTOR_DEFINITION.ID.eq(standardDestinationDefinition.getDestinationDefinitionId()))
             .execute();
 
@@ -211,7 +211,7 @@ public class ConfigWriter {
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_REPOSITORY, standardDestinationDefinition.getNormalizationRepository())
             .set(Tables.ACTOR_DEFINITION.NORMALIZATION_TAG, standardDestinationDefinition.getNormalizationTag())
             .set(Tables.ACTOR_DEFINITION.SUPPORTS_DBT, standardDestinationDefinition.getSupportsDbt())
-            .set(ACTOR_DEFINITION.INTEGRATION_TYPE, standardDestinationDefinition.getIntegrationType())
+            .set(Tables.ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE, standardDestinationDefinition.getNormalizationIntegrationType())
             .execute();
       }
     });

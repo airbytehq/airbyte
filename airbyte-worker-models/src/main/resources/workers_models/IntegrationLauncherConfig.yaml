@@ -21,7 +21,7 @@ properties:
   supportsDbt:
     type: boolean
     default: false
-  integrationType:
+  normalizationIntegrationType:
     type: string
   protocolVersion:
     type: object

@@ -13,10 +13,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // TODO: update migration description in the class name
-public class V0_40_23_002__AddIntegrationTypeToActorDefinition extends BaseJavaMigration {
+public class V0_40_23_002__AddNormalizationIntegrationTypeToActorDefinition extends BaseJavaMigration {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(
-      V0_40_23_002__AddIntegrationTypeToActorDefinition.class);
+      V0_40_23_002__AddNormalizationIntegrationTypeToActorDefinition.class);
 
   @Override
   public void migrate(final Context context) throws Exception {
@@ -28,7 +28,7 @@ public class V0_40_23_002__AddIntegrationTypeToActorDefinition extends BaseJavaM
   static void addIntegrationTypeColumn(final DSLContext ctx) {
     ctx.alterTable("actor_definition")
         .addColumnIfNotExists(DSL.field(
-            "integration_type",
+            "normalization_integration_type",
             SQLDataType.VARCHAR(255).nullable(true)))
         .execute();
   }

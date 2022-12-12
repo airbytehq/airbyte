@@ -239,9 +239,9 @@ public abstract class DestinationAcceptanceTest {
         .orElse(false);
   }
 
-  protected String getIntegrationType() {
+  protected String getNormalizationIntegrationType() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(StandardDestinationDefinition::getIntegrationType)
+        .map(StandardDestinationDefinition::getNormalizationIntegrationType)
         .orElse(null);
   }
 
@@ -570,7 +570,7 @@ public abstract class DestinationAcceptanceTest {
         new DefaultNormalizationRunner(
             processFactory,
             getNormalizationImageName(),
-            getIntegrationType());
+            getNormalizationIntegrationType());
         normalizationRunnerFactorySupportsDestinationImage = true;
       } catch (final IllegalStateException e) {
         normalizationRunnerFactorySupportsDestinationImage = false;
@@ -876,7 +876,7 @@ public abstract class DestinationAcceptanceTest {
         new DefaultNormalizationRunner(
             processFactory,
             getNormalizationImageName(),
-            getIntegrationType()));
+            getNormalizationIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -952,7 +952,7 @@ public abstract class DestinationAcceptanceTest {
         new DefaultNormalizationRunner(
             processFactory,
             getNormalizationImageName(),
-            getIntegrationType()));
+            getNormalizationIntegrationType()));
     runner.start();
     final Path transformationRoot = Files.createDirectories(jobRoot.resolve("transform"));
     final OperatorDbt dbtConfig = new OperatorDbt()
@@ -1299,7 +1299,7 @@ public abstract class DestinationAcceptanceTest {
     final NormalizationRunner runner = new DefaultNormalizationRunner(
         processFactory,
         getNormalizationImageName(),
-        getIntegrationType());
+        getNormalizationIntegrationType());
     runner.start();
     final Path normalizationRoot = Files.createDirectories(jobRoot.resolve("normalize"));
     if (!runner.normalize(JOB_ID, JOB_ATTEMPT, normalizationRoot,

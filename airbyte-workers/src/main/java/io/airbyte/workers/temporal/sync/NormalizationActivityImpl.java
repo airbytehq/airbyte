@@ -153,7 +153,7 @@ public class NormalizationActivityImpl implements NormalizationActivity {
         new DefaultNormalizationRunner(
             processFactory,
             destinationLauncherConfig.getNormalizationDockerImage(),
-            destinationLauncherConfig.getIntegrationType()),
+            destinationLauncherConfig.getNormalizationIntegrationType()),
         workerEnvironment);
   }
 

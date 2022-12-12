@@ -254,7 +254,7 @@ public class DestinationDefinitionsHandler {
         .withNormalizationRepository(currentDestination.getNormalizationRepository())
         .withNormalizationTag(currentDestination.getNormalizationTag())
         .withSupportsDbt(currentDestination.getSupportsDbt())
-        .withIntegrationType(currentDestination.getIntegrationType())
+        .withNormalizationIntegrationType(currentDestination.getNormalizationIntegrationType())
         .withSpec(spec)
         .withProtocolVersion(airbyteProtocolVersion.serialize())
         .withTombstone(currentDestination.getTombstone())

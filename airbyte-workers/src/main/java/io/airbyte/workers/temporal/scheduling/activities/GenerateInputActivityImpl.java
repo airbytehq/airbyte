@@ -98,7 +98,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
           standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
       final boolean supportstDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
-      final String integrationType = optionalDestinationDefinition.map(StandardDestinationDefinition::getIntegrationType).orElse(null);
+      final String normalizationIntegrationType =
+          optionalDestinationDefinition.map(StandardDestinationDefinition::getNormalizationIntegrationType).orElse(null);
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))
@@ -115,7 +116,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withIsCustomConnector(config.getIsDestinationCustomConnector())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
           .withSupportsDbt(supportstDbt)
-          .withIntegrationType(integrationType);
+          .withNormalizationIntegrationType(normalizationIntegrationType);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
           .withNamespaceDefinition(config.getNamespaceDefinition())

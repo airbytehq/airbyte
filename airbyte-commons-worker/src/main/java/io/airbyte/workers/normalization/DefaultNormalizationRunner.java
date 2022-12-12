@@ -45,7 +45,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private final String integrationType;
+  private final String normalizationIntegrationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
   private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
@@ -56,10 +56,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   public DefaultNormalizationRunner(final ProcessFactory processFactory,
                                     final String normalizationImage,
-                                    final String integrationType) {
+                                    final String normalizationIntegrationType) {
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImage;
-    this.integrationType = integrationType;
+    this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
   @Override
@@ -79,12 +79,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", integrationType.toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl);
     } else {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", integrationType.toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl,
           "--git-branch", gitRepoBranch);
@@ -104,7 +104,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", integrationType.toLowerCase(),
+        "--integration-type", normalizationIntegrationType.toLowerCase(),
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
