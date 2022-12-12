@@ -366,6 +366,7 @@ definitions:
         default: ""
       schema_loader:
         anyOf:
+          - "$ref": "#/definitions/DefaultSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       stream_cursor_field:
         anyOf:
