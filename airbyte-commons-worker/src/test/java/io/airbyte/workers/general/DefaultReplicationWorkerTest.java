@@ -153,7 +153,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     worker.run(syncInput, jobRoot);
 
@@ -181,7 +181,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     worker.run(syncInput, jobRoot);
 
@@ -211,7 +211,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -231,7 +231,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -253,7 +253,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -274,7 +274,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()
@@ -296,7 +296,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -322,7 +322,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     worker.run(syncInput, jobRoot);
 
@@ -346,7 +346,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -367,7 +367,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -389,7 +389,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -412,7 +412,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     worker.run(syncInput, jobRoot);
 
@@ -453,7 +453,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -501,7 +501,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -568,7 +568,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -587,7 +587,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -621,7 +621,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -667,7 +667,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -687,7 +687,7 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter);
+        workerMetricReporter, false);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 
