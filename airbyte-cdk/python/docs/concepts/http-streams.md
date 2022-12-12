@@ -85,7 +85,7 @@ be returned as a keyword argument.
 ## Stream Availability
 
 The CDK defines an `AvailabilityStrategy` for a stream, which is used to perform the `check_availability` method. This method checks whether
-the stream is available before performing `read_records.`
+the stream is available before performing `read_records`.
 
 For HTTP streams, a default `HttpAvailabilityStrategy` is defined, which attempts to read the first record of the stream, and excepts
 a dictionary of known error codes and associated reasons, `reasons_for_unavailable_status_codes`. By default, this list contains only
