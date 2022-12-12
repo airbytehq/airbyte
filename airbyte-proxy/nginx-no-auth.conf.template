@@ -10,6 +10,11 @@ http {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
       proxy_pass "${PROXY_PASS_WEB}";
+
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
     }
   }
 
@@ -22,6 +27,11 @@ http {
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 
       proxy_pass "${PROXY_PASS_API}";
+
+      proxy_connect_timeout       ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
+      send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
     }
   }
 
