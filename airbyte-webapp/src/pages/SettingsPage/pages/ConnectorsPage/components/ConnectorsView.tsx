@@ -99,13 +99,14 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
                   onChange={onUpdateVersion}
                   feedback={feedbackList[Connector.id(row.original)]}
                   currentVersion={row.original.dockerImageTag}
+                  updating={loading}
                 />
               ),
             },
           ]
         : []),
     ],
-    [feedbackList, onUpdateVersion, allowUpdateConnectors]
+    [allowUpdateConnectors, onUpdateVersion, feedbackList, loading]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
