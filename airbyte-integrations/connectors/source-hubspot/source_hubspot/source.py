@@ -16,7 +16,6 @@ from airbyte_cdk.sources.utils.schema_helpers import split_config
 from airbyte_cdk.utils.event_timing import create_timer
 from airbyte_cdk.utils.traced_exception import AirbyteTracedException
 from requests import HTTPError
-from source_hubspot.constants import API_KEY_CREDENTIALS
 from source_hubspot.streams import (
     API,
     Campaigns,
@@ -40,7 +39,6 @@ from source_hubspot.streams import (
     Owners,
     Products,
     PropertyHistory,
-    Quotes,
     SubscriptionChanges,
     TicketPipelines,
     Tickets,
@@ -117,10 +115,6 @@ class SourceHubspot(AbstractSource):
             TicketPipelines(**common_params),
             Workflows(**common_params),
         ]
-
-        credentials_title = credentials.get("credentials_title")
-        if credentials_title == API_KEY_CREDENTIALS:
-            streams.append(Quotes(**common_params))
 
         api = API(credentials=credentials)
         if api.is_oauth2():

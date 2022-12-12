@@ -162,6 +162,33 @@ describe("Feature Service", () => {
       rerender({ overwrite: undefined });
       expect(result.current.sort()).toEqual([FeatureItem.AllowDBTCloudIntegration, FeatureItem.AllowSync]);
     });
+
+    describe("env variable overwrites", () => {
+      beforeEach(() => {
+        process.env.REACT_APP_FEATURE_ALLOW_SYNC = "false";
+        process.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = "true";
+      });
+
+      afterEach(() => {
+        (process.env.NODE_ENV as string) = "test";
+        process.env.REACT_APP_FEATURE_ALLOW_SYNC = undefined;
+        process.env.REACT_APP_FEATURE_ALLOW_CHANGE_DATA_GEOGRAPHIES = undefined;
+      });
+
+      it("should allow overwriting it in dev", () => {
+        (process.env.NODE_ENV as string) = "development";
+        const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
+        expect(getFeature(FeatureItem.AllowSync)).toBe(false);
+        expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(true);
+      });
+
+      it("should not overwrite in a non dev environment", () => {
+        (process.env.NODE_ENV as string) = "production";
+        const getFeature = (feature: FeatureItem) => renderHook(() => useFeature(feature), { wrapper }).result.current;
+        expect(getFeature(FeatureItem.AllowSync)).toBe(true);
+        expect(getFeature(FeatureItem.AllowChangeDataGeographies)).toBe(false);
+      });
+    });
   });
 
   describe("IfFeatureEnabled", () => {
