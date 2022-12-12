@@ -171,6 +171,7 @@
   "connectionForm.modal.destinationNamespace.table.data.exampleSourceNamespace": "\"$<symbol>SOURCE_NAMESPACE</symbol>\"",
   "connectionForm.modal.destinationNamespace.table.data.exampleMySourceNamespace": "\"my_$<symbol>SOURCE_NAMESPACE</symbol>_schema\"",
   "connectionForm.modal.destinationNamespace.table.data.custom": "<symbol>custom</symbol>",
+  "connectionForm.modal.destinationNamespace.learnMore.link": "Learn more",
 
   "connectionForm.modal.destinationStreamNames.title": "Destination stream names",
   "connectionForm.modal.destinationStreamNames.radioButton.mirror": "Mirror source name",
