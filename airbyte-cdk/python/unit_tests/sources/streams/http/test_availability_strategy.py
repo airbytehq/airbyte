@@ -44,20 +44,29 @@ def test_default_http_availability_strategy(mocker):
     http_stream = MockHttpStream()
     assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
 
-    req = requests.Response()
-    req.status_code = 403
-    mocker.patch.object(requests.Session, "send", return_value=req)
+    class MockResponse(requests.Response, mocker.MagicMock):
+        def __init__(self, *args, **kvargs):
+            mocker.MagicMock.__init__(self)
+            requests.Response.__init__(self, **kvargs)
+            self.json = mocker.MagicMock()
+
+    response = MockResponse()
+    response.status_code = 403
+    response.json.return_value = {"error": "Oh no!"}
+    mocker.patch.object(requests.Session, "send", return_value=response)
 
     stream_is_available, reason = http_stream.check_availability(logger)
     assert not stream_is_available
 
     expected_messages = [
         "This is most likely due to insufficient permissions on the credentials in use.",
-        "Please visit the connector's documentation to learn more."
+        "Please visit the connector's documentation to learn more.",
+        "Oh no!",
     ]
     for message in expected_messages:
         assert message in reason
 
+    req = requests.Response()
     req.status_code = 200
     mocker.patch.object(requests.Session, "send", return_value=req)
 
