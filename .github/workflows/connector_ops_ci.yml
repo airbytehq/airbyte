@@ -45,7 +45,7 @@ jobs:
         id: get-mandatory-reviewers
         run: print-mandatory-reviewers >> $GITHUB_OUTPUT
       - name: Check if the review requirements are met
-        if: steps.write-review-requirements-file.outputs.REVIEW_REQUIREMENTS_FILE != ''
+        if: 'steps.write-review-requirements-file.outputs.REVIEW_REQUIREMENTS_FILE != ""'
         uses: Automattic/action-required-review@v3
         with:
           status: ${{ steps.get-mandatory-reviewers.outputs.MANDATORY_REVIEWERS  }}
