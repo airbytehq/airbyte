@@ -10,7 +10,7 @@ MAIN_REQUIREMENTS = ["requests", "ci_common_utils", "click~=8.1.3"]
 TEST_REQUIREMENTS = ["requests-mock", "pytest"]
 
 setup(
-    version="1.0.0",
+    version="1.0.1",
     name="ci_credentials",
     description="CLI tooling to read and manage GSM secrets",
     author="Airbyte",
