@@ -39,6 +39,16 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                 raise ValueError(f"{stream_name} is not part of the catalog. Expected one of {stream_name_to_stream.keys()}.")
             stream = stream_name_to_stream[stream_name]
 
+            if stream.availability_strategy is not None:
+                try:
+                    stream_is_available, reason = stream.check_availability(logger, source)
+                    if stream_is_available:
+                        return True, None
+                    else:
+                        return False, reason
+                except Exception as error:
+                    return False, f"Unable to connect to stream {stream_name} - {error}"
+
             try:
                 # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
                 # Streams that don't need a stream slice will return `None` as their first stream slice.
