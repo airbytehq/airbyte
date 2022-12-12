@@ -51,8 +51,6 @@ import org.slf4j.LoggerFactory;
 public class OAuthHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
-  private static final String ERROR_MESSAGE = "failed while reporting usage.";
-
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
   private final TrackingClient trackingClient;
