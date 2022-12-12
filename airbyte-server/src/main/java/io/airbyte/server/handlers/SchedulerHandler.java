@@ -82,9 +82,7 @@ import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Singleton
 public class SchedulerHandler {
 
