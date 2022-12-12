@@ -59,7 +59,7 @@ def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
         teams += GA_CONNECTOR_REVIEWERS
     if backward_compatibility_changes:
         teams += [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
-    if  test_strictness_level_changes:
+    if test_strictness_level_changes:
         teams += [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
     return teams
 
