@@ -57,19 +57,12 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   const changedStreams = useMemo(
     () =>
       streams.filter((stream) => {
-        if (!stream.config) {
-          return false;
-        }
-        const matchingInitialValue = initialValues.syncCatalog.streams.filter(
+        const matchingInitialValue = initialValues.syncCatalog.streams.find(
           (initialStream) =>
             initialStream.stream?.name === stream.stream?.name &&
             initialStream.stream?.namespace === stream.stream?.namespace
-        )[0];
-        if (!matchingInitialValue) {
-          return false;
-        }
-
-        return stream.config?.selected !== matchingInitialValue.config?.selected;
+        );
+        return stream.config?.selected !== matchingInitialValue?.config?.selected;
       }),
     [initialValues.syncCatalog.streams, streams]
   );
