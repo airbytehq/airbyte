@@ -650,6 +650,7 @@
   "connectorBuilder.resetModal.submitButton": "Reset",
   "connectorBuilder.streamsHeading": "STREAMS ({number})",
   "connectorBuilder.globalConfiguration": "Global Configuration",
+  "connectorBuilder.userInputs": "User inputs ({number})",
   "connectorBuilder.noStreamsMessage": "Add a stream to test it here",
   "connectorBuilder.toggleModal.text": "<b>Toggling back to the UI will erase any changes you have made in the YAML editor.</b>\n\nIn order to export your current yaml, click the Download YAML button.",
   "connectorBuilder.toggleModal.title": "Warning",

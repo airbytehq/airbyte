@@ -1,4 +1,4 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faPerson } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
@@ -70,7 +70,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
   };
   const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global") {
+    if (selectedView !== "global" && selectedView !== "inputs") {
       setTestStreamIndex(selectedView);
     }
   };
@@ -99,6 +99,15 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
+      </ViewSelectButton>
+
+      <ViewSelectButton
+        className={styles.globalConfigButton}
+        selected={selectedView === "inputs"}
+        onClick={() => handleViewSelect("inputs")}
+      >
+        <FontAwesomeIcon icon={faPerson} />
+        <FormattedMessage id="connectorBuilder.userInputs" values={{ number: 0 }} />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>

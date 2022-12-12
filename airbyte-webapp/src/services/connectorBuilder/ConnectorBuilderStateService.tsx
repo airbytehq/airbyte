@@ -26,7 +26,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
-export type BuilderView = "global" | number;
+export type BuilderView = "global" | "inputs" | number;
 
 interface Context {
   builderFormValues: BuilderFormValues;
@@ -66,6 +66,10 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     DEFAULT_JSON_MANIFEST_VALUES
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+
+  // const inputs = useMemo(() => {
+  //   jsonManifest.
+  // }, []);
 
   useEffect(() => {
     setJsonManifest(convertToManifest(formValues));
