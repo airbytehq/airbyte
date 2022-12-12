@@ -52,7 +52,7 @@ export const AuthButton: React.FC = () => {
   const authRequiredError = Object.values(hiddenAuthFieldErrors).includes("form.empty.error");
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnectorDefinitionSpecification!);
+  const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnectorDefinitionSpecification);
 
   if (!selectedConnectorDefinitionSpecification) {
     console.error("Entered non-auth flow while no connector is selected");
@@ -71,7 +71,7 @@ export const AuthButton: React.FC = () => {
   ) : (
     <FormattedMessage
       id={getAuthenticateMessageId(definitionId)}
-      values={{ connector: selectedConnectorDefinition?.name }}
+      values={{ connector: selectedConnectorDefinition.name }}
     />
   );
   return (
