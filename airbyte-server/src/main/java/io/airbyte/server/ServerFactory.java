@@ -15,8 +15,6 @@ import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.SourceOauthApiController;
-import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
