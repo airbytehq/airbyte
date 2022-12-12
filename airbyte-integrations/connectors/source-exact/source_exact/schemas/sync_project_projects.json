@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "sync/Project/Projects",
+  "title": "SyncProjectProjects",
   "properties": {
     "Timestamp": {
       "description": "Timestamp",

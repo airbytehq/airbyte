@@ -19,6 +19,7 @@ from bs4 import BeautifulSoup, Tag
 
 @dataclass
 class TableRow:
+    service: str
     endpoint_url: str
     documentation_url: str
 
@@ -30,6 +31,15 @@ def parse_url(url: str) -> BeautifulSoup:
     response.raise_for_status()
 
     return BeautifulSoup(response.content, "html.parser")
+
+
+def pascal_to_snake(input: str) -> str:
+    source_name_snake = re.sub(r"[A-Z]([A-Z](?![a-z]))*", lambda x: "_" + x.group(0), input)
+    source_name_snake = source_name_snake.lower()
+    source_name_snake = source_name_snake.strip("_")
+    source_name_snake = source_name_snake.replace("__", "_")
+
+    return source_name_snake
 
 
 def parse_table_row_from_html(row: Tag) -> list[TableRow]:
@@ -59,7 +69,7 @@ def parse_table_row_from_html(row: Tag) -> list[TableRow]:
     href = endpoint.attrs["href"]
     url = f"https://start.exactonline.nl/docs/{href}"
 
-    return TableRow(resource_uri, url)
+    return TableRow(service, resource_uri, url)
 
 
 def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
@@ -69,7 +79,7 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
     """
 
     soup = parse_url(table_row.documentation_url)
-    title = "Sync/" + soup.select_one("p#endpoint").text.strip()
+    title = table_row.service + soup.select_one('p#endpoint').text.strip().replace("/", "")
 
     soup_table = soup.select_one("table#referencetable")
 
@@ -141,10 +151,7 @@ def write_json_schema_file(json_schema: dict):
     """Write json schema to schemas/ directory."""
 
     source_name_pascal = json_schema["title"].replace("/", "_")
-    source_name_snake = re.sub(r"[A-Z]([A-Z](?![a-z]))*", lambda x: "_" + x.group(0), source_name_pascal)
-    source_name_snake = source_name_snake.lower()
-    source_name_snake = source_name_snake.strip("_")
-    source_name_snake = source_name_snake.replace("__", "_")
+    source_name_snake = pascal_to_snake(source_name_pascal)
 
     current_dir = os.path.dirname(__file__)
 
@@ -161,12 +168,11 @@ def generate_class_definition(json_schema: dict) -> str:
     return f"""
 class {source_name_pascal}(ExactStream):
     primary_key = "Timestamp"
-    endpoint = "{json_schema['title'].replace("Sync", "sync")}"
+    endpoint = "{json_schema['title']}"
     """.strip()
 
 
 def main():
-    # generate_files(None)
     soup_root = parse_url("https://start.exactonline.nl/docs/HlpRestAPIResources.aspx")
     soup_rows = soup_root.select("table#referencetable tr.filter")
 

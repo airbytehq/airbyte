@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "sync/Inventory/ItemWarehouses",
+  "title": "SyncInventoryItemWarehouses",
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
