@@ -38,7 +38,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.17
+  dockerImageTag: 1.0.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -562,7 +562,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -1250,7 +1250,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.31
+  dockerImageTag: 1.0.32
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1895,10 +1895,10 @@
 - name: Zenloop
   sourceDefinitionId: f1e4c7f6-db5c-4035-981f-d35ab4998794
   dockerRepository: airbyte/source-zenloop
-  dockerImageTag: 0.1.3
+  dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
   name: Sentry
   dockerRepository: airbyte/source-sentry
