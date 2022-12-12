@@ -1,35 +1,23 @@
 package io.airbyte.connectorbuilder.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import io.airbyte.connectorbuilder.ConnectorBuilderEntryPoint;
 import io.micronaut.http.MediaType;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 
-@Controller("/v1/streams/read")
-@Slf4j
+@Controller("/v1/stream/read")
 public class ReadController {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ReadController.class);
 
-    @Post(produces = MediaType.TEXT_PLAIN)
+    @Post(produces = MediaType.APPLICATION_JSON)
     public String manifest(final StreamReadRequestBody body) throws IOException, InterruptedException {
-        final String json = new ObjectMapper().writer().writeValueAsString(body);
-
-        //final File f = new File(".");
-        //return Arrays.stream(f.listFiles()).map(s -> s.toString()).collect(Collectors.joining());
-        log.info("Recevied read request with body: " + body);
-        final ProcessBuilder processBuilder = new ProcessBuilder("python3.9", "connector_builder/entrypoint.py", "read", json);
-        processBuilder.redirectErrorStream(true);
-
-        final Process process = processBuilder.start();
-
-        final List<String> results = IOUtils.readLines(process.getInputStream());
-//        final int exitCode = process.waitFor();
-
-        return results.stream().collect(Collectors.joining());
+        LOGGER.info("read receive: " + ConnectorBuilderEntryPoint.toJsonString(body));
+        final String response = ConnectorBuilderEntryPoint.read(body);
+        LOGGER.info("read send: " + response);
+        return response;
     }
 }
