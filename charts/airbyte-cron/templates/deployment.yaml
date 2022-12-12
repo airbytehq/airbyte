@@ -75,6 +75,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: CRON_MICRONAUT_ENVIRONMENTS
+          - name: TEMPORAL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-airbyte-env
+                key: TEMPORAL_HOST
           - name: TRACKING_STRATEGY
             valueFrom:
               configMapKeyRef:
@@ -128,3 +133,4 @@ spec:
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
+

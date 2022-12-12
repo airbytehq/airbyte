@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
 import { SchemaChange } from "core/request/AirbyteClient";
+import { FeatureItem } from "hooks/services/Feature";
 import en from "locales/en.json";
 
 // eslint-disable-next-line css-modules/no-unused-class
@@ -20,9 +21,11 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
   useRefreshSourceSchemaWithConfirmationOnDirty: mockUseRefreshSourceSchemaWithConfirmationOnDirty,
 }));
 
-jest.mock("hooks/connection/useIsAutoDetectSchemaChangesEnabled", () => ({
-  useIsAutoDetectSchemaChangesEnabled: () => true,
-}));
+const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
+  <TestWrapper features={[FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+);
+
+const renderComponent = () => render(<SchemaChangesDetected />, { wrapper: TestWrapperWithAutoDetectSchema });
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { SchemaChangesDetected } = require("./SchemaChangesDetected");
@@ -43,7 +46,7 @@ describe("<SchemaChangesDetected />", () => {
       schemaRefreshing: false,
     });
 
-    const { queryByTestId } = render(<SchemaChangesDetected />, { wrapper: TestWrapper });
+    const { queryByTestId } = renderComponent();
 
     expect(queryByTestId("schemaChagnesDetected")).toBeFalsy();
   });
@@ -55,7 +58,7 @@ describe("<SchemaChangesDetected />", () => {
       schemaRefreshing: false,
     });
 
-    const { getByTestId } = render(<SchemaChangesDetected />, { wrapper: TestWrapper });
+    const { getByTestId } = renderComponent();
 
     expect(getByTestId("schemaChangesDetected")).toHaveClass(styles.breaking);
     expect(getByTestId("schemaChangesDetected")).not.toHaveClass(styles.nonBreaking);
@@ -69,7 +72,7 @@ describe("<SchemaChangesDetected />", () => {
       schemaRefreshing: false,
     });
 
-    const { getByTestId } = render(<SchemaChangesDetected />, { wrapper: TestWrapper });
+    const { getByTestId } = renderComponent();
 
     expect(getByTestId("schemaChangesDetected")).toHaveClass(styles.nonBreaking);
     expect(getByTestId("schemaChangesDetected")).not.toHaveClass(styles.breaking);
@@ -86,7 +89,7 @@ describe("<SchemaChangesDetected />", () => {
     const refreshSpy = jest.fn();
     mockUseRefreshSourceSchemaWithConfirmationOnDirty.mockReturnValue(refreshSpy);
 
-    const { getByRole } = render(<SchemaChangesDetected />, { wrapper: TestWrapper });
+    const { getByRole } = renderComponent();
 
     userEvent.click(getByRole("button"));
 
