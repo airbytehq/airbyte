@@ -38,7 +38,7 @@ http {
       }
     }
 
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_oauths|operations|scheduler|sources|state)/.* {
+    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_definition_specifications|destination_oauths|operations|scheduler|sources|source_definitions|state)/.* {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -93,7 +93,8 @@ http {
       }
     }
 
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_oauths|operations|scheduler|sources|state)/.* {
+    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_definition_specifications|destination_oauths|operations
+    |scheduler|source_definitions|sources|state)/.* {
       proxy_set_header Host $host;
       proxy_set_header X-Real-IP $remote_addr;
       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;

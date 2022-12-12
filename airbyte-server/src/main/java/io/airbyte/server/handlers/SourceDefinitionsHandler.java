@@ -43,6 +43,7 @@ import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.server.services.AirbyteGithubStore;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -54,6 +55,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
+@Singleton
 public class SourceDefinitionsHandler {
 
   private final ConfigRepository configRepository;
