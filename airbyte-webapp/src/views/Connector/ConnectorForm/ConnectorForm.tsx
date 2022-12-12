@@ -92,7 +92,7 @@ export interface ConnectorFormProps {
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
@@ -111,7 +111,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formValues,
     onSubmit,
     isEditMode,
-    isTestConnectionInProgress,
     onStopTesting,
     testConnector,
     selectedConnectorDefinition,
@@ -207,7 +206,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
             {...props}
             formFields={formFields}
             errorMessage={errorMessage}
-            isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
           />
