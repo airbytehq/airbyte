@@ -234,51 +234,6 @@ class Dashboards(JiraStream):
         return "dashboard"
 
 
-class Epics(IncrementalJiraStream):
-    """
-    https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-issue-search/#api-rest-api-3-search-get
-    """
-
-    cursor_field = "updated"
-    extract_field = "issues"
-
-    def __init__(self, render_fields: bool = False, **kwargs):
-        super().__init__(**kwargs)
-        self._render_fields = render_fields
-        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-
-    def path(self, **kwargs) -> str:
-        return "search"
-
-    def request_params(
-        self,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
-    ) -> MutableMapping[str, Any]:
-        project_id = stream_slice["project_id"]
-        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = ["summary", "description", "status", "updated"]
-        jql_parts = ["issuetype = 'Epic'", f"project = '{project_id}'", self.jql_compare_date(stream_state)]
-        params["jql"] = " and ".join([p for p in jql_parts if p])
-        if self._render_fields:
-            params["expand"] = "renderedFields"
-        return params
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        for project in read_full_refresh(self.projects_stream):
-            stream_slice = {"project_id": project["id"], "project_key": project["key"]}
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-
-    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
-        record["projectId"] = stream_slice["project_id"]
-        record["projectKey"] = stream_slice["project_key"]
-        issue_fields = record["fields"]
-        record["created"] = issue_fields.get("created")
-        record["updated"] = issue_fields.get("updated") or issue_fields.get("created")
-        return record
-
-
 class Filters(JiraStream):
     """
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-filters/#api-rest-api-3-filter-search-get
