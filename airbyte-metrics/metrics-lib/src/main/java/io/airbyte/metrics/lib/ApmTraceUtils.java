@@ -4,6 +4,7 @@
 
 package io.airbyte.metrics.lib;
 
+import datadog.trace.api.interceptor.MutableSpan;
 import io.opentracing.Span;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
@@ -80,6 +81,8 @@ public class ApmTraceUtils {
     if (span != null) {
       span.setTag(Tags.ERROR, true);
       span.log(Map.of(Fields.ERROR_OBJECT, t));
+      final MutableSpan localRootSpan = ((MutableSpan) span).getLocalRootSpan();
+      localRootSpan.setError(true);
     }
   }
 
