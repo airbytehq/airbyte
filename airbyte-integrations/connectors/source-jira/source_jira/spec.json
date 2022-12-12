@@ -41,15 +41,6 @@
         "examples": ["2021-03-01T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       },
-      "additional_fields": {
-        "type": "array",
-        "title": "Additional Fields",
-        "items": {
-          "type": "string"
-        },
-        "description": "List of additional fields to include in replicating issues.",
-        "examples": ["customfield_10096", "customfield_10071"]
-      },
       "expand_issue_changelog": {
         "type": "boolean",
         "title": "Expand Issue Changelog",

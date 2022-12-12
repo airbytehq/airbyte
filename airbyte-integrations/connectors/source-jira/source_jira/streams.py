@@ -334,12 +334,10 @@ class Issues(IncrementalJiraStream):
     extract_field = "issues"
     use_cache = True
 
-    def __init__(self, additional_fields: List[str], expand_changelog: bool = False, render_fields: bool = False, **kwargs):
+    def __init__(self, expand_changelog: bool = False, render_fields: bool = False, **kwargs):
         super().__init__(**kwargs)
-        self._additional_fields = additional_fields
         self._expand_changelog = expand_changelog
         self._render_fields = render_fields
-        self._fields = []
         self._project_ids = []
         self.issue_fields_stream = IssueFields(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
         self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
@@ -354,7 +352,7 @@ class Issues(IncrementalJiraStream):
         next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> MutableMapping[str, Any]:
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
-        params["fields"] = self._fields
+        params["fields"] = "*all"
         jql_parts = [self.jql_compare_date(stream_state)]
         if self._project_ids:
             project_ids = ", ".join([f"'{project_id}'" for project_id in self._project_ids])
@@ -370,7 +368,6 @@ class Issues(IncrementalJiraStream):
         return params
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        self._fields = self.get_fields()
         self._project_ids = []
         if self._projects:
             self._project_ids = self.get_project_ids()
@@ -388,34 +385,6 @@ class Issues(IncrementalJiraStream):
     def get_project_ids(self):
         return [project["id"] for project in read_full_refresh(self.projects_stream)]
 
-    def get_fields(self):
-        fields = [
-            "assignee",
-            "attachment",
-            "components",
-            "created",
-            "creator",
-            "description",
-            "issuelinks",
-            "issuetype",
-            "labels",
-            "parent",
-            "priority",
-            "project",
-            "resolutiondate",
-            "security",
-            "status",
-            "subtasks",
-            "summary",
-            "updated",
-        ]
-        field_ids_by_name = self.issue_fields_stream.field_ids_by_name()
-        additional_field_names = ["Development", "Story Points", "Story point estimate", "Epic Link", "Sprint"]
-        for name in additional_field_names + self._additional_fields:
-            if name in field_ids_by_name:
-                fields.extend(field_ids_by_name[name])
-        return fields
-
 
 class IssueComments(IncrementalJiraStream):
     """
@@ -428,7 +397,6 @@ class IssueComments(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
@@ -580,7 +548,6 @@ class IssueProperties(StartDateJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
@@ -603,7 +570,6 @@ class IssueRemoteLinks(StartDateJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
@@ -674,7 +640,6 @@ class IssueVotes(StartDateJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
@@ -700,7 +665,6 @@ class IssueWatchers(StartDateJiraStream):
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
@@ -721,7 +685,6 @@ class IssueWorklogs(IncrementalJiraStream):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.issues_stream = Issues(
-            additional_fields=[],
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
