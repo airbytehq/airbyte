@@ -31,7 +31,6 @@ import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.SchedulerApiBinder;
-import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
@@ -39,7 +38,6 @@ import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.SchedulerApiFactory;
-import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.SourceOauthApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.apis.factories.WorkspaceApiFactory;
@@ -150,8 +148,6 @@ public interface ServerFactory {
 
       SchedulerApiFactory.setValues(schedulerHandler);
 
-      SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
-
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
       WorkspaceApiFactory.setValues(workspacesHandler);
@@ -164,7 +160,6 @@ public interface ServerFactory {
           OpenapiApiController.class,
           OperationApiController.class,
           SchedulerApiController.class,
-          SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
           StateApiController.class,
           WebBackendApiController.class,
@@ -175,7 +170,6 @@ public interface ServerFactory {
           new LogsApiBinder(),
           new NotificationApiBinder(),
           new SchedulerApiBinder(),
-          new SourceDefinitionSpecificationApiBinder(),
           new SourceOauthApiBinder(),
           new WebBackendApiBinder(),
           new WorkspaceApiBinder());
