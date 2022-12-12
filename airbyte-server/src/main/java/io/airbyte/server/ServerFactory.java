@@ -22,13 +22,11 @@ import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.JobsApiBinder;
 import io.airbyte.server.apis.binders.LogsApiBinder;
-import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.JobsApiFactory;
 import io.airbyte.server.apis.factories.LogsApiFactory;
-import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.SourceDefinitionSpecificationApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.apis.factories.WorkspaceApiFactory;
@@ -129,8 +127,6 @@ public interface ServerFactory {
 
       LogsApiFactory.setValues(logsHandler);
 
-      NotificationsApiFactory.setValues(workspacesHandler);
-
       SourceDefinitionSpecificationApiFactory.setValues(schedulerHandler);
 
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
@@ -150,7 +146,6 @@ public interface ServerFactory {
       final Set<Object> components = Set.of(
           new JobsApiBinder(),
           new LogsApiBinder(),
-          new NotificationApiBinder(),
           new SourceDefinitionSpecificationApiBinder(),
           new WebBackendApiBinder(),
           new WorkspaceApiBinder());
