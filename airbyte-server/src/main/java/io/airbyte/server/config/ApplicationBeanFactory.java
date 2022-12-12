@@ -9,7 +9,9 @@ import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs.DeploymentMode;
 import io.airbyte.config.Configs.TrackingStrategy;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -109,6 +111,13 @@ public class ApplicationBeanFactory {
   @Singleton
   public AirbyteGithubStore airbyteGithubStore() {
     return AirbyteGithubStore.production();
+  }
+
+  @Singleton
+  public AirbyteProtocolVersionRange airbyteProtocolVersionRange(
+                                                                 @Value("${airbyte.protocol.min-version}") final String minVersion,
+                                                                 @Value("${airbyte.protocol.max-version}") final String maxVersion) {
+    return new AirbyteProtocolVersionRange(new Version(minVersion), new Version(maxVersion));
   }
 
   private <T> T convertToEnum(final String value, final Function<String, T> creatorFunction, final T defaultValue) {

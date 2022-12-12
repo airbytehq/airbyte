@@ -16,10 +16,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.OpenapiApiController;
-import io.airbyte.server.apis.OperationApiController;
-import io.airbyte.server.apis.SourceApiController;
-import io.airbyte.server.apis.SourceDefinitionApiController;
 import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
@@ -152,10 +148,6 @@ public interface ServerFactory {
           JobsApiController.class,
           LogsApiController.class,
           NotificationsApiController.class,
-          OpenapiApiController.class,
-          OperationApiController.class,
-          SourceApiController.class,
-          SourceDefinitionApiController.class,
           SourceDefinitionSpecificationApiController.class,
           SourceOauthApiController.class,
           StateApiController.class,
