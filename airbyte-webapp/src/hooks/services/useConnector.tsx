@@ -1,12 +1,12 @@
 import { useMemo } from "react";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation } from "react-query";
 
 import { useConfig } from "config";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { Connector } from "core/domain/connector";
 import { DestinationService } from "core/domain/connector/DestinationService";
 import { SourceService } from "core/domain/connector/SourceService";
-import { connectorDefinitionKeys, useGetOutOfDateConnectorsCount } from "services/connector/ConnectorDefinitions";
+import { useGetOutOfDateConnectorsCount } from "services/connector/ConnectorDefinitions";
 import {
   useDestinationDefinitionList,
   useUpdateDestinationDefinition,
@@ -18,7 +18,6 @@ import { useInitService } from "services/useInitService";
 import { CheckConnectionRead } from "../../core/request/AirbyteClient";
 
 export const useUpdateSourceDefinitions = () => {
-  const queryClient = useQueryClient();
   const { sourceDefinitions } = useSourceDefinitionList();
   const { mutateAsync: updateSourceDefinition } = useUpdateSourceDefinition();
 
@@ -33,14 +32,12 @@ export const useUpdateSourceDefinitions = () => {
         })
       )
     );
-    await queryClient.refetchQueries(connectorDefinitionKeys.count);
   };
 
   return { updateAllSourceVersions };
 };
 
 export const useUpdateDestinationDefinitions = () => {
-  const queryClient = useQueryClient();
   const { destinationDefinitions } = useDestinationDefinitionList();
   const { mutateAsync: updateDestinationDefinition } = useUpdateDestinationDefinition();
 
@@ -58,7 +55,6 @@ export const useUpdateDestinationDefinitions = () => {
         })
       )
     );
-    await queryClient.refetchQueries(connectorDefinitionKeys.count);
   };
 
   return { updateAllDestinationVersions };

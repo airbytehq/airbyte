@@ -1,11 +1,8 @@
-import { useConfig } from "config";
-import { DestinationDefinitionRead, SourceDefinitionRead, webBackendCheckUpdates } from "core/request/AirbyteClient";
-import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { SCOPE_WORKSPACE } from "services/Scope";
-import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
-import { useInitService } from "services/useInitService";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 
+import { useConnectorService } from "./ConnectorService";
 import { useGetDestinationDefinitionService } from "./DestinationDefinitionService";
 import { useGetSourceDefinitionService } from "./SourceDefinitionService";
 import { useSuspenseQuery } from "./useSuspenseQuery";
@@ -18,7 +15,7 @@ interface ConnectorSpecifications {
 export const connectorDefinitionKeys = {
   all: [SCOPE_WORKSPACE, "connectorDefinition"] as const,
   lists: () => [...connectorDefinitionKeys.all, "list"] as const,
-  count: ["latestConnectorDefinitions"],
+  count: () => [...connectorDefinitionKeys.all, "count"] as const,
 };
 
 /**
@@ -42,21 +39,7 @@ export const useConnectorSpecifications = (): ConnectorSpecifications => {
   });
 };
 
-class ConnectorService extends AirbyteRequestService {
-  checkUpdates() {
-    return webBackendCheckUpdates(this.requestOptions);
-  }
-}
-
-export function useConnectorService() {
-  const { apiUrl } = useConfig();
-
-  const requestAuthMiddleware = useDefaultRequestMiddlewares();
-
-  return useInitService(() => new ConnectorService(apiUrl, requestAuthMiddleware), [apiUrl, requestAuthMiddleware]);
-}
-
 export const useGetOutOfDateConnectorsCount = () => {
   const service = useConnectorService();
-  return useSuspenseQuery(connectorDefinitionKeys.count, () => service.checkUpdates());
+  return useSuspenseQuery(connectorDefinitionKeys.count(), () => service.checkUpdates());
 };
