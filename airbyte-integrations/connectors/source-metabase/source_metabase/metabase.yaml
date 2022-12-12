@@ -20,6 +20,8 @@ definitions:
       header: "X-Metabase-Session"
       session_token: "{{ config['session_token'] }}"
       session_token_response_key: "id"
+      login_url: "session"
+      validate_session_url: "user/current"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
