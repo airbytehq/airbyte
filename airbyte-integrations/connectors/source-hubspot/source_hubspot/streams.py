@@ -1409,54 +1409,51 @@ class FormSubmissions(IncrementalStream):
         pagination_complete = False
 
         next_page_token = None
-        try:
-            while not pagination_complete:
-                properties = self._property_wrapper
-                if properties and properties.too_many_properties:
-                    records, response = self._read_stream_records(
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                    )
-                else:
-                    response = self.handle_request(
-                        stream_slice=stream_slice,
-                        stream_state=stream_state,
-                        next_page_token=next_page_token,
-                        properties=properties,
-                    )
-                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+        while not pagination_complete:
+            properties = self._property_wrapper
+            if properties and properties.too_many_properties:
+                records, response = self._read_stream_records(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                )
+            else:
+                response = self.handle_request(
+                    stream_slice=stream_slice,
+                    stream_state=stream_state,
+                    next_page_token=next_page_token,
+                    properties=properties,
+                )
+                records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
 
 
-                # All of the previous code comes from the original function in the Stream object
+            # All of the previous code comes from the original function in the Stream object
 
-                # Look through the records to check for the earliest date
-                for record in records:
-                    record["formId"] = stream_slice["form_id"]
-                    if self._earliest_date is None and "submittedAt" in record:
-                        self._earliest_date = record["submittedAt"]
-                        
-                    if "submittedAt" in record:
-                        self._earliest_date = min(self._earliest_date, record["submittedAt"])
-                    yield record
+            # Look through the records to check for the earliest date
+            for record in records:
+                record["formId"] = stream_slice["form_id"]
+                if self._earliest_date is None and "submittedAt" in record:
+                    self._earliest_date = record["submittedAt"]
+                    
+                if "submittedAt" in record:
+                    self._earliest_date = min(self._earliest_date, record["submittedAt"])
+                yield record
 
-                # I overwrote the next_page_token function so it won't return a token if
-                # the earliest submission is prior to the initial state variable
-                next_page_token = self.next_page_token(response)
+            # I overwrote the next_page_token function so it won't return a token if
+            # the earliest submission is prior to the initial state variable
+            next_page_token = self.next_page_token(response)
 
-                # Reset the earliest date variable for the next form
-                if not next_page_token:
-                    self._earliest_date = None
-                    pagination_complete = True
-                    # Set the state once a record has been called.
-                    # The state should be the time of the initial call that is made so that it 
-                    # catches any submissions for forms that happen while it is being synced on the next sync
-                    self._state = self._init_sync
+            # Reset the earliest date variable for the next form
+            if not next_page_token:
+                self._earliest_date = None
+                pagination_complete = True
+                # Set the state once a record has been called.
+                # The state should be the time of the initial call that is made so that it 
+                # catches any submissions for forms that happen while it is being synced on the next sync
+                self._state = self._init_sync
 
-            # Always return an empty generator just in case no records were ever yielded
-            yield from []
-        except requests.exceptions.HTTPError as e:
-            raise e
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
 
     def request_params(
         self,
