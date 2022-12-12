@@ -504,11 +504,24 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private void traceFailures(final AttemptFailureSummary failureSummary) {
     if (failureSummary != null) {
       if (CollectionUtils.isNotEmpty(failureSummary.getFailures())) {
-        ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, failureSummary.getFailures().stream().map(FailureReason::getFailureOrigin).map(
-            FailureOrigin::name).collect(Collectors.joining(","))));
+        ApmTraceUtils.addTagsToTrace(Map.of(
+            MetricTags.FAILURE_TYPE,
+            failureSummary.getFailures()
+                .stream()
+                .map(FailureReason::getFailureType)
+                .map(MetricTags::getFailureType)
+                .collect(Collectors.joining(",")),
+            FAILURE_ORIGINS_KEY,
+            failureSummary.getFailures()
+                .stream()
+                .map(FailureReason::getFailureOrigin)
+                .map(FailureOrigin::name)
+                .collect(Collectors.joining(","))));
       }
     } else {
-      ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
+      ApmTraceUtils.addTagsToTrace(Map.of(
+          MetricTags.FAILURE_TYPE, MetricTags.getFailureType(null),
+          FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
     }
   }
 
