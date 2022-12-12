@@ -30,6 +30,7 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.List;
@@ -48,6 +49,25 @@ public class DestinationHandler {
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
 
+  @Inject
+  public DestinationHandler(final ConfigRepository configRepository,
+                            final SecretsRepositoryReader secretsRepositoryReader,
+                            final SecretsRepositoryWriter secretsRepositoryWriter,
+                            final JsonSchemaValidator integrationSchemaValidation,
+                            final ConnectionsHandler connectionsHandler) {
+    this(
+        configRepository,
+        secretsRepositoryReader,
+        secretsRepositoryWriter,
+        integrationSchemaValidation,
+        connectionsHandler,
+        UUID::randomUUID,
+        JsonSecretsProcessor.builder()
+            .copySecrets(true)
+            .build(),
+        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
+  }
+
   @VisibleForTesting
   DestinationHandler(final ConfigRepository configRepository,
                      final SecretsRepositoryReader secretsRepositoryReader,
@@ -65,24 +85,6 @@ public class DestinationHandler {
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
     this.secretsProcessor = secretsProcessor;
-  }
-
-  public DestinationHandler(final ConfigRepository configRepository,
-                            final SecretsRepositoryReader secretsRepositoryReader,
-                            final SecretsRepositoryWriter secretsRepositoryWriter,
-                            final JsonSchemaValidator integrationSchemaValidation,
-                            final ConnectionsHandler connectionsHandler) {
-    this(
-        configRepository,
-        secretsRepositoryReader,
-        secretsRepositoryWriter,
-        integrationSchemaValidation,
-        connectionsHandler,
-        UUID::randomUUID,
-        JsonSecretsProcessor.builder()
-            .copySecrets(true)
-            .build(),
-        new ConfigurationUpdate(configRepository, secretsRepositoryReader));
   }
 
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
