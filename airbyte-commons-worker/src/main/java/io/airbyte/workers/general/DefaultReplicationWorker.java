@@ -205,9 +205,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
 
       final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
-          readFromSrcAndWriteToDstRunnable(source, destination, sourceConfig.getCatalog(), cancelled, mapper, messageTracker, mdc,
-              recordSchemaValidator, metricReporter,
-              timeTracker, fieldSelectionEnabled),
+          readFromSrcAndWriteToDstRunnable(
+              source,
+              destination,
+              sourceConfig.getCatalog(),
+              cancelled,
+              mapper,
+              messageTracker,
+              mdc,
+              recordSchemaValidator,
+              metricReporter,
+              timeTracker,
+              fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -287,7 +296,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
-                                                           ConfiguredAirbyteCatalog catalog,
+                                                           final ConfiguredAirbyteCatalog catalog,
                                                            final AtomicBoolean cancelled,
                                                            final AirbyteMapper mapper,
                                                            final MessageTracker messageTracker,
@@ -566,8 +575,16 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void populatedStreamToSelectedFields(ConfiguredAirbyteCatalog catalog,
-                                                      Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields) {
+  /**
+   * Generates a map from stream -> the explicit list of fields included for that stream, according to
+   * the configured catalog. Since the configured catalog only includes the selected fields, this lets
+   * us filter records to only the fields explicitly requested.
+   *
+   * @param catalog
+   * @param streamToSelectedFields
+   */
+  private static void populatedStreamToSelectedFields(final ConfiguredAirbyteCatalog catalog,
+                                                      final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields) {
     for (final var s : catalog.getStreams()) {
       final List<String> selectedFields = new ArrayList<>();
       final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
@@ -580,13 +597,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     }
   }
 
-  private static void filterSelectedFields(Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields, AirbyteMessage airbyteMessage) {
+  private static void filterSelectedFields(final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields,
+                                           final AirbyteMessage airbyteMessage) {
     final AirbyteRecordMessage record = airbyteMessage.getRecord();
+
+    if (record == null) {
+      // This isn't a record message, so we don't need to do any filtering.
+      return;
+    }
+
     final AirbyteStreamNameNamespacePair messageStream = AirbyteStreamNameNamespacePair.fromRecordMessage(record);
     final List<String> selectedFields = streamToSelectedFields.getOrDefault(messageStream, Collections.emptyList());
     final JsonNode data = record.getData();
     if (data.isObject()) {
       ((ObjectNode) data).retain(selectedFields);
+    } else {
+      throw new RuntimeException("Unexpected data in record");
     }
   }
 

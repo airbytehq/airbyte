@@ -50,7 +50,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
 
   @Override
   public boolean applyFieldSelection() {
-    return getEnvOrDefault(APPLY_FIELD_SELECTION, true, Boolean::parseBoolean);
+    return getEnvOrDefault(APPLY_FIELD_SELECTION, false, Boolean::parseBoolean);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java
