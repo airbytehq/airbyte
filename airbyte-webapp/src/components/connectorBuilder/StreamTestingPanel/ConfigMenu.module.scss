@@ -1,7 +1,21 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .modalContent {
   height: 60vh;
   overflow: visible;
   background-color: colors.$grey-100;
+}
+
+.inputFormModalFooter {
+  border-top: variables.$border-thin solid colors.$grey-100;
+  gap: variables.$spacing-md;
+  padding: 0 variables.$spacing-xl;
+  margin: 0 -1 * variables.$spacing-xl;
+}
+
+.inputFormModalFooter > * {
+  // need to overwrite the margin of the button wrapper used within create controls
+  // TODO refactor so this isn't necessary
+  margin-top: variables.$spacing-lg !important;
 }

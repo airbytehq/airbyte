@@ -16,7 +16,10 @@ import { useBuildForm, useConstructValidationSchema } from "./useBuildForm";
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedConnectorDefinition: ConnectorDefinition;
+  /**
+   * Definition of the connector might not be available if it's not released but only exists in frontend heap
+   */
+  selectedConnectorDefinition?: ConnectorDefinition;
   selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
@@ -25,6 +28,12 @@ export interface ConnectorFormProps {
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
+  footerClassName?: string;
+  submitLabel?: string;
+  /**
+   * Called in case the user cancels the form - if not provided, no cancel button is rendered
+   */
+  onCancel?: () => void;
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;

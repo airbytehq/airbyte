@@ -54,7 +54,7 @@ export const AuthButton: React.FC = () => {
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
   const { loading, done, run, hasRun } = useFormikOauthAdapter(selectedConnectorDefinitionSpecification);
 
-  if (!selectedConnectorDefinitionSpecification) {
+  if (!selectedConnectorDefinitionSpecification || !selectedConnectorDefinition) {
     console.error("Entered non-auth flow while no connector is selected");
     return null;
   }

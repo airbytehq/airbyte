@@ -17,6 +17,12 @@ interface FormRootProps {
   successMessage?: React.ReactNode;
   onRetest?: () => void;
   onStopTestingConnector?: () => void;
+  submitLabel?: string;
+  footerClassName?: string;
+  /**
+   * Called in case the user cancels the form - if not provided, no cancel button is rendered
+   */
+  onCancel?: () => void;
 }
 
 export const FormRoot: React.FC<FormRootProps> = ({
@@ -27,6 +33,9 @@ export const FormRoot: React.FC<FormRootProps> = ({
   errorMessage,
   hasSuccess,
   onStopTestingConnector,
+  submitLabel,
+  footerClassName,
+  onCancel,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
   const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
@@ -34,31 +43,35 @@ export const FormRoot: React.FC<FormRootProps> = ({
   return (
     <Form>
       <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
-      {isEditMode ? (
-        <EditControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          onRetestClick={onRetest}
-          isValid={isValid}
-          dirty={dirty}
-          onCancelClick={() => {
-            resetConnectorForm();
-          }}
-          successMessage={successMessage}
-        />
-      ) : (
-        <CreateControls
-          isTestConnectionInProgress={isTestConnectionInProgress}
-          onCancelTesting={onStopTestingConnector}
-          isSubmitting={isSubmitting || isTestConnectionInProgress}
-          errorMessage={errorMessage}
-          formType={formType}
-          hasSuccess={hasSuccess}
-        />
-      )}
+      <div className={footerClassName}>
+        {isEditMode ? (
+          <EditControls
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onCancelTesting={onStopTestingConnector}
+            isSubmitting={isSubmitting || isTestConnectionInProgress}
+            errorMessage={errorMessage}
+            formType={formType}
+            onRetestClick={onRetest}
+            isValid={isValid}
+            dirty={dirty}
+            onCancelClick={() => {
+              resetConnectorForm();
+            }}
+            successMessage={successMessage}
+          />
+        ) : (
+          <CreateControls
+            isTestConnectionInProgress={isTestConnectionInProgress}
+            onCancelTesting={onStopTestingConnector}
+            isSubmitting={isSubmitting || isTestConnectionInProgress}
+            errorMessage={errorMessage}
+            formType={formType}
+            submitLabel={submitLabel}
+            onCancel={onCancel}
+            hasSuccess={hasSuccess}
+          />
+        )}
+      </div>
     </Form>
   );
 };

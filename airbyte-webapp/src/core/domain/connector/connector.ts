@@ -1,5 +1,10 @@
 import { DEV_IMAGE_TAG } from "./constants";
-import { isSource, isSourceDefinition, isSourceDefinitionSpecification } from "./source";
+import {
+  isSource,
+  isSourceDefinition,
+  isSourceDefinitionSpecification,
+  isSourceDefinitionSpecificationDraft,
+} from "./source";
 import { ConnectorDefinition, ConnectorDefinitionSpecification, ConnectorT } from "./types";
 
 export class Connector {
@@ -27,6 +32,9 @@ export class ConnectorHelper {
 
 export class ConnectorSpecification {
   static id(connector: ConnectorDefinitionSpecification): string {
+    if (isSourceDefinitionSpecificationDraft(connector)) {
+      throw new Error("Tried to get id for specification draft");
+    }
     return isSourceDefinitionSpecification(connector)
       ? connector.sourceDefinitionId
       : connector.destinationDefinitionId;

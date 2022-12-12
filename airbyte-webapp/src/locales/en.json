@@ -186,6 +186,7 @@
   "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
+  "connectorForm.saveInputsForm": "Save",
 
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",

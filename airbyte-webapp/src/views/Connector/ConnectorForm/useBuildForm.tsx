@@ -4,6 +4,7 @@ import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
 import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
 import { FormBuildError } from "core/form/FormBuildError";
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
@@ -25,22 +26,29 @@ export function useBuildForm(
 ): BuildFormHook {
   const { formatMessage } = useIntl();
 
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
+  const isDraft = isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification);
+
+  const jsonSchema: JSONSchema7 = useMemo(() => {
+    const schema: JSONSchema7 = {
       type: "object",
       properties: {
-        name: {
-          type: "string",
-          title: formatMessage({ id: `form.${formType}Name` }),
-          description: formatMessage({ id: `form.${formType}Name.message` }),
-        },
         connectionConfiguration:
           selectedConnectorDefinitionSpecification.connectionSpecification as JSONSchema7Definition,
       },
-      required: ["name"],
-    }),
-    [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
-  );
+    };
+    if (isDraft) {
+      return schema;
+    }
+    // schema.properties gets defined right above
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    schema.properties!.name = {
+      type: "string",
+      title: formatMessage({ id: `form.${formType}Name` }),
+      description: formatMessage({ id: `form.${formType}Name.message` }),
+    };
+    schema.required = ["name"];
+    return schema;
+  }, [formType, formatMessage, isDraft, selectedConnectorDefinitionSpecification.connectionSpecification]);
 
   const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
@@ -49,7 +57,7 @@ export function useBuildForm(
   }
 
   const startValues = useMemo<ConnectorFormValues>(() => {
-    if (isEditMode) {
+    if (isEditMode || isDraft) {
       return {
         name: "",
         connectionConfiguration: {},
@@ -85,7 +93,7 @@ export function useBuildForm(
     setDefaultValues(formFields, baseValues as Record<string, unknown>);
 
     return baseValues;
-  }, [formFields, initialValues, isEditMode]);
+  }, [formFields, initialValues, isDraft, isEditMode]);
 
   return {
     initialValues: startValues,
