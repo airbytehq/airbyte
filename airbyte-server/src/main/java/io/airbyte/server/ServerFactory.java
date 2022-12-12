@@ -15,20 +15,15 @@ import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
-import io.airbyte.server.apis.WorkspaceApiController;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.SourceOauthApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
-import io.airbyte.server.apis.binders.WorkspaceApiBinder;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
-import io.airbyte.server.apis.factories.SourceOauthApiFactory;
+import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
-import io.airbyte.server.apis.factories.WorkspaceApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -123,31 +118,23 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
 
-      SourceOauthApiFactory.setValues(oAuthHandler);
-
       LogsApiFactory.setValues(logsHandler);
 
       NotificationsApiFactory.setValues(workspacesHandler);
 
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
-      WorkspaceApiFactory.setValues(workspacesHandler);
-
-      // server configuration
       final Set<Class<?>> componentClasses = Set.of(
           LogsApiController.class,
           NotificationsApiController.class,
-          SourceOauthApiController.class,
           StateApiController.class,
-          WebBackendApiController.class,
-          WorkspaceApiController.class);
+          WebBackendApiController.class);
 
       final Set<Object> components = Set.of(
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new SourceOauthApiBinder(),
-          new WebBackendApiBinder(),
-          new WorkspaceApiBinder());
+          new SourceDefinitionSpecificationApiBinder(),
+          new WebBackendApiBinder());
 
       // construct server
       return new ServerApp(airbyteVersion, componentClasses, components);

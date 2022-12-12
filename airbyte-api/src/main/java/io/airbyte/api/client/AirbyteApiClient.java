@@ -71,7 +71,7 @@ public class AirbyteApiClient {
     sourceDefinitionApi = new SourceDefinitionApi(micronautApiClient);
     sourceApi = new SourceApi(micronautApiClient);
     sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
-    workspaceApi = new WorkspaceApi(apiClient);
+    workspaceApi = new WorkspaceApi(micronautApiClient);
     healthApi = new HealthApi(micronautApiClient);
     attemptApi = new AttemptApi(micronautApiClient);
     stateApi = new StateApi(micronautApiClient);
