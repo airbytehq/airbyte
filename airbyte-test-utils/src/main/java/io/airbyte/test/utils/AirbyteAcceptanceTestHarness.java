@@ -460,7 +460,9 @@ public class AirbyteAcceptanceTestHarness {
   }
 
   /**
-   * Assert that the normalized destination matches the input records, only expecting a single id column.
+   * Assert that the normalized destination matches the input records, only expecting a single id
+   * column.
+   *
    * @param sourceRecords
    * @throws Exception
    */
