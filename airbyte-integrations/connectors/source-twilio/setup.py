@@ -11,7 +11,7 @@ MAIN_REQUIREMENTS = [
     "requests~=2.25",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "requests_mock"]
+TEST_REQUIREMENTS = ["pytest~=6.1", "pytest-mock", "requests_mock", "freezegun"]
 
 setup(
     name="source_twilio",

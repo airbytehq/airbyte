@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Button } from "components/ui/Button";
 
 import styles from "./CreateControls.module.scss";
-import { TestingConnectionError, FetchingConnectorError } from "./TestingConnectionError";
+import { TestingConnectionError } from "./TestingConnectionError";
 import { TestingConnectionSpinner } from "./TestingConnectionSpinner";
 import TestingConnectionSuccess from "./TestingConnectionSuccess";
 
@@ -14,8 +14,6 @@ interface CreateControlProps {
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
   hasSuccess?: boolean;
-  isLoadSchema?: boolean;
-  fetchingConnectorError?: Error | null;
 
   isTestConnectionInProgress: boolean;
   onCancelTesting?: () => void;
@@ -34,8 +32,6 @@ const CreateControls: React.FC<CreateControlProps> = ({
   formType,
   hasSuccess,
   errorMessage,
-  fetchingConnectorError,
-  isLoadSchema,
   onCancelTesting,
 }) => {
   if (isSubmitting) {
@@ -48,9 +44,8 @@ const CreateControls: React.FC<CreateControlProps> = ({
 
   return (
     <ButtonContainer>
-      {errorMessage && !fetchingConnectorError && <TestingConnectionError errorMessage={errorMessage} />}
-      {fetchingConnectorError && <FetchingConnectorError />}
-      <Button className={styles.submitButton} type="submit" disabled={isLoadSchema}>
+      {errorMessage && <TestingConnectionError errorMessage={errorMessage} />}
+      <Button className={styles.submitButton} type="submit">
         <FormattedMessage id={`onboarding.${formType}SetUp.buttonText`} />
       </Button>
     </ButtonContainer>

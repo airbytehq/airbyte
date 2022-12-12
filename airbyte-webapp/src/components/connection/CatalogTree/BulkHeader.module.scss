@@ -1,10 +1,11 @@
 @use "scss/colors";
+@use "scss/variables";
 
 .schemaHeader {
   min-height: 41px;
   height: 41px;
   background: colors.$blue-400;
-  border-radius: 8px 8px 0 0;
+  border-radius: variables.$border-radius-md variables.$border-radius-md 0 0;
 }
 
 .actionButton {

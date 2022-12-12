@@ -50,9 +50,9 @@ import io.airbyte.workers.*;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
-import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.io.IOException;
@@ -307,7 +307,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
     final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
-    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createTraceMessage("a trace message", 123456.0);
+    final AirbyteMessage TRACE_MESSAGE = AirbyteMessageUtils.createErrorMessage("a trace message", 123456.0);
     when(mapper.mapMessage(LOG_MESSAGE)).thenReturn(LOG_MESSAGE);
     when(mapper.mapMessage(TRACE_MESSAGE)).thenReturn(TRACE_MESSAGE);
     when(source.isFinished()).thenReturn(false, false, false, false, true);

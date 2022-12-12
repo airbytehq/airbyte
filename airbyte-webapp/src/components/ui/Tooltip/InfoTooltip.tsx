@@ -11,11 +11,11 @@ export const InfoTooltip: React.FC<React.PropsWithChildren<InfoTooltipProps>> = 
     <Tooltip
       {...props}
       control={
-        <div className={styles.container}>
-          <div className={styles.icon}>
+        <span className={styles.container}>
+          <span className={styles.icon}>
             <InfoIcon />
-          </div>
-        </div>
+          </span>
+        </span>
       }
     >
       {children}
