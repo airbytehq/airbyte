@@ -15,7 +15,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.Charset;

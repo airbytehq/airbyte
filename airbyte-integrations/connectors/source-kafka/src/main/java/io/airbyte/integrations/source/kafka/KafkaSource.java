@@ -11,7 +11,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.kafka.format.KafkaFormat;
 import io.airbyte.protocol.models.*;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

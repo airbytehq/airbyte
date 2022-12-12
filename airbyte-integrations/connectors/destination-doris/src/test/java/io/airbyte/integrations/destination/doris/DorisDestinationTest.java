@@ -18,7 +18,7 @@ import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.protocol.models.*;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;

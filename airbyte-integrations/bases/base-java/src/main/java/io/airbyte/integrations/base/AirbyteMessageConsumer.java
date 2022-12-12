@@ -6,7 +6,7 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 
 /**
  * Interface for the destination's consumption of incoming records wrapped in an

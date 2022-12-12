@@ -14,7 +14,7 @@ import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.protocol.models.*;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import java.util.*;
 import java.util.function.Consumer;
 import org.slf4j.Logger;

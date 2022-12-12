@@ -7,7 +7,7 @@ package io.airbyte.integrations.standardtest.destination;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
