@@ -148,6 +148,16 @@ public interface Configs {
    */
   String getVaultToken();
 
+  /**
+   * Defines thw aws_access_key configuration to use AWSSecretManager.
+   */
+  String getAwsAccessKey();
+
+  /**
+   * Defines aws_secret_access_key to use for AWSSecretManager.
+   */
+  String getAwsSecretAccessKey();
+
   // Database
 
   /**
@@ -748,7 +758,8 @@ public interface Configs {
     NONE,
     TESTING_CONFIG_DB_TABLE,
     GOOGLE_SECRET_MANAGER,
-    VAULT
+    VAULT,
+    AWS_SECRET_MANAGER
   }
 
 }
