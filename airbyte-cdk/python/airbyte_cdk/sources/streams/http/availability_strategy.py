@@ -3,10 +3,10 @@
 #
 
 import logging
-import requests
 import typing
 from typing import Dict, Optional, Tuple
 
+import requests
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
@@ -64,7 +64,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
             # If the HTTPError is not in the dictionary of errors we know how to handle, don't except it
             raise error
 
-    def reasons_for_unavailable_status_codes(self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError) -> Dict[int, str]:
+    def reasons_for_unavailable_status_codes(
+        self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
+    ) -> Dict[int, str]:
         """
         Returns a dictionary of HTTP status codes that indicate stream
         unavailability and reasons explaining why a given status code may
