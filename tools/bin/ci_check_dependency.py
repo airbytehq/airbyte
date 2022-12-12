@@ -127,10 +127,14 @@ def get_connector_version_status(connector, version):
 
 
 def get_connector_changelog_status(connector: str, version) -> str:
-    type, name = connector.replace("-strict-encrypt", "").split("-", 1)
+    type, name = connector.replace("-strict-encrypt", "").replace("-denormalized", "").split("-", 1)
     doc_path = f"{DOC_PATH}{type}s/{name}.md"
+
+    if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
+        return "🔵<br/>(ignored)"
     if not os.path.exists(doc_path):
         return "⚠<br/>(doc not found)"
+
     with open(doc_path) as f:
         after_changelog = False
         for line in f:
@@ -139,10 +143,7 @@ def get_connector_changelog_status(connector: str, version) -> str:
             if after_changelog and version in line:
                 return "✅"
 
-    if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
-        return "🔵<br/>(ignored)"
-    else:
-        return "❌<br/>(changelog missing)"
+    return "❌<br/>(changelog missing)"
 
 
 def as_bulleted_markdown_list(items):
