@@ -46,8 +46,6 @@ jobs:
         if: steps.write-review-requirements-file.outputs.REVIEW_REQUIREMENTS_FILE != ''
         uses: Automattic/action-required-review@v3
         with:
-          status: Required review
-          fail: true
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
           requirements-file: .github/connector_org_review_requirements.yaml
 
