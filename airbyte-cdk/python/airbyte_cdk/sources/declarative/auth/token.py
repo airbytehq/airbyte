@@ -225,7 +225,8 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
     def is_valid_session_token(self) -> bool:
         try:
             response = requests.get(
-                f"{self._api_url.eval(self.config)}{self._validate_session_url.eval(self.config)}", headers={self.auth_header: self._session_token.eval(self.config)}
+                f"{self._api_url.eval(self.config)}{self._validate_session_url.eval(self.config)}",
+                headers={self.auth_header: self._session_token.eval(self.config)},
             )
             response.raise_for_status()
         except requests.exceptions.HTTPError as e:
@@ -235,7 +236,7 @@ class SessionTokenAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenti
             else:
                 raise ConnectionError(f"Error while validating session token: {e}")
         if response.ok:
-            self.logger.info(f"Connection check for source is successful.")
+            self.logger.info("Connection check for source is successful.")
             return True
         else:
             raise ConnectionError(f"Failed to retrieve new session token, response code {response.status_code} because {response.reason}")
