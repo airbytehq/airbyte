@@ -32,7 +32,6 @@ class InsightConfig(BaseModel):
         description="The name value of insight",
     )
 
-    # TODO: Future Reference: Define type="string" with a list of acceptable values (Enum ValidLevel)
     level: str = Field(
         title="Level",
         description="Chosen level for API",
