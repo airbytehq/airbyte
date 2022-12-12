@@ -96,6 +96,8 @@ public class AdvancedTestDataComparator implements TestDataComparator {
   protected boolean compareJsonNodes(final JsonNode expectedValue, final JsonNode actualValue) {
     if (expectedValue == null || actualValue == null) {
       return expectedValue == null && actualValue == null;
+    } else if (isNumeric(expectedValue.asText())) {
+      return compareNumericValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isBoolean()) {
       return compareBooleanValues(expectedValue.asText(), actualValue.asText());
     } else if (isDateTimeWithTzValue(expectedValue.asText())) {
@@ -106,8 +108,6 @@ public class AdvancedTestDataComparator implements TestDataComparator {
       return compareDateValues(expectedValue.asText(), actualValue.asText());
     } else if (isTimeWithTimezone(expectedValue.asText()) || isTimeWithoutTimezone(expectedValue.asText())) {
       return compareTime(expectedValue.asText(), actualValue.asText());
-    } else if (StringUtils.isNumeric(expectedValue.asText())) {
-      return compareNumericValues(expectedValue.asText(), actualValue.asText());
     } else if (expectedValue.isArray()) {
       return compareArrays(expectedValue, actualValue);
     } else if (expectedValue.isObject()) {
@@ -121,6 +121,10 @@ public class AdvancedTestDataComparator implements TestDataComparator {
 
   protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
     return expectedValue.asText().equals(actualValue.asText());
+  }
+
+  private boolean isNumeric(final String value) {
+    return value.matches("-?\\d+(\\.\\d+)?");
   }
 
   private List<JsonNode> getArrayList(final JsonNode jsonArray) {
