@@ -1,7 +1,7 @@
 name: Connector Ops CI
 
 on:
-  pull_request:
+  pull_request_target:
     paths:
       - "airbyte-integrations/connectors/source-**"
   pull_request_review:
