@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.13.1
-Low-code: Add SessionTokenAuthenticator
+Low-code: Add `SessionTokenAuthenticator`
 
 ## 0.13.0
 Add `Stream.check_availability` and `Stream.AvailabilityStrategy`. Make `HttpAvailabilityStrategy` the default `HttpStream.AvailabilityStrategy`.
