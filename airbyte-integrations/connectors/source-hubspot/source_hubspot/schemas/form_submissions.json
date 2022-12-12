@@ -8,6 +8,9 @@
     "updatedAt": {
       "type": ["null", "integer"]
     },
+    "email": {
+      "type": ["null", "string"]
+    },
     "values": {
       "type": ["null", "array"],
       "items": {

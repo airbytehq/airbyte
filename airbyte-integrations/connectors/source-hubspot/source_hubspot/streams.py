@@ -22,6 +22,7 @@ from requests import codes
 from source_hubspot.constants import OAUTH_CREDENTIALS, PRIVATE_APP_CREDENTIALS
 from source_hubspot.errors import HubspotAccessDenied, HubspotInvalidAuth, HubspotRateLimited, HubspotTimeout
 from source_hubspot.helpers import APIv1Property, APIv3Property, GroupByKey, IRecordPostProcessor, IURLPropertyRepresentation, StoreAsIs
+from datetime import datetime
 
 # we got this when provided API Token has incorrect format
 CLOUDFLARE_ORIGIN_DNS_ERROR = 530
@@ -1316,14 +1317,24 @@ class Forms(Stream):
     """
 
     entity = "form"
+    #Lower limit to 50 since 100 returned cut off forms
+    limit = 50
     url = "/marketing/v3/forms"
     updated_at_field = "updatedAt"
     created_at_field = "createdAt"
     primary_key = "id"
     scopes = {"forms"}
 
+    #Form submission data was missing the form details for older forms. 
+    # This endpoint should ignore the start_date requirement so the two can
+    # be inner joined
+    def _filter_old_records(self, records: Iterable) -> Iterable:
+        """DON'T skip records that were updated before our start_date"""
+        for record in records:
+            yield record
 
-class FormSubmissions(Stream):
+
+class FormSubmissions(IncrementalStream):
     """Marketing Forms, API v1
     This endpoint requires the forms scope.
     Docs: https://legacydocs.hubspot.com/docs/methods/forms/get-submissions-for-a-form
@@ -1333,6 +1344,8 @@ class FormSubmissions(Stream):
     limit = 50
     updated_at_field = "updatedAt"
     scopes = {"forms"}
+    _init_state = None
+    _earliest_date = None
 
     def path(
         self,
@@ -1345,32 +1358,45 @@ class FormSubmissions(Stream):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.forms = Forms(**kwargs)
-
+        self.forms = Forms(**kwargs)        
+    
     def _transform(self, records: Iterable) -> Iterable:
         for record in super()._transform(records):
             keys = record.keys()
 
-            # There's no updatedAt field in the submission however forms fetched by using this field,
-            # so it has to be added to the submissions otherwise it would fail when calling _filter_old_records
+            # There's no updatedAt field in the submission however we need it for saving state
+            # so i added it
             if "updatedAt" not in keys:
                 record["updatedAt"] = record["submittedAt"]
+
+            # Email is a required field on all forms. Might as well add it to the top level
+            # I have to pull the email from their value properties to do that
+            if "email" not in keys and "values" in record:
+                for val in record["values"]:
+                    if val["name"] == "email":
+                        record["email"] = val["value"]
+                        break
 
             yield record
 
     def stream_slices(
         self, *, sync_mode: SyncMode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
     ) -> Iterable[Optional[Mapping[str, Any]]]:
+        self.set_sync(sync_mode)
         slices = []
         seen = set()
         # To get submissions for all forms date filtering has to be disabled
+        # And the sync mode needs to be set to full refresh (since incr. doesn't exist on Forms)
         self.forms.filter_old_records = False
-        for form in self.forms.read_records(sync_mode):
+        for form in self.forms.read_records(SyncMode.full_refresh):
             if form["id"] not in seen:
                 seen.add(form["id"])
                 slices.append({"form_id": form["id"]})
         return slices
 
+    # Have to override the read_records so it doesn't call the endpoint to iterate for every record
+    # Form Submissions always returns in reverse chronological order so once I've gone past
+    #  the initial state value, I need to move on to the next form
     def read_records(
         self,
         sync_mode: SyncMode,
@@ -1378,10 +1404,96 @@ class FormSubmissions(Stream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Iterable[Mapping[str, Any]]:
-        for record in super().read_records(sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state):
-            record["formId"] = stream_slice["form_id"]
-            yield record
 
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        try:
+            while not pagination_complete:
+                properties = self._property_wrapper
+                if properties and properties.too_many_properties:
+                    records, response = self._read_stream_records(
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                    )
+                else:
+                    response = self.handle_request(
+                        stream_slice=stream_slice,
+                        stream_state=stream_state,
+                        next_page_token=next_page_token,
+                        properties=properties,
+                    )
+                    records = self._transform(self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice))
+
+
+                # All of the previous code comes from the original function in the Stream object
+
+                # Look through the records to check for the earliest date
+                for record in records:
+                    record["formId"] = stream_slice["form_id"]
+                    if self._earliest_date is None and "submittedAt" in record:
+                        self._earliest_date = record["submittedAt"]
+                        
+                    if "submittedAt" in record:
+                        self._earliest_date = min(self._earliest_date, record["submittedAt"])
+                    yield record
+
+                # I overwrote the next_page_token function so it won't return a token if
+                # the earliest submission is prior to the initial state variable
+                next_page_token = self.next_page_token(response)
+
+                # Reset the earliest date variable for the next form
+                if not next_page_token:
+                    self._earliest_date = None
+                    pagination_complete = True
+                    # Set the state once a record has been called.
+                    # The state should be the time of the initial call that is made so that it 
+                    # catches any submissions for forms that happen while it is being synced on the next sync
+                    self._state = self._init_sync
+
+            # Always return an empty generator just in case no records were ever yielded
+            yield from []
+        except requests.exceptions.HTTPError as e:
+            raise e
+
+    def request_params(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> MutableMapping[str, Any]:
+
+        # Remember the initial state for comparison in the next_page_token function
+        if(stream_state and self._init_state is None):
+            self._init_state = stream_state[self.cursor_field]
+
+        params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+        return params
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+
+        #Assuming it got a record with a submittedAt value... and that there is an initial state
+        if self._earliest_date and self._init_state:
+            #Convert the initial state value and the timestamp to the same variable type
+            loaded_dt = pendulum.from_timestamp(self._earliest_date/1000)
+            if isinstance(self._init_state, str) :
+                start_dt = pendulum.parse(self._init_state)
+            else:
+                start_dt = pendulum.from_timestamp(self._init_state/1000)
+
+            # If the earliest date from the stream is less than the initial state date, then don't get another page
+            #  for this form
+            if start_dt > loaded_dt:
+                return
+
+        #I know the format of this endpoint so I can simplify the paging checks
+        response = self._parse_response(response)
+
+        if "paging" in response:
+            if "next" in response["paging"]:
+                return {"after": response["paging"]["next"]["after"]}
 
 class MarketingEmails(Stream):
     """Marketing Email, API v1
