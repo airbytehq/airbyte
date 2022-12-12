@@ -399,7 +399,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  @Disabled
   public void testSyncWithLargeRecordBatch(final String messagesFilename,
                                            final String catalogFilename)
       throws Exception {
@@ -502,7 +501,6 @@ public abstract class DestinationAcceptanceTest {
    * destinations.
    */
   @Test
-  @Disabled
   public void testLineBreakCharacters() throws Exception {
     final AirbyteCatalog catalog =
         Jsons.deserialize(
@@ -538,7 +536,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  @Disabled
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromSpec = normalizationFromSpec();
     assertEquals(normalizationFromSpec, supportsNormalization());
@@ -564,7 +561,6 @@ public abstract class DestinationAcceptanceTest {
    * append records to the datastore instead of overwriting the previous run.
    */
   @Test
-  @Disabled
   public void testIncrementalSync() throws Exception {
     if (!implementsAppend()) {
       LOGGER.info("Destination's spec.json does not include '\"supportsIncremental\" ; true'");
@@ -691,7 +687,6 @@ public abstract class DestinationAcceptanceTest {
    */
   @ParameterizedTest
   @ArgumentsSource(DataArgumentsProvider.class)
-  @Disabled
   public void testSyncWithNormalization(final String messagesFilename, final String catalogFilename)
       throws Exception {
     if (!normalizationFromSpec()) {
@@ -723,7 +718,6 @@ public abstract class DestinationAcceptanceTest {
    * do so, this is not necessarily true. This explains {@link #implementsAppendDedup()}.
    */
   @Test
-  @Disabled
   public void testIncrementalDedupeSync() throws Exception {
     if (!implementsAppendDedup()) {
       LOGGER.info(
@@ -829,7 +823,6 @@ public abstract class DestinationAcceptanceTest {
    * would be too big and fails to replicate.
    */
   @Test
-  @Disabled
   void testSyncVeryBigRecords() throws Exception {
     if (!implementsRecordSizeLimitChecks()) {
       return;
@@ -902,7 +895,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  @Disabled
   public void testCustomDbtTransformations() throws Exception {
     if (!dbtFromSpec()) {
       return;
@@ -1022,7 +1014,6 @@ public abstract class DestinationAcceptanceTest {
    * Verify the destination uses the namespace field if it is set.
    */
   @Test
-  @Disabled
   void testSyncUsesAirbyteStreamNamespaceIfNotNull() throws Exception {
     if (!implementsNamespaces()) {
       return;
@@ -1055,7 +1046,6 @@ public abstract class DestinationAcceptanceTest {
    * Verify a destination is able to write tables with the same name to different namespaces.
    */
   @Test
-  @Disabled
   void testSyncWriteSameTableNameDifferentNamespace() throws Exception {
     if (!implementsNamespaces()) {
       return;
@@ -1102,7 +1092,6 @@ public abstract class DestinationAcceptanceTest {
 
   @ParameterizedTest
   @ArgumentsSource(NamespaceTestCaseProvider.class)
-  @Disabled
   public void testNamespaces(final String testCaseId,
                              final String namespace,
                              final String normalizedNamespace)
@@ -1165,7 +1154,6 @@ public abstract class DestinationAcceptanceTest {
    * @throws Exception
    */
   @Test
-  @Disabled
   public void testSyncNotFailsWithNewFields() throws Exception {
     if (!implementsOverwrite()) {
       LOGGER.info("Destination's spec.json does not support overwrite sync mode.");
@@ -1505,7 +1493,6 @@ public abstract class DestinationAcceptanceTest {
    * your_containers_id" (ex. docker container attach 18cc929f44c8) to see the container's output
    */
   @Test
-  @Disabled
   public void testStressPerformance() throws Exception {
     final int streamsSize = 5; // number of generated streams
     final int messagesNumber = 300; // number of msg to be written to each generated stream
@@ -1672,7 +1659,6 @@ public abstract class DestinationAcceptanceTest {
 
   @ParameterizedTest
   @ArgumentsSource(DataTypeTestArgumentProvider.class)
-  @Disabled
   public void testDataTypeTestWithNormalization(final String messagesFilename,
                                                 final String catalogFilename,
                                                 final DataTypeTestArgumentProvider.TestCompatibility testCompatibility)
@@ -1706,7 +1692,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  @Disabled
   public void testSyncIntegerNanDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
     SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
@@ -1723,7 +1708,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  @Disabled
   public void testSyncNumberInfinityDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
     SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
@@ -1740,7 +1724,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   @Test
-  @Disabled
   public void testSyncIntegerInfinityDataType() throws Exception {
     // NaN/Infinity protocol supports started from V1 version or higher
     SpecialNumericTypes numericTypesSupport = getSpecialNumericTypesSupportTest();
