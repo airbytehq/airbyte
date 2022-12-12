@@ -5,7 +5,6 @@ import { ResizablePanels } from "components/ui/ResizablePanels";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -14,13 +13,9 @@ import { ResultDisplay } from "./ResultDisplay";
 import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
-interface StreamTesterProps {
-  selectedStream: StreamsListReadStreamsItem;
-}
-
-export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) => {
+export const StreamTester: React.FC = () => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson } = useConnectorBuilderState();
+  const { jsonManifest, configJson, streams, testStreamIndex } = useConnectorBuilderState();
   const {
     data: streamReadData,
     refetch: readStream,
@@ -29,7 +24,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
     isFetching,
   } = useReadStream({
     manifest: jsonManifest,
-    stream: selectedStream.name,
+    stream: streams[testStreamIndex]?.name,
     config: configJson,
   });
 
@@ -57,10 +52,10 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
   return (
     <div className={styles.container}>
       <Text className={styles.url} size="lg">
-        {selectedStream.url}
+        {streams[testStreamIndex]?.url}
       </Text>
 
-      <StreamTestButton selectedStreamName={selectedStream.name} readStream={readStream} />
+      <StreamTestButton readStream={readStream} />
 
       {isFetching && (
         <div className={styles.fetchingSpinner}>

@@ -8,8 +8,8 @@ import { Tooltip } from "components/ui/Tooltip";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { downloadFile } from "utils/file";
 
-import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./DownloadYamlButton.module.scss";
+import { useBuilderErrors } from "./useBuilderErrors";
 
 interface DownloadYamlButtonProps {
   className?: string;
@@ -51,7 +51,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
 
   const downloadButton = (
     <Button
-      className={styles.button}
+      full
       onClick={handleClick}
       disabled={buttonDisabled}
       icon={buttonDisabled ? <FontAwesomeIcon icon={faWarning} /> : <FontAwesomeIcon icon={faDownload} />}
@@ -63,7 +63,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
   return (
     <div className={className}>
       {buttonDisabled ? (
-        <Tooltip control={downloadButton} placement="left">
+        <Tooltip control={downloadButton} placement="left" containerClassName={styles.tooltipContainer}>
           {tooltipContent}
         </Tooltip>
       ) : (

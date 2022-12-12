@@ -37,35 +37,28 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 0;
+  padding: 0 variables.$spacing-sm 0 variables.$spacing-md;
   margin-top: variables.$spacing-2xl;
 }
 
 .streamsHeading {
-  margin-left: variables.$spacing-md;
   color: colors.$blue;
-}
-
-.addStreamButton {
-  margin-left: auto;
-  margin-right: variables.$spacing-sm;
+  flex-grow: 1;
 }
 
 .downloadButton {
-  margin-top: auto;
-  width: 90%;
+  width: 100%;
 }
 
 .resetButton {
   margin-top: variables.$spacing-sm;
-  margin-bottom: variables.$spacing-md;
-  width: 90%;
 }
 
 .viewButton {
   border: none;
   width: 100%;
   height: 34px;
+  flex-shrink: 0;
   cursor: pointer;
   border-radius: variables.$border-radius-md;
   padding: variables.$spacing-md;
@@ -94,6 +87,7 @@
 }
 
 .streamList {
+  flex-grow: 1;
   width: 100%;
   margin: variables.$spacing-md 0;
   display: flex;
@@ -113,4 +107,12 @@
   flex: 0 0 auto;
   margin-left: auto;
   margin-right: variables.$spacing-xs;
+}
+
+.streamViewText {
+  color: inherit;
+}
+
+.emptyStreamViewText {
+  color: colors.$grey-300;
 }

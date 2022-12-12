@@ -1,6 +1,5 @@
 import { faWarning } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useFormikContext } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { RotateIcon } from "components/icons/RotateIcon";
@@ -10,21 +9,16 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { BuilderFormValues } from "../types";
 import { useBuilderErrors } from "../useBuilderErrors";
 import styles from "./StreamTestButton.module.scss";
 
 interface StreamTestButtonProps {
-  selectedStreamName: string;
   readStream: () => void;
 }
 
-export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStreamName, readStream }) => {
-  const { editorView, yamlIsValid } = useConnectorBuilderState();
-  const { values } = useFormikContext<BuilderFormValues>();
+export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }) => {
+  const { editorView, yamlIsValid, testStreamIndex } = useConnectorBuilderState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
-
-  const selectedStreamNum = values.streams.findIndex((stream) => stream.name === selectedStreamName);
 
   const handleClick = () => {
     if (editorView === "yaml") {
@@ -32,7 +26,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStre
       return;
     }
 
-    validateAndTouch(readStream, selectedStreamNum);
+    validateAndTouch(readStream, testStreamIndex);
   };
 
   let buttonDisabled = false;
@@ -43,7 +37,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ selectedStre
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  if (editorView === "ui" && hasErrors(selectedStreamNum)) {
+  if (editorView === "ui" && hasErrors(testStreamIndex)) {
     buttonDisabled = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }

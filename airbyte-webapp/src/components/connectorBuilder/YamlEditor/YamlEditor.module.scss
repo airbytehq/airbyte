@@ -13,14 +13,10 @@
   background-color: colors.$grey-30;
   display: flex;
   padding: variables.$spacing-md;
-  flex-direction: row;
+  flex-direction: row-reverse;
 }
 
 .editorContainer {
   padding-top: variables.$spacing-xl;
   flex: 1 1 0;
-}
-
-.downloadButton {
-  margin-left: auto;
 }
