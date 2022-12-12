@@ -181,8 +181,6 @@ class SecretsManager:
             List[Path]: List of paths were the secrets were written
         """
         written_files = []
-        if not secrets:
-            return 0
         for secret in secrets:
             secrets_dir = self.base_folder / secret.directory
             secrets_dir.mkdir(parents=True, exist_ok=True)
