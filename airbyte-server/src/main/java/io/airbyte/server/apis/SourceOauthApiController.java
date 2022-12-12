@@ -10,6 +10,7 @@ import io.airbyte.api.model.generated.OAuthConsentRead;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SourceOauthConsentRequest;
 import io.airbyte.server.handlers.OAuthHandler;
+import io.micronaut.http.annotation.Body;
 import java.util.Map;
 import javax.ws.rs.Path;
 import lombok.AllArgsConstructor;
@@ -21,17 +22,17 @@ public class SourceOauthApiController implements SourceOauthApi {
   private final OAuthHandler oAuthHandler;
 
   @Override
-  public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest) {
+  public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
   @Override
-  public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest) {
+  public OAuthConsentRead getSourceOAuthConsent(@Body final SourceOauthConsentRequest sourceOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
   @Override
-  public void setInstancewideSourceOauthParams(final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
+  public void setInstancewideSourceOauthParams(@Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
       oAuthHandler.setSourceInstancewideOauthParams(setInstancewideSourceOauthParamsRequestBody);
       return null;
