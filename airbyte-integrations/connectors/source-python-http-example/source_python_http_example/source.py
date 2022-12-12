@@ -3,7 +3,6 @@
 #
 
 
-from abc import ABC
 from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
@@ -11,12 +10,12 @@ import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator, NoAuth, HttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import HttpAuthenticator
 
 
-def format_date(value, formatter='%Y-%m-%d'):
+def format_date(value, formatter="%Y-%m-%d"):
     if isinstance(value, str):
         return datetime.strptime(value, formatter)
     if isinstance(value, datetime):
@@ -40,9 +39,9 @@ class ExchangeRates(HttpStream, IncrementalMixin):
 
     def __init__(self, config: Mapping[str, Any], **kwargs):
         super().__init__(**kwargs)
-        self.base = config['base']
-        self.access_key = config['access_key']
-        self.start_date = format_date(config['start_date'])
+        self.base = config["base"]
+        self.access_key = config["access_key"]
+        self.start_date = format_date(config["start_date"])
         self._cursor_value = None
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
@@ -50,24 +49,26 @@ class ExchangeRates(HttpStream, IncrementalMixin):
         # so we return None to indicate there are no more pages in the response
         return None
 
-    def path(self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None) -> str:
-        return 'exchangerates_data/' + stream_slice['date']
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "exchangerates_data/" + stream_slice["date"]
 
     def request_params(
-            self,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         # The api requires that we include access_key as a query param so we do that in this method
-        return {'access_key': self.access_key, 'base': self.base}
+        return {"access_key": self.access_key, "base": self.base}
 
     def parse_response(
-            self,
-            response: requests.Response,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         # The response is a simple JSON whose schema matches our stream's schema exactly,
         # so we just return a list containing the response
@@ -91,7 +92,9 @@ class ExchangeRates(HttpStream, IncrementalMixin):
             start_date += timedelta(days=1)
         return dates
 
-    def stream_slices(self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None) -> Iterable[Optional[Mapping[str, Any]]]:
+    def stream_slices(
+        self, sync_mode, cursor_field: List[str] = None, stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, Any]]]:
         start_date = format_date(stream_state[self.cursor_field]) if stream_state and self.cursor_field in stream_state else self.start_date
         return self._chunk_date_range(start_date)
 
@@ -111,7 +114,7 @@ class ExchangeRates(HttpStream, IncrementalMixin):
 class SourcePythonHttpExample(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
-            auth = APIKeyAuthenticator(token=config['access_key'], auth_header="apikey")
+            auth = APIKeyAuthenticator(token=config["access_key"], auth_header="apikey")
             stream = ExchangeRates(authenticator=auth, config=config)
             records = stream.read_records(sync_mode=SyncMode.incremental)
             next(records)
@@ -122,5 +125,5 @@ class SourcePythonHttpExample(AbstractSource):
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         AirbyteLogger().log("INFO", f"Using start_date: {config['start_date']}")
 
-        auth = APIKeyAuthenticator(token=config['access_key'], auth_header="apikey")
+        auth = APIKeyAuthenticator(token=config["access_key"], auth_header="apikey")
         return [ExchangeRates(authenticator=auth, config=config)]

@@ -1,9 +1,9 @@
 {
   "type": "object",
-  "required": ["base", "date", "rates"],
+  "required": ["timestamp", "base", "date", "rates"],
   "properties": {
-    "access_key": {
-      "type": "string"
+    "timestamp": {
+      "type": "number"
     },
     "base": {
       "type": "string"
