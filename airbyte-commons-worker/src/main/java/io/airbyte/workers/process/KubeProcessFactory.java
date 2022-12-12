@@ -130,7 +130,7 @@ public class KubeProcessFactory implements ProcessFactory {
           files,
           entrypoint,
           resourceRequirements,
-          workerConfigs.getJobImagePullSecret(),
+          workerConfigs.getJobImagePullSecrets(),
           workerConfigs.getWorkerKubeTolerations(),
           nodeSelectors,
           allLabels,

@@ -13,11 +13,13 @@ import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
+import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
+import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
 import { Section } from "./components/Section";
 import { SyncCatalogField } from "./components/SyncCatalogField";
@@ -32,6 +34,8 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
+  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
+
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
   const { clearFormChange } = useFormChangeTrackerService();
@@ -55,6 +59,9 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
+          {isSchemaChangesEnabled && (
+            <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
+          )}
         </Section>
         {!isNewStreamsTableEnabled && (
           <Section>

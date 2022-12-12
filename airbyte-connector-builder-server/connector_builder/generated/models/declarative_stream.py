@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_add_fields_remove_fields import AnyOfAddFieldsRemoveFields
 from connector_builder.generated.models.any_of_json_file_schema_loader_default_schema_loader import AnyOfJsonFileSchemaLoaderDefaultSchemaLoader
 from connector_builder.generated.models.any_ofarrayarraystring import AnyOfarrayarraystring
@@ -34,16 +34,16 @@ class DeclarativeStream(BaseModel):
         checkpoint_interval: The checkpoint_interval of this DeclarativeStream [Optional].
     """
 
-    retriever: SimpleRetriever
-    config: Dict[str, Any]
-    name: Optional[str] = None
-    primary_key: Optional[AnyOfarrayarraystring] = None
-    schema_loader: Optional[AnyOfJsonFileSchemaLoaderDefaultSchemaLoader] = None
-    name: Optional[str] = None
-    primary_key: Optional[str] = None
-    schema_loader: Optional[AnyOfJsonFileSchemaLoaderDefaultSchemaLoader] = None
-    stream_cursor_field: Optional[AnyOfarraystring] = None
-    transformations: Optional[List[AnyOfAddFieldsRemoveFields]] = None
-    checkpoint_interval: Optional[int] = None
+    retriever: SimpleRetriever = Field(alias="retriever")
+    config: Dict[str, Any] = Field(alias="config")
+    name: Optional[str] = Field(alias="name", default=None)
+    primary_key: Optional[AnyOfarrayarraystring] = Field(alias="primary_key", default=None)
+    schema_loader: Optional[AnyOfJsonFileSchemaLoaderDefaultSchemaLoader] = Field(alias="schema_loader", default=None)
+    name: Optional[str] = Field(alias="_name", default=None)
+    primary_key: Optional[str] = Field(alias="_primary_key", default=None)
+    schema_loader: Optional[AnyOfJsonFileSchemaLoaderDefaultSchemaLoader] = Field(alias="_schema_loader", default=None)
+    stream_cursor_field: Optional[AnyOfarraystring] = Field(alias="stream_cursor_field", default=None)
+    transformations: Optional[List[AnyOfAddFieldsRemoveFields]] = Field(alias="transformations", default=None)
+    checkpoint_interval: Optional[int] = Field(alias="checkpoint_interval", default=None)
 
 DeclarativeStream.update_forward_refs()
