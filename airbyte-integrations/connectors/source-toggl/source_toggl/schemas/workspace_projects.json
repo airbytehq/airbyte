@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "active": {
+      "type": "boolean"
+    },
+    "actual_hours": {
+      "type": ["null", "integer"]
+    },
+    "at": {
+      "type": "string"
+    },
+    "auto_estimates": {
+      "type": ["null", "boolean"]
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "cid": {
+      "type": ["null", "integer"]
+    },
+    "client_id": {
+      "type": ["null", "integer"]
+    },
+    "color": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "currency": {
+      "type": ["null", "string"]
+    },
+    "current_period": {
+      "type": ["null", "object"]
+    },
+    "estimated_hours": {
+      "type": ["null", "integer"]
+    },
+    "first_time_entry": {
+      "type": "string"
+    },
+    "fixed_fee": {
+      "type": ["null", "number"]
+    },
+    "id": {
+      "type": "integer"
+    },
+    "is_private": {
+      "type": "boolean"
+    },
+    "name": {
+      "type": "string"
+    },
+    "rate": {
+      "type": ["null", "number"]
+    },
+    "rate_last_updated": {
+      "type": ["null", "string"]
+    },
+    "recurring": {
+      "type": "boolean"
+    },
+    "recurring_parameters": {
+      "type": ["null", "array"]
+    },
+    "server_deleted_at": {
+      "type": ["null", "string"]
+    },
+    "template": {
+      "type": ["null", "boolean"]
+    },
+    "wid": {
+      "type": "integer"
+    },
+    "workspace_id": {
+      "type": "integer"
+    }
+  }
+}

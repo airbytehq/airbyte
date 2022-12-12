@@ -27,10 +27,12 @@ jest.mock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
   useConnectionEditService: () => ({ connection: mockConnection }),
 }));
 
-jest.mock("components/DeleteBlock", () => () => {
-  const MockDeleteBlock = () => <div>Does not actually delete anything</div>;
-  return <MockDeleteBlock />;
-});
+jest.mock("components/common/DeleteBlock", () => ({
+  DeleteBlock: () => {
+    const MockDeleteBlock = () => <div>Does not actually delete anything</div>;
+    return <MockDeleteBlock />;
+  },
+}));
 
 describe("<SettingsView />", () => {
   it("only renders connection state when advanced mode is enabled", async () => {

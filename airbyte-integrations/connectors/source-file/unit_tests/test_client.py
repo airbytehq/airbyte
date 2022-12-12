@@ -3,6 +3,8 @@
 #
 
 
+from unittest.mock import patch
+
 import pytest
 from pandas import read_csv, read_excel
 from source_file.client import Client, ConfigurationError, URLFile
@@ -136,11 +138,12 @@ def test_open_gcs_url():
         assert URLFile(url="", provider=provider)._open_gcs_url()
 
 
-def test_client_wrong_reader_options():
-    with pytest.raises(ConfigurationError):
-        Client(
-            dataset_name="test_dataset",
-            url="scp://test_dataset",
-            provider={"provider": {"storage": "HTTPS", "reader_impl": "gcsfs", "user_agent": False}},
-            reader_options='{encoding":"utf_16"}',
-        )
+def test_read(test_read_config):
+    client = Client(**test_read_config)
+    client.sleep_on_retry_sec = 0  # just for test
+    with patch.object(client, "load_dataframes", side_effect=ConnectionResetError) as mock_method:
+        try:
+            return client.read(["date", "key"])
+        except ConnectionResetError:
+            print("Exception has been raised correctly!")
+        mock_method.assert_called()

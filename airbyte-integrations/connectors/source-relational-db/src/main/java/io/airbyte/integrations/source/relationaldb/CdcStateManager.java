@@ -5,8 +5,8 @@
 package io.airbyte.integrations.source.relationaldb;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.Collections;
 import java.util.Set;
 import org.slf4j.Logger;

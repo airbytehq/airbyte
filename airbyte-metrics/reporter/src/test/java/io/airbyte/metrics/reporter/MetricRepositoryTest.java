@@ -13,6 +13,7 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_CATALOG
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.ACTOR_DEFINITION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -20,9 +21,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.init.DatabaseInitializationException;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
+import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.NamespaceDefinitionType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ReleaseStage;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.AttemptStatus;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobConfigType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
@@ -31,7 +34,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.jooq.DSLContext;
@@ -50,6 +52,11 @@ class MetricRepositoryTest {
   private static final String SRC = "src";
   private static final String DEST = "dst";
   private static final String CONN = "conn";
+  private static final String SYNC_QUEUE = "SYNC";
+  private static final String AWS_SYNC_QUEUE = "AWS_PARIS_SYNC";
+  private static final String AUTO_REGION = "AUTO";
+  private static final String EU_REGION = "EU";
+
   private static final UUID SRC_DEF_ID = UUID.randomUUID();
   private static final UUID DST_DEF_ID = UUID.randomUUID();
   private static MetricRepository db;
@@ -92,6 +99,7 @@ class MetricRepositoryTest {
     ctx.truncate(ACTOR).execute();
     ctx.truncate(CONNECTION).cascade().execute();
     ctx.truncate(JOBS).cascade().execute();
+    ctx.truncate(ATTEMPTS).cascade().execute();
     ctx.truncate(WORKSPACE).cascade().execute();
   }
 
@@ -105,14 +113,13 @@ class MetricRepositoryTest {
 
     @Test
     void shouldReturnReleaseStages() {
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.PROCESSING_TASK_QUEUE)
+          .values(10L, 1L, AttemptStatus.running, SYNC_QUEUE).values(20L, 2L, AttemptStatus.running, SYNC_QUEUE)
+          .values(30L, 3L, AttemptStatus.running, SYNC_QUEUE).values(40L, 4L, AttemptStatus.running, AWS_SYNC_QUEUE)
+          .values(50L, 5L, AttemptStatus.running, SYNC_QUEUE)
+          .execute();
       final var srcId = UUID.randomUUID();
       final var dstId = UUID.randomUUID();
-
-      ctx.insertInto(ACTOR, ACTOR.ID, ACTOR.WORKSPACE_ID, ACTOR.ACTOR_DEFINITION_ID, ACTOR.NAME, ACTOR.CONFIGURATION, ACTOR.ACTOR_TYPE)
-          .values(srcId, UUID.randomUUID(), SRC_DEF_ID, SRC, JSONB.valueOf("{}"), ActorType.source)
-          .values(dstId, UUID.randomUUID(), DST_DEF_ID, DEST, JSONB.valueOf("{}"), ActorType.destination)
-          .execute();
-
       final var activeConnectionId = UUID.randomUUID();
       final var inactiveConnectionId = UUID.randomUUID();
       ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.STATUS, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID,
@@ -132,7 +139,10 @@ class MetricRepositoryTest {
           .values(5L, inactiveConnectionId.toString(), JobStatus.running)
           .execute();
 
-      assertEquals(2, db.numberOfRunningJobs());
+      assertEquals(1, db.numberOfRunningJobsByTaskQueue().get(SYNC_QUEUE));
+      assertEquals(1, db.numberOfRunningJobsByTaskQueue().get(AWS_SYNC_QUEUE));
+      // To test we send 0 for 'null' to overwrite previous bug.
+      assertEquals(0, db.numberOfRunningJobsByTaskQueue().get("null"));
       assertEquals(1, db.numberOfOrphanRunningJobs());
     }
 
@@ -142,34 +152,55 @@ class MetricRepositoryTest {
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(1L, "", JobStatus.pending).execute();
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS).values(2L, "", JobStatus.failed).execute();
 
-      final var res = db.numberOfRunningJobs();
-      assertEquals(0, res);
+      final var result = db.numberOfRunningJobsByTaskQueue();
+      assertEquals(result.get(SYNC_QUEUE), 0);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0);
     }
 
     @Test
     void pendingJobsShouldReturnCorrectCount() throws SQLException {
       // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
-          .values(1L, "", JobStatus.pending)
-          .values(2L, "", JobStatus.failed)
-          .values(3L, "", JobStatus.pending)
-          .values(4L, "", JobStatus.running)
+      final var connectionUuid = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+          CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.GEOGRAPHY)
+          .values(connectionUuid, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active,
+              GeographyType.valueOf(EU_REGION))
           .execute();
 
-      final var res = db.numberOfPendingJobs();
-      assertEquals(2, res);
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, connectionUuid.toString(), JobStatus.pending)
+          .values(2L, connectionUuid.toString(), JobStatus.failed)
+          .values(3L, connectionUuid.toString(), JobStatus.pending)
+          .values(4L, connectionUuid.toString(), JobStatus.running)
+          .execute();
+
+      final var res = db.numberOfPendingJobsByGeography();
+      assertEquals(2, res.get(EU_REGION));
+      assertEquals(0, res.get(AUTO_REGION));
     }
 
     @Test
     void pendingJobsShouldReturnZero() throws SQLException {
-      // non-pending jobs
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
-          .values(1L, "", JobStatus.running)
-          .values(2L, "", JobStatus.failed)
+      final var connectionUuid = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+          CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.GEOGRAPHY)
+          .values(connectionUuid, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active,
+              GeographyType.valueOf(EU_REGION))
           .execute();
 
-      final var res = db.numberOfPendingJobs();
-      assertEquals(0, res);
+      // non-pending jobs
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, connectionUuid.toString(), JobStatus.running)
+          .values(2L, connectionUuid.toString(), JobStatus.failed)
+          .execute();
+
+      final var result = db.numberOfPendingJobsByGeography();
+      assertEquals(result.get(AUTO_REGION), 0);
+      assertEquals(result.get(EU_REGION), 0);
     }
 
   }
@@ -181,33 +212,52 @@ class MetricRepositoryTest {
     void shouldReturnOnlyPendingSeconds() throws SQLException {
       final var expAgeSecs = 1000;
       final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
+      final var connectionUuid = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
+
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+          CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.GEOGRAPHY)
+          .values(connectionUuid, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active,
+              GeographyType.valueOf(EU_REGION))
+          .execute();
 
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
           // oldest pending job
-          .values(1L, "", JobStatus.pending, oldestCreateAt)
+          .values(1L, connectionUuid.toString(), JobStatus.pending, oldestCreateAt)
           // second-oldest pending job
-          .values(2L, "", JobStatus.pending, OffsetDateTime.now())
+          .values(2L, connectionUuid.toString(), JobStatus.pending, OffsetDateTime.now())
           .execute();
       // non-pending jobs
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
-          .values(3L, "", JobStatus.running)
-          .values(4L, "", JobStatus.failed)
+          .values(3L, connectionUuid.toString(), JobStatus.running)
+          .values(4L, connectionUuid.toString(), JobStatus.failed)
           .execute();
 
-      final var res = db.oldestPendingJobAgeSecs();
+      Double result = db.oldestPendingJobAgeSecsByGeography().get(EU_REGION);
       // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
-      assertTrue(List.of(999L, 1000L, 1001L).contains(res));
+      assertTrue(999 < result && result < 1001);
     }
 
     @Test
     void shouldReturnNothingIfNotApplicable() {
-      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
-          .values(1L, "", JobStatus.succeeded)
-          .values(2L, "", JobStatus.running)
-          .values(3L, "", JobStatus.failed).execute();
+      final var connectionUuid = UUID.randomUUID();
+      final var srcId = UUID.randomUUID();
+      final var dstId = UUID.randomUUID();
 
-      final var res = db.oldestPendingJobAgeSecs();
-      assertEquals(0L, res);
+      ctx.insertInto(CONNECTION, CONNECTION.ID, CONNECTION.NAMESPACE_DEFINITION, CONNECTION.SOURCE_ID, CONNECTION.DESTINATION_ID,
+          CONNECTION.NAME, CONNECTION.CATALOG, CONNECTION.MANUAL, CONNECTION.STATUS, CONNECTION.GEOGRAPHY)
+          .values(connectionUuid, NamespaceDefinitionType.source, srcId, dstId, CONN, JSONB.valueOf("{}"), true, StatusType.active, GeographyType.EU)
+          .execute();
+
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
+          .values(1L, connectionUuid.toString(), JobStatus.succeeded)
+          .values(2L, connectionUuid.toString(), JobStatus.running)
+          .values(3L, connectionUuid.toString(), JobStatus.failed).execute();
+
+      final var result = db.oldestPendingJobAgeSecsByGeography();
+      assertEquals(result.get(EU_REGION), 0.0);
+      assertEquals(result.get(AUTO_REGION), 0.0);
     }
 
   }
@@ -219,7 +269,9 @@ class MetricRepositoryTest {
     void shouldReturnOnlyRunningSeconds() {
       final var expAgeSecs = 10000;
       final var oldestCreateAt = OffsetDateTime.now().minus(expAgeSecs, ChronoUnit.SECONDS);
-
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.PROCESSING_TASK_QUEUE)
+          .values(10L, 1L, AttemptStatus.running, SYNC_QUEUE).values(20L, 2L, AttemptStatus.running, SYNC_QUEUE)
+          .execute();
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT)
           // oldest pending job
           .values(1L, "", JobStatus.running, oldestCreateAt)
@@ -233,21 +285,25 @@ class MetricRepositoryTest {
           .values(4L, "", JobStatus.failed)
           .execute();
 
-      final var res = db.oldestRunningJobAgeSecs();
-      // expected age is 10000 seconds, but allow for +/- 1 second to account for timing/rounding errors
-      assertTrue(List.of(9999L, 10000L, 10001L).contains(res));
+      final var result = db.oldestRunningJobAgeSecsByTaskQueue();
+      // expected age is 1000 seconds, but allow for +/- 1 second to account for timing/rounding errors
+      assertTrue(9999 < result.get(SYNC_QUEUE) && result.get(SYNC_QUEUE) < 10001L);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0.0);
     }
 
     @Test
     void shouldReturnNothingIfNotApplicable() {
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.PROCESSING_TASK_QUEUE).values(10L, 1L, SYNC_QUEUE).values(20L, 2L, SYNC_QUEUE)
+          .values(30L, 3L, SYNC_QUEUE).execute();
       ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS)
           .values(1L, "", JobStatus.succeeded)
           .values(2L, "", JobStatus.pending)
           .values(3L, "", JobStatus.failed)
           .execute();
 
-      final var res = db.oldestRunningJobAgeSecs();
-      assertEquals(0L, res);
+      final var result = db.oldestRunningJobAgeSecsByTaskQueue();
+      assertEquals(result.get(SYNC_QUEUE), 0.0);
+      assertEquals(result.get(AWS_SYNC_QUEUE), 0.0);
     }
 
   }
@@ -499,6 +555,124 @@ class MetricRepositoryTest {
 
       final var abnormalConnectionResult = db.numberOfJobsNotRunningOnScheduleInLastDay();
       assertEquals(0, abnormalConnectionResult);
+    }
+
+  }
+
+  @Nested
+  class UnusuallyLongJobs {
+
+    @Test
+    void shouldCountInJobsWithUnusuallyLongTime() throws SQLException {
+      final var connectionId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      // Current job has been running for 12 hours while the previous 5 jobs runs 2 hours. Avg will be 2
+      // hours.
+      // Thus latest job will be counted as an unusually long-running job.
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS), syncConfigType)
+          .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS), syncConfigType)
+          .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(16, ChronoUnit.HOURS), syncConfigType)
+          .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(16, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(14, ChronoUnit.HOURS), syncConfigType)
+          .values(4L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS), syncConfigType)
+          .values(5L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(12, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS))
+          .values(2L, 2L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(16, ChronoUnit.HOURS))
+          .values(3L, 3L, AttemptStatus.succeeded, OffsetDateTime.now().minus(16, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(14, ChronoUnit.HOURS))
+          .values(4L, 4L, AttemptStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS))
+          .values(5L, 5L, AttemptStatus.running, OffsetDateTime.now().minus(12, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(12, ChronoUnit.HOURS))
+          .execute();
+
+      final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
+      assertEquals(1, numOfJubsRunningUnusallyLong);
+    }
+
+    @Test
+    void shouldNotCountInJobsWithinFifteenMinutes() throws SQLException {
+      final var connectionId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      // Latest job runs 14 minutes while the previous 5 jobs runs average about 3 minutes.
+      // Despite it has been more than 2x than avg it's still within 15 minutes threshold, thus this
+      // shouldn't be
+      // counted in.
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(26, ChronoUnit.MINUTES), syncConfigType)
+          .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(18, ChronoUnit.MINUTES), syncConfigType)
+          .values(2L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(16, ChronoUnit.MINUTES), syncConfigType)
+          .values(3L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(16, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(14, ChronoUnit.MINUTES), syncConfigType)
+          .values(4L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(2, ChronoUnit.MINUTES), syncConfigType)
+          .values(5L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(2, ChronoUnit.MINUTES), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(26, ChronoUnit.MINUTES))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(18, ChronoUnit.MINUTES))
+          .values(2L, 2L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(16, ChronoUnit.MINUTES))
+          .values(3L, 3L, AttemptStatus.succeeded, OffsetDateTime.now().minus(26, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(14, ChronoUnit.MINUTES))
+          .values(4L, 4L, AttemptStatus.succeeded, OffsetDateTime.now().minus(18, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(17, ChronoUnit.MINUTES))
+          .values(5L, 5L, AttemptStatus.running, OffsetDateTime.now().minus(14, ChronoUnit.MINUTES),
+              OffsetDateTime.now().minus(14, ChronoUnit.MINUTES))
+          .execute();
+
+      final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
+      assertEquals(0, numOfJubsRunningUnusallyLong);
+    }
+
+    @Test
+    void shouldSkipInsufficientJobRuns() throws SQLException {
+      final var connectionId = UUID.randomUUID();
+      final var syncConfigType = JobConfigType.sync;
+
+      // Require at least 5 runs in last week to get meaningful average runtime.
+      ctx.insertInto(JOBS, JOBS.ID, JOBS.SCOPE, JOBS.STATUS, JOBS.CREATED_AT, JOBS.UPDATED_AT, JOBS.CONFIG_TYPE)
+          .values(100L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS), syncConfigType)
+          .values(1L, connectionId.toString(), JobStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS), syncConfigType)
+          .values(2L, connectionId.toString(), JobStatus.running, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(1, ChronoUnit.HOURS), syncConfigType)
+          .execute();
+
+      ctx.insertInto(ATTEMPTS, ATTEMPTS.ID, ATTEMPTS.JOB_ID, ATTEMPTS.STATUS, ATTEMPTS.CREATED_AT, ATTEMPTS.UPDATED_AT)
+          .values(100L, 100L, AttemptStatus.succeeded, OffsetDateTime.now().minus(28, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(26, ChronoUnit.HOURS))
+          .values(1L, 1L, AttemptStatus.succeeded, OffsetDateTime.now().minus(20, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(18, ChronoUnit.HOURS))
+          .values(2L, 2L, AttemptStatus.running, OffsetDateTime.now().minus(18, ChronoUnit.HOURS),
+              OffsetDateTime.now().minus(1, ChronoUnit.HOURS))
+          .execute();
+
+      final var numOfJubsRunningUnusallyLong = db.numberOfJobsRunningUnusuallyLong();
+      assertEquals(0, numOfJubsRunningUnusallyLong);
     }
 
   }

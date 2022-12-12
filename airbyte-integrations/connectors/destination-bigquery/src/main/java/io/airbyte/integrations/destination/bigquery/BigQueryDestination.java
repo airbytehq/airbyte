@@ -9,16 +9,17 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
+import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.Job;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.storage.Storage;
 import com.google.cloud.storage.StorageOptions;
 import com.google.common.base.Charsets;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -42,6 +43,7 @@ import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
@@ -86,28 +88,30 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       final BigQuery bigquery = getBigQuery(config);
       final UploadingMethod uploadingMethod = BigQueryUtils.getLoadingMethod(config);
 
-      BigQueryUtils.createDataset(bigquery, datasetId, datasetLocation);
+      BigQueryUtils.checkHasCreateAndDeleteDatasetRole(bigquery, datasetId, datasetLocation);
+
+      final Dataset dataset = BigQueryUtils.getOrCreateDataset(bigquery, datasetId, datasetLocation);
+      if (!dataset.getLocation().equals(datasetLocation)) {
+        throw new ConfigErrorException("Actual dataset location doesn't match to location from config");
+      }
       final QueryJobConfiguration queryConfig = QueryJobConfiguration
           .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES` LIMIT 1;", datasetId))
           .setUseLegacySql(false)
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        final AirbyteConnectionStatus airbyteConnectionStatus = checkGcsPermission(config);
-        if (Status.FAILED == airbyteConnectionStatus.getStatus()) {
-          return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(airbyteConnectionStatus.getMessage());
-        }
+        checkGcsPermission(config);
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
       if (result.getLeft() != null) {
         return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
       } else {
-        return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(result.getRight());
+        throw new ConfigErrorException(result.getRight());
       }
     } catch (final Exception e) {
       LOGGER.error("Check failed.", e);
-      return new AirbyteConnectionStatus().withStatus(Status.FAILED).withMessage(e.getMessage() != null ? e.getMessage() : e.toString());
+      throw new ConfigErrorException(e.getMessage() != null ? e.getMessage() : e.toString());
     }
   }
 
@@ -149,11 +153,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
       message.append(" Please make sure the service account can access the bucket path, and the HMAC keys are correct.");
 
       LOGGER.error(message.toString(), e);
-
-      return new AirbyteConnectionStatus()
-          .withStatus(AirbyteConnectionStatus.Status.FAILED)
-          .withMessage("Could access the GCS bucket with the provided configuration.\n" + e
-              .getMessage());
+      throw new ConfigErrorException("Could not access the GCS bucket with the provided configuration.\n", e);
     }
   }
 
@@ -237,7 +237,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                           final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
     uploaderMap.put(
-        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 

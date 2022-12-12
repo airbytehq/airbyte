@@ -2,8 +2,8 @@ import { faPenToSquare } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { ChangeEvent, useState } from "react";
 
+import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
-import { Text } from "components/ui/Text";
 
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import withKeystrokeHandler from "utils/withKeystrokeHandler";
@@ -83,9 +83,9 @@ export const ConnectionName: React.FC = () => {
       ) : (
         <button className={styles.nameContainer} onClick={() => setEditingState(true)}>
           <div>
-            <Text as="h2" size="lg">
+            <Heading as="h2" size="lg">
               {name}
-            </Text>
+            </Heading>
           </div>
           <FontAwesomeIcon className={styles.icon} icon={faPenToSquare} />
         </button>

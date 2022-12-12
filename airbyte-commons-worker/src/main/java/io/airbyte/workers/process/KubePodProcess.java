@@ -7,6 +7,8 @@ package io.airbyte.workers.process;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.lang.Exceptions;
 import io.airbyte.commons.resources.MoreResources;
+import io.airbyte.config.Configs;
+import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import io.airbyte.metrics.lib.MetricClientFactory;
@@ -67,7 +69,7 @@ import org.slf4j.MDC;
  * parent process starting a Kube Pod Process needs to exist within the Kube networking space. This
  * is so the parent process can forward data into the child's stdin and read the child's stdout and
  * stderr streams and copy configuration files over.
- *
+ * <p>
  * This is made possible by:
  * <ul>
  * <li>1) An init container that creates 3 named pipes corresponding to stdin, stdout and std err on
@@ -91,7 +93,7 @@ import org.slf4j.MDC;
  * </ul>
  * The docker image used for this pod process must expose a AIRBYTE_ENTRYPOINT which contains the
  * entrypoint we will wrap when creating the main container in the pod.
- *
+ * <p>
  * See the constructor for more information.
  */
 
@@ -101,17 +103,19 @@ import org.slf4j.MDC;
 // TODO(Davin): Better test for this. See https://github.com/airbytehq/airbyte/issues/3700.
 public class KubePodProcess extends Process implements KubePod {
 
+  private static final Configs configs = new EnvConfigs();
+
   private static final Logger LOGGER = LoggerFactory.getLogger(KubePodProcess.class);
 
   public static final String MAIN_CONTAINER_NAME = "main";
-  private static final String INIT_CONTAINER_NAME = "init";
-  private static final String DEFAULT_MEMORY_REQUEST = "25Mi";
-  private static final String DEFAULT_MEMORY_LIMIT = "50Mi";
-  private static final String DEFAULT_CPU_REQUEST = "0.1";
-  private static final String DEFAULT_CPU_LIMIT = "0.2";
+  public static final String INIT_CONTAINER_NAME = "init";
+
   private static final ResourceRequirements DEFAULT_SIDECAR_RESOURCES = new ResourceRequirements()
-      .withMemoryLimit(DEFAULT_MEMORY_LIMIT).withMemoryRequest(DEFAULT_MEMORY_REQUEST)
-      .withCpuLimit(DEFAULT_CPU_LIMIT).withCpuRequest(DEFAULT_CPU_REQUEST);
+      .withMemoryLimit(configs.getSidecarKubeMemoryLimit()).withMemoryRequest(configs.getSidecarMemoryRequest())
+      .withCpuLimit(configs.getSidecarKubeCpuLimit()).withCpuRequest(configs.getSidecarKubeCpuRequest());
+  private static final ResourceRequirements DEFAULT_SOCAT_RESOURCES = new ResourceRequirements()
+      .withMemoryLimit(configs.getSidecarKubeMemoryLimit()).withMemoryRequest(configs.getSidecarMemoryRequest())
+      .withCpuLimit(configs.getSocatSidecarKubeCpuLimit()).withCpuRequest(configs.getSocatSidecarKubeCpuRequest());
 
   private static final String PIPES_DIR = "/pipes";
   private static final String STDIN_PIPE_FILE = PIPES_DIR + "/stdin";
@@ -362,7 +366,7 @@ public class KubePodProcess extends Process implements KubePod {
                         final Map<String, String> files,
                         final String entrypointOverride,
                         final ResourceRequirements resourceRequirements,
-                        final String imagePullSecret,
+                        final List<String> imagePullSecrets,
                         final List<TolerationPOJO> tolerations,
                         final Map<String, String> nodeSelectors,
                         final Map<String, String> labels,
@@ -446,13 +450,17 @@ public class KubePodProcess extends Process implements KubePod {
     // Printing socat notice logs with socat -d -d
     // To print info logs as well use socat -d -d -d
     // more info: https://linux.die.net/man/1/socat
-    final io.fabric8.kubernetes.api.model.ResourceRequirements sidecarResources = getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
+    final io.fabric8.kubernetes.api.model.ResourceRequirements heartbeatSidecarResources =
+        getResourceRequirementsBuilder(DEFAULT_SIDECAR_RESOURCES).build();
+    final io.fabric8.kubernetes.api.model.ResourceRequirements socatSidecarResources =
+        getResourceRequirementsBuilder(DEFAULT_SOCAT_RESOURCES).build();
+
     final Container remoteStdin = new ContainerBuilder()
         .withName("remote-stdin")
         .withImage(socatImage)
         .withCommand("sh", "-c", "socat -d -d TCP-L:9001 STDOUT > " + STDIN_PIPE_FILE)
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -461,7 +469,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDOUT_PIPE_FILE, processRunnerHost, stdoutLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -470,7 +478,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withImage(socatImage)
         .withCommand("sh", "-c", String.format("cat %s | socat -d -d -t 60 - TCP:%s:%s", STDERR_PIPE_FILE, processRunnerHost, stderrLocalPort))
         .withVolumeMounts(pipeVolumeMount, terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(socatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -487,7 +495,7 @@ public class KubePodProcess extends Process implements KubePod {
         .withCommand("sh")
         .withArgs("-c", heartbeatCommand)
         .withVolumeMounts(terminationVolumeMount)
-        .withResources(sidecarResources)
+        .withResources(heartbeatSidecarResources)
         .withImagePullPolicy(sidecarImagePullPolicy)
         .build();
 
@@ -507,8 +515,13 @@ public class KubePodProcess extends Process implements KubePod {
       podBuilder = podBuilder.withServiceAccount("airbyte-admin").withAutomountServiceAccountToken(true);
     }
 
+    List<LocalObjectReference> pullSecrets = imagePullSecrets
+        .stream()
+        .map(imagePullSecret -> new LocalObjectReference(imagePullSecret))
+        .collect(Collectors.toList());
+
     final Pod pod = podBuilder.withTolerations(buildPodTolerations(tolerations))
-        .withImagePullSecrets(new LocalObjectReference(imagePullSecret)) // An empty string turns this into a no-op setting.
+        .withImagePullSecrets(pullSecrets) // An empty list or an empty LocalObjectReference turns this into a no-op setting.
         .withNodeSelector(nodeSelectors)
         .withRestartPolicy("Never")
         .withInitContainers(init)
@@ -701,7 +714,7 @@ public class KubePodProcess extends Process implements KubePod {
 
   /**
    * Close all open resource in the opposite order of resource creation.
-   *
+   * <p>
    * Null checks exist because certain local Kube clusters (e.g. Docker for Desktop) back this
    * implementation with OS processes and resources, which are automatically reaped by the OS.
    */

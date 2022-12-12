@@ -84,7 +84,7 @@ const Th = styled.th<TableHeaderProps>`
   font-size: ${({ light }) => (light ? 11 : 10)}px;
   line-height: 12px;
   color: ${({ theme, highlighted }) => (highlighted ? theme.whiteColor : theme.lightTextColor)};
-  border-bottom: ${({ theme, light }) => (light ? "none" : ` 1px solid ${theme.backgroundColor}`)};
+  border-bottom: none;
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
   text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};

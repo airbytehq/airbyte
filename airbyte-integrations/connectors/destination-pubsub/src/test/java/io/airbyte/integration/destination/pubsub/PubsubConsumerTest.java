@@ -4,9 +4,9 @@
 
 package io.airbyte.integration.destination.pubsub;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.base.FailureTrackingAirbyteMessageConsumer;
 import io.airbyte.integrations.destination.pubsub.PubsubConsumer;
+import io.airbyte.integrations.destination.pubsub.PubsubDestinationConfig;
 import io.airbyte.integrations.standardtest.destination.PerStreamStateMessageTest;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -25,7 +25,7 @@ public class PubsubConsumerTest extends PerStreamStateMessageTest {
   private PubsubConsumer consumer;
 
   @Mock
-  private JsonNode config;
+  private PubsubDestinationConfig config;
   @Mock
   private ConfiguredAirbyteCatalog catalog;
 
