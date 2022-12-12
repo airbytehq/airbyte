@@ -22,7 +22,7 @@ jobs:
         run: pip install --quiet -e ./tools/ci_connector_ops
       - name: Check test strictness level
         run: check-test-strictness-level
-  requires-connector-team-review:
+  check-review-requirements:
     name: "Check if a review is required from Connector teams"
     runs-on: ubuntu-latest
 
