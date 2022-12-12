@@ -21,7 +21,6 @@ import { ValuesProps } from "hooks/services/useConnectionHook";
 import { NamespaceDefinitionField } from "./components/NamespaceDefinitionField";
 import { NonBreakingChangesPreferenceField } from "./components/NonBreakingChangesPreferenceField";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "./components/refreshSourceSchemaWithConfirmationOnDirty";
-import { SchemaChangeOverlay } from "./components/SchemaChangeOverlay";
 import { Section } from "./components/Section";
 import { SyncCatalogField } from "./components/SyncCatalogField";
 import styles from "./ConnectionFormFields.module.scss";
@@ -58,7 +57,6 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       {/* FormChangeTracker is here as it has access to everything it needs without being repeated */}
       <FormChangeTracker changed={dirty} formId={formId} />
       <div className={styles.formContainer}>
-        <SchemaChangeOverlay />
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
           {allowAutoDetectSchemaChanges && (
