@@ -1,8 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
-
+import codecs
 from abc import ABC, abstractmethod
 from traceback import format_exc
 from typing import Any, List, Mapping, Optional, Tuple
@@ -43,6 +42,22 @@ class SourceFilesAbstract(AbstractSource, ABC):
         """
         :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
+    def _validate_field_len(self, config: Mapping[str, Any], field_name: str):
+        if len(config.get('format', {}).get(field_name)) != 1:
+            raise ValueError(f"{field_name} should contain 1 character only")
+
+    def _validate_csv(self, config: Mapping[str, Any]):
+        if config.get('format', {}).get('filetype') == 'csv':
+            self._validate_field_len(config, 'delimiter')
+            if config.get('format', {}).get('delimiter') in ('\r', '\n'):
+                raise ValueError(f"Delimiter cannot be \r or \n")
+
+            self._validate_field_len(config, 'quote_char')
+
+            if config.get('format', {}).get('escape_char'):
+                self._validate_field_len(config, 'escape_char')
+
+            codecs.lookup(config.get('format', {}).get('encoding'))
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         """
@@ -59,7 +74,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         The error object will be cast to string to display the problem to the user.
         """
         try:
-            self.stream_class(**config)._get_master_schema()
+            self._validate_csv(config)
             for file_info in self.stream_class(**config).filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
