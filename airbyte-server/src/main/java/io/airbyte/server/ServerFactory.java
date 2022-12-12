@@ -16,7 +16,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.JobsApiController;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.SourceDefinitionSpecificationApiController;
 import io.airbyte.server.apis.SourceOauthApiController;
 import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
@@ -134,7 +133,6 @@ public interface ServerFactory {
       LogsApiFactory.setValues(logsHandler);
 
       NotificationsApiFactory.setValues(workspacesHandler);
-
 
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 

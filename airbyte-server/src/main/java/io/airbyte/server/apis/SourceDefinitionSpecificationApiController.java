@@ -10,7 +10,6 @@ import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
 
 @Controller("/api/v1/source_definition_specifications")
 public class SourceDefinitionSpecificationApiController implements SourceDefinitionSpecificationApi {
