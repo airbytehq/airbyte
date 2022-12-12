@@ -15,11 +15,9 @@ import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.StateApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.binders.LogsApiBinder;
 import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.binders.SourceDefinitionSpecificationApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.factories.LogsApiFactory;
 import io.airbyte.server.apis.factories.NotificationsApiFactory;
@@ -127,13 +125,11 @@ public interface ServerFactory {
       final Set<Class<?>> componentClasses = Set.of(
           LogsApiController.class,
           NotificationsApiController.class,
-          StateApiController.class,
           WebBackendApiController.class);
 
       final Set<Object> components = Set.of(
           new LogsApiBinder(),
           new NotificationApiBinder(),
-          new SourceDefinitionSpecificationApiBinder(),
           new WebBackendApiBinder());
 
       // construct server
