@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_ORIGINS_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_TYPES_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
@@ -505,7 +506,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     if (failureSummary != null) {
       if (CollectionUtils.isNotEmpty(failureSummary.getFailures())) {
         ApmTraceUtils.addTagsToTrace(Map.of(
-            MetricTags.FAILURE_TYPE,
+            FAILURE_TYPES_KEY,
             failureSummary.getFailures()
                 .stream()
                 .map(FailureReason::getFailureType)
@@ -520,7 +521,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       }
     } else {
       ApmTraceUtils.addTagsToTrace(Map.of(
-          MetricTags.FAILURE_TYPE, MetricTags.getFailureType(null),
+          FAILURE_TYPES_KEY, MetricTags.getFailureType(null),
           FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
     }
   }
