@@ -489,13 +489,13 @@ public class WebBackendConnectionsHandler {
       // Get the most recent actor catalog fetched for this connection's source and the newly updated sync
       // catalog
       Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(originalConnectionRead.getSourceId());
-      AirbyteCatalog newActorCatalog = webBackendConnectionPatch.getSyncCatalog();
+      AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
       // Get the diff between these two catalogs to check for breaking changes
       if (!mostRecentActorCatalog.isEmpty()) {
         final io.airbyte.api.model.generated.AirbyteCatalog mostRecentAirbyteCatalog =
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.api.model.generated.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
-            connectionsHandler.getDiff(mostRecentAirbyteCatalog, newActorCatalog, CatalogConverter.toProtocol(newActorCatalog));
+            connectionsHandler.getDiff(mostRecentAirbyteCatalog, newAirbyteCatalog, CatalogConverter.toProtocol(newAirbyteCatalog));
         if (containsBreakingChange(catalogDiff)) {
           breakingChange = true;
         } else {
