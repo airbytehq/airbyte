@@ -4,10 +4,11 @@
 
 package io.airbyte.integrations.standardtest.destination;
 
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
-import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.workers.internal.AirbyteDestination;
 import java.nio.file.Path;
 import java.util.Optional;
@@ -29,14 +30,15 @@ public class LocalAirbyteDestination implements AirbyteDestination {
   @Override
   public void start(final WorkerDestinationConfig destinationConfig, final Path jobRoot) throws Exception {
     consumer =
-        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(), destinationConfig.getCatalog(),
+        dest.getConsumer(destinationConfig.getDestinationConnectionConfiguration(),
+            Jsons.object(Jsons.jsonNode(destinationConfig.getCatalog()), io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class),
             Destination::defaultOutputRecordCollector);
     consumer.start();
   }
 
   @Override
   public void accept(final AirbyteMessage message) throws Exception {
-    consumer.accept(message);
+    consumer.accept(Jsons.object(Jsons.jsonNode(message), io.airbyte.protocol.models.v0.AirbyteMessage.class));
   }
 
   @Override
