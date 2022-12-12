@@ -481,7 +481,7 @@ public class WebBackendConnectionsHandler {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     final ConnectionRead originalConnectionRead = connectionsHandler.getConnection(connectionId);
-    boolean breakingChange = originalConnectionRead.getBreakingChange();
+    boolean breakingChange = originalConnectionRead.getBreakingChange() != null && originalConnectionRead.getBreakingChange();
 
     // If there have been changes to the sync catalog, check whether these changes result in or fix a
     // broken connection
