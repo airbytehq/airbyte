@@ -14,17 +14,21 @@ import io.airbyte.api.model.generated.JobListRequestBody;
 import io.airbyte.api.model.generated.JobReadList;
 import io.airbyte.server.handlers.JobHistoryHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
+import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
-import lombok.AllArgsConstructor;
 
 @Controller("/api/v1/jobs")
-@AllArgsConstructor
+@Context
 public class JobsApiController implements JobsApi {
 
   private final JobHistoryHandler jobHistoryHandler;
   private final SchedulerHandler schedulerHandler;
+
+  public JobsApiController(final JobHistoryHandler jobHistoryHandler, final SchedulerHandler schedulerHandler) {
+    this.jobHistoryHandler = jobHistoryHandler;
+    this.schedulerHandler = schedulerHandler;
+  }
 
   @Post("/cancel")
   @Override
