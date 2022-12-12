@@ -8,9 +8,9 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
 
+import { useConfig } from "config";
 import { useUser } from "core/AuthContext";
 
-// import { useConfig } from "config";
 // import { useExperiment } from "hooks/services/Experiment";
 // import { FieldError } from "packages/cloud/lib/errors/FieldError";
 // import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -253,6 +253,7 @@ export const SignupForm: React.FC = () => {
     return yup.object().shape(shape);
   }, []);
 
+  const config = useConfig();
   return (
     <>
       <Alert
@@ -320,12 +321,12 @@ export const SignupForm: React.FC = () => {
             </BottomBlock>
             <div className={styles.termsAndPrivacy}>
               <FormattedMessage id="signup.description" />
-              <Link to="" $clear className={styles.link}>
-                <FormattedMessage id="signup.privacy" />
+              <Link target="_blank" href={config.links.termsLink} as="a" $clear className={styles.link}>
+                <FormattedMessage id="signup.terms" />
               </Link>
               <FormattedMessage id="signup.and" />
-              <Link to="" $clear className={styles.link}>
-                <FormattedMessage id="signup.terms" />
+              <Link target="_blank" href={config.links.privacyLink} as="a" $clear className={styles.link}>
+                <FormattedMessage id="signup.privacy" />
               </Link>
             </div>
           </Form>
