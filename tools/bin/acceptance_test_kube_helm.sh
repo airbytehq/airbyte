@@ -16,6 +16,14 @@ kubectl patch configmap/coredns \
   --type merge \
   -p '{"data":{"NodeHosts": "${DOCKER_HOST_IP} host.docker.internal" }}'
 
+echo "Getting key value"
+AWS_ACCESS_KEY_ID="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_access_key_id)"
+AWS_SECRET_ACCESS_KEY="$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key)"
+
+echo "Deploying fluentbit"
+helm repo add fluent https://fluent.github.io/helm-charts
+helm repo update fluent
+helm install --values tools/bin/fluent_values.yaml --set env.AWS_ACCESS_KEY_ID=$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_access_key_id),env.AWS_SECRET_ACCESS_KEY=$(echo "$AWS_S3_INTEGRATION_TEST_CREDS" | jq -r .aws_secret_access_key),env.WORKFLOW_RUN_ID=${WORKFLOW_RUN_ID},env.WORKFLOW_RUN_NUBMER=${WORKFLOW_RUN_NUBMER} fluent-bit fluent/fluent-bit
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old

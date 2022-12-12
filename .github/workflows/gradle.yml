@@ -1023,12 +1023,8 @@ jobs:
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get remove docker.io || sudo apt-get remove docker
             curl -fsSL https://get.docker.com | bash -
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
 
@@ -1061,20 +1057,16 @@ jobs:
           version: 'v1.21.2' # default is latest stable
 
       - name: Install tmate and it's dependencies
-        if: inputs.debug_mode == 'true'
+        # if: inputs.debug_mode == 'true'
         uses: Wandalen/wretry.action@master
         with:
           command: |
-            sudo rm /var/lib/dpkg/lock
-            sudo rm /var/lib/dpkg/lock-frontend
             sudo apt-get -y install tmate
-            sudo rm -f /var/lib/dpkg/lock
-            sudo rm -f /var/lib/dpkg/lock-frontend
           attempt_limit: 3
           attempt_delay: 2000 # in ms
       
       - name: Start tmate session in background
-        if: inputs.debug_mode == 'true'
+        # if: inputs.debug_mode == 'true'
         shell: bash
         run: |  
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
@@ -1124,6 +1116,8 @@ jobs:
           # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          WORKFLOW_RUN_ID: ${{ github.run_id }}
+          WORKFLOW_RUN_NUMBER: ${{ github.run_number }}
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         timeout-minutes: 20
