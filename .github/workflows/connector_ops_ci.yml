@@ -38,19 +38,15 @@ jobs:
           python-version: "3.9"
       - name: Install ci-connector-ops package
         run: pip install --quiet -e ./tools/ci_connector_ops
-      - name: Check if the PR requires a connector team review
-        id: check-requires-connector-team-review
-        run: check-requires-connector-team-review >> $GITHUB_OUTPUT
-      - name: Check if the required teams reviewed
-        if: steps.check-requires-connector-team-review.outputs.REQUIRES_CONNECTOR_TEAM_REVIEW == 'true'
+      - name: Write review requirements file
+        id: write-review-requirements-file
+        run: write-review-requirements-file >> $GITHUB_OUTPUT
+      - name: Check if the review requirements are met
+        if: steps.write-review-requirements-file.outputs.REVIEW_REQUIREMENTS_FILE != ""
         uses: Automattic/action-required-review@v3
         with:
           status: Required review
           fail: true
           token: ${{ secrets.OCTAVIA_4_ROOT_ACCESS }}
-          requirements: |
-            - paths: unmatched
-              teams:
-                - any-of: 
-                  - connector-operations
-                  - connector-extensibility
+          requirements-file: .github/connector_org_review_requirements.yaml
+

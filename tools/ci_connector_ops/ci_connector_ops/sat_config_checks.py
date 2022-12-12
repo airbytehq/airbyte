@@ -4,7 +4,8 @@
 
 import logging
 import sys
-from typing import List, Set
+from typing import List, Dict, Set, Union
+import yaml
 
 from ci_connector_ops import utils
 
@@ -12,6 +13,7 @@ RELEASE_STAGE_TO_STRICTNESS_LEVEL_MAPPING = {"generally_available": "high"}
 BACKWARD_COMPATIBILITY_REVIEWERS = {"connector-operations", "connector-extensibility"}
 TEST_STRICTNESS_LEVEL_REVIEWERS = {"connector-operations"}
 GA_CONNECTOR_REVIEWERS = {"gl-python"}
+REVIEW_REQUIREMENTS_FILE_PATH = ".github/connector_org_review_requirements.yaml"
 
 def find_connectors_with_bad_strictness_level() -> List[str]:
     """Check if changed connectors have the expected SAT test strictness level according to their release stage.
@@ -48,18 +50,18 @@ def find_changed_ga_connectors() -> List[str]:
     changed_connector_names = utils.get_changed_connector_names()
     return [connector_name for connector_name in changed_connector_names if utils.get_connector_release_stage(connector_name) == "generally_available"]
 
-def find_mandatory_reviewers() -> Set[str]:
-    mandatory_reviewers = set()
+def find_mandatory_reviewers() -> List[Union[str, Dict[str, List]]]:
+    teams = []
     ga_connector_changes = find_changed_ga_connectors()
     backward_compatibility_changes = utils.get_changed_acceptance_test_config(diff_regex="disable_for_version")
     test_strictness_level_changes = utils.get_changed_acceptance_test_config(diff_regex="test_strictness_level")
     if ga_connector_changes:
-        mandatory_reviewers.update(GA_CONNECTOR_REVIEWERS)
+        teams += GA_CONNECTOR_REVIEWERS
     if backward_compatibility_changes:
-        mandatory_reviewers.update(BACKWARD_COMPATIBILITY_REVIEWERS)
+        teams += [{"any-of": list(BACKWARD_COMPATIBILITY_REVIEWERS)}]
     if  test_strictness_level_changes:
-        mandatory_reviewers .update(TEST_STRICTNESS_LEVEL_REVIEWERS)
-    return mandatory_reviewers
+        teams += [{"any-of": list(TEST_STRICTNESS_LEVEL_REVIEWERS)}]
+    return teams
 
 def check_test_strictness_level():
     connectors_with_bad_strictness_level = find_connectors_with_bad_strictness_level()
@@ -71,11 +73,19 @@ def check_test_strictness_level():
     else:
         sys.exit(0)
 
-def print_mandatory_reviewers() -> bool:
+def write_review_requirements_file():
     mandatory_reviewers = find_mandatory_reviewers()
+
     if mandatory_reviewers:
-        print(f"MANDATORY_REVIEWERS={','.join(mandatory_reviewers)}")
+        requirements_file_content = [{
+            "name": "Required reviewers from the connector org teams",
+            "paths": "unmatched",
+            "teams": mandatory_reviewers
+        }]
+        with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
+            yaml.safe_dump(requirements_file_content, requirements_file)
+        print(f"REVIEW_REQUIREMENTS_FILE={REVIEW_REQUIREMENTS_FILE_PATH}")
     else:
-        print('MANDATORY_REVIEWERS=""')
+        print('REVIEW_REQUIREMENTS_FILE=""')
 
 
