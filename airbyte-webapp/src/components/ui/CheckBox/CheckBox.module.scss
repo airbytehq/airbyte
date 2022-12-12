@@ -1,15 +1,13 @@
 @use "scss/colors";
 @use "scss/variables" as vars;
 
-$default-size: 18px;
-$small-size: 14px;
+$lg-size: 18px;
+$sm-size: 14px;
 
 .container {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: $default-size;
-  width: $default-size;
   padding: vars.$border-thin 0;
   border: vars.$border-thin solid colors.$grey-100;
   border-radius: vars.$border-radius-2xs;
@@ -37,7 +35,12 @@ $small-size: 14px;
   }
 }
 
-.small {
-  height: $small-size;
-  width: $small-size;
+.sizeLg {
+  height: $lg-size;
+  width: $lg-size;
+}
+
+.sizeSm {
+  height: $sm-size;
+  width: $sm-size;
 }
