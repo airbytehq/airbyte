@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version "7.1.2"
+//    id("com.github.johnrengelman.shadow") version "7.1.2"
     id("io.micronaut.minimal.application") version "3.6.3"
     id("io.micronaut.test-resources") version "3.6.3"
 }
@@ -14,6 +14,10 @@ micronaut {
 
 dependencies {
     annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.1.1'
 //    annotationProcessor("io.micronaut:micronaut-http-validation")
 //    implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-jackson-databind")
@@ -40,3 +44,5 @@ micronaut {
 application {
     mainClass = "io.airbyte.db.repositories.Application"
 }
+
+tasks.register("prepareKotlinBuildScriptModel"){}
