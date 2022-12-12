@@ -79,7 +79,7 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
     """
 
     soup = parse_url(table_row.documentation_url)
-    title = table_row.service + soup.select_one('p#endpoint').text.strip().replace("/", "")
+    title = table_row.service + soup.select_one("p#endpoint").text.strip().replace("/", "")
 
     soup_table = soup.select_one("table#referencetable")
 
@@ -193,6 +193,11 @@ def main():
         class_definitions = list(pool.map(handle_endpoint, table_rows))
         print("Class definitions\n")
         print("\n\n".join(class_definitions))
+
+    # # Bonus endpoints needed
+    # # NOTE: doesn't print out class definitions as they are specific to the endpoint
+    # handle_endpoint(TableRow("CRM", "crm/AccountClassifications", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassifications"))
+    # handle_endpoint(TableRow("CRM", "crm/AccountClassificationNames", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassificationNames"))
 
 
 if __name__ == "__main__":

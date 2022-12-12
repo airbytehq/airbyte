@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "CRMAccountClassifications",
+  "properties": {
+    "ID": {
+      "description": "Primary key",
+      "type": "string"
+    },
+    "AccountClassificationName": {
+      "description": "Reference to Account classification name",
+      "type": "string"
+    },
+    "AccountClassificationNameDescription": {
+      "description": "Description of AccountClassificationName",
+      "type": "string"
+    },
+    "Code": {
+      "description": "Account classification code",
+      "type": "string"
+    },
+    "Created": {
+      "description": "Creation date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Creator": {
+      "description": "User ID of creator",
+      "type": "string"
+    },
+    "CreatorFullName": {
+      "description": "Name of creator",
+      "type": "string"
+    },
+    "Description": {
+      "description": "Description",
+      "type": "string"
+    },
+    "Division": {
+      "description": "Division code",
+      "type": "integer"
+    },
+    "Modified": {
+      "description": "Last modified date",
+      "type": "string",
+      "format": "date-time"
+    },
+    "Modifier": {
+      "description": "User ID of modifier",
+      "type": "string"
+    },
+    "ModifierFullName": {
+      "description": "Name of modifier",
+      "type": "string"
+    }
+  }
+}

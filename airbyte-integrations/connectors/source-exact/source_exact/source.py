@@ -19,9 +19,6 @@ from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefre
 
 
 class ExactStream(HttpStream, IncrementalMixin):
-    cursor_field = "Timestamp"
-    state_checkpoint_interval = 1000
-
     _cursor_value = None
 
     def __init__(self, config: Mapping[str, Any]):
@@ -56,9 +53,9 @@ class ExactStream(HttpStream, IncrementalMixin):
 
     def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
         for record in super().read_records(*args, **kwargs):
-            # Track the largest timestamp value
-            timestamp = record[self.cursor_field]
-            self._cursor_value = max(timestamp, self._cursor_value) if self._cursor_value else timestamp
+            # Track the largest cursor value
+            cursor_value = record[self.cursor_field]
+            self._cursor_value = max(cursor_value, self._cursor_value) if self._cursor_value else cursor_value
 
             yield record
 
@@ -96,7 +93,12 @@ class ExactStream(HttpStream, IncrementalMixin):
         }
 
         if self._cursor_value:
-            params["$filter"] = f"Timestamp gt {self._cursor_value}L"
+            if self.cursor_field == "Timestamp":
+                params["$filter"] = f"Timestamp gt {self._cursor_value}L"
+            elif self.cursor_field == "Modified":
+                params["$filter"] = f"Modified gt '{self._cursor_value}'"
+            else:
+                raise RuntimeError(f"Source not capable of incremental syncing with cursor field '{self.cursor_field}'")
 
         return params
 
@@ -207,189 +209,175 @@ class ExactStream(HttpStream, IncrementalMixin):
         return {k: parse_value(v) for k, v in obj.items()}
 
 
-class SyncCashflowPaymentTerms(ExactStream):
+class ExactSyncStream(ExactStream):
+    # Exact Sync endpoints paginate by 1000 items. They have a column named Timestamp which denotes a entity version,
+    # the value has no real correlation with a natural datetime. It allows for getting changes since the last sync.
+    state_checkpoint_interval = 1000
     primary_key = "Timestamp"
+    cursor_field = "Timestamp"
+
+
+class ExactOtherStream(ExactStream):
+    # Exact non-sync endpoints paginate by 60 items. Often they denote regular entities which have a ID as primary
+    # key, and modified field to get changes since last sync.
+    state_checkpoint_interval = 60
+    primary_key = "ID"
+    cursor_field = "Modified"
+
+
+class SyncCashflowPaymentTerms(ExactSyncStream):
     endpoint = "sync/Cashflow/PaymentTerms"
 
 
-class SyncCRMAccounts(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMAccounts(ExactSyncStream):
     endpoint = "sync/CRM/Accounts"
 
 
-class SyncCRMAddresses(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMAddresses(ExactSyncStream):
     endpoint = "sync/CRM/Addresses"
 
 
-class SyncCRMContacts(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMContacts(ExactSyncStream):
     endpoint = "sync/CRM/Contacts"
 
 
-class SyncCRMQuotationHeaders(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMQuotationHeaders(ExactSyncStream):
     endpoint = "sync/CRM/QuotationHeaders"
 
 
-class SyncCRMQuotationLines(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMQuotationLines(ExactSyncStream):
     endpoint = "sync/CRM/QuotationLines"
 
 
-class SyncCRMQuotations(ExactStream):
-    primary_key = "Timestamp"
+class SyncCRMQuotations(ExactSyncStream):
     endpoint = "sync/CRM/Quotations"
 
 
-class SyncDeleted(ExactStream):
-    primary_key = "Timestamp"
+class SyncDeleted(ExactSyncStream):
     endpoint = "sync/Deleted"
 
 
-class SyncDocumentsDocumentAttachments(ExactStream):
-    primary_key = "Timestamp"
+class SyncDocumentsDocumentAttachments(ExactSyncStream):
     endpoint = "sync/Documents/DocumentAttachments"
 
 
-class SyncDocumentsDocuments(ExactStream):
-    primary_key = "Timestamp"
+class SyncDocumentsDocuments(ExactSyncStream):
     endpoint = "sync/Documents/Documents"
 
 
-class SyncFinancialGLAccounts(ExactStream):
-    primary_key = "Timestamp"
+class SyncFinancialGLAccounts(ExactSyncStream):
     endpoint = "sync/Financial/GLAccounts"
 
 
-class SyncFinancialGLClassifications(ExactStream):
-    primary_key = "Timestamp"
+class SyncFinancialGLClassifications(ExactSyncStream):
     endpoint = "sync/Financial/GLClassifications"
 
 
-class SyncFinancialTransactionLines(ExactStream):
-    primary_key = "Timestamp"
+class SyncFinancialTransactionLines(ExactSyncStream):
     endpoint = "sync/Financial/TransactionLines"
 
 
-class SyncHRMLeaveAbsenceHoursByDay(ExactStream):
-    primary_key = "Timestamp"
+class SyncHRMLeaveAbsenceHoursByDay(ExactSyncStream):
     endpoint = "sync/HRM/LeaveAbsenceHoursByDay"
 
 
-class SyncInventoryItemWarehouses(ExactStream):
-    primary_key = "Timestamp"
+class SyncInventoryItemWarehouses(ExactSyncStream):
     endpoint = "sync/Inventory/ItemWarehouses"
 
 
-class SyncInventorySerialBatchNumbers(ExactStream):
-    primary_key = "Timestamp"
+class SyncInventorySerialBatchNumbers(ExactSyncStream):
     endpoint = "sync/Inventory/SerialBatchNumbers"
 
 
-class SyncInventoryStockPositions(ExactStream):
-    primary_key = "Timestamp"
+class SyncInventoryStockPositions(ExactSyncStream):
     endpoint = "sync/Inventory/StockPositions"
 
 
-class SyncInventoryStockSerialBatchNumbers(ExactStream):
-    primary_key = "Timestamp"
+class SyncInventoryStockSerialBatchNumbers(ExactSyncStream):
     endpoint = "sync/Inventory/StockSerialBatchNumbers"
 
 
-class SyncInventoryStorageLocationStockPositions(ExactStream):
-    primary_key = "Timestamp"
+class SyncInventoryStorageLocationStockPositions(ExactSyncStream):
     endpoint = "sync/Inventory/StorageLocationStockPositions"
 
 
-class SyncLogisticsItems(ExactStream):
-    primary_key = "Timestamp"
+class SyncLogisticsItems(ExactSyncStream):
     endpoint = "sync/Logistics/Items"
 
 
-class SyncLogisticsPurchaseItemPrices(ExactStream):
-    primary_key = "Timestamp"
+class SyncLogisticsPurchaseItemPrices(ExactSyncStream):
     endpoint = "sync/Logistics/PurchaseItemPrices"
 
 
-class SyncLogisticsSalesItemPrices(ExactStream):
-    primary_key = "Timestamp"
+class SyncLogisticsSalesItemPrices(ExactSyncStream):
     endpoint = "sync/Logistics/SalesItemPrices"
 
 
-class SyncLogisticsSupplierItem(ExactStream):
-    primary_key = "Timestamp"
+class SyncLogisticsSupplierItem(ExactSyncStream):
     endpoint = "sync/Logistics/SupplierItem"
 
 
-class SyncProjectProjectPlanning(ExactStream):
-    primary_key = "Timestamp"
+class SyncProjectProjectPlanning(ExactSyncStream):
     endpoint = "sync/Project/ProjectPlanning"
 
 
-class SyncProjectProjects(ExactStream):
-    primary_key = "Timestamp"
+class SyncProjectProjects(ExactSyncStream):
     endpoint = "sync/Project/Projects"
 
 
-class SyncProjectProjectWBS(ExactStream):
-    primary_key = "Timestamp"
+class SyncProjectProjectWBS(ExactSyncStream):
     endpoint = "sync/Project/ProjectWBS"
 
 
-class SyncProjectTimeCostTransactions(ExactStream):
-    primary_key = "Timestamp"
+class SyncProjectTimeCostTransactions(ExactSyncStream):
     endpoint = "sync/Project/TimeCostTransactions"
 
 
-class SyncPurchaseOrderPurchaseOrders(ExactStream):
-    primary_key = "Timestamp"
+class SyncPurchaseOrderPurchaseOrders(ExactSyncStream):
     endpoint = "sync/PurchaseOrder/PurchaseOrders"
 
 
-class SyncSalesSalesPriceListVolumeDiscounts(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesSalesPriceListVolumeDiscounts(ExactSyncStream):
     endpoint = "sync/Sales/SalesPriceListVolumeDiscounts"
 
 
-class SyncSalesInvoiceSalesInvoices(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesInvoiceSalesInvoices(ExactSyncStream):
     endpoint = "sync/SalesInvoice/SalesInvoices"
 
 
-class SyncSalesOrderGoodsDeliveries(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesOrderGoodsDeliveries(ExactSyncStream):
     endpoint = "sync/SalesOrder/GoodsDeliveries"
 
 
-class SyncSalesOrderGoodsDeliveryLines(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesOrderGoodsDeliveryLines(ExactSyncStream):
     endpoint = "sync/SalesOrder/GoodsDeliveryLines"
 
 
-class SyncSalesOrderSalesOrderHeaders(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesOrderSalesOrderHeaders(ExactSyncStream):
     endpoint = "sync/SalesOrder/SalesOrderHeaders"
 
 
-class SyncSalesOrderSalesOrderLines(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesOrderSalesOrderLines(ExactSyncStream):
     endpoint = "sync/SalesOrder/SalesOrderLines"
 
 
-class SyncSalesOrderSalesOrders(ExactStream):
-    primary_key = "Timestamp"
+class SyncSalesOrderSalesOrders(ExactSyncStream):
     endpoint = "sync/SalesOrder/SalesOrders"
 
 
-class SyncSubscriptionSubscriptionLines(ExactStream):
-    primary_key = "Timestamp"
+class SyncSubscriptionSubscriptionLines(ExactSyncStream):
     endpoint = "sync/Subscription/SubscriptionLines"
 
 
-class SyncSubscriptionSubscriptions(ExactStream):
-    primary_key = "Timestamp"
+class SyncSubscriptionSubscriptions(ExactSyncStream):
     endpoint = "sync/Subscription/Subscriptions"
+
+class CRMAccountClassifications(ExactOtherStream):
+    endpoint = "crm/AccountClassifications"
+
+
+class CRMAccountClassificationNames(ExactOtherStream):
+    endpoint = "crm/AccountClassificationNames"
 
 
 # Source
@@ -442,4 +430,6 @@ class SourceExact(AbstractSource):
             SyncSalesOrderSalesOrders(config),
             SyncSubscriptionSubscriptionLines(config),
             SyncSubscriptionSubscriptions(config),
+            CRMAccountClassifications(config),
+            CRMAccountClassificationNames(config),
         ]
