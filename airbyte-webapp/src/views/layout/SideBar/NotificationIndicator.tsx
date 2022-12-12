@@ -12,8 +12,7 @@ const Notification = styled(Indicator)`
 `;
 
 export const NotificationIndicator: React.FC = () => {
-  const { hasNewVersions, outOfDateConnectors } = useGetConnectorsOutOfDate();
-  console.log(outOfDateConnectors);
+  const { hasNewVersions } = useGetConnectorsOutOfDate();
 
   return hasNewVersions ? <Notification /> : null;
 };
