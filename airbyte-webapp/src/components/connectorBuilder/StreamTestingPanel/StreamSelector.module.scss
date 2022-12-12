@@ -1,9 +1,7 @@
 @use "scss/variables";
 @use "scss/colors";
 
-.centered {
-  margin-left: auto;
-  margin-right: auto;
+.container {
   width: 75%;
   max-width: 320px;
 }
@@ -14,16 +12,14 @@
   border-radius: variables.$border-radius-md;
   border: none;
   display: flex;
+  justify-content: center;
+  gap: variables.$spacing-md;
 }
 
 .label {
-  margin-left: auto;
   overflow: auto;
 }
 
 .arrow {
-  margin-left: variables.$spacing-md;
-  margin-top: -1px;
-  margin-right: auto;
   color: colors.$blue;
 }

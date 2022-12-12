@@ -7,7 +7,6 @@ import { BuilderFormValues, convertToManifest } from "components/connectorBuilde
 
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
-import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
@@ -27,6 +26,8 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
+export type BuilderView = "global" | number;
+
 interface Context {
   builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
@@ -35,14 +36,16 @@ interface Context {
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
-  selectedStream?: StreamsListReadStreamsItem;
+  testStreamIndex: number;
+  selectedView: BuilderView;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
-  setSelectedStream: (streamName: string) => void;
+  setTestStreamIndex: (streamIndex: number) => void;
+  setSelectedView: (view: BuilderView) => void;
   setConfigString: (configString: string) => void;
 }
 
@@ -104,18 +107,15 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const streams = useMemo(() => {
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
-  const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
-  const [selectedStreamName, setSelectedStream] = useState(firstStreamName);
+  const [testStreamIndex, setTestStreamIndex] = useState(0);
   useEffect(() => {
-    setSelectedStream((prevSelected) =>
-      prevSelected !== undefined && streams.map((stream) => stream.name).includes(prevSelected)
-        ? prevSelected
-        : firstStreamName
+    setTestStreamIndex((prevIndex) =>
+      prevIndex >= streams.length && streams.length > 0 ? streams.length - 1 : prevIndex
     );
-  }, [streams, firstStreamName]);
+  }, [streams]);
 
-  const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
+  const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
     builderFormValues: formValues,
@@ -125,14 +125,16 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     yamlIsValid,
     streams,
     streamListErrorMessage,
-    selectedStream,
+    testStreamIndex,
+    selectedView,
     configString,
     configJson,
     setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
-    setSelectedStream,
+    setTestStreamIndex,
+    setSelectedView,
     setConfigString,
   };
 
@@ -149,17 +151,9 @@ export const useConnectorBuilderState = (): Context => {
 };
 
 export const useSelectedPageAndSlice = () => {
-  const { trackError } = useAppMonitoringService();
-  const { selectedStream } = useConnectorBuilderState();
+  const { streams, testStreamIndex } = useConnectorBuilderState();
 
-  // this case should never be reached, as this hook should only be called in components that are only rendered when a stream is selected
-  if (selectedStream === undefined) {
-    const err = new Error("useSelectedPageAndSlice called when no stream is selected");
-    trackError(err, { id: "useSelectedPageAndSlice.noSelectedStream" });
-    throw err;
-  }
-
-  const selectedStreamName = selectedStream.name;
+  const selectedStreamName = streams[testStreamIndex].name;
 
   const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
   const setSelectedSlice = (sliceIndex: number) => {

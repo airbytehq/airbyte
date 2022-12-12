@@ -29,6 +29,7 @@ $buttonHeight: 36px;
   display: flex;
   flex-direction: column;
   gap: variables.$spacing-lg;
+  align-items: center;
 }
 
 .listErrorDisplay {

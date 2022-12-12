@@ -14,8 +14,7 @@ import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { jsonManifest, selectedStream, streams, streamListErrorMessage, yamlEditorIsMounted } =
-    useConnectorBuilderState();
+  const { jsonManifest, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
 
   if (!yamlEditorIsMounted) {
     return (
@@ -37,12 +36,12 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
           <img className={styles.logo} alt="" src="/images/octavia/pointing.svg" width={102} />
         </div>
       )}
-      {hasStreams && streamListErrorMessage === undefined && selectedStream !== undefined && (
+      {hasStreams && streamListErrorMessage === undefined && (
         <>
           <ConfigMenu className={styles.configButton} />
           <div className={styles.selectAndTestContainer}>
-            <StreamSelector className={styles.streamSelector} streams={streams} selectedStream={selectedStream} />
-            <StreamTester selectedStream={selectedStream} />
+            <StreamSelector className={styles.streamSelector} />
+            <StreamTester />
           </div>
         </>
       )}

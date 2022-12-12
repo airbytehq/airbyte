@@ -1,5 +1,6 @@
 import { useMonaco } from "@monaco-editor/react";
 import { load, YAMLException } from "js-yaml";
+import debounce from "lodash/debounce";
 import isMatch from "lodash/isMatch";
 import { editor } from "monaco-editor/esm/vs/editor/editor.api";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,8 +12,8 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { UiYamlToggleButton } from "../Builder/UiYamlToggleButton";
+import { DownloadYamlButton } from "../DownloadYamlButton";
 import { convertToManifest } from "../types";
-import { DownloadYamlButton } from "./DownloadYamlButton";
 import styles from "./YamlEditor.module.scss";
 
 interface YamlEditorProps {
@@ -33,6 +34,9 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
   } = useConnectorBuilderState();
   const [yamlValue, setYamlValue] = useState(yamlManifest);
 
+  // debounce the setJsonManifest calls so that it doesnt result in a network call for every keystroke
+  const debouncedSetJsonManifest = useMemo(() => debounce(setJsonManifest, 200), [setJsonManifest]);
+
   const monaco = useMonaco();
 
   useEffect(() => {
@@ -42,8 +46,8 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
 
       try {
         const json = load(yamlValue) as ConnectorManifest;
-        setJsonManifest(json);
         setYamlIsValid(true);
+        debouncedSetJsonManifest(json);
 
         // clear editor error markers
         if (yamlEditorModel) {
@@ -70,7 +74,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
         }
       }
     }
-  }, [yamlValue, monaco, setJsonManifest, setYamlIsValid]);
+  }, [yamlValue, monaco, debouncedSetJsonManifest, setYamlIsValid]);
 
   const yamlIsDirty = useMemo(() => {
     return !isMatch(convertToManifest(builderFormValues), jsonManifest);
@@ -96,7 +100,7 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
     <div className={styles.container}>
       <div className={styles.control}>
         <UiYamlToggleButton yamlSelected onClick={handleToggleYamlEditor} />
-        <DownloadYamlButton className={styles.downloadButton} yaml={yamlValue} yamlIsValid={yamlIsValid} />
+        <DownloadYamlButton yaml={yamlValue} yamlIsValid={yamlIsValid} />
       </div>
       <div className={styles.editorContainer}>
         <CodeEditor
