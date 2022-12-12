@@ -628,6 +628,12 @@ public abstract class DestinationAcceptanceTest {
 
     final AirbyteCatalog catalog = Jsons.deserialize(MoreResources.readResource(catalogFilename),
         AirbyteCatalog.class);
+
+    if (!catalog.getStreams().get(0).getName().equals("exchange_rate")) {
+      // This test is only implemented for the exchange rate catalog.
+      return;
+    }
+
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers.toDefaultConfiguredCatalog(
         catalog);
     configuredCatalog.getStreams().forEach(s -> {
