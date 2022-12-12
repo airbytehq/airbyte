@@ -23,7 +23,7 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
   }
 
   private Instant getInstantFromEpoch(String epochValue) {
-    return Instant.ofEpochMilli(Long.parseLong(epochValue.replaceAll("000$", "")));
+    return Instant.ofEpochMilli(Long.parseLong(epochValue) / 1000);
   }
 
   @Override
