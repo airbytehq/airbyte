@@ -46,7 +46,6 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
                     stream_helper = StreamHelper()
                     stream_helper.get_first_record(stream)
             except Exception as error:
-                raise error
                 return False, f"Unable to connect to stream {stream_name} - {error}"
 
         return True, None

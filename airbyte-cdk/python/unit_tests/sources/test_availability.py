@@ -5,6 +5,7 @@
 import logging
 from typing import Any, Iterable, List, Mapping, Optional, Tuple, Union
 
+import pytest
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource, Source
@@ -13,6 +14,7 @@ from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrate
 from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
+from requests import HTTPError
 
 logger = logging.getLogger("airbyte")
 
@@ -58,6 +60,9 @@ class MockHttpStream(HttpStream):
         self.resp_counter += 1
         yield stub_resp
     pass
+
+    def retry_factor(self) -> float:
+        return 0.01
 
 
 def test_no_availability_strategy():
@@ -150,3 +155,36 @@ def test_http_availability_connector_specific_docs(mocker):
     ]
     for message in expected_messages:
         assert message in reason
+
+
+def test_http_availability_raises_unhandled_error(mocker):
+    http_stream = MockHttpStream()
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    req = requests.Response()
+    req.status_code = 404
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    with pytest.raises(HTTPError):
+        http_stream.check_availability(logger)
+
+
+def test_send_handles_retries_when_checking_availability(mocker, caplog):
+    http_stream = MockHttpStream()
+    assert isinstance(http_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    req_1 = requests.Response()
+    req_1.status_code = 429
+    req_2 = requests.Response()
+    req_2.status_code = 503
+    req_3 = requests.Response()
+    req_3.status_code = 200
+    mock_send = mocker.patch.object(requests.Session, "send", side_effect=[req_1, req_2, req_3])
+
+    with caplog.at_level(logging.INFO):
+        stream_is_available, _ = http_stream.check_availability(logger)
+
+    assert stream_is_available
+    assert mock_send.call_count == 3
+    for message in ["Caught retryable error", "Response Code: 429", "Response Code: 503"]:
+        assert message in caplog.text
