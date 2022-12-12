@@ -1,7 +1,6 @@
 name: Connector Ops CI
 
 on:
-  workflow_dispatch:
   pull_request:
     paths:
       - "airbyte-integrations/connectors/source-**"
@@ -44,7 +43,7 @@ jobs:
         run: write-review-requirements-file >> $GITHUB_OUTPUT
       - name: Get mandatory reviewers
         id: get-mandatory-reviewers
-        run: get-mandatory-reviewers >> $GITHUB_OUTPUT
+        run: print-mandatory-reviewers >> $GITHUB_OUTPUT
       - name: Check if the review requirements are met
         if: steps.write-review-requirements-file.outputs.REVIEW_REQUIREMENTS_FILE != ''
         uses: Automattic/action-required-review@v3
