@@ -612,7 +612,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (data.isObject()) {
       ((ObjectNode) data).retain(selectedFields);
     } else {
-      throw new RuntimeException("Unexpected data in record");
+      throw new RuntimeException(String.format("Unexpected data in record: %s", data.toString()));
     }
   }
 

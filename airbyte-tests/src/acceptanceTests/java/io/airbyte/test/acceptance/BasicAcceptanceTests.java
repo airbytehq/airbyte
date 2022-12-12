@@ -1422,6 +1422,11 @@ class BasicAcceptanceTests {
   @Test
   @Order(19)
   void testIncrementalDedupeSyncRemoveOneColumn() throws Exception {
+    // !!! NOTE !!! this test relies on a feature flag that currently defaults to false. If you're
+    // running these tests locally against an external deployment and this test is failing, make sure
+    // the flag is enabled.
+    // Specifically:
+    // APPLY_FIELD_SELECTION=true
     final UUID sourceId = testHarness.createPostgresSource().getSourceId();
     final UUID destinationId = testHarness.createPostgresDestination().getDestinationId();
     final UUID operationId = testHarness.createOperation().getOperationId();
