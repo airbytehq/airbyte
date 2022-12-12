@@ -19,9 +19,13 @@ if op == "read":
     logs = [{"message": l["message"].replace("'", "")} for l in response.logs]
     slices = response.slices
     slice = slices[0]  # hack: only return first slice
-    pages = [{"records": p.records, "request": {"url": p.request.url, "http_method": p.request.http_method},
-              "response": {"status": p.response.status}}
-             for p in slice.pages]
+    pages = [
+        {"records": p.records,
+         "request": {"url": p.request.url, "http_method": p.request.http_method, "parameters": p.request.parameters or {},
+                     "body": p.request.body or {}, "headers": p.request.body or {}},
+         "response": {"status": p.response.status,
+                      "body": {k: v.replace("'", "") for k, v in p.response.body.items()} if p.response.body else {}}}
+        for p in slice.pages]
     print({"logs": logs, "slices": [{"pages": pages}]})
 elif op == "list":
     try:
@@ -31,4 +35,4 @@ elif op == "list":
     except Exception as e:
         print({"streams": []})
 else:
-    print("error")
+    print(f"op: {op}")

@@ -36,11 +36,8 @@ public class ConnectorBuilderEntryPoint {
                     .filter(s -> !s.contains("LOG"))
                     .filter(s -> !s.contains("DEBUG"))
                     .collect(Collectors.joining())
-                    //.replace("\"", "\\\"")
-                    //.replace("\"\"", "\"")
                     .replace("'", "\"")
             );
-            //return results.stream().collect(Collectors.joining("\n---\n"));
         }
     }
 
