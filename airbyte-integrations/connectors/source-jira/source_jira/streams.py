@@ -933,7 +933,7 @@ class PullRequests(IncrementalJiraStream):
         dev_field_ids = field_ids_by_name.get("Development", [])
         for issue in read_incremental(self.issues_stream, stream_state=stream_state):
             for dev_field_id in dev_field_ids:
-                if self.has_pull_requests(issue["fields"][dev_field_id]):
+                if self.has_pull_requests(issue["fields"].get(dev_field_id)):
                     yield from super().read_records(
                         stream_slice={"id": issue["id"], self.cursor_field: issue["fields"][self.cursor_field]}, **kwargs
                     )
