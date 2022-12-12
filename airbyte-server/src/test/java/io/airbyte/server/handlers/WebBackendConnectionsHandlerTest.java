@@ -562,9 +562,10 @@ class WebBackendConnectionsHandlerTest {
         .syncCatalog(catalog)
         .geography(Geography.US)
         .nonBreakingChangesPreference(NonBreakingChangesPreference.DISABLE)
-        .notifySchemaChanges(false);
+        .notifySchemaChanges(false)
+        .breakingChange(false);
 
-    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds);
+    final ConnectionUpdate actual = WebBackendConnectionsHandler.toConnectionPatch(input, operationIds, false);
 
     assertEquals(expected, actual);
   }
