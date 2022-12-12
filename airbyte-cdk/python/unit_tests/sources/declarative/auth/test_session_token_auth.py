@@ -13,6 +13,8 @@ password = "password"
 session_token = "session_token"
 header = "X-App-Session"
 session_token_response_key = "id"
+login_url = "session"
+validate_session_url = "user/current"
 
 input_instance_api_url = "{{ config['instance_api_url'] }}"
 input_username = "{{ config['username'] }}"
@@ -25,7 +27,9 @@ config = {
     "password": password,
     "session_token": session_token,
     "header": header,
-    "session_token_response_key": session_token_response_key
+    "session_token_response_key": session_token_response_key,
+    "login_url": login_url,
+    "validate_session_url": validate_session_url
 }
 
 config_session_token = {
@@ -34,7 +38,9 @@ config_session_token = {
     "password": "",
     "session_token": session_token,
     "header": header,
-    "session_token_response_key": session_token_response_key
+    "session_token_response_key": session_token_response_key,
+    "login_url": login_url,
+    "validate_session_url": validate_session_url
 }
 
 config_username_password = {
@@ -43,7 +49,9 @@ config_username_password = {
     "password": password,
     "session_token": "",
     "header": header,
-    "session_token_response_key": session_token_response_key
+    "session_token_response_key": session_token_response_key,
+    "login_url": login_url,
+    "validate_session_url": validate_session_url
 }
 
 
@@ -56,7 +64,9 @@ def test_auth_header():
         password=input_password,
         session_token=input_session_token,
         header=header,
-        session_token_response_key=session_token_response_key
+        session_token_response_key=session_token_response_key,
+        login_url=login_url,
+        validate_session_url=validate_session_url
     ).auth_header
     assert auth_header == "X-App-Session"
 
@@ -75,7 +85,9 @@ def test_get_token_valid_session(requests_mock):
         password=input_password,
         session_token=input_session_token,
         header=header,
-        session_token_response_key=session_token_response_key
+        session_token_response_key=session_token_response_key,
+        login_url=login_url,
+        validate_session_url=validate_session_url
     ).token
     assert token == "session_token"
 
@@ -90,7 +102,9 @@ def test_get_token_invalid_session_unauthorized():
             password=input_password,
             session_token=input_session_token,
             header=header,
-            session_token_response_key=session_token_response_key
+            session_token_response_key=session_token_response_key,
+            login_url=login_url,
+            validate_session_url=validate_session_url
         ).token
 
 
@@ -104,7 +118,9 @@ def test_get_token_invalid_username_password_unauthorized():
             password=input_password,
             session_token=input_session_token,
             header=header,
-            session_token_response_key=session_token_response_key
+            session_token_response_key=session_token_response_key,
+            validate_session_url=validate_session_url,
+            login_url=login_url
         ).token
 
 
@@ -119,7 +135,9 @@ def test_get_token_username_password(requests_mock):
         password=input_password,
         session_token=input_session_token,
         header=header,
-        session_token_response_key=session_token_response_key
+        session_token_response_key=session_token_response_key,
+        login_url=login_url,
+        validate_session_url=validate_session_url
     ).token
     assert token == "some session id"
 
@@ -136,7 +154,9 @@ def test_check_is_valid_session_token(requests_mock):
         password=input_password,
         session_token=input_session_token,
         header=header,
-        session_token_response_key=session_token_response_key
+        session_token_response_key=session_token_response_key,
+        validate_session_url=validate_session_url,
+        login_url=login_url
     ).is_valid_session_token()
 
 
@@ -149,7 +169,9 @@ def test_check_is_valid_session_token_unauthorized():
         password=input_password,
         session_token=input_session_token,
         header=header,
-        session_token_response_key=session_token_response_key
+        session_token_response_key=session_token_response_key,
+        login_url=login_url,
+        validate_session_url=validate_session_url
     ).is_valid_session_token()
 
 
