@@ -491,16 +491,13 @@ public class WebBackendConnectionsHandler {
       Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(originalConnectionRead.getSourceId());
       AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
       // Get the diff between these two catalogs to check for breaking changes
-      if (!mostRecentActorCatalog.isEmpty()) {
-        final io.airbyte.api.model.generated.AirbyteCatalog mostRecentAirbyteCatalog =
-            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.api.model.generated.AirbyteCatalog.class);
+      if (mostRecentActorCatalog.isPresent()) {
+        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
+            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
-            connectionsHandler.getDiff(mostRecentAirbyteCatalog, newAirbyteCatalog, CatalogConverter.toProtocol(newAirbyteCatalog));
-        if (containsBreakingChange(catalogDiff)) {
-          breakingChange = true;
-        } else {
-          breakingChange = false;
-        }
+            connectionsHandler.getDiff(CatalogConverter.toApi(mostRecentAirbyteCatalog), newAirbyteCatalog,
+                CatalogConverter.toProtocol(newAirbyteCatalog));
+        breakingChange = containsBreakingChange(catalogDiff);
       }
     }
 
