@@ -21,6 +21,7 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import java.sql.JDBCType;
+import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -153,6 +154,15 @@ public class MssqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     final AirbyteConnectionStatus status = source.check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: S0001; Error code: 4060;"));
+  }
+
+  @Override
+  protected void incrementalDateCheck() throws Exception {
+    incrementalCursorCheck(
+            COL_UPDATED_AT,
+            "2005-10-18",
+            "2006-10-19",
+            List.of(getTestMessages().get(1), getTestMessages().get(2)));
   }
 
 }
