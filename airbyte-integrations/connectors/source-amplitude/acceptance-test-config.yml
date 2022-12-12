@@ -5,7 +5,7 @@ tests:
       backward_compatibility_tests_config:
         disable_for_version: "0.1.17"
   connection:
-    - config_path: "secrets/foobar.json"
+    - config_path: "secrets/config.json"
       status: "succeed"
     - config_path: "integration_tests/invalid_config.json"
       status: "failed"
