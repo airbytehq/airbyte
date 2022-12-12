@@ -59,6 +59,9 @@ class HttpAvailabilityStrategy(AvailabilityStrategy):
         try:
             status_code = error.response.status_code
             reason = self.reasons_for_unavailable_status_codes(stream, logger, source, error)[status_code]
+            response_error_message = stream.parse_response_error_message(error.response)
+            if response_error_message:
+                reason += response_error_message
             return False, reason
         except KeyError:
             # If the HTTPError is not in the dictionary of errors we know how to handle, don't except it
