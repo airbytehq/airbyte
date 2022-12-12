@@ -60,6 +60,6 @@ def check_test_strictness_level():
 
 def check_if_requires_connector_team_review() -> bool:
     files_requiring_connector_team_review = find_acceptance_test_config_files_requiring_reviews()
-    requires_connector_team_review = len(files_requiring_connector_team_review) > 0
+    requires_connector_team_review = "true" if len(files_requiring_connector_team_review) > 0 else "false"
     print(f"REQUIRES_CONNECTOR_TEAM_REVIEW={requires_connector_team_review}")
 
