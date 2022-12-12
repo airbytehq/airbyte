@@ -14,7 +14,6 @@ tasks.named("buildDockerImage") {
 
 task bashTest(type: Exec) {
     dependsOn buildDockerImage
-    commandLine 'chmod', '775', 'test.sh'
     commandLine "./test.sh"
 }
 
