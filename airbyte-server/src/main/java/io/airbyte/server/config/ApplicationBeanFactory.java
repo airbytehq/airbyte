@@ -35,7 +35,6 @@ import java.util.Locale;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import org.elasticsearch.common.recycler.Recycler.V;
 
 @Factory
 public class ApplicationBeanFactory {
@@ -116,9 +115,8 @@ public class ApplicationBeanFactory {
 
   @Singleton
   public AirbyteProtocolVersionRange airbyteProtocolVersionRange(
-      @Value("${airbyte.protocol.min-version}") final String minVersion,
-      @Value("${airbyte.protocol.max-version}") final String maxVersion
-  ) {
+                                                                 @Value("${airbyte.protocol.min-version}") final String minVersion,
+                                                                 @Value("${airbyte.protocol.max-version}") final String maxVersion) {
     return new AirbyteProtocolVersionRange(new Version(minVersion), new Version(maxVersion));
   }
 
