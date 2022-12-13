@@ -1,11 +1,15 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import json
 import os
 from dataclasses import dataclass
-from typing import Optional, Mapping, Any, Union, MutableMapping, Type
+from typing import Any, Mapping, MutableMapping, Optional, Type, Union
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
-from airbyte_cdk.sources.declarative.types import StreamState, StreamSlice
+from airbyte_cdk.sources.declarative.types import StreamSlice, StreamState
 
 
 @dataclass
@@ -19,7 +23,7 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
         super(GraphQLRequestOptionsProvider, self).__post_init__(options)
 
         self.limit = InterpolatedString.create(self.limit, options=options)
-        self.name = options.get('name', '').lower()
+        self.name = options.get("name", "").lower()
 
     def _ensure_type(self, t: Type, o: Any):
         """
@@ -47,10 +51,7 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
         """
         fields = []
         for field, nested_schema in field_schema.items():
-            nested_fields = nested_schema.get(
-                "properties",
-                nested_schema.get("items", {}).get("properties")
-            )
+            nested_fields = nested_schema.get("properties", nested_schema.get("items", {}).get("properties"))
             if nested_fields:
                 # preconfigured_arguments = get properties from schema or any other source ...
                 # fields.append(self._build_query(field, nested_fields, **preconfigured_arguments))
@@ -60,7 +61,7 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
 
         arguments = self._get_object_arguments(**object_arguments)
         arguments = f"({arguments})" if arguments else ""
-        fields    = ",".join(fields)
+        fields = ",".join(fields)
 
         return f"{object_name}{arguments}{{{fields}}}"
 
@@ -69,11 +70,7 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
         Special optimization needed for items stream. Starting October 3rd, 2022 items can only be reached through boards.
         See https://developer.monday.com/api-reference/docs/items-queries#items-queries
         """
-        query = self._build_query(
-            object_name,
-            field_schema,
-            limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE
-        )
+        query = self._build_query(object_name, field_schema, limit=self.NESTED_OBJECTS_LIMIT_MAX_VALUE)
         arguments = self._get_object_arguments(**object_arguments)
         return f"boards({arguments}){{{query}}}"
 
@@ -90,8 +87,13 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
             return f"{object_name}({arguments}){query}"
         return self._build_query(object_name=object_name, field_schema=field_schema, **object_arguments)
 
-    def get_request_params(self, *, stream_state: Optional[StreamState] = None, stream_slice: Optional[StreamSlice] = None,
-                           next_page_token: Optional[Mapping[str, Any]] = None) -> MutableMapping[str, Any]:
+    def get_request_params(
+        self,
+        *,
+        stream_state: Optional[StreamState] = None,
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
+    ) -> MutableMapping[str, Any]:
         """
         Combines queries to a single GraphQL query.
         """
@@ -106,6 +108,6 @@ class GraphQLRequestOptionsProvider(InterpolatedRequestOptionsProvider):
             object_name=self.name,
             field_schema=self._get_schema_root_properties(),
             limit=limit or None,
-            page=next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME]
+            page=next_page_token and next_page_token[self.NEXT_PAGE_TOKEN_FIELD_NAME],
         )
         return {"query": f"query{{{query}}}"}

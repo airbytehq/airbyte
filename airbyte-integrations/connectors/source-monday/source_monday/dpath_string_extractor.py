@@ -32,12 +32,13 @@ class DpathStringExtractor(RecordExtractor, JsonSchemaMixin):
         >>> dpath.util.values(S, "/key/subkey/*/expected_records/*")  # The result: [{'id': 1}, {'id': 2}, {'id': 3}, {'id': 4}]
     # Now we are able to specify the `field_pointer` as a dpath interpolated string "/key/subkey/*/expected_records/*":
     record_selector:
-        ...  
+        ...
         extractor:
             ...
             field_pointer: "/key/subkey/*/expected_records/*"
             class_name: "source_monday.DpathStringExtractor"
     """
+
     field_pointer: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]

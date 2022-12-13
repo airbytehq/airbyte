@@ -1,6 +1,9 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import pytest
 from source_monday import GraphQLRequestOptionsProvider
-
 
 nested_object_schema = {
     "root": {
