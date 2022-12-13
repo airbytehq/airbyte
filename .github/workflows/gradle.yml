@@ -1103,12 +1103,12 @@ jobs:
           org.gradle.vfs.watch=false
           EOF
 
-      - name: Build Platform Docker Images
-        uses: Wandalen/wretry.action@master
-        with:
-          command: pwd && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
-          attempt_limit: 3
-          attempt_delay: 5000 # in ms
+      # - name: Build Platform Docker Images
+      #   uses: Wandalen/wretry.action@master
+      #   with:
+      #     command: pwd && SUB_BUILD=PLATFORM ./gradlew assemble -x test --scan
+      #     attempt_limit: 3
+      #     attempt_delay: 5000 # in ms
 
       - name: Run Helm End-to-End Acceptance Tests
         env:
