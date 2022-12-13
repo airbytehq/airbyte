@@ -60,21 +60,21 @@ public class AirbyteApiClient {
   private final AttemptApi attemptApi;
   private final StateApi stateApi;
 
-  public AirbyteApiClient(final ApiClient apiClient, final ApiClient micronautApiClient) {
-    connectionApi = new ConnectionApi(micronautApiClient);
-    destinationDefinitionApi = new DestinationDefinitionApi(micronautApiClient);
-    destinationApi = new DestinationApi(micronautApiClient);
-    destinationSpecificationApi = new DestinationDefinitionSpecificationApi(micronautApiClient);
-    jobsApi = new JobsApi(micronautApiClient);
-    logsApi = new PatchedLogsApi(micronautApiClient);
-    operationApi = new OperationApi(micronautApiClient);
-    sourceDefinitionApi = new SourceDefinitionApi(micronautApiClient);
-    sourceApi = new SourceApi(micronautApiClient);
-    sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(micronautApiClient);
-    workspaceApi = new WorkspaceApi(micronautApiClient);
-    healthApi = new HealthApi(micronautApiClient);
-    attemptApi = new AttemptApi(micronautApiClient);
-    stateApi = new StateApi(micronautApiClient);
+  public AirbyteApiClient(final ApiClient apiClient) {
+    connectionApi = new ConnectionApi(apiClient);
+    destinationDefinitionApi = new DestinationDefinitionApi(apiClient);
+    destinationApi = new DestinationApi(apiClient);
+    destinationSpecificationApi = new DestinationDefinitionSpecificationApi(apiClient);
+    jobsApi = new JobsApi(apiClient);
+    logsApi = new PatchedLogsApi(apiClient);
+    operationApi = new OperationApi(apiClient);
+    sourceDefinitionApi = new SourceDefinitionApi(apiClient);
+    sourceApi = new SourceApi(apiClient);
+    sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
+    workspaceApi = new WorkspaceApi(apiClient);
+    healthApi = new HealthApi(apiClient);
+    attemptApi = new AttemptApi(apiClient);
+    stateApi = new StateApi(apiClient);
   }
 
   public ConnectionApi getConnectionApi() {
