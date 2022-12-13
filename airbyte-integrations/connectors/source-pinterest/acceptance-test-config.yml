@@ -29,7 +29,6 @@ acceptance_tests:
   basic_read:
     tests:
       - config_path: "secrets/config.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
         # empty streams could be produced because of very low rate limits
         empty_streams:
           - name: ad_account_analytics
