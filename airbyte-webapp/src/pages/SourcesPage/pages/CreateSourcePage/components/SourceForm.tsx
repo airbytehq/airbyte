@@ -6,7 +6,7 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
+import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
@@ -54,8 +54,6 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
     });
   };
 
-  const errorMessage = error ? generateMessageFromError(error) : null;
-
   return (
     <ConnectorCard
       formType="source"
@@ -63,11 +61,11 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
       description={<FormattedMessage id="sources.description" />}
       isLoading={isLoading}
       hasSuccess={hasSuccess}
-      errorMessage={errorMessage}
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
       availableConnectorDefinitions={sourceDefinitions}
       onConnectorDefinitionSelect={onDropDownSelect}
       selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      selectedConnectorDefinitionId={sourceDefinitionId}
       onSubmit={onSubmitForm}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />

@@ -19,9 +19,11 @@ import {
   DestinationSyncMode,
   Geography,
   NamespaceDefinitionType,
+  NonBreakingChangesPreference,
   OperationCreate,
   OperationRead,
   OperatorType,
+  SchemaChange,
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
@@ -36,6 +38,7 @@ export interface FormikConnectionFormValues {
   name?: string;
   scheduleType?: ConnectionScheduleType | null;
   scheduleData?: ConnectionScheduleData | null;
+  nonBreakingChangesPreference?: NonBreakingChangesPreference | null;
   prefix: string;
   syncCatalog: SyncSchema;
   namespaceDefinition?: NamespaceDefinitionType;
@@ -80,11 +83,13 @@ export function useDefaultTransformation(): OperationCreate {
 interface CreateConnectionValidationSchemaArgs {
   allowSubOneHourCronExpressions: boolean;
   mode: ConnectionFormMode;
+  allowAutoDetectSchemaChanges: boolean;
 }
 
 export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
+  allowAutoDetectSchemaChanges,
 }: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
@@ -126,6 +131,10 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
+      nonBreakingChangesPreference: allowAutoDetectSchemaChanges
+        ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+        : yup.mixed().notRequired(),
+
       namespaceDefinition: yup
         .string()
         .oneOf([
@@ -272,19 +281,40 @@ export const useInitialValues = (
   const workspace = useCurrentWorkspace();
   const { catalogDiff } = connection;
 
+  // used to determine if we should calculate optimal sync mode
   const newStreamDescriptors = catalogDiff?.transforms
     .filter((transform) => transform.transformType === "add_stream")
     .map((stream) => stream.streamDescriptor);
+
+  // used to determine if we need to clear any primary keys or cursor fields that were removed
+  const streamTransformsWithBreakingChange = useMemo(() => {
+    if (connection.schemaChange === SchemaChange.breaking) {
+      return catalogDiff?.transforms.filter((streamTransform) => {
+        if (streamTransform.transformType === "update_stream") {
+          return streamTransform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
+        }
+        return false;
+      });
+    }
+    return undefined;
+  }, [catalogDiff?.transforms, connection]);
 
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
+        streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
       ),
-    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreamDescriptors]
+    [
+      streamTransformsWithBreakingChange,
+      connection.syncCatalog,
+      destDefinition?.supportedDestinationSyncModes,
+      isNotCreateMode,
+      newStreamDescriptors,
+    ]
   );
 
   return useMemo(() => {
@@ -292,6 +322,7 @@ export const useInitialValues = (
       syncCatalog: initialSchema,
       scheduleType: connection.connectionId ? connection.scheduleType : ConnectionScheduleType.basic,
       scheduleData: connection.connectionId ? connection.scheduleData ?? null : DEFAULT_SCHEDULE,
+      nonBreakingChangesPreference: connection.nonBreakingChangesPreference ?? NonBreakingChangesPreference.ignore,
       prefix: connection.prefix || "",
       namespaceDefinition: connection.namespaceDefinition || NamespaceDefinitionType.source,
       namespaceFormat: connection.namespaceFormat ?? SOURCE_NAMESPACE_TAG,
@@ -321,6 +352,7 @@ export const useInitialValues = (
     connection.name,
     connection.namespaceDefinition,
     connection.namespaceFormat,
+    connection.nonBreakingChangesPreference,
     connection.operations,
     connection.prefix,
     connection.scheduleData,
