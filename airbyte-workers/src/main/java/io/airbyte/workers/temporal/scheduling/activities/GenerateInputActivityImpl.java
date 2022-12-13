@@ -31,6 +31,7 @@ import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 
 @Singleton
@@ -97,7 +98,9 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .findFirst();
       final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
           standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
-      final boolean supportstDbt = optionalDestinationDefinition.isPresent() ? optionalDestinationDefinition.get().getSupportsDbt() : false;
+      final boolean supportstDbt = optionalDestinationDefinition.isPresent() && Objects.nonNull(optionalDestinationDefinition.get().getSupportsDbt())
+          ? optionalDestinationDefinition.get().getSupportsDbt()
+          : false;
       final String normalizationIntegrationType =
           optionalDestinationDefinition.map(StandardDestinationDefinition::getNormalizationIntegrationType).orElse(null);
 
