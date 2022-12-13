@@ -655,8 +655,7 @@ class IssueWorklogs(IncrementalJiraStream):
         )
 
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        return f"issue/{key}/worklog"
+        return f"issue/{stream_slice['key']}/worklog"
 
     def read_records(
         self, stream_slice: Optional[Mapping[str, Any]] = None, stream_state: Mapping[str, Any] = None, **kwargs
@@ -680,8 +679,14 @@ class Labels(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-labels/#api-rest-api-3-label-get
     """
 
+    extract_field = "values"
+    primary_key = "label"
+
     def path(self, **kwargs) -> str:
-        return "application-properties"
+        return "label"
+
+    def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
+        return {"label": record}
 
 
 class Permissions(JiraStream):
