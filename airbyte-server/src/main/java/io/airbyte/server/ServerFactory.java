@@ -13,13 +13,6 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.db.Database;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.server.apis.LogsApiController;
-import io.airbyte.server.apis.NotificationsApiController;
-import io.airbyte.server.apis.WebBackendApiController;
-import io.airbyte.server.apis.binders.LogsApiBinder;
-import io.airbyte.server.apis.binders.NotificationApiBinder;
-import io.airbyte.server.apis.factories.LogsApiFactory;
-import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
 import io.airbyte.server.handlers.DestinationDefinitionsHandler;
@@ -40,7 +33,7 @@ import io.airbyte.server.scheduler.EventRunner;
 import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import java.net.http.HttpClient;
 import java.nio.file.Path;
-import java.util.Set;
+import java.util.HashSet;
 import org.flywaydb.core.Flyway;
 
 public interface ServerFactory {
@@ -114,20 +107,8 @@ public interface ServerFactory {
                                  final WebBackendGeographiesHandler webBackendGeographiesHandler,
                                  final WebBackendCheckUpdatesHandler webBackendCheckUpdatesHandler) {
 
-      LogsApiFactory.setValues(logsHandler);
-
-      NotificationsApiFactory.setValues(workspacesHandler);
-
-      final Set<Class<?>> componentClasses = Set.of(
-          LogsApiController.class,
-          NotificationsApiController.class);
-
-      final Set<Object> components = Set.of(
-          new LogsApiBinder(),
-          new NotificationApiBinder());
-
       // construct server
-      return new ServerApp(airbyteVersion, componentClasses, components);
+      return new ServerApp(airbyteVersion, new HashSet<>(), new HashSet<>());
     }
 
   }
