@@ -37,15 +37,17 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
   };
 
   let buttonDisabled = false;
-  let tooltipContent = null;
+  let showWarningIcon = false;
+  let tooltipContent = undefined;
 
   if (editorView === "yaml" && !yamlIsValid) {
     buttonDisabled = true;
+    showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlDownload" />;
   }
 
   if (editorView === "ui" && hasErrors(true)) {
-    buttonDisabled = true;
+    showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsDownload" />;
   }
 
@@ -54,7 +56,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
       full
       onClick={handleClick}
       disabled={buttonDisabled}
-      icon={buttonDisabled ? <FontAwesomeIcon icon={faWarning} /> : <FontAwesomeIcon icon={faDownload} />}
+      icon={showWarningIcon ? <FontAwesomeIcon icon={faWarning} /> : <FontAwesomeIcon icon={faDownload} />}
     >
       <FormattedMessage id="connectorBuilder.downloadYaml" />
     </Button>
@@ -62,8 +64,12 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
 
   return (
     <div className={className}>
-      {buttonDisabled ? (
-        <Tooltip control={downloadButton} placement="left" containerClassName={styles.tooltipContainer}>
+      {tooltipContent !== undefined ? (
+        <Tooltip
+          control={downloadButton}
+          placement={editorView === "yaml" ? "left" : "top"}
+          containerClassName={styles.tooltipContainer}
+        >
           {tooltipContent}
         </Tooltip>
       ) : (

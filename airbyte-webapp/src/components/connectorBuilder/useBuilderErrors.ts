@@ -8,7 +8,7 @@ import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
-  const { setSelectedView } = useConnectorBuilderState();
+  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
 
   const invalidViews = (
     ignoreUntouched: boolean,
@@ -65,6 +65,7 @@ export const useBuilderErrors = () => {
           setSelectedView("global");
         } else {
           setSelectedView(invalidBuilderViews[0]);
+          setTestStreamIndex(invalidBuilderViews[0] as number);
         }
       } else {
         callback();

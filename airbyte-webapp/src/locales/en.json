@@ -654,6 +654,7 @@
   "connectorBuilder.toggleModal.title": "Warning",
   "connectorBuilder.toggleModal.submitButton": "Confirm",
   "connectorBuilder.configErrorsDownload": "Cannot download while there are form errors",
+  "connectorBuilder.configErrorsTest": "Cannot test while there are form errors",
   "connectorBuilder.connectorImgAlt": "Connector Image",
   "connectorBuilder.uiYamlToggle.ui": "UI",
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
