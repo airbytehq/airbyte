@@ -126,7 +126,7 @@ def _record(stream: str, title: str, word_count: int) -> AirbyteMessage:
     )
 
 
-def _pokemon_record(pokemon: str):
+def _pikachu_record():
     data = load_json_file("pokemon-pikachu.json")
     return AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="pokemon", data=data, emitted_at=0))
 
@@ -143,13 +143,20 @@ def _record_with_id(stream: str, title: str, word_count: int, id: int) -> Airbyt
 
 def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
     """retrieves and formats all Articles as Airbyte messages"""
-    all_records = client.client.data_object.get(class_name="Article")
+    all_records = client.client.data_object.get(class_name="Article", )
     out = []
     for record in all_records.get("objects"):
         props = record["properties"]
         out.append(_record("Article", props["title"], props["wordCount"]))
     out.sort(key=lambda x: x.record.data.get("title"))
     return out
+
+
+def count_articles(client: Client) -> int:
+    result = client.query.aggregate("Article") \
+        .with_fields('meta { count }') \
+        .do()
+    return result["data"]["Aggregate"]["Article"][0]["meta"]["count"]
 
 
 def retrieve_all_pokemons(client: Client) -> List[dict]:
@@ -183,6 +190,23 @@ def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, cl
     assert expected_records == records_in_destination, "Records in destination should match records expected"
 
 
+def test_write_large_batch(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
+    append_stream = configured_catalog.streams[0].stream.name
+    first_state_message = _state({"state": "1"})
+    first_record_chunk = [_record(append_stream, str(i), i) for i in range(400)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, configured_catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    assert count_articles(client.client) == 400, "There should be 400 records in weaviate"
+
+
 def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that records can have an ID that's an integer
@@ -214,7 +238,7 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
     destination = DestinationWeaviate()
 
     first_state_message = _state({"state": "1"})
-    pikachu = _pokemon_record("pikachu")
+    pikachu = _pikachu_record()
     output_states = list(
         destination.write(
             config, pokemon_catalog, [pikachu, first_state_message]
