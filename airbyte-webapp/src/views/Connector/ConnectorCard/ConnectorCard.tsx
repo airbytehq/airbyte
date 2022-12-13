@@ -164,12 +164,13 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
 
   const job = jobInfo || LogsRequestError.extractJobInfo(errorStatusRequest);
 
+  const connector = isEditMode ? props.connector : undefined;
+
   // Fill form with existing connector values otherwise set the default service name
   const formValues = useMemo(
-    () => (isEditMode ? props.connector : { name: selectedConnectorDefinition?.name }),
+    () => (isEditMode && connector ? connector : { name: selectedConnectorDefinition?.name }),
     // linter doesn't understand that props.connector is checked
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isEditMode, isEditMode && props.connector, selectedConnectorDefinition?.name]
+    [isEditMode, connector, selectedConnectorDefinition?.name]
   );
 
   return (
