@@ -3,20 +3,33 @@ definitions:
   selector:
     extractor:
       field_pointer: []
+  url_stream_slicer:
+    type: "ListStreamSlicer"
+    slice_values: "{{ config['urls'] }}"
+    cursor_field: url
+    request_option:
+      field_name: "url"
+      inject_into: "request_parameter"
+  strategy_stream_slicer:
+    type: "ListStreamSlicer"
+    slice_values: "{{ config['strategies'] }}"
+    cursor_field: strategy
+    request_option:
+      field_name: "strategy"
+      inject_into: "request_parameter"
+  category_stream_slicer:
+    type: "ListStreamSlicer"
+    slice_values: "{{ config['categories'] }}"
+    cursor_field: category
+    request_option:
+      field_name: "category"
+      inject_into: "request_parameter"
   requester:
     url_base: "https://www.googleapis.com/pagespeedonline/v5/"
     http_method: "GET"
     request_options_provider:
       request_parameters:
         key: "{{ config['api_key'] }}"
-        url: "{{ config['url'] }}"
-        category: seo
-        cateogry: accessibility
-        cateogry: best-practices
-        cateogry: performance
-        cateogry: pwa
-        strategy: desktop
-        strategy: mobile
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -24,6 +37,12 @@ definitions:
       type: NoPagination
     requester:
       $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      type: CartesianProductStreamSlicer
+      stream_slicers:
+        - "*ref(definitions.url_stream_slicer)"
+        - "*ref(definitions.strategy_stream_slicer)"
+        - "*ref(definitions.category_stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
@@ -32,32 +51,10 @@ definitions:
     $options:
       name: "pagespeed"
       path: "/runPagespeed"
-  origin_pagespeed_stream:
-    $ref: "*ref(definitions.base_stream)"
-    $options:
-      name: "origin_pagespeed"
-      path: "/runPagespeed"
-    retriever:
-      $ref: "*ref(definitions.base_stream.retriever)"
-      requester:
-        url_base: "https://www.googleapis.com/pagespeedonline/v5/"
-        http_method: "GET"
-        request_options_provider:
-          request_parameters:
-            key: "{{ config['api_key'] }}"
-            url: "origin:{{ config['url'] }}"
-            category: seo
-            cateogry: accessibility
-            cateogry: best-practices
-            cateogry: performance
-            cateogry: pwa
-            strategy: desktop
-            strategy: mobile
 
 streams:
   - "*ref(definitions.pagespeed_stream)"
-  - "*ref(definitions.origin_pagespeed_stream)"
 
 check:
   stream_names:
-    - "origin_pagespeed"
+    - "pagespeed"

@@ -4,8 +4,9 @@ connectionSpecification:
   title: Google PageSpeed Insights Spec
   type: object
   required:
-    - api_key
-    - url
+    - urls
+    - strategies
+    - categories
   additionalProperties: true
   properties:
     api_key:
@@ -14,13 +15,34 @@ connectionSpecification:
       description: >-
         Google PageSpeed API Key. See <a
         href="https://developers.google.com/speed/docs/insights/v5/get-started#APIKey">here</a>.
-        The toke is case sensitive.
+        The key is optional - however the API is heavily rate limited when using without API Key.
+        Creating and using the API key therefore is recommended.
+        The key is case sensitive.
       airbyte_secret: true
-    url:
-      type: string
-      title: URL to analyse
-      pattern: ^(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$
+    urls:
+      type: array
+      items:
+        type: string
+        pattern: ^(?:origin:)?(http(s)?:\/\/)[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:\/?#[\]@!\$&'\(\)\*\+,;=.]+$
+      title: URLs to analyse
       description: >-
-        The URL to retrieve pagespeed information from.
+        The URLs to retrieve pagespeed information from. The connector will attempt to sync
+        PageSpeed reports for all the defined URLs.
         Format: https://(www.)url.domain
       example: https://example.com
+    strategies:
+      type: array
+      items:
+        type: string
+        enum: ["desktop", "mobile"]
+      title: Analyses Strategies
+      description: >-
+        The analyses strategy to use. Either "desktop" or "mobile".
+    categories:
+      type: array
+      items:
+        type: string
+        enum: ["accessibility", "best-practices", "performance", "pwa", "seo"]
+      title: Lighthouse Categories
+      description: >-
+        Defines which Lighthouse category to run. One or many of: "accessibility", "best-practices", "performance", "pwa", "seo".
