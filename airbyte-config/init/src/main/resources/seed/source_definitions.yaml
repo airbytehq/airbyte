@@ -259,7 +259,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   icon: close.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: CoinGecko Coins
   sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
   dockerRepository: airbyte/source-coingecko-coins
