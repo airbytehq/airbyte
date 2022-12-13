@@ -90,6 +90,8 @@ public class ApmTraceUtils {
     activeSpan.log(Map.of(Fields.ERROR_OBJECT, t));
     final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
     localRootSpan.setError(true);
+    localRootSpan.setTag("error.stack", t.getStackTrace().toString());
+    localRootSpan.setTag("error.tag", t.getClass().toString());
   }
 
   /**
