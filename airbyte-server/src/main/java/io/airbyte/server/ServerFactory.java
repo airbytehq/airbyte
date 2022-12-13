@@ -17,10 +17,8 @@ import io.airbyte.server.apis.LogsApiController;
 import io.airbyte.server.apis.NotificationsApiController;
 import io.airbyte.server.apis.WebBackendApiController;
 import io.airbyte.server.apis.binders.LogsApiBinder;
-import io.airbyte.server.apis.binders.NotificationApiBinder;
 import io.airbyte.server.apis.binders.WebBackendApiBinder;
 import io.airbyte.server.apis.factories.LogsApiFactory;
-import io.airbyte.server.apis.factories.NotificationsApiFactory;
 import io.airbyte.server.apis.factories.WebBackendApiFactory;
 import io.airbyte.server.handlers.AttemptHandler;
 import io.airbyte.server.handlers.ConnectionsHandler;
@@ -118,8 +116,6 @@ public interface ServerFactory {
 
       LogsApiFactory.setValues(logsHandler);
 
-      NotificationsApiFactory.setValues(workspacesHandler);
-
       WebBackendApiFactory.setValues(webBackendConnectionsHandler, webBackendGeographiesHandler, webBackendCheckUpdatesHandler);
 
       final Set<Class<?>> componentClasses = Set.of(
@@ -129,7 +125,6 @@ public interface ServerFactory {
 
       final Set<Object> components = Set.of(
           new LogsApiBinder(),
-          new NotificationApiBinder(),
           new WebBackendApiBinder());
 
       // construct server
