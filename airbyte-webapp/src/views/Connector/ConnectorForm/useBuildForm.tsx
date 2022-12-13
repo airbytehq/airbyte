@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
+import { ConnectorDefinitionSpecification, SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
 import { FormBuildError } from "core/form/FormBuildError";
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
@@ -21,7 +21,7 @@ export interface BuildFormHook {
 export function useBuildForm(
   isEditMode: boolean,
   formType: "source" | "destination",
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification,
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft,
   initialValues?: Partial<ConnectorFormValues>
 ): BuildFormHook {
   const { formatMessage } = useIntl();

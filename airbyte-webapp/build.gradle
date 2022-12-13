@@ -3,7 +3,8 @@ plugins {
     id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
+// Use the node version that's defined in the .nvmrc file
+def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
 
 // This array should contain a path to all configs that are common to most build tasks and
 // might affect them (i.e. if any of those files change we want to rerun most tasks)
