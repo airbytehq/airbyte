@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.13.2
+Low-code: Enable low-code CDK users to specify schema inline in the manifest
+
+## 0.13.1
+Low-code: Add `SessionTokenAuthenticator`
+
+## 0.13.0
+Add `Stream.check_availability` and `Stream.AvailabilityStrategy`. Make `HttpAvailabilityStrategy` the default `HttpStream.AvailabilityStrategy`.
+
 ## 0.12.4
 Lookback window should applied when a state is supplied as well
 
