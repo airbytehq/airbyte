@@ -33,6 +33,7 @@
   padding: variables.$spacing-lg variables.$spacing-md;
   border-radius: variables.$border-radius-lg;
   cursor: pointer;
+  overflow: auto;
 }
 
 .active {
