@@ -20,9 +20,12 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/connections")
-@Context()
+@Secured(SecurityRule.IS_AUTHENTICATED)
+@Context
 public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;
@@ -51,12 +54,14 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/list")
+  @Secured({"READER"})
   public ConnectionReadList listConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   @Post(uri = "/list_all")
+  @Secured({"OTHER"})
   public ConnectionReadList listAllConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }

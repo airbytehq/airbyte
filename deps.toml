@@ -100,6 +100,7 @@ quartz-scheduler = { module = "org.quartz-scheduler:quartz", version = "2.3.2" }
 temporal-sdk = { module = "io.temporal:temporal-sdk", version.ref = "temporal" }
 temporal-serviceclient = { module = "io.temporal:temporal-serviceclient", version.ref = "temporal" }
 temporal-testing = { module = "io.temporal:temporal-testing", version.ref = "temporal" }
+reactor-core = { module = "io.projectreactor:reactor-core" }
 
 # Micronaut-related dependencies
 h2-database = { module = "com.h2database:h2", version = "2.1.214" }

@@ -38,6 +38,7 @@ dependencies {
     implementation 'org.quartz-scheduler:quartz:2.3.2'
     implementation 'io.sentry:sentry:6.3.1'
     implementation 'io.swagger:swagger-annotations:1.6.2'
+    implementation libs.reactor.core
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor

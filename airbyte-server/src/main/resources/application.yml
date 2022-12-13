@@ -2,15 +2,21 @@ micronaut:
   application:
     name: airbyte-server
   security:
+    authentication-provider-strategy: ALL
+    enabled: true
     intercept-url-map:
-      - pattern: /**
+      - pattern: /beans
         httpMethod: GET
         access:
           - isAnonymous()
-      - pattern: /**
-        httpMethod: POST
+      - pattern: /env
+        httpMethod: GET
         access:
           - isAnonymous()
+#      - pattern: /**
+#        httpMethod: POST
+#        access:
+#          - isAnonymous()
   server:
     port: 8001
 airbyte:
@@ -59,3 +65,8 @@ temporal:
     namespace: ${TEMPORAL_CLOUD_NAMESPACE:}
   host: ${TEMPORAL_HOST:`airbyte-temporal:7233`}
   retention: ${TEMPORAL_HISTORY_RETENTION_IN_DAYS:30}
+
+logger:
+  levels:
+    io.micronaut.context.condition: DEBUG
+    io.micronaut.security: DEBUG
