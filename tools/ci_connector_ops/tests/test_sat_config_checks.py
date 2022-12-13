@@ -82,7 +82,8 @@ def ga_connector_test_strictness_level_file_change(tmp_path, ga_connector_file):
 def check_review_requirements_file_contains_expected_teams(capsys, expected_teams: List):
     sat_config_checks.write_review_requirements_file()
     captured = capsys.readouterr()
-    requirements_file_path = captured.out.split("\n")[0].split("=")[-1]
+    assert captured.out.split("\n")[0].split("=")[-1] == "true"
+    requirements_file_path = sat_config_checks.REVIEW_REQUIREMENTS_FILE_PATH
     with open(requirements_file_path, "r") as requirements_file:
         requirements = yaml.safe_load(requirements_file)
     assert requirements[0]["teams"] == expected_teams
@@ -107,4 +108,4 @@ def test_find_mandatory_reviewers_ga_test_strictness_level(capsys, ga_connector_
 def test_find_mandatory_reviewers_no_tracked_changed(capsys, not_ga_not_tracked_change_expected_team):
     sat_config_checks.write_review_requirements_file()
     captured = capsys.readouterr()
-    assert captured.out.split("\n")[0] == 'REVIEW_REQUIREMENTS_FILE=""'
+    assert captured.out.split("\n")[0].split("=")[-1] == "false"
