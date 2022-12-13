@@ -30,6 +30,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import 
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
+from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
 
@@ -70,8 +71,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
     @property
     def connection_checker(self) -> ConnectionChecker:
         check = self._source_config["check"]
-        if "class_name" not in check:
-            check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
+        if "type" not in check:
+            check["type"] = "CheckStream"
         return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -95,8 +96,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         spec = self._source_config.get("spec")
         if spec:
-            if "class_name" not in spec:
-                spec["class_name"] = "airbyte_cdk.sources.declarative.spec.Spec"
+            if "type" not in spec:
+                spec["type"] = "Spec"
             spec_component = self._factory.create_component(spec, dict())()
             return spec_component.generate_spec()
         else:
@@ -136,32 +137,29 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         try:
             validate(full_config, declarative_source_schema)
-        except Exception as e:
-            raise Exception("Validation against auto-generated schema failed") from e
+        except ValidationError as e:
+            raise ValidationError("Validation against auto-generated schema failed") from e
 
         # Validates the connector manifest against the low-code component json schema
         manifest = self._source_config
-        hydro_homie = ManifestComponentTransformer()
-        hydrated_manifest = hydro_homie.propagate_types_and_options("", manifest, {})
+        manifest_transformer = ManifestComponentTransformer()
+        propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
 
         try:
-            # todo probably better to use some variation of this so we don't use a non-hardcoded value to find the correct package
-            # module_path = pkgutil.get_loader(__name__)
-
-            raw_manifest = pkgutil.get_data("airbyte_cdk.sources.declarative", "low_code_component_schema.yaml")
-            handwritten_source_schema = yaml.load(raw_manifest, Loader=yaml.SafeLoader)
+            raw_component_schema = pkgutil.get_data(__name__, "low_code_component_schema.yaml")
+            declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
 
         try:
-            validate(hydrated_manifest, handwritten_source_schema)
-        except Exception as e:
-            raise Exception("Validation against json schema defined in low_code_component_schema.yaml schema failed") from e
+            validate(propagated_manifest, declarative_component_schema)
+        except ValidationError as e:
+            raise ValidationError("Validation against json schema defined in low_code_component_schema.yaml schema failed") from e
 
     def _stream_configs(self):
         stream_configs = self._source_config.get("streams", [])
         for s in stream_configs:
-            if "class_name" not in s:
+            if "type" not in s:
                 s["type"] = "DeclarativeStream"
         return stream_configs
 

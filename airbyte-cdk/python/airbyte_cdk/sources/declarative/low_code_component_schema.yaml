@@ -499,11 +499,12 @@ definitions:
         type: string
       authenticator:
         anyOf:
-          - "$ref": "#/definitions/NoAuth"
-          - "$ref": "#/definitions/DeclarativeOauth2Authenticator"
           - "$ref": "#/definitions/ApiKeyAuthenticator"
-          - "$ref": "#/definitions/BearerAuthenticator"
           - "$ref": "#/definitions/BasicHttpAuthenticator"
+          - "$ref": "#/definitions/BearerAuthenticator"
+          - "$ref": "#/definitions/CustomAuthenticator"
+          - "$ref": "#/definitions/DeclarativeOauth2Authenticator"
+          - "$ref": "#/definitions/NoAuth"
       error_handler:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
@@ -745,7 +746,9 @@ definitions:
       type:
         enum: [RecordSelector]
       extractor:
-        "$ref": "#/definitions/DpathExtractor"
+        anyOf:
+          - "$ref": "#/definitions/CustomRecordExtractor"
+          - "$ref": "#/definitions/DpathExtractor"
       record_filter:
         "$ref": "#/definitions/RecordFilter"
       $options:
