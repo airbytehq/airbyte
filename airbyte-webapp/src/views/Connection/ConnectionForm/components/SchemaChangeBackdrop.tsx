@@ -42,7 +42,7 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
   }
 
   return (
-    <div className={styles.schemaChangeBackdropContainer}>
+    <div className={styles.schemaChangeBackdropContainer} data-testid="schemaChangesBackdrop">
       <div className={styles.backdrop}>
         <div className={styles.contentContainer}>
           <div>{schemaChangeImage}</div>

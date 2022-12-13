@@ -48,7 +48,7 @@ describe("<SchemaChangesDetected />", () => {
 
     const { queryByTestId } = renderComponent();
 
-    expect(queryByTestId("schemaChagnesDetected")).toBeFalsy();
+    expect(queryByTestId("schemaChangesDetected")).toBeFalsy();
   });
 
   it("renders with breaking changes", () => {
