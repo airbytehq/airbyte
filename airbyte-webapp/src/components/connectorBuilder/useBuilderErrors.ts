@@ -16,17 +16,20 @@ export const useBuilderErrors = () => {
     inputErrors?: FormikErrors<BuilderFormValues>
   ) => {
     const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
-    console.log("errorsToCheck", errorsToCheck);
-
-    const errorKeys = ignoreUntouched
-      ? intersection(Object.keys(errorsToCheck), Object.keys(touched))
-      : Object.keys(errorsToCheck);
-    console.log("errorKeys", errorKeys);
+    const errorKeys = Object.keys(errorsToCheck);
 
     const invalidViews: BuilderView[] = [];
 
     if (errorKeys.includes("global")) {
-      invalidViews.push("global");
+      if (ignoreUntouched) {
+        const globalErrorKeys = Object.keys(flatten(errorsToCheck.global));
+        const globalTouchedKeys = Object.keys(flatten(touched.global));
+        if (intersection(globalErrorKeys, globalTouchedKeys).length > 0) {
+          invalidViews.push("global");
+        }
+      } else {
+        invalidViews.push("global");
+      }
     }
 
     if (errorKeys.includes("streams")) {
