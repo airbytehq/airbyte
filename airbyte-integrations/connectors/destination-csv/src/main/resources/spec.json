@@ -40,6 +40,36 @@
                 "const": ";"
               }
             }
+          },
+          {
+            "title": "Pipe",
+            "required": ["delimiter"],
+            "properties": {
+              "delimiter": {
+                "type": "string",
+                "const": "|"
+              }
+            }
+          },
+          {
+            "title": "Tab",
+            "required": ["delimiter"],
+            "properties": {
+              "delimiter": {
+                "type": "string",
+                "const": "  "
+              }
+            }
+          },
+          {
+            "title": "Space",
+            "required": ["delimiter"],
+            "properties": {
+              "delimiter": {
+                "type": "string",
+                "const": " "
+              }
+            }
           }
         ]
       }
