@@ -1,17 +1,12 @@
 import { useField, useFormikContext } from "formik";
 import React, { useEffect, useRef, useState } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
 import { SecretTextArea } from "components/ui/SecretTextArea";
 
-const ComponentContainer = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
+import styles from "./SecretConfirmationControl.module.scss";
 
 interface SecretConfirmationControlProps {
   showButtons?: boolean;
@@ -31,7 +26,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
   const [field, , helpers] = useField(name);
   const [previousValue, setPreviousValue] = useState<unknown>(undefined);
   const isEditInProgress = Boolean(previousValue);
-  const controlRef = useRef<HTMLElement>(null);
+  const controlRef = useRef<HTMLInputElement>(null);
 
   const { dirty, touched } = useFormikContext();
 
@@ -42,8 +37,10 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
         autoComplete="off"
         value={field.value ?? ""}
         rows={3}
-        disabled={disabled}
         error={error}
+        // eslint-disable-next-line jsx-a11y/no-autofocus
+        autoFocus={showButtons && isEditInProgress}
+        disabled={(showButtons && !isEditInProgress) || disabled}
       />
     ) : (
       <Input
@@ -51,8 +48,9 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
         autoComplete="off"
         value={field.value ?? ""}
         type="password"
-        disabled={disabled}
         error={error}
+        ref={controlRef}
+        disabled={(showButtons && !isEditInProgress) || disabled}
       />
     );
 
@@ -87,12 +85,8 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
   };
 
   return (
-    <ComponentContainer>
-      {React.cloneElement(component, {
-        ref: controlRef,
-        autoFocus: isEditInProgress,
-        disabled: !isEditInProgress || disabled,
-      })}
+    <div className={styles.container}>
+      {component}
       {isEditInProgress ? (
         <>
           <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
@@ -107,7 +101,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
           <FormattedMessage id="form.edit" />
         </Button>
       )}
-    </ComponentContainer>
+    </div>
   );
 };
 

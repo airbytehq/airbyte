@@ -102,6 +102,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         multiline={Boolean(property.multiline)}
         showButtons={isFormInEditMode}
         disabled={disabled}
+        error={error}
       />
     );
   }
