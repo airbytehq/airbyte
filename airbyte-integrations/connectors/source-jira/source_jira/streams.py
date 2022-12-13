@@ -695,7 +695,7 @@ class Permissions(JiraStream):
     """
 
     extract_field = "permissions"
-    primary_key = None
+    primary_key = "key"
 
     def path(self, **kwargs) -> str:
         return "permissions"
