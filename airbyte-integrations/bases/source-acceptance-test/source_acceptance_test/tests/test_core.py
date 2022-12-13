@@ -83,7 +83,10 @@ class TestSpec(BaseTest):
     previous_spec_cache: ConnectorSpecification = None
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner,  previous_connector_spec: ConnectorSpecification, actual_connector_spec: ConnectorSpecification) -> bool:
+        if actual_connector_spec == previous_connector_spec:
+            pytest.skip("The previous and actual specifications are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
