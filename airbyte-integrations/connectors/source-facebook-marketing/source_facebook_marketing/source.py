@@ -187,9 +187,9 @@ class SourceFacebookMarketing(AbstractSource):
             insight_fields = set(insight.fields)
             if insight_fields.intersection(UNSUPPORTED_FIELDS):
                 # https://github.com/airbytehq/oncall/issues/1137
-                logger.info(f"Following fields were removed from the Custom{insight.name} fields list due to error"
-                            f" on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}")
-                insight_fields -= UNSUPPORTED_FIELDS
+                mes = f"Please remove Following fields from the Custom {insight.name} fields list due to possible " \
+                      f"errors on Facebook side: {insight_fields.intersection(UNSUPPORTED_FIELDS)}"
+                raise ValueError(mes)
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",
