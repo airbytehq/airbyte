@@ -8733,7 +8733,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.17"
+- dockerImage: "airbyte/source-mysql:1.0.16"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8795,14 +8795,21 @@
           order: 6
         ssl_mode:
           title: "SSL modes"
-          description: "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"\
+          description: "SSL connection modes. <li><b>preferred</b> - Automatically\
+            \ attempt SSL connection. If the MySQL server does not support SSL, continue\
+            \ with a regular connection.</li><li><b>required</b> - Always connect\
+            \ with SSL. If the MySQL server doesn’t support SSL, the connection will\
+            \ not be established. Certificate Authority (CA) and Hostname are not\
+            \ verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies\
+            \ CA, but allows connection even if Hostname does not match.</li><li><b>Verify\
+            \ Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read\
+            \ more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"\
             > in the docs</a>."
           type: "object"
           order: 7
           oneOf:
           - title: "preferred"
-            description: "Automatically attempt SSL connection. If the MySQL server\
-              \ does not support SSL, continue with a regular connection."
+            description: "Preferred SSL mode."
             required:
             - "mode"
             properties:
@@ -8811,9 +8818,7 @@
                 const: "preferred"
                 order: 0
           - title: "required"
-            description: "Always connect with SSL. If the MySQL server doesn’t support\
-              \ SSL, the connection will not be established. Certificate Authority\
-              \ (CA) and Hostname are not verified."
+            description: "Require SSL mode."
             required:
             - "mode"
             properties:
@@ -8822,8 +8827,7 @@
                 const: "required"
                 order: 0
           - title: "Verify CA"
-            description: "Always connect with SSL. Verifies CA, but allows connection\
-              \ even if Hostname does not match."
+            description: "Verify CA SSL mode."
             required:
             - "mode"
             - "ca_certificate"
@@ -8865,7 +8869,7 @@
                 airbyte_secret: true
                 order: 4
           - title: "Verify Identity"
-            description: "Always connect with SSL. Verify both CA and Hostname."
+            description: "Verify-full SSL mode."
             required:
             - "mode"
             - "ca_certificate"
