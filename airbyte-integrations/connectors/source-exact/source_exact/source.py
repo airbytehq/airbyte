@@ -188,6 +188,7 @@ class ExactStream(HttpStream, IncrementalMixin):
         """
 
         regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
+        tz_utc = pendulum.timezone("UTC")
 
         def parse_value(value):
             if isinstance(value, dict):
@@ -200,7 +201,9 @@ class ExactStream(HttpStream, IncrementalMixin):
                 match = regex_timestamp.match(value)
                 if match:
                     unix_seconds = int(match.group(1)) / 1000
-                    timestamp = pendulum.from_timestamp(unix_seconds, "CET").set(tz="UTC")
+
+                    timestamp = pendulum.from_timestamp(unix_seconds, "CET")
+                    timestamp = tz_utc.convert(timestamp)
 
                     return timestamp.isoformat()
 
