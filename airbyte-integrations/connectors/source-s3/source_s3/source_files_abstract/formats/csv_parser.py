@@ -59,7 +59,7 @@ class CsvParser(AbstractFileParser):
         if config.get("format", {}).get("filetype") == "csv":
             self._validate_field_len(config, "delimiter")
             if config.get("format", {}).get("delimiter") in ("\r", "\n"):
-                raise ValueError(f"Delimiter cannot be \r or \n")
+                raise ValueError("Delimiter cannot be \r or \n")
 
             self._validate_field_len(config, "quote_char")
 
