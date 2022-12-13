@@ -108,7 +108,7 @@ public class MSSQLConverter implements CustomConverter<SchemaBuilder, Relational
       if (Objects.isNull(input)) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
-      if (field.typeName().equals("DATE")) {
+      if (field.typeName().equalsIgnoreCase("DATE")) {
         return DateTimeConverter.convertToDate(input);
       }
       return DebeziumConverterUtils.convertDate(input);
