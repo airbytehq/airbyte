@@ -1,9 +1,11 @@
-@use "../../../../scss/colors";
-@use "../../../../scss/variables";
+@use "scss/colors";
+@use "scss/variables";
+@use "scss/_z-indices";
 
 .container {
   text-align: center;
   padding: variables.$spacing-lg variables.$spacing-xl;
+  z-index: z-indices.$connectionPageTitle;
 }
 
 .connectionTitle {

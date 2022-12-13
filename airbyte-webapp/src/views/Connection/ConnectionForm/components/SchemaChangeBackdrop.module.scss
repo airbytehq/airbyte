@@ -17,7 +17,7 @@
 
     position: absolute;
     background: linear-gradient(180deg, rgba(colors.$grey-50, 0.5) 0%, colors.$white 92.54%);
-    z-index: 2;
+    z-index: z-indices.$schemaChangesBackdrop;
     border-radius: variables.$border-radius-lg;
     display: flex;
     flex-direction: column;
@@ -32,7 +32,7 @@
     display: flex;
     justify-content: center;
     text-align: center;
-    z-index: 3;
+    z-index: z-indices.$schemaChangesBackdropContent;
     width: variables.$width-modal-sm;
     max-width: 40%;
     flex-direction: column;
