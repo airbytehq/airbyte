@@ -1,10 +1,19 @@
-import { ConnectorManifest, DeclarativeStream } from "core/request/ConnectorManifest";
+import { JSONSchema7 } from "json-schema";
+
+import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
+import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
+import { DeclarativeStream } from "core/request/ConnectorManifest";
 
 export interface BuilderFormValues {
   global: {
     connectorName: string;
     urlBase: string;
   };
+  inputs: Array<{
+    key: string;
+    required: boolean;
+    definition: JSONSchema7;
+  }>;
   streams: BuilderStream[];
 }
 
@@ -15,7 +24,7 @@ export interface BuilderStream {
   httpMethod: "GET" | "POST";
 }
 
-export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
+export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
       name: stream.name,
@@ -40,11 +49,24 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
     };
   });
 
+  const specSchema: JSONSchema7 = {
+    $schema: "http://json-schema.org/draft-07/schema#",
+    type: "object",
+    required: values.inputs.filter((input) => input.required).map((input) => input.key),
+    properties: Object.fromEntries(values.inputs.map((input) => [input.key, input.definition])),
+    additionalProperties: true,
+  };
+
+  const spec: SourceDefinitionSpecificationDraft = {
+    connectionSpecification: specSchema,
+  };
+
   return {
     version: "0.1.0",
     check: {
       stream_names: [],
     },
     streams: manifestStreams,
+    spec,
   };
 };

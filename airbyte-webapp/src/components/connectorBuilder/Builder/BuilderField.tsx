@@ -5,6 +5,7 @@ import * as yup from "yup";
 import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
+import { Switch } from "components/ui/Switch";
 import { TagInput } from "components/ui/TagInput";
 import { Text } from "components/ui/Text";
 
@@ -30,9 +31,17 @@ interface BaseFieldProps {
   label: string;
   tooltip?: string;
   optional?: boolean;
+  additionalValidation?: (schema: yup.AnySchema) => yup.AnySchema;
 }
 
-type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
+type BuilderFieldProps = BaseFieldProps &
+  (
+    | { type: "text" }
+    | { type: "number" }
+    | { type: "boolean" }
+    | { type: "array" }
+    | { type: "enum"; options: string[] }
+  );
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (
@@ -52,10 +61,20 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
-  let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
+export const BuilderField: React.FC<BuilderFieldProps> = ({
+  path,
+  label,
+  tooltip,
+  optional = false,
+  additionalValidation,
+  ...props
+}) => {
+  let yupSchema: yup.AnySchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
   if (!optional) {
     yupSchema = yupSchema.required("form.empty.error");
+  }
+  if (additionalValidation) {
+    yupSchema = additionalValidation(yupSchema);
   }
   const fieldConfig = {
     name: path,
@@ -76,7 +95,10 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
 
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
-      {props.type === "text" && <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />}
+      {(props.type === "text" || props.type === "number") && (
+        <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />
+      )}
+      {props.type === "boolean" && <Switch {...field} checked={field.value} />}
       {props.type === "array" && (
         <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
       )}

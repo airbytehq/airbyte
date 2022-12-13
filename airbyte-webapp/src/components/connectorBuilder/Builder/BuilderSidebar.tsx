@@ -1,4 +1,4 @@
-import { faSliders, faPerson } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
@@ -106,8 +106,8 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
         selected={selectedView === "inputs"}
         onClick={() => handleViewSelect("inputs")}
       >
-        <FontAwesomeIcon icon={faPerson} />
-        <FormattedMessage id="connectorBuilder.userInputs" values={{ number: 0 }} />
+        <FontAwesomeIcon icon={faUser} />
+        <FormattedMessage id="connectorBuilder.userInputs" values={{ number: values.inputs.length }} />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>

@@ -7,7 +7,6 @@ import { BuilderFormValues, convertToManifest } from "components/connectorBuilde
 
 import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
-import { ConnectorManifest } from "core/request/ConnectorManifest";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
@@ -16,10 +15,11 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
     connectorName: "",
     urlBase: "",
   },
+  inputs: [],
   streams: [],
 };
 
-const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+const DEFAULT_JSON_MANIFEST_VALUES: PatchedConnectorManifest = {
   version: "0.1.0",
   check: {
     stream_names: [],
@@ -42,7 +42,7 @@ interface Context {
   configString: string;
   configJson: StreamReadRequestBodyConfig;
   setBuilderFormValues: (values: BuilderFormValues) => void;
-  setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setJsonManifest: (jsonValue: PatchedConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setTestStreamIndex: (streamIndex: number) => void;
@@ -62,15 +62,11 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
 
-  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+  const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
-
-  // const inputs = useMemo(() => {
-  //   jsonManifest.
-  // }, []);
 
   useEffect(() => {
     setJsonManifest(convertToManifest(formValues));
