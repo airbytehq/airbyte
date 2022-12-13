@@ -1925,9 +1925,6 @@
             "applied_discounts": {
               "type": ["null", "array"]
             },
-            "applied_discounts": {
-              "type": ["null", "array"]
-            },
             "product_options": {
               "type": ["null", "array"]
             },
