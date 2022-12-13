@@ -18,7 +18,7 @@ interface StreamTestButtonProps {
 
 export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }) => {
   const { editorView, yamlIsValid, testStreamIndex } = useConnectorBuilderState();
-  const { hasErrors, validateAndTouch } = useBuilderErrors();
+  const { validateAndTouch } = useBuilderErrors();
 
   const handleClick = () => {
     if (editorView === "yaml") {
@@ -29,18 +29,8 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }
     validateAndTouch(readStream, ["global", testStreamIndex]);
   };
 
-  let buttonDisabled = false;
-  let tooltipContent = null;
-
-  if (editorView === "yaml" && !yamlIsValid) {
-    buttonDisabled = true;
-    tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
-  }
-
-  if (editorView === "ui" && hasErrors(true, ["global", testStreamIndex])) {
-    buttonDisabled = true;
-    tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
-  }
+  const buttonDisabled = editorView === "yaml" && !yamlIsValid;
+  const tooltipContent = buttonDisabled ? <FormattedMessage id="connectorBuilder.invalidYamlTest" /> : null;
 
   const testButton = (
     <Button

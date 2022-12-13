@@ -2,12 +2,42 @@ import { flatten } from "flat";
 import { FormikErrors, useFormikContext } from "formik";
 import intersection from "lodash/intersection";
 
-import { BuilderView } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
+  const { setSelectedView } = useConnectorBuilderState();
+
+  const invalidViews = (
+    ignoreUntouched: boolean,
+    limitToViews?: BuilderView[],
+    inputErrors?: FormikErrors<BuilderFormValues>
+  ) => {
+    const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
+
+    const errorKeys = ignoreUntouched
+      ? intersection(Object.keys(errorsToCheck), Object.keys(touched))
+      : Object.keys(errorsToCheck);
+
+    const invalidViews: BuilderView[] = [];
+
+    if (errorKeys.includes("global")) {
+      invalidViews.push("global");
+    }
+
+    if (errorKeys.includes("streams")) {
+      const errorStreamNums = Object.keys(errorsToCheck.streams ?? {});
+      const invalidStreamNums = (
+        ignoreUntouched ? intersection(errorStreamNums, Object.keys(touched.streams ?? {})) : errorStreamNums
+      ).map((numString) => Number(numString));
+
+      invalidViews.push(...invalidStreamNums);
+    }
+
+    return limitToViews === undefined ? invalidViews : intersection(invalidViews, limitToViews);
+  };
 
   // Returns true if the global config fields or any stream config fields have errors in the provided formik errors, and false otherwise.
   // If limitToViews is provided, the error check is limited to only those views.
@@ -16,30 +46,7 @@ export const useBuilderErrors = () => {
     limitToViews?: BuilderView[],
     inputErrors?: FormikErrors<BuilderFormValues>
   ) => {
-    const errorsToCheck = inputErrors !== undefined ? inputErrors : errors;
-
-    const errorViews = Object.keys(errorsToCheck);
-    const invalidViews = ignoreUntouched ? intersection(errorViews, Object.keys(touched)) : errorViews;
-    if (invalidViews.length === 0) {
-      return false;
-    }
-
-    if (invalidViews.includes("global")) {
-      if (limitToViews === undefined || limitToViews.includes("global")) {
-        return true;
-      }
-    }
-
-    if (invalidViews.includes("streams")) {
-      const errorStreamNums = Object.keys(errorsToCheck.streams ?? {});
-      const invalidStreamNums = (
-        ignoreUntouched ? intersection(errorStreamNums, Object.keys(touched.streams ?? {})) : errorStreamNums
-      ).map((numString) => Number(numString));
-
-      return limitToViews === undefined || intersection(limitToViews, invalidStreamNums).length > 0;
-    }
-
-    return false;
+    return invalidViews(ignoreUntouched, limitToViews, inputErrors).length > 0;
   };
 
   const validateAndTouch = (callback: () => void, limitToViews?: BuilderView[]) => {
@@ -48,8 +55,18 @@ export const useBuilderErrors = () => {
         setFieldTouched(path);
       }
 
-      // only call callback if there are no relevant errors
-      if (!hasErrors(false, limitToViews, errors)) {
+      // If there are relevant errors, select the erroring view, prioritizing global
+      // Otherwise, execute the callback.
+
+      const invalidBuilderViews = invalidViews(false, limitToViews, errors);
+
+      if (invalidBuilderViews.length > 0) {
+        if (invalidBuilderViews.includes("global")) {
+          setSelectedView("global");
+        } else {
+          setSelectedView(invalidBuilderViews[0]);
+        }
+      } else {
         callback();
       }
     });
