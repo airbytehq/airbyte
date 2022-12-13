@@ -159,7 +159,7 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
                 Function
                     .identity()));
 
-    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog);
+    validateCursorFieldForIncrementalTables(fullyQualifiedTableNameToInfo, catalog, database);
 
     final List<AutoCloseableIterator<AirbyteMessage>> incrementalIterators =
         getIncrementalIterators(database, catalog, fullyQualifiedTableNameToInfo, stateManager,
@@ -182,8 +182,9 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
 
   private void validateCursorFieldForIncrementalTables(
                                                        final Map<String, TableInfo<CommonField<DataType>>> tableNameToTable,
-                                                       final ConfiguredAirbyteCatalog catalog) {
+                                                       final ConfiguredAirbyteCatalog catalog, final Database database) throws SQLException {
     final List<InvalidCursorInfo> tablesWithInvalidCursor = new ArrayList<>();
+    final List<InvalidCursorInfo> tablesWithInvalidCursorToWarnAbout = new ArrayList<>();
     for (final ConfiguredAirbyteStream airbyteStream : catalog.getStreams()) {
       final AirbyteStream stream = airbyteStream.getStream();
       final String fullyQualifiedTableName = getFullyQualifiedTableName(stream.getNamespace(),
@@ -211,8 +212,19 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
       if (!isCursorType(cursorType)) {
         tablesWithInvalidCursor.add(
             new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
-                cursorType.toString()));
+                cursorType.toString(), "Unsupported cursor type"));
+        continue;
       }
+
+      if (!verifyCursorColumnValues(database, stream.getNamespace(), stream.getName(), cursorField.get())) {
+        tablesWithInvalidCursorToWarnAbout.add(
+            new InvalidCursorInfo(fullyQualifiedTableName, cursorField.get(),
+                cursorType.toString(), "Cursor column contains NULL value"));
+      }
+    }
+
+    if (!tablesWithInvalidCursorToWarnAbout.isEmpty()) {
+      LOGGER.warn("source-postgres detected null cursor value " + InvalidCursorInfoUtil.getInvalidCursorConfigMessage(tablesWithInvalidCursor));
     }
 
     if (!tablesWithInvalidCursor.isEmpty()) {
@@ -221,6 +233,16 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     }
   }
 
+  /**
+   * Verify that cursor column allows syncing to go through.
+   * @param database database
+   * @return true if syncing can go through. false otherwise
+   * @throws SQLException exception
+   */
+  protected boolean verifyCursorColumnValues(final Database database, final String schema, final String tableName, final String columnName) throws SQLException {
+    /* no-op */
+    return true;
+  }
   private List<TableInfo<CommonField<DataType>>> discoverWithoutSystemTables(
                                                                              final Database database)
       throws Exception {
