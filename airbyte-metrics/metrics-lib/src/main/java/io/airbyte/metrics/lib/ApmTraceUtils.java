@@ -4,11 +4,15 @@
 
 package io.airbyte.metrics.lib;
 
+import datadog.trace.api.DDTags;
 import datadog.trace.api.interceptor.MutableSpan;
+
 import io.opentracing.Span;
 import io.opentracing.log.Fields;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Map;
 
 /**
@@ -91,8 +95,11 @@ public class ApmTraceUtils {
     if (activeSpan instanceof MutableSpan) {
       final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
       localRootSpan.setError(true);
-      // localRootSpan.setTag("error.stack", t.getStackTrace().toString());
-      // localRootSpan.setTag("error.type", t.getClass().toString());
+      localRootSpan.setTag(DDTags.ERROR_MSG, t.getMessage());
+      localRootSpan.setTag(DDTags.ERROR_TYPE, t.getClass().getName());
+      final StringWriter errorString = new StringWriter();
+      t.printStackTrace(new PrintWriter(errorString));
+      localRootSpan.setTag(DDTags.ERROR_STACK, errorString.toString());
     }
   }
 
