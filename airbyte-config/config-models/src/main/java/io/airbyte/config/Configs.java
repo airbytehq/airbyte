@@ -672,8 +672,8 @@ public interface Configs {
   // Container Orchestrator
 
   /**
-   * Define if Airbyte should use the container orchestrator. Internal-use only.
-   * Should always be set to true - otherwise causes syncs to be run on workers instead.
+   * Define if Airbyte should use the container orchestrator. Internal-use only. Should always be set
+   * to true - otherwise causes syncs to be run on workers instead.
    */
   boolean getContainerOrchestratorEnabled();
 
