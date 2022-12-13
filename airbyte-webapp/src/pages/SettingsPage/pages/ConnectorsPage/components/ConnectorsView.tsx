@@ -49,7 +49,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
   const allowUploadCustomImage = useFeature(FeatureItem.AllowUploadCustomImage);
-  const updateCloudConnectorsExperiment = useExperiment("connector.uploadCustomCloudConnectors", false);
+  const customCloudConnectorsExperiment = useExperiment("connector.uploadCustomCloudConnectors", false);
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions<ConnectorDefinition>(
     connectorsDefinitions,
@@ -67,7 +67,6 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             connectorName={cell.value}
             img={row.original.icon}
             hasUpdate={allowUpdateConnectors && Connector.hasNewerVersion(row.original)}
-            isDeprecated={Connector.isDeprecated(row.original)}
             releaseStage={row.original.releaseStage}
           />
         ),
@@ -85,7 +84,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      ...(allowUpdateConnectors
+      ...(allowUpdateConnectors || customCloudConnectorsExperiment
         ? [
             {
               Header: (
@@ -95,27 +94,28 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               ),
               accessor: "latestDockerImageTag",
               collapse: true,
-              Cell: ({ cell, row }: CellProps<ConnectorDefinition>) => (
-                <VersionCell
-                  version={cell.value || row.original.dockerImageTag}
-                  id={Connector.id(row.original)}
-                  onChange={onUpdateVersion}
-                  feedback={feedbackList[Connector.id(row.original)]}
-                  currentVersion={row.original.dockerImageTag}
-                />
-              ),
+              Cell: ({ cell, row }: CellProps<ConnectorDefinition>) =>
+                allowUpdateConnectors || (customCloudConnectorsExperiment && row.original.releaseStage === "custom") ? (
+                  <VersionCell
+                    version={cell.value || row.original.dockerImageTag}
+                    id={Connector.id(row.original)}
+                    onChange={onUpdateVersion}
+                    feedback={feedbackList[Connector.id(row.original)]}
+                    currentVersion={row.original.dockerImageTag}
+                  />
+                ) : null,
             },
           ]
         : []),
     ],
-    [feedbackList, onUpdateVersion, allowUpdateConnectors]
+    [feedbackList, onUpdateVersion, allowUpdateConnectors, customCloudConnectorsExperiment]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div className={styles.buttonsContainer}>
-        {(allowUploadCustomImage || updateCloudConnectorsExperiment) && <CreateConnector type={type} />}
+        {(allowUploadCustomImage || customCloudConnectorsExperiment) && <CreateConnector type={type} />}
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
             isLoading={loading}
