@@ -78,9 +78,13 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   class="<removed-for-snapshot-test>"
                   type="button"
                 >
-                  <span
+                  <div
                     class="<removed-for-snapshot-test>"
-                  />
+                  >
+                    <span
+                      class="<removed-for-snapshot-test>"
+                    />
+                  </div>
                   <svg
                     aria-hidden="true"
                     class="<removed-for-snapshot-test>"
@@ -136,9 +140,13 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   disabled=""
                   type="button"
                 >
-                  <span
+                  <div
                     class="<removed-for-snapshot-test>"
-                  />
+                  >
+                    <span
+                      class="<removed-for-snapshot-test>"
+                    />
+                  </div>
                   <svg
                     aria-hidden="true"
                     class="<removed-for-snapshot-test>"
@@ -194,9 +202,13 @@ exports[`<BulkEditPanel /> should render 1`] = `
                   disabled=""
                   type="button"
                 >
-                  <span
+                  <div
                     class="<removed-for-snapshot-test>"
-                  />
+                  >
+                    <span
+                      class="<removed-for-snapshot-test>"
+                    />
+                  </div>
                   <svg
                     aria-hidden="true"
                     class="<removed-for-snapshot-test>"

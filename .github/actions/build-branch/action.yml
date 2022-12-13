@@ -27,7 +27,7 @@ runs:
 
     - uses: actions/setup-node@v3
       with:
-        node-version: "lts/gallium"
+        node-version: "lts/*"
 
     - uses: actions/setup-python@v4
       with:
