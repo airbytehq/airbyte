@@ -11,7 +11,10 @@ export default {
     disabled: { control: "boolean" },
     checked: { control: "boolean" },
     indeterminate: { control: "boolean" },
-    small: { control: "boolean" },
+    elSize: {
+      options: ["lg", "sm"],
+      control: { type: "radio" },
+    },
   },
 } as ComponentMeta<typeof CheckBox>;
 
@@ -38,7 +41,7 @@ export const CheckedSmall = (args: CheckBoxProps) => <CheckBoxWithState {...args
 
 CheckedSmall.args = {
   checked: true,
-  small: true,
+  elSize: "sm",
 };
 
 export const Disabled = (args: CheckBoxProps) => <CheckBoxWithState {...args} />;

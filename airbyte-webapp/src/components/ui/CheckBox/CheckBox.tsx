@@ -5,14 +5,15 @@ import React, { InputHTMLAttributes } from "react";
 
 import styles from "./CheckBox.module.scss";
 
+type CheckBoxSize = "lg" | "sm";
+
 export interface CheckBoxProps extends InputHTMLAttributes<HTMLInputElement> {
   indeterminate?: boolean;
-  small?: boolean;
+  checkboxSize?: CheckBoxSize;
 }
 
-export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, small, ...inputProps }) => {
+export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, checkboxSize = "lg", ...inputProps }) => {
   const { checked, disabled, className } = inputProps;
-  const iconSize = small ? "sm" : "lg";
 
   return (
     <label
@@ -22,16 +23,17 @@ export const CheckBox: React.FC<CheckBoxProps> = ({ indeterminate, small, ...inp
           [styles.checked]: checked,
           [styles.indeterminate]: indeterminate,
           [styles.disabled]: disabled,
-          [styles.small]: small,
+          [styles.sizeLg]: checkboxSize === "lg",
+          [styles.sizeSm]: checkboxSize === "sm",
         },
         className
       )}
     >
-      <input type="checkbox" aria-checked={checked} {...inputProps} />
+      <input type="checkbox" aria-checked={indeterminate ? "mixed" : checked} {...inputProps} />
       {indeterminate ? (
-        <FontAwesomeIcon size={iconSize} icon={faMinus} />
+        <FontAwesomeIcon size={checkboxSize} icon={faMinus} />
       ) : (
-        checked && <FontAwesomeIcon size={iconSize} icon={faCheck} />
+        checked && <FontAwesomeIcon size={checkboxSize} icon={faCheck} />
       )}
     </label>
   );
