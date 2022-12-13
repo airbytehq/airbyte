@@ -1,10 +1,10 @@
 import { flatten } from "flat";
-import { FormikErrors, FormikTouched, useFormikContext } from "formik";
+import { FormikErrors, useFormikContext } from "formik";
 import intersection from "lodash/intersection";
 
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { BuilderFormValues, BuilderStream } from "./types";
+import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
@@ -22,10 +22,12 @@ export const useBuilderErrors = () => {
 
     if (errorKeys.includes("global")) {
       if (ignoreUntouched) {
-        const globalErrorKeys = Object.keys(flatten(errorsToCheck.global));
-        const globalTouchedKeys = Object.keys(flatten(touched.global));
-        if (intersection(globalErrorKeys, globalTouchedKeys).length > 0) {
-          invalidViews.push("global");
+        if (errorsToCheck.global && touched.global) {
+          const globalErrorKeys = Object.keys(flatten(errorsToCheck.global));
+          const globalTouchedKeys = Object.keys(flatten(touched.global));
+          if (intersection(globalErrorKeys, globalTouchedKeys).length > 0) {
+            invalidViews.push("global");
+          }
         }
       } else {
         invalidViews.push("global");
@@ -36,18 +38,19 @@ export const useBuilderErrors = () => {
       const errorStreamNums = Object.keys(errorsToCheck.streams ?? {});
 
       if (ignoreUntouched) {
-        // have to cast to allow us to index into the formik errors objects
-        const streamsErrors = errorsToCheck.streams as Array<FormikErrors<BuilderStream>>;
-        const streamsTouched = touched.streams as Array<FormikTouched<BuilderStream>>;
-        // loop over each stream and find ones with fields that are both touched and erroring
-        for (const streamNumString of errorStreamNums) {
-          const streamNum = Number(streamNumString);
-          const streamErrors = streamsErrors[streamNum];
-          const streamTouched = streamsTouched[streamNum];
-          const streamErrorKeys = Object.keys(flatten(streamErrors));
-          const streamTouchedKeys = Object.keys(flatten(streamTouched));
-          if (intersection(streamErrorKeys, streamTouchedKeys).length > 0) {
-            invalidViews.push(streamNum);
+        if (errorsToCheck.streams && touched.streams) {
+          // loop over each stream and find ones with fields that are both touched and erroring
+          for (const streamNumString of errorStreamNums) {
+            const streamNum = Number(streamNumString);
+            const streamErrors = errorsToCheck.streams[streamNum];
+            const streamTouched = touched.streams[streamNum];
+            if (streamErrors && streamTouched) {
+              const streamErrorKeys = Object.keys(flatten(streamErrors));
+              const streamTouchedKeys = Object.keys(flatten(streamTouched));
+              if (intersection(streamErrorKeys, streamTouchedKeys).length > 0) {
+                invalidViews.push(streamNum);
+              }
+            }
           }
         }
       } else {
