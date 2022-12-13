@@ -6,6 +6,7 @@ for directory in ./source-* ; do
     rm -rf .venv
     python -m venv .venv
     source .venv/bin/activate
+    # this assumes that if a venv exist, it is up-to-date
     pip install -r requirements.txt > /dev/null 2>&1
     pip install -e ".[tests]" > /dev/null 2>&1
     pip install -e $0 > /dev/null 2>&1
@@ -20,5 +21,7 @@ for directory in ./source-* ; do
 
     deactivate
     cd ..
+#  else
+#    echo "NAY"
   fi
 done
