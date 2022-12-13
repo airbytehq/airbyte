@@ -3,6 +3,21 @@
     "custom_insights": {
       "items": {
         "properties": {
+          "action_breakdowns": {
+            "items": {
+              "type": "string"
+            }
+          },
+          "breakdowns": {
+            "items": {
+              "type": "string"
+            }
+          },
+          "fields": {
+            "items": {
+              "type": "string"
+            }
+          },
           "insights_lookback_window": {
             "minimum": 1,
             "mininum": null
