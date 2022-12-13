@@ -44,7 +44,7 @@ export const DownloadYamlButton: React.FC<DownloadYamlButtonProps> = ({ classNam
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlDownload" />;
   }
 
-  if (editorView === "ui" && hasErrors()) {
+  if (editorView === "ui" && hasErrors(true)) {
     buttonDisabled = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsDownload" />;
   }

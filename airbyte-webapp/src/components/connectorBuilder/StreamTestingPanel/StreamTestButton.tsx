@@ -26,7 +26,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }
       return;
     }
 
-    validateAndTouch(readStream, testStreamIndex);
+    validateAndTouch(readStream, ["global", testStreamIndex]);
   };
 
   let buttonDisabled = false;
@@ -37,7 +37,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  if (editorView === "ui" && hasErrors(testStreamIndex)) {
+  if (editorView === "ui" && hasErrors(true, ["global", testStreamIndex])) {
     buttonDisabled = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }

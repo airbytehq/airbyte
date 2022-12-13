@@ -1,7 +1,7 @@
 import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
-import { useField, useFormikContext } from "formik";
+import { useFormikContext } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
@@ -18,6 +18,7 @@ import {
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
 import { BuilderFormValues } from "../types";
+import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
@@ -25,7 +26,7 @@ import { UiYamlToggleButton } from "./UiYamlToggleButton";
 interface ViewSelectButtonProps {
   className?: string;
   selected: boolean;
-  path: string;
+  showErrorIndicator: boolean;
   onClick: () => void;
 }
 
@@ -33,14 +34,9 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   children,
   className,
   selected,
-  path,
+  showErrorIndicator,
   onClick,
 }) => {
-  const [, { error }] = useField(path);
-  // Formik type is incorrect here, necessitating a cast
-  const errorObject = error === undefined ? {} : (error as unknown as object);
-  const viewHasError = Object.keys(errorObject).length > 0;
-
   return (
     <button
       className={classnames(className, styles.viewButton, {
@@ -50,7 +46,7 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
       onClick={onClick}
     >
       <div className={styles.viewLabel}>{children}</div>
-      {viewHasError && <Indicator className={styles.errorIndicator} />}
+      {showErrorIndicator && <Indicator className={styles.errorIndicator} />}
     </button>
   );
 };
@@ -62,6 +58,7 @@ interface BuilderSidebarProps {
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
+  const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
@@ -104,7 +101,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       <ViewSelectButton
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
-        path="global"
+        showErrorIndicator={hasErrors(true, ["global"])}
         onClick={() => handleViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
@@ -124,7 +121,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
           <ViewSelectButton
             key={num}
             selected={selectedView === num}
-            path={`streams[${num}]`}
+            showErrorIndicator={hasErrors(true, [num])}
             onClick={() => handleViewSelect(num)}
           >
             {name && name.trim() ? (
