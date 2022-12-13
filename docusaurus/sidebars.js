@@ -185,6 +185,8 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
+        'operator-guides/configuring-sync-notifications',
+        'operator-guides/collecting-metrics',
       ],
     },
     {
@@ -422,6 +424,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/november_2022',
         'release_notes/october_2022',
         'release_notes/september_2022',
         'release_notes/august_2022',

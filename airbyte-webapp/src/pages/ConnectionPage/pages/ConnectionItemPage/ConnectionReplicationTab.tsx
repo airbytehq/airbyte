@@ -1,5 +1,5 @@
-import { Form, Formik, FormikHelpers } from "formik";
-import React, { useCallback, useState } from "react";
+import { Form, Formik, FormikHelpers, useFormikContext } from "formik";
+import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 
@@ -9,6 +9,7 @@ import LoadingSchema from "components/LoadingSchema";
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
+import { useConfirmCatalogDiff } from "hooks/connection/useConfirmCatalogDiff";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import {
@@ -20,7 +21,6 @@ import { useModalService } from "hooks/services/Modal";
 import { useConnectionService, ValuesProps } from "hooks/services/useConnectionHook";
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal } from "utils/objects";
-import { useConfirmCatalogDiff } from "views/Connection/CatalogDiffModal/useConfirmCatalogDiff";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import {
@@ -31,7 +31,21 @@ import {
 import styles from "./ConnectionReplicationTab.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
 
+const ValidateFormOnSchemaRefresh: React.FC = () => {
+  const { schemaHasBeenRefreshed } = useConnectionEditService();
+  const { setTouched } = useFormikContext();
+
+  useEffect(() => {
+    if (schemaHasBeenRefreshed) {
+      setTouched({ syncCatalog: true }, true);
+    }
+  }, [setTouched, schemaHasBeenRefreshed]);
+
+  return null;
+};
+
 export const ConnectionReplicationTab: React.FC = () => {
+  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
   const workspaceId = useCurrentWorkspaceId();
@@ -84,6 +98,7 @@ export const ConnectionReplicationTab: React.FC = () => {
         workspaceId,
         mode,
         allowSubOneHourCronExpressions,
+        allowAutoDetectSchemaChanges,
         connection.operations
       );
 
@@ -139,18 +154,19 @@ export const ConnectionReplicationTab: React.FC = () => {
       }
     },
     [
-      connection.connectionId,
-      connection.catalogDiff,
-      connection.operations,
-      connection.syncCatalog.streams,
-      connectionService,
-      formatMessage,
-      mode,
-      openModal,
-      saveConnection,
-      setSubmitError,
       workspaceId,
+      mode,
       allowSubOneHourCronExpressions,
+      allowAutoDetectSchemaChanges,
+      connection.operations,
+      connection.catalogDiff?.transforms,
+      connection.syncCatalog.streams,
+      connection.connectionId,
+      setSubmitError,
+      connectionService,
+      openModal,
+      formatMessage,
+      saveConnection,
     ]
   );
 
@@ -168,12 +184,17 @@ export const ConnectionReplicationTab: React.FC = () => {
         <Formik
           initialStatus={{ editControlsVisible: true }}
           initialValues={initialValues}
-          validationSchema={createConnectionValidationSchema({ mode, allowSubOneHourCronExpressions })}
+          validationSchema={createConnectionValidationSchema({
+            mode,
+            allowSubOneHourCronExpressions,
+            allowAutoDetectSchemaChanges,
+          })}
           onSubmit={onFormSubmit}
           enableReinitialize
         >
           {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
             <Form>
+              <ValidateFormOnSchemaRefresh />
               <ConnectionFormFields
                 values={values}
                 isSubmitting={isSubmitting}
