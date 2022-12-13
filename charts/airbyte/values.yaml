@@ -795,7 +795,14 @@ worker:
 
   hpa:
     enabled: false
-    
+  ## Container Orchestrator
+  ## enabled -- Enable or disable Orchestrator
+  ## image -- Orchestrator image
+
+  containerOrchestrator:
+    enabled: true
+    image: ""
+
 ## @section Metrics parameters
 metrics:
   enabled: false
