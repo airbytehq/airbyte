@@ -46,7 +46,8 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "fields": "AddedFieldDefinition",
 }
 
-# I don't love this separate map, but we may need to separate the behavior when we see class_name
+# We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
+# be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "authenticator": "CustomAuthenticator",
     "backoff_strategies": "CustomBackoffStrategy",
