@@ -17,10 +17,13 @@ class StreamHelper:
         :param stream: stream
         :return: StreamData containing the first record in the stream
         """
-        # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
-        stream_slice = self.get_stream_slice(stream)
-        records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
-        next(records)
+        try:
+            # Some streams need a stream slice to read records (e.g. if they have a SubstreamSlicer)
+            stream_slice = self.get_stream_slice(stream)
+            records = stream.read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice)
+            return next(records)
+        except StopIteration:
+            return {}
 
     @staticmethod
     def get_stream_slice(stream: Stream) -> Optional[Mapping[str, Any]]:
