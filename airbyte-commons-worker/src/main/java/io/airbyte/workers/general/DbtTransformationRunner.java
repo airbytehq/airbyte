@@ -99,6 +99,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               jobRoot,
               dbtConfig.getDockerImage(),
               false,
+              false,
               files,
               "/bin/bash",
               resourceRequirements,

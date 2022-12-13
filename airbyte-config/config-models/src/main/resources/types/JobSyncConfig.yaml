@@ -71,3 +71,9 @@ properties:
     type: object
     description: optional resource requirements to run sync workers - this is used for containers other than the source/dest containers
     existingJavaType: io.airbyte.config.ResourceRequirements
+  isSourceCustomConnector:
+    description: determine if the source running image is a custom connector.
+    type: boolean
+  isDestinationCustomConnector:
+    description: determine if the destination running image is a custom connector.
+    type: boolean

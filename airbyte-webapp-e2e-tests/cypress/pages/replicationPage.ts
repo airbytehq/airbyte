@@ -40,10 +40,7 @@ export const fillOutDestinationPrefix = (value: string) => {
 export const setupDestinationNamespaceCustomFormat = (value: string) => {
   cy.get(destinationNamespace).click();
   cy.get(destinationNamespaceCustom).click();
-  cy.get(destinationNamespaceCustomInput)
-    .first()
-    .type(value)
-    .should("have.value", "${SOURCE_NAMESPACE}" + value);
+  cy.get(destinationNamespaceCustomInput).first().type(value).should("have.value", `\${SOURCE_NAMESPACE}${value}`);
 };
 
 export const setupDestinationNamespaceSourceFormat = () => {
