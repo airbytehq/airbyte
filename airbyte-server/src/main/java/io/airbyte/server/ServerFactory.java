@@ -120,8 +120,7 @@ public interface ServerFactory {
 
       final Set<Class<?>> componentClasses = Set.of(
           LogsApiController.class,
-          NotificationsApiController.class,
-          WebBackendApiController.class);
+          NotificationsApiController.class);
 
       final Set<Object> components = Set.of(
           new LogsApiBinder(),
