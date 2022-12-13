@@ -495,7 +495,7 @@ public class WebBackendConnectionsHandler {
         final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
             Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
-            connectionsHandler.getDiff(CatalogConverter.toApi(mostRecentAirbyteCatalog), newAirbyteCatalog,
+            connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
                 CatalogConverter.toProtocol(newAirbyteCatalog));
         breakingChange = containsBreakingChange(catalogDiff);
       }
