@@ -593,18 +593,20 @@ class IssueVotes(StartDateJiraStream):
     # extract_field = "voters"
     primary_key = None
 
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        return f"issue/{key}/votes"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
         )
-        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['key']}/votes"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
 
