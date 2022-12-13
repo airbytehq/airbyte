@@ -179,6 +179,21 @@ class Groups(GitlabStream):
         return record
 
 
+class IncludeDescendantGroups(Groups):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return stream_slice["path"]
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for gid in self.group_ids:
+            yield {"path": f"groups/{gid}"}
+            yield {"path": f"groups/{gid}/descendant_groups"}
+
+
+class GroupsList(GitlabStream):
+    def path(self, **kwargs) -> str:
+        return "groups"
+
+
 class Projects(GitlabStream):
     stream_base_params = {"statistics": 1}
     use_cache = True

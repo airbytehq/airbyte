@@ -3,3 +3,11 @@
 @mixin shadow {
   box-shadow: variables.$box-shadow;
 }
+
+@mixin left-shadow {
+  box-shadow: -2px 0 10px rgba(colors.$dark-blue-900, 12%);
+}
+
+@mixin right-shadow {
+  box-shadow: 2px 0 10px rgba(colors.$dark-blue-900, 12%);
+}
