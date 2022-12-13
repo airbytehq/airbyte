@@ -85,11 +85,11 @@ public class DebeziumRecordIterator extends AbstractIterator<ChangeEvent<String,
     while (!MoreBooleans.isTruthy(publisherStatusSupplier.get()) || !queue.isEmpty()) {
       final ChangeEvent<String, String> next;
 
-        // #18987: waitTime is still required with heartbeats for backward
-        // compatibility with connectors not implementing heartbeat
-        // yet (MySql, MSSql), And also due to postgres taking a long time
-        // initially staying on "searching for WAL resume position"
-        final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
+      // #18987: waitTime is still required with heartbeats for backward
+      // compatibility with connectors not implementing heartbeat
+      // yet (MySql, MSSql), And also due to postgres taking a long time
+      // initially staying on "searching for WAL resume position"
+      final Duration waitTime = receivedFirstRecord ? SUBSEQUENT_RECORD_WAIT_TIME : this.firstRecordWaitTime;
       try {
         next = queue.poll(waitTime.getSeconds(), TimeUnit.SECONDS);
       } catch (final InterruptedException e) {
