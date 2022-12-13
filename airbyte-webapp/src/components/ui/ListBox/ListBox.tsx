@@ -2,6 +2,7 @@ import { Listbox } from "@headlessui/react";
 import classNames from "classnames";
 import React from "react";
 
+import { ReactComponent as CaretDownIcon } from "./CaretDownIcon.svg";
 import styles from "./ListBox.module.scss";
 
 export interface ListBoxControlButtonProps<T> {
@@ -9,12 +10,18 @@ export interface ListBoxControlButtonProps<T> {
 }
 
 const DefaultControlButton = <T,>({ selectedOption }: ListBoxControlButtonProps<T>) => {
-  return <>{selectedOption.label}</>;
+  return (
+    <>
+      {selectedOption.label}
+      <CaretDownIcon className={styles.caret} />
+    </>
+  );
 };
 
 export interface Option<T> {
   label: string;
   value: T;
+  icon?: React.ReactNode;
 }
 
 interface ListBoxProps<T> {
@@ -48,13 +55,14 @@ export const ListBox = <T,>({
         {/* wrap in div to make `position: absolute` on Listbox.Options result in correct vertical positioning */}
         <div className={styles.optionsContainer}>
           <Listbox.Options className={classNames(styles.optionsMenu)}>
-            {options.map(({ label, value }) => (
+            {options.map(({ label, value, icon }) => (
               <Listbox.Option key={label} value={value} className={styles.option}>
                 {({ active, selected }) => (
                   <div
                     className={classNames(styles.optionValue, { [styles.active]: active, [styles.selected]: selected })}
                   >
-                    {label}
+                    {icon && <span className={styles.icon}>{icon}</span>}
+                    <span className={styles.label}>{label}</span>
                   </div>
                 )}
               </Listbox.Option>

@@ -1,6 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
+import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
@@ -13,7 +14,7 @@ import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { selectedStream, streams, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
+  const { jsonManifest, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
 
   if (!yamlEditorIsMounted) {
     return (
@@ -23,10 +24,28 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
     );
   }
 
+  const hasStreams = jsonManifest.streams?.length > 0;
+
   return (
     <div className={styles.container}>
-      <ConfigMenu className={styles.configButton} />
-      {streamListErrorMessage !== undefined && (
+      {!hasStreams && (
+        <div className={styles.addStreamMessage}>
+          <Heading as="h2" className={styles.addStreamHeading}>
+            <FormattedMessage id="connectorBuilder.noStreamsMessage" />
+          </Heading>
+          <img className={styles.logo} alt="" src="/images/octavia/pointing.svg" width={102} />
+        </div>
+      )}
+      {hasStreams && streamListErrorMessage === undefined && (
+        <>
+          <ConfigMenu className={styles.configButton} />
+          <div className={styles.selectAndTestContainer}>
+            <StreamSelector className={styles.streamSelector} />
+            <StreamTester />
+          </div>
+        </>
+      )}
+      {hasStreams && streamListErrorMessage !== undefined && (
         <div className={styles.listErrorDisplay}>
           <Text>
             <FormattedMessage id="connectorBuilder.couldNotDetectStreams" />
@@ -44,12 +63,6 @@ export const StreamTestingPanel: React.FC<unknown> = () => {
               }}
             />
           </Text>
-        </div>
-      )}
-      {streamListErrorMessage === undefined && selectedStream !== undefined && (
-        <div className={styles.selectAndTestContainer}>
-          <StreamSelector className={styles.streamSelector} streams={streams} selectedStream={selectedStream} />
-          <StreamTester selectedStream={selectedStream} />
         </div>
       )}
     </div>
