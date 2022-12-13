@@ -1,4 +1,4 @@
-export const OctaviaRedFlagImage: React.FC = () => (
+export const OctaviaRedFlag: React.FC = () => (
   <svg width="79" height="73" viewBox="0 0 79 73" fill="none" xmlns="http://www.w3.org/2000/svg">
     <path
       d="M54.6656 45.7596L50.9172 33.2252L51.0372 33.1052L52.8664 33.8849L56.1949 44.86L56.3448 45.6096L56.1949 46.2094L55.7151 46.3593L55.0854 46.2094L54.6656 45.7596Z"

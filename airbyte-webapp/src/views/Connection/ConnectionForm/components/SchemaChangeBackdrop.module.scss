@@ -27,7 +27,8 @@
   .contentContainer {
     @extend %cover;
 
-    position: absolute;
+    position: fixed;
+    bottom: -60px; // this is to prevent the image/text from being illegible on top of the 'transfer' fields and will need to be adjusted with the "new table" design
     display: flex;
     justify-content: center;
     text-align: center;

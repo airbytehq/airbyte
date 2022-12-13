@@ -10,7 +10,6 @@ import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
 import { toWebBackendConnectionUpdate } from "core/domain/connection";
 import { useConfirmCatalogDiff } from "hooks/connection/useConfirmCatalogDiff";
-import { useSchemaChanges } from "hooks/connection/useSchemaChanges";
 import { PageTrackingCodes, useAnalyticsService, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import {
@@ -61,8 +60,6 @@ export const ConnectionReplicationTab: React.FC = () => {
     useConnectionEditService();
   const { initialValues, mode, schemaError, getErrorMessage, setSubmitError } = useConnectionFormService();
   const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
-
-  const { hasBreakingSchemaChange } = useSchemaChanges(connection.schemaChange);
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM_REPLICATION);
 
@@ -197,10 +194,7 @@ export const ConnectionReplicationTab: React.FC = () => {
           enableReinitialize
         >
           {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
-            <SchemaChangeBackdrop
-              hasBreakingSchemaChange={hasBreakingSchemaChange}
-              schemaHasBeenRefreshed={schemaHasBeenRefreshed}
-            >
+            <SchemaChangeBackdrop>
               <Form>
                 <ValidateFormOnSchemaRefresh />
                 <ConnectionFormFields
