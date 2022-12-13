@@ -84,9 +84,9 @@ def write_review_requirements_file():
         }]
         with open(REVIEW_REQUIREMENTS_FILE_PATH, "w") as requirements_file:
             yaml.safe_dump(requirements_file_content, requirements_file)
-        print(f"REVIEW_REQUIREMENTS_FILE={REVIEW_REQUIREMENTS_FILE_PATH}")
+        print("CREATED_REQUIREMENTS_FILE=true")
     else:
-        print('REVIEW_REQUIREMENTS_FILE=""')
+        print("CREATED_REQUIREMENTS_FILE=false")
 
 def print_mandatory_reviewers():
     teams = []
