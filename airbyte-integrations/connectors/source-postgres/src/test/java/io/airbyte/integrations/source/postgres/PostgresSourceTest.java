@@ -51,6 +51,7 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
@@ -545,6 +546,7 @@ class PostgresSourceTest {
   }
 
   @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/issues/17150#issuecomment-1342898439, enable once communication is out")
   public void tableWithNullValueCursorShouldThrowException() throws SQLException {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();
@@ -586,6 +588,7 @@ class PostgresSourceTest {
   }
 
   @Test
+  @Disabled("See https://github.com/airbytehq/airbyte/issues/17150#issuecomment-1342898439, enable once communication is out")
   public void viewWithNullValueCursorShouldThrowException() throws SQLException {
     try (final PostgreSQLContainer<?> db = new PostgreSQLContainer<>("postgres:13-alpine")) {
       db.start();

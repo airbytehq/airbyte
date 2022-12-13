@@ -313,7 +313,7 @@ public abstract class SourceAcceptanceTest extends AbstractSourceConnectorTest {
     return clone;
   }
 
-  private ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
+  protected ConfiguredAirbyteCatalog withFullRefreshSyncModes(final ConfiguredAirbyteCatalog catalog) {
     final ConfiguredAirbyteCatalog clone = Jsons.clone(catalog);
     for (final ConfiguredAirbyteStream configuredStream : clone.getStreams()) {
       if (configuredStream.getStream().getSupportedSyncModes().contains(FULL_REFRESH)) {
