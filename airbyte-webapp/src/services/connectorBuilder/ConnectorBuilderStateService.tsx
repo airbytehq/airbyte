@@ -26,6 +26,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
+type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | number;
 
 interface Context {
@@ -40,6 +41,7 @@ interface Context {
   selectedView: BuilderView;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
+  editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
@@ -47,6 +49,7 @@ interface Context {
   setTestStreamIndex: (streamIndex: number) => void;
   setSelectedView: (view: BuilderView) => void;
   setConfigString: (configString: string) => void;
+  setEditorView: (editorView: EditorView) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
@@ -78,6 +81,8 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   useEffect(() => {
     setYamlManifest(dump(jsonManifest));
   }, [jsonManifest]);
+
+  const [editorView, setEditorView] = useState<EditorView>("ui");
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -129,6 +134,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     selectedView,
     configString,
     configJson,
+    editorView,
     setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
@@ -136,6 +142,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     setTestStreamIndex,
     setSelectedView,
     setConfigString,
+    setEditorView,
   };
 
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
