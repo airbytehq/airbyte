@@ -27,6 +27,7 @@ class JiraStream(HttpStream, ABC):
     primary_key: Optional[str] = "id"
     extract_field: Optional[str] = None
     api_v1 = False
+    skip_http_status_codes = []
 
     def __init__(self, domain: str, projects: List[str], **kwargs):
         super().__init__(**kwargs)
@@ -81,6 +82,13 @@ class JiraStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any], **kwargs) -> MutableMapping[str, Any]:
         return record
 
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except HTTPError as e:
+            if not (self.skip_http_status_codes and e.response.status_code in self.skip_http_status_codes):
+                raise e
+
 
 class StartDateJiraStream(JiraStream, ABC):
     def __init__(self, start_date: Optional[pendulum.DateTime] = None, **kwargs):
@@ -128,17 +136,13 @@ class ApplicationRoles(JiraStream):
     """
 
     primary_key = "key"
+    skip_http_status_codes = [
+        # Application access permissions can only be edited or viewed by administrators.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "applicationrole"
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(**kwargs)
-        except HTTPError as e:
-            # Application access permissions can only be edited or viewed by administrators.
-            if e.response.status_code != requests.codes.FORBIDDEN:
-                raise e
 
 
 class Avatars(JiraStream):
@@ -389,6 +393,10 @@ class IssueFieldConfigurations(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access field configurations
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "fieldconfiguration"
@@ -400,7 +408,7 @@ class IssueCustomFieldContexts(JiraStream):
     """
 
     extract_field = "values"
-    SKIP_STATUS_CODES = [
+    skip_http_status_codes = [
         # https://community.developer.atlassian.com/t/get-custom-field-contexts-not-found-returned/48408/2
         # /rest/api/3/field/{fieldId}/context - can return 404 if project style is not "classic"
         requests.codes.NOT_FOUND,
@@ -418,11 +426,7 @@ class IssueCustomFieldContexts(JiraStream):
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
         for field in read_full_refresh(self.issue_fields_stream):
             if field.get("custom", False):
-                try:
-                    yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
-                except HTTPError as e:
-                    if e.response.status_code not in self.SKIP_STATUS_CODES:
-                        raise e
+                yield from super().read_records(stream_slice={"field_id": field["id"]}, **kwargs)
 
 
 class IssueLinkTypes(JiraStream):
@@ -442,6 +446,10 @@ class IssueNavigatorSettings(JiraStream):
     """
 
     primary_key = None
+    skip_http_status_codes = [
+        # You need Administrator permission to perform this operation.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "settings/columns"
@@ -551,6 +559,10 @@ class IssueSecuritySchemes(JiraStream):
     """
 
     extract_field = "issueSecuritySchemes"
+    skip_http_status_codes = [
+        # You need to be a Jira administrator to perform this operation
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "issuesecurityschemes"
@@ -562,6 +574,10 @@ class IssueTypeSchemes(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access issue type schemes.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "issuetypescheme"
@@ -573,6 +589,10 @@ class IssueTypeScreenSchemes(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access issue type screen schemes.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "issuetypescreenscheme"
@@ -668,6 +688,11 @@ class JiraSettings(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-jira-settings/#api-rest-api-3-application-properties-get
     """
 
+    skip_http_status_codes = [
+        # No permission
+        requests.codes.FORBIDDEN
+    ]
+
     def path(self, **kwargs) -> str:
         return "application-properties"
 
@@ -694,6 +719,10 @@ class Permissions(JiraStream):
 
     extract_field = "permissions"
     primary_key = "key"
+    skip_http_status_codes = [
+        # You need to have Administer permissions to view this resource
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "permissions"
@@ -793,6 +822,10 @@ class ProjectEmail(JiraStream):
     """
 
     primary_key = "projectId"
+    skip_http_status_codes = [
+        # You cannot edit the configuration of this project.
+        requests.codes.FORBIDDEN
+    ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -932,17 +965,13 @@ class Screens(JiraStream):
 
     extract_field = "values"
     use_cache = True
+    skip_http_status_codes = [
+        # Only Jira administrators can manage screens.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "screens"
-
-    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        try:
-            yield from super().read_records(**kwargs)
-        except HTTPError as e:
-            # Only Jira administrators can manage screens.
-            if e.response.status_code != requests.codes.FORBIDDEN:
-                raise e
 
 
 class ScreenTabs(JiraStream):
@@ -995,6 +1024,10 @@ class ScreenSchemes(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access screen schemes.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "screenscheme"
@@ -1081,6 +1114,10 @@ class TimeTracking(JiraStream):
     """
 
     primary_key = "key"
+    skip_http_status_codes = [
+        # This resource is only available to administrators
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "configuration/timetracking/list"
@@ -1134,6 +1171,10 @@ class Workflows(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access workflows.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "workflow/search"
@@ -1145,6 +1186,10 @@ class WorkflowSchemes(JiraStream):
     """
 
     extract_field = "values"
+    skip_http_status_codes = [
+        # Only Jira administrators can access workflow scheme associations.
+        requests.codes.FORBIDDEN
+    ]
 
     def path(self, **kwargs) -> str:
         return "workflowscheme"
