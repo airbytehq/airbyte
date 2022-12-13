@@ -88,6 +88,21 @@ public class ApmTraceUtils {
   }
 
   /**
+   * Adds all the provided tags to the root span.
+   *
+   * @param tags A map of tags to be added to the root span.
+   */
+  public static void addTagsToRootSpan(final Map<String, Object> tags) {
+    final Span activeSpan = GlobalTracer.get().activeSpan();
+    if (activeSpan instanceof MutableSpan) {
+      final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
+      tags.entrySet().forEach(entry -> {
+        localRootSpan.setTag(formatTag(entry.getKey(), TAG_PREFIX), entry.getValue().toString());
+      });
+    }
+  }
+
+  /**
    * Adds an exception to the root span, if an active one exists.
    *
    * @param t The {@link Throwable} to be added to the provided span.
