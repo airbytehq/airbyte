@@ -12,7 +12,7 @@ from pydantic.typing import resolve_annotations
 class AllOptional(pydantic.main.ModelMetaclass):
     def __new__(self, name, bases, namespaces, **kwargs):
         """
-        Iterate through fields and wrap then with typing.Optional type.
+        Iterate through fields and wrap them with typing.Optional type.
         """
         annotations = resolve_annotations(namespaces.get("__annotations__", {}), namespaces.get("__module__", None))
         for base in bases:
@@ -171,3 +171,34 @@ class User(BaseSchemaModel):
     deactivatedAt: int
     externalDirectoryId: str
     linkedContactIds: List[str]
+
+
+class ArchiveReason(BaseSchemaModel):
+    id: str
+    text: str
+    status: str
+    type: str
+
+class Posting(BaseSchemaModel):
+    id: str
+    text: str
+    createdAt: int
+    updatedAt: int
+    user: str
+    owner: str
+    hiringManager: str
+    confidentiality: str
+    categories: dict
+    content:dict
+    tags : List[str]
+    state: str
+    distributionChannels : List[str]
+    reqCode: str
+    requisitionCodes: List[str]
+    urls: dict
+
+
+
+class Stage(BaseSchemaModel):
+    id: str
+    text: str
