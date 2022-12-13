@@ -96,7 +96,7 @@ class DeclarativeOauth2Authenticator(AbstractOauth2Authenticator, DeclarativeAut
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self,  initial_time: pendulum.DateTime, value: Union[str, int]):
+    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
         if self.token_expiry_date_format:
             self._token_expiry_date = pendulum.from_format(value, self.token_expiry_date_format)
         else:
