@@ -3,7 +3,7 @@ tests:
   spec:
     - spec_path: "source_gitlab/spec.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.9"
+        disable_for_version: "0.1.10"
   connection:
     - config_path: "secrets/config.json"
       status: "succeed"
@@ -14,16 +14,21 @@ tests:
   discovery:
     - config_path: "secrets/config.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.9"
+        disable_for_version: "0.1.10"
     - config_path: "secrets/config_oauth.json"
       backward_compatibility_tests_config:
-        disable_for_version: "0.1.9"
+        disable_for_version: "0.1.10"
   basic_read:
     - config_path: "secrets/config.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
       empty_streams: ["group_issue_boards"]
       expect_records:
         path: "integration_tests/expected_records.txt"
+    - config_path: "secrets/config_with_ids.json"
+      configured_catalog_path: "integration_tests/configured_catalog.json"
+      empty_streams: ["group_issue_boards", "epic_issues"]
+      expect_records:
+        path: "integration_tests/expected_records_with_ids.txt"
 #     test read with OAuth2.0
     - config_path: "secrets/config_oauth.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"

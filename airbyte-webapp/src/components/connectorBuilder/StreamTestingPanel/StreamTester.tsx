@@ -10,7 +10,6 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
-import { StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -18,13 +17,9 @@ import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
 import styles from "./StreamTester.module.scss";
 
-interface StreamTesterProps {
-  selectedStream: StreamsListReadStreamsItem;
-}
-
-export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) => {
+export const StreamTester: React.FC = () => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, yamlIsValid } = useConnectorBuilderState();
+  const { jsonManifest, configJson, yamlIsValid, streams, testStreamIndex } = useConnectorBuilderState();
   const {
     data: streamReadData,
     refetch: readStream,
@@ -33,7 +28,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
     isFetching,
   } = useReadStream({
     manifest: jsonManifest,
-    stream: selectedStream.name,
+    stream: streams[testStreamIndex]?.name,
     config: configJson,
   });
 
@@ -60,7 +55,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
 
   const testButton = (
     <Button
-      className={styles.testButton}
+      full
       size="sm"
       onClick={() => {
         readStream();
@@ -85,7 +80,7 @@ export const StreamTester: React.FC<StreamTesterProps> = ({ selectedStream }) =>
   return (
     <div className={styles.container}>
       <Text className={styles.url} size="lg">
-        {selectedStream.url}
+        {streams[testStreamIndex]?.url}
       </Text>
       {yamlIsValid ? (
         testButton
