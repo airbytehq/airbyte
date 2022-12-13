@@ -88,6 +88,11 @@ public class ApmTraceUtils {
     }
   }
 
+  /**
+   * Adds an exception to the root span, if an active one exists.
+   *
+   * @param t The {@link Throwable} to be added to the provided span.
+   */
   public static void recordErrorOnRootSpan(final Throwable t) {
     final Span activeSpan = GlobalTracer.get().activeSpan();
     activeSpan.setTag(Tags.ERROR, true);
