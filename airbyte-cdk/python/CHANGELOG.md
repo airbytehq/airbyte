@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.13.2
+Low-code: Enable low-code CDK users to specify schema inline in the manifest
+
 ## 0.13.1
 Low-code: Add `SessionTokenAuthenticator`
 
