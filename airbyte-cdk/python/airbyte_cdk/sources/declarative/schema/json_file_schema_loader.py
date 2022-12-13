@@ -50,7 +50,7 @@ class JsonFileSchemaLoader(ResourceSchemaLoader, SchemaLoader, JsonSchemaMixin):
             self.file_path = _default_file_path()
         self.file_path = InterpolatedString.create(self.file_path, options=options)
 
-    def get_schema(self) -> Mapping[str, Any]:
+    def get_json_schema(self) -> Mapping[str, Any]:
         # todo: It is worth revisiting if we can replace file_path with just file_name if every schema is in the /schemas directory
         # this would require that we find a creative solution to store or retrieve source_name in here since the files are mounted there
         json_schema_path = self._get_json_filepath()
