@@ -947,13 +947,16 @@ class ScreenTabs(JiraStream):
     raise_on_http_errors = False
     use_cache = True
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
         screen_id = stream_slice["screen_id"]
         return f"screens/{screen_id}/tabs"
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        screens_stream = Screens(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for screen in screens_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for screen in read_full_refresh(self.screens_stream):
             yield from self.read_tab_records(stream_slice={"screen_id": screen["id"]}, **kwargs)
 
     def read_tab_records(self, stream_slice: Mapping[str, Any], **kwargs) -> Iterable[Mapping[str, Any]]:
