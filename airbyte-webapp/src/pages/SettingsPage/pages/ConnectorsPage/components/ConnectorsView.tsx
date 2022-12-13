@@ -8,7 +8,8 @@ import { Table } from "components/ui/Table";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { FeatureItem, IfFeatureEnabled, useFeature } from "hooks/services/Feature";
+import { useExperiment } from "hooks/services/Experiment";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
 import ConnectorCell from "./ConnectorCell";
@@ -47,6 +48,8 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
   connectorsDefinitions,
 }) => {
   const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
+  const allowUploadCustomImage = useFeature(FeatureItem.AllowUploadCustomImage);
+  const updateCloudConnectorsExperiment = useExperiment("connector.uploadCustomCloudConnectors", false);
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions<ConnectorDefinition>(
     connectorsDefinitions,
@@ -112,9 +115,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div className={styles.buttonsContainer}>
-        <IfFeatureEnabled feature={FeatureItem.AllowUploadCustomImage}>
-          <CreateConnector type={type} />
-        </IfFeatureEnabled>
+        {(allowUploadCustomImage || updateCloudConnectorsExperiment) && <CreateConnector type={type} />}
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
             isLoading={loading}

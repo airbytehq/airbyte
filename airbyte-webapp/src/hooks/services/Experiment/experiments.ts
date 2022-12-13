@@ -13,6 +13,7 @@ export interface Experiments {
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;
   "connector.form.useDatepicker": boolean;
+  "connector.uploadCustomCloudConnectors": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
