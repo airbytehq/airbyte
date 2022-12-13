@@ -51,3 +51,5 @@ acceptance_tests:
         # `constant_records_catalog.json` does not contain the available phone numbers streams,
         # as they may change on each request
         configured_catalog_path: "integration_tests/constant_records_catalog.json"
+        ignored_fields:
+          "accounts": ["auth_token"]
