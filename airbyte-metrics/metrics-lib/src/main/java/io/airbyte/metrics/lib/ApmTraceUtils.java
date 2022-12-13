@@ -88,10 +88,12 @@ public class ApmTraceUtils {
     final Span activeSpan = GlobalTracer.get().activeSpan();
     activeSpan.setTag(Tags.ERROR, true);
     activeSpan.log(Map.of(Fields.ERROR_OBJECT, t));
-    final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
-    localRootSpan.setError(true);
-    localRootSpan.setTag("error.stack", t.getStackTrace().toString());
-    localRootSpan.setTag("error.tag", t.getClass().toString());
+    if (activeSpan instanceof MutableSpan) {
+      final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
+      localRootSpan.setError(true);
+      localRootSpan.setTag("error.stack", t.getStackTrace().toString());
+      localRootSpan.setTag("error.type", t.getClass().toString());
+    }
   }
 
   /**
