@@ -65,12 +65,12 @@ public class AirbyteApiClient {
     destinationDefinitionApi = new DestinationDefinitionApi(micronautApiClient);
     destinationApi = new DestinationApi(micronautApiClient);
     destinationSpecificationApi = new DestinationDefinitionSpecificationApi(micronautApiClient);
-    jobsApi = new JobsApi(apiClient);
+    jobsApi = new JobsApi(micronautApiClient);
     logsApi = new PatchedLogsApi(apiClient);
     operationApi = new OperationApi(micronautApiClient);
     sourceDefinitionApi = new SourceDefinitionApi(micronautApiClient);
     sourceApi = new SourceApi(micronautApiClient);
-    sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(apiClient);
+    sourceDefinitionSpecificationApi = new SourceDefinitionSpecificationApi(micronautApiClient);
     workspaceApi = new WorkspaceApi(micronautApiClient);
     healthApi = new HealthApi(micronautApiClient);
     attemptApi = new AttemptApi(micronautApiClient);
