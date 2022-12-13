@@ -4,6 +4,7 @@
  */
 
 export enum FeatureItem {
+  AllowAutoDetectSchemaChanges = "ALLOW_AUTO_DETECT_SCHEMA_CHANGES",
   AllowUploadCustomImage = "ALLOW_UPLOAD_CUSTOM_IMAGE",
   AllowCustomDBT = "ALLOW_CUSTOM_DBT",
   AllowDBTCloudIntegration = "ALLOW_DBT_CLOUD_INTEGRATION",
@@ -14,4 +15,4 @@ export enum FeatureItem {
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
 }
 
-export type FeatureSet = Record<FeatureItem, boolean>;
+export type FeatureSet = Partial<Record<FeatureItem, boolean>>;
