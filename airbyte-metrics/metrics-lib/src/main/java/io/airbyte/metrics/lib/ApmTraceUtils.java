@@ -91,8 +91,8 @@ public class ApmTraceUtils {
     if (activeSpan instanceof MutableSpan) {
       final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
       localRootSpan.setError(true);
-      localRootSpan.setTag("error.stack", t.getStackTrace().toString());
-      localRootSpan.setTag("error.type", t.getClass().toString());
+      // localRootSpan.setTag("error.stack", t.getStackTrace().toString());
+      // localRootSpan.setTag("error.type", t.getClass().toString());
     }
   }
 
