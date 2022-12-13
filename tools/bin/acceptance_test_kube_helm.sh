@@ -25,7 +25,7 @@ helm install --values tools/bin/fluent_values.yaml --set env[0].name="AWS_ACCESS
  --set env[2].name="WORKFLOW_RUN_ID" --set env[2].value=${WORKFLOW_RUN_ID} \
  --set env[3].name="WORKFLOW_RUN_NUBMER" --set env[3].value=${WORKFLOW_RUN_NUBMER} \
  --set env[4].name="AWS_S3_BUCKET" --set env[4].value=${AWS_S3_BUCKET} \
- fluent-bit fluent/fluent-bit
+ --generate-name fluent/fluent-bit
 
 echo "Replacing default Chart.yaml and values.yaml with a test one"
 mv charts/airbyte/Chart.yaml charts/airbyte/Chart.yaml.old
