@@ -23,6 +23,7 @@ import {
   OperationCreate,
   OperationRead,
   OperatorType,
+  SchemaChange,
   SyncMode,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
@@ -82,13 +83,13 @@ export function useDefaultTransformation(): OperationCreate {
 interface CreateConnectionValidationSchemaArgs {
   allowSubOneHourCronExpressions: boolean;
   mode: ConnectionFormMode;
-  isAutoDetectSchemaChangesEnabled: boolean;
+  allowAutoDetectSchemaChanges: boolean;
 }
 
 export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
-  isAutoDetectSchemaChangesEnabled,
+  allowAutoDetectSchemaChanges,
 }: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
@@ -130,7 +131,7 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
-      nonBreakingChangesPreference: isAutoDetectSchemaChangesEnabled
+      nonBreakingChangesPreference: allowAutoDetectSchemaChanges
         ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
         : yup.mixed().notRequired(),
 
@@ -280,19 +281,40 @@ export const useInitialValues = (
   const workspace = useCurrentWorkspace();
   const { catalogDiff } = connection;
 
+  // used to determine if we should calculate optimal sync mode
   const newStreamDescriptors = catalogDiff?.transforms
     .filter((transform) => transform.transformType === "add_stream")
     .map((stream) => stream.streamDescriptor);
+
+  // used to determine if we need to clear any primary keys or cursor fields that were removed
+  const streamTransformsWithBreakingChange = useMemo(() => {
+    if (connection.schemaChange === SchemaChange.breaking) {
+      return catalogDiff?.transforms.filter((streamTransform) => {
+        if (streamTransform.transformType === "update_stream") {
+          return streamTransform.updateStream?.filter((fieldTransform) => fieldTransform.breaking === true);
+        }
+        return false;
+      });
+    }
+    return undefined;
+  }, [catalogDiff?.transforms, connection]);
 
   const initialSchema = useMemo(
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
         destDefinition?.supportedDestinationSyncModes || [],
+        streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
       ),
-    [connection.syncCatalog, destDefinition?.supportedDestinationSyncModes, isNotCreateMode, newStreamDescriptors]
+    [
+      streamTransformsWithBreakingChange,
+      connection.syncCatalog,
+      destDefinition?.supportedDestinationSyncModes,
+      isNotCreateMode,
+      newStreamDescriptors,
+    ]
   );
 
   return useMemo(() => {
