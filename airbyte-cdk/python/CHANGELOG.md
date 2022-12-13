@@ -1,7 +1,7 @@
 # Changelog
 
-## 0.13.2
-Fixed `StopIteration` exception for empty streams while `check-availability` runs.
+## 0.13.3
+Fixed `StopIteration` exception for empty streams while `check_availability` runs.
 
 ## 0.13.2
 Low-code: Enable low-code CDK users to specify schema inline in the manifest
