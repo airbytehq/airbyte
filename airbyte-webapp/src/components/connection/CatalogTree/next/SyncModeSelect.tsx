@@ -26,18 +26,18 @@ interface SyncModeSelectProps {
   variant?: PillButtonVariant;
 }
 
-export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, variant, options, onChange, value }) => {
+export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, options, onChange, value, variant }) => {
   const pillSelectOptions = useMemo(() => {
     return options.map(({ value }) => {
       const { syncMode, destinationSyncMode } = value;
       return {
-        label: (
-          <>
-            <FormattedMessage id={`syncMode.${syncMode}`} />
-            {` | `}
-            <FormattedMessage id={`destinationSyncMode.${destinationSyncMode}`} />
-          </>
-        ),
+        label: [
+          <FormattedMessage key={`syncMode.${syncMode}`} id={`syncMode.${syncMode}`} />,
+          <FormattedMessage
+            key={`destinationSyncMode.${destinationSyncMode}`}
+            id={`destinationSyncMode.${destinationSyncMode}`}
+          />,
+        ],
         value,
       };
     });
@@ -45,11 +45,11 @@ export const SyncModeSelect: React.FC<SyncModeSelectProps> = ({ className, varia
 
   return (
     <PillSelect
-      variant={variant}
       options={pillSelectOptions}
       value={value}
       onChange={onChange}
       className={classNames(styles.pillSelect, className)}
+      variant={variant}
     />
   );
 };

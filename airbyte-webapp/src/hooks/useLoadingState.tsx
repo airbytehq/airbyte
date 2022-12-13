@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { useIntl } from "react-intl";
 
-import { useNotificationService } from "./services/Notification";
+import { ToastType } from "../components/ui/Toast";
+import { Notification, useNotificationService } from "./services/Notification";
 
 const useLoadingState = (): {
   isLoading: boolean;
@@ -13,13 +14,11 @@ const useLoadingState = (): {
   const [isLoading, setIsLoading] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
 
-  const errorNotificationId = "error.somethingWentWrong";
-  const errorNotification = (message: string) => ({
-    isError: true,
-    title: formatMessage({ id: `notifications.${errorNotificationId}` }),
-    text: message,
-    id: errorNotificationId,
-  });
+  const errorNotification: Notification = {
+    id: "notifications.error.somethingWentWrong",
+    text: formatMessage({ id: `notifications.error.somethingWentWrong` }),
+    type: ToastType.ERROR,
+  };
 
   const startAction = async ({ action, feedbackAction }: { action: () => void; feedbackAction?: () => void }) => {
     try {
@@ -37,11 +36,9 @@ const useLoadingState = (): {
           feedbackAction();
         }
       }, 2000);
-    } catch (error) {
-      const message = error?.message || formatMessage({ id: "notifications.error.noMessage" });
-
+    } catch {
       setIsLoading(false);
-      registerNotification(errorNotification(message));
+      registerNotification(errorNotification);
     }
   };
 

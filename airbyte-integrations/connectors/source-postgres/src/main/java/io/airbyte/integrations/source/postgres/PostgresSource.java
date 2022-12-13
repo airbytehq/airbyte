@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -70,6 +71,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,6 +92,20 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA =
+      """
+        SELECT
+          (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+        AND
+          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
+  public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
+      """
+      SELECT
+        (EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+      AND
+        (EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -381,6 +397,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
                  FROM   pg_class c
                  JOIN   pg_namespace n on c.relnamespace = n.oid
                  WHERE  has_table_privilege(c.oid, 'SELECT')
+                 AND    has_schema_privilege(current_user, nspname, 'USAGE')
                  -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
                  AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
                  and    ((? is null) OR nspname = ?)
@@ -467,7 +484,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
@@ -499,4 +516,24 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     return result;
   }
 
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
+    final String query;
+    final String resultColName = "nullValue";
+    // Query: Only if cursor column allows null values, query whether it contains one
+    if (StringUtils.isNotBlank(schema)) {
+      query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA,
+          schema, tableName, columnName, schema, tableName, columnName, resultColName);
+    } else {
+      query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA,
+          tableName, columnName, tableName, columnName, resultColName);
+    }
+    LOGGER.debug("null value query: {}", query);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
+    LOGGER.debug("null value exist: {}", nullValExist);
+    return !nullValExist;
+  }
 }

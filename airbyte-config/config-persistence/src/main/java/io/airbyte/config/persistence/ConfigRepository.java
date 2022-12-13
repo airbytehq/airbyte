@@ -132,7 +132,7 @@ public class ConfigRepository {
 
   public StandardWorkspace getStandardWorkspaceNoSecrets(final UUID workspaceId, final boolean includeTombstone)
       throws JsonValidationException, IOException, ConfigNotFoundException {
-    return listWorkspaceQuery(includeTombstone)
+    return listWorkspaceQuery(Optional.of(workspaceId), includeTombstone)
         .findFirst()
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_WORKSPACE, workspaceId));
   }
@@ -158,13 +158,14 @@ public class ConfigRepository {
   }
 
   public List<StandardWorkspace> listStandardWorkspaces(final boolean includeTombstone) throws IOException {
-    return listWorkspaceQuery(includeTombstone).toList();
+    return listWorkspaceQuery(Optional.empty(), includeTombstone).toList();
   }
 
-  private Stream<StandardWorkspace> listWorkspaceQuery(final boolean includeTombstone) throws IOException {
+  private Stream<StandardWorkspace> listWorkspaceQuery(final Optional<UUID> workspaceId, final boolean includeTombstone) throws IOException {
     return database.query(ctx -> ctx.select(WORKSPACE.asterisk())
         .from(WORKSPACE)
         .where(includeTombstone ? noCondition() : WORKSPACE.TOMBSTONE.notEqual(true))
+        .and(workspaceId.map(WORKSPACE.ID::eq).orElse(noCondition()))
         .fetch())
         .stream()
         .map(DbConverter::buildStandardWorkspace);
@@ -864,6 +865,20 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
+  public List<StandardSync> listConnectionsBySource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
+        .from(CONNECTION)
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .where(CONNECTION.SOURCE_ID.eq(sourceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
+  }
+
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> connectionAndOperationIdsResult) {
     final List<StandardSync> standardSyncs = new ArrayList<>();
 
@@ -907,7 +922,7 @@ public class ConfigRepository {
   }
 
   public StandardSyncOperation getStandardSyncOperation(final UUID operationId) throws JsonValidationException, IOException, ConfigNotFoundException {
-    return listStandardSyncOperationQuery(Optional.empty())
+    return listStandardSyncOperationQuery(Optional.of(operationId))
         .findFirst()
         .orElseThrow(() -> new ConfigNotFoundException(ConfigSchema.STANDARD_SYNC_OPERATION, operationId));
   }

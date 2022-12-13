@@ -30,7 +30,6 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.internal.AirbyteMessageTracker;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -39,6 +38,7 @@ import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
+import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
@@ -96,19 +96,24 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     final var destinationLauncherConfig = JobOrchestrator.readAndDeserializeFile(
         Path.of(KubePodProcess.CONFIG_DIR, ReplicationLauncherWorker.INIT_FILE_DESTINATION_LAUNCHER_CONFIG),
         IntegrationLauncherConfig.class);
+    log.info("sourceLauncherConfig is: " + sourceLauncherConfig.toString());
 
     ApmTraceUtils.addTagsToTrace(
         Map.of(JOB_ID_KEY, jobRunConfig.getJobId(),
             DESTINATION_DOCKER_IMAGE_KEY, destinationLauncherConfig.getDockerImage(),
             SOURCE_DOCKER_IMAGE_KEY, sourceLauncherConfig.getDockerImage()));
 
+    // At this moment, if either source or destination is from custom connector image, we will put all
+    // jobs into isolated pool to run.
+    boolean useIsolatedPool = sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector();
     log.info("Setting up source launcher...");
     final var sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),
         Math.toIntExact(sourceLauncherConfig.getAttemptId()),
         sourceLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getSourceResourceRequirements());
+        syncInput.getSourceResourceRequirements(),
+        useIsolatedPool);
 
     log.info("Setting up destination launcher...");
     final var destinationLauncher = new AirbyteIntegrationLauncher(
@@ -116,7 +121,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(destinationLauncherConfig.getAttemptId()),
         destinationLauncherConfig.getDockerImage(),
         processFactory,
-        syncInput.getDestinationResourceRequirements());
+        syncInput.getDestinationResourceRequirements(),
+        useIsolatedPool);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
@@ -142,7 +148,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        metricReporter);
+        metricReporter, featureFlags.applyFieldSelection());
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

@@ -1,3 +1,98 @@
+@use "scss/colors";
+@use "scss/variables" as vars;
+@use "scss/z-indices";
+@use "scss/mixins";
+
+$toast-icon-size: 13px;
+$toast-icon-container-size: 34px;
+$toast-bottom-margin: 27px;
+
+@keyframes slide-up-animations {
+  0% {
+    transform: translate(-50%, -100%);
+    bottom: -60px;
+  }
+
+  100% {
+    transform: translate(-50%, 0);
+    bottom: $toast-bottom-margin;
+  }
+}
+
+@mixin type($name, $color, $background) {
+  &.#{$name} {
+    background-color: $background;
+    border: 1px solid $color;
+
+    .iconContainer {
+      background-color: $color;
+    }
+
+    .toastIcon {
+      color: $color;
+    }
+  }
+}
+
+.toastContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: vars.$spacing-md;
+  max-width: vars.$width-max-notification;
+  position: fixed;
+  box-sizing: border-box;
+  bottom: $toast-bottom-margin;
+  left: 50%;
+  transform: translate(-50%, 0);
+  z-index: z-indices.$notification;
+  padding: vars.$spacing-md;
+  border-radius: vars.$border-radius-md;
+  animation: slide-up-animations 0.25s ease-out;
+
+  @include mixins.shadow;
+
+  @include type("info", colors.$blue-400, colors.$blue-50);
+  @include type("warning", colors.$yellow-500, colors.$yellow-50);
+  @include type("success", colors.$green-200, colors.$green-50);
+  @include type("error", colors.$red-300, colors.$red-50);
+}
+
+.iconContainer {
+  width: $toast-icon-container-size;
+  height: $toast-icon-container-size;
+  max-height: $toast-icon-container-size;
+  min-width: $toast-icon-container-size;
+  padding: vars.$border-radius-md;
+  border-radius: vars.$border-radius-md;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.toastIcon {
+  width: $toast-icon-size;
+  height: $toast-icon-size;
+  background: colors.$white;
+  border-radius: 50%;
+}
+
+.textContainer {
+  align-self: center;
+}
+
+.text {
+  line-height: 17px;
+  text-align: left;
+}
+
+.actionButton {
+  margin-top: vars.$spacing-xs;
+}
+
 .closeButton {
-  margin-left: 10px;
+  svg {
+    color: colors.$dark-blue-900;
+  }
 }

@@ -75,7 +75,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
   return (
     <ReflexContainer className={className} orientation={orientation}>
       <ReflexElement
-        className={styles.panelStyle}
+        className={classNames(styles.panelStyle, firstPanel.className)}
         propagateDimensions
         minSize={firstPanel.minWidth}
         flex={firstPanel.flex}
@@ -83,9 +83,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
           firstPanel.onStopResize?.(args.component.props.flex);
         }}
       >
-        <PanelContainer className={firstPanel.className} overlay={firstPanel.overlay}>
-          {firstPanel.children}
-        </PanelContainer>
+        <PanelContainer overlay={firstPanel.overlay}>{firstPanel.children}</PanelContainer>
       </ReflexElement>
       {/* NOTE: ReflexElement will not load its contents if wrapped in an empty jsx tag along with ReflexSplitter.  They must be evaluated/rendered separately. */}
       {!hideSecondPanel && (
@@ -107,7 +105,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
       )}
       {!hideSecondPanel && (
         <ReflexElement
-          className={styles.panelStyle}
+          className={classNames(styles.panelStyle, secondPanel.className)}
           propagateDimensions
           minSize={secondPanel.minWidth}
           flex={secondPanel.flex}
@@ -115,9 +113,7 @@ export const ResizablePanels: React.FC<ResizablePanelsProps> = ({
             secondPanel.onStopResize?.(args.component.props.flex);
           }}
         >
-          <PanelContainer className={secondPanel.className} overlay={secondPanel.overlay}>
-            {secondPanel.children}
-          </PanelContainer>
+          <PanelContainer overlay={secondPanel.overlay}>{secondPanel.children}</PanelContainer>
         </ReflexElement>
       )}
     </ReflexContainer>
