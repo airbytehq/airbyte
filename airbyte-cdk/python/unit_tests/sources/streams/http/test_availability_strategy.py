@@ -154,7 +154,6 @@ def test_http_availability_strategy_on_empty_stream(mocker):
             self.read_records = mocker.MagicMock()
 
     empty_stream = MockEmptyStream()
-    streams = [empty_stream]
     assert isinstance(empty_stream, HttpStream)
 
     assert isinstance(empty_stream.availability_strategy, HttpAvailabilityStrategy)
