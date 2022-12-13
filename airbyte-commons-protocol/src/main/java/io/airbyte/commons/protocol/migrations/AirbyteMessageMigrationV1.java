@@ -574,7 +574,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         return new DowngradedNode(downgradedData, matchedSchema);
       }
     } else if (data.isArray()) {
-      // TODO handle this case
       boolean isArraySchema;
       if (schema.hasNonNull(REF_KEY)) {
         // If the schema uses a reference type, then it's not an array schema.
@@ -608,8 +607,24 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
           // it's a lot of work for no payoff
           return new DowngradedNode(data, true);
         } else if (itemsNode.isArray()) {
-          // TODO handle the {type: [..., array, ...]} case
-          return new DowngradedNode(downgradedItems, true);
+          boolean allSchemasMatched = true;
+          for (int i = 0; i < data.size(); i++) {
+            JsonNode element = data.get(i);
+            if (itemsNode.size() > i) {
+              // If we have a schema for this element, then try downgrading the element
+              DowngradedNode downgradedElement = downgradeNode(element, itemsNode.get(i));
+              if (downgradedElement.matchedSchema()) {
+                allSchemasMatched = false;
+              }
+              downgradedItems.add(downgradedElement.node());
+            }
+          }
+          // If there were more elements in `data` than there were schemas in `itemsNode`,
+          // then just blindly add the rest of those elements.
+          for (int i = itemsNode.size(); i < data.size(); i++) {
+            downgradedItems.add(data.get(i));
+          }
+          return new DowngradedNode(downgradedItems, allSchemasMatched);
         } else {
           boolean matchedSchema = true;
           for (JsonNode item : data) {

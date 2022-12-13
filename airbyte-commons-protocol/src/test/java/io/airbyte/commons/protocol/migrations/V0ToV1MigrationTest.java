@@ -1204,12 +1204,20 @@ public class V0ToV1MigrationTest {
                   "object": {
                     "type": "object",
                     "properties": {
-                      "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                      "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                      "arr": {
+                        "type": "array",
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                      }
                     }
                   },
                   "array": {
                     "type": "array",
                     "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                  },
+                  "array_multitype": {
+                    "type": "array",
+                    "items": [{"$ref": "WellKnownTypes.json#/definitions/Integer"}, {"$ref": "WellKnownTypes.json#/definitions/String"}]
                   }
                 }
               }
@@ -1226,6 +1234,7 @@ public class V0ToV1MigrationTest {
               "int": "42"
             },
             "array": ["42"],
+            "array_multitype": ["42", "42"],
             "additionalProperty": "42"
           }
           """);
@@ -1249,6 +1258,7 @@ public class V0ToV1MigrationTest {
                   "int": 42
                 },
                 "array": [42],
+                "array_multitype": [42, "42"],
                 "additionalProperty": "42"
               }
             }
@@ -1276,6 +1286,34 @@ public class V0ToV1MigrationTest {
                     "properties": {
                       "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                     }
+                  },
+                  "arr_obj_union1": {
+                    "type": ["array", "object"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                        "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                      }
+                    },
+                    "properties": {
+                      "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                      "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    }
+                  },
+                  "arr_obj_union2": {
+                    "type": ["array", "object"],
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                        "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                      }
+                    },
+                    "properties": {
+                      "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                      "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    }
                   }
                 }
               }
@@ -1289,7 +1327,9 @@ public class V0ToV1MigrationTest {
             "bad_int": "foo",
             "typeless_object": {
               "foo": "42"
-            }
+            },
+            "arr_obj_union1": [{"id": "42", "name": "arst"}, {"id": "43", "name": "qwfp"}],
+            "arr_obj_union2": {"id": "42", "name": "arst"}
           }
           """);
 
@@ -1309,7 +1349,9 @@ public class V0ToV1MigrationTest {
                 "bad_int": "foo",
                 "typeless_object": {
                   "foo": 42
-                }
+                },
+                "arr_obj_union1": [{"id": 42, "name": "arst"}, {"id": 43, "name": "qwfp"}],
+                "arr_obj_union2": {"id": 42, "name": "arst"}
               }
             }
           }
