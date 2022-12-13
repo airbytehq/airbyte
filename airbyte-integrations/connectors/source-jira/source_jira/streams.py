@@ -938,6 +938,14 @@ class Screens(JiraStream):
     def path(self, **kwargs) -> str:
         return "screens"
 
+    def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        try:
+            yield from super().read_records(**kwargs)
+        except HTTPError as e:
+            # Only Jira administrators can manage screens.
+            if e.response.status_code != requests.codes.FORBIDDEN:
+                raise e
+
 
 class ScreenTabs(JiraStream):
     """
