@@ -75,6 +75,9 @@
             },
             {
               "$ref": "#/definitions/DefaultSchemaLoader"
+            },
+            {
+              "$ref": "#/definitions/InlineSchemaLoader"
             }
           ]
         },
@@ -93,6 +96,9 @@
             },
             {
               "$ref": "#/definitions/DefaultSchemaLoader"
+            },
+            {
+              "$ref": "#/definitions/InlineSchemaLoader"
             }
           ]
         },
@@ -1608,6 +1614,11 @@
         }
       ],
       "description": "\n    Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.\n\n    Attributes:\n        config (Config): The user-provided configuration as specified by the source's spec\n        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed\n    "
+    },
+    "InlineSchemaLoader": {
+      "type": "object",
+      "properties": {},
+      "description": "Loads a schema from the manifest, if provided."
     },
     "AddFields": {
       "allOf": [
