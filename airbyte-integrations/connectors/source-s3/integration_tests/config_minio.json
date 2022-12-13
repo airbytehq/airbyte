@@ -9,7 +9,10 @@
     "endpoint": "http://10.0.229.255:9000"
   },
   "format": {
-    "filetype": "csv"
+    "filetype": "csv",
+    "delimiter": ",",
+    "quote_char": "'",
+    "encoding": "utf8"
   },
   "path_pattern": "*.csv",
   "schema": "{}"
