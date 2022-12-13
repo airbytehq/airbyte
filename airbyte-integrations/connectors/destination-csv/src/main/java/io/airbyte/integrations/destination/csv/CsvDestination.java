@@ -45,7 +45,7 @@ public class CsvDestination extends BaseConnector implements Destination {
 
   static final String DESTINATION_PATH_FIELD = "destination_path";
 
-  static final String DELIMITER_FIELD = "delimiter";
+  static final String DELIMITER_TYPE = "delimiter_type";
 
   private final StandardNameTransformer namingResolver;
 
@@ -134,12 +134,12 @@ public class CsvDestination extends BaseConnector implements Destination {
    * @return delimiter.
    */
   protected Character getDelimiter(final JsonNode config) {
-      Character delimiter;
-      JsonNode tempDelimiter = config.get(DELIMITER_FIELD);
-      LOGGER.info("Config: {}", tempDelimiter.toString());
 
-      if (tempDelimiter != null) {
-        delimiter = tempDelimiter.get("symbol").asText().charAt(0);
+      JsonNode tempConfig = config;
+      Character delimiter;
+
+      if (tempConfig.has(DELIMITER_TYPE)) {
+        delimiter = tempConfig.get(DELIMITER_TYPE).get("delimiter").asText().charAt(0);
         return delimiter;
       } else {
         delimiter = ',';

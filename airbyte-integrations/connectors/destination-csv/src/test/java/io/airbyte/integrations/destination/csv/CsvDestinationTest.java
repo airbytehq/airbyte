@@ -90,8 +90,8 @@ class CsvDestinationTest {
   @BeforeEach
   void setup() throws IOException {
     destinationPath = Files.createTempDirectory(Files.createDirectories(TEST_ROOT), "test");
-    delimiter = Jsons.jsonNode(ImmutableMap.of("symbol", ","));
-    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_FIELD, delimiter));
+    delimiter = Jsons.jsonNode(ImmutableMap.of("delimiter", ","));
+    config = Jsons.jsonNode(ImmutableMap.of(CsvDestination.DESTINATION_PATH_FIELD, destinationPath.toString(), CsvDestination.DELIMITER_TYPE, delimiter));
   }
 
   private CsvDestination getDestination() {
