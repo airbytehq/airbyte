@@ -1,0 +1,10 @@
+{
+    "properties": {
+        "updated_time": {
+            "format": null
+          },
+          "created_time": {
+            "format": null
+          }
+    }
+}

@@ -1,0 +1,165 @@
+{
+    "properties": {
+      "adlabels": {
+        "items": {
+          "properties": {
+            "created_time": {
+              "format": null
+            },
+            "updated_time": {
+              "format": null
+            }
+          }
+        }
+      },
+      "asset_feed_spec": {
+        "properties": {
+          "bodies": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "call_to_actions": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "captions": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "descriptions": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "images": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "link_urls": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "titles": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "videos": {
+            "items": {
+              "properties": {
+                "adlabels": {
+                  "items": {
+                    "properties": {
+                      "created_time": {
+                        "format": null
+                      },
+                      "updated_time": {
+                        "format": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  

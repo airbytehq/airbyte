@@ -1,3 +1,17 @@
 {
-  "type": "object"
+  "type": "object",
+  "properties": {
+    "updated_time": {
+      "format": null
+    },
+    "created_time": {
+      "format": null
+    },
+    "scheduled_publish_time": {
+      "format": null
+    },
+    "backdated_time": {
+      "format": null
+    }
+  }
 }

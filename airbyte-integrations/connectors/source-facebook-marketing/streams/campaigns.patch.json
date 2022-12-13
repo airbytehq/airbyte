@@ -1,0 +1,29 @@
+{
+    "properties": {
+      "adlabels": {
+        "items": {
+          "properties": {
+            "created_time": {
+              "format": null
+            },
+            "updated_time": {
+              "format": null
+            }
+          }
+        }
+      },
+      "created_time": {
+        "format": null
+      },
+      "start_time": {
+        "format": null
+      },
+      "stop_time": {
+        "format": null
+      },
+      "updated_time": {
+        "format": null
+      }
+    }
+  }
+  

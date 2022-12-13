@@ -1,0 +1,14 @@
+{
+    "properties": {
+      "creation_time": {
+        "format": null
+      },
+      "first_fired_time": {
+        "format": null
+      },
+      "last_fired_time": {
+        "format": null
+      }
+    }
+  }
+  

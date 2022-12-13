@@ -1,0 +1,25 @@
+{
+    "properties": {
+      "end_time": {
+        "format": null
+      },
+      "updated_time": {
+        "format": null
+      },
+      "created_time": {
+        "format": null
+      },
+      "start_time": {
+        "format": null
+      },
+      "adlabels": {
+        "items": {
+          "properties": {
+            "created_time": { "type": "string", "format": null },
+            "updated_time": { "type": "string", "format": null }
+          }
+        }
+      }
+    }
+  }
+  

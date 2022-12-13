@@ -1,0 +1,17 @@
+{
+    "properties": {
+      "created_time": {
+        "format": null
+      },
+      "date_start": {
+        "format": null
+      },
+      "date_stop": {
+        "format": null
+      },
+      "updated_time": {
+        "format": null
+      }
+    }
+}
+  
