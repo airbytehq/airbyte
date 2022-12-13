@@ -193,7 +193,7 @@ class SourceFacebookMarketing(AbstractSource):
             stream = AdsInsights(
                 api=api,
                 name=f"Custom{insight.name}",
-                fields=list(set(insight.fields)),
+                fields=list(insight_fields),
                 breakdowns=list(set(insight.breakdowns)),
                 action_breakdowns=list(set(insight.action_breakdowns)),
                 action_breakdowns_allow_empty=config.action_breakdowns_allow_empty,
