@@ -51,6 +51,8 @@ import org.slf4j.LoggerFactory;
 public class OAuthHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(OAuthHandler.class);
+  private static final String ERROR_MESSAGE = "failed while reporting usage.";
+
   private final ConfigRepository configRepository;
   private final OAuthImplementationFactory oAuthImplementationFactory;
   private final TrackingClient trackingClient;
@@ -102,8 +104,11 @@ public class OAuthHandler {
           sourceOauthConsentRequest.getSourceDefinitionId(),
           sourceOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
-    trackingClient.track(sourceOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
-
+    try {
+      trackingClient.track(sourceOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+    } catch (final Exception e) {
+      LOGGER.error(ERROR_MESSAGE, e);
+    }
     return result;
   }
 
@@ -145,8 +150,11 @@ public class OAuthHandler {
           destinationOauthConsentRequest.getDestinationDefinitionId(),
           destinationOauthConsentRequest.getRedirectUrl(), Jsons.emptyObject(), null));
     }
-    trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
-
+    try {
+      trackingClient.track(destinationOauthConsentRequest.getWorkspaceId(), "Get Oauth Consent URL - Backend", metadata);
+    } catch (final Exception e) {
+      LOGGER.error(ERROR_MESSAGE, e);
+    }
     return result;
   }
 
@@ -190,7 +198,11 @@ public class OAuthHandler {
           completeSourceOauthRequest.getQueryParams(),
           completeSourceOauthRequest.getRedirectUrl());
     }
-    trackingClient.track(completeSourceOauthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+    try {
+      trackingClient.track(completeSourceOauthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+    } catch (final Exception e) {
+      LOGGER.error(ERROR_MESSAGE, e);
+    }
     return result;
   }
 
@@ -235,7 +247,11 @@ public class OAuthHandler {
           completeDestinationOAuthRequest.getQueryParams(),
           completeDestinationOAuthRequest.getRedirectUrl());
     }
-    trackingClient.track(completeDestinationOAuthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+    try {
+      trackingClient.track(completeDestinationOAuthRequest.getWorkspaceId(), "Complete OAuth Flow - Backend", metadata);
+    } catch (final Exception e) {
+      LOGGER.error(ERROR_MESSAGE, e);
+    }
     return result;
   }
 
