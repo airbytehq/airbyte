@@ -5,8 +5,8 @@
 import re
 import urllib.parse as urlparse
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
-from urllib.parse import parse_qs
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional
+from urllib.parse import parse_qsl
 
 import pendulum
 import requests
@@ -24,6 +24,7 @@ class JiraStream(HttpStream, ABC):
     Jira API Reference: https://developer.atlassian.com/cloud/jira/platform/rest/v3/intro/
     """
 
+    page_size = 50
     primary_key: Optional[str] = "id"
     extract_field: Optional[str] = None
     api_v1 = False
@@ -40,33 +41,30 @@ class JiraStream(HttpStream, ABC):
         return f"https://{self._domain}/rest/api/{API_VERSION}/"
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        params = {}
-        response_data = response.json()
-        if "nextPage" in response_data:
-            next_page = response_data["nextPage"]
-            params = parse_qs(urlparse.urlparse(next_page).query)
-        else:
-            if all(paging_metadata in response_data for paging_metadata in ("startAt", "maxResults", "total")):
-                start_at = response_data["startAt"]
-                max_results = int(response_data["maxResults"])
-                total = response_data["total"]
-                end_at = start_at + max_results
-                if not end_at > total:
-                    params["startAt"] = end_at
-                    params["maxResults"] = max_results
-        return params
+        response_json = response.json()
+        if isinstance(response_json, dict):
+            if response_json.get("isLast"):
+                return
+            startAt = response_json.get("startAt")
+            if startAt is not None:
+                startAt += response_json["maxResults"]
+                if startAt < response_json["total"]:
+                    return {"startAt": startAt}
+        elif isinstance(response_json, list):
+            if len(response_json) == self.page_size:
+                query_params = dict(parse_qsl(urlparse.urlparse(response.url).query))
+                startAt = int(query_params.get("startAt", 0)) + self.page_size
+                return {"startAt": startAt}
 
     def request_params(
         self,
         stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any],
-        next_page_token: Optional[Mapping[str, Any]] = None,
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        params: Dict[str, str] = {}
-
+        params = {"maxResults": self.page_size}
         if next_page_token:
             params.update(next_page_token)
-
         return params
 
     def request_headers(self, **kwargs) -> Mapping[str, Any]:
@@ -1095,26 +1093,6 @@ class Users(JiraStream):
 
     primary_key = "accountId"
     use_cache = True
-
-    def __init__(self, domain: str, projects: List[str], **kwargs):
-        super(JiraStream, self).__init__(**kwargs)
-        self._domain = domain
-        self._projects = projects
-        self._max_results = 100
-        self._total = self._max_results
-        self._startAt = 0
-
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        params = {}
-        response_data = response.json()
-
-        if users_returned := len(response_data):
-            self._total = self._total + users_returned
-            self._startAt = self._startAt + users_returned
-            params["startAt"] = self._startAt
-            params["maxResults"] = self._max_results
-
-        return params
 
     def path(self, **kwargs) -> str:
         return "users/search"
