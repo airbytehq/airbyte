@@ -3,7 +3,7 @@ outputs: |
     Name s3
     Match kube.*
     bucket ${AWS_S3_BUCKET}
-    region us-east-1
+    region us-east-2
     total_file_size 1M
     upload_timeout 1m
     use_put_object On
