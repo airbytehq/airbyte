@@ -1,0 +1,12 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-xl;
+}
+
+.heading {
+  text-align: center;
+}

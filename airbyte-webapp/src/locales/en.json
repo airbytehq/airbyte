@@ -656,6 +656,7 @@
   "connectorBuilder.configErrorsDownload": "Cannot download while there are form errors",
   "connectorBuilder.configErrorsTest": "Cannot test while there are form errors",
   "connectorBuilder.connectorImgAlt": "Connector Image",
+  "connectorBuilder.stream": "Stream",
   "connectorBuilder.uiYamlToggle.ui": "UI",
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
