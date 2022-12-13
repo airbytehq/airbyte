@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SchemaChangesBackdrop renders if there are non-breaking changes 1`] = `
+exports[`SchemaChangesBackdrop renders if there are non-breaking changes and prevents background interaction 1`] = `
 <div
   class="schemaChangeBackdropContainer"
   data-testid="schemaChangesBackdrop"
@@ -89,13 +89,15 @@ exports[`SchemaChangesBackdrop renders if there are non-breaking changes 1`] = `
       </p>
     </div>
   </div>
-  <button>
+  <button
+    data-testid="bg-button"
+  >
     don't click
   </button>
 </div>
 `;
 
-exports[`SchemaChangesBackdrop renders with breaking changes 1`] = `
+exports[`SchemaChangesBackdrop renders with breaking changes and prevents background interaction 1`] = `
 <div
   class="schemaChangeBackdropContainer"
   data-testid="schemaChangesBackdrop"
@@ -184,7 +186,9 @@ exports[`SchemaChangesBackdrop renders with breaking changes 1`] = `
       </p>
     </div>
   </div>
-  <button>
+  <button
+    data-testid="bg-button"
+  >
     don't click
   </button>
 </div>
