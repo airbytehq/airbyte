@@ -1,6 +1,6 @@
 {
   "api_key": "sample",
-  "urls": ["https://www.google.com", "https://www.google.de"],
+  "urls": ["https://www.google.com"],
   "strategies": ["desktop", "mobile"],
-  "categories": ["accessibility", "best-practices", "performance", "pwa", "seo"]
+  "categories": ["performance", "pwa"]
 }
