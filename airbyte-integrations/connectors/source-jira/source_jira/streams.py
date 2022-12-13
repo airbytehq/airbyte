@@ -744,18 +744,20 @@ class ProjectAvatars(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-project-avatars/#api-rest-api-3-project-projectidorkey-avatars-get
     """
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
     def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        return f"project/{key}/avatars"
+        return f"project/{stream_slice['key']}/avatars"
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
         response_json = response.json()
-        for type_key, records in response_json.items():
+        for records in response_json.values():
             yield from records
 
     def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        projects_stream = Projects(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for project in projects_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for project in read_full_refresh(self.projects_stream):
             yield from super().read_records(stream_slice={"key": project["key"]}, **kwargs)
 
 
