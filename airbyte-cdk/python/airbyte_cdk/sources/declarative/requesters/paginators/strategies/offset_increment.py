@@ -37,14 +37,12 @@ class OffsetIncrement(PaginationStrategy, JsonSchemaMixin):
     """
 
     config: Config
-    page_size: Union[InterpolatedString, str, int]
+    page_size: Union[str, int]
     options: InitVar[Mapping[str, Any]]
 
     def __post_init__(self, options: Mapping[str, Any]):
         self._offset = 0
-        # InterpolatedString page_size may contain one of int/str types,
-        # so we need to ensure that its `.string` attribute is of *string* type
-        self.page_size.string = str(self.page_size.string)
+        self.page_size = InterpolatedString(self.page_size, options=options)
 
     def next_page_token(self, response: requests.Response, last_records: List[Mapping[str, Any]]) -> Optional[Any]:
         if len(last_records) < self.page_size.eval(self.config):

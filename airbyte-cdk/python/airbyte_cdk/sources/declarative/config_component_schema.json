@@ -75,6 +75,9 @@
             },
             {
               "$ref": "#/definitions/DefaultSchemaLoader"
+            },
+            {
+              "$ref": "#/definitions/InlineSchemaLoader"
             }
           ]
         },
@@ -93,6 +96,9 @@
             },
             {
               "$ref": "#/definitions/DefaultSchemaLoader"
+            },
+            {
+              "$ref": "#/definitions/InlineSchemaLoader"
             }
           ]
         },
@@ -289,6 +295,9 @@
                 },
                 {
                   "$ref": "#/definitions/BasicHttpAuthenticator"
+                },
+                {
+                  "$ref": "#/definitions/SessionTokenAuthenticator"
                 }
               ]
             },
@@ -628,6 +637,75 @@
         }
       ],
       "description": "\n    Builds auth based off the basic authentication scheme as defined by RFC 7617, which transmits credentials as USER ID/password pairs, encoded using base64\n    https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme\n\n    The header is of the form\n    `\"Authorization\": \"Basic <encoded_credentials>\"`\n\n    Attributes:\n        username (Union[InterpolatedString, str]): The username\n        config (Config): The user-provided configuration as specified by the source's spec\n        password (Union[InterpolatedString, str]): The password\n        options (Mapping[str, Any]): Additional runtime parameters to be used for string interpolation\n    "
+    },
+    "SessionTokenAuthenticator": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/DeclarativeAuthenticator"
+        },
+        {
+          "type": "object",
+          "required": ["api_url", "header"],
+          "properties": {
+            "api_url": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "session_token": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": ""
+            },
+            "username": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": ""
+            },
+            "password": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "default": ""
+            },
+            "header": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/InterpolatedString"
+                },
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "config": {
+              "type": "object"
+            }
+          }
+        }
+      ]
     },
     "CompositeErrorHandler": {
       "allOf": [
@@ -1536,6 +1614,11 @@
         }
       ],
       "description": "\n    Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.\n\n    Attributes:\n        config (Config): The user-provided configuration as specified by the source's spec\n        options (Mapping[str, Any]): Additional arguments to pass to the string interpolation if needed\n    "
+    },
+    "InlineSchemaLoader": {
+      "type": "object",
+      "properties": {},
+      "description": "Loads a schema from the manifest, if provided."
     },
     "AddFields": {
       "allOf": [
