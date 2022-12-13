@@ -311,7 +311,7 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .sourceType("TIME")
             .airbyteType(JsonSchemaType.STRING)
             .addInsertValues("null", "'00.00.00'", "'1:59 PM'", "'23.59.59'")
-            .addExpectedValues(null, "00:00:00", "13:59:00", "23:59:59")
+            .addExpectedValues(null, "00:00:00.000000", "13:59:00.000000", "23:59:59.000000")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
