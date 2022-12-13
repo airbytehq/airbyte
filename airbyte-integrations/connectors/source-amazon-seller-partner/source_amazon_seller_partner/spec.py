@@ -73,6 +73,7 @@ class AmazonSellerPartnerConfig(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
         examples=["2017-01-25T00:00:00Z"],
         order=8,
+        format="date-time"
     )
 
     replication_end_date: str = Field(
@@ -82,6 +83,7 @@ class AmazonSellerPartnerConfig(BaseModel):
         pattern="^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$|^$",
         examples=["2017-01-25T00:00:00Z"],
         order=9,
+        format="date-time"
     )
 
     period_in_days: int = Field(

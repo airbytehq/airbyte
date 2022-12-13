@@ -13,12 +13,14 @@ connectionSpecification:
       description: Start date for TV schedule retrieval. May be in the future.
       order: 0
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      format: date
     end_date:
       type: string
       description: |
         End date for TV schedule retrieval. May be in the future. Optional.
       order: 1
       pattern: "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+      format: date
     domestic_schedule_country_code:
       type: string
       description: Country code for domestic TV schedule retrieval.

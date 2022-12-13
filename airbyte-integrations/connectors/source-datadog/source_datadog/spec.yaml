@@ -42,6 +42,7 @@ connectionSpecification:
       type: string
       examples:
         - "2022-10-01T00:00:00Z"
+      format: date-time
       order: 5
     end_date:
       title: End date

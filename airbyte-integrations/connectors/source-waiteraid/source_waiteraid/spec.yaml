@@ -16,6 +16,7 @@ connectionSpecification:
       pattern: ^[0-9]{4}-[0-9]{2}-[0-9]{2}$
       examples:
         - YYYY-MM-DD
+      format: date
     auth_hash:
       title: Authentication Hash
       type: string

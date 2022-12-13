@@ -65,6 +65,7 @@ class InsightConfig(BaseModel):
         description="The date from which you'd like to replicate data for this stream, in the format YYYY-MM-DDT00:00:00Z.",
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-25T00:00:00Z"],
+        format="date-time"
     )
 
     end_date: Optional[datetime] = Field(
@@ -76,6 +77,7 @@ class InsightConfig(BaseModel):
         ),
         pattern=DATE_TIME_PATTERN,
         examples=["2017-01-26T00:00:00Z"],
+        format="date-time"
     )
     insights_lookback_window: Optional[PositiveInt] = Field(
         title="Custom Insights Lookback Window",

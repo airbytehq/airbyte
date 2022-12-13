@@ -20,7 +20,8 @@
         "title": "Start Date",
         "examples": ["2021-01-01"],
         "default": "2021-01-01",
-        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+        "format": "date"
       },
       "include_deleted_objects": {
         "type": "boolean",

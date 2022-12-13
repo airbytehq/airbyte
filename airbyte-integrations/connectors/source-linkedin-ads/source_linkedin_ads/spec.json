@@ -64,7 +64,8 @@
         "title": "Start date",
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
         "description": "UTC date in the format 2020-09-17. Any data before this date will not be replicated.",
-        "examples": ["2021-05-17"]
+        "examples": ["2021-05-17"],
+        "format": "date"
       },
       "account_ids": {
         "title": "Account IDs",
