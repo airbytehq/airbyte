@@ -1,0 +1,6 @@
+micronaut:
+  server:
+    port: 9000
+
+airbyte:
+  config-dir: /config

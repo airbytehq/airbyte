@@ -1,28 +1,51 @@
+import { dump } from "js-yaml";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
+import { useLocalStorage } from "react-use";
 
-import {
-  StreamReadRequestBodyConfig,
-  StreamsListReadStreamsItem,
-  StreamsListRequestBodyManifest,
-} from "core/request/ConnectorBuilderClient";
-import { useAppMonitoringService } from "hooks/services/AppMonitoringService";
+import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
+
+import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
+export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
+  global: {
+    connectorName: "",
+    urlBase: "",
+  },
+  streams: [],
+};
+
+const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+  version: "0.1.0",
+  check: {
+    stream_names: [],
+  },
+  streams: [],
+};
+
+export type BuilderView = "global" | number;
+
 interface Context {
-  jsonManifest: StreamsListRequestBodyManifest;
+  builderFormValues: BuilderFormValues;
+  jsonManifest: ConnectorManifest;
+  yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
-  selectedStream?: StreamsListReadStreamsItem;
+  testStreamIndex: number;
+  selectedView: BuilderView;
   configString: string;
   configJson: StreamReadRequestBodyConfig;
-  setJsonManifest: (jsonValue: StreamsListRequestBodyManifest) => void;
+  setBuilderFormValues: (values: BuilderFormValues) => void;
+  setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
-  setSelectedStream: (streamName: string) => void;
+  setTestStreamIndex: (streamIndex: number) => void;
+  setSelectedView: (view: BuilderView) => void;
   setConfigString: (configString: string) => void;
 }
 
@@ -31,10 +54,30 @@ export const ConnectorBuilderStateContext = React.createContext<Context | null>(
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
 
-  // json manifest
-  const [jsonManifest, setJsonManifest] = useState<StreamsListRequestBodyManifest>({});
+  // manifest values
+  const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+    "connectorBuilderFormValues",
+    DEFAULT_BUILDER_FORM_VALUES
+  );
+  const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
+
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+    "connectorBuilderJsonManifest",
+    DEFAULT_JSON_MANIFEST_VALUES
+  );
+  const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+
+  useEffect(() => {
+    setJsonManifest(convertToManifest(formValues));
+  }, [formValues, setJsonManifest]);
+
   const [yamlIsValid, setYamlIsValid] = useState(true);
-  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(false);
+  const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
+
+  const [yamlManifest, setYamlManifest] = useState("");
+  useEffect(() => {
+    setYamlManifest(dump(jsonManifest));
+  }, [jsonManifest]);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -54,7 +97,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
-  } = useListStreams({ manifest: jsonManifest, config: configJson });
+  } = useListStreams({ manifest, config: configJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
     ? streamListError instanceof Error
@@ -64,32 +107,34 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const streams = useMemo(() => {
     return streamListRead?.streams ?? [];
   }, [streamListRead]);
-  const firstStreamName = streams.length > 0 ? streams[0].name : undefined;
 
-  const [selectedStreamName, setSelectedStream] = useState(firstStreamName);
+  const [testStreamIndex, setTestStreamIndex] = useState(0);
   useEffect(() => {
-    setSelectedStream((prevSelected) =>
-      prevSelected !== undefined && streams.map((stream) => stream.name).includes(prevSelected)
-        ? prevSelected
-        : firstStreamName
+    setTestStreamIndex((prevIndex) =>
+      prevIndex >= streams.length && streams.length > 0 ? streams.length - 1 : prevIndex
     );
-  }, [streams, firstStreamName]);
+  }, [streams]);
 
-  const selectedStream = streams.find((stream) => stream.name === selectedStreamName);
+  const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
-    jsonManifest,
+    builderFormValues: formValues,
+    jsonManifest: manifest,
+    yamlManifest,
     yamlEditorIsMounted,
     yamlIsValid,
     streams,
     streamListErrorMessage,
-    selectedStream,
+    testStreamIndex,
+    selectedView,
     configString,
     configJson,
+    setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
     setYamlEditorIsMounted,
-    setSelectedStream,
+    setTestStreamIndex,
+    setSelectedView,
     setConfigString,
   };
 
@@ -106,17 +151,9 @@ export const useConnectorBuilderState = (): Context => {
 };
 
 export const useSelectedPageAndSlice = () => {
-  const { trackError } = useAppMonitoringService();
-  const { selectedStream } = useConnectorBuilderState();
+  const { streams, testStreamIndex } = useConnectorBuilderState();
 
-  // this case should never be reached, as this hook should only be called in components that are only rendered when a stream is selected
-  if (selectedStream === undefined) {
-    const err = new Error("useSelectedPageAndSlice called when no stream is selected");
-    trackError(err, { id: "useSelectedPageAndSlice.noSelectedStream" });
-    throw err;
-  }
-
-  const selectedStreamName = selectedStream.name;
+  const selectedStreamName = streams[testStreamIndex].name;
 
   const [streamToSelectedSlice, setStreamToSelectedSlice] = useState({ [selectedStreamName]: 0 });
   const setSelectedSlice = (sliceIndex: number) => {

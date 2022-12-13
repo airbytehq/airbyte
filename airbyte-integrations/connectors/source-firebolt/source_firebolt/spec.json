@@ -5,7 +5,7 @@
     "title": "Firebolt Spec",
     "type": "object",
     "required": ["username", "password", "database"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "username": {
         "type": "string",
@@ -16,7 +16,8 @@
       "password": {
         "type": "string",
         "title": "Password",
-        "description": "Firebolt password."
+        "description": "Firebolt password.",
+        "airbyte_secret": true
       },
       "account": {
         "type": "string",
