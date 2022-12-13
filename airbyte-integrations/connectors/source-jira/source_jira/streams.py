@@ -1082,7 +1082,7 @@ class TimeTracking(JiraStream):
     https://developer.atlassian.com/cloud/jira/platform/rest/v3/api-group-time-tracking/#api-rest-api-3-configuration-timetracking-list-get
     """
 
-    primary_key = None
+    primary_key = "key"
 
     def path(self, **kwargs) -> str:
         return "configuration/timetracking/list"
