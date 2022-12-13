@@ -10,7 +10,6 @@ from urllib.parse import parse_qsl
 
 import pendulum
 import requests
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
@@ -494,21 +493,22 @@ class IssueProperties(StartDateJiraStream):
 
     primary_key = "key"
 
-    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
-        key = stream_slice["key"]
-        issue_key = stream_slice["issue_key"]
-        return f"issue/{issue_key}/properties/{key}"
-
-    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        issues_stream = Issues(
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.issues_stream = Issues(
             authenticator=self.authenticator,
             domain=self._domain,
             projects=self._projects,
             start_date=self._start_date,
         )
-        issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
-        for issue in issues_stream.read_records(sync_mode=SyncMode.full_refresh):
-            for property_key in issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
+        self.issue_property_keys_stream = IssuePropertyKeys(authenticator=self.authenticator, domain=self._domain, projects=self._projects)
+
+    def path(self, stream_slice: Mapping[str, Any], **kwargs) -> str:
+        return f"issue/{stream_slice['issue_key']}/properties/{stream_slice['key']}"
+
+    def read_records(self, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
+        for issue in read_full_refresh(self.issues_stream):
+            for property_key in self.issue_property_keys_stream.read_records(stream_slice={"key": issue["key"]}, **kwargs):
                 yield from super().read_records(stream_slice={"key": property_key["key"], "issue_key": issue["key"]}, **kwargs)
 
 
