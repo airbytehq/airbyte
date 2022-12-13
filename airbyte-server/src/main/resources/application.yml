@@ -4,21 +4,29 @@ micronaut:
   security:
     authentication-provider-strategy: ALL
     enabled: true
-    intercept-url-map:
-      - pattern: /beans
-        httpMethod: GET
-        access:
-          - isAnonymous()
-      - pattern: /env
-        httpMethod: GET
-        access:
-          - isAnonymous()
-#      - pattern: /**
-#        httpMethod: POST
-#        access:
-#          - isAnonymous()
   server:
     port: 8001
+
+endpoints:
+  beans:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
+
 airbyte:
   deployment-mode: ${DEPLOYMENT_MODE:OSS}
   flyway:
@@ -68,5 +76,7 @@ temporal:
 
 logger:
   levels:
-    io.micronaut.context.condition: DEBUG
-    io.micronaut.security: DEBUG
+    # Uncomment to help resolve issues with conditional beans
+#    io.micronaut.context.condition: DEBUG
+    # Uncomment to help resolve issues with security beans
+#    io.micronaut.security: DEBUG
