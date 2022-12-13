@@ -5,6 +5,7 @@
 import logging
 import random
 import re
+import json
 import time
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 from urllib.parse import unquote
@@ -400,6 +401,21 @@ class SourceExact(AbstractSource):
 
         if not access_token or not refresh_token:
             return False, "Missing access or refresh token"
+
+        try:
+            headers = ExactStream.request_headers(None)
+            headers["Authorization"] = f"Bearer {access_token}"
+
+            response = requests.get(
+                "https://start.exactonline.nl/api/v1/current/Me",
+                headers=headers,
+                timeout=15,
+            )
+
+            response.raise_for_status()
+            logger.info(f"Connection check successful. Details:\n{json.dumps(response.json())}")
+        except requests.RequestException as exc:
+            return False, f"Check if access_token is still valid at this point. Details\n{exc}"
 
         return True, None
 
