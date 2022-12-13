@@ -47,6 +47,15 @@ definitions:
     retriever:
       $ref: "*ref(definitions.retriever)"
   pagespeed_stream:
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["category"]
+            value: "{{ stream_slice.category }}"
+      - type: AddFields
+        fields:
+          - path: ["strategy"]
+            value: "{{ stream_slice.strategy }}"
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "pagespeed"
