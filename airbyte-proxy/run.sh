@@ -16,7 +16,7 @@ else
   TEMPLATE_PATH="/etc/nginx/templates/nginx-auth.conf.template"
 fi
 
-envsubst '${PROXY_PASS_WEB} ${PROXY_PASS_API} ${CONNECTOR_BUILDER_SERVER_API} ${PROXY_PASS_RESOLVER}' < $TEMPLATE_PATH > /etc/nginx/nginx.conf
+envsubst '${PROXY_PASS_WEB} ${PROXY_PASS_API} ${CONNECTOR_BUILDER_SERVER_API} ${PROXY_PASS_RESOLVER} ${BASIC_AUTH_PROXY_TIMEOUT}' < $TEMPLATE_PATH > /etc/nginx/nginx.conf
 
 echo "starting nginx..."
 nginx -v

@@ -22,4 +22,6 @@ public interface FeatureFlags {
 
   boolean needStateValidation();
 
+  boolean applyFieldSelection();
+
 }

@@ -111,6 +111,7 @@ public class DefaultJobCreator implements JobCreator {
                                                  final StandardSync standardSync,
                                                  final String destinationDockerImage,
                                                  final Version destinationProtocolVersion,
+                                                 final boolean isDestinationCustomConnector,
                                                  final List<StandardSyncOperation> standardSyncOperations,
                                                  final List<StreamDescriptor> streamsToReset)
       throws IOException {
@@ -144,7 +145,9 @@ public class DefaultJobCreator implements JobCreator {
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
             workerResourceRequirements))
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(isDestinationCustomConnector);
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(resetConnectionConfig::withState);
 
