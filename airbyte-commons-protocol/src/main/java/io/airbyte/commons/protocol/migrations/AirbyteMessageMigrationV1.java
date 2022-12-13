@@ -501,22 +501,33 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   private DowngradedNode downgradeNode(JsonNode data, JsonNode schema) {
     // TODO handle oneOf case
     if (data.isTextual()) {
-      String refType = schema.get(REF_KEY).asText();
-      if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
-          || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
-        // We could do this as a try-catch, but this migration will run on every RecordMessage
-        // so it does need to be reasonably performant.
-        // Instead, we use a regex to check for numeric literals.
-        // Note that this does _not_ allow infinity/nan, even though protocol v1 _does_ allow them.
-        // This is because JSON numeric literals don't allow those values.
-        if (data.asText().matches("-?\\d+(\\.\\d+)?")) {
-          // If this string is a numeric literal, convert it to a numeric node.
-          return new DowngradedNode(Jsons.deserialize(data.asText()), true);
+      JsonNode refNode = schema.get(REF_KEY);
+      if (refNode != null) {
+        String refType = refNode.asText();
+        if (JsonSchemaReferenceTypes.NUMBER_REFERENCE.equals(refType)
+            || JsonSchemaReferenceTypes.INTEGER_REFERENCE.equals(refType)) {
+          // We could do this as a try-catch, but this migration will run on every RecordMessage
+          // so it does need to be reasonably performant.
+          // Instead, we use a regex to check for numeric literals.
+          // Note that this does _not_ allow infinity/nan, even though protocol v1 _does_ allow them.
+          // This is because JSON numeric literals don't allow those values.
+          if (data.asText().matches("-?\\d+(\\.\\d+)?")) {
+            // If this string is a numeric literal, convert it to a numeric node.
+            return new DowngradedNode(Jsons.deserialize(data.asText()), true);
+          } else {
+            // Otherwise, just leave the node unchanged.
+            return new DowngradedNode(data, false);
+          }
         } else {
-          // Otherwise, just leave the node unchanged.
-          return new DowngradedNode(data, false);
+          // TODO uncomment this
+          return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
         }
       } else {
+        JsonNode typeNode = schema.get("type");
+        boolean matchesSchema = true;
+        if (typeNode != null) {
+          // TODO check whether textual node is of the correct type
+        }
         // TODO uncomment this
         return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
       }
@@ -638,6 +649,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         }
       }
     } else {
+      // TODO check whether non-textual node (i.e. number/boolean?) is of the correct type
       // TODO uncomment this
       return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
     }

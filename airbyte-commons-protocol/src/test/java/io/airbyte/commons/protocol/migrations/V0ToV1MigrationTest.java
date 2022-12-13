@@ -1218,6 +1218,15 @@ public class V0ToV1MigrationTest {
                   "array_multitype": {
                     "type": "array",
                     "items": [{"$ref": "WellKnownTypes.json#/definitions/Integer"}, {"$ref": "WellKnownTypes.json#/definitions/String"}]
+                  },
+                  "oneof": {
+                    "type": "array",
+                    "items": {
+                      "oneOf": [
+                        {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                        {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
+                      ]
+                    }
                   }
                 }
               }
@@ -1235,6 +1244,7 @@ public class V0ToV1MigrationTest {
             },
             "array": ["42"],
             "array_multitype": ["42", "42"],
+            "oneof": ["42", true],
             "additionalProperty": "42"
           }
           """);
@@ -1259,6 +1269,7 @@ public class V0ToV1MigrationTest {
                 },
                 "array": [42],
                 "array_multitype": [42, "42"],
+                "oneof": [42, true],
                 "additionalProperty": "42"
               }
             }
@@ -1270,10 +1281,6 @@ public class V0ToV1MigrationTest {
 
     @Test
     public void testWeirdDowngrade() {
-      // TODO more complex stuff
-      // type: [array, object] -> two fields, one where the data is obj and one where data is array
-      // {type: null, items: {...}}
-      // type: [int, object] -> this is wrong, but we should handle it just in case
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
               {
@@ -1286,6 +1293,9 @@ public class V0ToV1MigrationTest {
                     "properties": {
                       "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                     }
+                  },
+                  "typeless_array": {
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                   },
                   "arr_obj_union1": {
                     "type": ["array", "object"],
@@ -1328,6 +1338,7 @@ public class V0ToV1MigrationTest {
             "typeless_object": {
               "foo": "42"
             },
+            "typeless_array": ["42"],
             "arr_obj_union1": [{"id": "42", "name": "arst"}, {"id": "43", "name": "qwfp"}],
             "arr_obj_union2": {"id": "42", "name": "arst"}
           }
@@ -1350,8 +1361,56 @@ public class V0ToV1MigrationTest {
                 "typeless_object": {
                   "foo": 42
                 },
+                "typeless_array": [42],
                 "arr_obj_union1": [{"id": 42, "name": "arst"}, {"id": 43, "name": "qwfp"}],
                 "arr_obj_union2": {"id": 42, "name": "arst"}
+              }
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    public void testEmptySchema() {
+      // TODO more complex stuff
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {
+                 "type": "object",
+                 "properties": {
+                   "empty_schema_primitive": {},
+                   "empty_schema_array": {},
+                   "empty_schema_object": {}
+                 }
+                }
+              }
+              """
+      );
+      JsonNode oldData = Jsons.deserialize(
+          """
+          {
+            "empty_schema_primitive": "42",
+            "empty_schema_array": ["42", false],
+            "empty_schema_object": {"foo": "42"}
+          }
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": {
+                "empty_schema_primitive": "42",
+                "empty_schema_array": ["42", false],
+                "empty_schema_object": {"foo": "42"}
               }
             }
           }
