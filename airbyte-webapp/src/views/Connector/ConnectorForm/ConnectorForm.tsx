@@ -3,7 +3,11 @@ import React, { useCallback } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
 import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -20,7 +24,7 @@ export interface ConnectorFormProps {
    * Definition of the connector might not be available if it's not released but only exists in frontend heap
    */
   selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;

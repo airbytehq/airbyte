@@ -5,6 +5,7 @@ import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
 
+import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 import { ConnectorManifest } from "core/request/ConnectorManifest";
 
@@ -30,7 +31,7 @@ export type BuilderView = "global" | number;
 
 interface Context {
   builderFormValues: BuilderFormValues;
-  jsonManifest: ConnectorManifest;
+  jsonManifest: PatchedConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;

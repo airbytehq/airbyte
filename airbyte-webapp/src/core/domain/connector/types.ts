@@ -17,7 +17,6 @@ export type SourceDefinitionSpecificationDraft = Pick<
 
 export type ConnectorDefinitionSpecification =
   | DestinationDefinitionSpecificationRead
-  | SourceDefinitionSpecificationRead
-  | SourceDefinitionSpecificationDraft;
+  | SourceDefinitionSpecificationRead;
 
 export type ConnectorT = DestinationRead | SourceRead;

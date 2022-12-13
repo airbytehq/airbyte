@@ -26,7 +26,7 @@ export function isSourceDefinitionSpecification(
 }
 
 export function isSourceDefinitionSpecificationDraft(
-  connector: ConnectorDefinitionSpecification
+  connector: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft
 ): connector is SourceDefinitionSpecificationDraft {
   return (
     (connector as SourceDefinitionSpecificationRead).sourceDefinitionId === undefined &&
