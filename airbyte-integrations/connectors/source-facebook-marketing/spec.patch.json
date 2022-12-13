@@ -51,6 +51,14 @@
                   "token"
               ],
               "airbyte_secret": true
+          },
+          "client_id": {
+            "airbyte_secret": true,
+            "type": ["null", "string"]
+          },
+          "client_secret": {
+            "airbyte_secret": true,
+            "type": ["null", "string"]
           }
         }
       }, {
