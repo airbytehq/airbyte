@@ -9,7 +9,7 @@ from airbyte_cdk.sources.declarative.schema.schema_loader import SchemaLoader
 
 
 @dataclass
-class StaticSchemaLoader(SchemaLoader):
+class InlineSchemaLoader(SchemaLoader):
     """Describes a stream's schema"""
 
     schema: Dict[str, Any]

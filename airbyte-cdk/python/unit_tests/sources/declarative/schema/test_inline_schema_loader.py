@@ -3,7 +3,7 @@
 #
 
 import pytest
-from airbyte_cdk.sources.declarative.schema import StaticSchemaLoader
+from airbyte_cdk.sources.declarative.schema import InlineSchemaLoader
 
 
 @pytest.mark.parametrize(
@@ -14,6 +14,6 @@ from airbyte_cdk.sources.declarative.schema import StaticSchemaLoader
     ],
 )
 def test_static_schema_loads(test_name, input_schema, expected_schema):
-    schema_loader = StaticSchemaLoader(input_schema, {})
+    schema_loader = InlineSchemaLoader(input_schema, {})
 
     assert schema_loader.get_json_schema() == expected_schema
