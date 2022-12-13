@@ -207,6 +207,24 @@ def test_write_large_batch(config: Mapping, configured_catalog: ConfiguredAirbyt
     assert count_articles(client.client) == 400, "There should be 400 records in weaviate"
 
 
+def test_write_second_sync(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
+    append_stream = configured_catalog.streams[0].stream.name
+    first_state_message = _state({"state": "1"})
+    second_state_message = _state({"state": "2"})
+    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message, second_state_message]
+    output_states = list(
+        destination.write(
+            config, configured_catalog, [*first_record_chunk, first_state_message, *first_record_chunk, second_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    assert count_articles(client.client) == 10, "First and second state should have flushed a total of 10 articles"
+
+
 def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that records can have an ID that's an integer
