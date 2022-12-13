@@ -31,6 +31,5 @@ definitions:
 streams:
   - "*ref(definitions.whois_stream)"
 check:
-  type: CheckStream
   stream_names:
     - "whois"

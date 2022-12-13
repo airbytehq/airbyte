@@ -781,6 +781,5 @@ streams:
   - "*ref(definitions.report_webinar_participants_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "users"

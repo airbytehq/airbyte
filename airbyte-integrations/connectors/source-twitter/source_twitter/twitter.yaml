@@ -66,6 +66,5 @@ streams:
   - "*ref(definitions.tweets_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "tweets"

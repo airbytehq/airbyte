@@ -90,5 +90,4 @@ streams:
   - "*ref(definitions.sequences_stream)"
 
 check:
-  type: CheckStream
   stream_names: ["tags"]

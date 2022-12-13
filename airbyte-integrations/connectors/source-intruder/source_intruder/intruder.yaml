@@ -79,6 +79,5 @@ streams:
   - "*ref(definitions.targets_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "issues"

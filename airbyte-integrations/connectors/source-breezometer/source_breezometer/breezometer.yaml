@@ -171,6 +171,5 @@ streams:
   - "*ref(definitions.wildfire_locate_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "pollen_forecast"

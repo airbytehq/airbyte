@@ -51,7 +51,6 @@ streams:
   - "*ref(definitions.stats_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "project"
     - "release"

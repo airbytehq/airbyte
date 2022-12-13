@@ -147,5 +147,4 @@ streams:
   - "*ref(definitions.forms_promotion_stream)"
 
 check:
-  type: CheckStream
   stream_names: ["timezones"]

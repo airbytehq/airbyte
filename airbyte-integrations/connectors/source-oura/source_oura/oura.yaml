@@ -114,6 +114,5 @@ streams:
   - "*ref(definitions.workouts_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "heart_rate"

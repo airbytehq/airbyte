@@ -103,6 +103,5 @@ streams:
   - "*ref(definitions.users_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "accounts"

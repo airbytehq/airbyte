@@ -34,6 +34,5 @@ streams:
   - "*ref(definitions.fonts_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "fonts"

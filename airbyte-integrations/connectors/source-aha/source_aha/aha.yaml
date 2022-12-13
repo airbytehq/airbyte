@@ -101,7 +101,6 @@ streams:
   - "*ref(definitions.goals_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "features"
     - "products"

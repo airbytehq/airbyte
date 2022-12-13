@@ -110,6 +110,5 @@ streams:
   - "*ref(definitions.flags_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "projects"

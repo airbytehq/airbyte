@@ -107,6 +107,5 @@ streams:
   - "*ref(definitions.notifications_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "locations"

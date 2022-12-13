@@ -65,6 +65,5 @@ streams:
   - "*ref(definitions.contacts_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "campaigns"

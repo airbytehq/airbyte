@@ -47,6 +47,5 @@ streams:
   - "*ref(definitions.books_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "books"

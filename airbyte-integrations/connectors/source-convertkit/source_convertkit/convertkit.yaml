@@ -84,5 +84,4 @@ streams:
   - "*ref(definitions.subscribers_stream)"
   - "*ref(definitions.broadcasts_stream)"
 check:
-  type: CheckStream
   stream_names: ["forms"]

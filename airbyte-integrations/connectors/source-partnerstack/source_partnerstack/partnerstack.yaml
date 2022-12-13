@@ -101,6 +101,5 @@ streams:
   - "*ref(definitions.transactions_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "groups"

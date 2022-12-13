@@ -296,6 +296,5 @@ streams:
   - "*ref(definitions.search_tv_shows_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "trending"

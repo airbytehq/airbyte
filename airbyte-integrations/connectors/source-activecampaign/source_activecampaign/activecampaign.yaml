@@ -97,5 +97,4 @@ streams:
   - "*ref(definitions.forms_stream)"
 
 check:
-  type: CheckStream
   stream_names: ["campaigns"]

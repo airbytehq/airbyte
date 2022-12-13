@@ -65,6 +65,5 @@ streams:
   - "*ref(definitions.collections_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "tables"

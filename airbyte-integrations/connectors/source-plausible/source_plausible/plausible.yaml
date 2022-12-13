@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: ["results"]
+      field_pointer: [ "results" ]
     record_filter:
       condition: "{{ record['bounce_rate'] is not none }}"
   requester:
@@ -44,6 +44,5 @@ streams:
   - "*ref(definitions.stats_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "stats"

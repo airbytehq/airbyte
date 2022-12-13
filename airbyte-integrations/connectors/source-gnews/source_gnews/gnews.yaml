@@ -81,7 +81,6 @@ streams:
   - "*ref(definitions.top_headlines_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "search"
     - "top_headlines"

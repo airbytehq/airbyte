@@ -154,6 +154,5 @@ streams:
   - "*ref(definitions.servers)"
 
 check:
-  type: CheckStream
   stream_names:
     - "message-streams"

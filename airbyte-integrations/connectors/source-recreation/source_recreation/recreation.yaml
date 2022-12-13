@@ -141,6 +141,5 @@ streams:
   - "*ref(definitions.tours_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "activities"

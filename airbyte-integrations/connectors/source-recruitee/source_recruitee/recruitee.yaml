@@ -50,7 +50,6 @@ streams:
   - "*ref(definitions.departments_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "candidates"
     - "offers"

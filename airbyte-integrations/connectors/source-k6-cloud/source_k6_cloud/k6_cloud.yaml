@@ -87,6 +87,5 @@ streams:
   - "*ref(definitions.tests_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "organizations"

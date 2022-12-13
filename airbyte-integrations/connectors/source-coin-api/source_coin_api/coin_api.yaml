@@ -64,6 +64,5 @@ streams:
   - "*ref(definitions.trades_historical_data_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "ohlcv_historical_data"

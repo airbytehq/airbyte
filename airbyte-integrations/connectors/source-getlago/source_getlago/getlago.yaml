@@ -101,6 +101,5 @@ streams:
   - "*ref(definitions.subscriptions_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "billable_metrics"

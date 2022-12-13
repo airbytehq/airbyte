@@ -30,6 +30,5 @@ streams:
   - "*ref(definitions.zapier_supported_storage_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "zapier_supported_storage"

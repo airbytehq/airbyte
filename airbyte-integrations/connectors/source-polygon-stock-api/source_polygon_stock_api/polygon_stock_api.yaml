@@ -37,6 +37,5 @@ streams:
   - "*ref(definitions.stock_api_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "stock_api"

@@ -102,7 +102,6 @@ streams:
   - "*ref(definitions.time_series_monthly_adjusted_stream)"
 
 check:
-  type: CheckStream
   stream_names:
     - "time_series_weekly"
     - "time_series_weekly_adjusted"
