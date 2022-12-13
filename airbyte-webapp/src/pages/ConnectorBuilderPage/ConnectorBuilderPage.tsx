@@ -17,7 +17,6 @@ import styles from "./ConnectorBuilderPage.module.scss";
 
 const ConnectorBuilderPageInner: React.FC = () => {
   const { formatMessage } = useIntl();
-
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   return (
