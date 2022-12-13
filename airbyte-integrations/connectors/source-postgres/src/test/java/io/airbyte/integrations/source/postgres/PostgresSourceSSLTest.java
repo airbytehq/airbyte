@@ -34,7 +34,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,31 +57,32 @@ class PostgresSourceSSLTest {
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaType.STRING),
-          Field.of("last_name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("first_name", JsonSchemaType.STRING_V1),
+          Field.of("last_name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1), SCHEMA_NAME),
-      createRecord(STREAM_NAME, map("id", null, "name", "piccolo", "power", null), SCHEMA_NAME));
+      createRecord(STREAM_NAME, map("id", "1.00", "name", "goku", "power", "Infinity"), SCHEMA_NAME),
+      // TODO : Check double precision weirdness
+      createRecord(STREAM_NAME, map("id", "2.00", "name", "vegeta", "power", "9000.1"), SCHEMA_NAME),
+      createRecord(STREAM_NAME, map("id", "NaN", "name", "piccolo", "power", "-Infinity"), SCHEMA_NAME));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -108,12 +108,12 @@ class PostgresSourceSSLTest {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
         ctx.fetch(
-            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
+            "CREATE TABLE id_and_name(id NUMERIC(20, 2) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 2) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
@@ -202,7 +202,7 @@ class PostgresSourceSSLTest {
   @Test
   void testAllowSSLWithCdcReplicationMethod() throws Exception {
 
-    JsonNode config = getCDCAndSslModeConfig("allow");
+    final JsonNode config = getCDCAndSslModeConfig("allow");
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
@@ -212,14 +212,14 @@ class PostgresSourceSSLTest {
   @Test
   void testPreferSSLWithCdcReplicationMethod() throws Exception {
 
-    JsonNode config = getCDCAndSslModeConfig("prefer");
+    final JsonNode config = getCDCAndSslModeConfig("prefer");
 
     final AirbyteConnectionStatus actual = new PostgresSource().check(config);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, actual.getStatus());
     assertTrue(actual.getMessage().contains("In CDC replication mode ssl value 'prefer' is invalid"));
   }
 
-  private JsonNode getCDCAndSslModeConfig(String sslMode) {
+  private JsonNode getCDCAndSslModeConfig(final String sslMode) {
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.SSL_KEY, true)
         .put(JdbcUtils.SSL_MODE_KEY, Map.of(JdbcUtils.MODE_KEY, sslMode))

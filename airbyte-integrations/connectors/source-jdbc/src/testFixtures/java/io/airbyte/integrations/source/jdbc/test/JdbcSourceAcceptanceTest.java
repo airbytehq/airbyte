@@ -15,11 +15,15 @@ import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.MoreIterators;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
@@ -129,6 +133,21 @@ public abstract class JdbcSourceAcceptanceTest {
   public Source source;
   public static String streamName;
 
+  public static final BiMap<JsonSchemaType, JsonSchemaType> V0_V1_MAPPING =
+      new ImmutableBiMap.Builder<JsonSchemaType, JsonSchemaType>()
+          .put(JsonSchemaType.BOOLEAN, JsonSchemaType.BOOLEAN_V1)
+          .put(JsonSchemaType.INTEGER, JsonSchemaType.INTEGER_V1)
+          .put(JsonSchemaType.NUMBER, JsonSchemaType.NUMBER_V1)
+          .put(JsonSchemaType.STRING, JsonSchemaType.STRING_V1)
+          .put(JsonSchemaType.STRING_TIME_WITH_TIMEZONE, JsonSchemaType.TIME_WITH_TIMEZONE_V1)
+          .put(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE, JsonSchemaType.TIME_WITHOUT_TIMEZONE_V1)
+          .put(JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1)
+          .put(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1)
+          .put(JsonSchemaType.STRING_DATE, JsonSchemaType.DATE_V1)
+          .put(JsonSchemaType.STRING_BASE_64, JsonSchemaType.BINARY_DATA_V1)
+          .put(JsonSchemaType.OBJECT, JsonSchemaType.OBJECT)
+          .put(JsonSchemaType.ARRAY, JsonSchemaType.ARRAY)
+          .build();
   /**
    * These tests write records without specifying a namespace (schema name). They will be written into
    * whatever the default schema is for the database. When they are discovered they will be namespaced
@@ -181,6 +200,22 @@ public abstract class JdbcSourceAcceptanceTest {
    */
   public Function<JsonNode, JsonNode> getToDatabaseConfigFunction() {
     return getJdbcSource()::toDatabaseConfig;
+  }
+
+  /**
+   * The method should be overridden if source connector supports newer protocol version otherwise the default
+   * protocol version is returned.
+   */
+  protected Version getProtocolVersion() {
+    return AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION;
+  }
+
+  private static JsonSchemaType getJsonSchema(final JsonSchemaType legacySchemaType, final Version protocolVersion) {
+    if (protocolVersion.equals(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION)) {
+      return legacySchemaType;
+    } else {
+      return V0_V1_MAPPING.get(legacySchemaType);
+    }
   }
 
   protected JdbcSourceOperations getSourceOperations() {
@@ -411,8 +446,8 @@ public abstract class JdbcSourceAcceptanceTest {
     catalogStreams.add(CatalogHelpers
         .createAirbyteStream(TABLE_NAME,
             SCHEMA_NAME2,
-            Field.of(COL_ID, JsonSchemaType.STRING),
-            Field.of(COL_NAME, JsonSchemaType.STRING))
+            Field.of(COL_ID, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+            Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())))
         .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)));
     expected.setStreams(catalogStreams);
     // sort streams by name so that we are comparing lists with the same order.
@@ -437,7 +472,7 @@ public abstract class JdbcSourceAcceptanceTest {
   @Test
   void testReadOneColumn() throws Exception {
     final ConfiguredAirbyteCatalog catalog = CatalogHelpers
-        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, JsonSchemaType.NUMBER));
+        .createConfiguredAirbyteCatalog(streamName, getDefaultNamespace(), Field.of(COL_ID, getJsonSchema(JsonSchemaType.NUMBER, getProtocolVersion())));
     final List<AirbyteMessage> actualMessages = MoreIterators
         .toList(source.read(config, catalog, null));
 
@@ -489,8 +524,8 @@ public abstract class JdbcSourceAcceptanceTest {
       catalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
           streamName2,
           getDefaultNamespace(),
-          Field.of(COL_ID, JsonSchemaType.NUMBER),
-          Field.of(COL_NAME, JsonSchemaType.STRING)));
+          Field.of(COL_ID, getJsonSchema(JsonSchemaType.NUMBER, getProtocolVersion())),
+          Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion()))));
 
       expectedMessages.addAll(getAirbyteMessagesSecondSync(streamName2));
     }
@@ -743,8 +778,8 @@ public abstract class JdbcSourceAcceptanceTest {
     configuredCatalog.getStreams().add(CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
         namespace,
-        Field.of(COL_ID, JsonSchemaType.NUMBER),
-        Field.of(COL_NAME, JsonSchemaType.STRING)));
+        Field.of(COL_ID, getJsonSchema(JsonSchemaType.NUMBER, getProtocolVersion())),
+        Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion()))));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of(COL_ID));
@@ -847,8 +882,8 @@ public abstract class JdbcSourceAcceptanceTest {
             CatalogHelpers.createAirbyteStream(
                 TABLE_NAME_AND_TIMESTAMP,
                 namespace,
-                Field.of(COL_NAME, JsonSchemaType.STRING),
-                Field.of(COL_TIMESTAMP, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE)))));
+                Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+                Field.of(COL_TIMESTAMP, getJsonSchema(JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE, getProtocolVersion()))))));
     configuredCatalog.getStreams().forEach(airbyteStream -> {
       airbyteStream.setSyncMode(SyncMode.INCREMENTAL);
       airbyteStream.setCursorField(List.of(COL_TIMESTAMP));
@@ -1002,25 +1037,25 @@ public abstract class JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            Field.of(COL_ID, getJsonSchema(JsonSchemaType.INTEGER, getProtocolVersion())),
+            Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+            Field.of(COL_UPDATED_AT, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            Field.of(COL_ID, getJsonSchema(JsonSchemaType.INTEGER, getProtocolVersion())),
+            Field.of(COL_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+            Field.of(COL_UPDATED_AT, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING))
+            Field.of(COL_FIRST_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+            Field.of(COL_LAST_NAME, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())),
+            Field.of(COL_UPDATED_AT, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())))
             .withSupportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -1110,8 +1145,8 @@ public abstract class JdbcSourceAcceptanceTest {
     return CatalogHelpers.createConfiguredAirbyteStream(
         streamName2,
         getDefaultNamespace(),
-        Field.of(COL_ID, JsonSchemaType.NUMBER),
-        Field.of(COL_LAST_NAME_WITH_SPACE, JsonSchemaType.STRING));
+        Field.of(COL_ID, getJsonSchema(JsonSchemaType.NUMBER, getProtocolVersion())),
+        Field.of(COL_LAST_NAME_WITH_SPACE, getJsonSchema(JsonSchemaType.STRING, getProtocolVersion())));
   }
 
   public String getFullyQualifiedTableName(final String tableName) {

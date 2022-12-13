@@ -25,6 +25,7 @@ import org.jooq.SQLDialect;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
+// TODO : Migrate JsonSchema getConfiguredCatalog(override)
 public class CdcWalLogsPostgresSourceDatatypeTest extends AbstractPostgresSourceDatatypeTest {
 
   private static final String SCHEMA_NAME = "test";

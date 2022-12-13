@@ -197,10 +197,10 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         case "point" -> putObject(json, columnName, resultSet, colIndex, PGpoint.class);
         case "polygon" -> putObject(json, columnName, resultSet, colIndex, PGpolygon.class);
         case "_varchar", "_char", "_bpchar", "_text", "_name" -> putArray(json, columnName, resultSet, colIndex);
-        case "_int2", "_int4", "_int8", "_oid" -> putLongArray(json, columnName, resultSet, colIndex);
-        case "_numeric", "_decimal" -> putBigDecimalArray(json, columnName, resultSet, colIndex);
+        case "_int2", "_int4", "_int8", "_oid" -> putArray(json, columnName, resultSet, colIndex);
+        case "_numeric", "_decimal" -> putArray(json, columnName, resultSet, colIndex);
         case "_money" -> putMoneyArray(json, columnName, resultSet, colIndex);
-        case "_float4", "_float8" -> putDoubleArray(json, columnName, resultSet, colIndex);
+        case "_float4", "_float8" -> putArray(json, columnName, resultSet, colIndex);
         case "_bool" -> putBooleanArray(json, columnName, resultSet, colIndex);
         case "_bit" -> putBitArray(json, columnName, resultSet, colIndex);
         case "_bytea" -> putByteaArray(json, columnName, resultSet, colIndex);
@@ -212,12 +212,13 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
         default -> {
           switch (columnType) {
             case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-            case TINYINT, SMALLINT -> putShortInt(json, columnName, resultSet, colIndex);
-            case INTEGER -> putInteger(json, columnName, resultSet, colIndex);
-            case BIGINT -> putBigInt(json, columnName, resultSet, colIndex);
+            // What is the difference between reading ints as corr (short/int/long) vs reading as a string?
+            case TINYINT, SMALLINT -> putString(json, columnName, resultSet, colIndex);
+            case INTEGER -> putString(json, columnName, resultSet, colIndex);
+            case BIGINT -> putString(json, columnName, resultSet, colIndex);
             case FLOAT, DOUBLE -> putDouble(json, columnName, resultSet, colIndex);
-            case REAL -> putFloat(json, columnName, resultSet, colIndex);
-            case NUMERIC, DECIMAL -> putBigDecimal(json, columnName, resultSet, colIndex);
+            case REAL -> putString(json, columnName, resultSet, colIndex);
+            case NUMERIC, DECIMAL -> putString(json, columnName, resultSet, colIndex);
             // BIT is a bit string in Postgres, e.g. '0100'
             case BIT, CHAR, VARCHAR, LONGVARCHAR -> putString(json, columnName, resultSet, colIndex);
             case DATE -> putDate(json, columnName, resultSet, colIndex);
@@ -369,7 +370,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     final ResultSet arrayResultSet = resultSet.getArray(colIndex).getResultSet();
     while (arrayResultSet.next()) {
       final String moneyValue = parseMoneyValue(arrayResultSet.getString(colIndex));
-      arrayNode.add(DataTypeUtils.returnNullIfInvalid(() -> DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite)));
+      arrayNode.add(moneyValue);
     }
     node.set(columnName, arrayNode);
   }
@@ -528,13 +529,14 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
     if (resultSet.getMetaData().getColumnTypeName(index).equals("money")) {
       putMoney(node, columnName, resultSet, index);
     } else {
-      super.putDouble(node, columnName, resultSet, index);
+      // Is there a difference between (i) Parsing as double first and THEN casting as string vs (ii) putting String
+      super.putString(node, columnName, resultSet, index);
     }
   }
 
   private void putMoney(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index) throws SQLException {
     final String moneyValue = parseMoneyValue(resultSet.getString(index));
-    node.put(columnName, DataTypeUtils.returnNullIfInvalid(() -> Double.valueOf(moneyValue), Double::isFinite));
+    node.put(columnName, moneyValue);
   }
 
   private void putHstoreAsJson(final ObjectNode node, final String columnName, final ResultSet resultSet, final int index)

@@ -38,7 +38,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
-import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
@@ -65,57 +64,57 @@ class PostgresSourceTest {
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME + "2",
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)),
       CatalogHelpers.createAirbyteStream(
           "names",
           SCHEMA_NAME,
-          Field.of("first_name", JsonSchemaType.STRING),
-          Field.of("last_name", JsonSchemaType.STRING),
-          Field.of("power", JsonSchemaType.NUMBER))
+          Field.of("first_name", JsonSchemaType.STRING_V1),
+          Field.of("last_name", JsonSchemaType.STRING_V1),
+          Field.of("power", JsonSchemaType.NUMBER_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("first_name"), List.of("last_name"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id"))),
       CatalogHelpers.createAirbyteStream(
           STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW,
           SCHEMA_NAME,
-          Field.of("id", JsonSchemaType.NUMBER),
-          Field.of("name", JsonSchemaType.STRING))
+          Field.of("id", JsonSchemaType.NUMBER_V1),
+          Field.of("name", JsonSchemaType.STRING_V1))
           .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
           .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
   private static final ConfiguredAirbyteCatalog CONFIGURED_CATALOG = CatalogHelpers.toDefaultConfiguredCatalog(CATALOG);
   private static final Set<AirbyteMessage> ASCII_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("1.0"), "name", "goku", "power", null)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", new BigDecimal("2.0"), "name", "vegeta", "power", 9000.1)),
-      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", null, "name", "piccolo", "power", null)));
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "1.00", "name", "goku", "power", "Infinity")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "2.00", "name", "vegeta", "power", "9000.1")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, map("id", "NaN", "name", "piccolo", "power", "-Infinity")));
 
   private static final Set<AirbyteMessage> UTF8_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "\u2013 someutfstring")),
-      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "\u2215")));
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "\u2013 someutfstring")),
+      createRecord(STREAM_NAME, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "\u2215")));
 
   private static final Set<AirbyteMessage> PRIVILEGE_TEST_CASE_EXPECTED_MESSAGES = Sets.newHashSet(
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 1, "name", "Zed")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 2, "name", "Jack")),
-      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", 3, "name", "Antuan")));
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE, SCHEMA_NAME, ImmutableMap.of("id", "3", "name", "Antuan")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "1", "name", "Zed")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "2", "name", "Jack")),
+      createRecord(STREAM_NAME_PRIVILEGES_TEST_CASE_VIEW, SCHEMA_NAME, ImmutableMap.of("id", "3", "name", "Antuan")));
 
   private static PostgreSQLContainer<?> PSQL_DB;
 
@@ -141,12 +140,12 @@ class PostgresSourceTest {
       final Database database = getDatabase(dslContext);
       database.query(ctx -> {
         ctx.fetch(
-            "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
+            "CREATE TABLE id_and_name(id NUMERIC(20, 2) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
         ctx.fetch("CREATE INDEX i1 ON id_and_name (id);");
         ctx.fetch(
             "INSERT INTO id_and_name (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
-        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
+        ctx.fetch("CREATE TABLE id_and_name2(id NUMERIC(20, 2) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL);");
         ctx.fetch(
             "INSERT INTO id_and_name2 (id, name, power) VALUES (1,'goku', 'Infinity'),  (2, 'vegeta', 9000.1), ('NaN', 'piccolo', '-Infinity');");
 
@@ -521,7 +520,7 @@ class PostgresSourceTest {
         .withStream(CatalogHelpers.createAirbyteStream(
             "test_table",
             "public",
-            Field.of("id", JsonSchemaType.STRING))
+            Field.of("id", JsonSchemaType.STRING_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id"))));
 

@@ -42,6 +42,7 @@ import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
  * This class is copied from source-postgres-strict-encrypt. The original file can be deleted
  * completely once the migration of multi-variant connector is done.
  */
+// TODO : Migrate JsonSchema getConfiguredCatalog(override)
 @ExtendWith(SystemStubsExtension.class)
 public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceTest {
 
@@ -134,8 +135,8 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
+                Field.of("id", JsonSchemaType.NUMBER_V1),
+                Field.of("name", JsonSchemaType.STRING_V1))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -143,8 +144,8 @@ public class PostgresSourceStrictEncryptAcceptanceTest extends SourceAcceptanceT
             .withDestinationSyncMode(DestinationSyncMode.APPEND)
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
+                Field.of("id", JsonSchemaType.NUMBER_V1),
+                Field.of("name", JsonSchemaType.STRING_V1))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 

@@ -66,9 +66,9 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
     container = new PostgreSQLContainer<>("postgres:13-alpine");
     container.start();
-    String username = container.getUsername();
-    String password = container.getPassword();
-    List<String> schemas = List.of("public");
+    final String username = container.getUsername();
+    final String password = container.getPassword();
+    final List<String> schemas = List.of("public");
     config = getConfig(username, password, schemas);
     try (final DSLContext dslContext = DSLContextFactory.create(
         config.get(JdbcUtils.USERNAME_KEY).asText(),
@@ -89,11 +89,11 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         ctx.fetch("CREATE MATERIALIZED VIEW testview AS select * from id_and_name where id = '2';");
         return null;
       });
-      configCatalog = getCommonConfigCatalog();
+      configCatalog = getCommonConfigCatalog(true);
     }
   }
 
-  private JsonNode getConfig(String username, String password, List<String> schemas) {
+  private JsonNode getConfig(final String username, final String password, final List<String> schemas) {
     final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
         .put("method", "Standard")
         .build());
@@ -149,7 +149,7 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     prepareEnvForUserWithoutPermissions(database);
 
     config = getConfig(LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD, List.of(LIMIT_PERMISSION_SCHEMA));
-    final ConfiguredAirbyteCatalog configuredCatalog = getLimitPermissionConfiguredCatalog();
+    final ConfiguredAirbyteCatalog configuredCatalog = getLimitPermissionConfiguredCatalog(true);
 
     final List<AirbyteRecordMessage> fullRefreshRecords = filterRecords(runRead(configuredCatalog));
     final String assertionMessage = "Expected records after full refresh sync for user with schema permission";
@@ -170,19 +170,19 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     config = getConfig(LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD, List.of(LIMIT_PERMISSION_SCHEMA));
 
     runDiscover();
-    AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
+    final AirbyteCatalog lastPersistedCatalogSecond = getLastPersistedCatalog();
     final String assertionMessageWithoutPermission = "Expected no streams after discover for user without schema permissions";
     assertTrue(lastPersistedCatalogSecond.getStreams().isEmpty(), assertionMessageWithoutPermission);
   }
 
-  private void revokeSchemaPermissions(Database database) throws SQLException {
+  private void revokeSchemaPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("REVOKE USAGE ON schema %s FROM %s;", LIMIT_PERMISSION_SCHEMA, LIMIT_PERMISSION_ROLE));
       return null;
     });
   }
 
-  private void prepareEnvForUserWithoutPermissions(Database database) throws SQLException {
+  private void prepareEnvForUserWithoutPermissions(final Database database) throws SQLException {
     database.query(ctx -> {
       ctx.fetch(String.format("CREATE ROLE %s WITH LOGIN PASSWORD '%s';", LIMIT_PERMISSION_ROLE, LIMIT_PERMISSION_ROLE_PASSWORD));
       ctx.fetch(String.format("CREATE SCHEMA %s;", LIMIT_PERMISSION_SCHEMA));
@@ -195,48 +195,92 @@ public class PostgresSourceAcceptanceTest extends SourceAcceptanceTest {
     });
   }
 
-  private ConfiguredAirbyteCatalog getCommonConfigCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME2,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                STREAM_NAME_MATERIALIZED_VIEW,
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+  private ConfiguredAirbyteCatalog getCommonConfigCatalog(final boolean isLegacyProtcolVersion) {
+    if (isLegacyProtcolVersion) {
+      return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME,
+                      Field.of("id", JsonSchemaType.NUMBER),
+                      Field.of("name", JsonSchemaType.STRING))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME2,
+                      Field.of("id", JsonSchemaType.NUMBER),
+                      Field.of("name", JsonSchemaType.STRING))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME_MATERIALIZED_VIEW,
+                      Field.of("id", JsonSchemaType.NUMBER),
+                      Field.of("name", JsonSchemaType.STRING))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    } else {
+      return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME,
+                      Field.of("id", JsonSchemaType.NUMBER_V1),
+                      Field.of("name", JsonSchemaType.STRING_V1))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME2,
+                      Field.of("id", JsonSchemaType.NUMBER_V1),
+                      Field.of("name", JsonSchemaType.STRING_V1))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      STREAM_NAME_MATERIALIZED_VIEW,
+                      Field.of("id", JsonSchemaType.NUMBER_V1),
+                      Field.of("name", JsonSchemaType.STRING_V1))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    }
   }
 
-  private ConfiguredAirbyteCatalog getLimitPermissionConfiguredCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
-        new ConfiguredAirbyteStream()
-            .withSyncMode(SyncMode.INCREMENTAL)
-            .withCursorField(Lists.newArrayList("id"))
-            .withDestinationSyncMode(DestinationSyncMode.APPEND)
-            .withStream(CatalogHelpers.createAirbyteStream(
-                LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
-                Field.of("id", JsonSchemaType.NUMBER),
-                Field.of("name", JsonSchemaType.STRING))
-                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+  private ConfiguredAirbyteCatalog getLimitPermissionConfiguredCatalog(final boolean isLegacyProtocolVersion) {
+    if (isLegacyProtocolVersion) {
+      return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
+                      Field.of("id", JsonSchemaType.NUMBER),
+                      Field.of("name", JsonSchemaType.STRING))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    } else {
+      return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+          new ConfiguredAirbyteStream()
+              .withSyncMode(SyncMode.INCREMENTAL)
+              .withCursorField(Lists.newArrayList("id"))
+              .withDestinationSyncMode(DestinationSyncMode.APPEND)
+              .withStream(CatalogHelpers.createAirbyteStream(
+                      LIMIT_PERMISSION_SCHEMA + "." + "id_and_name",
+                      Field.of("id", JsonSchemaType.NUMBER_V1),
+                      Field.of("name", JsonSchemaType.STRING_V1))
+                  .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
+    }
   }
 
 }

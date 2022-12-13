@@ -25,6 +25,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
 import io.airbyte.commons.util.AutoCloseableIterator;
 import io.airbyte.commons.util.AutoCloseableIterators;
+import io.airbyte.commons.version.Version;
 import io.airbyte.db.Database;
 import io.airbyte.db.PgLsn;
 import io.airbyte.db.factory.DSLContextFactory;
@@ -181,7 +182,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     database.query(ctx -> ctx.execute("DROP PUBLICATION " + PUBLICATION + ";"));
 
     assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
+      source.read(config, configuredCatalog, null);
     });
   }
 
@@ -191,7 +192,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     database.query(ctx -> ctx.execute("SELECT pg_drop_replication_slot('" + fullReplicationSlot + "');"));
 
     assertThrows(Exception.class, () -> {
-      source.read(config, CONFIGURED_CATALOG, null);
+      source.read(config, configuredCatalog, null);
     });
   }
 
@@ -284,14 +285,19 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     return MODELS_SCHEMA + "_random";
   }
 
+  @Override
+  protected Version getProtocolVersion() {
+    return new Version("1.0.0");
+  }
+
   @Test
   public void testTableWithTimestampColDefault() throws Exception {
     createAndPopulateTimestampTable();
     final AirbyteCatalog catalog = new AirbyteCatalog().withStreams(List.of(
         CatalogHelpers.createAirbyteStream("time_stamp_table", MODELS_SCHEMA,
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING),
-            Field.of("created_at", JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE))
+            Field.of("id", JsonSchemaType.NUMBER_V1),
+            Field.of("name", JsonSchemaType.STRING_V1),
+            Field.of("created_at", JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of("id")))));
     final ConfiguredAirbyteCatalog configuredCatalog = CatalogHelpers
@@ -347,7 +353,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final int recordsToCreate = 20;
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), configuredCatalog, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -363,7 +369,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(getConfig(), configuredCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
@@ -380,7 +386,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
     // sync failed on destination end and we didn't save state
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(getConfig(), configuredCatalog, state);
 
     final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
         .toListAndClose(thirdBatchIterator);
@@ -390,7 +396,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
         dataFromThirdBatch);
 
-    assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
+    assertEquals(modelRecords.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
   }
 
   @Test

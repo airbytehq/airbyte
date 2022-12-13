@@ -37,6 +37,7 @@ import org.testcontainers.utility.MountableFile;
 /**
  * None of the tests in this class use the cdc path (run the tests and search for `using CDC: false`
  * in logs). This is exact same as {@link PostgresSourceAcceptanceTest}
+ * MIgrate JsonSchema getConfiguredCatalog(override)
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
@@ -145,8 +146,8 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 NAMESPACE,
-                Field.of("id", JsonSchemaType.INTEGER),
-                Field.of("name", JsonSchemaType.STRING))
+                Field.of("id", JsonSchemaType.INTEGER_V1),
+                Field.of("name", JsonSchemaType.STRING_V1))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -155,8 +156,8 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 NAMESPACE,
-                Field.of("id", JsonSchemaType.INTEGER),
-                Field.of("name", JsonSchemaType.STRING))
+                Field.of("id", JsonSchemaType.INTEGER_V1),
+                Field.of("name", JsonSchemaType.STRING_V1))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 

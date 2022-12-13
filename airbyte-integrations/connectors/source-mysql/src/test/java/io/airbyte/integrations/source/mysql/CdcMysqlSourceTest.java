@@ -227,7 +227,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     }
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(getConfig(), configuredCatalog, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -237,7 +237,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
     final Set<AirbyteRecordMessage> recordsFromFirstBatch = extractRecordMessages(
         dataFromFirstBatch);
 
-    final int recordsCreatedBeforeTestCount = MODEL_RECORDS.size();
+    final int recordsCreatedBeforeTestCount = modelRecords.size();
     assertEquals((recordsCreatedBeforeTestCount + recordsToCreate), recordsFromFirstBatch.size());
     // sometimes there can be more than one of these at the end of the snapshot and just before the
     // first incremental.
@@ -260,7 +260,7 @@ public class CdcMysqlSourceTest extends CdcSourceTest {
 
     final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(getConfig(), configuredCatalog, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
 

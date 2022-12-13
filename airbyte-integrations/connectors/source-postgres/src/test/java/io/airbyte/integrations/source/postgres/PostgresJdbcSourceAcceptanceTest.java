@@ -17,6 +17,8 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.Version;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.StreamingJdbcDatabase;
@@ -174,6 +176,11 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
+  protected Version getProtocolVersion() {
+    return AirbyteProtocolVersion.getWithDefault("1.0.0");
+  }
+
+  @Override
   protected List<AirbyteMessage> getAirbyteMessagesReadOneColumn() {
     return getTestMessages().stream()
         .map(Jsons::clone)
@@ -184,7 +191,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
+              Jsons.jsonNode(m.getRecord().getData().get(COL_ID)));
         })
         .collect(Collectors.toList());
   }
@@ -227,7 +234,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
+              Jsons.jsonNode(m.getRecord().getData().get(COL_ID)));
         })
         .collect(Collectors.toList());
   }
@@ -244,7 +251,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_VISITED_AT);
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
+              Jsons.jsonNode(m.getRecord().getData().get(COL_ID)));
         })
         .collect(Collectors.toList());
   }
@@ -263,7 +270,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
           ((ObjectNode) m.getRecord().getData()).remove(COL_LAST_COMMENT_AT);
           ((ObjectNode) m.getRecord().getData()).remove(COL_WAKEUP_AT);
           ((ObjectNode) m.getRecord().getData()).replace(COL_ID,
-              Jsons.jsonNode(m.getRecord().getData().get(COL_ID).asInt()));
+              Jsons.jsonNode(m.getRecord().getData().get(COL_ID)));
         })
         .collect(Collectors.toList());
   }
@@ -307,7 +314,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_1,
+                    .of(COL_ID, String.valueOf(ID_VALUE_1),
                         COL_NAME, "picard",
                         COL_UPDATED_AT, "2004-10-19",
                         COL_WAKEUP_AT, "10:10:10.123456-05:00",
@@ -316,7 +323,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_2,
+                    .of(COL_ID, String.valueOf(ID_VALUE_2),
                         COL_NAME, "crusher",
                         COL_UPDATED_AT, "2005-10-19",
                         COL_WAKEUP_AT, "11:11:11.123456-05:00",
@@ -325,7 +332,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
             .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(getDefaultNamespace())
                 .withData(Jsons.jsonNode(ImmutableMap
-                    .of(COL_ID, ID_VALUE_3,
+                    .of(COL_ID, String.valueOf(ID_VALUE_3),
                         COL_NAME, "vash",
                         COL_UPDATED_AT, "2006-10-19",
                         COL_WAKEUP_AT, "12:12:12.123456-05:00",
@@ -353,34 +360,34 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(List.of(List.of(COL_ID))),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_WITHOUT_PK,
             defaultNamespace,
-            Field.of(COL_ID, JsonSchemaType.INTEGER),
-            Field.of(COL_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_ID, JsonSchemaType.INTEGER_V1),
+            Field.of(COL_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(Collections.emptyList()),
         CatalogHelpers.createAirbyteStream(
             TABLE_NAME_COMPOSITE_PK,
             defaultNamespace,
-            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_LAST_NAME, JsonSchemaType.STRING),
-            Field.of(COL_UPDATED_AT, JsonSchemaType.STRING_DATE),
-            Field.of(COL_WAKEUP_AT, JsonSchemaType.STRING_TIME_WITH_TIMEZONE),
-            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.STRING_TIMESTAMP_WITH_TIMEZONE),
-            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.STRING_TIMESTAMP_WITHOUT_TIMEZONE))
+            Field.of(COL_FIRST_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_LAST_NAME, JsonSchemaType.STRING_V1),
+            Field.of(COL_UPDATED_AT, JsonSchemaType.DATE_V1),
+            Field.of(COL_WAKEUP_AT, JsonSchemaType.TIME_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_VISITED_AT, JsonSchemaType.TIMESTAMP_WITH_TIMEZONE_V1),
+            Field.of(COL_LAST_COMMENT_AT, JsonSchemaType.TIMESTAMP_WITHOUT_TIMEZONE_V1))
             .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))
             .withSourceDefinedPrimaryKey(
                 List.of(List.of(COL_FIRST_NAME), List.of(COL_LAST_NAME)))));
@@ -428,7 +435,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_4,
+                .of(COL_ID, String.valueOf(ID_VALUE_4),
                     COL_NAME, "riker",
                     COL_UPDATED_AT, "2006-10-19",
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",
@@ -437,7 +444,7 @@ class PostgresJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     expectedMessages.add(new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
         .withRecord(new AirbyteRecordMessage().withStream(streamName).withNamespace(namespace)
             .withData(Jsons.jsonNode(ImmutableMap
-                .of(COL_ID, ID_VALUE_5,
+                .of(COL_ID, String.valueOf(ID_VALUE_5),
                     COL_NAME, "data",
                     COL_UPDATED_AT, "2006-10-19",
                     COL_WAKEUP_AT, "12:12:12.123456-05:00",

@@ -59,6 +59,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   @Override
   public void converterFor(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
+    LOGGER.debug("Setting up dbz converters");
     if (Arrays.stream(DATE_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))) {
       registerDate(field, registration);
     } else if (Arrays.stream(TEXT_TYPES).anyMatch(s -> s.equalsIgnoreCase(field.typeName()))
@@ -76,7 +77,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     }
   }
 
-  private void registerArray(RelationalColumn field, ConverterRegistration<SchemaBuilder> registration) {
+  private void registerArray(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     final String fieldType = field.typeName().toUpperCase();
     final SchemaBuilder arraySchema = switch (fieldType) {
       case "_NUMERIC", "_MONEY" -> SchemaBuilder.array(OPTIONAL_FLOAT64_SCHEMA);
@@ -89,6 +90,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
 
   private void registerNumber(final RelationalColumn field, final ConverterRegistration<SchemaBuilder> registration) {
     registration.register(SchemaBuilder.string().optional(), x -> {
+      LOGGER.debug("Registering number logic");
       if (x == null) {
         return DebeziumConverterUtils.convertDefaultValue(field);
       }
@@ -110,7 +112,7 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
       // The code below strips trailing zeros for integer numbers and represents number with exponent
       // if this number has decimals point.
       final double doubleValue = Double.parseDouble(x.toString());
-      var valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toString();
+      final var valueWithTruncatedZero = BigDecimal.valueOf(doubleValue).stripTrailingZeros().toString();
       return valueWithTruncatedZero.contains(".") ? String.valueOf(doubleValue) : valueWithTruncatedZero;
     });
   }
@@ -138,12 +140,12 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
-  private Object convertArray(Object x, RelationalColumn field) {
+  private Object convertArray(final Object x, final RelationalColumn field) {
     final String fieldType = field.typeName().toUpperCase();
     Object[] values = new Object[0];
     try {
       values = (Object[]) ((PgArray) x).getArray();
-    } catch (SQLException e) {
+    } catch (final SQLException e) {
       LOGGER.error("Failed to convert PgArray:" + e);
     }
     switch (fieldType) {
@@ -247,14 +249,14 @@ public class PostgresConverter implements CustomConverter<SchemaBuilder, Relatio
     });
   }
 
-  private String resolveTime(RelationalColumn field, Object x) {
+  private String resolveTime(final RelationalColumn field, final Object x) {
     if (x instanceof Long) {
       if (getTimePrecision(field) <= 3) {
-        long l = Math.multiplyExact((Long) x, TimeUnit.MILLISECONDS.toNanos(1));
+        final long l = Math.multiplyExact((Long) x, TimeUnit.MILLISECONDS.toNanos(1));
         return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
       }
       if (getTimePrecision(field) <= 6) {
-        long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
+        final long l = Math.multiplyExact((Long) x, TimeUnit.MICROSECONDS.toNanos(1));
         return DateTimeConverter.convertToTime(LocalTime.ofNanoOfDay(l));
       }
     }
