@@ -64,8 +64,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     REDSHIFT,
     SNOWFLAKE,
     CLICKHOUSE,
-    TIDB,
-    TERADATA
+    TIDB
   }
 
   public DefaultNormalizationRunner(final DestinationType destinationType,
@@ -74,13 +73,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     this.destinationType = destinationType;
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImageName;
-  }
-
-  public DefaultNormalizationRunner(final ProcessFactory processFactory,
-                                    final String normalizationImage) {
-    this.processFactory = processFactory;
-    this.normalizationImageName = normalizationImage;
-    this.destinationType = null;
   }
 
   @Override
@@ -202,20 +194,10 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.info("Terminating normalization process...");
+    LOGGER.debug("Closing normalization process");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-
-    /*
-     * After attempting to close the process check the following:
-     *
-     * Did the process actually terminate? If "yes", did it do so nominally?
-     */
-    if (process.isAlive()) {
-      throw new WorkerException("Normalization process did not terminate after 1 minute.");
-    } else if (process.exitValue() != 0) {
-      throw new WorkerException("Normalization process did not terminate normally (exit code: " + process.exitValue() + ")");
-    } else {
-      LOGGER.info("Normalization process successfully terminated.");
+    if (process.isAlive() || process.exitValue() != 0) {
+      throw new WorkerException("Normalization process wasn't successful");
     }
   }
 

@@ -72,7 +72,7 @@ public class TeradataSqlOperations extends JdbcSqlOperations {
   @Override
   public void createSchemaIfNotExists(final JdbcDatabase database, final String schemaName) throws Exception {
     try {
-      database.execute(String.format("CREATE DATABASE %s AS PERM = 1e9 SKEW = 10 PERCENT;", schemaName));
+      database.execute(String.format("CREATE DATABASE \"%s\" AS PERM = 1e9;", schemaName));
     } catch (SQLException e) {
       if (e.getMessage().contains("already exists")) {
         LOGGER.warn("Database " + schemaName + " already exists.");

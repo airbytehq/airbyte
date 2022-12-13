@@ -29,8 +29,6 @@ DESTINATION_SIZE_LIMITS = {
     DestinationType.CLICKHOUSE.value: 63,
     # https://docs.pingcap.com/tidb/stable/tidb-limitations
     DestinationType.TIDB.value: 64,
-    # https://docs.teradata.com/r/Teradata-VantageTM-SQL-Fundamentals-17.20/Basic-SQL-Syntax/Object-Names
-    DestinationType.TERADATA.value: 128,
 }
 
 # DBT also needs to generate suffix to table names, so we need to make sure it has enough characters to do so...
@@ -241,8 +239,6 @@ class DestinationNameTransformer:
         elif self.destination_type.value == DestinationType.TIDB.value:
             if not is_quoted and not self.needs_quotes(input_name):
                 result = input_name.lower()
-        elif self.destination_type.value == DestinationType.TERADATA.value:
-            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
@@ -283,8 +279,6 @@ class DestinationNameTransformer:
             pass
         elif self.destination_type.value == DestinationType.TIDB.value:
             result = input_name.lower()
-        elif self.destination_type.value == DestinationType.TERADATA.value:
-            pass
         else:
             raise KeyError(f"Unknown destination type {self.destination_type}")
         return result
