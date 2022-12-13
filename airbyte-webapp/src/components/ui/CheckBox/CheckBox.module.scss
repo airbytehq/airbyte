@@ -26,7 +26,7 @@ $sm-size: 14px;
 
 .checked,
 .indeterminate {
-  border: 1px solid colors.$blue;
+  border: vars.$border-thin solid colors.$blue;
   background: colors.$blue;
 
   &.disabled {
