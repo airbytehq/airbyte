@@ -17,7 +17,7 @@ tests:
         path: "integration_tests/expected_records.txt"
     - config_path: "secrets/config_with_ids.json"
       configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["group_issue_boards"]
+      empty_streams: ["group_issue_boards", "epic_issues"]
       expect_records:
         path: "integration_tests/expected_records_with_ids.txt"
 # We cannot use these tests for testing Incremental, since for Gitlab the State is saved for each Project separately,
