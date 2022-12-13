@@ -41,12 +41,8 @@ export const useBuilderErrors = () => {
 
   // Returns true if the global config fields or any stream config fields have errors in the provided formik errors, and false otherwise.
   // If limitToViews is provided, the error check is limited to only those views.
-  const hasErrors = (
-    ignoreUntouched: boolean,
-    limitToViews?: BuilderView[],
-    inputErrors?: FormikErrors<BuilderFormValues>
-  ) => {
-    return invalidViews(ignoreUntouched, limitToViews, inputErrors).length > 0;
+  const hasErrors = (ignoreUntouched: boolean, limitToViews?: BuilderView[]) => {
+    return invalidViews(ignoreUntouched, limitToViews).length > 0;
   };
 
   const validateAndTouch = (callback: () => void, limitToViews?: BuilderView[]) => {
