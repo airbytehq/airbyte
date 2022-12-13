@@ -198,7 +198,6 @@ class Posting(BaseSchemaModel):
     urls: dict
 
 
-
 class Stage(BaseSchemaModel):
     id: str
     text: str
