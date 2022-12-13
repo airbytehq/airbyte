@@ -7,4 +7,4 @@ outputs: |
     total_file_size 1M
     upload_timeout 1m
     use_put_object On
-    s3_key_format /k3s-logs/${WORKFLOW_RUN_ID}/${WORKFLOW_RUN_NUMBER}/$TAG/%Y/%m/%d/%H/%M
+    s3_key_format /k3s-logs/${WORKFLOW_RUN_ID}/$TAG/%Y/%m/%d/%H/%M
