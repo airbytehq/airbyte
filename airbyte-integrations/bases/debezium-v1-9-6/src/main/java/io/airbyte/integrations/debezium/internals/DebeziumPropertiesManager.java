@@ -47,6 +47,8 @@ public class DebeziumPropertiesManager {
     // default values from debezium CommonConnectorConfig
     props.setProperty("max.batch.size", "2048");
     props.setProperty("max.queue.size", "8192");
+    props.setProperty("slave_net_timeout", "120");
+    props.setProperty("thread_pool_idle_timeout", "120");
 
     if (schemaHistoryManager.isPresent()) {
       // https://debezium.io/documentation/reference/1.9/operations/debezium-server.html#debezium-source-database-history-class
