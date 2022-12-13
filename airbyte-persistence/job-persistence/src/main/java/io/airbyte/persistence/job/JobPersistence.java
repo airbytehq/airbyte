@@ -5,6 +5,7 @@
 package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.JobConfig;
@@ -261,6 +262,11 @@ public interface JobPersistence {
    * Set the min supported Airbyte Protocol Version
    */
   void setAirbyteProtocolVersionMin(Version version) throws IOException;
+
+  /**
+   * Get the current Airbyte Protocol Version range if defined
+   */
+  Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException;
 
   /**
    * Returns a deployment UUID.

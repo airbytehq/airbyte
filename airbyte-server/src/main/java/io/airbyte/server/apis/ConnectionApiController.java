@@ -35,37 +35,37 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate) {
-    return ConfigurationApi.execute(() -> connectionsHandler.createConnection(connectionCreate));
+    return ApiHelper.execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
   public ConnectionRead updateConnection(final ConnectionUpdate connectionUpdate) {
-    return ConfigurationApi.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
+    return ApiHelper.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
-    return ConfigurationApi.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
+    return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch) {
-    return ConfigurationApi.execute(() -> connectionsHandler.searchConnections(connectionSearch));
+    return ApiHelper.execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
   @Override
   public ConnectionRead getConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
+    return ApiHelper.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
   }
 
   @Override
   public void deleteConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    ConfigurationApi.execute(() -> {
+    ApiHelper.execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
       connectionsHandler.deleteConnection(connectionIdRequestBody.getConnectionId());
       return null;
@@ -74,12 +74,12 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody) {
-    return ConfigurationApi.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
+    return ApiHelper.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
 
 }

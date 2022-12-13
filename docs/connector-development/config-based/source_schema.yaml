@@ -58,6 +58,15 @@ definitions:
         "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
+  InlineSchemaLoader:
+    type: object
+    required:
+      - schema
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      schema:
+        type: object
   PrimaryKey:
     type: string
   Retriever:

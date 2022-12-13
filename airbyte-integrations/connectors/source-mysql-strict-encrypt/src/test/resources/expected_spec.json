@@ -61,8 +61,6 @@
               "mode": {
                 "type": "string",
                 "const": "preferred",
-                "enum": ["preferred"],
-                "default": "preferred",
                 "order": 0
               }
             }
@@ -75,8 +73,6 @@
               "mode": {
                 "type": "string",
                 "const": "required",
-                "enum": ["required"],
-                "default": "required",
                 "order": 0
               }
             }
@@ -89,8 +85,6 @@
               "mode": {
                 "type": "string",
                 "const": "verify_ca",
-                "enum": ["verify_ca"],
-                "default": "verify_ca",
                 "order": 0
               },
               "ca_certificate": {
@@ -134,8 +128,6 @@
               "mode": {
                 "type": "string",
                 "const": "verify_identity",
-                "enum": ["verify_identity"],
-                "default": "verify_identity",
                 "order": 0
               },
               "ca_certificate": {
@@ -187,8 +179,6 @@
               "method": {
                 "type": "string",
                 "const": "STANDARD",
-                "enum": ["STANDARD"],
-                "default": "STANDARD",
                 "order": 0
               }
             }
@@ -201,8 +191,6 @@
               "method": {
                 "type": "string",
                 "const": "CDC",
-                "enum": ["CDC"],
-                "default": "CDC",
                 "order": 0
               },
               "initial_waiting_seconds": {

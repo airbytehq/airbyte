@@ -2,27 +2,37 @@
 
 This page guides you through the process of setting up the TikTok Marketing source connector.
 
-## Prerequisites (Airbyte Cloud)
-* A Tiktok Ads Business account with permission to access data from accounts you want to sync 
+## Prerequisites
 
-## Prerequisites (Airbyte Open Source)
+<!-- env:cloud -->
+**For Airbyte Cloud:**
+
+* A Tiktok Ads Business account with permission to access data from accounts you want to sync
+<!-- /env:cloud -->
+
+<!-- env:oss -->
+**For Airbyte Open Source:**
 For the Production environment:
-* Access token 
+* Access token
 * Secret
 * App ID
 
 To access the Sandbox environment:
-* Access token 
+* Access token
 * Advertiser ID
+<!-- /env:oss -->
 
-## Step 1: Set up TikTok
+## Setup guide
+
+### Step 1: Set up TikTok
 
 1. Create a TikTok For Business account: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702715936951297)
 2. (Open source only) Create developer application: [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1702716474845185)
 3. (Open source only) For a sandbox environment: create a Sandbox Ad Account [Link](https://ads.tiktok.com/marketing_api/docs?rid=fgvgaumno25&id=1701890920013825)
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -32,15 +42,18 @@ To access the Sandbox environment:
 5. Log in and Authorize to the Tiktok account
 6. Choose required Start date
 7. click `Set up source`.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
-3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the Set up the source page, enter the name for the connector and select **Tiktok Marketing** from the Source type dropdown.
 4. Select `Production Access Token` or `Sandbox Access Token` Authorization method, then copy and paste info from step 1.
 5. Choose required Start date
 6. Click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported streams and sync modes
 
@@ -405,7 +418,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
 
 **AdsAudienceReportsDaily Stream - [AudienceReports](https://ads.tiktok.com/marketing_api/docs?id=1707957217727489)**
 ```
-{ 
+{
   {
     "result": 17,
     "clicks": 17,
@@ -482,7 +495,7 @@ Reports synced by this connector can use either hourly, daily, or lifetime granu
     "campaign_name": "CampaignVadimTraffic",
     "clicks": 20,
     "dpa_target_audience_type": null,
-    "mobile_app_id": 0,
+    "mobile_app_id": "0",
     "promotion_type": "Website",
     "conversion_rate": 0,
     "cpm": 3.9,
@@ -537,6 +550,7 @@ The connector is restricted by [requests limitation](https://ads.tiktok.com/mark
 
 | Version | Date       | Pull Request                                             | Subject                                                                                       |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------|
+| 1.0.0   | 2022-12-05 | [19758](https://github.com/airbytehq/airbyte/pull/19758) | Convert `mobile_app_id` from integer to string in AudienceReport streams.                     |
 | 0.1.17  | 2022-10-04 | [17557](https://github.com/airbytehq/airbyte/pull/17557) | Retry error 50002                                                                             |
 | 0.1.16  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream state                                                                   |                                               
 | 0.1.15  | 2022-08-30 | [16137](https://github.com/airbytehq/airbyte/pull/16137) | Fixed bug with normalization caused by unsupported nested cursor field                        |                                               

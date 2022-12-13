@@ -5,7 +5,7 @@
     "title": "Source GitLab Singer Spec",
     "type": "object",
     "required": ["api_url", "private_token", "start_date"],
-    "additionalProperties": false,
+    "additionalProperties": true,
     "properties": {
       "api_url": {
         "type": "string",

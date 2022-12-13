@@ -1,19 +1,11 @@
 {
-  "type": [
-    "null",
-    "object"
-  ],
+  "type": ["null", "object"],
   "properties": {
     "Description": {
-      "type": [
-        "null",
-        "string"
-      ]
+      "type": ["null", "string"]
     },
     "Code": {
-      "type": [
-        "string"
-      ]
+      "type": ["string"]
     }
   },
   "additionalProperties": true

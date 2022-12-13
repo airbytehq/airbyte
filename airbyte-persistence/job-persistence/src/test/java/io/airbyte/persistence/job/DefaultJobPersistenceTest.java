@@ -24,6 +24,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.text.Sqls;
+import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.FailureReason;
@@ -594,6 +596,22 @@ class DefaultJobPersistenceTest {
     jobPersistence.setAirbyteProtocolVersionMin(minVersion2);
     final Optional<Version> minVersion2read = jobPersistence.getAirbyteProtocolVersionMin();
     assertEquals(minVersion2, minVersion2read.orElseThrow());
+  }
+
+  @Test
+  void testAirbyteProtocolVersionRange() throws IOException {
+    final Version v1 = new Version("1.5.0");
+    final Version v2 = new Version("2.5.0");
+    final Optional<AirbyteProtocolVersionRange> range = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.empty(), range);
+
+    jobPersistence.setAirbyteProtocolVersionMax(v2);
+    final Optional<AirbyteProtocolVersionRange> range2 = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION, v2)), range2);
+
+    jobPersistence.setAirbyteProtocolVersionMin(v1);
+    final Optional<AirbyteProtocolVersionRange> range3 = jobPersistence.getCurrentProtocolVersionRange();
+    assertEquals(Optional.of(new AirbyteProtocolVersionRange(v1, v2)), range3);
   }
 
   private long createJobAt(final Instant created_at) throws IOException {

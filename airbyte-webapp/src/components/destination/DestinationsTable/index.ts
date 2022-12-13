@@ -1,0 +1,1 @@
+export { DestinationsTable } from "./DestinationsTable";

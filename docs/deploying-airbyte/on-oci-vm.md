@@ -1,4 +1,4 @@
-# On Oracle Cloud Infrastructure VM
+# Deploy Airbyte on Oracle Cloud
 
 This page guides you through deploying Airbyte Open Source on an Oracle Cloud Infrastructure (OCI) Virtual Machine (VM) Instance.
 

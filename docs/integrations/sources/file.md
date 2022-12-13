@@ -51,14 +51,20 @@ This source produces a single table for the target file as it replicates only on
 
 **This connector does not support syncing unstructured data files such as raw text, audio, or videos.**
 
-## Getting Started (Airbyte Cloud)
+## Getting Started
+
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 Setup through Airbyte Cloud will be exactly the same as the open-source setup, except for the fact that local files are disabled.
+<!-- /env:cloud -->
 
-## Getting Started (Airbyte Open-Source)
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Once the File Source is selected, you should define both the storage provider along its URL and format of the file.
 2. Depending on the provider choice and privacy of the data, you will have to configure more options.
+<!-- /env:oss -->
 
 #### Provider Specific Information
 
@@ -131,6 +137,7 @@ In order to read large files from a remote location, this connector uses the [sm
 | Version | Date       | Pull Request                                             | Subject                                                  |
 | ------- | ---------- | -------------------------------------------------------- | -------------------------------------------------------- |
 | 0.2.30  | 2022-11-10 | [19222](https://github.com/airbytehq/airbyte/pull/19222) | Use AirbyteConnectionStatus for "check" command          |
+| 0.2.29  | 2022-11-08 | [18587](https://github.com/airbytehq/airbyte/pull/18587) | Fix pandas read_csv header none issue.                   |
 | 0.2.28  | 2022-10-27 | [18428](https://github.com/airbytehq/airbyte/pull/18428) | Added retry logic for `Connection reset error - 104`     |
 | 0.2.27  | 2022-10-26 | [18481](https://github.com/airbytehq/airbyte/pull/18481) | Fix check for wrong format                               |
 | 0.2.26  | 2022-10-18 | [18116](https://github.com/airbytehq/airbyte/pull/18116) | Transform Dropbox shared link                            |
