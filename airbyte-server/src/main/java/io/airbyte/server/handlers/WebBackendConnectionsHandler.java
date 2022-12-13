@@ -390,7 +390,8 @@ public class WebBackendConnectionsHandler {
     return buildWebBackendConnectionRead(connection, currentSourceCatalogId).catalogDiff(diff);
   }
 
-  private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(final AirbyteCatalog configuredCatalog, final AirbyteCatalog originalDiscoveredCatalog) {
+  private AirbyteCatalog updateSchemaWithOriginalDiscoveredCatalog(final AirbyteCatalog configuredCatalog,
+                                                                   final AirbyteCatalog originalDiscoveredCatalog) {
     // We pass the original discovered catalog in as the "new" discovered catalog.
     return updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, originalDiscoveredCatalog, originalDiscoveredCatalog);
   }

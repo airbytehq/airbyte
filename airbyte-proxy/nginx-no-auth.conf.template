@@ -16,22 +16,6 @@ http {
       proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
       send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
     }
-
-    location ~ ^/api/v1/(health|openapi) {
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      proxy_pass "${PROXY_PASS_MICRONAUT_API}";
-    }
-
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_definition_specifications|destination_oauths|jobs|logs|notifications|operations|scheduler|source_oauths|sources|source_definitions|source_definition_specifications|state|web_backend|workspaces)/.* {
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      proxy_pass "${PROXY_PASS_MICRONAUT_API}";
-    }
   }
 
   server {
@@ -48,22 +32,6 @@ http {
       proxy_send_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
       proxy_read_timeout          ${BASIC_AUTH_PROXY_TIMEOUT};
       send_timeout                ${BASIC_AUTH_PROXY_TIMEOUT};
-    }
-
-    location ~ ^/api/v1/(health|openapi) {
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      proxy_pass "${PROXY_PASS_MICRONAUT_API}";
-    }
-
-    location ~ ^/api/v1/(connections|destinations|destination_definitions|destination_definition_specifications|destination_oauths|jobs|logs|notifications|operations|scheduler|source_oauths|sources|source_definitions|source_definition_specifications|state|web_backend|workspaces)/.* {
-      proxy_set_header Host $host;
-      proxy_set_header X-Real-IP $remote_addr;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-
-      proxy_pass "${PROXY_PASS_MICRONAUT_API}";
     }
   }
 

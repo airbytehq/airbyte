@@ -22,7 +22,6 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.ws.rs.Path;
 
 @Controller("/api/v1/web_backend")
 public class WebBackendApiController implements WebBackendApi {

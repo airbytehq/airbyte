@@ -96,7 +96,6 @@ public class DatabaseBeanFactory {
     return new StatePersistence(configDatabase);
   }
 
-
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("configsDatabaseMigrationCheck")

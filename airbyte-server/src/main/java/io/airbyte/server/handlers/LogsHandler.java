@@ -33,7 +33,8 @@ public class LogsHandler {
 
   @Inject
   public LogsHandler(@Named("workspaceRoot") final Path workspaceRoot,
-                     final WorkerEnvironment workerEnvironment, final LogConfigs logConfigs) {
+                     final WorkerEnvironment workerEnvironment,
+                     final LogConfigs logConfigs) {
     this.workspaceRoot = workspaceRoot;
     this.workerEnvironment = workerEnvironment;
     this.logConfigs = logConfigs;

@@ -27,8 +27,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
-import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -64,27 +62,19 @@ public class DestinationDefinitionsHandler {
   private final DestinationHandler destinationHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
 
-  public DestinationDefinitionsHandler(final ConfigRepository configRepository,
-                                       final SynchronousSchedulerClient schedulerSynchronousClient,
-                                       final DestinationHandler destinationHandler) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), destinationHandler);
-  }
-
   @VisibleForTesting
   public DestinationDefinitionsHandler(final ConfigRepository configRepository,
                                        final Supplier<UUID> uuidSupplier,
                                        final SynchronousSchedulerClient schedulerSynchronousClient,
                                        final AirbyteGithubStore githubStore,
-                                       final DestinationHandler destinationHandler) {
+                                       final DestinationHandler destinationHandler,
+                                       final AirbyteProtocolVersionRange protocolVersionRange) {
     this.configRepository = configRepository;
     this.uuidSupplier = uuidSupplier;
     this.schedulerSynchronousClient = schedulerSynchronousClient;
     this.githubStore = githubStore;
     this.destinationHandler = destinationHandler;
-
-    // TODO inject protocol min and max once this handler is being converted to micronaut
-    final Configs configs = new EnvConfigs();
-    protocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax());
+    this.protocolVersionRange = protocolVersionRange;
   }
 
   @VisibleForTesting
