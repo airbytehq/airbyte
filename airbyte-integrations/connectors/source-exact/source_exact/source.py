@@ -96,7 +96,16 @@ class ExactStream(HttpStream, IncrementalMixin):
             if self.cursor_field == "Timestamp":
                 params["$filter"] = f"Timestamp gt {self._cursor_value}L"
             elif self.cursor_field == "Modified":
-                params["$filter"] = f"Modified gt '{self._cursor_value}'"
+                # value is a timestamp stored as string in UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_timestamps)
+                # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
+                # the API's local timezone (CET) without timezone info.
+
+                tz_cet = pendulum.timezone("CET")
+                timestamp = pendulum.parse(self._cursor_value)
+                timestamp = tz_cet.convert(timestamp)
+                timestamp_str = timestamp.isoformat().split("+")[0]
+
+                params["$filter"] = f"Modified gt datetime'{timestamp_str}'"
             else:
                 raise RuntimeError(f"Source not capable of incremental syncing with cursor field '{self.cursor_field}'")
 
