@@ -43,7 +43,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: bigquery
   resourceRequirements:
@@ -60,7 +60,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/bigquery
   icon: bigquery.svg
   normalizationRepository: airbyte/normalization
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   normalizationIntegrationType: bigquery
   resourceRequirements:
     jobSpecific:
@@ -91,7 +91,7 @@
   icon: clickhouse.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-clickhouse
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: clickhouse
 - name: Cloudflare R2
@@ -204,7 +204,7 @@
   icon: mssql.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-mssql
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: mssql
 - name: MeiliSearch
@@ -229,7 +229,7 @@
   icon: mysql.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-mysql
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: mysql
 - name: Oracle
@@ -240,7 +240,7 @@
   icon: oracle.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-oracle
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: oracle
 - name: Postgres
@@ -251,7 +251,7 @@
   icon: postgresql.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: postgres
 - name: Pulsar
@@ -282,7 +282,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redshift
   icon: redshift.svg
   normalizationRepository: airbyte/normalization-redshift
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: redshift
   resourceRequirements:
@@ -337,7 +337,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/snowflake
   icon: snowflake.svg
   normalizationRepository: airbyte/normalization-snowflake
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: snowflake
   resourceRequirements:
@@ -390,7 +390,7 @@
   icon: tidb.svg
   releaseStage: alpha
   normalizationRepository: airbyte/normalization-tidb
-  normalizationTag: 0.2.24
+  normalizationTag: 0.2.25
   supportsDbt: true
   normalizationIntegrationType: tidb
 - name: Typesense
