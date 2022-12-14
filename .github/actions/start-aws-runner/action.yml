@@ -24,6 +24,10 @@ inputs:
     required: false
   ec2-instance-id:
     required: false
+  iam-role-name:
+    required: false
+    default: ""
+
 outputs:
   label:
     value: ${{ steps.start-ec2-runner.outputs.label }}
@@ -49,6 +53,7 @@ runs:
         ec2-instance-type: ${{ inputs.ec2-instance-type }}
         subnet-id: ${{ inputs.subnet-id }}
         security-group-id: ${{ inputs.security-group-id }}
+        iam-role-name: ${{ inputs.iam-role-name }}
         # this adds a label to group any EC2 runners spun up within the same action run
         # this enables creating a pool of runners to run multiple/matrix jobs on in parallel
         label: runner-pool-${{ github.run_id }}
