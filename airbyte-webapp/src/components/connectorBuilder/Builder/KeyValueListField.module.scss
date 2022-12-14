@@ -23,8 +23,13 @@
 .removeButton {
   border: none;
   background-color: transparent;
-  color: colors.$grey;
+  color: colors.$grey-200;
   cursor: pointer;
   padding: 0;
   font-size: 18px;
+  transition: variables.$transition;
+
+  &:hover {
+    color: colors.$grey-300;
+  }
 }
