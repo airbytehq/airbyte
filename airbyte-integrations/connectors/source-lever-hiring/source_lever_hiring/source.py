@@ -67,6 +67,6 @@ class SourceLeverHiring(AbstractSource):
             Referrals(**stream_params_with_start_date),
             Users(**full_refresh_params),
             ArchiveReasons(**full_refresh_params),
-            Postings(**full_refresh_params),
+            Postings(**stream_params_with_start_date),
             Stages(**full_refresh_params),
         ]
