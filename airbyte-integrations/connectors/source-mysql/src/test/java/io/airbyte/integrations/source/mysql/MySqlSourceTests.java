@@ -5,6 +5,8 @@
 package io.airbyte.integrations.source.mysql;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -65,6 +67,23 @@ public class MySqlSourceTests {
         .put(JdbcUtils.PASSWORD_KEY, TEST_PASSWORD)
         .put(JdbcUtils.JDBC_URL_PARAMS_KEY, jdbcParams)
         .build());
+  }
+
+  @Test
+  void testJdbcUrlWithEscapedDatabaseName() {
+    final JsonNode jdbcConfig = new MySqlSource().toDatabaseConfig(buildConfigEscapingNeeded());
+    assertNotNull(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText());
+    assertTrue(jdbcConfig.get(JdbcUtils.JDBC_URL_KEY).asText().startsWith(EXPECTED_JDBC_ESCAPED_URL));
+  }
+
+  private static final String EXPECTED_JDBC_ESCAPED_URL = "jdbc:mysql://localhost:1111/db%2Ffoo?";
+
+  private JsonNode buildConfigEscapingNeeded() {
+    return Jsons.jsonNode(ImmutableMap.of(
+        JdbcUtils.HOST_KEY, "localhost",
+        JdbcUtils.PORT_KEY, 1111,
+        JdbcUtils.USERNAME_KEY, "user",
+        JdbcUtils.DATABASE_KEY, "db/foo"));
   }
 
 }

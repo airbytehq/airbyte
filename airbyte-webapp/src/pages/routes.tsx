@@ -2,11 +2,10 @@ import React, { useMemo } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
-import ApiErrorBoundary from "components/ApiErrorBoundary";
+import { ApiErrorBoundary } from "components/common/ApiErrorBoundary";
 
 import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
 import { useApiHealthPoll } from "hooks/services/Health";
-import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useListWorkspaces } from "services/workspaces/WorkspacesService";
 import { storeUtmFromQuery } from "utils/utmStorage";
@@ -15,11 +14,15 @@ import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
 import ConnectionPage from "./ConnectionPage";
-import { ConnectorBuilderPage } from "./connector-builder/ConnectorBuilderPage";
-import DestinationPage from "./DestinationPage";
-import OnboardingPage from "./OnboardingPage";
+import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
+import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
+import { AllDestinationsPage } from "./destination/AllDestinationsPage";
+import CreateDestinationPage from "./destination/CreateDestinationPage";
+import { DestinationItemPage } from "./destination/DestinationItemPage";
+import { DestinationOverviewPage } from "./destination/DestinationOverviewPage";
+import { DestinationSettingsPage } from "./destination/DestinationSettingsPage";
 import PreferencesPage from "./PreferencesPage";
-import { RoutePaths } from "./routePaths";
+import { RoutePaths, DestinationPaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
 import SourcesPage from "./SourcesPage";
 
@@ -35,23 +38,25 @@ const useAddAnalyticsContextForWorkspace = (workspace: WorkspaceRead): void => {
   useAnalyticsIdentifyUser(workspace.workspaceId);
 };
 
-const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = ({ workspace }) => {
+const MainViewRoutes: React.FC = () => {
   return (
     <MainView>
       <ApiErrorBoundary>
         <Routes>
-          <Route path={`${RoutePaths.Destination}/*`} element={<DestinationPage />} />
+          <Route path={RoutePaths.Destination}>
+            <Route index element={<AllDestinationsPage />} />
+            <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
+              <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
+              <Route index element={<DestinationOverviewPage />} />
+            </Route>
+          </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
           <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
-          <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
-          {workspace.displaySetupWizard ? (
-            <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} />
-          ) : null}
-          <Route
-            path="*"
-            element={<Navigate to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections} />}
-          />
+
+          <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
         </Routes>
       </ApiErrorBoundary>
     </MainView>
@@ -83,11 +88,7 @@ const RoutingWithWorkspace: React.FC = () => {
   useAddAnalyticsContextForWorkspace(workspace);
   useApiHealthPoll();
 
-  return (
-    <OnboardingServiceProvider>
-      {workspace.initialSetupComplete ? <MainViewRoutes workspace={workspace} /> : <PreferencesRoutes />}
-    </OnboardingServiceProvider>
-  );
+  return workspace.initialSetupComplete ? <MainViewRoutes /> : <PreferencesRoutes />;
 };
 
 export const Routing: React.FC = () => {
@@ -107,6 +108,7 @@ export const Routing: React.FC = () => {
   );
   return (
     <Routes>
+      <Route path={`${RoutePaths.ConnectorBuilder}/*`} element={<ConnectorBuilderPage />} />
       {OldRoutes}
       <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
       <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />

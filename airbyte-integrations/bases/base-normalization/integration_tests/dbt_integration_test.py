@@ -690,7 +690,7 @@ class DbtIntegrationTest(object):
             schemas_to_remove[destination.value] = []
 
             # based on test_type select path to source files
-            if test_type == "ephemeral":
+            if test_type == "ephemeral" or test_type == "test_reset_scd_overwrite":
                 if not tmp_folders:
                     raise TypeError("`tmp_folders` arg is not provided.")
                 for folder in tmp_folders:

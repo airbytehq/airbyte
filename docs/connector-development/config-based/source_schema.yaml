@@ -58,6 +58,15 @@ definitions:
         "$ref": "#/definitions/RecordTransformation"
       checkpoint_interval:
         type: integer
+  InlineSchemaLoader:
+    type: object
+    required:
+      - schema
+    properties:
+      "$options":
+        "$ref": "#/definitions/$options"
+      schema:
+        type: object
   PrimaryKey:
     type: string
   Retriever:
@@ -222,6 +231,9 @@ definitions:
         default: "expires_in"
       refresh_request_body:
         type: object
+      grant_type:
+        type: string
+        default: "refresh_token"
   Paginator:
     type: object
     anyOf:

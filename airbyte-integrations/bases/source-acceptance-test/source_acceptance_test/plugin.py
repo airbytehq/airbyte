@@ -3,12 +3,16 @@
 #
 
 
+from enum import Enum
 from pathlib import Path
-from typing import List
+from typing import Callable, List, Tuple, Type
 
 import pytest
 from _pytest.config import Config
 from _pytest.config.argparsing import Parser
+from source_acceptance_test.base import BaseTest
+from source_acceptance_test.config import Config as AcceptanceTestConfig
+from source_acceptance_test.config import GenericTestConfig
 from source_acceptance_test.utils import diff_dicts, load_config
 
 HERE = Path(__file__).parent.absolute()
@@ -34,36 +38,75 @@ def pytest_addoption(parser):
     )
 
 
+class TestAction(Enum):
+    PARAMETRIZE = 1
+    SKIP = 2
+    FAIL = 3
+
+
 def pytest_generate_tests(metafunc):
     """Hook function to customize test discovery and parametrization.
-    It does two things:
-     1. skip test class if its name omitted in the config file (or it has no inputs defined)
-     2. parametrize each test with inputs from config file.
-
-    For example config file contains this:
-        tests:
-          test_suite1:
-            - input1: value1
-              input2: value2
-            - input1: value3
-              input2: value4
-          test_suite2: []
-
-    Hook function will skip test_suite2 and test_suite3, but parametrize test_suite1 with two sets of inputs.
+    It parametrizes, skips or fails a discovered test according the test configuration.
     """
 
     if "inputs" in metafunc.fixturenames:
-        config_key = metafunc.cls.config_key()
-        test_name = f"{metafunc.cls.__name__}.{metafunc.function.__name__}"
-        config = load_config(metafunc.config.getoption("--acceptance-test-config"))
-        if not hasattr(config.tests, config_key) or not getattr(config.tests, config_key):
-            pytest.skip(f"Skipping {test_name} because not found in the config")
-        else:
-            test_inputs = getattr(config.tests, config_key)
-            if not test_inputs:
-                pytest.skip(f"Skipping {test_name} because no inputs provided")
+        test_config_key = metafunc.cls.config_key()
+        global_config = load_config(metafunc.config.getoption("--acceptance-test-config"))
+        test_configuration: GenericTestConfig = getattr(global_config.acceptance_tests, test_config_key, None)
+        test_action, reason = parametrize_skip_or_fail(
+            metafunc.cls, metafunc.function, global_config.test_strictness_level, test_configuration
+        )
 
-            metafunc.parametrize("inputs", test_inputs)
+        if test_action == TestAction.PARAMETRIZE:
+            metafunc.parametrize("inputs", test_configuration.tests)
+        if test_action == TestAction.SKIP:
+            pytest.skip(reason)
+        if test_action == TestAction.FAIL:
+            pytest.fail(reason)
+
+
+def parametrize_skip_or_fail(
+    TestClass: Type[BaseTest],
+    test_function: Callable,
+    global_test_mode: AcceptanceTestConfig.TestStrictnessLevel,
+    test_configuration: GenericTestConfig,
+) -> Tuple[TestAction, str]:
+    """Use the current test strictness level and test configuration to determine if the discovered test should be parametrized, skipped or failed.
+    We parametrize a test if:
+      - the configuration declares tests.
+    We skip a test if:
+      - the configuration does not declare tests and:
+        - the current test mode allows this test to be skipped.
+        - Or a bypass_reason is declared in the test configuration.
+    We fail a test if:
+        - the configuration does not declare the test but the discovered test is declared as mandatory for the current test strictness level.
+    Args:
+        TestClass (Type[BaseTest]): The discovered test class
+        test_function (Callable): The discovered test function
+        global_test_mode (AcceptanceTestConfig.TestStrictnessLevel): The global test strictness level (from the global configuration object)
+        test_configuration (GenericTestConfig): The current test configuration.
+
+    Returns:
+        Tuple[TestAction, str]: The test action the execution should take and the reason why.
+    """
+    test_name = f"{TestClass.__name__}.{test_function.__name__}"
+    test_mode_can_skip_this_test = global_test_mode not in TestClass.MANDATORY_FOR_TEST_STRICTNESS_LEVELS
+    skipping_reason_prefix = f"Skipping {test_name}: "
+    default_skipping_reason = skipping_reason_prefix + "not found in the config."
+
+    if test_configuration is None:
+        if test_mode_can_skip_this_test:
+            return TestAction.SKIP, default_skipping_reason
+        else:
+            return (
+                TestAction.FAIL,
+                f"{test_name} failed: it was not configured but must be according to the current {global_test_mode} test strictness level.",
+            )
+    else:
+        if test_configuration.tests is not None:
+            return TestAction.PARAMETRIZE, f"Parametrize {test_name}: tests are configured."
+        else:
+            return TestAction.SKIP, skipping_reason_prefix + test_configuration.bypass_reason
 
 
 def pytest_collection_modifyitems(config, items):
@@ -87,8 +130,9 @@ def pytest_collection_modifyitems(config, items):
         if not hasattr(items[0].cls, "config_key"):
             # Skip user defined test classes from integration_tests/ directory.
             continue
-        test_configs = getattr(config.tests, items[0].cls.config_key())
-        for test_config, item in zip(test_configs, items):
+        test_configs = getattr(config.acceptance_tests, items[0].cls.config_key())
+
+        for test_config, item in zip(test_configs.tests, items):
             default_timeout = item.get_closest_marker("default_timeout")
             if test_config.timeout_seconds:
                 item.add_marker(pytest.mark.timeout(test_config.timeout_seconds))

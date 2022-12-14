@@ -3,7 +3,7 @@ plugins {
     id "com.github.node-gradle.node" version "3.3.0"
 }
 
-def nodeVersion = System.getenv('NODE_VERSION') ?: '16.15.1'
+def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
 
 node {
     download = true

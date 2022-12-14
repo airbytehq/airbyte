@@ -58,38 +58,43 @@ This tutorial assumes that you are an administrator on your slack instance. If y
 8. In Airbyte, create a Slack source. The "Bot User OAuth Access Token" from the earlier should be used as the token.
 9. You can now pull data from your slack instance!
 
-
-### Airbyte Open Source additional setup steps
+<!-- env:oss -->
+**Airbyte Open Source additional setup steps**
 
 You can no longer create "Legacy" API Keys, but if you already have one, you can use it with this source. Fill it into the API key section.
 
 We recommend creating a restricted, read-only key specifically for Airbyte access. This will allow you to control which resources Airbyte should be able to access.
+<!-- /env:oss -->
 
 
-## Step 2: Set up the Slack connector in Airbyte
+### Step 2: Set up the Slack connector in Airbyte
 
-### For Airbyte Cloud:
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown. 
+3. On the Set up the source page, enter the name for the Slack connector and select **Slack** from the Source type dropdown.
 4. Select `Authenticate your account` and log in and Authorize to the Slack account.
 5. Enter your `start_date`.
 6. Enter your `lookback_window`.
 7. Enter your `join_channels`.
-8. Enter your `channel_filter`. 
+8. Enter your `channel_filter`.
 9. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte OSS:
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
-2. Set the name for your source. 
+2. Set the name for your source.
 3. Enter your `start_date`.
 4. Enter your `lookback_window`.
 5. Enter your `join_channels`.
 6. Enter your `channel_filter`.
-7. Enter your `api_token`. 
+7. Enter your `api_token`.
 8. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -131,6 +136,7 @@ It is recommended to sync required channels only, this can be done by specifying
 
 | Version | Date       | Pull Request                                             | Subject                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------|
+| 0.1.19  | 2022-12-01 | [19970](https://github.com/airbytehq/airbyte/pull/19970) | Remove OAuth2.0 broken `refresh_token` support      |
 | 0.1.18  | 2022-09-28 | [17315](https://github.com/airbytehq/airbyte/pull/17315) | Always install latest version of Airbyte CDK        |
 | 0.1.17  | 2022-08-28 | [16085](https://github.com/airbytehq/airbyte/pull/16085) | Increase unit test coverage                         |
 | 0.1.16  | 2022-08-28 | [16050](https://github.com/airbytehq/airbyte/pull/16050) | Fix SATs                                            |

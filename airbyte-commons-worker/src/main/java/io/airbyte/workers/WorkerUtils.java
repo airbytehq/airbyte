@@ -13,6 +13,7 @@ import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.WorkerSourceConfig;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
@@ -22,11 +23,9 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -132,18 +131,12 @@ public class WorkerUtils {
     throw new WorkerException(defaultErrorMessage);
   }
 
-  public static Map<String, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
+  public static Map<AirbyteStreamNameNamespacePair, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
     return syncInput.getCatalog().getStreams().stream().collect(
         Collectors.toMap(
-            k -> {
-              return streamNameWithNamespace(k.getStream().getNamespace(), k.getStream().getName());
-            },
+            k -> AirbyteStreamNameNamespacePair.fromAirbyteStream(k.getStream()),
             v -> v.getStream().getJsonSchema()));
 
-  }
-
-  public static String streamNameWithNamespace(final @Nullable String namespace, final String streamName) {
-    return Objects.toString(namespace, "").trim() + streamName.trim();
   }
 
 }

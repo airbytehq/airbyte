@@ -5,8 +5,14 @@
 package io.airbyte.integrations.source.mssql;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.SyncMode;
 import io.debezium.annotation.VisibleForTesting;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import org.codehaus.plexus.util.StringUtils;
 
 public class MssqlCdcHelper {
 
@@ -130,8 +136,7 @@ public class MssqlCdcHelper {
     return DataToSync.EXISTING_AND_NEW;
   }
 
-  @VisibleForTesting
-  static Properties getDebeziumProperties(final JsonNode config) {
+  static Properties getDebeziumProperties(final JsonNode config, final ConfiguredAirbyteCatalog catalog) {
     final Properties props = new Properties();
     props.setProperty("connector.class", "io.debezium.connector.sqlserver.SqlServerConnector");
 
@@ -146,7 +151,19 @@ public class MssqlCdcHelper {
     props.setProperty("snapshot.mode", getDataToSyncConfig(config).getDebeziumSnapshotMode());
     props.setProperty("snapshot.isolation.mode", getSnapshotIsolationConfig(config).getDebeziumIsolationMode());
 
+    props.setProperty("schema.include.list", getSchema(catalog));
+
     return props;
+  }
+
+  private static String getSchema(final ConfiguredAirbyteCatalog catalog) {
+    return catalog.getStreams().stream()
+        .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
+        .map(ConfiguredAirbyteStream::getStream)
+        .map(AirbyteStream::getNamespace)
+        // debezium needs commas escaped to split properly
+        .map(x -> StringUtils.escape(x, new char[] {','}, "\\,"))
+        .collect(Collectors.joining(","));
   }
 
 }

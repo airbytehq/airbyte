@@ -58,3 +58,10 @@ properties:
   protocolVersion:
     type: string
     description: the Airbyte Protocol version supported by the connector
+  normalizationRepository:
+    type: string
+  normalizationTag:
+    type: string
+  supportsDbt:
+    type: boolean
+    default: false

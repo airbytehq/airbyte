@@ -5,7 +5,15 @@
 import traceback
 from datetime import datetime
 
-from airbyte_cdk.models import AirbyteErrorTraceMessage, AirbyteMessage, AirbyteTraceMessage, FailureType, TraceType
+from airbyte_cdk.models import (
+    AirbyteConnectionStatus,
+    AirbyteErrorTraceMessage,
+    AirbyteMessage,
+    AirbyteTraceMessage,
+    FailureType,
+    Status,
+    TraceType,
+)
 from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.utils.airbyte_secrets_utils import filter_secrets
 
@@ -55,6 +63,13 @@ class AirbyteTracedException(Exception):
         )
 
         return AirbyteMessage(type=MessageType.TRACE, trace=trace_message)
+
+    def as_connection_status_message(self) -> AirbyteMessage:
+        if self.failure_type == FailureType.config_error:
+            output_message = AirbyteMessage(
+                type=MessageType.CONNECTION_STATUS, connectionStatus=AirbyteConnectionStatus(status=Status.FAILED, message=self.message)
+            )
+            return output_message
 
     def emit_message(self):
         """

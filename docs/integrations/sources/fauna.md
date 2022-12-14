@@ -194,6 +194,7 @@ inferred that the document ID refers to a document within the synced collection.
 
 Every ref is serialized as a JSON object with 2 or 3 fields, as listed above. The `type` field must be
 one of these strings:
+
 |                                    Reference Type                                       |    `type` string    |
 | --------------------------------------------------------------------------------------- | ------------------- |
 | Document                                                                                | `"document"`        |
@@ -223,4 +224,4 @@ FQL [`Select`](https://docs.fauna.com/fauna/current/api/fql/functions/select) is
 
 | Version | Date       | Pull Request                                             | Subject          |
 | ------- | ---------- | -------------------------------------------------------- | ---------------- |
-| 0.1.0   | 2022-08-03 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |
+| 0.1.0   | 2022-11-17 | [15274](https://github.com/airbytehq/airbyte/pull/15274) | Add Fauna Source |

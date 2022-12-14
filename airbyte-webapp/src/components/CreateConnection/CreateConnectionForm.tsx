@@ -10,6 +10,7 @@ import {
   tidyConnectionFormValues,
   useConnectionFormService,
 } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useCreateConnection } from "hooks/services/useConnectionHook";
 import { SchemaError as SchemaErrorType, useDiscoverSchema } from "hooks/services/useSourceHook";
@@ -17,10 +18,14 @@ import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import CreateControls from "views/Connection/ConnectionForm/components/CreateControls";
 import { OperationsSection } from "views/Connection/ConnectionForm/components/OperationsSection";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
-import { connectionValidationSchema, FormikConnectionFormValues } from "views/Connection/ConnectionForm/formConfig";
+import {
+  createConnectionValidationSchema,
+  FormikConnectionFormValues,
+} from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CreateConnectionForm.module.scss";
 import { CreateConnectionNameField } from "./CreateConnectionNameField";
+import { DataResidency } from "./DataResidency";
 import { SchemaError } from "./SchemaError";
 
 interface CreateConnectionProps {
@@ -35,19 +40,26 @@ interface CreateConnectionPropsInner extends Pick<CreateConnectionProps, "afterS
 
 const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schemaError, afterSubmitConnection }) => {
   const navigate = useNavigate();
-
+  const canEditDataGeographies = useFeature(FeatureItem.AllowChangeDataGeographies);
   const { mutateAsync: createConnection } = useCreateConnection();
-
+  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
   const { clearFormChange } = useFormChangeTrackerService();
 
   const workspaceId = useCurrentWorkspaceId();
 
   const { connection, initialValues, mode, formId, getErrorMessage, setSubmitError } = useConnectionFormService();
   const [editingTransformation, setEditingTransformation] = useState(false);
+  const allowSubOneHourCronExpressions = useFeature(FeatureItem.AllowSyncSubOneHourCronExpressions);
 
   const onFormSubmit = useCallback(
     async (formValues: FormikConnectionFormValues, formikHelpers: FormikHelpers<FormikConnectionFormValues>) => {
-      const values = tidyConnectionFormValues(formValues, workspaceId, mode);
+      const values = tidyConnectionFormValues(
+        formValues,
+        workspaceId,
+        mode,
+        allowSubOneHourCronExpressions,
+        allowAutoDetectSchemaChanges
+      );
 
       try {
         const createdConnection = await createConnection({
@@ -80,6 +92,8 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
     [
       workspaceId,
       mode,
+      allowSubOneHourCronExpressions,
+      allowAutoDetectSchemaChanges,
       createConnection,
       connection.source,
       connection.destination,
@@ -101,13 +115,17 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
       <div className={styles.connectionFormContainer}>
         <Formik
           initialValues={initialValues}
-          validationSchema={connectionValidationSchema(mode)}
+          validationSchema={createConnectionValidationSchema({
+            mode,
+            allowSubOneHourCronExpressions,
+            allowAutoDetectSchemaChanges,
+          })}
           onSubmit={onFormSubmit}
-          validateOnChange={false}
         >
           {({ values, isSubmitting, isValid, dirty }) => (
             <Form>
               <CreateConnectionNameField />
+              {canEditDataGeographies && <DataResidency />}
               <ConnectionFormFields values={values} isSubmitting={isSubmitting} dirty={dirty} />
               <OperationsSection
                 onStartEditTransformation={() => setEditingTransformation(true)}
