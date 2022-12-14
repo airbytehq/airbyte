@@ -1,9 +1,9 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
-
+import string
 from typing import Any, Iterable, Mapping
+import random
 
 from airbyte_cdk import AirbyteLogger
 import logging
@@ -84,6 +84,9 @@ class DestinationWeaviate(Destination):
         try:
             client = Client.get_weaviate_client(config)
             ready = client.is_ready()
+            class_name = ''.join(random.choices(string.ascii_uppercase, k=10))
+            client.schema.create_class({"class": class_name})
+            client.schema.delete_class(class_name)
             if not ready:
                 return AirbyteConnectionStatus(status=Status.FAILED, message=f"Weaviate server {config.get('url')} not ready")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
