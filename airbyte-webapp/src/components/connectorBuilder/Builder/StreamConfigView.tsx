@@ -88,7 +88,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestBody")}
           label="Request Body"
-          tooltip="Body to attach to API requests"
+          tooltip="Body to attach to API requests as url-encoded form values"
         />
       </BuilderCard>
     </BuilderConfigView>
