@@ -460,6 +460,7 @@ class StatsIncremental(Stats, IncrementalMixin):
         return stream_slices
 
     def request_params(
+            
             self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """start/end date param should be set for Daily and Hourly streams"""
