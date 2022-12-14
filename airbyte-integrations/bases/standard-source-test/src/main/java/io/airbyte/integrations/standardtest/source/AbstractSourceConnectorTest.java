@@ -113,8 +113,8 @@ public abstract class AbstractSourceConnectorTest {
   private ConfigRepository mConfigRepository;
 
   // This has to be using the protocol version of the platform in order to capture the arg
-  private final ArgumentCaptor<io.airbyte.protocol.models.AirbyteCatalog> lastPersistedCatalog =
-      ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
+  private final ArgumentCaptor<io.airbyte.protocol.models.v1.AirbyteCatalog> lastPersistedCatalog =
+      ArgumentCaptor.forClass(io.airbyte.protocol.models.v1.AirbyteCatalog.class);
 
   protected AirbyteCatalog getLastPersistedCatalog() {
     return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
@@ -153,7 +153,7 @@ public abstract class AbstractSourceConnectorTest {
   }
 
   protected ConnectorSpecification runSpec() throws WorkerException {
-    final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecWorker(
+    final io.airbyte.protocol.models.v1.ConnectorSpecification spec = new DefaultGetSpecWorker(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false))
             .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
     return convertProtocolObject(spec, ConnectorSpecification.class);
@@ -202,7 +202,7 @@ public abstract class AbstractSourceConnectorTest {
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
-        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog.class));
 
     final AirbyteSource source = new DefaultAirbyteSource(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false));
@@ -224,7 +224,7 @@ public abstract class AbstractSourceConnectorTest {
     final WorkerSourceConfig sourceConfig = new WorkerSourceConfig()
         .withSourceConnectionConfiguration(getConfig())
         .withState(state == null ? null : new State().withState(state))
-        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class));
+        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog.class));
 
     final Map<String, String> mapOfResourceRequirementsParams = prepareResourceRequestMapBySystemProperties();
     final AirbyteSource source =

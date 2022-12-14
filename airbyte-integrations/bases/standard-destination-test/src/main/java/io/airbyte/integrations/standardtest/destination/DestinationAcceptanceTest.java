@@ -1281,14 +1281,15 @@ public abstract class DestinationAcceptanceTest {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
+        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination destination = getDestination();
 
     destination.start(destinationConfig, jobRoot);
     messages.forEach(
-        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
+        message -> Exceptions
+            .toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.v1.AirbyteMessage.class))));
     destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
@@ -1484,7 +1485,7 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(convertProtocolObject(configuredTestCatalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
+        .withCatalog(convertProtocolObject(configuredTestCatalog, io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
     final AirbyteDestination destination = getDestination();
 
@@ -1526,7 +1527,7 @@ public abstract class DestinationAcceptanceTest {
                             .build()))
                 .withEmittedAt(Instant.now().toEpochMilli()));
         try {
-          destination.accept(convertProtocolObject(msg, io.airbyte.protocol.models.AirbyteMessage.class));
+          destination.accept(convertProtocolObject(msg, io.airbyte.protocol.models.v1.AirbyteMessage.class));
         } catch (final Exception e) {
           LOGGER.error("Failed to write a RECORD message: " + e);
           throw new RuntimeException(e);
@@ -1542,7 +1543,7 @@ public abstract class DestinationAcceptanceTest {
               .withData(
                   Jsons.jsonNode(ImmutableMap.builder().put("start_date", "2020-09-02").build())));
       try {
-        destination.accept(convertProtocolObject(msgState, io.airbyte.protocol.models.AirbyteMessage.class));
+        destination.accept(convertProtocolObject(msgState, io.airbyte.protocol.models.v1.AirbyteMessage.class));
       } catch (final Exception e) {
         LOGGER.error("Failed to write a STATE message: " + e);
         throw new RuntimeException(e);
