@@ -20,7 +20,7 @@ definitions:
         order: "asc"
   date_stream_slicer:
     type: DatetimeStreamSlicer
-    lookback_window: "{{ config['conversion_window_days'] }}d"
+    lookback_window: "{{ config.get('conversion_window_days', 0) }}d"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
