@@ -44,5 +44,5 @@ class SourcePardot(AbstractSource):
             Users(**args),
             VisitorActivities(**args),
             Visitors(**args),
-            Visits(parent_stream=visitors, **args),
+            Visits(parent_stream=Visitors(**args), **args),
         ]
