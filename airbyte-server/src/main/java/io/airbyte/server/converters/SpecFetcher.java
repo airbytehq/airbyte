@@ -5,7 +5,7 @@
 package io.airbyte.server.converters;
 
 import com.google.common.base.Preconditions;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import io.airbyte.server.scheduler.SynchronousResponse;
 
 public class SpecFetcher {

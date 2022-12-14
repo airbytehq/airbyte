@@ -41,7 +41,7 @@ properties:
   name:
     type: string
   catalog:
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   fieldSelectionData:
     type: object
     description: A map of StreamDescriptor to an indicator of whether field selection is enabled for that stream.

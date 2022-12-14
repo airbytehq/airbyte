@@ -21,6 +21,6 @@ properties:
     type: string
     format: uuid
   spec:
-    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+    existingJavaType: io.airbyte.protocol.models.v1.ConnectorSpecification
   failureReason:
     "$ref": FailureReason.yaml

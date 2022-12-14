@@ -24,7 +24,7 @@ import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.WorkerDestinationConfig;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;

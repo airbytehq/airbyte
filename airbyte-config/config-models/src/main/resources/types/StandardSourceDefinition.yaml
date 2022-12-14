@@ -35,7 +35,7 @@ properties:
       - custom
   spec:
     type: object
-    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+    existingJavaType: io.airbyte.protocol.models.v1.ConnectorSpecification
   tombstone:
     description: if false, the configuration is active. if true, then this
       configuration is permanently off.

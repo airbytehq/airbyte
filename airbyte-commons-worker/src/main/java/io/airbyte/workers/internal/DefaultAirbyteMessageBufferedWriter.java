@@ -5,7 +5,7 @@
 package io.airbyte.workers.internal;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
 import java.io.BufferedWriter;
 import java.io.IOException;
 

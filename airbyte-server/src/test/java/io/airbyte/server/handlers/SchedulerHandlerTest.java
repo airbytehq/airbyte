@@ -70,12 +70,12 @@ import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.AirbyteCatalog;
+import io.airbyte.protocol.models.v1.CatalogHelpers;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.server.converters.JobConverter;
 import io.airbyte.server.errors.ValueConflictKnownException;
@@ -594,7 +594,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -648,7 +648,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -703,7 +703,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -756,7 +756,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
     final ConnectionUpdate expectedConnectionUpdate =
         new ConnectionUpdate().connectionId(connectionId).breakingChange(true).status(ConnectionStatus.ACTIVE);
@@ -812,7 +812,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
     final ConnectionUpdate expectedConnectionUpdate =
         new ConnectionUpdate().connectionId(connectionId).breakingChange(true).status(ConnectionStatus.INACTIVE);
@@ -868,7 +868,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);
@@ -944,7 +944,7 @@ class SchedulerHandlerTest {
     when(configRepository.getActorCatalogById(discoveredCatalogId)).thenReturn(actorCatalog);
 
     final AirbyteCatalog persistenceCatalog = Jsons.object(actorCatalog.getCatalog(),
-        io.airbyte.protocol.models.AirbyteCatalog.class);
+        io.airbyte.protocol.models.v1.AirbyteCatalog.class);
     final io.airbyte.api.model.generated.AirbyteCatalog expectedActorCatalog = CatalogConverter.toApi(persistenceCatalog);
 
     final SourceDiscoverSchemaRead actual = schedulerHandler.discoverSchemaForSourceFromSourceId(request);

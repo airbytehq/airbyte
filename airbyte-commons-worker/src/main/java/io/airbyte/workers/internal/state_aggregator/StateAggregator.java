@@ -5,7 +5,7 @@
 package io.airbyte.workers.internal.state_aggregator;
 
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
 
 public interface StateAggregator {
 

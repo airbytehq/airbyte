@@ -40,7 +40,7 @@ properties:
     description: the configured airbyte catalog
     type: object
     # necessary because the configuration declaration is in a separate package.
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   state:
     description: optional state of the previous run. this object is defined per integration.
     "$ref": State.yaml

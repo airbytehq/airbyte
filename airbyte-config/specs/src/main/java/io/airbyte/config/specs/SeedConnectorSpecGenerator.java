@@ -14,7 +14,7 @@ import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.yaml.Yamls;
 import io.airbyte.config.DockerImageSpec;
 import io.airbyte.config.EnvConfigs;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;

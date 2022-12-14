@@ -18,9 +18,9 @@ properties:
   global:
     description: Representation of the shared
     type: object
-    existingJavaType: io.airbyte.protocol.models.AirbyteStateMessage
+    existingJavaType: io.airbyte.protocol.models.v1.AirbyteStateMessage
   stateMessages:
     type: array
     items:
       type: object
-      existingJavaType: io.airbyte.protocol.models.AirbyteStateMessage
+      existingJavaType: io.airbyte.protocol.models.v1.AirbyteStateMessage

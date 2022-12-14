@@ -19,7 +19,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.MoreOAuthParameters;
 import io.airbyte.persistence.job.tracker.TrackingMetadata;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;

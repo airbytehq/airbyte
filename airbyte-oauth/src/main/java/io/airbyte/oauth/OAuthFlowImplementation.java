@@ -6,7 +6,7 @@ package io.airbyte.oauth;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.protocol.models.OAuthConfigSpecification;
+import io.airbyte.protocol.models.v1.OAuthConfigSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Map;

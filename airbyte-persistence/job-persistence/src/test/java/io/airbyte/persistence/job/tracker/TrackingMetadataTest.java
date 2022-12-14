@@ -17,7 +17,7 @@ import io.airbyte.config.SyncStats;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.Job;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;

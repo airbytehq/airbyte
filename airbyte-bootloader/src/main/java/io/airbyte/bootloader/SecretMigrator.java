@@ -17,7 +17,7 @@ import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.persistence.job.JobPersistence;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v1.ConnectorSpecification;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;

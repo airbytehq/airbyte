@@ -10,7 +10,7 @@ import static org.jooq.impl.DSL.noCondition;
 import io.airbyte.config.StreamResetRecord;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.List;

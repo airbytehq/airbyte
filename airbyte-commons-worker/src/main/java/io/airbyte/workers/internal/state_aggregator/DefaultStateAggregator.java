@@ -6,8 +6,8 @@ package io.airbyte.workers.internal.state_aggregator;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.config.State;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage;
+import io.airbyte.protocol.models.v1.AirbyteStateMessage.AirbyteStateType;
 
 public class DefaultStateAggregator implements StateAggregator {
 

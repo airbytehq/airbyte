@@ -22,7 +22,7 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.persistence.job.models.Job;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConstants;
 import java.io.IOException;
 import java.nio.file.Files;

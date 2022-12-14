@@ -7,7 +7,7 @@ package io.airbyte.workers;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v1.AirbyteStreamNameNamespacePair;
 
 public class WorkerMetricReporter {
 

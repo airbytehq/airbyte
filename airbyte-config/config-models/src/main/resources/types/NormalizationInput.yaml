@@ -16,7 +16,7 @@ properties:
   catalog:
     description: the configured airbyte catalog. this version of the catalog represents the schema of the data in json blobs in the raw tables.
     type: object
-    existingJavaType: io.airbyte.protocol.models.ConfiguredAirbyteCatalog
+    existingJavaType: io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog
   resourceRequirements:
     type: object
     description: optional resource requirements to run sync workers

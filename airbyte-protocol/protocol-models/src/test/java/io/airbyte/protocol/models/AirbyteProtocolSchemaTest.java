@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v1.AirbyteMessage.Type;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,7 +38,7 @@ class AirbyteProtocolSchemaTest {
 
   @Test
   void testVersionedObjectsAccessibility() {
-    final var message = new io.airbyte.protocol.models.AirbyteMessage()
+    final var message = new io.airbyte.protocol.models.v1.AirbyteMessage()
         .withType(Type.SPEC);
     final var messageV0 = new io.airbyte.protocol.models.v0.AirbyteMessage()
         .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.SPEC);

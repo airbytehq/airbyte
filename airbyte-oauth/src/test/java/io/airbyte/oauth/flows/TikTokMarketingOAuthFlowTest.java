@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.oauth.BaseOAuthFlow;
-import io.airbyte.protocol.models.OAuthConfigSpecification;
+import io.airbyte.protocol.models.v1.OAuthConfigSpecification;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 

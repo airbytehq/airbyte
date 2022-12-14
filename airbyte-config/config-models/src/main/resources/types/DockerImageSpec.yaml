@@ -13,4 +13,4 @@ properties:
     type: string
   spec:
     type: object
-    existingJavaType: io.airbyte.protocol.models.ConnectorSpecification
+    existingJavaType: io.airbyte.protocol.models.v1.ConnectorSpecification

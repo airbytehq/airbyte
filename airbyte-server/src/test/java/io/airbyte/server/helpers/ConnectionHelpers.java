@@ -36,13 +36,13 @@ import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.StreamDescriptor;
+import io.airbyte.protocol.models.v1.CatalogHelpers;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v1.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v1.DestinationSyncMode;
+import io.airbyte.protocol.models.v1.StreamDescriptor;
 import io.airbyte.server.converters.ApiPojoConverters;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -296,14 +296,14 @@ public class ConnectionHelpers {
   public static ConfiguredAirbyteCatalog generateAirbyteCatalogWithTwoFields() {
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(new ConfiguredAirbyteStream()
         .withStream(
-            new io.airbyte.protocol.models.AirbyteStream()
+            new io.airbyte.protocol.models.v1.AirbyteStream()
                 .withName(STREAM_NAME)
                 .withJsonSchema(generateJsonSchemaWithTwoFields())
                 .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
                 .withSourceDefinedCursor(false)
                 .withSourceDefinedPrimaryKey(Collections.emptyList())
                 .withSupportedSyncModes(
-                    List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL)))));
+                    List.of(io.airbyte.protocol.models.v1.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.v1.SyncMode.INCREMENTAL)))));
   }
 
   public static ConfiguredAirbyteCatalog generateMultipleStreamsConfiguredAirbyteCatalog(final int streamsCount) {
@@ -318,16 +318,16 @@ public class ConnectionHelpers {
     return new ConfiguredAirbyteStream()
         .withStream(generateBasicAirbyteStream(nameSuffix))
         .withCursorField(Lists.newArrayList(FIELD_NAME))
-        .withSyncMode(io.airbyte.protocol.models.SyncMode.INCREMENTAL)
+        .withSyncMode(io.airbyte.protocol.models.v1.SyncMode.INCREMENTAL)
         .withDestinationSyncMode(DestinationSyncMode.APPEND);
   }
 
-  private static io.airbyte.protocol.models.AirbyteStream generateBasicAirbyteStream(final String nameSuffix) {
+  private static io.airbyte.protocol.models.v1.AirbyteStream generateBasicAirbyteStream(final String nameSuffix) {
     return CatalogHelpers.createAirbyteStream(
         nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix, Field.of(FIELD_NAME, JsonSchemaType.STRING))
         .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
         .withSourceDefinedCursor(false)
-        .withSupportedSyncModes(List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL));
+        .withSupportedSyncModes(List.of(io.airbyte.protocol.models.v1.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.v1.SyncMode.INCREMENTAL));
   }
 
   public static AirbyteCatalog generateBasicApiCatalog() {

@@ -15,7 +15,7 @@ import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV0;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.version.Version;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v1.AirbyteMessage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.StringReader;
