@@ -25,7 +25,6 @@ definitions:
     $options:
       name: "catalogs"
       path: "/catalog"
-      primary_key: "id"
 
 streams:
   - "*ref(definitions.catalogs_stream)"
