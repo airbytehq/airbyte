@@ -1,6 +1,8 @@
 @use "scss/variables";
 @use "scss/colors";
 
+$removeButtonWidth: 20px;
+
 .inputContainer {
   width: 100%;
   display: flex;
@@ -26,6 +28,8 @@
   color: colors.$grey-200;
   cursor: pointer;
   padding: 0;
+  width: $removeButtonWidth;
+  height: $removeButtonWidth;
   font-size: 18px;
   transition: variables.$transition;
 
