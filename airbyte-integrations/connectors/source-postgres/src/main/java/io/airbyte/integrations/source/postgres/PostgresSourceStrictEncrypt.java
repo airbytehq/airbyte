@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.source.postgres;
 
-import static io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import static io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;

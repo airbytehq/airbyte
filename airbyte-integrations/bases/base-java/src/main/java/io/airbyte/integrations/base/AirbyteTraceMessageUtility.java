@@ -29,7 +29,7 @@ public final class AirbyteTraceMessageUtility {
   }
 
   // todo: handle the other types of trace message we'll expect in the future, see
-  // io.airbyte.protocol.models.AirbyteTraceMessage
+  // io.airbyte.protocol.models.v0.AirbyteTraceMessage
   // & the tech spec:
   // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
   // public void emitNotificationTrace() {}
