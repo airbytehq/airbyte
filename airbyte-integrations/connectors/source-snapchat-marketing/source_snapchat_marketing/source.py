@@ -497,7 +497,7 @@ class StatsIncremental(Stats, IncrementalMixin):
 
         # Update state for each date slice (start_date), it ensures that previous date slices have been read
         # and can be skipped in next incremental sync
-        self.state = stream_slice[self.cursor_field]
+        self.state = {self.cursor_field: stream_slice[self.cursor_field]}
 
         for record in super().parse_response(
             response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
