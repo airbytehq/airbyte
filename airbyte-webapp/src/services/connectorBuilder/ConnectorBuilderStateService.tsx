@@ -63,6 +63,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     DEFAULT_BUILDER_FORM_VALUES
   );
   const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
+  console.log("formValues", formValues);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",

@@ -15,8 +15,10 @@ interface BuilderProps {
 }
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
+  console.log("values", values);
   const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
   useEffect(() => {
+    console.log("setting builder form values", values);
     setBuilderFormValues(values);
   }, [values, setBuilderFormValues]);
 
