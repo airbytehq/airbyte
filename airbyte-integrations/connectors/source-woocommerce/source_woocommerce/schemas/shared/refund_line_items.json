@@ -19,7 +19,7 @@
         "type": ["null", "integer"]
       },
       "tax_class": {
-        "type": ["null", "integer"]
+        "type": ["null", "string", "integer"]
       },
       "subtotal": {
         "type": ["null", "string"]
@@ -34,19 +34,22 @@
         "type": ["null", "string"]
       },
       "taxes": {
-        "type": ["null", "string"],
-        "properties": {
-          "id": {
-            "type": ["null", "integer"]
-          },
-          "total": {
-            "type": ["null", "string"]
-          },
-          "subtotal": {
-            "type": ["null", "string"]
-          },
-          "refund_total": {
-            "type": ["null", "number"]
+        "type": ["null", "array"],
+        "items": {
+          "type": ["null", "object"],
+          "properties": {
+            "id": {
+              "type": ["null", "integer"]
+            },
+            "total": {
+              "type": ["null", "string"]
+            },
+            "subtotal": {
+              "type": ["null", "string"]
+            },
+            "refund_total": {
+              "type": ["null", "number"]
+            }
           }
         }
       },
@@ -57,7 +60,7 @@
         "type": ["null", "string"]
       },
       "price": {
-        "type": ["null", "string"]
+        "type": ["null", "string", "integer"]
       },
       "refund_total": {
         "type": ["null", "number"]

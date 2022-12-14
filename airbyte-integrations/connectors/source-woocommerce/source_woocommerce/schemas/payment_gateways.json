@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": ["null", "integer"]
+      "type": ["null", "string"]
     },
     "title": {
       "type": ["null", "string"]
@@ -12,7 +12,7 @@
       "type": ["null", "string"]
     },
     "order": {
-      "type": ["null", "integer"]
+      "type": ["null", "string", "integer"]
     },
     "enabled": {
       "type": ["null", "boolean"]
