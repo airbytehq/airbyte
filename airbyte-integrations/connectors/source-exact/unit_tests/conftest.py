@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import pendulum
 import pytest
 
 replication_start_date = "2017-01-25T00:00:00Z"
@@ -17,8 +16,9 @@ def config_oauth():
             "client_secret": "client_secret",
             "access_token": "access_token",
             "refresh_token": "refresh_token",
-        }
+        },
     }
+
 
 @pytest.fixture(autouse=True)
 def time_sleep_mock(mocker):

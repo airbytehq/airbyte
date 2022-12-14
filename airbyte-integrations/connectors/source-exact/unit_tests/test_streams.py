@@ -4,10 +4,9 @@
 
 from unittest.mock import MagicMock
 
-from source_exact.streams import ExactSyncStream, ExactOtherStream
-
 import pytest
 import requests
+from source_exact.streams import ExactOtherStream, ExactSyncStream
 
 
 class TestExactSyncStream(ExactSyncStream):
@@ -144,7 +143,7 @@ def test_is_token_expired__not_expired(config_oauth):
     response_mock = MagicMock()
     response_mock.status_code = 200
 
-    assert TestExactSyncStream(config_oauth)._is_token_expired(response_mock) == False
+    assert not TestExactSyncStream(config_oauth)._is_token_expired(response_mock)
 
 
 def test_is_token_expired__expired(config_oauth):
@@ -152,16 +151,7 @@ def test_is_token_expired__expired(config_oauth):
     response_mock.status_code = 401
     response_mock.headers = {"WWW-Authenticate": "access token expired"}
 
-    assert TestExactSyncStream(config_oauth)._is_token_expired(response_mock) == True
-
-
-def test_is_token_expired__failure(config_oauth):
-    response_mock = MagicMock()
-    response_mock.status_code = 401
-    response_mock.headers = {"WWW-Authenticate": "can't access this resource"}
-
-    with pytest.raises(RuntimeError, match="Unexpected forbidden error"):
-        TestExactSyncStream(config_oauth)._is_token_expired(response_mock)
+    assert TestExactSyncStream(config_oauth)._is_token_expired(response_mock)
 
 
 def test_is_token_expired__failure(config_oauth):

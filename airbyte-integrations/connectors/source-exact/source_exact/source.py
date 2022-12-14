@@ -8,8 +8,9 @@ from typing import Any, List, Mapping, Tuple
 import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-
 from source_exact.streams import (
+    CRMAccountClassificationNames,
+    CRMAccountClassifications,
     SyncCashflowPaymentTerms,
     SyncCRMAccounts,
     SyncCRMAddresses,
@@ -38,18 +39,17 @@ from source_exact.streams import (
     SyncProjectProjectWBS,
     SyncProjectTimeCostTransactions,
     SyncPurchaseOrderPurchaseOrders,
-    SyncSalesSalesPriceListVolumeDiscounts,
     SyncSalesInvoiceSalesInvoices,
     SyncSalesOrderGoodsDeliveries,
     SyncSalesOrderGoodsDeliveryLines,
     SyncSalesOrderSalesOrderHeaders,
     SyncSalesOrderSalesOrderLines,
     SyncSalesOrderSalesOrders,
+    SyncSalesSalesPriceListVolumeDiscounts,
     SyncSubscriptionSubscriptionLines,
     SyncSubscriptionSubscriptions,
-    CRMAccountClassifications,
-    CRMAccountClassificationNames,
 )
+
 
 # Source
 class SourceExact(AbstractSource):
