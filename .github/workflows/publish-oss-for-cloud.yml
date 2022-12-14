@@ -1,6 +1,7 @@
 name: Publish OSS Artifacts for Cloud
 
 env:
+  # enable gradle remote build cache
   S3_BUILD_CACHE_ACCESS_KEY_ID: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
   S3_BUILD_CACHE_SECRET_KEY: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
 
