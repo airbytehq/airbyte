@@ -1,4 +1,4 @@
-import React from "react";
+import { useMemo, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
@@ -55,9 +55,34 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
     connectorsDefinitions,
     workspace
   );
+  const showVersionUpdateColumnForAvailable = useMemo(() => {
+    if (allowUpdateConnectors) {
+      return true;
+    }
+    if (
+      allowUploadCustomImage &&
+      availableConnectorDefinitions.some((definition) => definition.releaseStage === "custom")
+    ) {
+      return true;
+    }
+    return false;
+  }, [availableConnectorDefinitions, allowUpdateConnectors, allowUploadCustomImage]);
 
-  const columns = React.useMemo(
-    () => [
+  const showVersionUpdateColumnForUsed = useMemo(() => {
+    if (allowUpdateConnectors) {
+      return true;
+    }
+    if (
+      allowUploadCustomImage &&
+      usedConnectorsDefinitions.some((definition) => definition.releaseStage === "custom")
+    ) {
+      return true;
+    }
+    return false;
+  }, [usedConnectorsDefinitions, allowUpdateConnectors, allowUploadCustomImage]);
+
+  const renderColumns = useCallback(
+    (showVersionUpdateColumn: boolean) => [
       {
         Header: <FormattedMessage id="admin.connectors" />,
         accessor: "name",
@@ -84,7 +109,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
         accessor: "dockerImageTag",
         customWidth: 10,
       },
-      ...(allowUpdateConnectors || customCloudConnectorsExperiment
+      ...(showVersionUpdateColumn
         ? [
             {
               Header: (
@@ -138,7 +163,11 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             <FormattedMessage id={type === "sources" ? "admin.manageSource" : "admin.manageDestination"} />
             {renderHeaderControls("used")}
           </Title>
-          <Table columns={columns} data={usedConnectorsDefinitions} sortBy={defaultSorting} />
+          <Table
+            columns={renderColumns(showVersionUpdateColumnForUsed)}
+            data={usedConnectorsDefinitions}
+            sortBy={defaultSorting}
+          />
         </Block>
       )}
 
@@ -147,7 +176,11 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           <FormattedMessage id={type === "sources" ? "admin.availableSource" : "admin.availableDestinations"} />
           {renderHeaderControls("available")}
         </Title>
-        <Table columns={columns} data={availableConnectorDefinitions} sortBy={defaultSorting} />
+        <Table
+          columns={renderColumns(showVersionUpdateColumnForAvailable)}
+          data={availableConnectorDefinitions}
+          sortBy={defaultSorting}
+        />
       </Block>
     </>
   );
