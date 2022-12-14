@@ -4,23 +4,26 @@ connector_image: airbyte/source-mongodb-v2:dev
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "src/test-integration/resources/dummy_config.json"
+      - spec_path: "integration_tests/expected_spec.json"
+        config_path: "secrets/config.json"
+        timeout_seconds: 60
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+        timeout_seconds: 60
   discovery:
     tests:
       - config_path: "secrets/config.json"
-  # basic_read:
-  #   tests:
-  #     - config_path: "secrets/config.json"
-  # full_refresh:
-  #   tests:
-  #     - config_path: "secrets/sat-config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog.json"
-  # incremental:
-  #   tests:
-  #     - config_path: "secrets/sat-config.json"
-  #       configured_catalog_path: "integration_tests/configured_catalog_inc.json"
+        timeout_seconds: 60
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 120
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        timeout_seconds: 180
+
