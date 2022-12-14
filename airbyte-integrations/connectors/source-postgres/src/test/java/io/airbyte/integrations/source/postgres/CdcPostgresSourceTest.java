@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,11 +60,19 @@ import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 abstract class CdcPostgresSourceTest extends CdcSourceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
@@ -94,7 +101,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     source = new PostgresSource();
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 

@@ -5,7 +5,8 @@
 package io.airbyte.db;
 
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import java.util.Optional;
 
 public class IncrementalUtils {
@@ -26,7 +27,7 @@ public class IncrementalUtils {
   public static Optional<String> getCursorFieldOptional(final ConfiguredAirbyteStream stream) {
     try {
       return Optional.ofNullable(getCursorField(stream));
-    } catch (IllegalStateException e) {
+    } catch (final IllegalStateException e) {
       return Optional.empty();
     }
   }
@@ -41,12 +42,18 @@ public class IncrementalUtils {
           String.format("Could not find cursor field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
     }
 
-    if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type") == null) {
+    if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type") == null &&
+        stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("$ref") == null) {
       throw new IllegalStateException(
           String.format("Could not find cursor type for field: %s in schema for stream: %s.", cursorField, stream.getStream().getName()));
     }
 
-    return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type").asText().toUpperCase());
+    if (stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type") == null) {
+      return JsonSchemaPrimitiveUtil.PRIMITIVE_TO_REFERENCE_BIMAP.inverse()
+          .get(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("$ref").asText());
+    } else {
+      return JsonSchemaPrimitive.valueOf(stream.getStream().getJsonSchema().get(PROPERTIES).get(cursorField).get("type").asText().toUpperCase());
+    }
   }
 
   /**
@@ -72,14 +79,14 @@ public class IncrementalUtils {
     }
 
     switch (type) {
-      case STRING -> {
+      case STRING, STRING_V1, DATE_V1, TIME_WITH_TIMEZONE_V1, TIME_WITHOUT_TIMEZONE_V1, TIMESTAMP_WITH_TIMEZONE_V1, TIMESTAMP_WITHOUT_TIMEZONE_V1 -> {
         return original.compareTo(candidate);
       }
-      case NUMBER -> {
+      case NUMBER, NUMBER_V1, INTEGER_V1 -> {
         // todo (cgardens) - handle big decimal. this is currently an overflow risk.
         return Double.compare(Double.parseDouble(original), Double.parseDouble(candidate));
       }
-      case BOOLEAN -> {
+      case BOOLEAN, BOOLEAN_V1 -> {
         return Boolean.compare(Boolean.parseBoolean(original), Boolean.parseBoolean(candidate));
       }
       // includes OBJECT, ARRAY, NULL
