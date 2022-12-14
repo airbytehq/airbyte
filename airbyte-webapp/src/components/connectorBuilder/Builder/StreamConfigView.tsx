@@ -1,6 +1,6 @@
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useFormikContext } from "formik";
+import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { Heading } from "components/ui/Heading";
@@ -8,7 +8,7 @@ import { Heading } from "components/ui/Heading";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { BuilderFormValues } from "../types";
+import { BuilderStream } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
@@ -19,7 +19,8 @@ interface StreamConfigViewProps {
 }
 
 export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
-  const { values, setValues } = useFormikContext<BuilderFormValues>();
+  // const { values, setValues } = useFormikContext<BuilderFormValues>();
+  const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
 
@@ -32,17 +33,10 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
       title: "connectorBuilder.deleteStreamModal.title",
       submitButtonText: "connectorBuilder.deleteStreamModal.submitButton",
       onSubmit: () => {
-        const streams = values.streams;
-        console.log("streams", streams);
-        const updatedStreams = [...streams.slice(0, streamNum), ...streams.slice(streamNum + 1)];
-        console.log("updatedStreams", updatedStreams);
-        const updatedValues = Object.assign(values, { streams: updatedStreams });
-        console.log("updatedValues", updatedValues);
+        const updatedStreams = field.value.filter((_, index) => index !== streamNum);
         const streamToSelect = streamNum >= updatedStreams.length ? updatedStreams.length - 1 : streamNum;
-        console.log("streamToSelect", streamToSelect);
         const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
-        console.log("viewToSelect", viewToSelect);
-        setValues(updatedValues);
+        helpers.setValue(updatedStreams);
         setSelectedView(viewToSelect);
         setTestStreamIndex(streamToSelect);
         closeConfirmationModal();
