@@ -311,7 +311,6 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
                     m.register_uri("GET", stream.path() + f"/{job_id}/results", status_code=403, json=json_response)
 
                 m.register_uri("DELETE", stream.path() + f"/{job_id}")
-                
             m.register_uri("POST", stream.path(), creation_responses)
 
         result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
