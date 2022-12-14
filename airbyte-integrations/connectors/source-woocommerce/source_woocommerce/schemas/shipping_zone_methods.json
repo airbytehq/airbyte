@@ -11,7 +11,7 @@
     "order": {
       "type": ["null", "integer"]
     },
-        "enabled": {
+    "enabled": {
       "type": ["null", "boolean"]
     },
     "method_id": {

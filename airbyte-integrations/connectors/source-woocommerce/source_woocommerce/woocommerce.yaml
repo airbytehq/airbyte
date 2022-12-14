@@ -20,7 +20,7 @@ definitions:
         order: "asc"
   date_stream_slicer:
     type: DatetimeStreamSlicer
-    lookback_window: "{{ config['conversion_window_days'] }}"
+    lookback_window: "{{ config['conversion_window_days'] }}d"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
@@ -213,7 +213,7 @@ definitions:
         $ref: "*ref(definitions.shipping_stream_slicer)"
     $options:
       name: "shipping_zone_locations"
-      primary_key: "id"
+      primary_key: ["code", "type"]
       path: "/shipping/zones/{{ stream_slice.id }}/locations"
   shipping_zone_methods_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -223,7 +223,7 @@ definitions:
         $ref: "*ref(definitions.shipping_stream_slicer)"
     $options:
       name: "shipping_zone_methods"
-      primary_key: "id"
+      primary_key: "instance_id"
       path: "/shipping/zones/{{ stream_slice.id }}/methods"
   system_status_tools_stream:
     $ref: "*ref(definitions.base_stream)"
@@ -235,7 +235,7 @@ definitions:
     $ref: "*ref(definitions.base_stream)"
     $options:
       name: "tax_classes"
-      primary_key: "id"
+      primary_key: ["slug", "name"]
       path: "/taxes/classes"
   tax_rates_stream:
     $ref: "*ref(definitions.base_stream)"
