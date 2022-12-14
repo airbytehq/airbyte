@@ -17,11 +17,13 @@ describe("Auto-detect schema changes", () => {
     let sourceId: string;
     console.log("payload", payload);
 
-    requestCreateSource("Test source", payload).then((response) => {
-      sourceId = response.sourceId;
-      expect(sourceId).to.be.a("string");
+    requestCreateSource("Test source", payload)
+      .then((response) => {
+        sourceId = response.sourceId;
 
-      requestDeleteSource(sourceId);
-    });
+        expect(sourceId).to.be.a("string");
+        requestDeleteSource(sourceId);
+      })
+      .as("@test");
   });
 });
