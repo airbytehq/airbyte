@@ -315,12 +315,14 @@ def test_rate_limit_bulk(stream_config, stream_api, bulk_catalog, state):
             m.register_uri("POST", stream.path(), creation_responses)
 
         result = [i for i in source.read(logger=logger, config=stream_config, catalog=bulk_catalog, state=state)]
+        print(f"\nResult: {result}\n")
         assert stream_1.request_params.called
         assert (
             not stream_2.request_params.called
         ), "The second stream should not be executed, because the first stream finished with Rate Limit."
 
         records = [item for item in result if item.type == Type.RECORD]
+        print(f"\nRecords: {records}\n")
         assert len(records) == 6  # stream page size: 6
 
         state_record = [item for item in result if item.type == Type.STATE][0]
