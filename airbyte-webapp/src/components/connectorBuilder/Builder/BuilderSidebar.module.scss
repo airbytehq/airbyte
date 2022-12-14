@@ -95,6 +95,19 @@
   overflow-y: auto;
 }
 
+.viewLabel {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  gap: variables.$spacing-sm;
+  align-items: center;
+}
+
+.errorIndicator {
+  flex: 0 0 auto;
+  margin-right: variables.$spacing-xs;
+}
+
 .streamViewText {
   color: inherit;
 }

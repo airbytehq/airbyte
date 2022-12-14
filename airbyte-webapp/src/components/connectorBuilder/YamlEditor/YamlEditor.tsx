@@ -87,11 +87,13 @@ export const YamlEditor: React.FC<YamlEditorProps> = ({ toggleYamlEditor }) => {
         title: "connectorBuilder.toggleModal.title",
         submitButtonText: "connectorBuilder.toggleModal.submitButton",
         onSubmit: () => {
+          setYamlIsValid(true);
           toggleYamlEditor();
           closeConfirmationModal();
         },
       });
     } else {
+      setYamlIsValid(true);
       toggleYamlEditor();
     }
   };
