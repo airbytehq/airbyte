@@ -6,6 +6,7 @@ package io.airbyte.integrations.io.airbyte.integration_tests.sources;
 
 import static io.airbyte.integrations.source.snowflake.SnowflakeDataSourceUtils.AIRBYTE_OSS;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +38,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -226,4 +228,46 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
+  @Test
+  void testDiscoverSchemaConfig() throws Exception {
+    // add table and data to a separate schema.
+    database.execute(connection -> {
+      connection.createStatement().execute(
+          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement()
+          .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement()
+          .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement()
+          .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+      connection.createStatement().execute(
+          String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
+              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME, Strings.addRandomSuffix(TABLE_NAME, "_", 4))));
+    });
+
+    JsonNode confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME);
+    AirbyteCatalog actual = source.discover(confWithSchema);
+
+    assertFalse(actual.getStreams().isEmpty());
+
+    var streams = actual.getStreams().stream()
+            .filter(s -> !s.getNamespace().equals(SCHEMA_NAME))
+                .collect(Collectors.toList());
+
+    assertTrue(streams.isEmpty());
+
+    confWithSchema = ((ObjectNode) config).put("schema", SCHEMA_NAME2);
+    actual = source.discover(confWithSchema);
+    assertFalse(actual.getStreams().isEmpty());
+
+    streams = actual.getStreams().stream()
+        .filter(s -> !s.getNamespace().equals(SCHEMA_NAME2))
+        .collect(Collectors.toList());
+
+    assertTrue(streams.isEmpty());
+  }
 }
