@@ -38,7 +38,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -101,7 +100,8 @@ class ContainerOrchestratorAcceptanceTests {
   void setup() throws URISyntaxException, IOException, SQLException {
     testHarness.setup();
   }
-  // This test is flaky.  Warnings are suppressed until that condition us understood
+
+  // This test is flaky. Warnings are suppressed until that condition us understood
   // See: https://github.com/airbytehq/airbyte/issues/19948
   @Test
   @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")

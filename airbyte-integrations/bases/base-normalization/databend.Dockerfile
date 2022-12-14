@@ -21,7 +21,7 @@ RUN pip install .
 
 WORKDIR /airbyte/normalization_code/dbt-template/
 #RUN pip install dbt-databend-cloud
-RUN pip install dbt-databend-cloud==1.2.8
+RUN pip install dbt-databend-cloud==1.3.2
 # Download external dbt dependencies
 RUN dbt deps
 
