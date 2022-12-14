@@ -97,3 +97,4 @@ tests:
     - config_path: "secrets/prod_config.json"
       configured_catalog_path: "integration_tests/streams_reports_lifetime.json"
       timeout_seconds: 7200
+disable_for_version: "foob"
