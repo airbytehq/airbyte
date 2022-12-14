@@ -195,6 +195,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
+              LOGGER.info("error thrown from destination runnable");
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof DestinationException) {
                 destinationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
@@ -220,12 +221,15 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
+              LOGGER.info("error thrown from read source and dest write runnable");
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof SourceException) {
+                LOGGER.info("source exception thrown");
                 replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
               } else if (ex.getCause() instanceof DestinationException) {
                 replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
               } else {
+                LOGGER.info("worker failure thrown");
                 replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
               }
             }
