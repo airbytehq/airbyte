@@ -96,7 +96,7 @@ The Jira connector should not run into Jira API limitations under normal usage. 
 
 | Version | Date       | Pull Request                                                | Subject                                                                                                                 |
 |:--------|:-----------|:------------------------------------------------------------|:------------------------------------------------------------------------------------------------------------------------|
-| 0.3.1   | 2022-12-06 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Skip 404 for IssueCustomFieldContexts                                                                                   |
+| 0.3.1   | 2022-12-14 | [\#20128](https://github.com/airbytehq/airbyte/pull/20128)  | Improved code to become beta                                                                                            |
 | 0.3.0   | 2022-11-03 | [\#18901](https://github.com/airbytehq/airbyte/pull/18901)  | Adds UserGroupsDetailed schema, fix Incremental normalization, add Incremental support for IssueComments, IssueWorklogs |
 | 0.2.23  | 2022-10-28 | [\#18505](https://github.com/airbytehq/airbyte/pull/18505)  | Correcting `max_results` bug introduced in connector stream                                                             |
 | 0.2.22  | 2022-10-03 | [\#16944](https://github.com/airbytehq/airbyte/pull/16944)  | Adds support for `max_results` to `users` stream                                                                        |
