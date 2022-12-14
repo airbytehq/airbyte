@@ -1,0 +1,58 @@
+version: "0.1.0"
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  url_stream_slicer:
+    type: "ListStreamSlicer"
+    slice_values: "{{ config['urls'] }}"
+    cursor_field: url
+    request_option:
+      field_name: "url"
+      inject_into: "request_parameter"
+  strategy_stream_slicer:
+    type: "ListStreamSlicer"
+    slice_values: "{{ config['strategies'] }}"
+    cursor_field: strategy
+    request_option:
+      field_name: "strategy"
+      inject_into: "request_parameter"
+  requester:
+    url_base: "https://www.googleapis.com/pagespeedonline/v5/"
+    http_method: "GET"
+    request_options_provider:
+      request_parameters:
+        key: "{{ config['api_key'] }}"
+        category: "{{ config['categories'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      type: CartesianProductStreamSlicer
+      stream_slicers:
+        - "*ref(definitions.url_stream_slicer)"
+        - "*ref(definitions.strategy_stream_slicer)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  pagespeed_stream:
+    transformations:
+      - type: AddFields
+        fields:
+          - path: ["strategy"]
+            value: "{{ stream_slice.strategy }}"
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "pagespeed"
+      path: "/runPagespeed"
+
+streams:
+  - "*ref(definitions.pagespeed_stream)"
+
+check:
+  stream_names:
+    - "pagespeed"
