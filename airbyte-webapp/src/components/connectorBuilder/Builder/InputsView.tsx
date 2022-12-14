@@ -170,6 +170,7 @@ const InputModal = ({
           <BuilderField
             path="key"
             type="text"
+            readOnly
             label={formatMessage({ id: "connectorBuilder.inputModal.fieldId" })}
             tooltip={formatMessage(
               { id: "connectorBuilder.inputModal.fieldIdTooltip" },

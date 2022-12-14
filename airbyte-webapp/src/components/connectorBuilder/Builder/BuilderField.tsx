@@ -30,6 +30,7 @@ interface BaseFieldProps {
   path: string;
   label: string;
   tooltip?: string;
+  readOnly?: boolean;
   optional?: boolean;
 }
 
@@ -60,7 +61,14 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
+export const BuilderField: React.FC<BuilderFieldProps> = ({
+  path,
+  label,
+  tooltip,
+  optional = false,
+  readOnly,
+  ...props
+}) => {
   const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
@@ -81,7 +89,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
       {(props.type === "text" || props.type === "number") && (
-        <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />
+        <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} readOnly={readOnly} />
       )}
       {props.type === "array" && (
         <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
