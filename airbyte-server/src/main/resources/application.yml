@@ -11,6 +11,9 @@ endpoints:
   beans:
     enabled: true
     sensitive: false
+  env:
+    enabled: true
+    sensitive: false
   health:
     enabled: true
     sensitive: false
@@ -19,6 +22,9 @@ endpoints:
     sensitive: true
   loggers:
     enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
     sensitive: true
   routes:
     enabled: true

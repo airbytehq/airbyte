@@ -1,12 +1,6 @@
 micronaut:
   application:
     name: airbyte-workers
-  security:
-    intercept-url-map:
-      - pattern: /**
-        httpMethod: GET
-        access:
-          - isAnonymous()
   server:
     port: 9000
 
@@ -211,8 +205,30 @@ docker:
   network: ${DOCKER_NETWORK:host}
 
 endpoints:
-  all:
+  beans:
     enabled: true
+    sensitive: false
+  env:
+    enabled: true
+    sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: true
+  loggers:
+    enabled: true
+    sensitive: true
+  refresh:
+    enabled: false
+    sensitive: true
+  routes:
+    enabled: true
+    sensitive: false
+  threaddump:
+    enabled: true
+    sensitive: true
 
 google:
   application:
