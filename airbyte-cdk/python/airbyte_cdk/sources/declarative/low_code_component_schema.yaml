@@ -65,14 +65,6 @@ definitions:
         type: string
       header:
         type: string
-  BackoffStrategy: # maybe delete this since it was intended to be just an interface
-    type: object
-    anyOf:
-      - "$ref": "#/definitions/ConstantBackoffStrategy"
-      - "$ref": "#/definitions/CustomBackoffStrategy"
-      - "$ref": "#/definitions/ExponentialBackoffStrategy"
-      - "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
-      - "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
   BasicHttpAuthenticator:
     description: Authenticator for requests authenticated with a username and optional password
     type: object
@@ -210,6 +202,21 @@ definitions:
     properties:
       type:
         enum: [CustomBackoffStrategy]
+      class_name:
+        type: string
+      $options:
+        type: object
+        additionalProperties: true
+  CustomErrorHandler:
+    description: Error handler component whose behavior is derived from a custom code implementation of the connector
+    type: object
+    additionalProperties: true
+    required:
+      - type
+      - class_name
+    properties:
+      type:
+        enum: [CustomErrorHandler]
       class_name:
         type: string
       $options:
@@ -508,6 +515,7 @@ definitions:
       error_handler:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
+          - "$ref": "#/definitions/CustomErrorHandler"
           - "$ref": "#/definitions/CompositeErrorHandler"
       http_method:
         anyOf:

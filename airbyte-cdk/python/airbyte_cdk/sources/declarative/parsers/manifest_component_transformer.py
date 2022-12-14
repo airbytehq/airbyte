@@ -12,54 +12,60 @@ OPTIONS_STR = "$options"
 # todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # DatetimeStreamSlicer
-    "end_datetime": "MinMaxDatetime",
-    "start_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.end_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
     # DeclarativeSource
-    "streams": "DeclarativeStream",
+    "DeclarativeSource.streams": "DeclarativeStream",
     # DeclarativeStream
-    "retriever": "SimpleRetriever",
-    "schema_loader": "DefaultSchemaLoader",
-    # CursorPagination, DefaultPaginator, DpathExtractor
-    "decoder": "JsonDecoder",
+    "DeclarativeStream.retriever": "SimpleRetriever",
+    "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
+    # CursorPagination
+    "CursorPagination.decoder": "JsonDecoder",
     # DefaultErrorHandler
     "response_filters": "HttpResponseFilter",
     # DefaultPaginator
-    "page_size_option": "RequestOption",
-    "page_token_option": "RequestOption",
+    "DefaultPaginator.decoder": "JsonDecoder",
+    "DefaultPaginator.page_size_option": "RequestOption",
+    "DefaultPaginator.page_token_option": "RequestOption",
+    # DpathExtractor
+    "DpathExtractor.decoder": "JsonDecoder",
     # HttpRequester
-    "error_handler": "DefaultErrorHandler",
-    "request_options_provider": "InterpolatedRequestOptionsProvider",
-    # ListStreamSlicer, ParentStreamConfig
-    "request_option": "RequestOption",
+    "HttpRequester.error_handler": "DefaultErrorHandler",
+    "HttpRequester.request_options_provider": "InterpolatedRequestOptionsProvider",
+    # ListStreamSlicer
+    "ListStreamSlicer.request_option": "RequestOption",
     # ParentStreamConfig
-    "stream": "DeclarativeStream",
+    "ParentStreamConfig.request_option": "RequestOption",
+    "ParentStreamConfig.stream": "DeclarativeStream",
     # RecordSelector
-    "extractor": "DpathExtractor",
+    "RecordSelector.extractor": "DpathExtractor",
     # SimpleRetriever
-    "paginator": "NoPagination",
-    "record_selector": "RecordSelector",
-    "requester": "HttpRequester",
-    "stream_slicer": "SingleSlice",
+    "SimpleRetriever.paginator": "NoPagination",
+    "SimpleRetriever.record_selector": "RecordSelector",
+    "SimpleRetriever.requester": "HttpRequester",
+    "SimpleRetriever.stream_slicer": "SingleSlice",
     # SubstreamSlicer
-    "parent_stream_configs": "ParentStreamConfig",
-    # Transformers
-    "fields": "AddedFieldDefinition",
+    "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
+    # AddFields
+    "AddFields.fields": "AddedFieldDefinition",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "authenticator": "CustomAuthenticator",
-    "backoff_strategies": "CustomBackoffStrategy",
-    "extractor": "CustomRecordExtractor",
-    "pagination_strategy": "CustomPaginationStrategy",
-    "stream_slicer": "CustomStreamSlicer",
+    "CartesianProductStreamSlicer.stream_slicer": "CustomStreamSlicer",
+    "DefaultErrorHandler.backoff_strategies": "CustomBackoffStrategy",
+    "DefaultPaginator.pagination_strategy": "CustomPaginationStrategy",
+    "HttpRequester.authenticator": "CustomAuthenticator",
+    "HttpRequester.error_handler": "CustomErrorHandler",
+    "RecordSelector.extractor": "CustomRecordExtractor",
+    "SimpleRetriever.stream_slicer": "CustomStreamSlicer",
 }
 
 
 class ManifestComponentTransformer:
     def propagate_types_and_options(
-        self, parent_field: str, declarative_component: Mapping[str, Any], parent_options: Mapping[str, Any]
+        self, parent_field_identifier: str, declarative_component: Mapping[str, Any], parent_options: Mapping[str, Any]
     ) -> Mapping[str, Any]:
         """
         Recursively transforms the specified declarative component and subcomponents to propagate options and insert the
@@ -78,9 +84,9 @@ class ManifestComponentTransformer:
             # class_name will only be a valid field on custom components and this change reflects that. I checked, and we currently
             # have no low-code connectors that use class_name except for custom components.
             if "class_name" in propagated_component:
-                found_type = CUSTOM_COMPONENTS_MAPPING.get(parent_field)
+                found_type = CUSTOM_COMPONENTS_MAPPING.get(parent_field_identifier)
             else:
-                found_type = DEFAULT_MODEL_TYPES.get(parent_field)
+                found_type = DEFAULT_MODEL_TYPES.get(parent_field_identifier)
             if found_type:
                 propagated_component["type"] = found_type
 
@@ -97,13 +103,17 @@ class ManifestComponentTransformer:
             if isinstance(field_value, dict):
                 # We exclude propagating an option that matches the current field name because that would result in an infinite cycle
                 excluded_option = current_options.pop(field_name, None)
-                propagated_component[field_name] = self.propagate_types_and_options(field_name, field_value, current_options)
+                parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
+                propagated_component[field_name] = self.propagate_types_and_options(
+                    parent_type_field_identifier, field_value, current_options
+                )
                 if excluded_option:
                     current_options[field_name] = excluded_option
             elif isinstance(field_value, typing.List):
                 for i, element in enumerate(field_value):
                     if isinstance(element, dict):
-                        field_value[i] = self.propagate_types_and_options(field_name, element, current_options)
+                        parent_type_field_identifier = f"{propagated_component.get('type')}.{field_name}"
+                        field_value[i] = self.propagate_types_and_options(parent_type_field_identifier, element, current_options)
 
         if current_options:
             propagated_component[OPTIONS_STR] = current_options

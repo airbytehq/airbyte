@@ -10,7 +10,7 @@ from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer impo
     "component, expected_component",
     [
         pytest.param(
-            {"streams": [{"retriever": {}, "schema_loader": {}}]},
+            {"streams": [{"type": "DeclarativeStream", "retriever": {}, "schema_loader": {}}]},
             {
                 "streams": [
                     {
