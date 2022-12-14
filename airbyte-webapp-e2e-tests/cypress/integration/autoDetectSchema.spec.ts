@@ -12,16 +12,12 @@ describe("Auto-detect schema changes", () => {
     requestWorkspaceId();
   });
 
-  it("creates a source", () => {
+  it("creates a source", async () => {
     const payload = getPostgresCreateSourceBody("Test source");
-    let sourceId: string;
-    console.log("payload", payload);
 
-    requestCreateSource("Test source", payload).then((response) => {
-      sourceId = response.sourceId;
+    const { sourceId } = await requestCreateSource("Test source", payload);
 
-      expect(sourceId).to.be.a("string");
-      requestDeleteSource(sourceId);
-    });
+    expect(sourceId).to.be.a("string");
+    requestDeleteSource(sourceId);
   });
 });

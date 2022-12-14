@@ -1,3 +1,5 @@
+import { toPromise } from "./utils/promise";
+
 let _workspaceId: string;
 
 const getApiUrl = (path: string): string => `http://localhost:8001/api/v1${path}`;
@@ -31,30 +33,26 @@ export const requestWorkspaceId = () => {
   }
 };
 
-export const requestCreateSource = (name: string, payload: Record<string, unknown>) => {
-  return cy.request("POST", getApiUrl("/sources/create"), payload).then((response) => {
-    expect(response.status).to.eq(200);
+const apiRequest = <T = void>(
+  method: Cypress.HttpMethod,
+  path: string,
+  payload: Record<string, unknown> | undefined,
+  expectedStatus: number
+): Promise<T> =>
+  toPromise<T>(
+    cy.request(method, getApiUrl(path), payload).then((response) => {
+      expect(response.status).to.eq(expectedStatus, "response status");
+      return response.body;
+    })
+  );
 
-    return response.body as { sourceId: string };
-  });
-};
+export const requestCreateSource = (name: string, payload: Record<string, unknown>) =>
+  apiRequest<{ sourceId: string }>("POST", "/sources/create", payload, 200);
 
-export const requestDeleteSource = (sourceId: string) => {
-  return cy.request("POST", getApiUrl("/sources/delete"), { sourceId }).then((response) => {
-    expect(response.status).to.eq(204);
-  });
-};
+export const requestDeleteSource = (sourceId: string) => apiRequest("POST", "/sources/delete", { sourceId }, 204);
 
-export const requestCreateDestination = (name: string, payload: Record<string, unknown>) => {
-  return cy.request("POST", getApiUrl("/destinations/create"), payload).then((response) => {
-    expect(response.status).to.eq(200);
+export const requestCreateDestination = (name: string, payload: Record<string, unknown>) =>
+  apiRequest<{ destinationId: string }>("POST", "/destinations/create", payload, 200);
 
-    return response.body as { destinationId: string };
-  });
-};
-
-export const requestDeleteDestination = (destinationId: string) => {
-  return cy.request("POST", getApiUrl("/destinations/delete"), { destinationId }).then((response) => {
-    expect(response.status).to.eq(204);
-  });
-};
+export const requestDeleteDestination = (destinationId: string) =>
+  apiRequest("POST", "/destinations/delete", { destinationId }, 204);
