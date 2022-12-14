@@ -1,7 +1,8 @@
 import { Form, Formik, useField } from "formik";
 import { JSONSchema7 } from "json-schema";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
@@ -24,6 +25,22 @@ export const InputsView: React.FC = () => {
   const { formatMessage } = useIntl();
   const [inputs, , helpers] = useField<BuilderFormValues["inputs"]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
+  const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
+  const inputInEditValidation = useMemo(
+    () =>
+      yup.object().shape({
+        // make sure key can only occur once
+        key: yup
+          .string()
+          .required("form.empty.error")
+          .notOneOf(inputInEditing?.isNew ? usedKeys : usedKeys.filter((key) => key !== inputInEditing?.key)),
+        required: yup.bool(),
+        definition: yup.object().shape({
+          title: yup.string().required("form.empty.error"),
+        }),
+      }),
+    [inputInEditing?.isNew, inputInEditing?.key, usedKeys]
+  );
   return (
     <>
       <Card>
@@ -65,6 +82,7 @@ export const InputsView: React.FC = () => {
       {inputInEditing && (
         <Formik
           initialValues={inputInEditing}
+          validationSchema={inputInEditValidation}
           onSubmit={({ isNew, ...values }: InputInEditing) => {
             helpers.setValue(
               inputInEditing.isNew
@@ -95,13 +113,6 @@ export const InputsView: React.FC = () => {
                     <BuilderField
                       path="key"
                       type="text"
-                      additionalValidation={(schema) => {
-                        const usedKeys = inputs.value.map((input) => input.key);
-                        if (values.isNew) {
-                          return schema.notOneOf(usedKeys);
-                        }
-                        return schema.notOneOf(usedKeys.filter((key) => key !== inputInEditing.key));
-                      }}
                       label={formatMessage({ id: "connectorBuilder.inputModal.key" })}
                       tooltip={formatMessage({ id: "connectorBuilder.inputModal.keyTooltip" })}
                     />

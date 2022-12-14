@@ -38,7 +38,7 @@ export const jsonSchemaToFormBlock = (
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
-    let possibleConditionSelectionKeys: Set<string> | null = null as Set<string> | null;
+    let possibleConditionSelectionKeys = null as Set<string> | null;
     const conditions = jsonSchema.oneOf.flatMap((condition) => {
       if (typeof condition === "boolean") {
         throw new FormBuildError("Spec uses oneOf without using object types for all conditions");

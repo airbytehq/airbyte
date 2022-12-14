@@ -1,4 +1,5 @@
 import { JSONSchema7 } from "json-schema";
+import * as yup from "yup";
 
 import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
@@ -23,6 +24,21 @@ export interface BuilderStream {
   fieldPointer: string[];
   httpMethod: "GET" | "POST";
 }
+
+export const builderFormValidationSchema = yup.object().shape({
+  global: yup.object().shape({
+    connectorName: yup.string().required("form.empty.error"),
+    urlBase: yup.string().required("form.empty.error"),
+  }),
+  streams: yup.array().of(
+    yup.object().shape({
+      name: yup.string().required("form.empty.error"),
+      urlPath: yup.string().required("form.empty.error"),
+      fieldPointer: yup.array().of(yup.string()),
+      httpMethod: yup.mixed().oneOf(["GET", "POST"]),
+    })
+  ),
+});
 
 export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {

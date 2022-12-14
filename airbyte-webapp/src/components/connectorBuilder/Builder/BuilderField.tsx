@@ -1,6 +1,5 @@
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
-import * as yup from "yup";
 
 import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
@@ -31,7 +30,6 @@ interface BaseFieldProps {
   label: string;
   tooltip?: string;
   optional?: boolean;
-  additionalValidation?: (schema: yup.AnySchema) => yup.AnySchema;
 }
 
 type BuilderFieldProps = BaseFieldProps &
@@ -61,36 +59,8 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
   return <TagInput name={name} fieldValue={value} onChange={(value) => setValue(value)} error={error} />;
 };
 
-export const BuilderField: React.FC<BuilderFieldProps> = ({
-  path,
-  label,
-  tooltip,
-  optional = false,
-  additionalValidation,
-  ...props
-}) => {
-  let yupSchema: yup.AnySchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
-  if (!optional) {
-    yupSchema = yupSchema.required("form.empty.error");
-  }
-  if (additionalValidation) {
-    yupSchema = additionalValidation(yupSchema);
-  }
-  const fieldConfig = {
-    name: path,
-    validate: (value: string) => {
-      try {
-        yupSchema.validateSync(value);
-        return undefined;
-      } catch (err) {
-        if (err instanceof yup.ValidationError) {
-          return err.errors.join(", ");
-        }
-        throw err;
-      }
-    },
-  };
-  const [field, meta, helpers] = useField(fieldConfig);
+export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
+  const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
   return (
