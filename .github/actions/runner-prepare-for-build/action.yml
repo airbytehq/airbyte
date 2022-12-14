@@ -25,7 +25,7 @@ runs:
     - if: inputs.install_node == 'true'
       uses: actions/setup-node@v3
       with:
-        node-version: "lts/gallium"
+        node-version: "lts/*"
 
     - if: inputs.install_python == 'true'
       uses: actions/setup-python@v4
