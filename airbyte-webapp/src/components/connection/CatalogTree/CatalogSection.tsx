@@ -43,7 +43,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   errors,
   changedSelected,
 }) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const isNewStreamsTableEnabled = import.meta.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
 
   const {
     destDefinition: { supportedDestinationSyncModes },

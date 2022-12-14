@@ -52,7 +52,7 @@ export const isGdprCountry = (): boolean => {
 };
 
 export const loadOsano = (): void => {
-  if (!process.env.REACT_APP_OSANO) {
+  if (!import.meta.env.REACT_APP_OSANO) {
     return;
   }
 
@@ -69,7 +69,7 @@ export const loadOsano = (): void => {
 
   // Create and append the script tag to  load osano
   const script = document.createElement("script");
-  script.src = `https://cmp.osano.com/${process.env.REACT_APP_OSANO}/osano.js`;
+  script.src = `https://cmp.osano.com/${import.meta.env.REACT_APP_OSANO}/osano.js`;
   script.addEventListener("load", () => {
     window.Osano?.cm.addEventListener("osano-cm-script-blocked", (item) => {
       console.debug(`Script blocked by Osano: ${item}`);

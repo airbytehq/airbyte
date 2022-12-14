@@ -28,7 +28,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   onStreamsChanged,
   isLoading,
 }) => {
-  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const isNewStreamsTableEnabled = import.meta.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
   const { initialValues, mode } = useConnectionFormService();
 
   const [searchString, setSearchString] = useState("");

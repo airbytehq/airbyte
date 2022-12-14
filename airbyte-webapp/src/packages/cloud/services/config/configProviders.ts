@@ -38,17 +38,17 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
 
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
-    cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
-    cloudPublicApiUrl: process.env.REACT_APP_CLOUD_PUBLIC_API_URL,
+    cloudApiUrl: import.meta.env.REACT_APP_CLOUD_API_URL,
+    cloudPublicApiUrl: import.meta.env.REACT_APP_CLOUD_PUBLIC_API_URL,
     firebase: {
-      apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
-      authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
-      authEmulatorHost: process.env.REACT_APP_FIREBASE_AUTH_EMULATOR_HOST,
+      apiKey: import.meta.env.REACT_APP_FIREBASE_API_KEY,
+      authDomain: import.meta.env.REACT_APP_FIREBASE_AUTH_DOMAIN,
+      authEmulatorHost: import.meta.env.REACT_APP_FIREBASE_AUTH_EMULATOR_HOST,
     },
     intercom: {
-      appId: process.env.REACT_APP_INTERCOM_APP_ID,
+      appId: import.meta.env.REACT_APP_INTERCOM_APP_ID,
     },
-    launchDarkly: process.env.REACT_APP_LAUNCHDARKLY_KEY,
+    launchDarkly: import.meta.env.REACT_APP_LAUNCHDARKLY_KEY,
   };
 };
 
