@@ -625,6 +625,7 @@
   "sidebar.DaspireLogo": "Daspire",
   "sidebar.DaspireDashboard": "Dashboard",
   "sidebar.DaspireSetting": "Settings",
+  "sidebar.DaspireSignOut": "Sign out",
 
   "upgrade.plan.countdown": "You’re using the trial version of Daspire. Your trial ends in 14 days.",
   "upgrade.plan.btn": "Upgrade Now",
