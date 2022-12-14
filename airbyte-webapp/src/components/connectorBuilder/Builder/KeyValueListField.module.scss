@@ -1,20 +1,30 @@
 @use "scss/variables";
 @use "scss/colors";
 
-// .container {
-//   display: flex;
-//   flex-direction: column;
-//   gap: variables.$spacing-md;
-// }
-
 .inputContainer {
   width: 100%;
   display: flex;
-  gap: variables.$spacing-md;
+  gap: variables.$spacing-xl;
   align-items: center;
 }
 
 .labeledInput {
+  flex: 1;
+  max-width: 400px;
   display: flex;
   gap: variables.$spacing-sm;
+  align-items: center;
+}
+
+.kvLabel {
+  color: colors.$grey;
+}
+
+.removeButton {
+  border: none;
+  background-color: transparent;
+  color: colors.$grey;
+  cursor: pointer;
+  padding: 0;
+  font-size: 18px;
 }

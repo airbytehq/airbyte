@@ -7,6 +7,7 @@ import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 import { Button } from "components/ui/Button";
 import { Input } from "components/ui/Input";
+import { Text } from "components/ui/Text";
 
 import styles from "./KeyValueListField.module.scss";
 
@@ -20,15 +21,19 @@ const KeyValueInput: React.FC<KeyValueInputProps> = ({ keyValue, onChange, onRem
   return (
     <div className={styles.inputContainer}>
       <div className={styles.labeledInput}>
-        <FormattedMessage id="connectorBuilder.key" />
+        <Text className={styles.kvLabel}>
+          <FormattedMessage id="connectorBuilder.key" />
+        </Text>
         <Input value={keyValue[0]} onChange={(e) => onChange([e.target.value, keyValue[1]])} />
       </div>
       <div className={styles.labeledInput}>
-        <FormattedMessage id="connectorBuilder.value" />
+        <Text className={styles.kvLabel}>
+          <FormattedMessage id="connectorBuilder.value" />
+        </Text>
         <Input value={keyValue[1]} onChange={(e) => onChange([keyValue[0], e.target.value])} />
       </div>
-      <button type="button" onClick={onRemove}>
-        <FontAwesomeIcon icon={faXmark} />
+      <button type="button" className={styles.removeButton} onClick={onRemove}>
+        <FontAwesomeIcon icon={faXmark} size="1x" />
       </button>
     </div>
   );
@@ -38,24 +43,10 @@ interface KeyValueListFieldProps {
   path: string;
   label: string;
   tooltip: string;
-  // keyValueList: Array<[string, string]>;
-  // setValue: (newValue: Array<[string, string]>) => void;
 }
 
 export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, label, tooltip }) => {
   const [{ value: keyValueList }, , { setValue: setKeyValueList }] = useField<Array<[string, string]>>(path);
-  // const [keyValues, setKeyValues] = useState<KeyValue[]>(
-  //   Object.keys(object).map((key) => {
-  //     return { key, value: object[key] };
-  //   })
-  // );
-  console.log(JSON.stringify(keyValueList));
-
-  // useEffect(() => {
-  //   const updatedObject = keyValues.reduce((acc, kv) => ({ ...acc, [kv.key]: kv.value }), {});
-  //   const updatedObject = Object.fromE;
-  //   setValue(updatedObject);
-  // }, [keyValues]);
 
   return (
     <GroupControls label={<ControlLabels label={label} infoTooltipContent={tooltip} />}>
@@ -76,7 +67,11 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
           }}
         />
       ))}
-      <Button onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>Add key/value</Button>
+      <div>
+        <Button variant="secondary" onClick={() => setKeyValueList([...keyValueList, ["", ""]])}>
+          <FormattedMessage id="connectorBuilder.addKeyValue" />
+        </Button>
+      </div>
     </GroupControls>
   );
 };
