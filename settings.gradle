@@ -83,6 +83,7 @@ include ':airbyte-commons'
 include ':airbyte-api'
 include ':airbyte-commons-cli'
 include ':airbyte-commons-docker'
+include ':airbyte-commons-featureflag'
 include ':airbyte-commons-protocol'
 include ':airbyte-config:init'
 include ':airbyte-config:config-models' // reused by acceptance tests in connector base.
