@@ -4,6 +4,10 @@ inputs:
   branch_version_tag:
     description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
     required: false
+  build_docker_images:
+    description: 'Build docker images'
+    default: 'true'
+    required: false
 outputs:
   branch_version_tag:
     description: "Tag used for jars and docker images. Either user specified or auto generated as `dev-<commit_hash>`"
@@ -20,35 +24,17 @@ runs:
         [[ "${{ inputs.branch_version_tag }}" != '' ]] && echo "branch_version_tag=${{ inputs.branch_version_tag }}" >> $GITHUB_OUTPUT \
           || { short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_OUTPUT ; }
 
-    - uses: actions/setup-java@v3
-      with:
-        distribution: "zulu"
-        java-version: "17"
+    - name: Prepare Runner for Building
+      uses: ./.github/actions/runner-prepare-for-build
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: "lts/*"
-
-    - uses: actions/setup-python@v4
-      with:
-        python-version: "3.9"
-
-    - name: Set up CI Gradle Properties
-      run: |
-        mkdir -p ~/.gradle/
-        cat > ~/.gradle/gradle.properties <<EOF
-        org.gradle.jvmargs=-Xmx8g -Xss4m --add-exports jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
-          --add-exports jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED
-        org.gradle.workers.max=8
-        org.gradle.vfs.watch=false
-        EOF
+    - name: Build with Docker Images
+      if: inputs.build_docker_images == 'true'
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
       shell: bash
 
-    - name: Build
-      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
+    - name: Build without Docker Images
+      if: inputs.build_docker_images != 'true'
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew test --scan
       shell: bash
 
     - name: Publish to Maven Local
