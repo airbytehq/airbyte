@@ -1,4 +1,4 @@
-// import { faRocket } from "@fortawesome/free-solid-svg-icons";
+import { faSignOut } from "@fortawesome/free-solid-svg-icons";
 import { faHome } from "@fortawesome/free-solid-svg-icons";
 import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -13,6 +13,7 @@ import { Link } from "components";
 
 // import { useConfig } from "config";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
+import { useUser } from "core/AuthContext";
 import useRouter from "hooks/useRouter";
 
 import { RoutePaths } from "../../../pages/routePaths";
@@ -83,6 +84,20 @@ const Logo = styled.img`
   height: auto;
 `;
 
+const LogOut = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b6b6f;
+  margin: 20px 0;
+  // height: 50px;
+  // border:1px solid red;
+  &:hover {
+    cursor: pointer;
+    color: #4f46e5;
+  }
+`;
+
 // const ButtonCenter = styled.div`
 //   display: flex;
 //   flex-direction: column;
@@ -144,7 +159,8 @@ export const getPopoutStyles = (isOpen?: boolean) => {
 const SideBar: React.FC = () => {
   // const config = useConfig();
   // const workspace = useCurrentWorkspace();
-
+  const { removeUser } = useUser();
+  const { push } = useRouter();
   return (
     <Bar>
       <div>
@@ -243,6 +259,19 @@ const SideBar: React.FC = () => {
             </Text>
           </NavLink>
         </MenuItem>
+        <LogOut
+          onClick={() => {
+            removeUser!();
+            push(`/${RoutePaths.Signin}`);
+          }}
+        >
+          <div>
+            <MenuItemIcon icon={faSignOut} />
+          </div>
+          <Text>
+            <FormattedMessage id="sidebar.DaspireSignOut" />
+          </Text>
+        </LogOut>
         {/* <li>
           <ButtonCenter>
             <Button>

@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2022.12.14
+1. Add sign out button in sidebar (file: en.json&SideBar.tsx)
 #### 2022.12.13
 1. Airbtyte replaced by Daspire (file: en.json)
 2. Hide error log (file: ConnectorCard.tsx)
