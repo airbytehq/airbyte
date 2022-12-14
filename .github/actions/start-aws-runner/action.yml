@@ -18,7 +18,7 @@ inputs:
     default: "subnet-0469a9e68a379c1d3"
     required: true
   security-group-id:
-    default: "sg-0793f3c9413f21970"
+    default: "sg-0793f3c9413f21970,sg-023656a050e7d5634"
     required: true
   label:
     required: false

@@ -23,5 +23,8 @@ ADD bin/${APPLICATION}-${VERSION}.tar /app
 # Grab well-known types file
 COPY WellKnownTypes.json /app
 
+# force build to fail, just in case this _doesn't_ actually fail again
+COPY nonexistent_file.txt /app
+
 # wait for upstream dependencies to become available before starting server
 ENTRYPOINT ["/bin/bash", "-c", "${APPLICATION}-${VERSION}/bin/${APPLICATION}"]
