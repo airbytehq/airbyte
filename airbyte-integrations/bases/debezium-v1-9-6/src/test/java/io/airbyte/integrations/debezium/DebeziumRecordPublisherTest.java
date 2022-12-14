@@ -64,17 +64,17 @@ class DebeziumRecordPublisherTest {
 
   @Test
   public void testColumnIncludeListEscaping() {
-//    final String a = "public\\.products\\*\\^\\$\\+-\\\\";
-//    final String b = "public.products*^$+-\\";
-//    final Pattern p = Pattern.compile(a, Pattern.UNIX_LINES);
-//    assertTrue(p.matcher(b).find());
-//    assertTrue(Pattern.compile(Pattern.quote(b)).matcher(b).find());
+    // final String a = "public\\.products\\*\\^\\$\\+-\\\\";
+    // final String b = "public.products*^$+-\\";
+    // final Pattern p = Pattern.compile(a, Pattern.UNIX_LINES);
+    // assertTrue(p.matcher(b).find());
+    // assertTrue(Pattern.compile(Pattern.quote(b)).matcher(b).find());
 
     final ConfiguredAirbyteCatalog catalog = new ConfiguredAirbyteCatalog().withStreams(ImmutableList.of(
         CatalogHelpers.createConfiguredAirbyteStream(
-        "id_and_name",
-        "public",
-        Field.of("fld1", JsonSchemaType.NUMBER), Field.of("fld2", JsonSchemaType.STRING)).withSyncMode(SyncMode.INCREMENTAL)));
+            "id_and_name",
+            "public",
+            Field.of("fld1", JsonSchemaType.NUMBER), Field.of("fld2", JsonSchemaType.STRING)).withSyncMode(SyncMode.INCREMENTAL)));
 
     final String anchored = "^" + DebeziumPropertiesManager.getColumnIncludeList(catalog) + "$";
     final Pattern pattern = Pattern.compile(anchored);
@@ -85,4 +85,5 @@ class DebeziumRecordPublisherTest {
     assertFalse(pattern.matcher("ppppublic.id_and_name.fld2333").find());
     assertFalse(pattern.matcher("public.id_and_name.fld_wrong_wrong").find());
   }
+
 }

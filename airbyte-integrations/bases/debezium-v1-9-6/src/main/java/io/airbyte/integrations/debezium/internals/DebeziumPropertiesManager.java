@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class DebeziumPropertiesManager {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(DebeziumPropertiesManager.class);
   private final JsonNode config;
   private final AirbyteFileOffsetBackingStore offsetManager;
@@ -95,14 +96,14 @@ public class DebeziumPropertiesManager {
   }
 
   public static String getTableIncludelist(final ConfiguredAirbyteCatalog catalog) {
-    // Turn  "stream": {
-    //          "namespace": "schema1"
-    //          "name": "table1
-    //        },
-    //        "stream": {
-    //          "namespace": "schema2"
-    //          "name": "table2
-    //        } -------> info "schema1.table1, schema2.table2"
+    // Turn "stream": {
+    // "namespace": "schema1"
+    // "name": "table1
+    // },
+    // "stream": {
+    // "namespace": "schema2"
+    // "name": "table2
+    // } -------> info "schema1.table1, schema2.table2"
 
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
@@ -114,27 +115,27 @@ public class DebeziumPropertiesManager {
   }
 
   public static String getColumnIncludeList(final ConfiguredAirbyteCatalog catalog) {
-    // Turn  "stream": {
-    //          "namespace": "schema1"
-    //          "name": "table1"
-    //          "jsonSchema": {
-    //            "properties": {
-    //              "column1": {
-    //              },
-    //              "column2": {
-    //              }
-    //            }
-    //          }
-    //        }     -------> info "schema1.table1.(column1 | column2)"
+    // Turn "stream": {
+    // "namespace": "schema1"
+    // "name": "table1"
+    // "jsonSchema": {
+    // "properties": {
+    // "column1": {
+    // },
+    // "column2": {
+    // }
+    // }
+    // }
+    // } -------> info "schema1.table1.(column1 | column2)"
 
     return catalog.getStreams().stream()
         .filter(s -> s.getSyncMode() == SyncMode.INCREMENTAL)
         .map(ConfiguredAirbyteStream::getStream)
         .map(s -> {
-              final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
-              // schema.table.(col1|col2)
-              return Pattern.quote(s.getNamespace() + "." + s.getName()) + (StringUtils.isNotBlank(fields) ? "\\." + fields : "");
-            })
+          final String fields = parseFields(s.getJsonSchema().get("properties").fieldNames());
+          // schema.table.(col1|col2)
+          return Pattern.quote(s.getNamespace() + "." + s.getName()) + (StringUtils.isNotBlank(fields) ? "\\." + fields : "");
+        })
         .map(x -> StringUtils.escape(x, ",".toCharArray(), "\\,"))
         .collect(Collectors.joining(","));
   }
