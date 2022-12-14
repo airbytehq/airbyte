@@ -1,41 +1,49 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-jira:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_jira/spec.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.23"
+    tests:
+      - spec_path: "source_jira/spec.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.23"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.2.23"
-      backward_compatibility_tests_config:
-        disable_for_version: "0.3.0"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.23"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.3.0"
   basic_read:
-    # TEST for the Labels stream
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/labels_catalog.json"
-      expect_records:
-        path: "integration_tests/expected_label_records.txt"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/issues_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/projects_configured_catalog.json"
-      empty_streams: ["project_permission_schemes"]
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
-      empty_streams: ["screen_tab_fields", "sprint_issues", "sprints"]
-      timeout_seconds: 1800
+    tests:
+      # TEST for the Labels stream
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/labels_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_label_records.txt"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/issues_configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/issue_worklogs_configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/projects_configured_catalog.json"
+        empty_streams:
+          - name: "project_permission_schemes"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/workflows_configured_catalog.json"
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "screen_tab_fields"
+          - name: "sprint_issues"
+          - name: "sprints"
+        timeout_seconds: 1800
 #  incremental:
 #    - config_path: "secrets/config.json"
 #      configured_catalog_path: "integration_tests/inc_configured_catalog.json"
