@@ -4,6 +4,7 @@ import classnames from "classnames";
 import { useFormikContext } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 
+import Indicator from "components/Indicator";
 import { Button } from "components/ui/Button";
 import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
@@ -17,6 +18,7 @@ import {
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
 import { BuilderFormValues } from "../types";
+import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
 import { UiYamlToggleButton } from "./UiYamlToggleButton";
@@ -24,6 +26,7 @@ import { UiYamlToggleButton } from "./UiYamlToggleButton";
 interface ViewSelectButtonProps {
   className?: string;
   selected: boolean;
+  showErrorIndicator: boolean;
   onClick: () => void;
 }
 
@@ -31,6 +34,7 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
   children,
   className,
   selected,
+  showErrorIndicator,
   onClick,
 }) => {
   return (
@@ -41,7 +45,8 @@ const ViewSelectButton: React.FC<React.PropsWithChildren<ViewSelectButtonProps>>
       })}
       onClick={onClick}
     >
-      {children}
+      <div className={styles.viewLabel}>{children}</div>
+      {showErrorIndicator && <Indicator className={styles.errorIndicator} />}
     </button>
   );
 };
@@ -53,6 +58,7 @@ interface BuilderSidebarProps {
 
 export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
+  const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
@@ -95,6 +101,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       <ViewSelectButton
         className={styles.globalConfigButton}
         selected={selectedView === "global"}
+        showErrorIndicator={hasErrors(true, ["global"])}
         onClick={() => handleViewSelect("global")}
       >
         <FontAwesomeIcon icon={faSliders} />
@@ -111,7 +118,12 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
 
       <div className={styles.streamList}>
         {values.streams.map(({ name }, num) => (
-          <ViewSelectButton key={num} selected={selectedView === num} onClick={() => handleViewSelect(num)}>
+          <ViewSelectButton
+            key={num}
+            selected={selectedView === num}
+            showErrorIndicator={hasErrors(true, [num])}
+            onClick={() => handleViewSelect(num)}
+          >
             {name && name.trim() ? (
               <Text className={styles.streamViewText}>{name}</Text>
             ) : (
