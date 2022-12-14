@@ -88,7 +88,6 @@ const Th = styled.th<TableHeaderProps>`
   width: ${({ collapse, customWidth }) => (customWidth ? `${customWidth}%` : collapse ? "0.0000000001%" : "auto")};
   font-weight: ${({ light }) => (light ? 400 : 600)};
   text-transform: ${({ light }) => (light ? "capitalize" : "uppercase")};
-  white-space: nowrap;
 
   &:first-child {
     padding-left: ${({ light }) => (light ? 13 : 45)}px;
