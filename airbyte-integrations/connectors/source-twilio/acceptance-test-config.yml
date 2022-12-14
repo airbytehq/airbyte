@@ -19,6 +19,8 @@ acceptance_tests:
         expect_records:
           path: "integration_tests/expected_records.txt"
         empty_streams:
+          - name: "accounts"
+            bypass_reason: "With bypassed expected_records test, we should set `accounts` as empty as well"
           - name: "alerts"
             bypass_reason: "alerts are transient - they emerge and disappear from time to time"
           - name: "dependent_phone_numbers"
@@ -42,16 +44,17 @@ acceptance_tests:
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
+        timeout_seconds: 3600
       - config_path: "secrets/config_with_lookback.json"
         configured_catalog_path: "integration_tests/incremental_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
         threshold_days: 30
+        timeout_seconds: 3600
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
         # `constant_records_catalog.json` does not contain the available phone numbers streams,
         # as they may change on each request
         configured_catalog_path: "integration_tests/constant_records_catalog.json"
-        ignored_fields:
-          "accounts": ["auth_token"]
+        timeout_seconds: 3600
