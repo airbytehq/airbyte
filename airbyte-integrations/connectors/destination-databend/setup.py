@@ -5,7 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = ["airbyte-cdk", "requests", "databend-sqlalchemy", "databend-py"]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "requests", "databend-sqlalchemy"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 setup(
