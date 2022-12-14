@@ -137,8 +137,8 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     public Stream<? extends Arguments> provideArguments(final ExtensionContext context) {
       ProtocolVersion protocolVersion = getProtocolVersion();
       return Stream.of(
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), ","),
-              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "|")
+              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u002c"),
+              Arguments.of(EXCHANGE_RATE_CONFIG.getMessageFileVersion(protocolVersion), EXCHANGE_RATE_CONFIG.getCatalogFileVersion(protocolVersion), "\\u003b")
       );
     }
   }

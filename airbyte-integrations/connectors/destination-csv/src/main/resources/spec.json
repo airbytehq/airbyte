@@ -27,7 +27,7 @@
             "properties": {
               "delimiter": {
                 "type": "string",
-                "const": ","
+                "const": "\\u002c"
               }
             }
           },
@@ -37,7 +37,7 @@
             "properties": {
               "delimiter": {
                 "type": "string",
-                "const": ";"
+                "const": "\\u003b"
               }
             }
           },
@@ -47,7 +47,7 @@
             "properties": {
               "delimiter": {
                 "type": "string",
-                "const": "|"
+                "const": "\\u007c"
               }
             }
           },

@@ -140,11 +140,7 @@ public class CsvDestination extends BaseConnector implements Destination {
 
       if (tempConfig.has(DELIMITER_TYPE)) {
         String delimiter_as_text = tempConfig.get(DELIMITER_TYPE).get("delimiter").asText();
-        if(delimiter_as_text.length() > 1) {
-          delimiter = (char) Integer.parseInt(delimiter_as_text.substring(2),16);
-          return delimiter;
-        }
-        delimiter = delimiter_as_text.charAt(0);
+        delimiter = (char) Integer.parseInt(delimiter_as_text.substring(2),16);
         return delimiter;
       } else {
         delimiter = ',';
