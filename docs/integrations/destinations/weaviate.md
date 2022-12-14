@@ -22,6 +22,9 @@ if you need more control over the schema in Weaviate.
 IDs: If your source table has an int based id stored as field name `id` then the
 ID will automatically be converted to a UUID. Weaviate only supports ID to be a UUID.
 
+Any field name starting with an upper case letter will be converted to lower case. For example,
+if you have a field name `USD` then that field will become `uSD`. This is due to a limitation
+in Weaviate, see [this issue in Weaviate](https://github.com/semi-technologies/weaviate/issues/2438).
 
 ## Getting Started
 
