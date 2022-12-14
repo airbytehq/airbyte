@@ -16,7 +16,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DOCKER_IMAGE_
 import datadog.trace.api.Trace;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
@@ -38,30 +37,15 @@ import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.metrics.lib.MetricAttribute;
-import io.airbyte.metrics.lib.MetricClient;
 import io.airbyte.metrics.lib.MetricClientFactory;
-import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.metrics.lib.OssMetricsRegistry;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.ContainerOrchestratorConfig;
-import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
-import io.airbyte.workers.WorkerMetricReporter;
-import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.DefaultAirbyteDestination;
-import io.airbyte.workers.internal.DefaultAirbyteSource;
-import io.airbyte.workers.internal.EmptyAirbyteSource;
-import io.airbyte.workers.internal.NamespacingMapper;
-import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
-import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
-import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
-import io.airbyte.workers.process.IntegrationLauncher;
+import io.airbyte.workers.general.DefaultReplicationWorkerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
@@ -180,8 +164,11 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                 () -> context,
                 workerConfigs);
           } else {
-            workerFactory =
-                getLegacyWorkerFactory(sourceLauncherConfig, destinationLauncherConfig, jobRunConfig, syncInput);
+            workerFactory = getLegacyWorkerFactory(
+                sourceLauncherConfig,
+                destinationLauncherConfig,
+                jobRunConfig,
+                syncInput);
           }
 
           final TemporalAttemptExecution<StandardSyncInput, ReplicationOutput> temporalAttempt =
@@ -267,45 +254,21 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                           final IntegrationLauncherConfig destinationLauncherConfig,
                                                                                                           final JobRunConfig jobRunConfig,
                                                                                                           final StandardSyncInput syncInput) {
-    return () -> {
-      final IntegrationLauncher sourceLauncher = new AirbyteIntegrationLauncher(
-          sourceLauncherConfig.getJobId(),
-          Math.toIntExact(sourceLauncherConfig.getAttemptId()),
-          sourceLauncherConfig.getDockerImage(),
-          processFactory,
-          syncInput.getSourceResourceRequirements(),
-          sourceLauncherConfig.getIsCustomConnector());
-      final IntegrationLauncher destinationLauncher = new AirbyteIntegrationLauncher(
-          destinationLauncherConfig.getJobId(),
-          Math.toIntExact(destinationLauncherConfig.getAttemptId()),
-          destinationLauncherConfig.getDockerImage(),
-          processFactory,
-          syncInput.getDestinationResourceRequirements(),
-          destinationLauncherConfig.getIsCustomConnector());
-
-      // reset jobs use an empty source to induce resetting all data in destination.
-      final AirbyteSource airbyteSource = isResetJob(sourceLauncherConfig.getDockerImage())
-          ? new EmptyAirbyteSource(featureFlags.useStreamCapableState())
-          : new DefaultAirbyteSource(sourceLauncher,
-              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
-      MetricClientFactory.initialize(MetricEmittingApps.WORKER);
-      final MetricClient metricClient = MetricClientFactory.getMetricClient();
-      final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
-
-      return new DefaultReplicationWorker(
-          jobRunConfig.getJobId(),
-          Math.toIntExact(jobRunConfig.getAttemptId()),
-          airbyteSource,
-          new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-          new DefaultAirbyteDestination(destinationLauncher,
-              new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
-                  DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
-              new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
-          new AirbyteMessageTracker(),
-          new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter, false);
-    };
+    return () -> DefaultReplicationWorkerFactory.create(
+        jobRunConfig.getJobId(),
+        Math.toIntExact(jobRunConfig.getAttemptId()),
+        processFactory,
+        sourceLauncherConfig.getDockerImage(),
+        destinationLauncherConfig.getDockerImage(),
+        sourceLauncherConfig.getIsCustomConnector(),
+        destinationLauncherConfig.getIsCustomConnector(),
+        sourceLauncherConfig.getProtocolVersion(),
+        destinationLauncherConfig.getProtocolVersion(),
+        syncInput,
+        serDeProvider,
+        migratorFactory,
+        featureFlags,
+        false);
   }
 
   private CheckedSupplier<Worker<StandardSyncInput, ReplicationOutput>, Exception> getContainerLauncherWorkerFactory(final ContainerOrchestratorConfig containerOrchestratorConfig,
@@ -314,8 +277,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                                                                                                      final JobRunConfig jobRunConfig,
                                                                                                                      final ResourceRequirements resourceRequirements,
                                                                                                                      final Supplier<ActivityExecutionContext> activityContext,
-                                                                                                                     final WorkerConfigs workerConfigs)
-      throws ApiException {
+                                                                                                                     final WorkerConfigs workerConfigs) {
     final JobIdRequestBody id = new JobIdRequestBody();
     id.setId(Long.valueOf(jobRunConfig.getJobId()));
     final var jobInfo = AirbyteApiClient.retryWithJitter(
