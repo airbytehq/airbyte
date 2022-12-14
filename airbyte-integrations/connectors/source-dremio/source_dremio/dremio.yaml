@@ -20,19 +20,19 @@ definitions:
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
-  catalog_stream:
+  catalogs_stream:
     $ref: "*ref(definitions.base_stream)"
     $options:
-      name: "catalog"
+      name: "catalogs"
       path: "/catalog"
       primary_key: "id"
 
 streams:
-  - "*ref(definitions.catalog_stream)"
+  - "*ref(definitions.catalogs_stream)"
 
 check:
   stream_names:
-    - "catalog"
+    - "catalogs"
 
 spec:
   documentation_url: "https://docs.airbyte.com/integrations/sources/dremio"
