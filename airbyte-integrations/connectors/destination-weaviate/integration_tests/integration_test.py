@@ -23,7 +23,6 @@ from airbyte_cdk.models import (
     SyncMode,
     Type,
 )
-import requests
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client
 
@@ -95,6 +94,7 @@ def setup_teardown(config: Mapping):
         "semitechnologies/weaviate:1.16.1", detach=True, environment=env_vars, name=name,
         ports={8080: ('127.0.0.1', 8081)}
     )
+    time.sleep(1)
 
     retries = 3
     while retries > 0:
@@ -167,16 +167,17 @@ def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
     return out
 
 
+def get_objects(client: Client, class_name: str) -> List[Mapping[str, Any]]:
+    """retrieves and formats all Articles as Airbyte messages"""
+    all_records = client.client.data_object.get(class_name=class_name)
+    return all_records.get("objects")
+
+
 def count_objects(client: Client, class_name: str) -> int:
-    result = client.query.aggregate(class_name) \
+    result = client.client.query.aggregate(class_name) \
         .with_fields('meta { count }') \
         .do()
     return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
-
-
-def retrieve_all_pokemons(client: Client) -> List[dict]:
-    """retrieves and formats all Articles as Airbyte messages"""
-    return client.client.data_object.get(class_name="Pokemon")
 
 
 def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
@@ -219,7 +220,7 @@ def test_write_large_batch(config: Mapping, article_catalog: ConfiguredAirbyteCa
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-    assert count_objects(client.client, "Article") == 400, "There should be 400 records in weaviate"
+    assert count_objects(client, "Article") == 400, "There should be 400 records in weaviate"
 
 
 def test_write_second_sync(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
@@ -237,7 +238,7 @@ def test_write_second_sync(config: Mapping, article_catalog: ConfiguredAirbyteCa
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-    assert count_objects(client.client, "Article") == 10, "First and second state should have flushed a total of 10 articles"
+    assert count_objects(client, "Article") == 10, "First and second state should have flushed a total of 10 articles"
 
 
 def test_line_break_characters(config: Mapping, client: Client):
@@ -257,7 +258,12 @@ def test_line_break_characters(config: Mapping, client: Client):
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-    assert count_objects(client.client, "Currency") == 1, "First and second state should have flushed a total of 10 articles"
+    assert count_objects(client, "Currency") == 1, "There should be only 1 object of class currency in Weaviate"
+    actual = get_objects(client, "Currency")[0]
+    assert actual["properties"].get("date") == data.get("date"), "Dates with new line should match"
+    assert actual["properties"].get("hKD") == data.get("HKD"), "HKD should match hKD in Weaviate"
+    assert actual["properties"].get("nZD") == data.get("NZD")
+    assert actual["properties"].get("currency") == data.get("currency")
 
 
 def test_write_id(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
@@ -301,8 +307,8 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
     expected_states = [first_state_message]
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    records_in_destination = retrieve_all_pokemons(client)
-    assert len(records_in_destination["objects"]) == 1, "Expecting there should be 1 record"
+    records_in_destination = get_objects(client, "Pokemon")
+    assert len(records_in_destination) == 1, "Expecting there should be 1 record"
 
-    actual = records_in_destination["objects"][0]
+    actual = records_in_destination[0]
     assert actual["properties"]["name"] == pikachu.record.data.get("name"), "Names should match"
