@@ -376,7 +376,8 @@ class ConnectionsHandlerTest {
 
       @Test
       void testFieldSelectionRemovePrimaryKeyFails() throws JsonValidationException, ConfigNotFoundException, IOException {
-        // Test that if we try to de-select a field that's being used for the primary key, the request will fail.
+        // Test that if we try to de-select a field that's being used for the primary key, the request will
+        // fail.
         // The connection initially has a catalog with one stream, and two fields in that stream.
         standardSync.setCatalog(ConnectionHelpers.generateAirbyteCatalogWithTwoFields());
 
