@@ -17,19 +17,13 @@ definitions:
     request_option:
       field_name: "strategy"
       inject_into: "request_parameter"
-  category_stream_slicer:
-    type: "ListStreamSlicer"
-    slice_values: "{{ config['categories'] }}"
-    cursor_field: category
-    request_option:
-      field_name: "category"
-      inject_into: "request_parameter"
   requester:
     url_base: "https://www.googleapis.com/pagespeedonline/v5/"
     http_method: "GET"
     request_options_provider:
       request_parameters:
         key: "{{ config['api_key'] }}"
+        category: "{{ config['categories'] }}"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"
@@ -42,16 +36,11 @@ definitions:
       stream_slicers:
         - "*ref(definitions.url_stream_slicer)"
         - "*ref(definitions.strategy_stream_slicer)"
-        - "*ref(definitions.category_stream_slicer)"
   base_stream:
     retriever:
       $ref: "*ref(definitions.retriever)"
   pagespeed_stream:
     transformations:
-      - type: AddFields
-        fields:
-          - path: ["category"]
-            value: "{{ stream_slice.category }}"
       - type: AddFields
         fields:
           - path: ["strategy"]
