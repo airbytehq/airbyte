@@ -628,6 +628,14 @@
   icon: googledirectory.svg
   sourceType: api
   releaseStage: alpha
+- name: Google PageSpeed Insights
+  sourceDefinitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
+  dockerRepository: airbyte/source-google-pagespeed-insights
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  icon: google-pagespeed-insights.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Google Search Console
   sourceDefinitionId: eb4c9e00-db83-4d63-a386-39cfa91012a8
   dockerRepository: airbyte/source-google-search-console
