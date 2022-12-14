@@ -243,7 +243,8 @@ public abstract class DestinationAcceptanceTest {
 
   protected String getNormalizationIntegrationType() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(StandardDestinationDefinition::getNormalizationIntegrationType)
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
         .orElse(null);
   }
 
