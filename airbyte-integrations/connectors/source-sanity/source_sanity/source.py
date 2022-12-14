@@ -25,5 +25,5 @@ class SourceSanity(AbstractSource):
   def streams(self, config: Mapping[str, Any]) -> List[Stream]:
     return [
       Challenges(config, "*[_type == 'challenge']"),
-      Packs(config, "*[_type == 'pack']")
+      Packs(config, """*[_type == 'pack']{...,"drop": drop ->}""")
     ]
