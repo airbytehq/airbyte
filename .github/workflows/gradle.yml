@@ -422,7 +422,14 @@ jobs:
       - name: Build :airbyte-webapp
         uses: Wandalen/wretry.action@master
         with:
-          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan
+          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:build --scan -x :airbyte-webapp:test
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+      
+      - name: Run tests for :airbyte-webapp
+        uses: Wandalen/wretry.action@master
+        with:
+          command: SUB_BUILD=PLATFORM ./gradlew --no-daemon :airbyte-webapp:test --scan
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
