@@ -4,6 +4,7 @@ import { useAsyncFn } from "react-use";
 import styled from "styled-components";
 
 import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
 
 import { LogType } from "core/domain/logs/types";
 import { useNotificationService } from "hooks/services/Notification";
@@ -33,8 +34,8 @@ const LogsContent: React.FC = () => {
 
       registerNotification({
         id: "admin.logs.error",
-        title: formatMessage({ id: "admin.logs.error" }),
-        isError: true,
+        text: formatMessage({ id: "admin.logs.error" }),
+        type: ToastType.ERROR,
       });
     }
   };
