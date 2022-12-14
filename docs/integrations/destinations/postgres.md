@@ -165,7 +165,6 @@ Now that you have set up the Postgres destination connector, check out the follo
 
 | Version | Date       | Pull Request                                             | Subject                                                                                             |
 |:--------|:-----------|:---------------------------------------------------------|:----------------------------------------------------------------------------------------------------|
-| 0.3.27  | 2022-12-12 | [20378](https://github.com/airbytehq/airbyte/pull/20378)   | Improve descriptions                                               |
 | 0.3.26  | 2022-09-27 | [17299](https://github.com/airbytehq/airbyte/pull/17299) | Improve error handling for strict-encrypt postgres destination                                      |
 | 0.3.24  | 2022-09-08 | [16046](https://github.com/airbytehq/airbyte/pull/16046) | Fix missing database name URL Encoding                                                              |
 | 0.3.23  | 2022-07-18 | [16260](https://github.com/airbytehq/airbyte/pull/16260) | Prevent traffic going on an unsecured channel in strict-encryption version of destination postgres  |
