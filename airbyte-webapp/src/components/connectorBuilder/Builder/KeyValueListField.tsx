@@ -59,10 +59,7 @@ export const KeyValueListField: React.FC<KeyValueListFieldProps> = ({ path, labe
             setKeyValueList(updatedList);
           }}
           onRemove={() => {
-            console.log(`Removing index ${keyValueIndex}`);
-            console.log(keyValueList);
             const updatedList = keyValueList.filter((_, index) => index !== keyValueIndex);
-            console.log(updatedList);
             setKeyValueList(updatedList);
           }}
         />
