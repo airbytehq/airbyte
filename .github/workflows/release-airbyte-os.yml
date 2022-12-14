@@ -142,6 +142,7 @@ jobs:
         run: |
           echo "Pull Request Number - ${{ steps.cpr.outputs.pull-request-number }}"
           echo "Pull Request URL - ${{ steps.cpr.outputs.pull-request-url }}"
+
   # In case of self-hosted EC2 errors, remove this block.
   stop-release-airbyte-runner:
     name: "Release Airbyte: Stop EC2 Runner"
