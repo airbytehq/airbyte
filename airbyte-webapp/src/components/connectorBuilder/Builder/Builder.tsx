@@ -27,8 +27,7 @@ function getView(selectedView: BuilderView) {
 }
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
-  const { setBuilderFormValues, selectedView, builderFormValues } = useConnectorBuilderState();
-  console.log(builderFormValues);
+  const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
   useEffect(() => {
     setBuilderFormValues(values);
   }, [values, setBuilderFormValues]);

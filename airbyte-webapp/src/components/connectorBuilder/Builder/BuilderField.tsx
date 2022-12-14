@@ -2,11 +2,12 @@ import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
 
 import { ControlLabels } from "components/LabeledControl";
+import { LabeledSwitch } from "components/LabeledSwitch";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
-import { Switch } from "components/ui/Switch";
 import { TagInput } from "components/ui/TagInput";
 import { Text } from "components/ui/Text";
+import { InfoTooltip } from "components/ui/Tooltip/InfoTooltip";
 
 import styles from "./BuilderField.module.scss";
 
@@ -63,12 +64,25 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip
   const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
+  if (props.type === "boolean") {
+    return (
+      <LabeledSwitch
+        {...field}
+        checked={field.value}
+        label={
+          <>
+            {label} {tooltip && <InfoTooltip placement="top-start">{tooltip}</InfoTooltip>}
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
       {(props.type === "text" || props.type === "number") && (
         <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} />
       )}
-      {props.type === "boolean" && <Switch {...field} checked={field.value} />}
       {props.type === "array" && (
         <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
       )}

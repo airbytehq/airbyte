@@ -1,6 +1,10 @@
 @use "scss/colors";
 @use "scss/variables";
 
+.icon {
+  color: colors.$grey-500;
+}
+
 .modalContent {
   height: 60vh;
   overflow: visible;

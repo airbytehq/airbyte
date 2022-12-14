@@ -1,0 +1,45 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  list-style-type: none;
+  padding: 0;
+  align-items: stretch;
+  margin: 0;
+}
+
+.listItem {
+  display: flex;
+  align-items: center;
+}
+
+.itemLabel {
+  flex-grow: 1;
+  font-size: 16px;
+}
+
+.itemButton {
+  background: none !important;
+  border: none !important;
+  padding: variables.$spacing-xs;
+}
+
+.inputForm {
+  gap: variables.$spacing-lg;
+  display: flex;
+  flex-direction: column;
+}
+
+.viewContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: variables.$spacing-xl;
+}
+
+.inputsCard {
+  align-self: stretch;
+}
