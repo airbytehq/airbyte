@@ -96,13 +96,19 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
               .equalsIgnoreCase(
                   DockerUtils.getTaggedImageName(destinationDefinition.getDockerRepository(), destinationDefinition.getDockerImageTag())))
           .findFirst();
-      final String destinationNormalizationDockerImage = optionalDestinationDefinition.map(standardDestinationDefinition -> String.format("%s:%s",
-          standardDestinationDefinition.getNormalizationRepository(), standardDestinationDefinition.getNormalizationTag())).orElse(null);
+      final String destinationNormalizationDockerImage = optionalDestinationDefinition
+          .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+          .map(standardDestinationDefinition -> String.format("%s:%s",
+              standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository(),
+              standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()))
+          .orElse(null);
       final boolean supportstDbt = optionalDestinationDefinition.isPresent() && Objects.nonNull(optionalDestinationDefinition.get().getSupportsDbt())
           ? optionalDestinationDefinition.get().getSupportsDbt()
           : false;
-      final String normalizationIntegrationType =
-          optionalDestinationDefinition.map(StandardDestinationDefinition::getNormalizationIntegrationType).orElse(null);
+      final String normalizationIntegrationType = optionalDestinationDefinition
+          .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+          .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationIntegrationType())
+          .orElse(null);
 
       final IntegrationLauncherConfig sourceLauncherConfig = new IntegrationLauncherConfig()
           .withJobId(String.valueOf(jobId))

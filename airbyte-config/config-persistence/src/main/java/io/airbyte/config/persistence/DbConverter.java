@@ -15,35 +15,19 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SER
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.ActorCatalog;
-import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
-import io.airbyte.config.DestinationConnection;
-import io.airbyte.config.DestinationOAuthParameter;
-import io.airbyte.config.FieldSelectionData;
-import io.airbyte.config.Geography;
+import io.airbyte.config.*;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
-import io.airbyte.config.Notification;
-import io.airbyte.config.ResourceRequirements;
-import io.airbyte.config.Schedule;
-import io.airbyte.config.ScheduleData;
-import io.airbyte.config.SourceConnection;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
-import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.config.StandardWorkspace;
-import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.jooq.Record;
 
@@ -177,14 +161,17 @@ public class DbConverter {
             : Enums.toEnum(record.get(ACTOR_DEFINITION.RELEASE_STAGE, String.class), StandardDestinationDefinition.ReleaseStage.class).orElseThrow())
         .withReleaseDate(record.get(ACTOR_DEFINITION.RELEASE_DATE) == null ? null
             : record.get(ACTOR_DEFINITION.RELEASE_DATE).toString())
-        .withNormalizationRepository(record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY) == null ? null
-            : record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY))
-        .withNormalizationTag(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG) == null ? null
-            : record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
         .withSupportsDbt(record.get(ACTOR_DEFINITION.SUPPORTS_DBT) == null ? null
             : record.get(ACTOR_DEFINITION.SUPPORTS_DBT))
-        .withNormalizationIntegrationType(record.get(ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE) == null ? null
-            : record.get(ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE))
+        .withNormalizationConfig(
+            Objects.nonNull(record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY)) && Objects.nonNull(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
+                &&
+                Objects.nonNull(record.get(ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE))
+                    ? new NormalizationDestinationDefinitionConfig()
+                        .withNormalizationRepository(record.get(ACTOR_DEFINITION.NORMALIZATION_REPOSITORY))
+                        .withNormalizationTag(record.get(ACTOR_DEFINITION.NORMALIZATION_TAG))
+                        .withNormalizationIntegrationType(record.get(ACTOR_DEFINITION.NORMALIZATION_INTEGRATION_TYPE))
+                    : null)
         .withResourceRequirements(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS) == null
             ? null
             : Jsons.deserialize(record.get(ACTOR_DEFINITION.RESOURCE_REQUIREMENTS).data(), ActorDefinitionResourceRequirements.class));

@@ -6,15 +6,10 @@ package io.airbyte.persistence.job.errorreporter;
 
 import static org.mockito.Mockito.mock;
 
-import io.airbyte.config.AttemptFailureSummary;
+import io.airbyte.config.*;
 import io.airbyte.config.Configs.DeploymentMode;
-import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
-import io.airbyte.config.Metadata;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.StandardWorkspace;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.persistence.job.WebUrlHelper;
@@ -39,6 +34,7 @@ class JobErrorReporterTest {
   private static final String AIRBYTE_VERSION = "0.1.40";
   private static final String NORMALIZATION_IMAGE = "airbyte/normalization";
   private static final String NORMALIZATION_VERSION = "0.2.24";
+  private static final String NORMALIZATION_INTEGRATION_TYPE = "snowflake";
   private static final UUID SOURCE_DEFINITION_ID = UUID.randomUUID();
   private static final String SOURCE_DEFINITION_NAME = "stripe";
   private static final String SOURCE_DOCKER_REPOSITORY = "airbyte/source-stripe";
@@ -138,8 +134,10 @@ class JobErrorReporterTest {
             .withDockerRepository(DESTINATION_DOCKER_REPOSITORY)
             .withReleaseStage(DESTINATION_RELEASE_STAGE)
             .withDestinationDefinitionId(DESTINATION_DEFINITION_ID)
-            .withNormalizationRepository(NORMALIZATION_IMAGE)
-            .withNormalizationTag(NORMALIZATION_VERSION)
+            .withNormalizationConfig(new NormalizationDestinationDefinitionConfig()
+                .withNormalizationTag(NORMALIZATION_VERSION)
+                .withNormalizationRepository(NORMALIZATION_IMAGE)
+                .withNormalizationIntegrationType(NORMALIZATION_INTEGRATION_TYPE))
             .withName(DESTINATION_DEFINITION_NAME));
 
     final StandardWorkspace mWorkspace = Mockito.mock(StandardWorkspace.class);

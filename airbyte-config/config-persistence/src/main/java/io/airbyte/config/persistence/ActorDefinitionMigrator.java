@@ -16,10 +16,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.util.MoreIterators;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
-import io.airbyte.config.AirbyteConfig;
-import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.StandardDestinationDefinition;
-import io.airbyte.config.StandardSourceDefinition;
+import io.airbyte.config.*;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.configs.jooq.generated.enums.ActorType;
@@ -271,7 +268,9 @@ public class ActorDefinitionMigrator {
       sourceDef.withProtocolVersion(getProtocolVersion(sourceDef.getSpec()));
       ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDef), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class);
+      final NormalizationDestinationDefinitionConfig normalizationConfig = Jsons.object(definition, NormalizationDestinationDefinitionConfig.class);
+      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class)
+          .withNormalizationConfig(normalizationConfig);
       destDef.withProtocolVersion(getProtocolVersion(destDef.getSpec()));
       ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(destDef), ctx);
     } else {

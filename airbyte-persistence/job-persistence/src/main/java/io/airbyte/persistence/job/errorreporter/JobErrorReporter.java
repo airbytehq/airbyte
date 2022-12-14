@@ -114,11 +114,11 @@ public class JobErrorReporter {
           // the destination)
           final Map<String, String> metadata = MoreMaps.merge(
               commonMetadata,
-              getNormalizationMetadata(destinationDefinition.getNormalizationRepository()),
+              getNormalizationMetadata(destinationDefinition.getNormalizationConfig().getNormalizationRepository()),
               prefixConnectorMetadataKeys(getSourceMetadata(sourceDefinition), "source"),
               getDestinationMetadata(destinationDefinition));
-          final String dockerImage = DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationRepository(),
-              destinationDefinition.getNormalizationTag());
+          final String dockerImage = DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
+              destinationDefinition.getNormalizationConfig().getNormalizationTag());
 
           reportJobFailureReason(workspace, failureReason, dockerImage, metadata);
         }
