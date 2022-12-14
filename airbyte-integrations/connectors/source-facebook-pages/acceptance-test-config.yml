@@ -23,6 +23,9 @@ acceptance_tests:
         empty_streams: []
         expect_records:
           path: "integration_tests/expected_records.txt"
+          extra_fields: yes
+          exact_order: no
+          extra_records: yes
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
