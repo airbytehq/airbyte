@@ -4,7 +4,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources import AbstractSource
 
 from .stream_events import (
-  Challenges
+  Challenges,
+  Packs
 )
 
 
@@ -23,5 +24,6 @@ class SourceSanity(AbstractSource):
 
   def streams(self, config: Mapping[str, Any]) -> List[Stream]:
     return [
-      Challenges(config, "*[_type == 'challenge']")
+      Challenges(config, "*[_type == 'challenge']"),
+      Packs(config, "*[_type == 'pack']")
     ]

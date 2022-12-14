@@ -33,3 +33,9 @@ class Challenges(EventsStream):
     return "v2021-06-07/data/query/production"
   def request_params(self, **_) -> MutableMapping[str, Any]:
     return {"query": self.query}
+
+class Packs(EventsStream):
+  def path(self, **_) -> str:
+    return "v2021-06-07/data/query/production"
+  def request_params(self, **_) -> MutableMapping[str, Any]:
+    return {"query": self.query}
