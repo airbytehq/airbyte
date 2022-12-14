@@ -5,11 +5,13 @@ type: object
 description: An API source that extracts data according to its declarative components
 version: 1.0.0
 required:
+  - type
   - check
   - streams
   - version
 properties:
   type:
+    type: string
     enum: [DeclarativeSource]
   check:
     "$ref": "#/definitions/CheckStream"
@@ -33,6 +35,7 @@ definitions:
       - value
     properties:
       type:
+        type: string
         enum: [AddedFieldDefinition]
       path:
         type: array
@@ -48,6 +51,7 @@ definitions:
       - fields
     properties:
       type:
+        type: string
         enum: [AddFields]
       fields:
         type: array
@@ -64,6 +68,7 @@ definitions:
       - api_token
     properties:
       type:
+        type: string
         enum: [ApiKeyAuthenticator]
       api_token:
         type: string
@@ -77,6 +82,7 @@ definitions:
       - username
     properties:
       type:
+        type: string
         enum: [BasicHttpAuthenticator]
       username:
         type: string
@@ -90,6 +96,7 @@ definitions:
       - api_token
     properties:
       type:
+        type: string
         enum: [BearerAuthenticator]
       api_token:
         type: string
@@ -122,6 +129,7 @@ definitions:
       - stream_names
     properties:
       type:
+        type: string
         enum: [CheckStream]
       stream_names:
         type: array
@@ -131,9 +139,11 @@ definitions:
     description: Error handler that sequentially iterates over a list of error handlers
     type: object
     required:
+      - type
       - error_handlers
     properties:
       type:
+        type: string
         enum: [CompositeErrorHandler]
       error_handlers:
         type: array
@@ -152,6 +162,7 @@ definitions:
       - backoff_time_in_seconds
     properties:
       type:
+        type: string
         enum: [ConstantBackoffStrategy]
       backoff_time_in_seconds:
         anyOf:
@@ -168,6 +179,7 @@ definitions:
       - cursor_value
     properties:
       type:
+        type: string
         enum: [CursorPagination]
       cursor_value:
         type: string
@@ -189,6 +201,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomAuthenticator]
       class_name:
         type: string
@@ -205,6 +218,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomBackoffStrategy]
       class_name:
         type: string
@@ -220,6 +234,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomErrorHandler]
       class_name:
         type: string
@@ -235,6 +250,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomPaginationStrategy]
       class_name:
         type: string
@@ -250,6 +266,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomRecordExtractor]
       class_name:
         type: string
@@ -265,6 +282,7 @@ definitions:
       - class_name
     properties:
       type:
+        type: string
         enum: [CustomStreamSlicer]
       class_name:
         type: string
@@ -283,6 +301,7 @@ definitions:
       - step
     properties:
       type:
+        type: string
         enum: [DatetimeStreamSlicer]
       cursor_field:
         type: string
@@ -322,6 +341,7 @@ definitions:
       - token_refresh_endpoint
     properties:
       type:
+        type: string
         enum: [DeclarativeOauth2Authenticator]
       client_id:
         type: string
@@ -355,6 +375,7 @@ definitions:
       - retriever
     properties:
       type:
+        type: string
         enum: [DeclarativeStream]
       retriever:
         "$ref": "#/definitions/SimpleRetriever"
@@ -398,8 +419,11 @@ definitions:
   DefaultErrorHandler:
     description: The default error handler. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
     type: object
+    required:
+      - type
     properties:
       type:
+        type: string
         enum: [DefaultErrorHandler]
       backoff_strategies:
         type: array
@@ -429,6 +453,7 @@ definitions:
       - url_base
     properties:
       type:
+        type: string
         enum: [DefaultPaginator]
       pagination_strategy:
         anyOf:
@@ -454,6 +479,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [DefaultSchemaLoader]
       $options:
         type: object
@@ -466,6 +492,7 @@ definitions:
       - field_pointer
     properties:
       type:
+        type: string
         enum: [DpathExtractor]
       field_pointer:
         type: array
@@ -483,6 +510,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [ExponentialBackoffStrategy]
       factor:
         anyOf:
@@ -502,6 +530,7 @@ definitions:
       - url_base
     properties:
       type:
+        type: string
         enum: [HttpRequester]
       name:
         type: string
@@ -539,9 +568,11 @@ definitions:
     description: A filter that is used to select on properties of the HTTP response received
     type: object
     required:
+      - type
       - action
     properties:
       type:
+        type: string
         enum: [HttpResponseFilter]
       action:
         type: string
@@ -571,6 +602,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [InlineSchemaLoader]
       schema:
         type: object
@@ -581,6 +613,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [InterpolatedRequestOptionsProvider]
       request_body_data:
         anyOf:
@@ -628,6 +661,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [JsonDecoder]
   ListStreamSlicer:
     description: Stream slicer that iterates over the values of a list
@@ -638,6 +672,7 @@ definitions:
       - slice_values
     properties:
       type:
+        type: string
         enum: [ListStreamSlicer]
       cursor_field:
         type: string
@@ -660,6 +695,7 @@ definitions:
       - datetime
     properties:
       type:
+        type: string
         enum: [MinMaxDatetime]
       datetime:
         type: string
@@ -680,6 +716,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [NoAuth]
       $options:
         type: object
@@ -691,6 +728,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [NoPagination]
   OffsetIncrement:
     description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
@@ -700,6 +738,7 @@ definitions:
       - page_size
     properties:
       type:
+        type: string
         enum: [OffsetIncrement]
       page_size:
         type: integer
@@ -714,6 +753,7 @@ definitions:
       - page_size
     properties:
       type:
+        type: string
         enum: [PageIncrement]
       page_size:
         type: integer
@@ -733,6 +773,7 @@ definitions:
       - stream_slice_field
     properties:
       type:
+        type: string
         enum: [ParentStreamConfig]
       parent_key:
         type: string
@@ -752,6 +793,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [RecordFilter]
       backoff_time_in_seconds:
         type: string
@@ -767,6 +809,7 @@ definitions:
       - extractor
     properties:
       type:
+        type: string
         enum: [RecordSelector]
       extractor:
         anyOf:
@@ -785,6 +828,7 @@ definitions:
       - field_pointers
     properties:
       type:
+        type: string
         enum: [RemoveFields]
       field_pointers:
         type: array
@@ -799,6 +843,7 @@ definitions:
       - inject_into
     properties:
       type:
+        type: string
         enum: [RequestOption]
       inject_into:
         enum:
@@ -822,6 +867,7 @@ definitions:
       - requester
     properties:
       type:
+        type: string
         enum: [SimpleRetriever]
       record_selector:
         "$ref": "#/definitions/RecordSelector"
@@ -864,6 +910,7 @@ definitions:
       - type
     properties:
       type:
+        type: string
         enum: [SingleSlice]
       $options:
         type: object
@@ -877,6 +924,7 @@ definitions:
       - documentation_url
     properties:
       type:
+        type: string
         enum: [Spec]
       connection_specification:
         type: object
@@ -891,6 +939,7 @@ definitions:
       - parent_stream_configs
     properties:
       type:
+        type: string
         enum: [SubstreamSlicer]
       parent_stream_configs:
         type: array
@@ -907,6 +956,7 @@ definitions:
       - header
     properties:
       type:
+        type: string
         enum: [WaitTimeFromHeaderBackoffStrategy]
       header:
         type: string
@@ -923,6 +973,7 @@ definitions:
       - header
     properties:
       type:
+        type: string
         enum: [WaitUntilTimeFromHeaderBackoffStrategy]
       header:
         type: string
