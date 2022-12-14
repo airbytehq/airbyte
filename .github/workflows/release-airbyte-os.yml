@@ -34,6 +34,7 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           github-token: ${{ env.PAT }}
+          security-group-id: "sg-0793f3c9413f21970,sg-023656a050e7d5634"
 
   releaseAirbyte:
     # In case of self-hosted EC2 errors, removed the `needs` line and switch back to running on ubuntu-latest.
