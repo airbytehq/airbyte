@@ -128,13 +128,14 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
         return f"boards/{stream_slice['sub_parent']['parent']['id']}/sections/{stream_slice['parent']['id']}/pins"
 
 
-class IncrementalPinterestStream(PinterestStream, ABC):
+class IncrementalPinterestStream(PinterestStream, ABC):    
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         default_value = self.start_date.format("YYYY-MM-DD")
         latest_state = latest_record.get(self.cursor_field, default_value)
         current_state = current_stream_state.get(self.cursor_field, default_value)
-
-        if (isinstance(latest_state, int) or isinstance(latest_state, float)) and isinstance(current_state, str):
+        latest_state_is_numeric = isinstance(latest_state, int) or isinstance(latest_state, float)
+        
+        if latest_state_is_numeric and isinstance(current_state, str):
             current_state = datetime.strptime(current_state, "%Y-%m-%d").timestamp()
 
         return {self.cursor_field: max(latest_state, current_state)}
