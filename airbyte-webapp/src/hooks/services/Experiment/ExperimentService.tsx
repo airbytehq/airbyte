@@ -16,13 +16,27 @@ export interface ExperimentService {
 }
 
 export function useExperiment<K extends keyof Experiments>(key: K, defaultValue: Experiments[K]): Experiments[K] {
+  const envOverwrite = useMemo(() => {
+    if (process.env.NODE_ENV !== "development" || !process.env[`REACT_APP_EXPERIMENT_${key}`]) {
+      return null;
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return JSON.parse(process.env[`REACT_APP_EXPERIMENT_${key}`]!);
+  }, [key]);
+
   const experimentService = useContext(experimentContext);
   // Get the observable for the changes of the experiment or an empty (never emitting) observable in case the
   // experiment service doesn't exist (e.g. we're running in OSS or it failed to initialize)
-  const onChanges$ = useMemo(() => experimentService?.getExperimentChanges$(key) ?? EMPTY, [experimentService, key]);
+
+  const onChanges$ = useMemo(
+    () => (envOverwrite ? EMPTY : experimentService?.getExperimentChanges$(key) ?? EMPTY),
+    [envOverwrite, experimentService, key]
+  );
   // Listen to changes on that observable and use the current value (if the service exist) or the defaultValue otherwise
   // as the starting value.
-  return useObservable(onChanges$, experimentService?.getExperiment(key, defaultValue) ?? defaultValue);
+
+  return useObservable(onChanges$, envOverwrite ?? experimentService?.getExperiment(key, defaultValue) ?? defaultValue);
 }
 
 export const ExperimentProvider = experimentContext.Provider;
