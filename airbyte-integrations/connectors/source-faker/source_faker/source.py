@@ -28,5 +28,5 @@ class SourceFaker(AbstractSource):
         return [
             Products(count, seed, records_per_sync, records_per_slice),
             Users(count, seed, records_per_sync, records_per_slice),
-            Purchases(seed, records_per_sync, records_per_slice),
+            Purchases(count, seed, records_per_sync, records_per_slice),
         ]
