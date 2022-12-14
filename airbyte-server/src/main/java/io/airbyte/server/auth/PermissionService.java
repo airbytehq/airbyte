@@ -1,16 +1,14 @@
 package io.airbyte.server.auth;
 
+import io.airbyte.commons.auth.AuthRole;
 import jakarta.inject.Singleton;
 import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.stream.Collectors;
 
 @Singleton
 public class PermissionService {
 
-  public static final Collection<String> ROLES = Set.of("OWNER", "ADMIN", "EDITOR", "READER", "AUTHENTICATED_USER", "NONE");
-
   public Collection<String> getUserPermissions(final String username) {
-    return Set.of("EDITOR", "READER");
+    return AuthRole.buildAuthRolesSet(AuthRole.EDITOR).stream().map(r -> r.name()).collect(Collectors.toSet());
   }
 }
