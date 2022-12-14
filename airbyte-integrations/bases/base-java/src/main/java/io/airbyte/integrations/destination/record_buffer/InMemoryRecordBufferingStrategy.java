@@ -4,12 +4,12 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.destination.buffered_stream_consumer.CheckAndRemoveRecordWriter;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordSizeEstimator;
 import io.airbyte.integrations.destination.buffered_stream_consumer.RecordWriter;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

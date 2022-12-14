@@ -28,11 +28,11 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
 
   private final NamingConventionTransformer nameTransformer;
 
-  public BaseS3Destination() {
+  protected BaseS3Destination() {
     this(new S3DestinationConfigFactory());
   }
 
-  public BaseS3Destination(final S3DestinationConfigFactory configFactory) {
+  protected BaseS3Destination(final S3DestinationConfigFactory configFactory) {
     this.configFactory = configFactory;
     this.nameTransformer = new S3NameTransformer();
   }

@@ -4,10 +4,24 @@ This page guides you through the process of setting up the LinkedIn Ads source c
 
 ## Prerequisites
 
-- For Airbyte Cloud and Open Source, you’ll need a LinkedIn Ads account with permission to access data from accounts you want to sync.
-- For Airbyte Open Source, you’ll need the Client ID, Client Secret, and Refresh token for your Developer Application.
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
+* The LinkedIn Ads account with permission to access data from accounts you want to sync.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
+**For Airbyte Open Source:**
+
+* The LinkedIn Ads account with permission to access data from accounts you want to sync.
+* Authentication Options:
+   * OAuth2.0:
+      * `Client ID` from your `Developer Application`
+      * `Client Secret` from your `Developer Application`
+      * `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
+   * Access Token:
+      * `Access Token` obtained from successful authorization with `Client ID` + `Client Secret`
+<!-- /env:oss -->
 
 ## Step 1: Set up LinkedIn Ads
 
@@ -37,7 +51,6 @@ This page guides you through the process of setting up the LinkedIn Ads source c
    Create an Authorization URL with the following steps:
 
    1. Replace the highlighted parameters `YOUR_CLIENT_ID` and `YOUR_REDIRECT_URI` in the URL (`https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=YOUR_CLIENT_ID&redirect_uri=YOUR_REDIRECT_URI&scope=r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`) from the scope obtain below.
-
 
    2. Set up permissions for the following scopes `r_emailaddress,r_liteprofile,r_ads,r_ads_reporting,r_organization_social`. For **OAuth2.0**, copy the `Client ID`, and `Client Secret` from your `Developer Application`. And copy the `Refresh Token` obtained from successful authorization with `Client ID` + `Client Secret`
 
@@ -86,6 +99,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 
 ## Step 2: Set up the source connector in Airbyte
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
 1. [Login to your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -97,6 +111,7 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 7. Login and Authorize the LinkedIn Ads account
 8. Click **Set up source**.
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to the local Airbyte page.
@@ -107,8 +122,8 @@ To edit these roles, sign in to Campaign Manager and follow [these instructions]
 6. Choose between Authentication Options:
     1. For **OAuth2.0:** Copy and paste info (**Client ID**, **Client Secret**) from your **LinkedIn Ads developer application**, and obtain the **Refresh Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
     2. For **Access Token:** Obtain the **Access Token** using **Set up LinkedIn Ads**  guide steps and paste it into the corresponding field.
-
 7. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported Streams and Sync Modes
 
@@ -181,6 +196,3 @@ After 5 unsuccessful attempts - the connector will stop the sync operation. In s
 | 0.1.2   | 2021-11-08 | [7499](https://github.com/airbytehq/airbyte/pull/7499)   | Remove base-python dependencies                                                                                 |
 | 0.1.1   | 2021-10-02 | [6610](https://github.com/airbytehq/airbyte/pull/6610)   | Fix for `Campaigns/targetingCriteria` transformation, coerced `Creatives/variables/values` to string by default |
 | 0.1.0   | 2021-09-05 | [5285](https://github.com/airbytehq/airbyte/pull/5285)   | Initial release of Native LinkedIn Ads connector for Airbyte                                                    |
-
-
-

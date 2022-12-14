@@ -282,12 +282,14 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
               af.getCause(),
               workflowInternalState.getJobId(),
               workflowInternalState.getAttemptNumber()));
+          ApmTraceUtils.addExceptionToTrace(af.getCause());
           reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.ACTIVITY);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         } else {
           workflowInternalState.getFailures().add(
               FailureHelper.unknownOriginFailure(childWorkflowFailure.getCause(), workflowInternalState.getJobId(),
                   workflowInternalState.getAttemptNumber()));
+          ApmTraceUtils.addExceptionToTrace(childWorkflowFailure.getCause());
           reportFailure(connectionUpdaterInput, standardSyncOutput, FailureCause.WORKFLOW);
           prepareForNextRunAndContinueAsNew(connectionUpdaterInput);
         }
@@ -628,6 +630,9 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       log.info("Waiting {} before restarting the workflow for connection {}, to prevent spamming temporal with restarts.", workflowDelay,
           connectionId);
       Workflow.sleep(workflowDelay);
+
+      // Add the exception to the span, as it represents a platform failure
+      ApmTraceUtils.addExceptionToTrace(e);
 
       // If a jobId exist set the failure reason
       if (workflowInternalState.getJobId() != null) {

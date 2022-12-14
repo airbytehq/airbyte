@@ -5,6 +5,7 @@ connectionSpecification:
   type: object
   required:
     - api_key
+    - grid_id
   properties:
     api_key:
       type: string

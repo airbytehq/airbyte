@@ -26,7 +26,7 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     step: "*ref(definitions.step)"
-    cursor_field:  "{{ options.stream_cursor_field }}"
+    cursor_field: "{{ options.stream_cursor_field }}"
     start_time_option:
       field_name: "start_date"
       inject_into: "request_parameter"
@@ -41,7 +41,7 @@ definitions:
     record_selector:
       extractor:
         type: DpathExtractor
-        field_pointer: [ "{{ options['name'] }}" ]
+        field_pointer: ["{{ options['name'] }}"]
     paginator:
       type: DefaultPaginator
       pagination_strategy:
@@ -68,7 +68,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path:  "{{ config['account_id'] }}/calls.json?"
+        path: "{{ config['account_id'] }}/calls.json?"
         request_options_provider:
           request_parameters:
             fields: "call_type,company_id,company_name,company_time_zone,created_at,device_type,first_call,formatted_call_type,formatted_customer_location,formatted_business_phone_number,formatted_customer_name,prior_calls,formatted_customer_name_or_phone_number,formatted_customer_phone_number,formatted_duration,formatted_tracking_phone_number,formatted_tracking_source,formatted_value,good_lead_call_id,good_lead_call_time,lead_status,note,source,source_name,tags,total_calls,value,waveforms,tracker_id,speaker_percent,keywords,medium,campaign,referring_url,landing_page_url,last_requested_url,referrer_domain,utm_source,utm_medium,utm_term,utm_content,utm_campaign,utma,utmb,utmc,utmv,utmz,ga,gclid,fbclid,msclkid,milestones,timeline_url,keywords_spotted,call_highlights,agent_email,keypad_entries"
@@ -84,7 +84,7 @@ definitions:
       $ref: "*ref(definitions.retriever)"
       requester:
         $ref: "*ref(definitions.requester)"
-        path:  "{{ config['account_id'] }}/text-messages.json?"
+        path: "{{ config['account_id'] }}/text-messages.json?"
         request_options_provider:
           request_parameters:
             fields: "id,company_id,initial_tracker_id,current_tracker_id,customer_name,customer_phone_number,initial_tracking_number,current_tracking_number,last_message_at,state,company_time_zone,formatted_customer_phone_number,formatted_initial_tracking_number,formatted_current_tracking_number,formatted_customer_name,recent_messages"
@@ -123,5 +123,5 @@ streams:
 
 check:
   type: CheckStream
-  stream_names: 
+  stream_names:
     - users

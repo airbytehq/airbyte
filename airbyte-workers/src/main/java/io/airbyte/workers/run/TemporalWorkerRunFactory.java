@@ -65,7 +65,9 @@ public class TemporalWorkerRunFactory {
             .withOperationSequence(resetConnection.getOperationSequence())
             .withResourceRequirements(resetConnection.getResourceRequirements())
             .withSourceResourceRequirements(resetConnection.getResourceRequirements())
-            .withDestinationResourceRequirements(resetConnection.getResourceRequirements());
+            .withDestinationResourceRequirements(resetConnection.getResourceRequirements())
+            .withIsSourceCustomConnector(false)
+            .withIsDestinationCustomConnector(resetConnection.getIsDestinationCustomConnector());
 
         final TemporalResponse<StandardSyncOutput> output = temporalClient.submitSync(job.getId(), attemptId, config, connectionId);
         return toOutputAndStatus(output);

@@ -962,6 +962,9 @@ class IncrementalAnalyticsStream(AnalyticsStream):
         start_date = pendulum.parse(self._replication_start_date)
         end_date = pendulum.now().subtract(days=self.availability_sla_days)
 
+        if self._replication_end_date:
+            end_date = pendulum.parse(self._replication_end_date)
+
         if stream_state:
             state = stream_state.get(self.cursor_field)
             start_date = pendulum.parse(state)

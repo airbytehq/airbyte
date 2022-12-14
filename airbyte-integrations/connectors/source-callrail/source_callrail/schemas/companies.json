@@ -1,56 +1,58 @@
-{"type": "object",
+{
+  "type": "object",
   "properties": {
-    "id" : {
-      "type" : ["null","string"]
+    "id": {
+      "type": ["null", "string"]
     },
-    "name" : {
-      "type" : ["null","string"]
+    "name": {
+      "type": ["null", "string"]
     },
-    "status" : {
-      "type" : ["null","string"]
+    "status": {
+      "type": ["null", "string"]
     },
-    "time_zone" : {
-      "type" : ["null","string"]
+    "time_zone": {
+      "type": ["null", "string"]
     },
-    "created_at" : {
-      "type" : ["null","string"],
-      "format" : "date-time"
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "disabled_at" : {
-      "type" : ["null","string"],
-      "format" : "date-time"
+    "disabled_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
     },
-    "dni_active" : {
-      "type" : ["null", "boolean"]
+    "dni_active": {
+      "type": ["null", "boolean"]
     },
-    "script_url" : {
-      "type" : ["null","string"]
+    "script_url": {
+      "type": ["null", "string"]
     },
-    "callscore_enabled" : {
-      "type" : ["null", "boolean"]
+    "callscore_enabled": {
+      "type": ["null", "boolean"]
     },
-    "lead_scoring_enabled" : {
-      "type" : ["null", "boolean"]
+    "lead_scoring_enabled": {
+      "type": ["null", "boolean"]
     },
-    "swap_exclude_jquery" : {
-      "type" : ["null","string"]
+    "swap_exclude_jquery": {
+      "type": ["null", "string"]
     },
-    "swap_ppc_override" : {
-      "type" : ["null","string"]
+    "swap_ppc_override": {
+      "type": ["null", "string"]
     },
-    "swap_landing_override" : {
-      "type" : ["null","string"]
+    "swap_landing_override": {
+      "type": ["null", "string"]
     },
-    "swap_cookie_duration" : {
-      "type" : "integer"
+    "swap_cookie_duration": {
+      "type": "integer"
     },
-    "callscribe_enabled" : {
-      "type" : ["null", "boolean"]
+    "callscribe_enabled": {
+      "type": ["null", "boolean"]
     },
-    "keyword_spotting_enabled" : {
-      "type" : ["null", "boolean"]
+    "keyword_spotting_enabled": {
+      "type": ["null", "boolean"]
     },
-    "form_capture" : {
-      "type" : ["null", "boolean"]
+    "form_capture": {
+      "type": ["null", "boolean"]
     }
-  }}
+  }
+}

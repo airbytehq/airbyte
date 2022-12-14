@@ -7,7 +7,6 @@ package io.airbyte.integrations.source.postgres;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_LSN;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
-import static io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest.setEnv;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -49,20 +48,31 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
 import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.debezium.engine.ChangeEvent;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.apache.kafka.connect.source.SourceRecord;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 abstract class CdcPostgresSourceTest extends CdcSourceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   protected static final String SLOT_NAME_BASE = "debezium_slot";
   protected static final String PUBLICATION = "publication";
@@ -91,7 +101,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .withCopyFileToContainer(MountableFile.forClasspathResource("postgresql.conf"), "/etc/postgresql/postgresql.conf")
         .withCommand("postgres -c config_file=/etc/postgresql/postgresql.conf");
     container.start();
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     source = new PostgresSource();
     dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
 
@@ -381,6 +391,51 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         dataFromThirdBatch);
 
     assertEquals(MODEL_RECORDS.size() + recordsToCreate + 1, recordsFromThirdBatch.size());
+  }
+
+  @Test
+  void testReachedTargetPosition() {
+    final CdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
+    final PgLsn target = pctp.targetLsn;
+    assertTrue(ctp.reachedTargetPosition(target.asLong() + 1));
+    assertTrue(ctp.reachedTargetPosition(target.asLong()));
+    assertFalse(ctp.reachedTargetPosition(target.asLong() - 1));
+    assertFalse(ctp.reachedTargetPosition((Long) null));
+  }
+
+  @Test
+  void testGetHeartbeatPosition() {
+    final CdcTargetPosition ctp = cdcLatestTargetPosition();
+    final PostgresCdcTargetPosition pctp = (PostgresCdcTargetPosition) ctp;
+    final Long lsn = pctp.getHeartbeatPosition(new ChangeEvent<String, String>() {
+
+      private final SourceRecord sourceRecord = new SourceRecord(null, Collections.singletonMap("lsn", 358824993496L), null, null, null);
+
+      @Override
+      public String key() {
+        return null;
+      }
+
+      @Override
+      public String value() {
+        return "{\"ts_ms\":1667616934701}";
+      }
+
+      @Override
+      public String destination() {
+        return null;
+      }
+
+      public SourceRecord sourceRecord() {
+        return sourceRecord;
+      }
+
+    });
+
+    assertEquals(lsn, 358824993496L);
+
+    assertNull(pctp.getHeartbeatPosition(null));
   }
 
 }

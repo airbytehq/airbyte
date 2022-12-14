@@ -15,6 +15,7 @@ import static java.util.stream.Collectors.toSet;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
@@ -28,7 +29,6 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -50,6 +50,7 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage.AirbyteStateType;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteStreamState;
 import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -58,7 +59,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.sql.Connection;
-import java.sql.JDBCType;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.time.Duration;
@@ -71,10 +71,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Source {
+public class PostgresSource extends AbstractJdbcSource<PostgresType> implements Source {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSource.class);
   private static final int INTERMEDIATE_STATE_EMISSION_FREQUENCY = 10_000;
@@ -91,9 +92,20 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
-  static final Map<String, String> SSL_JDBC_PARAMETERS = ImmutableMap.of(
-      "ssl", "true",
-      "sslmode", "require");
+  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA =
+      """
+        SELECT
+          (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+        AND
+          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
+  public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
+      """
+      SELECT
+        (EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
+      AND
+        (EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
+      """;
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -109,11 +121,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    if (JdbcUtils.useSsl(config)) {
-      return SSL_JDBC_PARAMETERS;
-    } else {
-      return Collections.emptyMap();
-    }
+    return Collections.emptyMap();
   }
 
   @Override
@@ -174,7 +182,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
             .map((entry) -> {
               try {
                 final String result = switch (entry.getKey()) {
-                  case SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
+                  case AbstractJdbcSource.SSL_MODE -> PARAM_SSLMODE + EQUALS + toSslJdbcParam(SslMode.valueOf(entry.getValue()))
                       + JdbcUtils.AMPERSAND + PARAM_SSL + EQUALS + (entry.getValue() == DISABLE ? PARAM_SSL_FALSE : PARAM_SSL_TRUE);
                   case CA_CERTIFICATE_PATH -> SSL_ROOT_CERT + EQUALS + entry.getValue();
                   case CLIENT_KEY_STORE_URL -> SSL_KEY + EQUALS + Path.of(new URI(entry.getValue()));
@@ -214,8 +222,8 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   }
 
   @Override
-  public List<TableInfo<CommonField<JDBCType>>> discoverInternal(final JdbcDatabase database) throws Exception {
-    final List<TableInfo<CommonField<JDBCType>>> rawTables = discoverRawTables(database);
+  public List<TableInfo<CommonField<PostgresType>>> discoverInternal(final JdbcDatabase database) throws Exception {
+    final List<TableInfo<CommonField<PostgresType>>> rawTables = discoverRawTables(database);
     final Set<AirbyteStreamNameNamespacePair> publicizedTablesInCdc = PostgresCdcCatalogHelper.getPublicizedTables(database);
 
     if (publicizedTablesInCdc.isEmpty()) {
@@ -227,15 +235,15 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
         .collect(toList());
   }
 
-  public List<TableInfo<CommonField<JDBCType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
+  public List<TableInfo<CommonField<PostgresType>>> discoverRawTables(final JdbcDatabase database) throws Exception {
     if (schemas != null && !schemas.isEmpty()) {
       // process explicitly selected (from UI) schemas
-      final List<TableInfo<CommonField<JDBCType>>> internals = new ArrayList<>();
+      final List<TableInfo<CommonField<PostgresType>>> internals = new ArrayList<>();
       for (final String schema : schemas) {
         LOGGER.info("Checking schema: {}", schema);
-        final List<TableInfo<CommonField<JDBCType>>> tables = super.discoverInternal(database, schema);
+        final List<TableInfo<CommonField<PostgresType>>> tables = super.discoverInternal(database, schema);
         internals.addAll(tables);
-        for (final TableInfo<CommonField<JDBCType>> table : tables) {
+        for (final TableInfo<CommonField<PostgresType>> table : tables) {
           LOGGER.info("Found table: {}.{}", table.getNameSpace(), table.getName());
         }
       }
@@ -325,7 +333,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   @Override
   public List<AutoCloseableIterator<AirbyteMessage>> getIncrementalIterators(final JdbcDatabase database,
                                                                              final ConfiguredAirbyteCatalog catalog,
-                                                                             final Map<String, TableInfo<CommonField<JDBCType>>> tableNameToTable,
+                                                                             final Map<String, TableInfo<CommonField<PostgresType>>> tableNameToTable,
                                                                              final StateManager stateManager,
                                                                              final Instant emittedAt) {
     final JsonNode sourceConfig = database.getSourceConfig();
@@ -389,6 +397,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
                  FROM   pg_class c
                  JOIN   pg_namespace n on c.relnamespace = n.oid
                  WHERE  has_table_privilege(c.oid, 'SELECT')
+                 AND    has_schema_privilege(current_user, nspname, 'USAGE')
                  -- r = ordinary table, i = index, S = sequence, t = TOAST table, v = view, m = materialized view, c = composite type, f = foreign table, p = partitioned table, I = partitioned index
                  AND    relkind in ('r', 'm', 'v', 't', 'f', 'p')
                  and    ((? is null) OR nspname = ?)
@@ -475,7 +484,7 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
   public AirbyteConnectionStatus check(final JsonNode config) throws Exception {
     if (PostgresUtils.isCdc(config)) {
       if (config.has(SSL_MODE) && config.get(SSL_MODE).has(MODE)) {
-        String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
+        final String sslModeValue = config.get(SSL_MODE).get(MODE).asText();
         if (INVALID_CDC_SSL_MODES.contains(sslModeValue)) {
           return new AirbyteConnectionStatus()
               .withStatus(Status.FAILED)
@@ -507,4 +516,24 @@ public class PostgresSource extends AbstractJdbcSource<JDBCType> implements Sour
     return result;
   }
 
+  @Override
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
+    final String query;
+    final String resultColName = "nullValue";
+    // Query: Only if cursor column allows null values, query whether it contains one
+    if (StringUtils.isNotBlank(schema)) {
+      query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA,
+          schema, tableName, columnName, schema, tableName, columnName, resultColName);
+    } else {
+      query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA,
+          tableName, columnName, tableName, columnName, resultColName);
+    }
+    LOGGER.debug("null value query: {}", query);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(query),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    final boolean nullValExist = jsonNodes.get(0).get(resultColName.toLowerCase()).booleanValue(); // For some reason value in node is lowercase
+    LOGGER.debug("null value exist: {}", nullValExist);
+    return !nullValExist;
+  }
 }

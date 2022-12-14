@@ -21,8 +21,8 @@ images:
     newTag: 1.7.0
   - name: airbyte/cron
     newTag: dev
-  #- name: airbyte/connector-builder-server #FIXME: Uncomment this block when enabling airbyte-connector-builder
-  #  newTag: dev
+  - name: airbyte/connector-builder-server
+    newTag: dev
 
 configMapGenerator:
   - name: airbyte-env
