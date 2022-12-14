@@ -3,7 +3,7 @@ import {
   requestCreateSource,
   requestDeleteSource,
   requestWorkspaceId,
-} from "commands/request";
+} from "commands/api";
 import { initialSetupCompleted } from "commands/workspaces";
 
 describe("Auto-detect schema changes", () => {
@@ -17,13 +17,11 @@ describe("Auto-detect schema changes", () => {
     let sourceId: string;
     console.log("payload", payload);
 
-    requestCreateSource("Test source", payload)
-      .then((response) => {
-        sourceId = response.sourceId;
+    requestCreateSource("Test source", payload).then((response) => {
+      sourceId = response.sourceId;
 
-        expect(sourceId).to.be.a("string");
-        requestDeleteSource(sourceId);
-      })
-      .as("@test");
+      expect(sourceId).to.be.a("string");
+      requestDeleteSource(sourceId);
+    });
   });
 });
