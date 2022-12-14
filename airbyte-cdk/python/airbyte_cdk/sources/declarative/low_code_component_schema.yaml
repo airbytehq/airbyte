@@ -1,14 +1,16 @@
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/handwritten_manifest.yaml
-title: LowCodeComponentManifest
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/low_code_component_schema.yaml
+title: DeclarativeSource
 type: object
-description: Low Code connector components
+description: An API source that extracts data according to its declarative components
 version: 1.0.0
 required:
   - check
   - streams
   - version
 properties:
+  type:
+    enum: [DeclarativeSource]
   check:
     "$ref": "#/definitions/CheckStream"
   streams:
@@ -17,6 +19,8 @@ properties:
       "$ref": "#/definitions/DeclarativeStream"
   version:
     type: string
+  schemas:
+    "$ref": "#/definitions/Schemas"
   spec:
     "$ref": "#/definitions/Spec"
 definitions:
@@ -374,6 +378,7 @@ definitions:
       schema_loader:
         anyOf:
           - "$ref": "#/definitions/DefaultSchemaLoader"
+          - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       stream_cursor_field:
         anyOf:
@@ -559,6 +564,16 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  InlineSchemaLoader:
+    description: Loads a schema that is defined directly in the manifest file
+    type: object
+    required:
+      - type
+    properties:
+      type:
+        enum: [InlineSchemaLoader]
+      schema:
+        type: object
   InterpolatedRequestOptionsProvider:
     description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
     type: object
@@ -794,6 +809,10 @@ definitions:
           - body_json
       field_name:
         type: string
+  Schemas:
+    description: The stream schemas representing the shape of the data emitted by the stream
+    type: object
+    additionalProperties: true
   SimpleRetriever:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
     type: object

@@ -16,6 +16,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
     # DeclarativeSource
     "DeclarativeSource.streams": "DeclarativeStream",
+    "DeclarativeSource.check": "CheckStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
     "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
@@ -89,6 +90,10 @@ class ManifestComponentTransformer:
                 found_type = DEFAULT_MODEL_TYPES.get(parent_field_identifier)
             if found_type:
                 propagated_component["type"] = found_type
+
+        # When there is no resolved type, we're not processing a component (likely a regular object) and don't need to propagate options
+        if "type" not in propagated_component:
+            return propagated_component
 
         # Combines options defined at the current level with options from parent components. Options at the current level take precedence
         current_options = dict(copy.deepcopy(parent_options))
