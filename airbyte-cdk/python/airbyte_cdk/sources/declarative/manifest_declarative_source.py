@@ -33,14 +33,14 @@ from jsonschema.validators import validate
 @dataclass
 class ConcreteDeclarativeSource(JsonSchemaMixin):
     version: str
-    checker: CheckStream
+    check: CheckStream
     streams: List[DeclarativeStream]
 
 
 class ManifestDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a manifest of low-code components that define source connector behavior"""
 
-    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "version"}
 
     def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """
@@ -122,8 +122,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         full_config = {}
         if "version" in self._source_config:
             full_config["version"] = self._source_config["version"]
-        if "check" in self._source_config:
-            full_config["checker"] = self._source_config["check"]
+        full_config["check"] = self._source_config["check"]
         streams = [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
         if len(streams) > 0:
             full_config["streams"] = streams

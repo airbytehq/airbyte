@@ -9,6 +9,7 @@ import io.airbyte.server.errors.BadObjectSchemaKnownException;
 import io.airbyte.server.errors.IdNotFoundKnownException;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import org.slf4j.LoggerFactory;
 
 public class ApiHelper {
 
@@ -23,6 +24,9 @@ public class ApiHelper {
           String.format("The provided configuration does not fulfill the specification. Errors: %s", e.getMessage()), e);
     } catch (final IOException e) {
       throw new RuntimeException(e);
+    } catch (final Exception e) {
+      LoggerFactory.getLogger(ApiHelper.class).error("Unexpected Exception", e);
+      throw e;
     }
   }
 

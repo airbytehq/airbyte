@@ -1,0 +1,88 @@
+version: "0.2.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["entries"]
+  requester:
+    url_base: "https://api.chartmogul.com"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['api_key'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+  customers_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      paginator:
+        type: DefaultPaginator
+        url_base: "*ref(definitions.requester.url_base)"
+        pagination_strategy:
+          type: "PageIncrement"
+          start_from_page: 1
+          page_size: 200
+        page_size_option:
+          inject_into: request_parameter
+          field_name: per_page
+        page_token_option:
+          inject_into: request_parameter
+          field_name: page
+    $options:
+      name: "customers"
+      primary_key: "id"
+      path: "/v1/customers"
+  activities_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_parameters:
+            start-date: "{{ config.start_date }}"
+      paginator:
+        type: DefaultPaginator
+        url_base: "*ref(definitions.requester.url_base)"
+        pagination_strategy:
+          type: "CursorPagination"
+          cursor_value: "{{ response['entries'][-1]['uuid'] }}"
+          stop_condition: "{{ not response.has_more }}"
+          page_size: 200
+        page_size_option:
+          inject_into: request_parameter
+          field_name: per_page
+        page_token_option:
+          inject_into: request_parameter
+          field_name: start-after
+    $options:
+      name: "activities"
+      primary_key: "uuid"
+      path: "/v1/activities"
+  customer_count_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        request_options_provider:
+          request_body_data:
+            start-date: "{{ format_datetime(config['start_date'], '%Y-%m-%d') }}"
+            end-date: "{{ now_utc().strftime('%Y-%m-%d') }}"
+            interval: "{{ config['interval'] }}"
+      paginator:
+        type: NoPagination
+    $options:
+      name: "customer_count"
+      primary_key: "date"
+      path: "/v1/metrics/customer-count"
+
+streams:
+  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.activities_stream)"
+  - "*ref(definitions.customer_count_stream)"
+
+check:
+  stream_names:
+    - "customers"

@@ -283,12 +283,12 @@ jobs:
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
           source venv/bin/activate
-          ci_credentials ${{ matrix.connector }}
+          ci_credentials ${{ matrix.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
+            ci_credentials destination-bigquery write-to-storage
+            ci_credentials destination-postgres write-to-storage
+            ci_credentials destination-snowflake write-to-storage
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -301,18 +301,38 @@ jobs:
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
-        run: |
-          curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Publish ${{ matrix.connector }}
-        run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+        uses: Wandalen/wretry.action@master
+        with:
+          command: |
+            echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
+      - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ matrix.connector }} update-secrets
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery update-secrets
+            ci_credentials destination-postgres update-secrets
+            ci_credentials destination-snowflake update-secrets
+          fi
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors') && success()
         run: |
@@ -346,8 +366,11 @@ jobs:
           fi
       - name: Run gradle process changes
         if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          ./gradlew :airbyte-config:init:processResources
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-config:init:processResources
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
       - name: git config
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |

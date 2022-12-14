@@ -76,6 +76,8 @@ class BigQueryDestinationTest {
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
   protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
       Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
+  protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
+      Path.of("secrets/credentials-non-billable-project.json");
 
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationTest.class);
   private static final String DATASET_NAME_PREFIX = "bq_dest_integration_test";
@@ -250,8 +252,7 @@ class BigQueryDestinationTest {
                                        please add file with creds to
                                       ../destination-bigquery/secrets/credentialsWithMissedDatasetCreationRole.json.""");
     }
-    final String fullConfigAsString = Files.readString(
-        CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH);
+    final String fullConfigAsString = Files.readString(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
     final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
@@ -274,6 +275,41 @@ class BigQueryDestinationTest {
     });
 
     assertThat(ex.getMessage()).contains("User does not have bigquery.datasets.create permission");
+  }
+
+  @ParameterizedTest
+  @MethodSource("datasetIdResetterProvider")
+  void testCheckFailureNonBillableProject(final DatasetIdResetter resetDatasetId) throws IOException {
+
+    if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
+      throw new IllegalStateException("""
+                                      Json config not found. Must provide path to a big query credentials file,
+                                       please add file with creds to
+                                      ../destination-bigquery/secrets/credentials-non-billable-project.json""");
+    }
+    final String fullConfigAsString = Files.readString(CREDENTIALS_NON_BILLABLE_PROJECT_PATH);
+
+    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+
+    final JsonNode insufficientRoleConfig;
+
+    insufficientRoleConfig = Jsons.jsonNode(ImmutableMap.builder()
+        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
+        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
+        .put(BigQueryConsts.CONFIG_DATASET_ID, "testnobilling")
+        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, "US")
+        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
+        .build());
+
+    resetDatasetId.accept(insufficientRoleConfig);
+
+    // Assert that check throws exception. Later it will be handled by IntegrationRunner
+    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
+      new BigQueryDestination().check(insufficientRoleConfig);
+    });
+
+    assertThat(ex.getMessage()).contains("Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier");
   }
 
   @ParameterizedTest

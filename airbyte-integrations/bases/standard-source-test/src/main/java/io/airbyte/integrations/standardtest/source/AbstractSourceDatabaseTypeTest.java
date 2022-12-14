@@ -117,7 +117,7 @@ public abstract class AbstractSourceDatabaseTypeTest extends AbstractSourceConne
     testDataHolders.forEach(testDataHolder -> {
       if (testCatalog()) {
         final AirbyteStream airbyteStream = streams.get(testDataHolder.getNameWithTestPrefix());
-        final Map<String, String> jsonSchemaTypeMap = (Map<String, String>) Jsons.deserialize(
+        final Map<String, Object> jsonSchemaTypeMap = (Map<String, Object>) Jsons.deserialize(
             airbyteStream.getJsonSchema().get("properties").get(getTestColumnName()).toString(), Map.class);
         assertEquals(testDataHolder.getAirbyteType().getJsonSchemaTypeMap(), jsonSchemaTypeMap,
             "Expected column type for " + testDataHolder.getNameWithTestPrefix());
