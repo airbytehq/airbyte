@@ -68,7 +68,7 @@ class ExactStream(HttpStream, IncrementalMixin):
 
     def request_headers(self, **kwargs) -> MutableMapping[str, Any]:
         """
-        Default response type is XML, this is overriden to return JSON.
+        Overridden to request JSON response (default for Exact is XML).
         """
 
         return {"Accept": "application/json"}
@@ -92,7 +92,7 @@ class ExactStream(HttpStream, IncrementalMixin):
             if self.cursor_field == "Timestamp":
                 params["$filter"] = f"Timestamp gt {self._cursor_value}L"
             elif self.cursor_field == "Modified":
-                # value is a timestamp stored as string in UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_timestamps)
+                # value is a timestamp stored as string in UTC e.g., 2022-12-12T00:00:00.00000+00:00 (see _parse_item)
                 # The Exact API (OData format) doesn't accept timezone info. Instead, we parse the timestamp into
                 # the API's local timezone (CET) without timezone info.
 
@@ -124,7 +124,7 @@ class ExactStream(HttpStream, IncrementalMixin):
         response_json = response.json()
         results = response_json.get("d", {}).get("results", [])
 
-        return [self._parse_timestamps(x) for x in results]
+        return [self._parse_item(x) for x in results]
 
     def read_records(self, *args, **kwargs) -> Iterable[StreamData]:
         """Overridden to keep track of the cursor."""
@@ -155,36 +155,50 @@ class ExactStream(HttpStream, IncrementalMixin):
 
         return False
 
-    def _parse_timestamps(self, obj: dict):
+    def _parse_item(self, obj: dict):
         """
-        Exact returns timestamps in following format: /Date(1672531200000)/ (OData date format).
-        The value is in seconds since Epoch (UNIX time). Note, the time is in CET and not in GMT/UTC.
-        https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
+        Parses single result item:
+        - OData dates (/Date(1672531200000)/) are parsed to iso formatted timestamps 2022-12-12T12:00:00
+        - int, float and booleans are casted based on the JSON Schema type field
         """
+
+        # Get the first not null type -> i.e., the expected type of the property
+        property_type_lookup = {k: next(x for x in v["type"] if x != "null") for k, v in self.get_json_schema()["properties"].items()}
 
         regex_timestamp = re.compile(r"^\/Date\((\d+)\)\/$")
         tz_utc = pendulum.timezone("UTC")
 
-        def parse_value(value):
+        def parse_value(key, value):
             if isinstance(value, dict):
-                return {k: parse_value(v) for k, v in value.items()}
+                return {k: parse_value(k, v) for k, v in value.items()}
 
             if isinstance(value, list):
-                return [parse_value(v) for v in value]
+                return [parse_value(key, v) for v in value]
 
             if isinstance(value, str):
-                match = regex_timestamp.match(value)
-                if match:
-                    unix_seconds = int(match.group(1)) / 1000
+                # Exact returns timestamps in following format: /Date(1672531200000)/ (OData date format).
+                # The value is in seconds since Epoch (UNIX time). Note, the time is in CET and not in GMT/UTC.
+                # https://support.exactonline.com/community/s/knowledge-base#All-All-DNO-Content-faq-rest-api
+                match_timestamp = regex_timestamp.match(value)
+                if match_timestamp:
+                    unix_seconds = int(match_timestamp.group(1)) / 1000
 
                     timestamp = pendulum.from_timestamp(unix_seconds, "CET")
                     timestamp = tz_utc.convert(timestamp)
 
                     return timestamp.isoformat()
 
+                expected_type = property_type_lookup.get(key)
+                if expected_type == "number":
+                    return float(value)
+                elif expected_type == "integer":
+                    return int(value)
+                elif expected_type == "boolean":
+                    return value and value.lower() == "true"
+
             return value
 
-        return parse_value(obj)
+        return parse_value(None, obj)
 
     def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> requests.Response:
         """

@@ -134,7 +134,7 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
             json_property["type"] = json_type
         else:
             json_property.update(json_type)
-        
+
         # Add null as possible type (we don't know which fields are required -> just allow everything)
         json_property["type"] = ["null", json_property["type"]]
 
@@ -200,8 +200,20 @@ def main():
 
     # # Bonus endpoints needed
     # NOTE: doesn't print out class definitions as they are specific to the endpoint
-    handle_endpoint(TableRow("CRM", "crm/AccountClassifications", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassifications"))
-    handle_endpoint(TableRow("CRM", "crm/AccountClassificationNames", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassificationNames"))
+    handle_endpoint(
+        TableRow(
+            "CRM",
+            "crm/AccountClassifications",
+            "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassifications",
+        )
+    )
+    handle_endpoint(
+        TableRow(
+            "CRM",
+            "crm/AccountClassificationNames",
+            "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassificationNames",
+        )
+    )
 
 
 if __name__ == "__main__":

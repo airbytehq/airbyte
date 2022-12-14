@@ -20,8 +20,11 @@ class TestExactSyncStream(ExactSyncStream):
     def get_json_schema(self):
         return {
             "properties": {
-                "ID": None,
-                "Timestamp": None,
+                "ID": {"type": ["null", "string"]},
+                "Timestamp": {"type": ["null", "integer"]},
+                "IntField": {"type": ["null", "integer"]},
+                "FloatField": {"type": ["null", "number"]},
+                "BoolField": {"type": ["null", "boolean"]},
             }
         }
 
@@ -36,8 +39,8 @@ class TestExactOtherStream(ExactOtherStream):
     def get_json_schema(self):
         return {
             "properties": {
-                "ID": None,
-                "Modified": None,
+                "ID": {"type": ["null", "integer"]},
+                "Modified": {"type": ["null", "string"]},
             }
         }
 
@@ -76,8 +79,8 @@ def test_request_params_with_next_page(config_oauth: dict):
     [
         ("token", None, {}),
         ("token", "123", {}),
-        (None, None, {"$select": "ID,Timestamp"}),
-        (None, "123", {"$filter": "Timestamp gt 123L", "$select": "ID,Timestamp"}),
+        (None, None, {"$select": "ID,Timestamp,IntField,FloatField,BoolField"}),
+        (None, "123", {"$filter": "Timestamp gt 123L", "$select": "ID,Timestamp,IntField,FloatField,BoolField"}),
     ],
 )
 def test_request_params_with_sync_stream(config_oauth: dict, next_page_token, cursor_value, expected):
@@ -170,7 +173,10 @@ def test_is_token_expired__failure(config_oauth):
         TestExactSyncStream(config_oauth)._is_token_expired(response_mock)
 
 
-def test_parse_timestamps(config_oauth: dict):
+def test_parse_item__nested_timestamps(config_oauth: dict):
+    # This test doesn't follow the defined JSON Schema. Instead, here we validate whether all (nested) occurrences
+    # of timestamps are parsed correctly.
+
     obj = {
         "date": "/Date(1640995200000)/",
         "nested": {
@@ -179,11 +185,30 @@ def test_parse_timestamps(config_oauth: dict):
         "array": ["/Date(1640995200000)/"],
         "array_with_nested": [{"date": "/Date(1640995200000)/"}],
     }
-    assert TestExactSyncStream(config_oauth)._parse_timestamps(obj) == {
+    assert TestExactSyncStream(config_oauth)._parse_item(obj) == {
         "date": "2022-01-01T00:00:00+00:00",
         "nested": {"date": "2022-01-01T00:00:00+00:00"},
         "array": ["2022-01-01T00:00:00+00:00"],
         "array_with_nested": [{"date": "2022-01-01T00:00:00+00:00"}],
+    }
+
+
+def test_parse_item__type_casting(config_oauth: dict):
+    # This follows the defined schema and also checks whether correct type casting is done.
+
+    obj = {
+        "ID": "entity-100",
+        "Timestamp": 123,
+        "IntField": "456",  # explicit str as that also is how Exact can return the data
+        "FloatField": "7.89",  # explicit str as that also is how Exact can return the data
+        "BoolField": "true",  # explicit str as that also is how Exact can return the data
+    }
+    assert TestExactSyncStream(config_oauth)._parse_item(obj) == {
+        "ID": "entity-100",
+        "Timestamp": 123,
+        "IntField": 456,
+        "FloatField": 7.89,
+        "BoolField": True,
     }
 
 
