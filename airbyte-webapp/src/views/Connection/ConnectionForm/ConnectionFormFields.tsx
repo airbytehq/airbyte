@@ -13,8 +13,8 @@ import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
 import { NamespaceDefinitionType } from "core/request/AirbyteClient";
-import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { ValuesProps } from "hooks/services/useConnectionHook";
 
@@ -34,7 +34,7 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
-  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
+  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
 
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();
@@ -59,7 +59,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
       <div className={styles.formContainer}>
         <Section title={<FormattedMessage id="connection.transfer" />}>
           <ScheduleField />
-          {isSchemaChangesEnabled && (
+          {allowAutoDetectSchemaChanges && (
             <Field name="nonBreakingChangesPreference" component={NonBreakingChangesPreferenceField} />
           )}
         </Section>

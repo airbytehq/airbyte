@@ -865,6 +865,20 @@ public class ConfigRepository {
     return getStandardSyncsFromResult(connectionAndOperationIdsResult);
   }
 
+  public List<StandardSync> listConnectionsBySource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final Result<Record> connectionAndOperationIdsResult = database.query(ctx -> ctx
+        .select(
+            CONNECTION.asterisk(),
+            groupConcat(CONNECTION_OPERATION.OPERATION_ID).separator(OPERATION_IDS_AGG_DELIMITER).as(OPERATION_IDS_AGG_FIELD))
+        .from(CONNECTION)
+        .leftJoin(CONNECTION_OPERATION).on(CONNECTION_OPERATION.CONNECTION_ID.eq(CONNECTION.ID))
+        .where(CONNECTION.SOURCE_ID.eq(sourceId)
+            .and(includeDeleted ? noCondition() : CONNECTION.STATUS.notEqual(StatusType.deprecated)))
+        .groupBy(CONNECTION.ID)).fetch();
+
+    return getStandardSyncsFromResult(connectionAndOperationIdsResult);
+  }
+
   private List<StandardSync> getStandardSyncsFromResult(final Result<Record> connectionAndOperationIdsResult) {
     final List<StandardSync> standardSyncs = new ArrayList<>();
 
@@ -1291,13 +1305,22 @@ public class ConfigRepository {
     return records.stream().findFirst().map(DbConverter::buildActorCatalog);
   }
 
+  public Optional<ActorCatalog> getMostRecentActorCatalogForSource(final UUID sourceId) throws IOException {
+    final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG.asterisk())
+        .from(ACTOR_CATALOG)
+        .join(ACTOR_CATALOG_FETCH_EVENT)
+        .on(ACTOR_CATALOG_FETCH_EVENT.ACTOR_CATALOG_ID.eq(ACTOR_CATALOG.ID))
+        .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
+        .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
+    return records.stream().findFirst().map(DbConverter::buildActorCatalog);
+  }
+
   public Optional<ActorCatalogFetchEvent> getMostRecentActorCatalogFetchEventForSource(final UUID sourceId) throws IOException {
 
     final Result<Record> records = database.query(ctx -> ctx.select(ACTOR_CATALOG_FETCH_EVENT.asterisk())
         .from(ACTOR_CATALOG_FETCH_EVENT)
         .where(ACTOR_CATALOG_FETCH_EVENT.ACTOR_ID.eq(sourceId))
         .orderBy(ACTOR_CATALOG_FETCH_EVENT.CREATED_AT.desc()).limit(1).fetch());
-
     return records.stream().findFirst().map(DbConverter::buildActorCatalogFetchEvent);
   }
 
