@@ -83,7 +83,7 @@ None!
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                         |
 | :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
-| 1.0.0   | 2022-12-14 | [xxx](https://github.com/airbytehq/airbyte/pull/xxx)     | Decouple stream states for better parallelism                                                                   |
+| 1.0.0   | 2022-12-14 | [20492](https://github.com/airbytehq/airbyte/pull/20492) | Decouple stream states for better parallelism                                                                   |
 | 1.0.0   | 2022-11-28 | [19490](https://github.com/airbytehq/airbyte/pull/19490) | Faker uses the CDK; rename streams to be lower-case (breaking), add determinism to random purchases, and rename |
 | 0.2.1   | 2022-10-14 | [19197](https://github.com/airbytehq/airbyte/pull/19197) | Emit `AirbyteEstimateTraceMessage`                                                                              |
 | 0.2.0   | 2022-10-14 | [18021](https://github.com/airbytehq/airbyte/pull/18021) | Move to mimesis for speed!                                                                                      |
