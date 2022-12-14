@@ -63,8 +63,9 @@ class WorkflowRunsAvailabilityStrategy(RepositoryBasedAvailabilityStrategy):
         self, stream: Stream, logger: logging.Logger, source: Optional["Source"], error: HTTPError
     ) -> Dict[int, str]:
         stream_slice = StreamHelper().get_stream_slice(stream)
+        repository = stream_slice["repository"]
         reasons_for_codes = super().reasons_for_unavailable_status_codes(stream, logger, source, error).copy()
-        server_error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{stream_slice['repository']}`."
+        server_error_msg = f"Syncing `{stream.name}` stream isn't available for repository `{repository}`."
         reasons_for_codes[requests.codes.SERVER_ERROR] = server_error_msg
         return reasons_for_codes
 
