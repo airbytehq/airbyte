@@ -134,29 +134,28 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: S3_LOG_BUCKET_REGION
-        {{- if and .Values.global.logs.accessKey.existingSecret .Values.global.logs.secretKey.existingSecretKey }}
+        {{- if and .Values.global.logs.auth.accessKey.existingSecret .Values.global.logs.auth.secretKey.existingSecret }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.logs.accessKey.existingSecret }}
-              key: {{ .Values.global.logs.accessKey.existingSecretKey }}
+              name: {{ .Values.global.logs.auth.accessKey.existingSecret }}
+              key: {{ .Values.global.logs.auth.accessKey.existingSecretKey }}
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.global.logs.secretKey.existingSecret }}
-              key: {{ .Values.global.logs.secretKey.existingSecretKey }}
-        {{- end }}
-        {{- if or .Values.global.logs.minio.enabled .Values.global.logs.externalMinio.enabled }}
+              name: {{ .Values.global.logs.auth.secretKey.existingSecret }}
+              key: {{ .Values.global.logs.auth.secretKey.existingSecretKey }}
+        {{- else }}
         - name: AWS_ACCESS_KEY_ID
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-airbyte-secrets
-              key: STATE_STORAGE_MINIO_ACCESS_KEY
+              key: AWS_ACCESS_KEY_ID
         - name: AWS_SECRET_ACCESS_KEY
           valueFrom:
             secretKeyRef:
               name: {{ .Release.Name }}-airbyte-secrets
-              key: STATE_STORAGE_MINIO_SECRET_ACCESS_KEY
+              key: AWS_SECRET_ACCESS_KEY
         {{- end }}
         - name: S3_MINIO_ENDPOINT
           valueFrom:

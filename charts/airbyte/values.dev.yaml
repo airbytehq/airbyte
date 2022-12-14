@@ -1,0 +1,34 @@
+global:
+  state:
+    auth:
+      reuseCredentials: false
+      accessKey:
+        password: "aks"
+        existingSecret: 'global.state.accessKey.existingSecret'
+        existingSecretKey: "accesskey"
+      secretKey:
+        password: "sks"
+        existingSecret: 'global.state.secretKey.existingSecret'
+        existingSecretKey: secretkey
+  logs:
+    minio:
+      enabled: false
+    externalMinio:
+      enabled: true
+      host: 'global.logs.externalMinio.host'
+      port: 9000
+    auth:
+      reuseCredentials: true
+      accessKey:
+        password: "akl"
+        existingSecret: 'global.logs.auth.accessKey.existingSecret'
+        existingSecretKey: "accesskey"
+      secretKey:
+        password: "skl"
+        existingSecret: 'global.logs.auth.secretKey.existingSecret'
+        existingSecretKey: secretkey
+minio:
+  enabled: true
+  auth: 
+    rootUser: 'minio.auth.rootUser'
+    rootPassword: 'minio.auth.rootPassword'

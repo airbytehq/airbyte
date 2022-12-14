@@ -23,28 +23,52 @@ global:
     ## state.storage.type Determines which state storage will be utilized.  One of "MINIO", "S3" or "GCS"
     storage:
       type: "MINIO"
+    ## The auth block here and the one under global.logs has a defined order of precedence
+    ## from highest to lowest: 
+    ## 1. auth.accessKey.existingSecret and auth.secretKey.existingSecret
+    ## 2. auth.accessKey.password and auth.secretKey.password 
+    ## 3. auth.reuseCredentials 
+    ## If none of those are valid values, the deployment will (and should) fail.
+    auth:
+      ## state.auth.reuseCredentials requires minio.enabled
+      ## it will reuse the credentials set under minio.auth
+      reuseCredentials: true
+      accessKey:
+        password: ""
+        existingSecret: ""
+        existingSecretKey: ""
+      secretKey:
+        password: ""
+        existingSecret: ""
+        existingSecretKey: ""
   logs:
-    ##  logs.accessKey.password Logs Access Key
-    ##  logs.accessKey.existingSecret
-    ##  logs.accessKey.existingSecretKey
-    accessKey:
-      password: ""
-      existingSecret: ""
-      existingSecretKey: ""
-    ##  logs.secretKey.password Logs Secret Key
-    ##  logs.secretKey.existingSecret
-    ##  logs.secretKey.existingSecretKey
-    secretKey:
-      password: ""
-      existingSecret: ""
-      existingSecretKey: ""
+    ## The auth block here follows the same order of precedence as the one under global.state
+    auth:
+      ## logs.auth.reuseCredentials requires minio.enabled and global.logs.minio.enabled
+      ## it will reuse the credentials set under minio.auth
+      reuseCredentials: true
+      ##  logs.accessKey.password Logs Access Key
+      ##  logs.accessKey.existingSecret
+      ##  logs.accessKey.existingSecretKey
+      accessKey:
+        password: ""
+        existingSecret: ""
+        existingSecretKey: ""
+      ##  logs.secretKey.password Logs Secret Key
+      ##  logs.secretKey.existingSecret
+      ##  logs.secretKey.existingSecretKey
+      secretKey:
+        password: ""
+        existingSecret: ""
+        existingSecretKey: ""
 
     ## logs.storage.type Determines which log storage  will be utilized.  One of "MINIO", "S3" or "GCS"
     ##                   Used in conjunction with logs.minio.*, logs.s3.* or logs.gcs.*
     storage:
       type: "MINIO"
 
-    ##  logs.minio.enabled Switch to enable or disable the Minio helm chart
+    ## logs.minio.enabled Switch to enable or disable the Minio helm chart
+    ## 
     minio:
       enabled: true
 

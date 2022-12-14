@@ -1,0 +1,40 @@
+root = "."
+testdata_dir = "testdata"
+tmp_dir = "tmp"
+
+# This is used to hot reload charts
+
+[build]
+  args_bin = []
+  bin = "/bin/sh -c 'true'"
+  cmd = "helm template --values charts/airbyte/values.dev.yaml --show-only templates/secret.yaml charts/airbyte"
+  # cmd = "helm template --values charts/airbyte/values.dev.yaml --show-only templates/secret.yaml --show-only charts/server/templates/deployment.yaml --show-only charts/worker/templates/deployment.yaml charts/airbyte | grep -C 5 MINIO_"
+  delay = 500
+  exclude_dir = ["assets", "tmp", "vendor", "testdata"]
+  exclude_file = []
+  exclude_regex = ["_test.go"]
+  exclude_unchanged = false
+  follow_symlink = false
+  full_bin = ""
+  include_dir = []
+  include_ext = ["go", "tpl", "tmpl", "html", "yaml", ".txt"]
+  kill_delay = "0s"
+  log = "build-errors.log"
+  send_interrupt = false
+  stop_on_error = true
+
+[color]
+  app = ""
+  build = "yellow"
+  main = "magenta"
+  runner = "green"
+  watcher = "cyan"
+
+[log]
+  time = true
+
+[misc]
+  clean_on_exit = true
+
+[screen]
+  clear_on_rebuild = true
