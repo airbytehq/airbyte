@@ -40,7 +40,7 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
 class ManifestDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a manifest of low-code components that define source connector behavior"""
 
-    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "spec", "streams", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "version"}
 
     def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """

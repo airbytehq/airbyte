@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useExperiment } from "hooks/services/Experiment";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorIds } from "utils/connectors";
-import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
+import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
 
@@ -63,8 +63,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
     });
   };
 
-  const errorMessage = error ? generateMessageFromError(error) : null;
-
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
     ConnectorIds.Destinations.BigQuery,
     ConnectorIds.Destinations.Snowflake,
@@ -91,11 +89,11 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
         description={<FormattedMessage id="destinations.description" />}
         isLoading={isLoading}
         hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
         fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
         availableConnectorDefinitions={destinationDefinitions}
         onConnectorDefinitionSelect={onDropDownSelect}
         selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        selectedConnectorDefinitionId={destinationDefinitionId}
         onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
         additionalSelectorComponent={frequentlyUsedDestinationsComponent}
