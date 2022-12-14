@@ -49,7 +49,7 @@
       },
       "ssl_mode": {
         "title": "SSL Modes",
-        "description": "SSL connection modes.",
+        "description": "SSL connection modes. \n  <li><b>verify-full</b> - This is the most secure mode. Always require encryption and verifies the identity of the source database server",
         "type": "object",
         "order": 6,
         "oneOf": [
@@ -71,7 +71,7 @@
           {
             "title": "verify-full",
             "additionalProperties": false,
-            "description": "This is the most secure mode. Always require encryption and verifies the identity of the source database server.",
+            "description": "Verify-full SSL mode.",
             "required": [
               "mode",
               "ca_certificate",
