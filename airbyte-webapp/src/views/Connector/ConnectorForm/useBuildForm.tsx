@@ -18,6 +18,27 @@ export interface BuildFormHook {
   jsonSchema: JSONSchema7;
 }
 
+function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
+  formGroup.properties.forEach((property) => {
+    if (property.const) {
+      values[property.fieldKey] = property.const;
+    }
+    if (property.default) {
+      values[property.fieldKey] = property.default;
+    }
+    switch (property._type) {
+      case "formGroup":
+        values[property.fieldKey] = {};
+        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
+        break;
+      case "formCondition":
+        // implicitly select the first option (do not respect a potential default value)
+        values[property.fieldKey] = {};
+        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
+    }
+  });
+}
+
 export function useBuildForm(
   isEditMode: boolean,
   formType: "source" | "destination",
@@ -70,26 +91,6 @@ export function useBuildForm(
       ...initialValues,
     };
 
-    function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
-      formGroup.properties.forEach((property) => {
-        if (property.const) {
-          values[property.fieldKey] = property.const;
-        }
-        if (property.default) {
-          values[property.fieldKey] = property.default;
-        }
-        switch (property._type) {
-          case "formGroup":
-            values[property.fieldKey] = {};
-            setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
-            break;
-          case "formCondition":
-            // implicitly select the first option (do not respect a potential default value)
-            values[property.fieldKey] = {};
-            setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
-        }
-      });
-    }
     setDefaultValues(formFields, baseValues as Record<string, unknown>);
 
     return baseValues;
