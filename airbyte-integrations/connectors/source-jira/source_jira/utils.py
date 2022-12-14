@@ -30,17 +30,3 @@ def read_incremental(stream_instance: Stream, stream_state: MutableMapping[str, 
         records = stream_instance.read_records(sync_mode=SyncMode.incremental, stream_slice=_slice, stream_state=stream_state)
         for record in records:
             yield record
-
-
-def call_once(f):
-    result = None
-    called = False
-
-    def wrapper(*args, **kwargs):
-        nonlocal called, result
-        if not called:
-            result = f(*args, **kwargs)
-            called = True
-        return result
-
-    return wrapper

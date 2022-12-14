@@ -13,7 +13,7 @@ import requests
 from airbyte_cdk.sources.streams.http import HttpStream
 from requests.exceptions import HTTPError
 
-from .utils import call_once, read_full_refresh, read_incremental, safe_max
+from .utils import read_full_refresh, read_incremental, safe_max
 
 API_VERSION = 3
 
@@ -97,6 +97,10 @@ class StartDateJiraStream(JiraStream, ABC):
 
 
 class IncrementalJiraStream(StartDateJiraStream, ABC):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._starting_point_cache = {}
+
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
         updated_state = latest_record[self.cursor_field]
         stream_state_value = current_stream_state.get(self.cursor_field)
@@ -111,8 +115,12 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
             compare_date = compare_date.strftime("%Y/%m/%d %H:%M")
             return f"{self.cursor_field} >= '{compare_date}'"
 
-    @call_once
     def get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
+        if self.cursor_field not in self._starting_point_cache:
+            self._starting_point_cache[self.cursor_field] = self._get_starting_point(stream_state=stream_state)
+        return self._starting_point_cache[self.cursor_field]
+
+    def _get_starting_point(self, stream_state: Mapping[str, Any]) -> Optional[pendulum.DateTime]:
         if stream_state:
             stream_state_value = stream_state.get(self.cursor_field)
             if stream_state_value:
@@ -128,6 +136,10 @@ class IncrementalJiraStream(StartDateJiraStream, ABC):
             cursor_value = pendulum.parse(record[self.cursor_field])
             if not start_point or cursor_value >= start_point:
                 yield record
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+        self._starting_point_cache.clear()
+        yield from super().stream_slices(**kwargs)
 
 
 class ApplicationRoles(JiraStream):
