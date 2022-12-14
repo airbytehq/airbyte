@@ -18,6 +18,7 @@ definitions:
       request_parameters:
         orderby: "id"
         order: "asc"
+        dates_are_gmt: "true"
   date_stream_slicer:
     type: DatetimeStreamSlicer
     lookback_window: "{{ config.get('conversion_window_days', 0) }}d"
@@ -31,6 +32,9 @@ definitions:
     step: 30d
     start_time_option:
       field_name: modified_after
+      inject_into: request_parameter
+    end_time_option:
+      field_name: modified_before
       inject_into: request_parameter
     cursor_field: "{{ options['stream_cursor_field'] }}"
   retriever:
@@ -60,10 +64,9 @@ definitions:
       stream_slicer:
         $ref: "*ref(definitions.date_stream_slicer)"
   customers_stream:
-    $ref: "*ref(definitions.base_incremental_stream)"
+    $ref: "*ref(definitions.base_stream)"
     $options:
       name: "customers"
-      stream_cursor_field: "date_modified_gmt"
       primary_key: "id"
       path: "/customers"
   coupons_stream:
@@ -155,6 +158,9 @@ definitions:
         $ref: "*ref(definitions.date_stream_slicer)"
         start_time_option:
           field_name: after
+          inject_into: request_parameter
+        end_time_option:
+          field_name: before
           inject_into: request_parameter
     $options:
       name: "product_reviews"
