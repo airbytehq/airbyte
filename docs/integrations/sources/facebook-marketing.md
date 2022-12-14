@@ -56,8 +56,9 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 
             For example, if you set this value to 7, Airbyte will report statistics as 7-day aggregates starting from the Start Date. Suppose the start and end dates are October 1st and October 30th, then the connector will output 5 records: 01 - 06, 07 - 13, 14 - 20, 21 - 27, and 28 - 30 (3 days only).  
     7. For **Action Breakdown**, enter a list of the action breakdowns you want to configure.
-    8. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
-    9. Click **Done**.
+    8. For **Action Report Time**, enter the action report time you want to configure (mixed, conversion or impression).
+    9. For **Custom Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
+    10. Click **Done**.
 12. For **Page Size of Requests**, fill in the size of the page in case pagintion kicks in. Feel free to ignore it, the default value should work in most cases.
 13. For **Insights Lookback Window**, fill in the appropriate value. See [more](#facebook-marketing-attribution-reporting) on this parameter.
 14. Click **Set up source**.
@@ -131,6 +132,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.79  | 2022-12-14 | [20490](https://github.com/airbytehq/airbyte/pull/20490) | add new `action_report_time` attribute to `AdInsights` class                                                                                                                                                                                                                                                                       |
 | 0.2.78  | 2022-12-07 | [20165](https://github.com/airbytehq/airbyte/pull/20165) | fix fields permission error                                                                                                                                                                                                                                                                       |
 | 0.2.77  | 2022-12-06 | [20131](https://github.com/airbytehq/airbyte/pull/20131) | update next cursor value at read start                                                                                                                                                                                                                                                            |
 | 0.2.76  | 2022-12-03 | [20043](https://github.com/airbytehq/airbyte/pull/20043) | Allows `action_breakdowns` to be an empty list - bugfix for #20016                                                                                                                                                                                                                                |
