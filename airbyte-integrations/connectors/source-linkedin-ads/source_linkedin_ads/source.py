@@ -344,6 +344,16 @@ class AdCreativeName(Creatives):
     parent_values_map = {"creative_id": "id"}
     parent_stream = Creatives
 
+    sync_mode = SyncMode.full_refresh
+
+    @property
+    def source_defined_cursor(self) -> bool:
+        return False
+
+    @property
+    def cursor_field(self) -> str:
+        return ""
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return {}
 
@@ -354,6 +364,16 @@ class AdCreativeName(Creatives):
         self, stream_state: Mapping[str, Any], next_page_token: Mapping[str, Any] = None, **kwargs
     ) -> MutableMapping[str, Any]:
         return {self.search_param: self.search_param_value}
+
+    def stream_slices(
+            self,
+            sync_mode: sync_mode,
+            cursor_field: List[str] = [""],
+            stream_state: Mapping[str, Any] = None
+    ) -> Iterable[Optional[Mapping[str, any]]]:
+        parent = self.parent_stream(config=self.config)
+        for record in parent.read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_state=stream_state):
+            return {"creative_id": record["id"]}
 
     def parse_response(
         self,
