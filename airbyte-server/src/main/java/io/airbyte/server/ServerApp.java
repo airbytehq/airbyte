@@ -289,9 +289,7 @@ public class ServerApp implements ServerRunnable {
         jobPersistence,
         configs.getWorkerEnvironment(),
         configs.getLogConfigs(),
-        eventRunner,
-        connectionsHandler,
-        envVariableFeatureFlags);
+        eventRunner);
 
     final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
         destinationHandler);
@@ -307,7 +305,8 @@ public class ServerApp implements ServerRunnable {
         schemaValidator,
         connectionsHandler,
         schedulerHandler,
-        syncSchedulerClient);
+        syncSchedulerClient,
+        envVariableFeatureFlags);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
 

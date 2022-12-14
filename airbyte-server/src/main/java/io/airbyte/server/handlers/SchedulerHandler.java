@@ -5,45 +5,28 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import io.airbyte.api.model.generated.AdvancedAuth;
 import io.airbyte.api.model.generated.AuthSpecification;
-import io.airbyte.api.model.generated.CatalogDiff;
 import io.airbyte.api.model.generated.CheckConnectionRead;
 import io.airbyte.api.model.generated.CheckConnectionRead.StatusEnum;
 import io.airbyte.api.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
-import io.airbyte.api.model.generated.ConnectionStatus;
-import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationCoreConfig;
 import io.airbyte.api.model.generated.DestinationDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationSyncMode;
 import io.airbyte.api.model.generated.DestinationUpdate;
-import io.airbyte.api.model.generated.FieldTransform;
-import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobIdRequestBody;
 import io.airbyte.api.model.generated.JobInfoRead;
-import io.airbyte.api.model.generated.LogRead;
-import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.SourceCoreConfig;
 import io.airbyte.api.model.generated.SourceDefinitionIdWithWorkspaceId;
 import io.airbyte.api.model.generated.SourceDefinitionSpecificationRead;
 import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
-import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceUpdate;
-import io.airbyte.api.model.generated.StreamTransform;
-import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
-import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.commons.docker.DockerUtils;
 import io.airbyte.commons.enums.Enums;
-import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.temporal.ErrorCode;
 import io.airbyte.commons.temporal.TemporalClient.ManualOperationResult;
@@ -77,21 +60,17 @@ import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
-import javax.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class SchedulerHandler {
 
-  private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
   private static final ImmutableSet<ErrorCode> VALUE_CONFLICT_EXCEPTION_ERROR_CODE_SET =
       ImmutableSet.of(ErrorCode.WORKFLOW_DELETED, ErrorCode.WORKFLOW_RUNNING);
 
-  private final ConnectionsHandler connectionsHandler;
   private final ConfigRepository configRepository;
   private final SecretsRepositoryWriter secretsRepositoryWriter;
   private final SynchronousSchedulerClient synchronousSchedulerClient;
@@ -100,7 +79,6 @@ public class SchedulerHandler {
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
   private final EventRunner eventRunner;
-  private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
   public SchedulerHandler(final ConfigRepository configRepository,
                           final SecretsRepositoryReader secretsRepositoryReader,
@@ -109,9 +87,7 @@ public class SchedulerHandler {
                           final JobPersistence jobPersistence,
                           final WorkerEnvironment workerEnvironment,
                           final LogConfigs logConfigs,
-                          final EventRunner eventRunner,
-                          final ConnectionsHandler connectionsHandler,
-                          final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                          final EventRunner eventRunner) {
     this(
         configRepository,
         secretsRepositoryWriter,
@@ -120,9 +96,7 @@ public class SchedulerHandler {
         new JsonSchemaValidator(),
         jobPersistence,
         eventRunner,
-        new JobConverter(workerEnvironment, logConfigs),
-        connectionsHandler,
-        envVariableFeatureFlags);
+        new JobConverter(workerEnvironment, logConfigs));
   }
 
   @VisibleForTesting
@@ -133,9 +107,7 @@ public class SchedulerHandler {
                    final JsonSchemaValidator jsonSchemaValidator,
                    final JobPersistence jobPersistence,
                    final EventRunner eventRunner,
-                   final JobConverter jobConverter,
-                   final ConnectionsHandler connectionsHandler,
-                   final EnvVariableFeatureFlags envVariableFeatureFlags) {
+                   final JobConverter jobConverter) {
     this.configRepository = configRepository;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
     this.synchronousSchedulerClient = synchronousSchedulerClient;
@@ -144,8 +116,6 @@ public class SchedulerHandler {
     this.jobPersistence = jobPersistence;
     this.eventRunner = eventRunner;
     this.jobConverter = jobConverter;
-    this.connectionsHandler = connectionsHandler;
-    this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
