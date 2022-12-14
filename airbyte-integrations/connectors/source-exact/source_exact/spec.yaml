@@ -22,12 +22,15 @@ connectionSpecification:
         access_token:
           type: string
           description: Access token from Exact.
+          airbyte_secret: true
         refresh_token:
           type: string
           description: Refresh token from Exact.
+          airbyte_secret: true
         client_id:
           type: string
           description: OAuth client_id, can be found at apps.exactonline.com.
         client_secret:
           type: string
           description: OAuth client_secret, can be found at apps.exactonline.com.
+          airbyte_secret: true
