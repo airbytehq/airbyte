@@ -151,7 +151,7 @@ def _record_with_id(stream: str, title: str, word_count: int, id: int) -> Airbyt
         type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={
             "title": title,
             "wordCount": word_count,
-            "id":  id
+            "id": id
         }, emitted_at=0)
     )
 
@@ -340,3 +340,38 @@ def test_upload_vector(config: Mapping, client: Client):
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("vector") == data.get("vector"), "Vectors should match"
+
+
+def test_weaviate_existing_class(config: Mapping, client: Client):
+    class_obj = {
+        "class": "Article",
+        "properties": [
+            {"dataType": ["string"], "name": "title"},
+            {"dataType": ["text"], "name": "content"}
+        ]
+    }
+    client.client.schema.create_class(class_obj)
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "text": {"type": "string"}
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"title": "test1", "content": "test 1 content"}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = stream_name[0].upper() + stream_name[1:]
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual["properties"].get("title") == data.get("title"), "Title should match"
+    assert actual["properties"].get("content") == data.get("content"), "Content should match"
