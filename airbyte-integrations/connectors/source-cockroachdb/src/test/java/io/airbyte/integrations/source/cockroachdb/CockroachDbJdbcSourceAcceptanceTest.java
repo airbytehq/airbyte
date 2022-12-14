@@ -543,13 +543,4 @@ class CockroachDbJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     assertEquals(expected, filterOutOtherSchemas(actual));
   }
 
-  @Override
-  protected void incrementalDateCheck() throws Exception {
-    incrementalCursorCheck(
-            COL_UPDATED_AT,
-            "2005-10-18",
-            "2006-10-19",
-            List.of(getTestMessages().get(1), getTestMessages().get(2)));
-  }
-
 }
