@@ -1,10 +1,5 @@
 # API documentation
 
-:::info
-
-Airbyte Cloud does not currently support API access yet. Our Cloud API will be available in 2023. For early-access in 2023, please email riley@airbyte.io
-
-
 :::caution
 
 For Airbyte Open-Source you don't need the API Token for Authentication!
@@ -17,4 +12,8 @@ Our Configuration API is still in alpha and might change. You won’t lose any f
 **Check it out** [**here**](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html)**.**
 
 Don't hesitate to ask us on [Slack](https://slack.airbyte.io), if you have any questions about it.
+
+:::info
+
+Airbyte Cloud will also support API access in 2023. See [Airbyte roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/airbyte-roadmap) for more details.
 
