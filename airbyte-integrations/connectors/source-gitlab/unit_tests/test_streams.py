@@ -9,11 +9,6 @@ from source_gitlab.streams import Commits, Jobs, MergeRequestCommits, MergeReque
 auth_params = {"authenticator": NoAuth(), "api_url": "gitlab.com"}
 
 
-@pytest.fixture(autouse=True)
-def projects_api_response(requests_mock):
-    requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
-
-
 projects = Projects(project_ids=["p_1"], **auth_params)
 pipelines = Pipelines(parent_stream=projects, start_date="2021-01-01T00:00:00Z", **auth_params)
 merge_requests = MergeRequests(parent_stream=projects, start_date="2021-01-01T00:00:00Z", **auth_params)
@@ -22,6 +17,15 @@ releases = Releases(parent_stream=projects, **auth_params)
 jobs = Jobs(parent_stream=pipelines, **auth_params)
 merge_request_commits = MergeRequestCommits(parent_stream=merge_requests, **auth_params)
 commits = Commits(parent_stream=projects, repository_part=True, start_date="2021-01-01T00:00:00Z", **auth_params)
+
+
+def test_should_retry(mocker, requests_mock):
+    mocker.patch("time.sleep")
+    requests_mock.get("/api/v4/projects/p_1", status_code=403)
+    for stream_slice in projects.stream_slices(sync_mode="full_refresh"):
+        records = list(projects.read_records(sync_mode="full_refresh", stream_slice=stream_slice))
+    assert records == []
+    assert requests_mock.call_count == 1
 
 
 test_cases = (
@@ -75,6 +79,8 @@ test_cases = (
 
 @pytest.mark.parametrize("stream, response_mocks, expected_records", test_cases)
 def test_transform(requests_mock, stream, response_mocks, expected_records):
+    requests_mock.get("/api/v4/projects/p_1", json=[{"id": "p_1"}])
+
     for url, json in response_mocks:
         requests_mock.get(url, json=json)
 

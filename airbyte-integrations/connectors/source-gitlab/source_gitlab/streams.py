@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional
 
@@ -9,12 +10,11 @@ import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
-from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 
 
 class GitlabStream(HttpStream, ABC):
-    availability_strategy = HttpAvailabilityStrategy()
     primary_key = "id"
+    raise_on_http_errors = True
     stream_base_params = {}
     flatten_id_keys = []
     flatten_list_keys = []
@@ -41,7 +41,23 @@ class GitlabStream(HttpStream, ABC):
     def url_base(self) -> str:
         return f"https://{self.api_url}/api/v4/"
 
+    def should_retry(self, response: requests.Response) -> bool:
+        # Gitlab API returns a 403 response in case a feature is disabled in a project (pipelines/jobs for instance).
+        # This code is not equivalent of what HttpAvailabilityStrategy does.
+        # Different stream slices (different projects or groups) - may or may not result in a 403 error.
+        # HttpAvailabilityStrategy skips all the slices in case it faces error when reading the first record.
+        if response.status_code == 403:
+            setattr(self, "raise_on_http_errors", False)
+            self.logger.warning(
+                f"Got 403 error when accessing URL {response.request.url}."
+                f" Very likely the feature is disabled for this project and/or group. Please double check it, or report a bug otherwise."
+            )
+            return False
+        return super().should_retry(response)
+
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if response.status_code != 200:
+            return
         response_data = response.json()
         if isinstance(response_data, dict):
             return None
@@ -50,6 +66,8 @@ class GitlabStream(HttpStream, ABC):
             return {"page": self.page}
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        if response.status_code == 403:
+            return []
         response_data = response.json()
         if isinstance(response_data, list):
             for record in response_data:
