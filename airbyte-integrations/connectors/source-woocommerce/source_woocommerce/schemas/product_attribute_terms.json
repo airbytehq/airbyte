@@ -15,10 +15,10 @@
       "type": ["null", "string"]
     },
     "menu_order": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     },
     "count": {
-      "type": ["null", "boolean"]
+      "type": ["null", "integer"]
     }
   }
 }

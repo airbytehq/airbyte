@@ -1,14 +1,17 @@
 {
-  "type": ["null", "object"],
-  "properties": {
-    "id": {
-      "type": ["null", "integer"]
-    },
-    "name": {
-      "type": ["null", "string"]
-    },
-    "options": {
-      "type": ["null", "string"]
+  "type": ["null", "array"],
+  "items": {
+    "type": ["null", "object"],
+    "properties": {
+      "id": {
+        "type": ["null", "integer"]
+      },
+      "name": {
+        "type": ["null", "string"]
+      },
+      "option": {
+        "type": ["null", "string"]
+      }
     }
   }
 }

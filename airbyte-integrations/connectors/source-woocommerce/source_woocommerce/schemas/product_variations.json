@@ -86,7 +86,7 @@
       "type": ["null", "string"]
     },
     "manage_stock": {
-      "type": ["null", "boolean"]
+      "type": ["null", "string"]
     },
     "stock_quantity": {
       "type": ["null", "integer"]
@@ -113,22 +113,25 @@
       "type": ["null", "string"]
     },
     "shipping_class_id": {
-      "type": ["null", "string"]
+      "type": ["null", "integer"]
     },
     "image": {
       "$ref": "product_images.json"
     },
     "attributes": {
-      "type": ["null", "object"],
-      "properties": {
-        "id": {
-          "type": ["null", "integer"]
-        },
-        "name": {
-          "type": ["null", "string"]
-        },
-        "options": {
-          "type": ["null", "string"]
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "name": {
+            "type": ["null", "string"]
+          },
+          "option": {
+            "type": ["null", "string"]
+          }
         }
       }
     },
