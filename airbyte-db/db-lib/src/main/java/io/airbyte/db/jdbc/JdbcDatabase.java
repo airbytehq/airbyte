@@ -22,7 +22,6 @@ import java.util.Spliterators;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import javax.sql.DataSource;
 
 /**
  * Database object for interacting with a JDBC connection.
@@ -230,7 +229,5 @@ public abstract class JdbcDatabase extends SqlDatabase {
   }
 
   public abstract DatabaseMetaData getMetaData() throws SQLException;
-
-  public abstract DataSource getDataSource();
 
 }

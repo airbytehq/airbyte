@@ -363,9 +363,12 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
 
       if (!savedOffsetAfterReplicationSlotLSN) {
         LOGGER.warn("Saved offset is before Replication slot's confirmed_flush_lsn, Airbyte will trigger sync from scratch");
-      } else if(PostgresUtils.shouldFlushAfterSync(sourceConfig)){
-        postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDataSource(), savedOffset,
-            sourceConfig.get("replication_method").get("replication_slot").asText());
+      } else if (PostgresUtils.shouldFlushAfterSync(sourceConfig)) {
+        postgresDebeziumStateUtil.commitLSNToPostgresDatabase(database.getDatabaseConfig(),
+            savedOffset,
+            sourceConfig.get("replication_method").get("replication_slot").asText(),
+            sourceConfig.get("replication_method").get("publication").asText(),
+            PostgresUtils.getPluginValue(sourceConfig.get("replication_method")));
       }
 
       final AirbyteDebeziumHandler handler = new AirbyteDebeziumHandler(sourceConfig,
