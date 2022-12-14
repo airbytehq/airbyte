@@ -234,8 +234,6 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
 
         stream_state = kwargs.get("stream_state")
         self.initial_state = stream_state.get(self.cursor_field) if stream_state else self.start_date
-        self.state = self.initial_state
-        print(f"initial state: {self.initial_state}")
         self.max_state = self.initial_state
 
         parent_stream = self.parent(authenticator=self.authenticator, start_date=self.start_date, end_date=self.end_date)
@@ -477,7 +475,6 @@ class StatsIncremental(Stats, IncrementalMixin):
             self.number_of_last_records += 1
             # Update state if 'last' records for all dependant entities have been read
             if self.number_of_parent_ids == self.number_of_last_records:
-                print(f"updating state from {self.state} to {record_end_date}")
                 self.state = {self.cursor_field: record_end_date}
 
     @property
