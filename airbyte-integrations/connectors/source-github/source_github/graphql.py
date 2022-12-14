@@ -27,6 +27,8 @@ def select_user_fields(user):
 
 
 def get_query_pull_requests(owner, name, first, after, direction):
+    AVERAGE_REVIEWS = 5  # optimal number of reviews to fetch inside every pull request.
+
     kwargs = {"first": first, "order_by": {"field": "UPDATED_AT", "direction": direction}}
     if after:
         kwargs["after"] = after
@@ -52,7 +54,8 @@ def get_query_pull_requests(owner, name, first, after, direction):
     )
     pull_requests.nodes.comments.__fields__(total_count=True)
     pull_requests.nodes.commits.__fields__(total_count=True)
-    reviews = pull_requests.nodes.reviews(first=100, __alias__="review_comments")
+    reviews = pull_requests.nodes.reviews(first=AVERAGE_REVIEWS, __alias__="review_comments")
+    reviews.page_info.__fields__(has_next_page=True, end_cursor=True)
     reviews.total_count()
     reviews.nodes.comments.__fields__(total_count=True)
     user = pull_requests.nodes.merged_by(__alias__="merged_by").__as__(_schema_root.User)
@@ -260,3 +263,13 @@ class CursorStorage:
         if self.storage:
             _, _, c = heapq.heappop(self.storage)
             return {"typename": c[0], "cursor": c[1], "total_count": c[2], "parent_id": c[3]}
+
+
+def get_query_pull_request_reviews(pull_request_id, after):
+    op = sgqlc.operation.Operation(_schema_root.query_type)
+    pull_request = op.node(id=pull_request_id).__as__(_schema_root.PullRequest)
+    reviews = pull_request.reviews(first=100, after=after)
+    reviews.page_info.__fields__(has_next_page=True, end_cursor=True)
+    reviews.total_count()
+    reviews.nodes.comments.__fields__(total_count=True)
+    return str(op)

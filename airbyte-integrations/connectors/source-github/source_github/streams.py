@@ -14,8 +14,8 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from requests.exceptions import HTTPError
 
-from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
-from .utils import getter
+from .graphql import CursorStorage, QueryReactions, get_query_pull_request_reviews, get_query_pull_requests, get_query_reviews
+from .utils import getter, read_full_refresh
 
 DEFAULT_PAGE_SIZE = 100
 
@@ -721,6 +721,53 @@ class ReviewComments(IncrementalMixin, GithubStream):
         return f"repos/{stream_slice['repository']}/pulls/comments"
 
 
+class PullRequestReviews(GithubStream):
+    "PullRequestReviews is internal stream"
+
+    http_method = "POST"
+
+    def __init__(self, *, authenticator, pull_request_id, cursor):
+        super().__init__(authenticator=authenticator, repositories=[None], page_size_for_large_streams=None)
+        self.pull_request_id = pull_request_id
+        self.cursor = cursor
+
+    def path(
+        self, *, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "graphql"
+
+    def request_params(
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> MutableMapping[str, Any]:
+        return {}
+
+    def raise_error_from_response(self, response_json):
+        if "errors" in response_json:
+            raise Exception(str(response_json["errors"]))
+
+    def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
+        self.raise_error_from_response(response_json=response.json())
+        for record in response.json()["data"]["node"]["reviews"]["nodes"]:
+            yield record
+
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        pageInfo = response.json()["data"]["node"]["reviews"]["pageInfo"]
+        if pageInfo["hasNextPage"]:
+            return {"endCursor": pageInfo["endCursor"]}
+
+    def request_body_json(
+        self,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Optional[Mapping]:
+        after = self.cursor
+        if next_page_token:
+            after = next_page_token["endCursor"]
+        query = get_query_pull_request_reviews(pull_request_id=self.pull_request_id, after=after)
+        return {"query": query}
+
+
 class PullRequestStats(SemiIncrementalMixin, GithubStream):
     """
     API docs: https://docs.github.com/en/graphql/reference/objects#pullrequest
@@ -747,7 +794,17 @@ class PullRequestStats(SemiIncrementalMixin, GithubStream):
         if repository:
             nodes = repository["pullRequests"]["nodes"]
             for record in nodes:
-                record["review_comments"] = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+
+                review_comments = sum([node["comments"]["totalCount"] for node in record["review_comments"]["nodes"]])
+
+                hasNextPage = record["review_comments"]["pageInfo"]["hasNextPage"]
+                if hasNextPage:
+                    endCursor = record["review_comments"]["pageInfo"]["endCursor"]
+                    stream = PullRequestReviews(authenticator=self.authenticator, pull_request_id=record["node_id"], cursor=endCursor)
+                    records = list(read_full_refresh(stream))
+                    review_comments += sum([record["comments"]["totalCount"] for record in records])
+
+                record["review_comments"] = review_comments
                 record["comments"] = record["comments"]["totalCount"]
                 record["commits"] = record["commits"]["totalCount"]
                 record["repository"] = self._get_name(repository)
