@@ -33,6 +33,18 @@
       "password" : {
         "type" : "string",
         "description" : "Password used with OIDC authentication"
+      },
+      "batch_size" : {
+        "type" : "integer",
+        "description" : "Batch size for writing to Weaviate",
+        "default" : 100
+      },
+      "vectors" : {
+        "type" : "string",
+        "description" : "Comma separated list of strings to configure which field holds the vector foreach stream. Using the following format <stream_name>.<vector_column_name>",
+        "examples" : [
+          "my_table.my_vector_column, another_table.vector"
+        ]
       }
     }
   }

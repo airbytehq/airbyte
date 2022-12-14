@@ -5,9 +5,21 @@
 import uuid
 import logging
 import json
-from typing import Any, Mapping
+from typing import Any, Mapping, List
 
 import weaviate
+
+
+def parse_vectors(vectors_config: str) -> Mapping[str, str]:
+    vectors = {}
+    if not vectors_config:
+        return vectors
+
+    vectors_list = vectors_config.replace(" ", "").split(",")
+    for vector in vectors_list:
+        stream_name, vector_column_name = vector.split(".")
+        vectors[stream_name] = vector_column_name
+    return vectors
 
 
 class Client:
@@ -16,6 +28,8 @@ class Client:
         self.config = config
         self.batch_size = int(config.get("batch_size", 100))
         self.schema = schema
+        self.vectors = parse_vectors(config.get("vectors"))
+
 
     def queue_write_operation(self, stream_name: str, record: Mapping):
         # TODO need to handle case where original DB ID is not a UUID
@@ -38,8 +52,12 @@ class Client:
 
         # Property names in Weaviate have to start with lowercase letter
         record = {k[0].lower() + k[1:]: v for k, v in record.items()}
-
-        self.client.batch.add_data_object(record, stream_name.title(), id)
+        vector = None
+        if stream_name in self.vectors:
+            vector_column_name = self.vectors.get(stream_name)
+            vector = record.get(vector_column_name)
+            del record[vector_column_name]
+        self.client.batch.add_data_object(record, stream_name.title(), id, vector=vector)
         if self.client.batch.num_objects() >= self.batch_size:
             self.flush()
 

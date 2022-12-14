@@ -94,7 +94,7 @@ def setup_teardown(config: Mapping):
         "semitechnologies/weaviate:1.16.1", detach=True, environment=env_vars, name=name,
         ports={8080: ('127.0.0.1', 8081)}
     )
-    time.sleep(1)
+    time.sleep(0.5)
 
     retries = 3
     while retries > 0:
@@ -169,7 +169,7 @@ def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
 
 def get_objects(client: Client, class_name: str) -> List[Mapping[str, Any]]:
     """retrieves and formats all Articles as Airbyte messages"""
-    all_records = client.client.data_object.get(class_name=class_name)
+    all_records = client.client.data_object.get(class_name=class_name, with_vector=True)
     return all_records.get("objects")
 
 
@@ -312,3 +312,31 @@ def test_write_pokemon_source_pikachu(config: Mapping, pokemon_catalog: Configur
 
     actual = records_in_destination[0]
     assert actual["properties"]["name"] == pikachu.record.data.get("name"), "Names should match"
+
+
+def test_upload_vector(config: Mapping, client: Client):
+    stream_name = "article_with_vector"
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "vector": {"type": "array", "items": {"type": "number}"}}
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"title": "test1", "vector": [0.1, 0.2]}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+    config["vectors"] = "article_with_vector.vector"
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = "Article_With_Vector"
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual.get("vector") == data.get("vector"), "Vectors should match"
