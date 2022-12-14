@@ -340,49 +340,6 @@ public class SchedulerHandler {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
 
-  // Find all connections that use the source from the SourceDiscoverSchemaRequestBody. For each one,
-  // determine whether 1. the source schema change resulted in a broken connection or 2. the user
-  // wants the connection disabled when non-breaking changes are detected. If so, disable that
-  // connection. Modify the current discoveredSchema object to add a CatalogDiff,
-  // containsBreakingChange paramter, and connectionStatus parameter.
-  protected void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
-                                                                 SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
-      throws JsonValidationException, ConfigNotFoundException, IOException {
-    final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
-    for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
-      final Optional<io.airbyte.api.model.generated.AirbyteCatalog> catalogUsedToMakeConfiguredCatalog = connectionsHandler
-          .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
-      final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
-          connectionRead.getSyncCatalog();
-      CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-          CatalogConverter.toProtocol(currentAirbyteCatalog));
-      boolean containsBreakingChange = containsBreakingChange(diff);
-      ConnectionUpdate updateObject =
-          new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
-      ConnectionStatus connectionStatus;
-      if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
-        connectionStatus = ConnectionStatus.INACTIVE;
-      } else {
-        connectionStatus = connectionRead.getStatus();
-      }
-      updateObject.status(connectionStatus);
-      connectionsHandler.updateConnection(updateObject);
-      if (connectionRead.getConnectionId().equals(discoverSchemaRequestBody.getConnectionId())) {
-        discoveredSchema.catalogDiff(diff).breakingChange(containsBreakingChange).connectionStatus(connectionStatus);
-      }
-    }
-  }
-
-  private boolean shouldDisableConnection(final boolean containsBreakingChange,
-                                          final NonBreakingChangesPreference preference,
-                                          final CatalogDiff diff) {
-    if (!envVariableFeatureFlags.autoDetectSchema()) {
-      return false;
-    }
-
-    return containsBreakingChange || (preference == NonBreakingChangesPreference.DISABLE && !diff.getTransforms().isEmpty());
-  }
-
   private CheckConnectionRead reportConnectionStatus(final SynchronousResponse<StandardCheckConnectionOutput> response) {
     final CheckConnectionRead checkConnectionRead = new CheckConnectionRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
@@ -456,19 +413,6 @@ public class SchedulerHandler {
     return jobConverter.getJobInfoRead(job);
   }
 
-  private boolean containsBreakingChange(final CatalogDiff diff) {
-    for (final StreamTransform streamTransform : diff.getTransforms()) {
-      if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
-        continue;
-      }
 
-      final boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(FieldTransform::getBreaking);
-      if (anyBreakingFieldTransforms) {
-        return true;
-      }
-    }
-
-    return false;
-  }
 
 }
