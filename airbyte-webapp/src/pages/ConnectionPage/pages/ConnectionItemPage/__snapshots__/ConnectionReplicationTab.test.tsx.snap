@@ -371,7 +371,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                         class="<removed-for-snapshot-test>"
                       >
                         <input
-                          class="<removed-for-snapshot-test>"
+                          aria-checked="false"
                           type="checkbox"
                         />
                       </label>
@@ -585,7 +585,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
                             class="<removed-for-snapshot-test>"
                           >
                             <input
-                              class="<removed-for-snapshot-test>"
+                              aria-checked="false"
                               type="checkbox"
                             />
                           </label>
