@@ -50,7 +50,7 @@ class DefaultNormalizationRunnerTest {
   private static final int JOB_ATTEMPT = 0;
 
   private static final String NORMALIZATION_IMAGE = "airbyte/normalization";
-  private static final String NORMALIZATION_TAG = "0.2.24";
+  private static final String NORMALIZATION_TAG = "42.42.42";
   private static final String INTEGRATION_TYPE = "postgres";
 
   private static Path logJobRoot;

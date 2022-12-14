@@ -63,10 +63,10 @@ properties:
     description: an optional field indicating the name of the repository to be used for normalization. If the value of the flag is NULL - normalization is not used.
   normalizationTag:
     type: string
-    description: an optional field indicating the tag of the repository to be used for normalization.
+    description: an optional field indicating the tag of the docker repository to be used for normalization.
   supportsDbt:
     type: boolean
     description: an optional flag indicating whether DBT is used in the normalization. If the flag value is NULL - DBT is not used.
   normalizationIntegrationType:
     type: string
-    description: an optional field indicating the type of integration dialect to use for normalization. If the value is NULL, the default dialect will be used.
+    description: an optional field indicating the type of integration dialect to use for normalization.
