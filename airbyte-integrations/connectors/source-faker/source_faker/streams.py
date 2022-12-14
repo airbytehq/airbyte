@@ -142,15 +142,15 @@ class Users(Stream, IncrementalMixin):
                 break
 
         self.state = {self.cursor_field: total_records, "seed": self.seed}
-        set_total_user_records(total_records)
 
 
 class Purchases(Stream, IncrementalMixin):
     primary_key = None
-    cursor_field = "user_id"
+    cursor_field = "id"
 
-    def __init__(self, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count:int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
+        self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
@@ -222,23 +222,33 @@ class Purchases(Stream, IncrementalMixin):
         return purchases
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
-        purchases_count = self.state[self.cursor_field] if self.cursor_field in self.state else 0
-
-        if total_user_records <= 0:
-            return  # if there are no new users, there should be no new purchases
+        total_purchase_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
+        total_user_records = self.state['user_id'] if 'user_id' in self.state else 0
+        user_records_in_sync = 0
+        user_records_in_slice = 0
 
         median_record_byte_size = 230
         yield generate_estimate(
-            self.name, total_user_records - purchases_count * 1.3, median_record_byte_size
+            self.name, (self.count - total_user_records) * 1.3, median_record_byte_size
         )  # a fuzzy guess, some users have purchases, some don't
 
-        for i in range(purchases_count, total_user_records):
-            purchases = self.generate_purchases(i + 1, purchases_count)
+        for i in range(total_user_records, self.count):
+            purchases = self.generate_purchases(i + 1, total_purchase_records)
             for purchase in purchases:
+                total_purchase_records += 1
                 yield purchase
-                purchases_count += 1
+            total_user_records += 1
+            user_records_in_sync += 1
+            user_records_in_slice += 1
 
-        self.state = {self.cursor_field: total_user_records, "seed": self.seed}
+            if user_records_in_slice >= self.records_per_slice:
+                self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
+                user_records_in_slice = 0
+
+            if user_records_in_sync == self.records_per_sync:
+                break
+
+        self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
 
 
 def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
@@ -247,11 +257,3 @@ def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
         type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
     )
     return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)
-
-
-# a globals hack to share data between streams:
-total_user_records = 0
-
-
-def set_total_user_records(total: int):
-    globals()["total_user_records"] = total
