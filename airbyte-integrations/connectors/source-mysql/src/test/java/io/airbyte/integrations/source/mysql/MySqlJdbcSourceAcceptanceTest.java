@@ -46,9 +46,17 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.testcontainers.containers.MySQLContainer;
+import uk.org.webcompere.systemstubs.environment.EnvironmentVariables;
+import uk.org.webcompere.systemstubs.jupiter.SystemStub;
+import uk.org.webcompere.systemstubs.jupiter.SystemStubsExtension;
 
+@ExtendWith(SystemStubsExtension.class)
 class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
+
+  @SystemStub
+  private EnvironmentVariables environmentVariables;
 
   protected static final String USERNAME_WITHOUT_PERMISSION = "new_user";
   protected static final String PASSWORD_WITHOUT_PERMISSION = "new_password";
@@ -61,7 +69,6 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeAll
   static void init() throws Exception {
-    setEnv(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     container = new MySQLContainer<>("mysql:8.0")
         .withUsername(TEST_USER)
         .withPassword(TEST_PASSWORD.call())
@@ -74,6 +81,7 @@ class MySqlJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
 
   @BeforeEach
   public void setup() throws Exception {
+    environmentVariables.set(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true");
     config = Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())

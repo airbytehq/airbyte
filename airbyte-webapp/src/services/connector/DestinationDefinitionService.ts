@@ -76,9 +76,10 @@ const useDestinationDefinition = <T extends string | undefined>(
 const useCreateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
-    (destinationDefinition) => service.create(destinationDefinition),
+    (destinationDefinition) => service.createCustom({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(

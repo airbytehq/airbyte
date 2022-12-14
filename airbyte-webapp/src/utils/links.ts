@@ -29,8 +29,10 @@ export const links = {
   webhookVideoGuideLink: "https://www.youtube.com/watch?v=NjYm8F-KiFc",
   webhookGuideLink: `${BASE_DOCS_LINK}/operator-guides/configuring-sync-notifications/`,
   cronReferenceLink: "http://www.quartz-scheduler.org/documentation/quartz-2.3.0/tutorials/crontrigger.html",
-  cloudAllowlistIPsLink: `${BASE_DOCS_LINK}/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-address`,
+  cloudAllowlistIPsLink: `${BASE_DOCS_LINK}/cloud/getting-started-with-airbyte-cloud/#allowlist-ip-addresses`,
   dataResidencySurvey: "https://forms.gle/Dr7MPTdt9k3xTinL8",
+  connectionDataResidency:
+    "https://docs.airbyte.com/cloud/managing-airbyte-cloud/#choose-the-data-residency-for-a-connection",
   lowCodeYamlDescription: `${BASE_DOCS_LINK}/connector-development/config-based/understanding-the-yaml-file/yaml-overview`,
 } as const;
 

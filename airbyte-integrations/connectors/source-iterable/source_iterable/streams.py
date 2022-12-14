@@ -19,6 +19,7 @@ from pendulum.datetime import DateTime
 from requests import codes
 from requests.exceptions import ChunkedEncodingError
 from source_iterable.slice_generators import AdjustableSliceGenerator, RangeSliceGenerator, StreamSlice
+from source_iterable.utils import dateutil_parse
 
 EVENT_ROWS_LIMIT = 200
 CAMPAIGNS_PER_REQUEST = 20
@@ -137,7 +138,7 @@ class IterableExportStream(IterableStream, ABC):
         if isinstance(value, int):
             value = pendulum.from_timestamp(value / 1000.0)
         elif isinstance(value, str):
-            value = pendulum.parse(value, strict=False)
+            value = dateutil_parse(value)
         else:
             raise ValueError(f"Unsupported type of datetime field {type(value)}")
         return value

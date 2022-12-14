@@ -95,3 +95,26 @@ ERROR: Head "https://registry-1.docker.io/v2/airbyte/init/manifests/{XXX}": unau
 
 You are most likely logged into Docker with your email address instead of your Docker ID.
 Log out of Docker by running `docker logout` and try running `docker-compose up` again.
+
+## Protocol Version errors from the bootloader when trying to upgrade
+
+When starting up Airbyte, the bootloader may fail with the following error:
+```
+Aborting bootloader to avoid breaking existing connection after an upgrade. Please address airbyte protocol version support issues in the connectors before retrying.
+```
+
+We aborted the upgrade to avoid breaking existing connections due to a deprecation of protocol version.
+
+Looking at the `airbyte-bootloader` logs, there should be a few messages describing the change of support range of the Airbyte Protocol:
+
+```
+2022-11-21 22:07:20 INFO i.a.b.ProtocolVersionChecker(validate):81 - Detected an AirbyteProtocolVersion range change from [0.0.0:2.0.0] to [1.0.0:2.0.0]
+2022-11-21 22:07:20 WARN i.a.b.ProtocolVersionChecker(validate):98 - The following connectors need to be upgraded before being able to upgrade the platform
+2022-11-21 22:07:20 WARN j.u.s.ReferencePipeline$3$1(accept):197 - Source: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a: E2E Testing: protocol version: 0.2.1
+```
+
+From this example, this upgrade will drop the support for the major version 0 of the Airbyte Protocol. One connector here is problematic, we have the `E2E Testing` source connector that is blocking the upgrade because it is still using protocol version 0.2.1.
+
+In order to resolve this situation, all the problematic connectors must be upgraded to a version that is using a newer version of the Airbyte Protocol. In this specific example, we should target version 1 or 2, our recommendation is to always target the most recent version.
+
+For more details on how to upgrade a custom connector, you may want to refer to the [custom connector](../operator-guides/using-custom-connectors.md) documentation.

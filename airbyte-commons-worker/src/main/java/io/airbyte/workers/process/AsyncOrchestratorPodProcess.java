@@ -22,7 +22,12 @@ import io.fabric8.kubernetes.api.model.VolumeMount;
 import io.fabric8.kubernetes.api.model.VolumeMountBuilder;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.micronaut.core.util.StringUtils;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -186,7 +191,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     }
   }
 
-  @Override
   public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
     // implementation copied from Process.java since this isn't a real Process
     long remainingNanos = unit.toNanos(timeout);
@@ -227,6 +231,56 @@ public class AsyncOrchestratorPodProcess implements KubePod {
   @Override
   public KubePodInfo getInfo() {
     return kubePodInfo;
+  }
+
+  @Override
+  public Process toProcess() {
+    return new Process() {
+
+      @Override
+      public OutputStream getOutputStream() {
+        try {
+          final String output = AsyncOrchestratorPodProcess.this.getOutput().orElse("");
+          final OutputStream os = new BufferedOutputStream(new ByteArrayOutputStream());
+          os.write(output.getBytes(Charset.defaultCharset()));
+          return os;
+        } catch (final Exception e) {
+          log.warn("Unable to write output to stream.", e);
+          return OutputStream.nullOutputStream();
+        }
+      }
+
+      @Override
+      public InputStream getInputStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public InputStream getErrorStream() {
+        return InputStream.nullInputStream();
+      }
+
+      @Override
+      public int waitFor() throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor();
+      }
+
+      @Override
+      public int exitValue() {
+        return AsyncOrchestratorPodProcess.this.exitValue();
+      }
+
+      @Override
+      public void destroy() {
+        AsyncOrchestratorPodProcess.this.destroy();
+      }
+
+      @Override
+      public boolean waitFor(final long timeout, final TimeUnit unit) throws InterruptedException {
+        return AsyncOrchestratorPodProcess.this.waitFor(timeout, unit);
+      }
+
+    };
   }
 
   private Optional<String> getDocument(final String key) {
@@ -393,7 +447,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
     copyFilesToKubeConfigVolumeMain(createdPod, updatedFileMap);
   }
 
-  public static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
+  private static void copyFilesToKubeConfigVolumeMain(final Pod podDefinition, final Map<String, String> files) {
     final List<Map.Entry<String, String>> fileEntries = new ArrayList<>(files.entrySet());
 
     // copy this file last to indicate that the copy has completed

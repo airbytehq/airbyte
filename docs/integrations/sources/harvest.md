@@ -16,7 +16,7 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
 5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 7. For Authentication mechanism, select **Authenticate via Harvest (OAuth)** from the dropdown and click **Authenticate your Harvest account**. Log in and authorize your Harvest account.
 8. Click **Set up source**.
 <!-- /env:cloud -->
@@ -29,7 +29,7 @@ To set up the Harvest source connector, you'll need the [Harvest Account ID and 
 3. On the Set up the source page, select **Harvest** from the Source type dropdown.
 4. Enter the name for the Harvest connector.
 5. Enter your [Harvest Account ID](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/).
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
 7. For **Authentication mechanism**, select **Authenticate with Personal Access Token** from the dropdown. Enter your [Personal Access Token](https://help.getharvest.com/api-v2/authentication-api/authentication/authentication/#personal-access-tokens).
 8. Click **Set up source**.
 <!-- /env:oss -->

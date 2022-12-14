@@ -52,6 +52,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: AIRBYTE_VERSION
+        - name: AUTO_DETECT_SCHEMA
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: AUTO_DETECT_SCHEMA
         - name: CONFIG_ROOT
           valueFrom:
             configMapKeyRef:
