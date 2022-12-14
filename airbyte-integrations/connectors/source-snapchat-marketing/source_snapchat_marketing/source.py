@@ -2,11 +2,15 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import backoff
 import logging
+from abc import ABC, abstractmethod
+from enum import Enum
+from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
+from urllib.parse import parse_qsl, urlparse
+
+import backoff
 import pendulum
 import requests
-from abc import ABC, abstractmethod
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
@@ -15,9 +19,6 @@ from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
 from airbyte_cdk.sources.utils.schema_helpers import ResourceSchemaLoader
-from enum import Enum
-from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
-from urllib.parse import parse_qsl, urlparse
 
 # https://marketingapi.snapchat.com/docs/#core-metrics
 # https://marketingapi.snapchat.com/docs/#metrics-and-supported-granularities
@@ -172,7 +173,7 @@ class SnapchatMarketingStream(HttpStream, ABC):
             return {"cursor": dict(parse_qsl(urlparse(next_page_cursor["next_link"]).query))["cursor"]}
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         return next_page_token or {}
 
@@ -266,7 +267,7 @@ class IncrementalSnapchatMarketingStream(SnapchatMarketingStream, ABC):
             return {self.cursor_field: self.initial_state}
 
     def read_records(
-            self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
         """
         This structure is used to set the class variable current_slice to the current stream slice for the
@@ -374,7 +375,7 @@ class Stats(SnapchatMarketingStream, ABC):
         return f"{self.parent_name}/{stream_slice['id']}/stats"
 
     def request_params(
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
 
         params = super().request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
@@ -385,17 +386,17 @@ class Stats(SnapchatMarketingStream, ABC):
         return params
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         """Customized by adding stream state setting"""
 
         for record in super().parse_response(
-                response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         ):
             # move all 'stats' metrics to root level
             record.update(record.pop("stats", {}))
@@ -460,8 +461,7 @@ class StatsIncremental(Stats, IncrementalMixin):
         return stream_slices
 
     def request_params(
-            
-            self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
+        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
         """start/end date param should be set for Daily and Hourly streams"""
 
@@ -489,12 +489,12 @@ class StatsIncremental(Stats, IncrementalMixin):
         self._state = value
 
     def parse_response(
-            self,
-            response: requests.Response,
-            *,
-            stream_state: Mapping[str, Any],
-            stream_slice: Mapping[str, Any] = None,
-            next_page_token: Mapping[str, Any] = None,
+        self,
+        response: requests.Response,
+        *,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         """Customized by adding stream state setting"""
 
@@ -503,7 +503,7 @@ class StatsIncremental(Stats, IncrementalMixin):
         self.state = stream_slice[self.cursor_field]
 
         for record in super().parse_response(
-                response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
+            response=response, stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token
         ):
 
             record_identifiers = {
