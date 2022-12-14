@@ -89,6 +89,11 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     }
   }
 
+  @Override
+  public DataSource getDataSource() {
+    return dataSource;
+  }
+
   /**
    * You CANNOT assume that data will be returned from this method before the entire {@link ResultSet}
    * is buffered in memory. Review the implementation of the database's JDBC driver or use the

@@ -18,17 +18,24 @@ import io.debezium.connector.postgresql.PostgresPartition;
 import io.debezium.connector.postgresql.connection.Lsn;
 import io.debezium.pipeline.spi.Offsets;
 import io.debezium.pipeline.spi.Partition;
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalLong;
 import java.util.Properties;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.apache.kafka.connect.json.JsonConverter;
 import org.apache.kafka.connect.runtime.WorkerConfig;
 import org.apache.kafka.connect.runtime.standalone.StandaloneConfig;
 import org.apache.kafka.connect.storage.FileOffsetBackingStore;
 import org.apache.kafka.connect.storage.OffsetStorageReaderImpl;
+import org.postgresql.core.BaseConnection;
+import org.postgresql.replication.LogSequenceNumber;
+import org.postgresql.replication.PGReplicationStream;
+import org.postgresql.replication.fluent.logical.ChainedLogicalStreamBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,33 +47,65 @@ public class PostgresDebeziumStateUtil {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumStateUtil.class);
 
-  public boolean isSavedOffsetAfterReplicationSlotLSN(final Properties baseProperties,
-                                                      final ConfiguredAirbyteCatalog catalog,
-                                                      final JsonNode cdcState,
-                                                      final JsonNode replicationSlot,
-                                                      final JsonNode config) {
+  public boolean isSavedOffsetAfterReplicationSlotLSN(final JsonNode replicationSlot,
+      final OptionalLong savedOffset) {
 
-    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
-        AirbyteFileOffsetBackingStore.initializeState(cdcState),
-        Optional.empty());
-    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
-    final OptionalLong savedOffset = parseSavedOffset(debeziumProperties);
+    if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
+      return true;
+    }
 
-    if (savedOffset.isPresent()) {
-      if (replicationSlot.has("confirmed_flush_lsn")) {
-        final long confirmedFlushLsnOnServerSide = Lsn.valueOf(replicationSlot.get("confirmed_flush_lsn").asText()).asLong();
-        LOGGER.info("Replication slot confirmed_flush_lsn : " + confirmedFlushLsnOnServerSide + " Saved offset LSN : " + savedOffset.getAsLong());
-        return savedOffset.getAsLong() >= confirmedFlushLsnOnServerSide;
-      } else if (replicationSlot.has("restart_lsn")) {
-        final long restartLsn = Lsn.valueOf(replicationSlot.get("restart_lsn").asText()).asLong();
-        LOGGER.info("Replication slot restart_lsn : " + restartLsn + " Saved offset LSN : " + savedOffset.getAsLong());
-        return savedOffset.getAsLong() >= restartLsn;
-      }
+    if (replicationSlot.has("confirmed_flush_lsn")) {
+      final long confirmedFlushLsnOnServerSide = Lsn.valueOf(replicationSlot.get("confirmed_flush_lsn").asText()).asLong();
+      LOGGER.info("Replication slot confirmed_flush_lsn : " + confirmedFlushLsnOnServerSide + " Saved offset LSN : " + savedOffset.getAsLong());
+      return savedOffset.getAsLong() >= confirmedFlushLsnOnServerSide;
+    } else if (replicationSlot.has("restart_lsn")) {
+      final long restartLsn = Lsn.valueOf(replicationSlot.get("restart_lsn").asText()).asLong();
+      LOGGER.info("Replication slot restart_lsn : " + restartLsn + " Saved offset LSN : " + savedOffset.getAsLong());
+      return savedOffset.getAsLong() >= restartLsn;
     }
 
     // We return true when saved offset is not present cause using an empty offset would result in sync
     // from scratch anyway
     return true;
+  }
+
+  public OptionalLong savedOffset(final Properties baseProperties,
+      final ConfiguredAirbyteCatalog catalog,
+      final JsonNode cdcState,
+      final JsonNode config) {
+    final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
+        AirbyteFileOffsetBackingStore.initializeState(cdcState),
+        Optional.empty());
+    final Properties debeziumProperties = debeziumPropertiesManager.getDebeziumProperties();
+    return parseSavedOffset(debeziumProperties);
+  }
+
+  public void commitLSNToPostgresDatabase(final DataSource dataSource, final OptionalLong savedOffset, final String slotName) {
+    if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
+      return;
+    }
+
+    final LogSequenceNumber logSequenceNumber = Lsn.valueOf(savedOffset.getAsLong()).asLogSequenceNumber();
+
+    try (final BaseConnection pgConnection = ((BaseConnection) dataSource.getConnection())) {
+      final ChainedLogicalStreamBuilder streamBuilder = pgConnection
+          .getReplicationAPI()
+          .replicationStream()
+          .logical()
+          .withSlotName("\"" + slotName + "\"")
+          .withStartPosition(logSequenceNumber)
+          .withSlotOptions(new Properties());
+      try (final PGReplicationStream stream = streamBuilder.start()) {
+        stream.forceUpdateStatus();
+
+        stream.setFlushedLSN(logSequenceNumber);
+        stream.setAppliedLSN(logSequenceNumber);
+
+        stream.forceUpdateStatus();
+      }
+    } catch (SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
   /**

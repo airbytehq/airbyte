@@ -10,6 +10,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.List;
+import java.util.OptionalLong;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -47,9 +48,12 @@ public class PostgresDebeziumStateUtilTest {
     final JsonNode cdcState = Jsons.deserialize(
         "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23897640,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}");
 
-    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, REPLICATION_SLOT, CONFIG);
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
+        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+    Assertions.assertTrue(savedOffset.isPresent());
+    Assertions.assertEquals(savedOffset.getAsLong(), 23897640L);
 
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
@@ -58,9 +62,12 @@ public class PostgresDebeziumStateUtilTest {
     final JsonNode cdcState = Jsons.deserialize(
         "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"last_snapshot_record\\\":true,\\\"lsn\\\":23896935,\\\"txId\\\":505,\\\"ts_usec\\\":1659422332985000,\\\"snapshot\\\":true}\"}");
 
-    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, REPLICATION_SLOT, CONFIG);
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
+        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+    Assertions.assertTrue(savedOffset.isPresent());
+    Assertions.assertEquals(savedOffset.getAsLong(), 23896935L);
 
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertFalse(savedOffsetAfterReplicationSlotLSN);
   }
 
@@ -69,9 +76,12 @@ public class PostgresDebeziumStateUtilTest {
     final JsonNode cdcState = Jsons.deserialize(
         "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23901120,\\\"lsn_commit\\\":23901120,\\\"lsn\\\":23901120,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}");
 
-    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, REPLICATION_SLOT, CONFIG);
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
+        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+    Assertions.assertTrue(savedOffset.isPresent());
+    Assertions.assertEquals(savedOffset.getAsLong(), 23901120L);
 
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
@@ -80,17 +90,29 @@ public class PostgresDebeziumStateUtilTest {
     final JsonNode cdcState = Jsons.deserialize(
         "{\"{\\\"schema\\\":null,\\\"payload\\\":[\\\"db_jagkjrgxhw\\\",{\\\"server\\\":\\\"db_jagkjrgxhw\\\"}]}\":\"{\\\"transaction_id\\\":null,\\\"lsn_proc\\\":23896935,\\\"lsn_commit\\\":23896935,\\\"lsn\\\":23896935,\\\"txId\\\":525,\\\"ts_usec\\\":1659422649959099}\"}");
 
-    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(new Properties(),
-        new ConfiguredAirbyteCatalog(), cdcState, REPLICATION_SLOT, CONFIG);
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
+        new ConfiguredAirbyteCatalog(), cdcState, CONFIG);
+    Assertions.assertTrue(savedOffset.isPresent());
+    Assertions.assertEquals(savedOffset.getAsLong(), 23896935L);
 
+
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertFalse(savedOffsetAfterReplicationSlotLSN);
   }
 
   @Test
-  public void nullState() {
-    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(new Properties(),
-        new ConfiguredAirbyteCatalog(), null, REPLICATION_SLOT, CONFIG);
+  public void nullOffset() {
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, null);
+    Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
+  }
 
+  @Test
+  public void emptyState() {
+    final OptionalLong savedOffset = postgresDebeziumStateUtil.savedOffset(new Properties(),
+        new ConfiguredAirbyteCatalog(), null, CONFIG);
+    Assertions.assertTrue(savedOffset.isEmpty());
+
+    final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
   }
 
