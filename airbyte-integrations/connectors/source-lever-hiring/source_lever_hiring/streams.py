@@ -158,16 +158,19 @@ class ArchiveReasons(LeverHiringStream):
 
     schema = ArchiveReason
 
-class Postings(LeverHiringStream):
-    """
-    Postings stream: https://hire.lever.co/developer/documentation#postings
-    """
-
-    schema = Posting
-
 class Stages(LeverHiringStream):
     """
     Stages stream: https://hire.lever.co/developer/documentation#stages
     """
 
     schema = Stage
+
+
+class Postings(IncrementalLeverHiringStream):
+    """
+    Postings stream: https://hire.lever.co/developer/documentation#postings
+    """
+
+    schema = Posting
+    
+
