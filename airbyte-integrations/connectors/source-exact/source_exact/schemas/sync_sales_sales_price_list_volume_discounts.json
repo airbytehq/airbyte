@@ -2,116 +2,198 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSalesSalesPriceListVolumeDiscounts",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BasePrice": {
       "description": "ID of the base price. If base price = use the standard sales price, it shows null. If base price = set sales price, it shows ID of the sales price within this volume discount.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BasePriceAmount": {
       "description": "Amount of the base price. If base price = use the standard sales price, it shows the latest item sales price.  If base price = set sales price, it shows the base price which defined in price list.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Discount": {
       "description": "Discount",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EntryMethod": {
       "description": "Indicates whether discount or the new price is leading : 1-Discount, 2-New price. Scenario 1. When entry method is Discount and use base price, Discounted price = (1 - SalesPriceListDetails.Discount) * SalesPriceListDetails.BasePriceAmount 2. When entry method is Discount and use Item's standard sales price, Discounted price = (1 - SalesPriceListDetails.Discount) * SalesItemPrices.Price 3. When entry method is New price, Discounted price = SalesPriceListDetails.NewPrice",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Item ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemGroup": {
       "description": "Item group ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemGroupCode": {
       "description": "Item group code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemGroupDescription": {
       "description": "Item group description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "NewPrice": {
       "description": "New price after discount",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "NumberOfItemsPerUnit": {
       "description": "Number of the item per unit",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "PriceListCode": {
       "description": "Code of the PriceList",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PriceListDescription": {
       "description": "Description of the PriceList",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PriceListPeriod": {
       "description": "Price list period ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Quantity": {
       "description": "Quantity",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Unit": {
       "description": "Unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of the unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

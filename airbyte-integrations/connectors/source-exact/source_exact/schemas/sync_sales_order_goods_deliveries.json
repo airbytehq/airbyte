@@ -2,125 +2,213 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSalesOrderGoodsDeliveries",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccount": {
       "description": "Reference to account for delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccountCode": {
       "description": "Delivery account code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccountName": {
       "description": "Account name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAddress": {
       "description": "Reference to shipping address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryContact": {
       "description": "Reference to contact for delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryContactPersonFullName": {
       "description": "Name of the contact person of the customer who will receive delivered goods",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryDate": {
       "description": "Date of goods delivery",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "DeliveryNumber": {
       "description": "Delivery number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Description": {
       "description": "Header description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Document": {
       "description": "Document that is manually linked to the sales order delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentSubject": {
       "description": "Document Subject",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EntryID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EntryNumber": {
       "description": "Entry number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Remarks": {
       "description": "Remarks",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethod": {
       "description": "Reference to shipping method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodCode": {
       "description": "Code of shipping method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodDescription": {
       "description": "Description of shipping method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TrackingNumber": {
       "description": "Reference to header tracking number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Warehouse": {
       "description": "Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

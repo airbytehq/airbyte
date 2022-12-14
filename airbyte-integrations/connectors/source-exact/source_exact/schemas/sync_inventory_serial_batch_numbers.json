@@ -2,82 +2,137 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncInventorySerialBatchNumbers",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndDate": {
       "description": "End date of effective period for serial or batch number",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ID": {
       "description": "A guid that is the unique identifier of the serial or batch number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IsBlocked": {
       "description": "Boolean value indicating whether or not the serial or batch number is blocked",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Item": {
       "description": "Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Remarks": {
       "description": "Remarks",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SerialBatchNumber": {
       "description": "Human readable serial or batch number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StartDate": {
       "description": "Start date of effective period for serial number",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Type": {
       "description": "Type of number (serial or batch)  Available values: 1 = Serial number 2 = Batch number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }

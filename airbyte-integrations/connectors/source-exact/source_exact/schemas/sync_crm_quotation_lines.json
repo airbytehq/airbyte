@@ -2,132 +2,226 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncCRMQuotationLines",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "AmountDC": {
       "description": "Amount in the default currency of the company",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscount": {
       "description": "Discount amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscountExclVat": {
       "description": "Discount amount excluding VAT in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFC": {
       "description": "Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Created": {
       "description": "Date and time on which the quotation was created",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomerItemCode": {
       "description": "Code the customer uses for this item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "By default this contains the item description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Discount": {
       "description": "Discount given on the default price. This is stored as a fraction. ie 5.5% is stored as .055",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Reference to the item that is sold in this quotation line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LineNumber": {
       "description": "Indicates the sequence of the lines within one quotation",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Date and time on which the quotation was last modified",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of the modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of the modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "NetPrice": {
       "description": "Net price of the quotation line",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Notes": {
       "description": "Extra notes",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Quantity": {
       "description": "The number of items sold in default units. The quantity shown in the entry screen is Quantity * UnitFactor",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "QuotationID": {
       "description": "Identifies the quotation. All the lines of a quotation have the same QuotationID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "QuotationNumber": {
       "description": "Unique number to indentify the quotation. By default this number is based on the setting for first available number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "UnitCode": {
       "description": "Code of the item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of the item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitPrice": {
       "description": "Price per item unit",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATAmountFC": {
       "description": "VAT amount of the line in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATCode": {
       "description": "The VAT code that is used when the quotation is invoiced",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATDescription": {
       "description": "Description of the VAT code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATPercentage": {
       "description": "The VAT percentage of the VAT code",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     }
   }
 }

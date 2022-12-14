@@ -2,415 +2,719 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncPurchaseOrderPurchaseOrders",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "AmountDC": {
       "description": "Amount in the default currency of the company",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFC": {
       "description": "Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ApprovalStatus": {
       "description": "Approval status of purchase order. 0=Awaiting approval, 1=Automatically, 2=Approved. Approve a new purchase order by giving value 2 if user has PurchaseOrderApproval right.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ApprovalStatusDescription": {
       "description": "Description of ApprovalStatus",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Approved": {
       "description": "Approval datetime",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Approver": {
       "description": "User who approved the purchase order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ApproverFullName": {
       "description": "Name of approver",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenter": {
       "description": "Reference to Cost center",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenterCode": {
       "description": "Code of Cost Center (user-defined ID)",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenterDescription": {
       "description": "Description of Cost Center",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostUnit": {
       "description": "Reference to Cost Unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostUnitCode": {
       "description": "Code of Cost Unit (user-defined ID)",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostUnitDescription": {
       "description": "Description of Cost Unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "Currency code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccount": {
       "description": "Reference to account for delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccountCode": {
       "description": "Delivery account code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAccountName": {
       "description": "Account name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAddress": {
       "description": "Reference to shipping address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryContact": {
       "description": "Reference to contact for delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryContactPersonFullName": {
       "description": "Name of the contact person of the customer who will receive delivered goods",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Discount": {
       "description": "Discount in percentage for item",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Document": {
       "description": "Document that is manually linked to the purchase order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentNumber": {
       "description": "Number of the document",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DocumentSubject": {
       "description": "Subject of the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DropShipment": {
       "description": "Shows if it is a drop shipment purchase order",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "ExchangeRate": {
       "description": "The exchange rate between the invoice currency and the default currency of the division.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Expense": {
       "description": "Expense related to the Work Breakdown Structure of the selected project. Only available with a professional service license",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ExpenseDescription": {
       "description": "Description of expense. Only available with a professional service license",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermAddress": {
       "description": "Address of Incoterm",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermCode": {
       "description": "Code of Incoterm",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermVersion": {
       "description": "Version of Incoterm  Supported version for Incoterms : 2010, 2020",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "InvoicedQuantity": {
       "description": "Quantity of item that has been invoiced",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "InvoiceStatus": {
       "description": "Invoice status of purchase order: 10-Open, 20-Partial, 30-Complete, 40-Canceled",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "IsBatchNumberItem": {
       "description": "Indicates that an Item is an batch item",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "IsSerialNumberItem": {
       "description": "Indicates that an Item is an serial item",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Item": {
       "description": "Reference to the item for purchase order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemBarcode": {
       "description": "Barcode of the item (numeric string)",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDivisable": {
       "description": "Indicates if fractional quantities of the item can be used, for example quantity = 0.4",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "LineNumber": {
       "description": "Line number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "NetPrice": {
       "description": "The net price is the unit price (VAT code taken into account) with any discount applied",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Notes": {
       "description": "Notes",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderDate": {
       "description": "Order date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "OrderNumber": {
       "description": "Human readable id of the purchase order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "OrderStatus": {
       "description": "Purchase order status: 10-Open, 20-Partial, 30-Complete, 40-Canceled",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentCondition": {
       "description": "The payment condition code used for due date and discount calculation",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentConditionDescription": {
       "description": "Description of payment condition",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Project": {
       "description": "Reference to project. Only available with a professional service license",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectCode": {
       "description": "Project code. Only available with a professional service license",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectDescription": {
       "description": "Description of the project. Only available with a professional service license",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseAgent": {
       "description": "Purchase agent",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseAgentFullName": {
       "description": "Name of purchase agent",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseOrderID": {
       "description": "The Purchase OrderID identifies the purchase order. All the lines of a purchase order have the same Purchase Order ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Quantity": {
       "description": "Quantity in item units",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "QuantityInPurchaseUnits": {
       "description": "Quantity in purchase units. Use this field when creating a purchase order",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Rebill": {
       "description": "Indicates whether the purchase order line needs to be rebilled. Only available with a professional service license",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "ReceiptDate": {
       "description": "This field shows the date the goods are expected to be received.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ReceiptStatus": {
       "description": "Receipt status of purchase order: 10-Open, 20-Partial, 30-Complete, 40-Canceled",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ReceivedQuantity": {
       "description": "Quantity of goods received",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Remarks": {
       "description": "Include any relevant remarks regarding the purchase order.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesOrder": {
       "description": "Reference to sales order when purchase order generated via back to back sales order. Show NULL if more than one sales order is linked to the purchase order.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesOrderLine": {
       "description": "Sales order line of the sales order that Is linked to a back to back sales order in purchase order. Show NULL if more than one sales order is linked to the purchase order line.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesOrderLineNumber": {
       "description": "Number of the sales order line. Show NULL if more than one sales order is linked to the purchase order line.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SalesOrderNumber": {
       "description": "Number of the sales order. Show NULL if more than one sales order is linked to the purchase order line.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SelectionCode": {
       "description": "ID of selection code. Only supported by the Plus, Professional and Premium for Wholesale & Distribution and Manufacturing",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SelectionCodeCode": {
       "description": "Code of selection code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SelectionCodeDescription": {
       "description": "Description of selection code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SendingMethod": {
       "description": "SendingMethod",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ShippingMethod": {
       "description": "Shipping Method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodCode": {
       "description": "Code of Shipping Method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodDescription": {
       "description": "Description of Shipping Method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Source": {
       "description": "This shows how the purchase order was created: 1-Manual entry, 2-Import, 3-Other, 4-Purchase order, 5-Sales order, 6-Supplier's items, 7-Subcontract, 8-Purchase order advice, 9-Shop order, 10-MRP calculation, 11-Rest API, 12-Merge purchase orders",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Supplier": {
       "description": "Reference to supplier account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierCode": {
       "description": "Code of supplier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierContact": {
       "description": "Contact of supplier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierContactPersonFullName": {
       "description": "Contact person full name of supplier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierItemCode": {
       "description": "Code the supplier uses for this item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierItemCopyRemarks": {
       "description": "Indicate if the notes content should be copied from SupplierItem's remarks. The default follows the CopyRemarks value from SupplierItem. Values: 0 = Do not copy remark, 1 = Copy remark",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SupplierName": {
       "description": "Name of supplier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Unit": {
       "description": "Code of item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitPrice": {
       "description": "Item price per purchase unit",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATAmount": {
       "description": "Total VAT amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATCode": {
       "description": "The VAT code used when the invoice was registered",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATDescription": {
       "description": "Description of vat code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATPercentage": {
       "description": "The VAT percentage of the VAT code. This is the percentage at the moment the invoice is created. It's also used by the default calculation of VAT amounts and VAT base amounts",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Warehouse": {
       "description": "Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "YourRef": {
       "description": "The reference number of the customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

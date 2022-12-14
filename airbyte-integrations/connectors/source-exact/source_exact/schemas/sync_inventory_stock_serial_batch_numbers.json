@@ -2,148 +2,254 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncInventoryStockSerialBatchNumbers",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DraftStockTransactionLocation": {
       "description": "ID of draft stock transaction storage location associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DraftTransactionID": {
       "description": "ID representing a group of serial or batch numbers being reserved for use in a subsequent stock transaction",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Primary Key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IsDraft": {
       "description": "Boolean value indicating if this serial or batch number is being reserved",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Item": {
       "description": "Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ParentID": {
       "description": "ID of the main item. Only applicable for assembled item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PicklistLine": {
       "description": "ID of picking list associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PickOrderLine": {
       "description": "ID of pick order associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseTransaction": {
       "description": "ID of purchase transaction associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Quantity": {
       "description": "Quantity of this serial or batch number entering or leaving inventory",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Remarks": {
       "description": "Remarks",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesReturnLine": {
       "description": "ID of sales return associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesTransaction": {
       "description": "ID of sales transaction associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SerialBatchNumber": {
       "description": "Serial or Batch Number ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StockCountLine": {
       "description": "ID of stock count entry",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StockTransactionID": {
       "description": "ID of the stock transaction in which this serial or batch number was used",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StockTransactionLocation": {
       "description": "ID of stock transaction location associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StockTransactionType": {
       "description": "Type of stock transaction associated with this serial or batch number. Available values: 10 = Opening balance 120 = Goods delivery 121 = Sales return 122 = Stock out (Drop shipment) 123 = Stock in (Drop shipment return) 124 = Warehouse transfer delivery 125 = Location Transfer Delivery 130 = Goods receipt 131 = Purchase return 132 = Stock in (Drop shipment) 133 = Stock out (Drop shipment return) 134 = Warehouse transfer receipt 135 = Location Transfer Receipt 140 = Shop order stock receipt 141 = Shop order stock reversal 147 = Shop order by-product receipt 148 = Shop order by-product reversal 150 = Requirement issue 151 = Requirement reversal 155 = Subcontract issue 156 = Subcontract return 160 = Receipt (Assembly) 161 = Return receipt (Disassembly) 165 = Issue (Assembly) 166 = Return issue (Disassembly) 180 = Stock revaluation 181 = Financial revaluation 195 = Stock count 196 = Adjust stock - out 197 = Adjust stock - in 200 = Trade-in",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "StorageLocation": {
       "description": "Storage location which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationCode": {
       "description": "Code of the storage location which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationDescription": {
       "description": "Description of the storage location which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Warehouse": {
       "description": "Warehouse which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of the warehouse which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of the warehouse which this serial or batch number is entering or leaving",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseTransferLine": {
       "description": "ID of warehouse transfer associated with this serial or batch number.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

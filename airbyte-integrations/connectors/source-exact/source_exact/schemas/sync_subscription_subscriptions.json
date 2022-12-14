@@ -2,181 +2,308 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSubscriptionSubscriptions",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BlockEntry": {
       "description": "Indicates if subscription is blocked for time cost entry",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "CancellationDate": {
       "description": "Date of cancellation",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Classification": {
       "description": "Guid ID of classification, to filter the report based on the classification of a subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ClassificationCode": {
       "description": "Code of classification, to filter the report based on the classification of a subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ClassificationDescription": {
       "description": "Description of classification, to filter the report based on the classification of a subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Date when the subscription was created",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "The Guid ID of the user that created the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "The full name of the user that created the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "Currency code used in the transactions",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomerPONumber": {
       "description": "Purchase order number of that is linked to customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Description of the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division number of the company that the subscription is linked to",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndDate": {
       "description": "The date and time when the subscription ends",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "EntryID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceDay": {
       "description": "For monthly, quaterly, half-year and yearly invoice period, the day number of the month when the invoice of the subscription is sent.  While for weekly invoice period, the weekday number of the week when the invoice of the subscription is sent: 0=Monday 1=Tuesday 2=Wednesday 3=Thursday  4=Friday 5=Saturday 6=Sunday",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "InvoicedTo": {
       "description": "The date when the invoice of the subscription is sent",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "InvoiceTo": {
       "description": "The account which the subsciption is invoiced to",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToContactPerson": {
       "description": "The ID of the contact person that is linked to the account the subscription is invoice to",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToContactPersonFullName": {
       "description": "The name of the contact person that is linked to the account the subscription is invoice to",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToName": {
       "description": "Name of the account to invoice to",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoicingStartDate": {
       "description": "Date to start invoicing the account",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modified": {
       "description": "Date and time when the subscription has been modified",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "The ID of the user that modified the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "The name of the user that modified the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "For additional information regarding the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Number": {
       "description": "Subscription number of the company",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "OrderedBy": {
       "description": "Reference to order account, GUID ID of the subscriber",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByContactPerson": {
       "description": "Reference of contact person of order account, displays the contact name of the subscriber",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByContactPersonFullName": {
       "description": "Name of contact person of order account, displays the full contact name of the subscriber",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByName": {
       "description": "Name of order account, displays the name of the subscriber",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentCondition": {
       "description": "Code of subscriptions payment condition",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentConditionDescription": {
       "description": "Description of subscriptions payment condition",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Printed": {
       "description": "Indicates if subscription has been printed",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Project": {
       "description": "The Guid ID of the project, reference to Project endpoint",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ReasonCancelled": {
       "description": "Guid ID of the reason of cancellation record linked to the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ReasonCancelledCode": {
       "description": "Code of the reason of cancellation record linked to the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ReasonCancelledDescription": {
       "description": "Description of the reason of cancellation record linked to the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StartDate": {
       "description": "Start date of the subscription",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "SubscriptionType": {
       "description": "The GUID ID of the subscription condition, reference to SubscriptionType endpoint",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SubscriptionTypeCode": {
       "description": "The code of the subscription condition record",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SubscriptionTypeDescription": {
       "description": "The code of the subscription condition description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

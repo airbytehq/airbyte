@@ -2,451 +2,782 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSalesOrderSalesOrders",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "AmountDC": {
       "description": "Amount in the default currency of the company",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscount": {
       "description": "Discount amount in the default currency of the company. Only supported for header",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscountExclVat": {
       "description": "Discount amount excluding VAT in the default currency of the company. Only supported for header",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFC": {
       "description": "Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFCExclVat": {
       "description": "Amount exclude VAT in the currency of the transaction. Only supported for header",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ApprovalStatus": {
       "description": "Shows if this sales order is approved",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ApprovalStatusDescription": {
       "description": "Description of ApprovalStatus",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Approved": {
       "description": "Approval datetime",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Approver": {
       "description": "User who approved the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ApproverFullName": {
       "description": "Name of approver",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenter": {
       "description": "Reference to Cost center",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostCenterDescription": {
       "description": "Description of CostCenter",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostPriceFC": {
       "description": "Item cost price",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "CostUnit": {
       "description": "Reference to Cost unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CostUnitDescription": {
       "description": "Description of CostUnit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "Currency code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomerItemCode": {
       "description": "Code the customer uses for this item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliverTo": {
       "description": "Reference to the delivery customer. For an existing sales order this value can not be changed.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliverToContactPerson": {
       "description": "Reference to contact person of delivery customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliverToContactPersonFullName": {
       "description": "Name of contact person of delivery customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliverToName": {
       "description": "Name of delivery customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryAddress": {
       "description": "Delivery address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryDate": {
       "description": "Delivery date of this line",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "DeliveryStatus": {
       "description": "Shipping status of the sales order line. 12=Open, 20=Partial, 21=Complete, 45=Cancelled",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DeliveryStatusDescription": {
       "description": "Description of DeliveryStatus",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Discount": {
       "description": "Discount given on the default price. Discount = (DefaultPrice of Item - PriceItem in line) / DefaultPrice of Item",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Document": {
       "description": "Document that is manually linked to the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentNumber": {
       "description": "Number of the document",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DocumentSubject": {
       "description": "Subject of the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermAddress": {
       "description": "Address of Incoterm",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermCode": {
       "description": "Code of Incoterm",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IncotermVersion": {
       "description": "Version of Incoterm  Supported version for Incoterms : 2010, 2020",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "InvoiceStatus": {
       "description": "Invoice status of the sales order line. 12=Open, 20=Partial, 21=Complete, 45=Cancelled",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "InvoiceStatusDescription": {
       "description": "Description of InvoiceStatus",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceTo": {
       "description": "Reference to the customer who will receive the invoice. For an existing sales order this value can not be changed.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToContactPerson": {
       "description": "Reference to the contact person of the customer who will receive the invoice",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToContactPersonFullName": {
       "description": "Name of the contact person of the customer who will receive the invoice",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceToName": {
       "description": "Name of the customer who will receive the invoice",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Reference to the item that is sold in this sales order line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Code of Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemVersion": {
       "description": "Item Version",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemVersionDescription": {
       "description": "Description of Item Version",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LineNumber": {
       "description": "Line number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Margin": {
       "description": "Sales margin of the sales order line",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "NetPrice": {
       "description": "Net price of the sales order line",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Notes": {
       "description": "Extra notes",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderDate": {
       "description": "Order date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "OrderedBy": {
       "description": "Customer who ordered the sales order. For an existing sales order this value can not be changed.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByContactPerson": {
       "description": "Contact person of the customer who ordered the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByContactPersonFullName": {
       "description": "Name of contact person of the customer who ordered the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderedByName": {
       "description": "Name of the customer who ordered the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderID": {
       "description": "The OrderID identifies the sales order. All the lines of a sales order have the same OrderID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderNumber": {
       "description": "Number of sales order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentCondition": {
       "description": "The payment condition used for due date and discount calculation",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentConditionDescription": {
       "description": "Description of PaymentCondition",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentReference": {
       "description": "Payment reference for sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Pricelist": {
       "description": "Price list",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PricelistDescription": {
       "description": "Description of Pricelist",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Project": {
       "description": "The project to which the sales order line is linked. The project can be different per line. Sometimes also the project in the header is filled although this is not really used",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectCode": {
       "description": "Code of Project",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectDescription": {
       "description": "Description of Project",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseOrder": {
       "description": "Purchase order that is linked to the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseOrderLine": {
       "description": "Purchase order line of the purchase order that is linked to the sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseOrderLineNumber": {
       "description": "Number of the purchase order line",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PurchaseOrderNumber": {
       "description": "Number of the purchase order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Quantity": {
       "description": "The number of items sold in default units. The quantity shown in the entry screen is Quantity * UnitFactor. Positive quantity = Sales order lines, Negative quantity = Trade-in lines.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "QuantityDelivered": {
       "description": "The number of items delivered",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "QuantityInvoiced": {
       "description": "The number of items invoiced",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Remarks": {
       "description": "Extra remarks",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesChannel": {
       "description": "ID of Sales channel.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesChannelCode": {
       "description": "Code of Sales channel",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesChannelDescription": {
       "description": "Description of Sales channel",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Salesperson": {
       "description": "Sales representative",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalespersonFullName": {
       "description": "Name of sales representative",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SelectionCode": {
       "description": "ID of selection code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SelectionCodeCode": {
       "description": "Code of selection code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SelectionCodeDescription": {
       "description": "Description of selection code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethod": {
       "description": "ShippingMethod",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodCode": {
       "description": "Code of Shipping Method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShippingMethodDescription": {
       "description": "Description of Shipping Method",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShopOrder": {
       "description": "Reference to ShopOrder",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ShopOrderNumber": {
       "description": "Number of shop order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Status": {
       "description": "The status of the sales order. 12 = Open, 20 = Partial, 21 = Complete, 45 = Cancelled.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "StatusDescription": {
       "description": "Description of Status",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TaxSchedule": {
       "description": "Obsolete",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TaxScheduleCode": {
       "description": "Obsolete",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TaxScheduleDescription": {
       "description": "Obsolete",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitCode": {
       "description": "Code of item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of Unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitPrice": {
       "description": "Price per unit in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "UseDropShipment": {
       "description": "Indicates if drop shipment is used (delivery directly to customer, invoice to wholesaler)",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "VATAmount": {
       "description": "VAT amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATCode": {
       "description": "VAT code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATCodeDescription": {
       "description": "Description of VATCode",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATPercentage": {
       "description": "The vat percentage of the VAT code. This is the percentage at the moment the sales order is created. It's also used for the default calculation of VAT amounts and VAT base amounts",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseID": {
       "description": "Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "YourRef": {
       "description": "The reference number of the customer",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

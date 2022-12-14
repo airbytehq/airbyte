@@ -2,56 +2,93 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "CRMAccountClassifications",
+  "additionalProperties": true,
   "properties": {
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountClassificationName": {
       "description": "Reference to Account classification name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountClassificationNameDescription": {
       "description": "Description of AccountClassificationName",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Code": {
       "description": "Account classification code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

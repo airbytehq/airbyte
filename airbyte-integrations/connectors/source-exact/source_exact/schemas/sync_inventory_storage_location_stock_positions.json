@@ -2,66 +2,112 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncInventoryStorageLocationStockPositions",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Code of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Stock": {
       "description": "Stock",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "StorageLocation": {
       "description": "Storage location",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationCode": {
       "description": "Code of the storage location",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationDescription": {
       "description": "Description of the storage location",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitCode": {
       "description": "Code of the unit for the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of the unit for the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Warehouse": {
       "description": "Warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of the warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of the warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

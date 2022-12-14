@@ -2,178 +2,305 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncDocumentsDocuments",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Account": {
       "description": "ID of the related account of this document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountCode": {
       "description": "Code of Account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountName": {
       "description": "Name of Account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AmountFC": {
       "description": "Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Body": {
       "description": "Body of this document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Category": {
       "description": "ID of the category of this document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CategoryDescription": {
       "description": "Description of Category",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Contact": {
       "description": "ID of the related contact of this document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ContactFullName": {
       "description": "Contact full name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "Currency code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DocumentDate": {
       "description": "Entry date of the incoming document",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "DocumentFolder": {
       "description": "The Id of document folder",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentFolderCode": {
       "description": "The Code of document folder",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentFolderDescription": {
       "description": "The Decsription of document folder",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentViewUrl": {
       "description": "Url to view the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ExpiryDate": {
       "description": "Expiry date of this document",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FinancialTransactionEntryID": {
       "description": "Reference to the transaction lines of the financial entry. For a document of type sales invoice it will return the InvoiceID of the sales invoice (SalesInvoices API).",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "HasEmptyBody": {
       "description": "Indicates that the document body is empty",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "HID": {
       "description": "Human-readable ID, formatted as xx.xxx.xxx. Unique. May not be equal to zero",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InheritShare": {
       "description": "InheritShare value",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Language": {
       "description": "The language code of the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Opportunity": {
       "description": "The opportunity linked to the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Project": {
       "description": "The project linked to the document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectCode": {
       "description": "Code of project",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectDescription": {
       "description": "Description of project",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProposedEntryStatus": {
       "description": "ProposedEntryStatus, 0 = Void, 5 = Rejected, 20 = Open, 50 = Processed",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SalesInvoiceNumber": {
       "description": "'Our reference' of the transaction that belongs to this document",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SalesOrderNumber": {
       "description": "Number of the sales order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SendMethod": {
       "description": "Send method",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ShopOrderNumber": {
       "description": "Number of the shop order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Subject": {
       "description": "Subject of this document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Type": {
       "description": "ID of the type of this document",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "TypeDescription": {
       "description": "Description of Type",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

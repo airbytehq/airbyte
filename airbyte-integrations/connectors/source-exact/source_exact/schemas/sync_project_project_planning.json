@@ -2,154 +2,263 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncProjectProjectPlanning",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Account": {
       "description": "Account linked to the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountCode": {
       "description": "Account code linked to project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountName": {
       "description": "Account name linked to project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BGTStatus": {
       "description": "Status of the background task for project planning, 1 = To be processed, 2 = Processed, 3 = Failed",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "CommunicationErrorStatus": {
       "description": "Status of the external calender linked to project planning, 0 = No error, 1 = Credentials error, 2 = Technical error, 3 = Both credentials & technical errors, 4 = In progress",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Date and time the record was created",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "The GUID ID of the user that created the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "The full name of the user that created the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomField": {
       "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "The description of the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "The code of the company that the record is stored in",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Employee": {
       "description": "The GUID ID of the employee that is linked to the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EmployeeCode": {
       "description": "The code of the employee that is linked to the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EmployeeHID": {
       "description": "The numeric ID of the employee that is linked to the project planning",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndDate": {
       "description": "The end date of the project planning, this is to indicate when the planning ends. E.g: End of a project",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Hours": {
       "description": "Hours planned for the employee",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "HourType": {
       "description": "The type of hours entered for the project planning, item with 'Time' type",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "HourTypeCode": {
       "description": "The code of the item with 'Time' type that is used in project planning, can be used for searching for hour type",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "HourTypeDescription": {
       "description": "The description of the item with 'Time' type that is used in project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IsBrokenRecurrence": {
       "description": "Indicates whether the project planning is separated from the recurring planning",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Modified": {
       "description": "Date the project planning record was modified",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "The ID of the user that modified the project planning records",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "The full name of the user that modified the project planning record",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "Additional information on this project planning record",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OverAllocate": {
       "description": "Indicates whether the entries can have over allocated planning hours",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Project": {
       "description": "Project ID that is linked to the planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectCode": {
       "description": "Project code that is linked to the planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectDescription": {
       "description": "Project description that is linked to the planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectPlanningRecurring": {
       "description": "Recurring planning linked to project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectWBS": {
       "description": "Referenced project work break down structure ID that is linked to the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectWBSDescription": {
       "description": "Referenced project work break down structure description that is linked to the project planning",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StartDate": {
       "description": "Start date of the project planning",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Status": {
       "description": "Status of the project planning, 1 = Reserved, 2 = Planned",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Type": {
       "description": "Type of project planning, it will always be 4 for employee",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }

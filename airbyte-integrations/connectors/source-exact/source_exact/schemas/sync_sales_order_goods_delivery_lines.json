@@ -2,121 +2,206 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSalesOrderGoodsDeliveryLines",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomerItemCode": {
       "description": "Code the customer uses for this item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DeliveryDate": {
       "description": "Date of goods delivery",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Description": {
       "description": "Description of sales order delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EntryID": {
       "description": "The EntryID identifies the goods delivery. All the lines of a goods delivery have the same EntryID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "The unique identifier of a stock transaction for a goods delivery line. A goods delivery line can be split into multiple storage locations. In this case, multiple storage locations will have the same stock transaction ID.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Reference to item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LineNumber": {
       "description": "Line number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "Notes",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "QuantityDelivered": {
       "description": "Quantity delivered",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "QuantityOrdered": {
       "description": "Quantity ordered",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SalesOrderLineID": {
       "description": "Reference to sales order",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SalesOrderLineNumber": {
       "description": "Sales order line number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "SalesOrderNumber": {
       "description": "Sales order number",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "StorageLocation": {
       "description": "Reference to storage location",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationCode": {
       "description": "Storage location code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StorageLocationDescription": {
       "description": "Storage location description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TrackingNumber": {
       "description": "Reference to tracking number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Unitcode": {
       "description": "Code of item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

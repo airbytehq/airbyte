@@ -2,162 +2,277 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncLogisticsSupplierItem",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "CopyRemarks": {
       "description": "Copy purchase remarks to purchase lines",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "CountryOfOrigin": {
       "description": "Country of origin code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CountryOfOriginDescription": {
       "description": "Description of country of origin",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "Currency of item price",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CurrencyDescription": {
       "description": "Description of currency of item price",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DropShipment": {
       "description": "Indicates that the supplier will deliver the item directly to customer. Values: 0 = No, 1 = Yes, 2 = Optional",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndDate": {
       "description": "Together with StartDate this determines whether the price is active",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Item ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemUnit": {
       "description": "Item Unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemUnitCode": {
       "description": "Item Unit Code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemUnitDescription": {
       "description": "Item Unit Description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "MainSupplier": {
       "description": "Indicates this is a main supplier",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "MinimumQuantity": {
       "description": "Minimum quantity of the item for purchase, only available for Wholesale & Distribution (Professional and Premium only)",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "Notes",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseLeadTime": {
       "description": "The number of days between placing an order with a supplier and receiving items from the supplier",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PurchaseLotSize": {
       "description": "Lot size of the item for purchase, only available for Wholesale & Distribution (Premium only)",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PurchasePrice": {
       "description": "Purchase price. If neither active nor future price exists, it shows 0 when GET",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "PurchaseUnit": {
       "description": "Unit code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseUnitDescription": {
       "description": "Description of unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseUnitFactor": {
       "description": "This is the multiplication factor when going from default item unit to the unit of this price",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "PurchaseVATCode": {
       "description": "VAT code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchaseVATCodeDescription": {
       "description": "Description of VAT",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StartDate": {
       "description": "Together with EndDate this determines whether the price is active",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Supplier": {
       "description": "Supplier ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierCode": {
       "description": "Supplier code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierDescription": {
       "description": "Description of supplier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SupplierItemCode": {
       "description": "Supplier's item code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

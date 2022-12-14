@@ -2,78 +2,133 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncInventoryStockPositions",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "CurrentStock": {
       "description": "Number of items in stock",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "FreeStock": {
       "description": "Quantity of available stock",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ID": {
       "description": "Primary Key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Code of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemId": {
       "description": "A guid that is the unique identifier of the item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PlanningIn": {
       "description": "Number of items that are planned to come in",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "PlanningOut": {
       "description": "Number of items that are planned to go out",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ProjectedStock": {
       "description": "The quantity of stock projected given all planned future stock changes",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReorderPoint": {
       "description": "Quantity of items as an indication of when you need to reorder more stock for the warehouse",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReservedStock": {
       "description": "The quantity in a back to back order process which is already received from the purchase order, but not yet delivered for the sales order.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "UnitCode": {
       "description": "Code of item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of the item unit",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Warehouse": {
       "description": "A guid that is the unique identifier of the warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

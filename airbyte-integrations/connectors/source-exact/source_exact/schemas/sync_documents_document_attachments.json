@@ -2,30 +2,49 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncDocumentsDocumentAttachments",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Document": {
       "description": "Reference to the Document",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FileName": {
       "description": "Filename of the attachment",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FileSize": {
       "description": "File size of the attachment",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Url": {
       "description": "Url of the attachment. To get the file in its original format (xml, jpg, pdf, etc.) append &Download=1 to the url.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

@@ -2,125 +2,213 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncSubscriptionSubscriptionLines",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "AmountDC": {
       "description": "Amount in the default currency of the company",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFC": {
       "description": "Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Costcenter": {
       "description": "Cost center linked to the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Costunit": {
       "description": "Cost unit linked to the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomField": {
       "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Description of the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Discount": {
       "description": "Discount percentage of the subscription line",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Division": {
       "description": "Code of division the subscription line is made",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EntryID": {
       "description": "Entry ID referencing to the subscription",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FromDate": {
       "description": "The date which the subscription line starts",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "The item that is used by the subscription line for sales details. Reference to Item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of Item used by the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LineNumber": {
       "description": "Line number of the subscription line per subscription",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "LineType": {
       "description": "Reference to LineType endpoint",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "LineTypeDescription": {
       "description": "Description of LineType",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Date and time when the subscription line has been modified",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "NetPrice": {
       "description": "Net price in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Notes": {
       "description": "To add or retrieve additional information in the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Quantity": {
       "description": "Quantity of item used in the subscription line",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SubscriptionNumber": {
       "description": "Subscription number of the subscription line per subscription",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ToDate": {
       "description": "The date the subscription line ends",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "UnitCode": {
       "description": "The code of the unit used in the subscription line. E.g: kg, meter",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitDescription": {
       "description": "Description of Unit used in the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "UnitPrice": {
       "description": "Unit price in the currency of the transaction (price * unit factor)",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATAmountFC": {
       "description": "Vat Amount in the currency of the transaction",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "VATCode": {
       "description": "VAT code that is used in the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "VATCodeDescription": {
       "description": "Description of VAT code that is used in the subscription line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

@@ -2,229 +2,399 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncCRMAddresses",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Account": {
       "description": "Account linked to the address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountIsSupplier": {
       "description": "Indicates if the account is a supplier",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "AccountName": {
       "description": "Name of the account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressLine1": {
       "description": "First address line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressLine2": {
       "description": "Second address line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressLine3": {
       "description": "Third address line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "City": {
       "description": "City",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Contact": {
       "description": "Contact linked to Address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ContactName": {
       "description": "Contact name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Country": {
       "description": "Country code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CountryName": {
       "description": "Country name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Fax": {
       "description": "Fax number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FreeBoolField_01": {
       "description": "Free boolean field 1",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "FreeBoolField_02": {
       "description": "Free boolean field 2",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "FreeBoolField_03": {
       "description": "Free boolean field 3",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "FreeBoolField_04": {
       "description": "Free boolean field 4",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "FreeBoolField_05": {
       "description": "Free boolean field 5",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "FreeDateField_01": {
       "description": "Free date field 1",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FreeDateField_02": {
       "description": "Free date field 2",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FreeDateField_03": {
       "description": "Free date field 3",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FreeDateField_04": {
       "description": "Free date field 4",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FreeDateField_05": {
       "description": "Free date field 5",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FreeNumberField_01": {
       "description": "Free number field 1",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "FreeNumberField_02": {
       "description": "Free number field 2",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "FreeNumberField_03": {
       "description": "Free number field 3",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "FreeNumberField_04": {
       "description": "Free number field 4",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "FreeNumberField_05": {
       "description": "Free number field 5",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "FreeTextField_01": {
       "description": "Free text field 1",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FreeTextField_02": {
       "description": "Free text field 2",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FreeTextField_03": {
       "description": "Free text field 3",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FreeTextField_04": {
       "description": "Free text field 4",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FreeTextField_05": {
       "description": "Free text field 5",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Mailbox": {
       "description": "Mailbox",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Main": {
       "description": "Indicates if the address is the main address for this type",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "NicNumber": {
       "description": "Last 5 digits of SIRET number which is an intern sequential number of 4 digits representing the identification of the localization of the office",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "Notes for an address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Phone": {
       "description": "Phone number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PhoneExtension": {
       "description": "Phone extension",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Postcode": {
       "description": "Postcode",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "Source": {
+      "description": "CRM creation source",
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "State": {
       "description": "State",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StateDescription": {
       "description": "Name of the State",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Type": {
       "description": "The type of address. Visit=1, Postal=2, Invoice=3, Delivery=4",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Warehouse": {
       "description": "The warehouse linked to the address, if a warehouse is linked the account will be empty. Can only be filled for type=Delivery",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of the warehoude",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of the warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

@@ -2,361 +2,620 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncCashflowPaymentTerms",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Account": {
       "description": "The supplier to which the payment has to be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountBankAccountID": {
       "description": "The bank account of the supplier, to which the payment has to be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountBankAccountNumber": {
       "description": "The bank account number of the supplier, to which the payment has to be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountCode": {
       "description": "The code of the supplier to which the payment has to be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountContact": {
       "description": "Contact person copied from the purchase invoice linked to the related purchase entry. Used as prefered contact when sending reminders.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountContactName": {
       "description": "Name of the contact person of the supplier.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountCountry": {
       "description": "Country code of the customer.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountName": {
       "description": "Name of the supplier.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AmountDC": {
       "description": "The amount in default currency (division currency). Payments are matched on this amount.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscountDC": {
       "description": "The amount of the discount in the default currency.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountDiscountFC": {
       "description": "The amount of the discount. This is in the amount of the selected currency.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "AmountFC": {
       "description": "The amount of the payment. This is in the amount of the selected currency.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ApprovalStatus": {
       "description": "Shows the approval status of the payment. Values can be 1 N/A, 2 Awaiting review, 3 Awaiting approval, 4 Approved, 5 Rejected. Approval of payments is not enabled in all subscriptions. If turned of the ApprovalStatus is null",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BankAccountID": {
       "description": "Own bank account from which the payment must be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BankAccountNumber": {
       "description": "Own bank account number from which the payment must be done.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CashflowTransactionBatchCode": {
       "description": "When processing payments, all payments with the same processing data are put in a batch. This field contains the code of that batch.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of the creator.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of the creator.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Currency": {
       "description": "The currency of the payment. This currency can only deviate from the division currency if the module Currency is in the license.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Description": {
       "description": "Extra description for the payment that may be included in the bank export file.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DirectDebitMandate": {
       "description": "Direct Debit Mandate used to collect the PaymentTerms.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DirectDebitMandateDescription": {
       "description": "Description of the mandate.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DirectDebitMandatePaymentType": {
       "description": "Payment type of the mandate.  0 = One off payment  1 = Recurrent payment.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DirectDebitMandateReference": {
       "description": "Unique mandate reference.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DirectDebitMandateType": {
       "description": "Type of the mandate.  0 = Core  1 = Business-to-business.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DiscountDueDate": {
       "description": "Date before which the payment must be done to be eligible for discount.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Division": {
       "description": "Division code.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Document": {
       "description": "Document that is created when processing payments. The bank export file is attached to the document.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DocumentNumber": {
       "description": "Number of the document.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "DocumentSubject": {
       "description": "Subject of the document.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DueDate": {
       "description": "Date before which the payment must be done.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "EndDate": {
       "description": "Date since when the payment is no longer an outstanding item. This is the highest invoice date of all matched payments.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "EndPeriod": {
       "description": "Period since when the payment is no longer an outstanding item. This is the highest period of all matched payments.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndToEndID": {
       "description": "The value of the tag 'EndToEndID' when generating a SEPA file.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EndYear": {
       "description": "Year (of period) since when the payment is no longer an outstanding item. This is the highest year of all matched payments. Used in combination with EndPeriod.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EntryDate": {
       "description": "Processing date of the payment.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "EntryID": {
       "description": "The unique identifier for a set of payments. A payment can be split so that one part is paid on a different date. In that case the two records get a different EntryID.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EntryNumber": {
       "description": "Entry number of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "GLAccount": {
       "description": "G/L account of the payment. Must be of type 22 (Accounts payable).",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "GLAccountCode": {
       "description": "Code of the G/L account.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "GLAccountDescription": {
       "description": "Description of the G/L account.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ID": {
       "description": "Identifier of the PaymentTerms.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceDate": {
       "description": "Invoice date of the linked transaction.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "InvoiceNumber": {
       "description": "Invoice number of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "IsBatchBooking": {
       "description": "Boolean indicating whether the payment is part of a batch booking.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "IsFullyPaid": {
       "description": "Boolean indicating whether the receivable was fully paid by the customer.",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "Journal": {
       "description": "Journal of the linked transaction.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "JournalDescription": {
       "description": "Description of the journal.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LastPaymentDate": {
       "description": "Last payment date.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "LineType": {
       "description": "Determines if the record is a payment or receipt. In case of payment the value is 22, in case of receipt the value is 20",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderNumber": {
       "description": "Order number of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentBatchNumber": {
       "description": "Number assigned during the of processing payments. When payments are processed a bank export file is created. This file contains one or more batches that contain one or more payments. Each batch gets a sequence number that is stored for each payment in that batch.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentCondition": {
       "description": "Payment condition of the linked transaction.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentConditionDescription": {
       "description": "Description of the payment condition.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentDays": {
       "description": "Number of days between invoice date and due date.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentDaysDiscount": {
       "description": "Number of days between invoice date and due date of the discount.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "PaymentDiscountPercentage": {
       "description": "Payment discount percentage.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "PaymentInformationID": {
       "description": "PaymentInformationID tag from the SEPA xml file.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentMethod": {
       "description": "Method of payment.  B = On credit (default)  I = Collection  K = Cash  V = Credit card.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentReference": {
       "description": "Payment reference for the payment that may be included in the bank export file.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentSelected": {
       "description": "Date and time since when the payment is selected to be paid.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "PaymentSelector": {
       "description": "User who selected the payment to be paid.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PaymentSelectorFullName": {
       "description": "Name of the payment selector.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "RateFC": {
       "description": "Exchange rate from payment currency to division currency. AmountFC * RateFC = AmountDC.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReceivableBatchNumber": {
       "description": "Number assigned during the processing of receivables.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ReceivableSelected": {
       "description": "Date and time since when the receivable is selected to be collected.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ReceivableSelector": {
       "description": "User who selected the receivable to be collected.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ReceivableSelectorFullName": {
       "description": "Name of the receivable selector.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Source": {
       "description": "The source of the payment.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Status": {
       "description": "The status of the payment.  20 = open  30 = selected - payment is selected to be paid  40 = processed - payment has been done  50 = matched - payment is matched with one or more other outstanding items or financial statement lines",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "TransactionAmountDC": {
       "description": "Total amount of the linked transaction in default currency (division currency).",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "TransactionAmountFC": {
       "description": "Total amount of the linked transaction in the selected currency.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "TransactionDueDate": {
       "description": "Due date of the linked transaction.",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "TransactionEntryID": {
       "description": "Linked transaction. Use this as reference to PurchaseEntries.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TransactionID": {
       "description": "Linked transaction line. Use this as reference to PurchaseEntryLines.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TransactionIsReversal": {
       "description": "Indicates if the linked transaction is a reversal entry.",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "TransactionReportingPeriod": {
       "description": "Period of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "TransactionReportingYear": {
       "description": "Year of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "TransactionStatus": {
       "description": "Status of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "TransactionType": {
       "description": "Type of the linked transaction.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "YourRef": {
       "description": "Invoice number of the supplier. In case the payment belongs to a bank entry line and is matched with one invoice, YourRef is filled with the YourRef of this invoice.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

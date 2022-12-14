@@ -2,112 +2,191 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncInventoryItemWarehouses",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DefaultStorageLocation": {
       "description": "This is a default storage location",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DefaultStorageLocationCode": {
       "description": "Default storage location's code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DefaultStorageLocationDescription": {
       "description": "Default storage location's description",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "A guid that is the unique identifier of the linkage between item and warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Item": {
       "description": "Item ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemCode": {
       "description": "Code of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ItemDescription": {
       "description": "Description of item",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "MaximumStock": {
       "description": "Maximum quantity of items that you want in warehouse",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "OrderPolicy": {
       "description": "Order Policy options: 1-Lot for lot, 2-Fixed order quantity, 3-Min / Max, 4-Order",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Period": {
       "description": "Period that work together with replenishment in MRP",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ReorderPoint": {
       "description": "Quantity of items as an indication of when you need to reorder more stock for the warehouse",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReorderQuantity": {
       "description": "Reorder quantity that work together with replenishment in MRP",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ReplenishmentType": {
       "description": "Replenishment options: 1-Purchase, 2-Assemble, 3-Make, 4-Transfer, 5-No replenishment advice",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ReservedStock": {
       "description": "The quantity in a back to back order process which is already received from the purchase order, but not yet delivered for the sales order.",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SafetyStock": {
       "description": "Minimum quantity of items you must have in stock",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Warehouse": {
       "description": "Warehouse ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseCode": {
       "description": "Code of warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "WarehouseDescription": {
       "description": "Description of warehouse",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

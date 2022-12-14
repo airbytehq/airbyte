@@ -134,6 +134,9 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
             json_property["type"] = json_type
         else:
             json_property.update(json_type)
+        
+        # Add null as possible type (we don't know which fields are required -> just allow everything)
+        json_property["type"] = ["null", json_property["type"]]
 
         json_properties[name] = json_property
 
@@ -141,6 +144,7 @@ def parse_json_schema_from_table_row(table_row: TableRow) -> dict:
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
         "title": title,
+        "additionalProperties": True,
         # NOTE: descriptions are really extensive, not sure if they add a lot so for now disabled them
         # "description": soup.select_one("p#goodToKnow").text.strip(),
         "properties": json_properties,
@@ -195,9 +199,9 @@ def main():
         print("\n\n".join(class_definitions))
 
     # # Bonus endpoints needed
-    # # NOTE: doesn't print out class definitions as they are specific to the endpoint
-    # handle_endpoint(TableRow("CRM", "crm/AccountClassifications", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassifications"))
-    # handle_endpoint(TableRow("CRM", "crm/AccountClassificationNames", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassificationNames"))
+    # NOTE: doesn't print out class definitions as they are specific to the endpoint
+    handle_endpoint(TableRow("CRM", "crm/AccountClassifications", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassifications"))
+    handle_endpoint(TableRow("CRM", "crm/AccountClassificationNames", "https://start.exactonline.nl/docs/HlpRestAPIResourcesDetails.aspx?name=CRMAccountClassificationNames"))
 
 
 if __name__ == "__main__":

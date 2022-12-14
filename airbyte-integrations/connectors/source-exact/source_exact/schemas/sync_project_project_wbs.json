@@ -2,171 +2,292 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncProjectProjectWBS",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BlockEntry": {
       "description": "A boolean field to indicated if time and cost entries is blocked",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BlockRebilling": {
       "description": "A boolean field to indicated if rebilling is blocked. Only for expense",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BudgetedCost": {
       "description": "Budget cost of the WBS activity and expense",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "BudgetedHours": {
       "description": "Budget hours of the WBS. Only for activity",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "BudgetedQuantity": {
       "description": "Budget quantity of the WBS. Only for expense",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "BudgetedRevenue": {
       "description": "Revenue of the WBS. Only for activity and expense",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "BudgetOverrunHours": {
       "description": "BudgetOverrunHours: 10-Allowed, 20-Not Allowed. Only for activity",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Completed": {
       "description": "A boolean field to indicated if the project WBS deliverable is completed.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "The date and time when the WBS was created",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "The ID of the user that created the WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "The full name of the user that created the WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomField": {
       "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DefaultItem": {
       "description": "Default item to used for timecost entry",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "DefaultItemIsMandatory": {
       "description": "To indicated if only default item is allowed. Only for activity",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Description": {
       "description": "Description of the project WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndDate": {
       "description": "EndDate of the WBS. If it is a deliverable then EndDate is the lastest EndDate of its children",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "InvoiceDate": {
       "description": "The invoice date of the WBS when invoice term is generated",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "InvoiceMethod": {
       "description": "The invoice method of the WBS. For activity: 2 = Fixed price, 3 = Time and Material, 4 = Non billable, 5 = Prepaid. For expense: 6 = Fixed, 7 = Rebill, 8 = Non re-billable",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "InvoiceSeparately": {
       "description": "To indicated if additional invoice is allowed on this WBS. Additional invoice can only be set when the project type is fixed price or prepaid and the project allow additional invoices. Only for activity and expense. (Obsolete)",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "MarkupPercentage": {
       "description": "Markup percentage for WBS expense",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Milestone": {
       "description": "To indicated if this is a milestone for WBS deliverable",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Modified": {
       "description": "Last modified date and time",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "The Guid ID of the user that modified the records",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "The full name of the user that modified the WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "For additional information about wbs",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PartOf": {
       "description": "ID of the parent WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PartOfDescription": {
       "description": "Description of part of",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Project": {
       "description": "ID of the project that linked to WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectDescription": {
       "description": "Description of the project that linked to WBS",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectTerm": {
       "description": "ID of invoice term that linked to the WBS deliverable. Invoice term can only be linked when the project is using billing milestones and the deliverable is set as a milestone",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ProjectTermDescription": {
       "description": "Description of invoice term that linked to the WBS deliverable",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PurchasePrice": {
       "description": "Purchase price of the item. Only for expense",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "SequenceNumber": {
       "description": "Sequence number of the WBS. Last sequence will be selected if not specified",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "StartDate": {
       "description": "Startdate of the WBS. If it is a deliverable then StartDate is the earliest StartDate of its children",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Supplier": {
       "description": "Supplier of the item. Only for expense",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "TimeQuantityToAlert": {
       "description": "Alert when exceeding this time quantity for WBS activity",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "Type": {
       "description": "The type of project WBS. E.g: 1 = Deliverable, 2 = Activity, 3 = Expense",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }

@@ -2,284 +2,489 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncCRMContacts",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Account": {
       "description": "The account to which the contact belongs",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountIsCustomer": {
       "description": "Indicates if account is a customer",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "AccountIsSupplier": {
       "description": "Indicates if account is a supplier",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "AccountMainContact": {
       "description": "Reference to the main contact of the account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AccountName": {
       "description": "Name of the account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressLine2": {
       "description": "Second address line",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressStreet": {
       "description": "Street name of the address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressStreetNumber": {
       "description": "Street number of the address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AddressStreetNumberSuffix": {
       "description": "Street number suffix of the address",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "AllowMailing": {
       "description": "Obsolete",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "BirthDate": {
       "description": "Birth date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "BirthName": {
       "description": "Obsolete. Please don't use this field anymore as it may overwrite LastName.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BirthNamePrefix": {
       "description": "Obsolete. Please don't use this field anymore as it may overwrite MiddleName.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BirthPlace": {
       "description": "Birth place",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BusinessEmail": {
       "description": "Email address of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BusinessFax": {
       "description": "Fax of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BusinessMobile": {
       "description": "Mobile of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BusinessPhone": {
       "description": "Phone of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "BusinessPhoneExtension": {
       "description": "Phone extension of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "City": {
       "description": "City",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Code": {
       "description": "Code of the account",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Country": {
       "description": "Country code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Creator": {
       "description": "User ID of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CreatorFullName": {
       "description": "Name of the creator",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "CustomField": {
       "description": "Custom field endpoint. Provided only for the Exact Online Premium users.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Email": {
       "description": "Email address of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EndDate": {
       "description": "End date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "FirstName": {
       "description": "First name. Provide at least first name or last name to create a new contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "FullName": {
       "description": "Full name (First name Middle name Last name)",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Gender": {
       "description": "Gender",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "HID": {
       "description": "Contact ID",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IdentificationDate": {
       "description": "Identification date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "IdentificationDocument": {
       "description": "Reference to the identification document of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IdentificationUser": {
       "description": "Reference to the user responsible for identification",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Initials": {
       "description": "Initials",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "IsAnonymised": {
       "description": "Indicates whether the contact is anonymised.",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "IsMailingExcluded": {
       "description": "Indicates whether contacts are excluded from the marketing list",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "IsMainContact": {
       "description": "Indicates if this is the main contact of the linked account",
-      "type": "boolean"
+      "type": [
+        "null",
+        "boolean"
+      ]
     },
     "JobTitleDescription": {
       "description": "Jobtitle of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Language": {
       "description": "Language code",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LastName": {
       "description": "Last name. Provide at least first name or last name to create a new contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LeadPurpose": {
       "description": "Reference to purpose of an contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "LeadSource": {
       "description": "Reference to source of an contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "MarketingNotes": {
       "description": "The user should be able to do a full text search on these notes to gather contacts for a marketing campaign",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "MiddleName": {
       "description": "Middle name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Mobile": {
       "description": "Business phone of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Modifier": {
       "description": "User ID of modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "ModifierFullName": {
       "description": "Name of the last modifier",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Nationality": {
       "description": "Nationality",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Notes": {
       "description": "Extra remarks",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PartnerName": {
       "description": "Last name of partner",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PartnerNamePrefix": {
       "description": "Middlename of partner",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Person": {
       "description": "Reference to the personal information of this contact such as name, gender, address etc.",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Phone": {
       "description": "Phone of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PhoneExtension": {
       "description": "Phone extension of the contact",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PictureName": {
       "description": "Filename of the picture",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PictureThumbnailUrl": {
       "description": "Url to retrieve the picture thumbnail",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "PictureUrl": {
       "description": "Url to retrieve the picture",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Postcode": {
       "description": "Postcode",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "SocialSecurityNumber": {
       "description": "Social security number",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "StartDate": {
       "description": "Start date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "State": {
       "description": "State",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Title": {
       "description": "Title",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     }
   }
 }

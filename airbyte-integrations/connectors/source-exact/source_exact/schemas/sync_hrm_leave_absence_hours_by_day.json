@@ -2,75 +2,124 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "title": "SyncHRMLeaveAbsenceHoursByDay",
+  "additionalProperties": true,
   "properties": {
     "Timestamp": {
       "description": "Timestamp",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Created": {
       "description": "Creation date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Date": {
       "description": "Date of leave or absence",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Division": {
       "description": "Division code",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Employee": {
       "description": "ID of employee linked to the leave or absence",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EmployeeFullName": {
       "description": "Employee full name",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EmployeeHID": {
       "description": "Numeric ID of the employee",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Employment": {
       "description": "Employment ID",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "EmploymentHID": {
       "description": "Numeric ID of the employment",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "EndTime": {
       "description": "End time of leave or absence",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Hours": {
       "description": "Hours of leave or absence",
-      "type": "number"
+      "type": [
+        "null",
+        "number"
+      ]
     },
     "ID": {
       "description": "Primary key",
-      "type": "string"
+      "type": [
+        "null",
+        "string"
+      ]
     },
     "Modified": {
       "description": "Last modified date",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "StartTime": {
       "description": "Start time of leave or absence",
-      "type": "string",
+      "type": [
+        "null",
+        "string"
+      ],
       "format": "date-time"
     },
     "Status": {
       "description": "Status, 1 = Submitted, 2 = ApprovedNote: Submitted status is only applicable for Type = Leave",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     },
     "Type": {
       "description": "Type, 0 = Leave, 1 = AbsenceNote: Absence type is only allow for Status = Approved",
-      "type": "integer"
+      "type": [
+        "null",
+        "integer"
+      ]
     }
   }
 }
