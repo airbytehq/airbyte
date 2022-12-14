@@ -719,15 +719,19 @@ public abstract class AbstractDbSource<DataType, Database extends AbstractDataba
     return typedState.map((state) -> {
       switch (state.getStateType()) {
         case GLOBAL:
-          return List.of(state.getGlobal());
+          return List.of(convertStateMessage(state.getGlobal()));
         case STREAM:
-          return state.getStateMessages();
+          return state.getStateMessages().stream().map(this::convertStateMessage).toList();
         case LEGACY:
         default:
           return List.of(new AirbyteStateMessage().withType(AirbyteStateType.LEGACY)
               .withData(state.getLegacyState()));
       }
     }).orElse(generateEmptyInitialState(config));
+  }
+
+  protected AirbyteStateMessage convertStateMessage(final io.airbyte.protocol.models.AirbyteStateMessage state) {
+    return Jsons.object(Jsons.jsonNode(state), AirbyteStateMessage.class);
   }
 
   /**
