@@ -12449,7 +12449,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.26"
+- dockerImage: "airbyte/source-s3:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12582,6 +12582,8 @@
                   \ during schema detection, increasing this should solve it. Beware\
                   \ of raising this too high as you could hit OOM errors."
                 default: 10000
+                minimum: 1
+                maximum: 2147483647
                 order: 9
                 type: "integer"
           - title: "Parquet"
