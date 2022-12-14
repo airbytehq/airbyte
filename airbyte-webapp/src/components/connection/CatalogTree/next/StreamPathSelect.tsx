@@ -1,9 +1,7 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PillButtonVariant, PillSelect } from "components/ui/PillSelect";
-import { Text } from "components/ui/Text";
-import { Tooltip } from "components/ui/Tooltip";
+import { PillButton, PillButtonVariant, PillSelect } from "components/ui/PillSelect";
 
 import { Path } from "core/domain/catalog";
 
@@ -37,19 +35,18 @@ type PathPopoutProps = StreamPathSelectBaseProps & (StreamPathSelectMultiProps |
 
 export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
   if (props.pathType === "sourceDefined") {
+    let node;
     if (props.path && props.path.length > 0) {
-      const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
-
-      return (
-        <Text className={styles.text}>
-          <Tooltip placement="bottom-start" control={text}>
-            {text}
-          </Tooltip>
-        </Text>
-      );
+      node = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
+    } else {
+      node = <FormattedMessage id="connection.catalogTree.sourceDefined" />;
     }
 
-    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
+    return (
+      <PillButton variant={props.variant} disabled className={styles.streamPathSelect}>
+        {node}
+      </PillButton>
+    );
   }
 
   const options = props.paths.map((path) => ({

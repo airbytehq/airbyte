@@ -1,3 +1,5 @@
+import { FormattedMessage } from "react-intl";
+
 import { Popout, PopoutProps } from "../Popout";
 import { Tooltip } from "../Tooltip";
 import { PillButton, PillButtonVariant } from "./PillButton";
@@ -34,7 +36,7 @@ export const PillSelect: React.FC<PillSelectProps> = ({ className, ...props }) =
                 active={isOpen}
                 className={className}
               >
-                {label}
+                {disabled ? <FormattedMessage id="connectionForm.bulkEdit.pillButtonLabel.notAvailable" /> : label}
               </PillButton>
             }
             placement="bottom-start"
