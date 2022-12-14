@@ -58,6 +58,8 @@ More info about this can be found in the [Redpanda producer configs documentatio
 
 _NOTE_: Configurations for SSL are not available yet.
 
+## CHANGELOG
+
 | Version | Date       | Pull Request                                             | Subject        |
 | :------ | :--------- | :------------------------------------------------------- | :------------- |
 | 0.1.0   | 2022-08-05 | [18884](https://github.com/airbytehq/airbyte/pull/18884) | Initial commit |

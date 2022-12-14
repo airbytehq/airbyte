@@ -105,6 +105,7 @@ const ExistingEntityForm: React.FC<IProps> = ({ type, onSubmit }) => {
                     <DropDown
                       {...field}
                       options={dropDownData}
+                      isSearchable
                       onChange={(item: { value: string }) => {
                         setFieldValue(field.name, item.value);
                       }}

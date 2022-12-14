@@ -3,7 +3,7 @@
   "version": "0.40.25",
   "private": true,
   "engines": {
-    "node": ">=16.0.0"
+    "node": "16.18.1"
   },
   "scripts": {
     "prepare": "cd .. && husky install airbyte-webapp/.husky",
