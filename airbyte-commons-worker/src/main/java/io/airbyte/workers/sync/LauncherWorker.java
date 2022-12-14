@@ -181,6 +181,8 @@ public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
           final var nodeSelectors =
               isCustomConnector ? workerConfigs.getWorkerIsolatedKubeNodeSelectors().orElse(workerConfigs.getworkerKubeNodeSelectors())
                   : workerConfigs.getworkerKubeNodeSelectors();
+          log.info("nodeSelector: " + nodeSelectors.get("cloud.google.com/gke-nodepool") + " isCustomConnector: " + isCustomConnector
+              + "  workerConfigs: " + workerConfigs);
 
           try {
             process.create(
