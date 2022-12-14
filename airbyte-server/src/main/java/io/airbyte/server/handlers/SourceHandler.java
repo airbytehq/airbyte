@@ -5,18 +5,30 @@
 package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.base.Charsets;
 import com.google.common.collect.Lists;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import io.airbyte.api.model.generated.ConnectionRead;
+import io.airbyte.api.model.generated.JobConfigType;
+import io.airbyte.api.model.generated.LogRead;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
 import io.airbyte.api.model.generated.SourceCreate;
 import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
+import io.airbyte.api.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SourceReadList;
 import io.airbyte.api.model.generated.SourceSearch;
 import io.airbyte.api.model.generated.SourceUpdate;
+import io.airbyte.api.model.generated.SynchronousJobRead;
 import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.commons.docker.DockerUtils;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.version.Version;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -24,16 +36,24 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;
 import io.airbyte.config.persistence.split_secrets.JsonSecretsProcessor;
+import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.server.converters.ConfigurationUpdate;
+import io.airbyte.server.handlers.helpers.CatalogConverter;
+import io.airbyte.server.scheduler.SynchronousResponse;
+import io.airbyte.server.scheduler.SynchronousSchedulerClient;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
 public class SourceHandler {
+
+  private static final HashFunction HASH_FUNCTION = Hashing.md5();
 
   private final Supplier<UUID> uuidGenerator;
   private final ConfigRepository configRepository;
@@ -43,15 +63,20 @@ public class SourceHandler {
   private final ConnectionsHandler connectionsHandler;
   private final ConfigurationUpdate configurationUpdate;
   private final JsonSecretsProcessor secretsProcessor;
+  private final SchedulerHandler schedulerHandler;
+  private final SynchronousSchedulerClient synchronousSchedulerClient;
 
   SourceHandler(final ConfigRepository configRepository,
                 final SecretsRepositoryReader secretsRepositoryReader,
                 final SecretsRepositoryWriter secretsRepositoryWriter,
                 final JsonSchemaValidator integrationSchemaValidation,
                 final ConnectionsHandler connectionsHandler,
+                final SchedulerHandler schedulerHandler,
+                final SynchronousSchedulerClient synchronousSchedulerClient,
                 final Supplier<UUID> uuidGenerator,
                 final JsonSecretsProcessor secretsProcessor,
-                final ConfigurationUpdate configurationUpdate) {
+                final ConfigurationUpdate configurationUpdate
+                ) {
     this.configRepository = configRepository;
     this.secretsRepositoryReader = secretsRepositoryReader;
     this.secretsRepositoryWriter = secretsRepositoryWriter;
@@ -59,6 +84,8 @@ public class SourceHandler {
     this.connectionsHandler = connectionsHandler;
     this.uuidGenerator = uuidGenerator;
     this.configurationUpdate = configurationUpdate;
+    this.schedulerHandler = schedulerHandler;
+    this.synchronousSchedulerClient = synchronousSchedulerClient;
     this.secretsProcessor = secretsProcessor;
   }
 
@@ -66,13 +93,17 @@ public class SourceHandler {
                        final SecretsRepositoryReader secretsRepositoryReader,
                        final SecretsRepositoryWriter secretsRepositoryWriter,
                        final JsonSchemaValidator integrationSchemaValidation,
-                       final ConnectionsHandler connectionsHandler) {
+                       final ConnectionsHandler connectionsHandler,
+                       final SchedulerHandler schedulerHandler,
+                       final SynchronousSchedulerClient synchronousSchedulerClient) {
     this(
         configRepository,
         secretsRepositoryReader,
         secretsRepositoryWriter,
         integrationSchemaValidation,
         connectionsHandler,
+        schedulerHandler,
+        synchronousSchedulerClient,
         UUID::randomUUID,
         JsonSecretsProcessor.builder()
             .copySecrets(true)
@@ -285,6 +316,51 @@ public class SourceHandler {
       throws IOException, JsonValidationException, ConfigNotFoundException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceDefId);
     return sourceDef.getSpec();
+  }
+
+  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+      throws ConfigNotFoundException, IOException, JsonValidationException {
+    final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
+    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
+    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
+    final boolean isCustomConnector = sourceDef.getCustom();
+
+    final String configHash = HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
+        Charsets.UTF_8)).toString();
+    final String connectorVersion = sourceDef.getDockerImageTag();
+    final Optional<ActorCatalog> currentCatalog =
+        configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
+    final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
+    if (currentCatalog.isEmpty() || bustActorCatalogCache) {
+      final SynchronousResponse<UUID> persistedCatalogId =
+          synchronousSchedulerClient.createDiscoverSchemaJob(
+              source,
+              imageName,
+              connectorVersion,
+              new Version(sourceDef.getProtocolVersion()),
+              isCustomConnector);
+      final SourceDiscoverSchemaRead discoveredSchema = schedulerHandler.retrieveDiscoveredSchema(persistedCatalogId);
+
+      if (discoverSchemaRequestBody.getConnectionId() != null) {
+        // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
+        schedulerHandler.generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
+      }
+
+      return discoveredSchema;
+    }
+    final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
+    final SynchronousJobRead emptyJob = new SynchronousJobRead()
+        .configId("NoConfiguration")
+        .configType(JobConfigType.DISCOVER_SCHEMA)
+        .id(UUID.randomUUID())
+        .createdAt(0L)
+        .endedAt(0L)
+        .logs(new LogRead().logLines(new ArrayList<>()))
+        .succeeded(true);
+    return new SourceDiscoverSchemaRead()
+        .catalog(CatalogConverter.toApi(airbyteCatalog))
+        .jobInfo(emptyJob)
+        .catalogId(currentCatalog.get().getId());
   }
 
   private void persistSourceConnection(final String name,

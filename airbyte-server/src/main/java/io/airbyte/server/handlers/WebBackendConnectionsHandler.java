@@ -386,7 +386,7 @@ public class WebBackendConnectionsHandler {
         .sourceId(sourceId)
         .disableCache(true)
         .connectionId(connectionId);
-    SourceDiscoverSchemaRead schemaRead = schedulerHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
+    SourceDiscoverSchemaRead schemaRead = sourceHandler.discoverSchemaForSourceFromSourceId(discoverSchemaReadReq);
     return Optional.ofNullable(schemaRead);
   }
 

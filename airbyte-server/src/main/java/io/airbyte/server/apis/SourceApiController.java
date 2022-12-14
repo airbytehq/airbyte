@@ -58,7 +58,7 @@ public class SourceApiController implements SourceApi {
 
   @Override
   public SourceDiscoverSchemaRead discoverSchemaForSource(final SourceDiscoverSchemaRequestBody sourceDiscoverSchemaRequestBody) {
-    return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
+    return ApiHelper.execute(() -> sourceHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchemaRequestBody));
   }
 
   @Override

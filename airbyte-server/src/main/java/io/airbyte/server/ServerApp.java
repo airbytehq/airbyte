@@ -305,7 +305,9 @@ public class ServerApp implements ServerRunnable {
         secretsRepositoryReader,
         secretsRepositoryWriter,
         schemaValidator,
-        connectionsHandler);
+        connectionsHandler,
+        schedulerHandler,
+        syncSchedulerClient);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler = new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler);
 

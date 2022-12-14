@@ -241,51 +241,6 @@ public class SchedulerHandler {
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
-  public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
-      throws ConfigNotFoundException, IOException, JsonValidationException {
-    final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
-    final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(source.getSourceDefinitionId());
-    final String imageName = DockerUtils.getTaggedImageName(sourceDef.getDockerRepository(), sourceDef.getDockerImageTag());
-    final boolean isCustomConnector = sourceDef.getCustom();
-
-    final String configHash = HASH_FUNCTION.hashBytes(Jsons.serialize(source.getConfiguration()).getBytes(
-        Charsets.UTF_8)).toString();
-    final String connectorVersion = sourceDef.getDockerImageTag();
-    final Optional<ActorCatalog> currentCatalog =
-        configRepository.getActorCatalog(discoverSchemaRequestBody.getSourceId(), connectorVersion, configHash);
-    final boolean bustActorCatalogCache = discoverSchemaRequestBody.getDisableCache() != null && discoverSchemaRequestBody.getDisableCache();
-    if (currentCatalog.isEmpty() || bustActorCatalogCache) {
-      final SynchronousResponse<UUID> persistedCatalogId =
-          synchronousSchedulerClient.createDiscoverSchemaJob(
-              source,
-              imageName,
-              connectorVersion,
-              new Version(sourceDef.getProtocolVersion()),
-              isCustomConnector);
-      final SourceDiscoverSchemaRead discoveredSchema = retrieveDiscoveredSchema(persistedCatalogId);
-
-      if (discoverSchemaRequestBody.getConnectionId() != null) {
-        // modify discoveredSchema object to add CatalogDiff, containsBreakingChange, and connectionStatus
-        generateCatalogDiffsAndDisableConnectionsIfNeeded(discoveredSchema, discoverSchemaRequestBody);
-      }
-
-      return discoveredSchema;
-    }
-    final AirbyteCatalog airbyteCatalog = Jsons.object(currentCatalog.get().getCatalog(), AirbyteCatalog.class);
-    final SynchronousJobRead emptyJob = new SynchronousJobRead()
-        .configId("NoConfiguration")
-        .configType(JobConfigType.DISCOVER_SCHEMA)
-        .id(UUID.randomUUID())
-        .createdAt(0L)
-        .endedAt(0L)
-        .logs(new LogRead().logLines(new ArrayList<>()))
-        .succeeded(true);
-    return new SourceDiscoverSchemaRead()
-        .catalog(CatalogConverter.toApi(airbyteCatalog))
-        .jobInfo(emptyJob)
-        .catalogId(currentCatalog.get().getId());
-  }
-
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
@@ -311,7 +266,7 @@ public class SchedulerHandler {
     return retrieveDiscoveredSchema(response);
   }
 
-  private SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
+  protected SourceDiscoverSchemaRead retrieveDiscoveredSchema(final SynchronousResponse<UUID> response) throws ConfigNotFoundException, IOException {
     final SourceDiscoverSchemaRead sourceDiscoverSchemaRead = new SourceDiscoverSchemaRead()
         .jobInfo(jobConverter.getSynchronousJobRead(response));
 
@@ -390,7 +345,7 @@ public class SchedulerHandler {
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
   // containsBreakingChange paramter, and connectionStatus parameter.
-  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
+  protected void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
                                                                  SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);

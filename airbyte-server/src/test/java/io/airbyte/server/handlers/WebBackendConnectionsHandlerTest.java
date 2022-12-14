@@ -119,6 +119,7 @@ class WebBackendConnectionsHandlerTest {
   private ConnectionsHandler connectionsHandler;
   private OperationsHandler operationsHandler;
   private SchedulerHandler schedulerHandler;
+  private SourceHandler sourceHandler;
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
 
@@ -153,7 +154,7 @@ class WebBackendConnectionsHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
-    final SourceHandler sourceHandler = mock(SourceHandler.class);
+    sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     configRepository = mock(ConfigRepository.class);
@@ -274,7 +275,7 @@ class WebBackendConnectionsHandlerTest {
     final SourceDiscoverSchemaRequestBody sourceDiscoverSchema = new SourceDiscoverSchemaRequestBody();
     sourceDiscoverSchema.setSourceId(connectionRead.getSourceId());
     sourceDiscoverSchema.setDisableCache(true);
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchema)).thenReturn(
+    when(sourceHandler.discoverSchemaForSourceFromSourceId(sourceDiscoverSchema)).thenReturn(
         new SourceDiscoverSchemaRead()
             .jobInfo(mock(SynchronousJobRead.class))
             .catalog(modifiedCatalog));
@@ -428,7 +429,7 @@ class WebBackendConnectionsHandlerTest {
     final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(sourceHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
     when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.of(connectionRead.getSyncCatalog()));
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
@@ -446,7 +447,7 @@ class WebBackendConnectionsHandlerTest {
     final SourceDiscoverSchemaRead schemaRead =
         new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
             .breakingChange(true).connectionStatus(ConnectionStatus.INACTIVE);
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(sourceHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
     when(connectionsHandler.getConnectionAirbyteCatalog(brokenConnectionRead.getConnectionId()))
         .thenReturn(Optional.of(connectionRead.getSyncCatalog()));
 
@@ -490,7 +491,7 @@ class WebBackendConnectionsHandlerTest {
             .catalog(newCatalogToDiscover)
             .breakingChange(false)
             .connectionStatus(ConnectionStatus.ACTIVE);
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(sourceHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
@@ -536,7 +537,7 @@ class WebBackendConnectionsHandlerTest {
             .catalog(newCatalogToDiscover)
             .breakingChange(false)
             .connectionStatus(ConnectionStatus.ACTIVE);
-    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(sourceHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
 
     final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
         operationReadList);
@@ -554,7 +555,7 @@ class WebBackendConnectionsHandlerTest {
   void testWebBackendGetConnectionNoRefreshCatalog()
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final WebBackendConnectionRead result = testWebBackendGetConnection(false, connectionRead, operationReadList);
-    verify(schedulerHandler, never()).discoverSchemaForSourceFromSourceId(any());
+    verify(sourceHandler, never()).discoverSchemaForSourceFromSourceId(any());
     assertEquals(expected, result);
   }
 
