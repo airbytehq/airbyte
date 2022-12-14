@@ -1,2 +1,0 @@
-{"stream":"labels","data":{"label":"test"},"emitted_at":1670963992553}
-{"stream":"labels","data":{"label":"zZ"},"emitted_at":1670963992553}
