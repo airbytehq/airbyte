@@ -2,7 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 import json
-from abc import ABC
+import logging
+from abc import ABC, abstractmethod
+from datetime import datetime
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
 from elasticsearch import Elasticsearch
@@ -10,6 +12,9 @@ import requests
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
+from airbyte_cdk.sources.streams.core import IncrementalMixin
+from airbyte_cdk.models import SyncMode
+
 
 
 """
@@ -70,16 +75,28 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         At the same time only one of the 'request_body_data' and 'request_body_json' functions can be overridden.
         """
 
-        if next_page_token is None:
-            next_page_token = 0
+        if stream_state == {}:
+            date_filter = "1970-00-00"
+        else:
+            date_filter = stream_state.get("date")
 
+        if next_page_token is None:
             payload = {
                 "query": {
-                    "query_string": {
-                        "query": "*"
+                    "bool": {
+                        "filter": [
+                            {
+                                "range": {
+                                    "date": {
+                                        "gte": date_filter
+                                    }
+                                }
+                            }
+                        ]
                     }
                 },
-                "size": 10000
+                "size": 10000,
+                "sort": "date"
             }
 
         else:
@@ -97,43 +114,100 @@ class ElasticSearchV2Stream(HttpStream, ABC):
         hits = response.json()["hits"]["hits"]
 
         for hit in hits:
+
             data = hit["_source"]
             yield data
 
 
 # Basic incremental stream
 class IncrementalElasticSearchV2Stream(ElasticSearchV2Stream, ABC):
-    """
-    TODO fill in details of this class to implement functionality related to incremental syncs for your connector.
-         if you do not need to implement incremental sync for any streams, remove this class.
-    """
 
-    # TODO: Fill in to checkpoint stream reads after N records. This prevents re-reading of data if the stream fails for any reason.
-    state_checkpoint_interval = 100
+    state_checkpoint_interval = 10
+    _cursor_value = ""
 
     @property
     def cursor_field(self) -> str:
         """
-        TODO
         Override to return the cursor field used by this stream e.g: an API entity might always use created_at as the cursor field. This is
         usually id or date based. This field's presence tells the framework this in an incremental stream. Required for incremental.
 
         :return str: The name of the cursor field.
         """
-        return "value"
+        return "date"
 
-    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+
+    @property
+    def state(self) -> MutableMapping[str, Any]:
+        """State getter, should return state in form that can serialized to a string and send to the output
+        as a STATE AirbyteMessage.
+
+        A good example of a state is a cursor_value:
+            {
+                self.cursor_field: "cursor_value"
+            }
+
+         State should try to be as small as possible but at the same time descriptive enough to restore
+         syncing process from the point where it stopped.
         """
-        Override to determine the latest state after reading the latest record. This typically compared the cursor_field from the latest record and
-        the current state and picks the 'most' recent cursor. This is how a stream's state is determined. Required for incremental.
-        """
-        return latest_record
+
+        return {self.cursor_field: self._cursor_value}
+
+    @state.setter
+    def state(self, value: MutableMapping[str, Any]):
+        """State setter, accept state serialized by state getter."""
+        self._cursor_value = value[self.cursor_field]
+
+    def read_records(
+        self,
+        sync_mode: SyncMode,
+        cursor_field: List[str] = None,
+        stream_slice: Mapping[str, Any] = None,
+        stream_state: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping[str, Any]]:
+        stream_state = stream_state or {}
+        pagination_complete = False
+
+        next_page_token = None
+        while not pagination_complete:
+            request_headers = self.request_headers(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+            request = self._create_prepared_request(
+                path=self.path(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                headers=dict(request_headers, **self.authenticator.get_auth_header()),
+                params=self.request_params(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                json=self.request_body_json(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+                data=self.request_body_data(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token),
+            )
+            request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice, next_page_token=next_page_token)
+
+            if self.use_cache:
+                # use context manager to handle and store cassette metadata
+                with self.cache_file as cass:
+                    self.cassete = cass
+                    # vcr tries to find records based on the request, if such records exist, return from cache file
+                    # else make a request and save record in cache file
+                    response = self._send_request(request, request_kwargs)
+
+            else:
+                response = self._send_request(request, request_kwargs)
+
+            yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
+
+            next_page_token = self.next_page_token(response)
+            if not next_page_token:
+                pagination_complete = True
+
+            hits = response.json().get("hits").get("hits")
+            if hits:
+                self._cursor_value = hits[len(hits) - 1].get("_source").get("date")
+
+        # Always return an empty generator just in case no records were ever yielded
+        yield from []
+
 
 # Source
 class SourceElasticSearchV2(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         """
-        TODO: Implement a connection check to validate that the user-provided config can be used to connect to the underlying API
 
         See https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L232
         for an example.
@@ -154,7 +228,7 @@ class SourceElasticSearchV2(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Creatives(), Campaigns(), Accounts()]
+        return [Campaigns(), Accounts(), Creatives()]
 
 
 class Creatives(IncrementalElasticSearchV2Stream):
