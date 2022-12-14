@@ -141,7 +141,8 @@ public abstract class DestinationAcceptanceTest {
 
   protected String getNormalizationImageName() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationRepository() + ":"
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository() + ":"
             + NORMALIZATION_VERSION)
         .orElse(null);
   }
@@ -227,8 +228,9 @@ public abstract class DestinationAcceptanceTest {
 
   protected boolean normalizationFromDefinition() {
     return getOptionalDestinationDefinitionFromProvider(getImageNameWithoutTag())
-        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationRepository())
-            && Objects.nonNull(standardDestinationDefinition.getNormalizationTag()))
+        .filter(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig()))
+        .map(standardDestinationDefinition -> Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationRepository())
+            && Objects.nonNull(standardDestinationDefinition.getNormalizationConfig().getNormalizationTag()))
         .orElse(false);
   }
 
