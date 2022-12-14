@@ -14,7 +14,7 @@ class Client:
     def __init__(self, config: Mapping[str, Any], schema: Mapping[str, str]):
         self.client = self.get_weaviate_client(config)
         self.config = config
-        self.batch_size = 100
+        self.batch_size = int(config.get("batch_size", 100))
         self.schema = schema
 
     def queue_write_operation(self, stream_name: str, record: Mapping):
