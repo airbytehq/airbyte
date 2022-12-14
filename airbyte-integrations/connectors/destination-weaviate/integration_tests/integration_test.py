@@ -34,8 +34,17 @@ def config_fixture() -> Mapping[str, Any]:
         return json.loads(f.read())
 
 
-@pytest.fixture(name="configured_catalog")
-def configured_catalog_fixture() -> ConfiguredAirbyteCatalog:
+def create_catalog(stream_name: str, stream_schema: Mapping[str, Any]) -> ConfiguredAirbyteCatalog:
+    append_stream = ConfiguredAirbyteStream(
+        stream=AirbyteStream(name=stream_name, json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
+        sync_mode=SyncMode.incremental,
+        destination_sync_mode=DestinationSyncMode.append,
+    )
+    return ConfiguredAirbyteCatalog(streams=[append_stream])
+
+
+@pytest.fixture(name="article_catalog")
+def article_catalog_fixture() -> ConfiguredAirbyteCatalog:
     stream_schema = {"type": "object", "properties": {"title": {"type": "str"}, "wordCount": {"type": "integer"}}}
 
     append_stream = ConfiguredAirbyteStream(
@@ -120,7 +129,13 @@ def _state(data: Dict[str, Any]) -> AirbyteMessage:
     return AirbyteMessage(type=Type.STATE, state=AirbyteStateMessage(data=data))
 
 
-def _record(stream: str, title: str, word_count: int) -> AirbyteMessage:
+def _record(stream: str, data: Mapping[str, Any]) -> AirbyteMessage:
+    return AirbyteMessage(
+        type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data=data, emitted_at=0)
+    )
+
+
+def _article_record(stream: str, title: str, word_count: int) -> AirbyteMessage:
     return AirbyteMessage(
         type=Type.RECORD, record=AirbyteRecordMessage(stream=stream, data={"title": title, "wordCount": word_count}, emitted_at=0)
     )
@@ -147,16 +162,16 @@ def retrieve_all_articles(client: Client) -> List[AirbyteRecordMessage]:
     out = []
     for record in all_records.get("objects"):
         props = record["properties"]
-        out.append(_record("Article", props["title"], props["wordCount"]))
+        out.append(_article_record("Article", props["title"], props["wordCount"]))
     out.sort(key=lambda x: x.record.data.get("title"))
     return out
 
 
-def count_articles(client: Client) -> int:
-    result = client.query.aggregate("Article") \
+def count_objects(client: Client, class_name: str) -> int:
+    result = client.query.aggregate(class_name) \
         .with_fields('meta { count }') \
         .do()
-    return result["data"]["Aggregate"]["Article"][0]["meta"]["count"]
+    return result["data"]["Aggregate"][class_name][0]["meta"]["count"]
 
 
 def retrieve_all_pokemons(client: Client) -> List[dict]:
@@ -164,72 +179,92 @@ def retrieve_all_pokemons(client: Client) -> List[dict]:
     return client.client.data_object.get(class_name="Pokemon")
 
 
-def test_write(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
+def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that:
         TODO: 1. writing a stream in "overwrite" mode overwrites any existing data for that stream
         2. writing a stream in "append" mode appends new records without deleting the old ones
         3. The correct state message is output by the connector at the end of the sync
     """
-    append_stream = configured_catalog.streams[0].stream.name
+    append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)]
+    first_record_chunk = [_article_record(append_stream, str(i), i) for i in range(5)]
 
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message]
+            config, article_catalog, [*first_record_chunk, first_state_message]
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    expected_records = [_record(append_stream, str(i), i) for i in range(5)]
+    expected_records = [_article_record(append_stream, str(i), i) for i in range(5)]
     records_in_destination = retrieve_all_articles(client)
     assert expected_records == records_in_destination, "Records in destination should match records expected"
 
 
-def test_write_large_batch(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
-    append_stream = configured_catalog.streams[0].stream.name
+def test_write_large_batch(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
+    append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(400)]
+    first_record_chunk = [_article_record(append_stream, str(i), i) for i in range(400)]
 
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message]
+            config, article_catalog, [*first_record_chunk, first_state_message]
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-    assert count_articles(client.client) == 400, "There should be 400 records in weaviate"
+    assert count_objects(client.client, "Article") == 400, "There should be 400 records in weaviate"
 
 
-def test_write_second_sync(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
-    append_stream = configured_catalog.streams[0].stream.name
+def test_write_second_sync(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
+    append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
     second_state_message = _state({"state": "2"})
-    first_record_chunk = [_record(append_stream, str(i), i) for i in range(5)]
+    first_record_chunk = [_article_record(append_stream, str(i), i) for i in range(5)]
 
     destination = DestinationWeaviate()
 
     expected_states = [first_state_message, second_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message, *first_record_chunk, second_state_message]
+            config, article_catalog, [*first_record_chunk, first_state_message, *first_record_chunk, second_state_message]
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
-    assert count_articles(client.client) == 10, "First and second state should have flushed a total of 10 articles"
+    assert count_objects(client.client, "Article") == 10, "First and second state should have flushed a total of 10 articles"
 
 
-def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog, client: Client):
+def test_line_break_characters(config: Mapping, client: Client):
+    stream_name = "currency"
+    stream_schema = load_json_file("exchange_rate_catalog.json")
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"id": 1, "currency": "USD\u2028", "date": "2020-03-\n31T00:00:00Z\r", "HKD": 10.1, "NZD": 700.1}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    assert count_objects(client.client, "Currency") == 1, "First and second state should have flushed a total of 10 articles"
+
+
+def test_write_id(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
     """
     This test verifies that records can have an ID that's an integer
     """
-    append_stream = configured_catalog.streams[0].stream.name
+    append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
     first_record_chunk = [_record_with_id(append_stream, str(i), i, i) for i in range(1, 6)]
 
@@ -238,7 +273,7 @@ def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog,
     expected_states = [first_state_message]
     output_states = list(
         destination.write(
-            config, configured_catalog, [*first_record_chunk, first_state_message]
+            config, article_catalog, [*first_record_chunk, first_state_message]
         )
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
@@ -246,7 +281,7 @@ def test_write_id(config: Mapping, configured_catalog: ConfiguredAirbyteCatalog,
     records_in_destination = retrieve_all_articles(client)
     assert len(records_in_destination) == 5, "Expecting there should be 5 records"
 
-    expected_records = [_record(append_stream, str(i), i) for i in range(1, 6)]
+    expected_records = [_article_record(append_stream, str(i), i) for i in range(1, 6)]
     for expected, actual in zip(expected_records, records_in_destination):
         assert expected.record.data.get("title") == actual.record.data.get("title"), "Titles should match"
         assert expected.record.data.get("wordCount") == actual.record.data.get("wordCount"), "Titles should match"
