@@ -208,6 +208,7 @@ class Transactions(OrderSubstream):
         params = {"limit": self.limit}
         return params
 
+
 class OrderProducts(OrderSubstream):
     api_version = "v2"
     data_field = "products"
@@ -235,6 +236,7 @@ class OrderProducts(OrderSubstream):
             return dict(page=self.page)
         else:
             return None
+
 
 class Channels(IncrementalBigcommerceStream):
     data_field = "channels"
