@@ -52,6 +52,11 @@ airbyte:
     specific-resource-defaults-enabled: ${CONNECTOR_SPECIFIC_RESOURCE_DEFAULTS_ENABLED:false}
   container:
     orchestrator:
+      api:
+        auth-header:
+          name: ${AIRBYTE_API_AUTH_HEADER_NAME:}
+          value: ${AIRBYTE_API_AUTH_HEADER_VALUE:}
+        host: ${CONTAINER_ORCHESTRATOR_API_HOST:airbyte-server-svc.ab:80}
       enabled: ${CONTAINER_ORCHESTRATOR_ENABLED:false}
       image: ${CONTAINER_ORCHESTRATOR_IMAGE:}
       java-opts: ${CONTAINER_ORCHESTRATOR_JAVA_OPTS:}
