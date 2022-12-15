@@ -17,7 +17,7 @@ images:
     newTag: 0.40.25
   - name: airbyte/worker
     newTag: 0.40.25
-  - name: temporalio/auto-setup
+  - name: airbyte/temporal-auto-setup
     newTag: 1.13.0
   - name: airbyte/cron
     newTag: 0.40.25
