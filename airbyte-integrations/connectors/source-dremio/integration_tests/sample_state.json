@@ -1,4 +1,4 @@
-{
+{"data": [{
     "id": "eaead081-dd9f-4dea-918b-637c5106379f",
     "path": [
         "Samples"
@@ -7,4 +7,4 @@
     "type": "CONTAINER",
     "containerType": "SOURCE",
     "createdAt": "2022-11-28T22:45:47.809Z"
-}
+}]}

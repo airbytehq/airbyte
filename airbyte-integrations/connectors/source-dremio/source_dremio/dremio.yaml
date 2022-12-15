@@ -7,8 +7,12 @@ definitions:
   requester:
     url_base: "{{ config['base_url']}}/api/v3"
     http_method: "GET"
+    request_options_provider:
+      request_body_json:
+        Content-Type: "application/json"
     authenticator:
-      type: BearerAuthenticator
+      type: ApiKeyAuthenticator
+      header: Authorization
       api_token: "_dremio{{ config['api_key'] }}"
   retriever:
     record_selector:
