@@ -9,7 +9,7 @@ config:
         upload_timeout 2m
         use_put_object On
         log_key log
-        s3_key_format /k3s-logs/${WORKFLOW_RUN_ID}/$TAG[4]/$UUID.log
+        s3_key_format /${SUITE_TYPE}/${WORKFLOW_RUN_ID}/$TAG[4]/$UUID.log
 env:
   - name: WORKFLOW_RUN_ID
     value: 'PLACEHOLDER'
