@@ -129,6 +129,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put("publication", PUBLICATION)
         .put("plugin", getPluginName())
         .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("lsn_commit_behaviour", "After loading Data in the destination")
         .build());
 
     return Jsons.jsonNode(ImmutableMap.builder()
@@ -346,8 +347,18 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final int recordsToCreate = 20;
 
+    final JsonNode config = getConfig();
+    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
+        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
+        .put("publication", PUBLICATION)
+        .put("plugin", getPluginName())
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("lsn_commit_behaviour", "While reading Data")
+        .build());
+    ((ObjectNode) config).put("replication_method", replicationMethod);
+
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, null);
+        .read(config, CONFIGURED_CATALOG, null);
     final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
         .toListAndClose(firstBatchIterator);
     final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
@@ -363,7 +374,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final JsonNode state = Jsons.jsonNode(stateAfterFirstBatch);
     final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
     final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
         .toListAndClose(secondBatchIterator);
     final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
@@ -380,7 +391,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
     // sync failed on destination end and we didn't save state
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
-        .read(getConfig(), CONFIGURED_CATALOG, state);
+        .read(config, CONFIGURED_CATALOG, state);
 
     final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
         .toListAndClose(thirdBatchIterator);
