@@ -68,6 +68,13 @@ class Application(BaseSchemaModel):
     requisitionForHire: dict
 
 
+class ArchiveReason(BaseSchemaModel):
+    id: str
+    text: str
+    status: str
+    type: str
+
+
 class Interview(BaseSchemaModel):
     id: str
     panel: str
@@ -146,40 +153,6 @@ class Opportunity(BaseSchemaModel):
     isAnonymized: bool
 
 
-class Referral(BaseSchemaModel):
-    id: str
-    type: str
-    text: str
-    instructions: str
-    fields: List[dict]
-    baseTemplateId: str
-    user: str
-    referrer: str
-    stage: str
-    createdAt: int
-    completedAt: int
-
-
-class User(BaseSchemaModel):
-    id: str
-    name: str
-    username: str
-    email: str
-    accessRole: str
-    photo: str
-    createdAt: int
-    deactivatedAt: int
-    externalDirectoryId: str
-    linkedContactIds: List[str]
-
-
-class ArchiveReason(BaseSchemaModel):
-    id: str
-    text: str
-    status: str
-    type: str
-
-
 class Posting(BaseSchemaModel):
     id: str
     text: str
@@ -199,11 +172,38 @@ class Posting(BaseSchemaModel):
     urls: dict
 
 
-class Stage(BaseSchemaModel):
+class Referral(BaseSchemaModel):
     id: str
+    type: str
     text: str
+    instructions: str
+    fields: List[dict]
+    baseTemplateId: str
+    user: str
+    referrer: str
+    stage: str
+    createdAt: int
+    completedAt: int
 
 
 class Source(BaseSchemaModel):
     text: str
     count: int
+
+
+class Stage(BaseSchemaModel):
+    id: str
+    text: str
+
+
+class User(BaseSchemaModel):
+    id: str
+    name: str
+    username: str
+    email: str
+    accessRole: str
+    photo: str
+    createdAt: int
+    deactivatedAt: int
+    externalDirectoryId: str
+    linkedContactIds: List[str]

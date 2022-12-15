@@ -72,14 +72,14 @@ class SourceLeverHiring(AbstractSource):
         }
         return [
             Applications(**stream_params_with_start_date),
+            ArchiveReasons(**full_refresh_params),
             Interviews(**stream_params_with_start_date),
             Notes(**stream_params_with_start_date),
             Offers(**stream_params_with_start_date),
             Opportunities(**stream_params_with_start_date),
-            Referrals(**stream_params_with_start_date),
-            Users(**full_refresh_params),
-            ArchiveReasons(**full_refresh_params),
             Postings(**full_refresh_params),
-            Stages(**full_refresh_params),
+            Referrals(**stream_params_with_start_date),
+            Users(**full_refresh_params),            
             Sources(**full_refresh_params),
+            Stages(**full_refresh_params),            
         ]
