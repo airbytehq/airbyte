@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 from connector_builder.generated.models.json_decoder import JsonDecoder
 
@@ -23,8 +23,8 @@ class DpathExtractorAllOf(BaseModel):
         decoder: The decoder of this DpathExtractorAllOf [Optional].
     """
 
-    field_pointer: List[AnyOfInterpolatedStringstring]
-    config: Dict[str, Any]
-    decoder: Optional[JsonDecoder] = None
+    field_pointer: List[AnyOfInterpolatedStringstring] = Field(alias="field_pointer")
+    config: Dict[str, Any] = Field(alias="config")
+    decoder: Optional[JsonDecoder] = Field(alias="decoder", default=None)
 
 DpathExtractorAllOf.update_forward_refs()

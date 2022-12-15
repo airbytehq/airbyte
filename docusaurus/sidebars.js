@@ -185,6 +185,8 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
+        'operator-guides/configuring-sync-notifications',
+        'operator-guides/collecting-metrics',
       ],
     },
     {

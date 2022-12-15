@@ -6,7 +6,8 @@
   border-collapse: separate;
 
   tr {
-    th, td {
+    th,
+    td {
       padding: variables.$spacing-md;
       border-style: solid;
       border-color: colors.$dark-blue-50;
@@ -26,7 +27,8 @@
     td {
       background-color: colors.$white;
 
-      &:first-child, th:first-child {
+      &:first-child,
+      th:first-child {
         border-left-width: variables.$border-thin;
       }
     }

@@ -4,11 +4,11 @@
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.protocol.models.AirbyteErrorTraceMessage;
-import io.airbyte.protocol.models.AirbyteErrorTraceMessage.FailureType;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteTraceMessage;
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage;
+import io.airbyte.protocol.models.v0.AirbyteErrorTraceMessage.FailureType;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteTraceMessage;
 import java.util.function.Consumer;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
@@ -29,7 +29,7 @@ public final class AirbyteTraceMessageUtility {
   }
 
   // todo: handle the other types of trace message we'll expect in the future, see
-  // io.airbyte.protocol.models.AirbyteTraceMessage
+  // io.airbyte.protocol.models.v0.AirbyteTraceMessage
   // & the tech spec:
   // https://docs.google.com/document/d/1ctrj3Yh_GjtQ93aND-WH3ocqGxsmxyC3jfiarrF6NY0/edit#
   // public void emitNotificationTrace() {}
