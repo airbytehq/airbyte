@@ -6,7 +6,7 @@ from datetime import date, datetime  # noqa: F401
 import re  # noqa: F401
 from typing import Any, Dict, List, Optional  # noqa: F401
 
-from pydantic import AnyUrl, BaseModel, EmailStr, validator  # noqa: F401
+from pydantic import AnyUrl, BaseModel, EmailStr, Field, validator  # noqa: F401
 from connector_builder.generated.models.any_of_interpolated_stringstring import AnyOfInterpolatedStringstring
 
 
@@ -24,10 +24,10 @@ class MinMaxDatetime(BaseModel):
         max_datetime: The max_datetime of this MinMaxDatetime [Optional].
     """
 
-    datetime: AnyOfInterpolatedStringstring
-    datetime_format: Optional[str] = None
-    datetime_format: Optional[str] = None
-    min_datetime: Optional[AnyOfInterpolatedStringstring] = None
-    max_datetime: Optional[AnyOfInterpolatedStringstring] = None
+    datetime: AnyOfInterpolatedStringstring = Field(alias="datetime")
+    datetime_format: Optional[str] = Field(alias="datetime_format", default=None)
+    datetime_format: Optional[str] = Field(alias="_datetime_format", default=None)
+    min_datetime: Optional[AnyOfInterpolatedStringstring] = Field(alias="min_datetime", default=None)
+    max_datetime: Optional[AnyOfInterpolatedStringstring] = Field(alias="max_datetime", default=None)
 
 MinMaxDatetime.update_forward_refs()
