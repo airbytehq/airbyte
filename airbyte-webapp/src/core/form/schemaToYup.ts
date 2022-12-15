@@ -56,7 +56,7 @@ export const buildYupFormForJsonSchema = (
           ?.push([
             selectionConstValue,
             typeof prop === "boolean"
-              ? yup.mixed()
+              ? yup.bool()
               : buildYupFormForJsonSchema(
                   prop,
                   selectionFormField.properties[propertyIndex],
@@ -162,7 +162,7 @@ export const buildYupFormForJsonSchema = (
                 propertyKey,
                 propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
               )
-            : yup.mixed(),
+            : yup.bool(),
         ];
       });
 
