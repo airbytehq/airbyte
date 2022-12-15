@@ -95,7 +95,6 @@ public class PostgresDebeziumStateUtilTest {
     Assertions.assertTrue(savedOffset.isPresent());
     Assertions.assertEquals(savedOffset.getAsLong(), 23896935L);
 
-
     final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertFalse(savedOffsetAfterReplicationSlotLSN);
   }

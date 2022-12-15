@@ -54,7 +54,7 @@ public class PostgresDebeziumStateUtil {
   private static final Logger LOGGER = LoggerFactory.getLogger(PostgresDebeziumStateUtil.class);
 
   public boolean isSavedOffsetAfterReplicationSlotLSN(final JsonNode replicationSlot,
-      final OptionalLong savedOffset) {
+                                                      final OptionalLong savedOffset) {
 
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return true;
@@ -76,9 +76,9 @@ public class PostgresDebeziumStateUtil {
   }
 
   public OptionalLong savedOffset(final Properties baseProperties,
-      final ConfiguredAirbyteCatalog catalog,
-      final JsonNode cdcState,
-      final JsonNode config) {
+                                  final ConfiguredAirbyteCatalog catalog,
+                                  final JsonNode cdcState,
+                                  final JsonNode config) {
     final DebeziumPropertiesManager debeziumPropertiesManager = new DebeziumPropertiesManager(baseProperties, config, catalog,
         AirbyteFileOffsetBackingStore.initializeState(cdcState),
         Optional.empty());
@@ -101,10 +101,10 @@ public class PostgresDebeziumStateUtil {
   }
 
   public void commitLSNToPostgresDatabase(final JsonNode jdbcConfig,
-      final OptionalLong savedOffset,
-      final String slotName,
-      final String publicationName,
-      final String plugin) {
+                                          final OptionalLong savedOffset,
+                                          final String slotName,
+                                          final String publicationName,
+                                          final String plugin) {
     if (Objects.isNull(savedOffset) || savedOffset.isEmpty()) {
       return;
     }
@@ -113,7 +113,6 @@ public class PostgresDebeziumStateUtil {
 
     try (final BaseConnection pgConnection = ((BaseConnection) connection(jdbcConfig))) {
       validateReplicationConnection(pgConnection);
-
 
       ChainedLogicalStreamBuilder streamBuilder = pgConnection
           .getReplicationAPI()
@@ -138,9 +137,9 @@ public class PostgresDebeziumStateUtil {
   }
 
   private ChainedLogicalStreamBuilder addSlotOption(final String publicationName,
-      final String plugin,
-      final BaseConnection pgConnection,
-      ChainedLogicalStreamBuilder streamBuilder) {
+                                                    final String plugin,
+                                                    final BaseConnection pgConnection,
+                                                    ChainedLogicalStreamBuilder streamBuilder) {
     if (plugin.equalsIgnoreCase("pgoutput")) {
       streamBuilder = streamBuilder.withSlotOption("proto_version", 1)
           .withSlotOption("publication_names", publicationName);
@@ -171,7 +170,7 @@ public class PostgresDebeziumStateUtil {
     });
   }
 
-  private  <T> T queryAndMap(Connection conn, String query, StatementFactory statementFactory, ResultSetMapper<T> mapper) throws SQLException {
+  private <T> T queryAndMap(Connection conn, String query, StatementFactory statementFactory, ResultSetMapper<T> mapper) throws SQLException {
     Objects.requireNonNull(mapper, "Mapper must be provided");
     try (Statement statement = statementFactory.createStatement(conn)) {
       try (ResultSet resultSet = statement.executeQuery(query);) {
