@@ -663,5 +663,7 @@
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
 
+  "jobs.noAttemptsFailure": "Failed to start job.",
+
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
