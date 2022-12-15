@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import LoadingSchema from "components/LoadingSchema";
 
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
-import { useIsAutoDetectSchemaChangesEnabled } from "hooks/connection/useIsAutoDetectSchemaChangesEnabled";
 import {
   ConnectionFormServiceProvider,
   tidyConnectionFormValues,
@@ -43,7 +42,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   const navigate = useNavigate();
   const canEditDataGeographies = useFeature(FeatureItem.AllowChangeDataGeographies);
   const { mutateAsync: createConnection } = useCreateConnection();
-  const isAutoDetectSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
+  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
   const { clearFormChange } = useFormChangeTrackerService();
 
   const workspaceId = useCurrentWorkspaceId();
@@ -59,7 +58,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
         workspaceId,
         mode,
         allowSubOneHourCronExpressions,
-        isAutoDetectSchemaChangesEnabled
+        allowAutoDetectSchemaChanges
       );
 
       try {
@@ -94,7 +93,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
       workspaceId,
       mode,
       allowSubOneHourCronExpressions,
-      isAutoDetectSchemaChangesEnabled,
+      allowAutoDetectSchemaChanges,
       createConnection,
       connection.source,
       connection.destination,
@@ -119,7 +118,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
           validationSchema={createConnectionValidationSchema({
             mode,
             allowSubOneHourCronExpressions,
-            isAutoDetectSchemaChangesEnabled,
+            allowAutoDetectSchemaChanges,
           })}
           onSubmit={onFormSubmit}
         >
