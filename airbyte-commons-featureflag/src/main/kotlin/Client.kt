@@ -58,7 +58,7 @@ sealed interface Context {
  * Workspace context example object
  *   where key is the unique identifier of the workspace and the account can be optionally passed as an attribute
  */
-data class Workspace(override val key: String, val account: String?) : Context {
+data class Workspace(override val key: String, val account: String? = null) : Context {
     override val kind = "workspace"
 }
 
