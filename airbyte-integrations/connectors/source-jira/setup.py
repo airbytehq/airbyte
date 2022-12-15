@@ -10,6 +10,7 @@ MAIN_REQUIREMENTS = ["airbyte-cdk~=0.1", "requests==2.25.1", "pendulum~=2.1.2"]
 TEST_REQUIREMENTS = [
     "pytest==6.1.2",
     "source-acceptance-test",
+    "responses~=0.22.0",
 ]
 
 setup(
