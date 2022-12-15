@@ -4,6 +4,8 @@
 
 Generate a [service token](https://docs.getdbt.com/docs/dbt-cloud-apis/service-tokens#generating-service-account-tokens) for your dbt Cloud transformation.
 
+The service token must have Member, Job Admin, or Account Admin permissions.  
+
 :::note
 
 To use the dbt Cloud integration, you must use a paid version of dbt Cloud.
