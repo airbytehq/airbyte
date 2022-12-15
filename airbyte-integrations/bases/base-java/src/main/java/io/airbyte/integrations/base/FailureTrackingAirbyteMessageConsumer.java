@@ -15,8 +15,10 @@ import org.slf4j.LoggerFactory;
  *
  * Two methods are intended for extension:
  * <ul>
- * <li>startTracked: Wraps set up of necessary infrastructure/configuration before message consumption.</li>
- * <li>acceptTracked: Wraps actual processing of each {@link io.airbyte.protocol.models.v0.AirbyteMessage}.</li>
+ * <li>startTracked: Wraps set up of necessary infrastructure/configuration before message
+ * consumption.</li>
+ * <li>acceptTracked: Wraps actual processing of each
+ * {@link io.airbyte.protocol.models.v0.AirbyteMessage}.</li>
  * </ul>
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See

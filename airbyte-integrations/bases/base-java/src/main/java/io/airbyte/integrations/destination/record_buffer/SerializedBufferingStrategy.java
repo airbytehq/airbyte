@@ -31,7 +31,8 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
   private final ConfiguredAirbyteCatalog catalog;
 
   /**
-   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer with an associated buffer type
+   * Creates instance of Serialized Buffering Strategy used to handle the logic of flushing buffer
+   * with an associated buffer type
    *
    * @param onCreateBuffer type of buffer used upon creation
    * @param catalog collection of {@link io.airbyte.protocol.models.ConfiguredAirbyteStream}
@@ -48,11 +49,11 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
 
   /**
    * Handles both adding records and when buffer is full to also flush
-   * TODO: (ryankfu) when buffer is filled up to write to bucket storage or airbyte_raw table
    *
    * @param stream - stream associated with record
    * @param message - {@link AirbyteMessage} to buffer
-   * @return true if this {@link io.airbyte.protocol.models.AirbyteRecordMessage} causes buffer to flush all messages, otherwise false
+   * @return true if this {@link io.airbyte.protocol.models.AirbyteRecordMessage} causes buffer to
+   *         flush all messages, otherwise false
    * @throws Exception
    */
   @Override
