@@ -11,7 +11,6 @@ from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, Oauth2
 from .streams import (
     Applications,
     ArchiveReasons,
-    Contacts,
     Interviews,
     Notes,
     Offers,
@@ -82,6 +81,5 @@ class SourceLeverHiring(AbstractSource):
             ArchiveReasons(**full_refresh_params),
             Postings(**full_refresh_params),
             Stages(**full_refresh_params),
-            Contacts(**full_refresh_params),
             Sources(**full_refresh_params),
         ]

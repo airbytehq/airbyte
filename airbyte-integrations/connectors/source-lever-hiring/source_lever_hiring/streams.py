@@ -70,7 +70,6 @@ class LeverHiringStream(HttpStream, ABC):
         """Use Pydantic schema"""
         return self.schema.schema()
 
-
 class IncrementalLeverHiringStream(LeverHiringStream, ABC):
 
     state_checkpoint_interval = 100
@@ -190,17 +189,10 @@ class Postings(LeverHiringStream):
     schema = Posting
 
 
-class Contacts(LeverHiringStream):
-    """
-    Postings stream: https://hire.lever.co/developer/documentation#contacts
-    """
-
-    schema = Contact
-
-
 class Sources(LeverHiringStream):
     """
     Postings stream: https://hire.lever.co/developer/documentation#sources
     """
 
     schema = Source
+
