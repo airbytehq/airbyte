@@ -160,7 +160,7 @@ public class PostgresDebeziumStateUtil {
     return streamBuilder;
   }
 
-  private void validateReplicationConnection(BaseConnection pgConnection) throws SQLException {
+  private void validateReplicationConnection(final BaseConnection pgConnection) throws SQLException {
     final Lsn xlogStart = queryAndMap(pgConnection, "IDENTIFY_SYSTEM", Connection::createStatement, rs -> {
       if (!rs.next()) {
         throw new IllegalStateException("The DB connection is not a valid replication connection");
@@ -170,7 +170,8 @@ public class PostgresDebeziumStateUtil {
     });
   }
 
-  private <T> T queryAndMap(Connection conn, String query, StatementFactory statementFactory, ResultSetMapper<T> mapper) throws SQLException {
+  private <T> T queryAndMap(final Connection conn, final String query, final StatementFactory statementFactory, final ResultSetMapper<T> mapper)
+      throws SQLException {
     Objects.requireNonNull(mapper, "Mapper must be provided");
     try (Statement statement = statementFactory.createStatement(conn)) {
       try (ResultSet resultSet = statement.executeQuery(query);) {

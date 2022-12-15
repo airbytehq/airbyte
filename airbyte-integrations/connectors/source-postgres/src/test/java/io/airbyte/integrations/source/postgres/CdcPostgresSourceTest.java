@@ -124,14 +124,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
   }
 
   private JsonNode getConfig(final String dbName) {
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
-        .put("publication", PUBLICATION)
-        .put("plugin", getPluginName())
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("lsn_commit_behaviour", "After loading Data in the destination")
-        .build());
-
+    final JsonNode replicationMethod = getReplicationMethod(dbName);
     return Jsons.jsonNode(ImmutableMap.builder()
         .put(JdbcUtils.HOST_KEY, container.getHost())
         .put(JdbcUtils.PORT_KEY, container.getFirstMappedPort())
@@ -142,6 +135,17 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
         .put(JdbcUtils.SSL_KEY, false)
         .put("is_test", true)
         .put("replication_method", replicationMethod)
+        .build());
+  }
+
+  private JsonNode getReplicationMethod(final String dbName) {
+    return Jsons.jsonNode(ImmutableMap.builder()
+        .put("method", "CDC")
+        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
+        .put("publication", PUBLICATION)
+        .put("plugin", getPluginName())
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
+        .put("lsn_commit_behaviour", "After loading Data in the destination")
         .build());
   }
 
@@ -348,13 +352,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     final int recordsToCreate = 20;
 
     final JsonNode config = getConfig();
-    final JsonNode replicationMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put("replication_slot", SLOT_NAME_BASE + "_" + dbName)
-        .put("publication", PUBLICATION)
-        .put("plugin", getPluginName())
-        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
-        .put("lsn_commit_behaviour", "While reading Data")
-        .build());
+    final JsonNode replicationMethod = ((ObjectNode) getReplicationMethod(config.get(JdbcUtils.DATABASE_KEY).asText())).put("lsn_commit_behaviour",
+        "While reading Data");
     ((ObjectNode) config).put("replication_method", replicationMethod);
 
     final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()

@@ -19,6 +19,10 @@ dependencies {
     testFixturesImplementation project(':airbyte-db:db-lib')
     testFixturesImplementation project(':airbyte-integrations:bases:base-java')
 
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.connectors.testcontainers.jdbc
+    testImplementation libs.connectors.testcontainers.postgresql
+
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-engine:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.2'
     testFixturesImplementation 'org.junit.jupiter:junit-jupiter-params:5.4.2'

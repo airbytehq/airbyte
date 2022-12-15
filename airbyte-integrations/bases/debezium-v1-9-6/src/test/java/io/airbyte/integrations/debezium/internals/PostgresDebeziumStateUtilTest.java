@@ -6,14 +6,31 @@ package io.airbyte.integrations.debezium.internals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.string.Strings;
+import io.airbyte.db.PgLsn;
+import io.airbyte.db.PostgresUtils;
+import io.airbyte.db.factory.DataSourceFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.DefaultJdbcDatabase;
+import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.test.utils.PostgreSQLContainerHelper;
+import io.debezium.connector.postgresql.connection.Lsn;
+import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 import java.util.OptionalLong;
 import java.util.Properties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 public class PostgresDebeziumStateUtilTest {
 
@@ -113,6 +130,69 @@ public class PostgresDebeziumStateUtilTest {
 
     final boolean savedOffsetAfterReplicationSlotLSN = postgresDebeziumStateUtil.isSavedOffsetAfterReplicationSlotLSN(REPLICATION_SLOT, savedOffset);
     Assertions.assertTrue(savedOffsetAfterReplicationSlotLSN);
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {"pgoutput", "wal2json"})
+  public void test(final String plugin) throws SQLException {
+    final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
+    final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
+    final String fullReplicationSlot = "debezium_slot" + "_" + dbName;
+    final String publication = "publication";
+    try (final PostgreSQLContainer<?> container = new PostgreSQLContainer<>(myImage)) {
+      container.start();
+
+      final String initScriptName = "init_" + dbName.concat(".sql");
+      final String tmpFilePath = IOs.writeFileToRandomTmpDir(initScriptName, "CREATE DATABASE " + dbName + ";");
+      PostgreSQLContainerHelper.runSqlScript(MountableFile.forHostPath(tmpFilePath), container);
+
+      final Map<String, String> databaseConfig = Map.of(JdbcUtils.USERNAME_KEY, container.getUsername(),
+          JdbcUtils.PASSWORD_KEY, container.getPassword(),
+          JdbcUtils.JDBC_URL_KEY, String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+              container.getHost(),
+              container.getFirstMappedPort(),
+              dbName));
+
+      final JdbcDatabase database = new DefaultJdbcDatabase(
+          DataSourceFactory.create(
+              databaseConfig.get(JdbcUtils.USERNAME_KEY),
+              databaseConfig.get(JdbcUtils.PASSWORD_KEY),
+              DatabaseDriver.POSTGRESQL.getDriverClassName(),
+              databaseConfig.get(JdbcUtils.JDBC_URL_KEY)));
+
+      database.execute("SELECT pg_create_logical_replication_slot('" + fullReplicationSlot + "', '" + plugin + "');");
+      database.execute("CREATE PUBLICATION " + publication + " FOR ALL TABLES;");
+
+      database.execute("CREATE TABLE public.test_table (id int primary key, name varchar(256));");
+      database.execute("insert into public.test_table values (1, 'foo');");
+      database.execute("insert into public.test_table values (2, 'bar');");
+
+      final Lsn lsnAtTheBeginning = Lsn.valueOf(
+          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+
+      final PgLsn targetLsn = PostgresUtils.getLsn(database);
+      postgresDebeziumStateUtil.commitLSNToPostgresDatabase(Jsons.jsonNode(databaseConfig),
+          OptionalLong.of(targetLsn.asLong()),
+          fullReplicationSlot,
+          publication,
+          plugin);
+
+      final Lsn lsnAfterCommit = Lsn.valueOf(
+          getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
+
+      Assertions.assertEquals(1, lsnAfterCommit.compareTo(lsnAtTheBeginning));
+      Assertions.assertEquals(targetLsn.asLong(), lsnAfterCommit.asLong());
+      container.stop();
+    }
+  }
+
+  private JsonNode getReplicationSlot(final JdbcDatabase database, String slotName, String plugin, String dbName) {
+    try {
+      return database.queryJsons("SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?", slotName, plugin, dbName)
+          .get(0);
+    } catch (final SQLException e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }
