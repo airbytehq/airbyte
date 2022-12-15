@@ -216,6 +216,8 @@
   "form.selected": "Selected",
   "form.notSelected": "Not selected",
   "form.nullable": "Nullable",
+  "form.field.sync": "Sync",
+  "form.field.sync.nestedFieldTooltip": "This field will be synced if \"{fieldName}\" is selected",
   "form.field.name": "Field name",
   "form.field.dataType": "Data type",
   "form.field.destinationName": "Destination name",
@@ -667,6 +669,8 @@
   "connectorBuilder.key": "key",
   "connectorBuilder.value": "value",
   "connectorBuilder.addKeyValue": "Add",
+
+  "jobs.noAttemptsFailure": "Failed to start job.",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

@@ -12,7 +12,7 @@ import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
-public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator {
+public class S3BaseAvroParquetTestDataComparator extends AdvancedTestDataComparator {
 
   @Override
   protected boolean compareDateValues(String airbyteMessageValue, String destinationValue) {
@@ -22,7 +22,7 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
   }
 
   private Instant getInstantFromEpoch(String epochValue) {
-    return Instant.ofEpochMilli(Long.parseLong(epochValue.replaceAll("000$", "")));
+    return Instant.ofEpochMilli(Long.parseLong(epochValue) / 1000);
   }
 
   @Override
