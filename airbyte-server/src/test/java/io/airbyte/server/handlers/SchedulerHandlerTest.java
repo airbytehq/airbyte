@@ -100,7 +100,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("unchecked")
-@Disabled
 class SchedulerHandlerTest {
 
   private static final String SOURCE_DOCKER_REPO = "srcimage";
@@ -161,6 +160,11 @@ class SchedulerHandlerTest {
   void setup() {
     completedJob = mock(Job.class, RETURNS_DEEP_STUBS);
     jobResponse = mock(SynchronousResponse.class, RETURNS_DEEP_STUBS);
+    final SynchronousJobMetadata synchronousJobMetadata = mock(SynchronousJobMetadata.class);
+    when(synchronousJobMetadata.getConfigType())
+        .thenReturn(ConfigType.SYNC);
+    when(jobResponse.getMetadata())
+        .thenReturn(synchronousJobMetadata);
     configurationUpdate = mock(ConfigurationUpdate.class);
     jsonSchemaValidator = mock(JsonSchemaValidator.class);
     when(completedJob.getStatus()).thenReturn(JobStatus.SUCCEEDED);
