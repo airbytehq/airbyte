@@ -1045,9 +1045,9 @@ temporal:
   ##  temporal.image.pullPolicy The pull policy for the temporal image
   ##  temporal.image.tag The temporal image tag to use
   image:
-    repository: temporalio/auto-setup
+    repository: airbyte/temporal-auto-setup
     pullPolicy: IfNotPresent
-    tag: "1.7.0"
+    tag: "1.13.0"
 
   ##  temporal.service.type The Kubernetes Service Type
   ##  temporal.service.port The temporal port and exposed kubernetes port
@@ -1071,7 +1071,7 @@ temporal:
   ## Examples (when using `temporal.containerSecurityContext.readOnlyRootFilesystem=true`):
   ## extraInitContainers:
   ##   - name: config-loader
-  ##     image: temporalio/auto-setup:1.7.0
+  ##     image: airbyte/temporal-auto-setup:1.13.4
   ##     command:
   ##       - /bin/sh
   ##       - -c
@@ -1407,7 +1407,6 @@ cron:
   ##   DATABASE_HOST: airbyte-db
   ##   DATABASE_PORT: 5432
   env_vars: {}
-
 connectorBuilderServer:
   enabled: true
   service:
