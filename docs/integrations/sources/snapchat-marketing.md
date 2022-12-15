@@ -8,7 +8,6 @@ This page guides you through the process of setting up the Snapchat Marketing so
 **For Airbyte Cloud:**
 
 * A Snapchat Marketing account with permission to access data from accounts you want to sync
-
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -18,7 +17,6 @@ This page guides you through the process of setting up the Snapchat Marketing so
 * client_secret
 * refresh_token
 * start_date
-
 <!-- /env:oss -->
 
 ## Setup guide
@@ -30,29 +28,26 @@ This page guides you through the process of setting up the Snapchat Marketing so
 <!-- env:oss -->
 **For Airbyte Open Source:**
 
-2. [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)
+2. [Activate Access to the Snapchat Marketing API](https://businesshelp.snapchat.com/s/article/api-apply?language=en_US)  
 3. Add the OAuth2 app:
-    * Adding the OAuth2 app requires the `redirect_url` parameter.
-        - If you have the API endpoint that will handle next OAuth process - write it to this parameter.
-        - If not - just use some valid url. Here's the discussion about
-          it: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3)
-    * save **Client ID** and **Client Secret**
+   * Adding the OAuth2 app requires the `redirect_url` parameter.
+     - If you have the API endpoint that will handle next OAuth process - write it to this parameter.
+     - If not - just use some valid url. Here's the discussion about it: [Snapchat Redirect URL - Clarity in documentation please](https://github.com/Snap-Kit/bitmoji-sample/issues/3)
+   * save **Client ID** and **Client Secret**
 4. Get refresh token using OAuth2 authentication workflow:
-    * Open the authorize link in a
-      browser: [https://accounts.snapchat.com/login/oauth2/authorize?response\_type=code&client\_id={client\_id}&redirect\_uri={redirect\_uri}&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU](https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU)
-    * Login & Authorize via UI
-    * Locate "code" query parameter in the redirect
-    * Exchange code for access token + refresh token
-       ```text
-       curl -X POST \  
-       -d "code={one_time_use_code}" \  
-       -d "client_id={client_id}" \  
-       -d "client_secret={client_secret}"  \  
-       -d "grant_type=authorization_code"  \  
-       -d "redirect_uri=redirect_uri"  
-       https://accounts.snapchat.com/login/oauth2/access_token
-       ```
-
+   * Open the authorize link in a browser: [https://accounts.snapchat.com/login/oauth2/authorize?response\_type=code&client\_id={client\_id}&redirect\_uri={redirect\_uri}&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU](https://accounts.snapchat.com/login/oauth2/authorize?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope=snapchat-marketing-api&state=wmKkg0TWgppW8PTBZ20sldUmF7hwvU)
+   * Login & Authorize via UI
+   * Locate "code" query parameter in the redirect
+   * Exchange code for access token + refresh token
+      ```text
+      curl -X POST \  
+      -d "code={one_time_use_code}" \  
+      -d "client_id={client_id}" \  
+      -d "client_secret={client_secret}"  \  
+      -d "grant_type=authorization_code"  \  
+      -d "redirect_uri=redirect_uri"  
+      https://accounts.snapchat.com/login/oauth2/access_token
+      ```
 You will receive the API key and refresh token in response. Use this refresh token in the connector specifications.  
 The useful link to Authentication process is [here](https://marketingapi.snapchat.com/docs/#authentication)
 <!-- /env:oss -->
@@ -64,13 +59,11 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this
-   connector.
+3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. lick `Authenticate your account`.
 5. Log in and Authorize to the Snapchat account
 6. Choose required Start date
 7. click `Set up source`.
-
 <!-- /env:cloud -->
 
 <!-- env:oss -->
@@ -78,12 +71,10 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 
 1. Go to local Airbyte page.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
-3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this
-   connector.
+3. On the source setup page, select **Snapchat Marketing** from the Source type dropdown and enter a name for this connector.
 4. Add **Client ID**, **Client Secret**, **Refresh Token**
 5. Choose required Start date
 6. Click `Set up source`.
-
 <!-- /env:oss -->
 
 ## Supported streams and sync modes
@@ -110,6 +101,7 @@ The useful link to Authentication process is [here](https://marketingapi.snapcha
 | CampaignsStatsHourly    | Yes         | ["id", "granularity", "start_time"] |
 | CampaignsStatsDaily     | Yes         | ["id", "granularity", "start_time"] |
 | CampaignsStatsLifetime  | No          | ["id", "granularity"]               |
+
 
 ## Performance considerations
 
