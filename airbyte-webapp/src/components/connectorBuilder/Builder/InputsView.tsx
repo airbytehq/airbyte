@@ -8,6 +8,7 @@ import * as yup from "yup";
 
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
+import { InfoBox } from "components/ui/InfoBox";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 import { Text } from "components/ui/Text";
 
@@ -17,13 +18,15 @@ import { BuilderFormInput } from "../types";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsView.module.scss";
 
+const supportedTypes = ["string", "integer", "number", "array", "boolean", "enum", "unknown"] as const;
+
 interface InputInEditing {
   key: string;
   definition: JSONSchema7;
   required: boolean;
   isNew?: boolean;
   showDefaultValueField: boolean;
-  type: "string" | "integer" | "number" | "array" | "boolean" | "enum";
+  type: typeof supportedTypes[number];
 }
 
 function sluggify(str: string) {
@@ -42,13 +45,14 @@ function newInputInEditing(): InputInEditing {
 }
 
 function formInputToInputInEditing({ key, definition, required }: BuilderFormInput): InputInEditing {
+  const supportedType = supportedTypes.find((type) => type === definition.type) || "unknown";
   return {
     key,
     definition,
     required,
     isNew: false,
     showDefaultValueField: Boolean(definition.default),
-    type: definition.enum ? "enum" : (definition.type as InputInEditing["type"]),
+    type: supportedType !== "unknown" && definition.enum ? "enum" : supportedType,
   };
 }
 
@@ -62,7 +66,7 @@ function inputInEditingToFormInput({
     ...values,
     definition: {
       ...values.definition,
-      type: type === "enum" ? "string" : type,
+      type: type === "enum" ? "string" : type === "unknown" ? values.definition.type : type,
       // only respect the enum values if the user explicitly selected enum as type
       enum: type === "enum" && values.definition.enum?.length ? values.definition.enum : undefined,
       default: showDefaultValueField ? values.definition.default : undefined,
@@ -214,59 +218,67 @@ const InputModal = ({
             label={formatMessage({ id: "connectorBuilder.inputModal.description" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.descriptionTooltip" })}
           />
-          <BuilderField
-            path="type"
-            type="enum"
-            options={["string", "number", "integer", "array", "boolean", "enum"]}
-            label={formatMessage({ id: "connectorBuilder.inputModal.type" })}
-            tooltip={formatMessage({ id: "connectorBuilder.inputModal.typeTooltip" })}
-          />
-          {values.type === "enum" && (
-            <BuilderField
-              path="definition.enum"
-              type="array"
-              optional
-              label={formatMessage({ id: "connectorBuilder.inputModal.enum" })}
-              tooltip={formatMessage({ id: "connectorBuilder.inputModal.enumTooltip" })}
-            />
+          {values.type !== "unknown" ? (
+            <>
+              <BuilderField
+                path="type"
+                type="enum"
+                options={["string", "number", "integer", "array", "boolean", "enum"]}
+                label={formatMessage({ id: "connectorBuilder.inputModal.type" })}
+                tooltip={formatMessage({ id: "connectorBuilder.inputModal.typeTooltip" })}
+              />
+              {values.type === "enum" && (
+                <BuilderField
+                  path="definition.enum"
+                  type="array"
+                  optional
+                  label={formatMessage({ id: "connectorBuilder.inputModal.enum" })}
+                  tooltip={formatMessage({ id: "connectorBuilder.inputModal.enumTooltip" })}
+                />
+              )}
+              <BuilderField
+                path="definition.airbyte_secret"
+                type="boolean"
+                optional
+                label={formatMessage({ id: "connectorBuilder.inputModal.secret" })}
+                tooltip={formatMessage({ id: "connectorBuilder.inputModal.secretTooltip" })}
+              />
+              <BuilderField
+                path="required"
+                type="boolean"
+                optional
+                label={formatMessage({ id: "connectorBuilder.inputModal.required" })}
+                tooltip={formatMessage({ id: "connectorBuilder.inputModal.requiredTooltip" })}
+              />
+              <BuilderField
+                path="showDefaultValueField"
+                type="boolean"
+                optional
+                label={formatMessage({ id: "connectorBuilder.inputModal.showDefaultValueField" })}
+                tooltip={formatMessage({ id: "connectorBuilder.inputModal.showDefaultValueFieldTooltip" })}
+              />
+              {values.showDefaultValueField && (
+                <BuilderField
+                  path="definition.default"
+                  type={values.type}
+                  options={(values.definition.enum || []) as string[]}
+                  optional
+                  label={formatMessage({ id: "connectorBuilder.inputModal.default" })}
+                />
+              )}
+              <BuilderField
+                path="definition.placeholder"
+                type="string"
+                optional
+                label={formatMessage({ id: "connectorBuilder.inputModal.placeholder" })}
+                tooltip={formatMessage({ id: "connectorBuilder.inputModal.placeholderTooltip" })}
+              />
+            </>
+          ) : (
+            <InfoBox>
+              <FormattedMessage id="connectorBuilder.inputModal.unsupportedInput" />
+            </InfoBox>
           )}
-          <BuilderField
-            path="definition.airbyte_secret"
-            type="boolean"
-            optional
-            label={formatMessage({ id: "connectorBuilder.inputModal.secret" })}
-            tooltip={formatMessage({ id: "connectorBuilder.inputModal.secretTooltip" })}
-          />
-          <BuilderField
-            path="required"
-            type="boolean"
-            optional
-            label={formatMessage({ id: "connectorBuilder.inputModal.required" })}
-            tooltip={formatMessage({ id: "connectorBuilder.inputModal.requiredTooltip" })}
-          />
-          <BuilderField
-            path="showDefaultValueField"
-            type="boolean"
-            optional
-            label={formatMessage({ id: "connectorBuilder.inputModal.showDefaultValueField" })}
-            tooltip={formatMessage({ id: "connectorBuilder.inputModal.showDefaultValueFieldTooltip" })}
-          />
-          {values.showDefaultValueField && (
-            <BuilderField
-              path="definition.default"
-              type={values.type}
-              options={(values.definition.enum || []) as string[]}
-              optional
-              label={formatMessage({ id: "connectorBuilder.inputModal.default" })}
-            />
-          )}
-          <BuilderField
-            path="definition.placeholder"
-            type="string"
-            optional
-            label={formatMessage({ id: "connectorBuilder.inputModal.placeholder" })}
-            tooltip={formatMessage({ id: "connectorBuilder.inputModal.placeholderTooltip" })}
-          />
         </ModalBody>
         <ModalFooter>
           {!inputInEditing.isNew && (
