@@ -4,7 +4,9 @@
 
 package io.airbyte.integrations.destination.s3;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -12,6 +14,7 @@ import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator {
 
@@ -42,6 +45,18 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
     var destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
     return expectedDate.equals(destinationDate);
+  }
+
+  @Override
+  protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
+    // to handle base64 encoded strings
+    return  expectedValue.asText().equals(actualValue.asText())
+        || decodeBase64(expectedValue.asText()).equals(actualValue.asText());
+  }
+
+  private String decodeBase64(String string) {
+      byte[] decoded = Base64.getDecoder().decode(string);
+      return new String(decoded, StandardCharsets.UTF_8);
   }
 
 }
