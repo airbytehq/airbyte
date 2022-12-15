@@ -1,9 +1,9 @@
 {
-	"$schema": "http://json-schema.org/draft-03/schema#",
-	"title": "Booked invoice schema",
-	"description": "A schema for retrieving a booked invoice.",
-	"type": "object",
-	"restdocs": "http://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber",
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "title": "Booked invoice schema",
+  "description": "A schema for retrieving a booked invoice.",
+  "type": "object",
+  "restdocs": "http://restdocs.e-conomic.com/#get-invoices-booked-bookedinvoicenumber",
   "properties": {
     "bookedInvoiceNumber": {
       "type": "integer",
@@ -214,10 +214,10 @@
             }
           }
         },
-				"cvr": {
-					"type": "string",
-					"description": "The Corporate Identification Number of the recipient for example CVR in Denmark."
-				}
+        "cvr": {
+          "type": "string",
+          "description": "The Corporate Identification Number of the recipient for example CVR in Denmark."
+        }
       }
     },
     "deliveryLocation": {

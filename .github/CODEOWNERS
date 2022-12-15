@@ -5,14 +5,31 @@
 /airbyte-webapp/package.json
 /airbyte-webapp/package-lock.json
 
+# Design
+/airbyte-config/init/src/main/resources/icons/*.svg @airbytehq/design
+
 # CDK and SAT
-/airbyte-cdk/ @airbytehq/api-connectors-dx
-/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/api-connectors-dx
-/airbyte-integrations/connector-templates/ @airbytehq/api-connectors-dx
+/airbyte-cdk/ @airbytehq/connector-extensibility
+/airbyte-integrations/bases/source-acceptance-tests/ @airbytehq/connector-extensibility
+/airbyte-integrations/connector-templates/ @airbytehq/connector-extensibility
 
 # Protocol related items
 /airbyte-protocol/ @airbytehq/protocol-reviewers
 /docs/understanding-airbyte/airbyte-protocol.md @airbytehq/protocol-reviewers
+
+# Airbyte Maintainers
+airbyte-server/src/main/java/io/airbyte/server/handlers/WebBackendConnectionsHandler.java @airbytehq/airbyte-maintainers
+airbyte-config/config-persistence/src/test/java/io/airbyte/config/persistence/BaseConfigDatabaseTest.java @airbytehq/airbyte-maintainers
+airbyte-commons/src/main/ @airbytehq/airbyte-maintainers
+airbyte-commons/src/main/java/io/airbyte/commons/json/JsonSchemas.java @airbytehq/airbyte-maintainers
+airbyte-commons/src/main/java/io/airbyte/commons/json/JsonPaths.java @airbytehq/airbyte-maintainers
+airbyte-commons/src/main/java/io/airbyte/commons/json/Jsons.java @airbytehq/airbyte-maintainers
+airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/split_secrets/ @airbytehq/airbyte-maintainers
+airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryReader.java @airbytehq/airbyte-maintainers
+airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/SecretsRepositoryWriter.java @airbytehq/airbyte-maintainers
+airbyte-config/config-persistence/src/main/java/io/airbyte/config/persistence/ConfigRepository.java @airbytehq/airbyte-maintainers
+*build.gradle @airbytehq/airbyte-maintainers
+airbyte-integrations/connectors/**/build.gradle # ignore gradle files for individual connectors.
 
 # Normalization
 /airbyte-integrations/bases/base-normalization/ @airbytehq/normalization

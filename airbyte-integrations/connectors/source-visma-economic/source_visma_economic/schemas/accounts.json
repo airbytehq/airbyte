@@ -1,9 +1,9 @@
 {
-	"$schema": "http://json-schema.org/draft-03/schema#",
-	"title": "Accounts collection schema",
-	"description": "A schema for retrieving the accounts of the chart of accounts.",
-	"type": "object",
-	"restdocs": "http://restdocs.e-conomic.com/#get-accounts",
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "title": "Accounts collection schema",
+  "description": "A schema for retrieving the accounts of the chart of accounts.",
+  "type": "object",
+  "restdocs": "http://restdocs.e-conomic.com/#get-accounts",
   "properties": {
     "accountNumber": {
       "type": "integer",
@@ -150,5 +150,5 @@
       "format": "uri",
       "description": "A unique reference to the account resource."
     }
-	}
+  }
 }

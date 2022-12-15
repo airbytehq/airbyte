@@ -15,7 +15,7 @@ definitions:
         q: "{{ config['query'] }}"
         tag: "{{ config['tag'] }}"
         section: "{{ config['section'] }}"
-        order-by: 'oldest'
+        order-by: "oldest"
         # from-date: "{{ config['start_date'] }}"
         # to-date: "{{ config['end_date'] or now_utc().strftime('%Y-%m-%d') }}"
   stream_slicer:

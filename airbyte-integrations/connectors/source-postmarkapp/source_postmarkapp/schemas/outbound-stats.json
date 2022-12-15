@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Sent": {
+      "type": "integer"
+    },
+    "Bounced": {
+      "type": "integer"
+    },
+    "SMTPApiErrors": {
+      "type": "integer"
+    },
+    "BounceRate": {
+      "type": "number"
+    },
+    "SpamComplaints": {
+      "type": "integer"
+    },
+    "SpamComplaintsRate": {
+      "type": "number"
+    },
+    "Tracked": {
+      "type": "integer"
+    },
+    "Opens": {
+      "type": "integer"
+    },
+    "UniqueOpens": {
+      "type": "integer"
+    },
+    "TotalClicks": {
+      "type": "integer"
+    },
+    "UniqueLinksClicked": {
+      "type": "integer"
+    },
+    "WithClientRecorded": {
+      "type": "integer"
+    },
+    "WithPlatformRecorded": {
+      "type": "integer"
+    },
+    "WithReadTimeRecorded": {
+      "type": "integer"
+    },
+    "WithLinkTracking": {
+      "type": "integer"
+    },
+    "WithOpenTracking": {
+      "type": "integer"
+    },
+    "TotalTrackedLinksSent": {
+      "type": "integer"
+    }
+  }
+}

@@ -1,10 +1,13 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PillSelect } from "components/ui/PillSelect";
+import { PillButtonVariant, PillSelect } from "components/ui/PillSelect";
+import { Text } from "components/ui/Text";
 import { Tooltip } from "components/ui/Tooltip";
 
 import { Path } from "core/domain/catalog";
+
+import styles from "./StreamPathSelect.module.scss";
 
 export const pathDisplayName = (path: Path): string => path.join(".");
 
@@ -12,8 +15,10 @@ export type IndexerType = null | "required" | "sourceDefined";
 
 interface StreamPathSelectBaseProps {
   paths: Path[];
-  pathType: "required" | "sourceDefined";
+  pathType: IndexerType;
   placeholder?: React.ReactNode;
+  variant?: PillButtonVariant;
+  disabled?: boolean;
 }
 
 interface StreamPathSelectMultiProps {
@@ -36,9 +41,11 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
       const text = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
 
       return (
-        <Tooltip placement="bottom-start" control={text}>
-          {text}
-        </Tooltip>
+        <Text className={styles.text}>
+          <Tooltip placement="bottom-start" control={text}>
+            {text}
+          </Tooltip>
+        </Text>
       );
     }
 
@@ -52,6 +59,8 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
 
   return (
     <PillSelect
+      disabled={props.disabled}
+      variant={props.variant}
       options={options}
       value={props.path}
       isMulti={props.isMulti}
@@ -59,6 +68,7 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
         const finalValues = Array.isArray(options) ? options.map((op) => op.value) : options.value;
         props.onPathChange(finalValues);
       }}
+      className={styles.streamPathSelect}
     />
   );
 };

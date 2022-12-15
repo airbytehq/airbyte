@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: 
+      field_pointer:
         - "{{ options['name'] }}"
 
   requester:
@@ -113,7 +113,6 @@ definitions:
       name: "translations"
       primary_key: "translation_id"
       path: "/api2/projects/{{ config['project_id'] }}/translations"
-
 
 streams:
   - "*ref(definitions.keys_stream)"

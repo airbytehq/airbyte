@@ -1,9 +1,9 @@
 {
-	"$schema": "http://json-schema.org/draft-03/schema#",
-	"title": "Customer collection GET schema",
-	"description": "A schema for fetching a collection of customer, aka. Debtor.",
-	"type": "object",
-	"restdocs": "http://restdocs.e-conomic.com/#get-customers",
+  "$schema": "http://json-schema.org/draft-03/schema#",
+  "title": "Customer collection GET schema",
+  "description": "A schema for fetching a collection of customer, aka. Debtor.",
+  "type": "object",
+  "restdocs": "http://restdocs.e-conomic.com/#get-customers",
   "properties": {
     "address": {
       "type": "string",
@@ -333,5 +333,5 @@
       "format": "uri",
       "description": "The unique self reference of the customer resource."
     }
-	}
+  }
 }

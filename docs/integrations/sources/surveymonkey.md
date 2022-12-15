@@ -8,17 +8,21 @@ OAuth for Survey Monkey is officially supported only for the US. We are testing 
 
 :::
 
-## Prerequisites 
+<!-- env:oss -->
+## Prerequisites
 
- ### For Airbyte Open Source:
+**For Airbyte Open Source:**
+
 * Access Token
+<!-- /env:oss -->
 
 ## Setup guide
 ### Step 1: Set up SurveyMonkey
 Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-started). Register your application [here](https://developer.surveymonkey.com/apps/) Then go to Settings and copy your access token
 
-## Step 2: Set up the source connector in Airbyte
+### Step 2: Set up the source connector in Airbyte
 
+<!-- env:cloud -->
 **For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
@@ -28,15 +32,18 @@ Please read this [docs](https://developer.surveymonkey.com/api/v3/#getting-start
 5. Log in and Authorize to the SurveyMonkey account
 6. Choose required Start date
 7. click `Set up source`.
+<!-- /env:cloud -->
 
+<!-- env:oss -->
 **For Airbyte Open Source:**
 
 1. Go to local Airbyte page.
-2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**. 
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
 3. On the source setup page, select **SurveyMonkey** from the Source type dropdown and enter a name for this connector.
 4. Add **Access Token**
 5. Choose required Start date
 6. Click `Set up source`.
+<!-- /env:oss -->
 
 ## Supported streams and sync modes
 
@@ -58,6 +65,8 @@ To cover more data from this source we use caching.
 
 | Version | Date       | Pull Request                                             | Subject                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :--------------------------------------------------------------------- |
+| 0.1.13  | 2022-11-29 | [19868](https://github.com/airbytehq/airbyte/pull/19868) | Fix OAuth flow urls                                                    |
+| 0.1.12  | 2022-10-13 | [17964](https://github.com/airbytehq/airbyte/pull/17964) | Add OAuth for Eu and Ca                                                |
 | 0.1.11  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                          |
 | 0.1.10  | 2022-09-14 | [16706](https://github.com/airbytehq/airbyte/pull/16706) | Fix 404 error when handling nonexistent surveys                        |
 | 0.1.9   | 2022-07-28 | [13046](https://github.com/airbytehq/airbyte/pull/14998) | Fix state for response stream, fixed backoff behaviour, added unittest |
@@ -70,4 +79,3 @@ To cover more data from this source we use caching.
 | 0.1.2   | 2021-10-27 | [7433](https://github.com/airbytehq/airbyte/pull/7433)   | Add OAuth support                                                      |
 | 0.1.1   | 2021-09-10 | [5983](https://github.com/airbytehq/airbyte/pull/5983)   | Fix caching for gzip compressed http response                          |
 | 0.1.0   | 2021-07-06 | [4097](https://github.com/airbytehq/airbyte/pull/4097)   | Initial Release                                                        |
-

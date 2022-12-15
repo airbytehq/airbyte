@@ -1,10 +1,10 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/airbyte_protocol.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-protocol/models/src/main/resources/airbyte_protocol/v1/airbyte_protocol.yaml
 title: AirbyteProtocol
 type: object
 description: AirbyteProtocol structs
-version: 0.3.2
+version: 1.0.0
 properties:
   airbyte_message:
     "$ref": "#/definitions/AirbyteMessage"
@@ -217,7 +217,11 @@ definitions:
         type: string
       type:
         title: "estimate type" # this title is required to avoid python codegen conflicts with the "type" parameter in AirbyteMessage. See https://github.com/airbytehq/airbyte/pull/12581
-        description: The type of estimate
+        description: >
+          Estimates are either per-stream (STREAM) or for the entire sync (SYNC).
+          STREAM is preferred, and requires the source to count how many records are about to be emitted per-stream (e.g. there will be 100 rows from this table emitted).
+          For the rare source which cannot tell which stream a record belongs to before reading (e.g. CDC databases), SYNC estimates can be emitted.
+          Sources should not emit both STREAM and SOURCE estimates within a sync.
         type: string
         enum:
           - STREAM

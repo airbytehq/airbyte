@@ -51,6 +51,10 @@ dependencies {
 
     // MongoDB
     implementation 'org.mongodb:mongodb-driver-sync:4.3.0'
+
+    // MySQL
+    implementation 'mysql:mysql-connector-java:8.0.30'
+
 }
 
 task(newConfigsMigration, dependsOn: 'classes', type: JavaExec) {

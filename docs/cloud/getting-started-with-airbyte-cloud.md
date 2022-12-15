@@ -20,8 +20,6 @@ To use Airbyte Cloud:
    A workspace lets you collaborate with team members and share resources across your team under a shared billing account.
    :::
 
-You will be greeted with an onboarding tutorial to help you set up your first connection. If you haven’t set up a connection on Airbyte Cloud before, we highly recommend following the tutorial. If you are familiar with the connection setup process, click **Skip Onboarding** and follow this guide to set up your next connection.
-
 ## Set up a source
 
 :::info
@@ -63,7 +61,7 @@ Setting up a connection involves configuring the following parameters:
 | Parameter                              | Description                                                                                                                                                                                                                                                           |
 |----------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | Replication frequency                  | How often should the data sync?                                                                                                                                                                                                                                       |
-| Data residency                         | Where should the data be processed? To choose the preferred data processing location for all of your connections, set your default [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency). |
+| Data residency                         | Where should the data be processed? |
 | Destination Namespace and stream names | Where should the replicated data be written?                                                                                                                                                                                                                          |
 | Catalog selection                      | Which streams and fields should be replicated from the source to the destination?                                                                                                                                                                                     |
 | Sync mode                              | How should the streams be replicated (read and written)?                                                                                                                                                                                                              |
@@ -182,7 +180,7 @@ Verify the sync by checking the logs:
 2. The Sync History is displayed. Click on the first log in the sync history.
 3. Check the data at your destination. If you added a Destination Stream Prefix while setting up the connection, make sure to search for the stream name with the prefix.
 
-## Allowlist IP address
+## Allowlist IP addresses
 Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airbyte-cloud#choose-your-default-data-residency) location, you may need to allowlist the following IP addresses to enable access to Airbyte:
 
 ### United States and Airbyte Default
@@ -190,12 +188,29 @@ Depending on your [data residency](https://docs.airbyte.com/cloud/managing-airby
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
 
 ### European Union
+
+:::note 
+
+Some workflows still run in the US, even when the data residency is in the EU. If you use the EU as a data residency, you must allowlist the following IP addresses from both GCP us-west3 and AWS eu-west-3.
+
+:::
+
 #### GCP region: us-west3
 * 34.106.109.131
 * 34.106.196.165
 * 34.106.60.246
+* 34.106.229.69
+* 34.106.127.139
+* 34.106.218.58
+* 34.106.115.240
+* 34.106.225.141
 
 #### AWS region: eu-west-3
 * 13.37.4.46

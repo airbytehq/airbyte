@@ -288,11 +288,21 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+        - name: AUTO_DETECT_SCHEMA
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: AUTO_DETECT_SCHEMA
         - name: USE_STREAM_CAPABLE_STATE
           valueFrom:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: USE_STREAM_CAPABLE_STATE
+        - name: SHOULD_RUN_NOTIFY_WORKFLOWS
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: SHOULD_RUN_NOTIFY_WORKFLOWS
         - name: MICRONAUT_ENVIRONMENTS
           valueFrom:
             configMapKeyRef:

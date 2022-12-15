@@ -23,7 +23,6 @@ class RedisDestination extends BaseConnector implements Destination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RedisDestination.class);
 
-
   public static void main(String[] args) throws Exception {
     LOGGER.info("starting destination: {}", RedisDestination.class);
     final Destination destination = RedisDestination.sshWrappedDestination();

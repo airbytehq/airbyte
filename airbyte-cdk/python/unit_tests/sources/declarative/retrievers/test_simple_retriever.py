@@ -7,22 +7,27 @@ from unittest.mock import MagicMock, patch
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
-from airbyte_cdk.models import SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, Level, SyncMode
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
 
 primary_key = "pk"
 records = [{"id": 1}, {"id": 2}]
+request_response_logs = [
+    AirbyteLogMessage(level=Level.INFO, message="request:{}"),
+    AirbyteLogMessage(level=Level.INFO, message="response{}"),
+]
 config = {}
 
 
-@patch.object(HttpStream, "read_records", return_value=[])
+@patch.object(HttpStream, "_read_pages", return_value=[])
 def test_simple_retriever_full(mock_http_stream):
     requester = MagicMock()
     request_params = {"param": "value"}
@@ -45,7 +50,7 @@ def test_simple_retriever_full(mock_http_stream):
     underlying_state = {"date": "2021-01-01"}
     iterator.get_stream_state.return_value = underlying_state
 
-    requester.get_authenticator.return_value = NoAuth
+    requester.get_authenticator.return_value = NoAuth()
     url_base = "https://airbyte.io"
     requester.get_url_base.return_value = url_base
     path = "/v1"
@@ -77,6 +82,7 @@ def test_simple_retriever_full(mock_http_stream):
         record_selector=record_selector,
         stream_slicer=iterator,
         options={},
+        config={},
     )
 
     assert retriever.primary_key == primary_key
@@ -89,7 +95,7 @@ def test_simple_retriever_full(mock_http_stream):
 
     assert retriever._last_response is None
     assert retriever._last_records is None
-    assert retriever.parse_response(response, stream_state=None) == records
+    assert retriever.parse_response(response, stream_state={}) == records
     assert retriever._last_response == response
     assert retriever._last_records == records
 
@@ -106,6 +112,67 @@ def test_simple_retriever_full(mock_http_stream):
     paginator.reset.assert_called()
 
 
+@patch.object(HttpStream, "_read_pages", return_value=[*request_response_logs, *records])
+def test_simple_retriever_with_request_response_logs(mock_http_stream):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    iterator = DatetimeStreamSlicer(
+        start_datetime="", end_datetime="", step="1d", cursor_field="id", datetime_format="", config={}, options={}
+    )
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=iterator,
+        options={},
+        config={},
+    )
+
+    actual_messages = [r for r in retriever.read_records(SyncMode.full_refresh)]
+    paginator.reset.assert_called()
+
+    assert isinstance(actual_messages[0], AirbyteLogMessage)
+    assert isinstance(actual_messages[1], AirbyteLogMessage)
+    assert actual_messages[2] == records[0]
+    assert actual_messages[3] == records[1]
+
+
+@patch.object(HttpStream, "_read_pages", return_value=[])
+def test_simple_retriever_with_request_response_log_last_records(mock_http_stream):
+    requester = MagicMock()
+    paginator = MagicMock()
+    record_selector = MagicMock()
+    record_selector.select_records.return_value = request_response_logs
+    response = requests.Response()
+    iterator = DatetimeStreamSlicer(
+        start_datetime="", end_datetime="", step="1d", cursor_field="id", datetime_format="", config={}, options={}
+    )
+
+    retriever = SimpleRetriever(
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        paginator=paginator,
+        record_selector=record_selector,
+        stream_slicer=iterator,
+        options={},
+        config={},
+    )
+
+    assert retriever._last_response is None
+    assert retriever._last_records is None
+    assert retriever.parse_response(response, stream_state={}) == request_response_logs
+    assert retriever._last_response == response
+    assert retriever._last_records == request_response_logs
+
+    [r for r in retriever.read_records(SyncMode.full_refresh)]
+    paginator.reset.assert_called()
+
+
 @pytest.mark.parametrize(
     "test_name, requester_response, expected_should_retry, expected_backoff_time",
     [
@@ -116,7 +183,9 @@ def test_simple_retriever_full(mock_http_stream):
 )
 def test_should_retry(test_name, requester_response, expected_should_retry, expected_backoff_time):
     requester = MagicMock(use_cache=False)
-    retriever = SimpleRetriever(name="stream_name", primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={})
+    retriever = SimpleRetriever(
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=MagicMock(), options={}, config={}
+    )
     requester.interpret_response_status.return_value = requester_response
     assert retriever.should_retry(requests.Response()) == expected_should_retry
     if requester_response.action == ResponseAction.RETRY:
@@ -149,9 +218,10 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
     record_selector = MagicMock()
     record_selector.select_records.return_value = [{"id": 100}]
     retriever = SimpleRetriever(
-        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}, config={}
     )
     response = requests.Response()
+    response.request = requests.Request()
     response.status_code = status_code
     requester.interpret_response_status.return_value = response_status
     if len_expected_records is None:
@@ -159,7 +229,7 @@ def test_parse_response(test_name, status_code, response_status, len_expected_re
             retriever.parse_response(response, stream_state={})
             assert False
         except ReadException as actual_exception:
-            assert type(expected_error) is type(actual_exception) and expected_error.args == actual_exception.args
+            assert type(expected_error) is type(actual_exception)
     else:
         records = retriever.parse_response(response, stream_state={})
         assert len(records) == len_expected_records
@@ -180,7 +250,7 @@ def test_backoff_time(test_name, response_action, retry_in, expected_backoff_tim
     record_selector.select_records.return_value = [{"id": 100}]
     response = requests.Response()
     retriever = SimpleRetriever(
-        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}
+        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, options={}, config={}
     )
     if expected_backoff_time:
         requester.interpret_response_status.return_value = ResponseStatus(response_action, retry_in)
@@ -232,6 +302,7 @@ def test_get_request_options_from_pagination(test_name, paginator_mapping, strea
         paginator=paginator,
         stream_slicer=stream_slicer,
         options={},
+        config={},
     )
 
     request_option_type_to_method = {
@@ -271,7 +342,13 @@ def test_get_request_headers(test_name, paginator_mapping, expected_mapping):
 
     record_selector = MagicMock()
     retriever = SimpleRetriever(
-        name="stream_name", primary_key=primary_key, requester=requester, record_selector=record_selector, paginator=paginator, options={}
+        name="stream_name",
+        primary_key=primary_key,
+        requester=requester,
+        record_selector=record_selector,
+        paginator=paginator,
+        options={},
+        config={},
     )
 
     request_option_type_to_method = {
@@ -315,6 +392,7 @@ def test_request_body_data(test_name, requester_body_data, paginator_body_data, 
         record_selector=record_selector,
         paginator=paginator,
         options={},
+        config={},
     )
 
     if expected_body_data:
@@ -350,6 +428,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
         record_selector=record_selector,
         paginator=paginator,
         options={},
+        config={},
     )
 
     actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)

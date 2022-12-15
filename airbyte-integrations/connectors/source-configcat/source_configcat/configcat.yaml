@@ -1,0 +1,100 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: []
+  requester:
+    url_base: "https://api.configcat.com/v1"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['username'] }}"
+      password: "{{ config['password'] }}"
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: NoPagination
+    requester:
+      $ref: "*ref(definitions.requester)"
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+  organizations_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organizations"
+      primary_key: "organizationId"
+      path: "/organizations"
+  products_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "products"
+      primary_key: "productId"
+      path: "/products"
+  product_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.products_stream)"
+        parent_key: productId
+        stream_slice_field: productId
+  tags_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "tags"
+      primary_key: "tagId"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/products/{{ stream_slice.productId }}/tags"
+      stream_slicer:
+        $ref: "*ref(definitions.product_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  environments_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "environments"
+      primary_key: "environmentId"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/products/{{ stream_slice.productId }}/environments"
+      stream_slicer:
+        $ref: "*ref(definitions.product_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+  organization_stream_slicer:
+    type: SubstreamSlicer
+    parent_stream_configs:
+      - stream: "*ref(definitions.organizations_stream)"
+        parent_key: organizationId
+        stream_slice_field: organizationId
+  organization_members_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "organization_members"
+      primary_key: "userId"
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+      requester:
+        $ref: "*ref(definitions.requester)"
+        path: "/organizations/{{ stream_slice.organizationId }}/members"
+      stream_slicer:
+        $ref: "*ref(definitions.organization_stream_slicer)"
+      record_selector:
+        $ref: "*ref(definitions.selector)"
+
+streams:
+  - "*ref(definitions.organizations_stream)"
+  - "*ref(definitions.organization_members_stream)"
+  - "*ref(definitions.products_stream)"
+  - "*ref(definitions.tags_stream)"
+  - "*ref(definitions.environments_stream)"
+
+check:
+  stream_names:
+    - "organizations"

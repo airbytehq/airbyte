@@ -1,0 +1,73 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "string"],
+      "description": "Identifier for component"
+    },
+    "page_id": {
+      "type": ["null", "string"],
+      "description": "Page identifier"
+    },
+    "group_id": {
+      "type": ["null", "string"],
+      "description": "Component Group identifier"
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "group": {
+      "type": ["null", "boolean"],
+      "description": "Is this component a group"
+    },
+    "name": {
+      "type": ["null", "string"],
+      "description": "Display name for component"
+    },
+    "description": {
+      "type": ["null", "string"],
+      "description": "More detailed description for component"
+    },
+    "position": {
+      "type": "integer",
+      "format": "int32",
+      "description": "Order the component will appear on the page"
+    },
+    "status": {
+      "type": ["null", "string"],
+      "enum": [
+        "operational",
+        "under_maintenance",
+        "degraded_performance",
+        "partial_outage",
+        "major_outage",
+        ""
+      ],
+      "description": "Status of component"
+    },
+    "showcase": {
+      "type": ["null", "boolean"],
+      "description": "Should this component be showcased"
+    },
+    "only_show_if_degraded": {
+      "type": ["null", "boolean"],
+      "description": "Requires a special feature flag to be enabled"
+    },
+    "automation_email": {
+      "type": ["null", "string"],
+      "description": "Requires a special feature flag to be enabled"
+    },
+    "start_date": {
+      "type": ["null", "string"],
+      "format": "date",
+      "description": "The date this component started being used"
+    }
+  },
+  "description": "Add page access groups to a component",
+  "$schema": "http://json-schema.org/schema#"
+}

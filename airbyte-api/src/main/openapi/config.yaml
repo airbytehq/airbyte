@@ -12,13 +12,8 @@ info:
     * The naming convention for endpoints is: localhost:8000/{VERSION}/{METHOD_FAMILY}/{METHOD_NAME} e.g. `localhost:8000/v1/connections/create`.
     * For all `update` methods, the whole object must be passed in, even the fields that did not change.
 
-    Change Management:
-    * The major version of the API endpoint can be determined / specified in the URL `localhost:8080/v1/connections/create`
-    * Minor version bumps will be invisible to the end user. The user cannot specify minor versions in requests.
-    * All backwards incompatible changes will happen in major version bumps. We will not make backwards incompatible changes in minor version bumps. Examples of non-breaking changes (includes but not limited to...):
-      * Adding fields to request or response bodies.
-      * Adding new HTTP endpoints.
-    * All `web_backend` APIs are not considered public APIs and are not guaranteeing backwards compatibility.
+    Authentication (OSS):
+    * When authenticating to the Configuration API, you must use Basic Authentication by setting the Authentication Header to Basic and base64 encoding the username and password (which are `airbyte` and `password` by default - so base64 encoding `airbyte:password` results in `YWlyYnl0ZTpwYXNzd29yZA==`). So the full header reads `'Authorization': "Basic YWlyYnl0ZTpwYXNzd29yZA=="`
 
   version: "1.0.0"
   title: Airbyte Configuration API
@@ -53,8 +48,6 @@ tags:
     description: Source OAuth related resources to delegate access from user.
   - name: source_oauth
     description: Source OAuth related resources to delegate access from user.
-  - name: db_migration
-    description: Database migration related resources.
   - name: web_backend
     description: |
       Endpoints for the Airbyte web application. Those APIs should not be called outside the web application implementation and are not
@@ -277,26 +270,7 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/create:
-    post:
-      tags:
-        - source_definition
-      summary: Creates a sourceDefinition
-      operationId: createSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
+
   /v1/source_definitions/update:
     post:
       tags:
@@ -465,47 +439,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SourceDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/update_custom:
-    post:
-      tags:
-        - source_definition
-      summary: Update a custom sourceDefinition for the given workspace
-      operationId: updateCustomSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CustomSourceDefinitionUpdate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SourceDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/source_definitions/delete_custom:
-    post:
-      tags:
-        - source_definition
-      summary: Delete a custom source definition for the given workspace
-      operationId: deleteCustomSourceDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/SourceDefinitionIdWithWorkspaceId"
-        required: true
-      responses:
-        "204":
-          description: The resource was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -798,26 +731,6 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/create:
-    post:
-      tags:
-        - destination_definition
-      summary: Creates a destinationsDefinition
-      operationId: createDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionCreate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/destination_definitions/update:
     post:
       tags:
@@ -987,47 +900,6 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/DestinationDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/update_custom:
-    post:
-      tags:
-        - destination_definition
-      summary: Update a custom destinationDefinition for the given workspace
-      operationId: updateCustomDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CustomDestinationDefinitionUpdate"
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DestinationDefinitionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/destination_definitions/delete_custom:
-    post:
-      tags:
-        - destination_definition
-      summary: Delete a custom destination definition for the given workspace
-      operationId: deleteCustomDestinationDefinition
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DestinationDefinitionIdWithWorkspaceId"
-        required: true
-      responses:
-        "204":
-          description: The destination was deleted successfully.
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -1738,52 +1610,6 @@ paths:
                 $ref: "#/components/schemas/CheckConnectionRead"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
-  /v1/db_migrations/list:
-    post:
-      tags:
-        - db_migration
-      summary: List all database migrations
-      operationId: listMigrations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DbMigrationRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DbMigrationReadList"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
-  /v1/db_migrations/migrate:
-    post:
-      tags:
-        - db_migration
-      summary: Migrate the database to the latest version
-      operationId: executeMigrations
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/DbMigrationRequestBody"
-        required: true
-      responses:
-        "200":
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/DbMigrationExecutionRead"
-        "404":
-          $ref: "#/components/responses/NotFoundResponse"
-        "422":
-          $ref: "#/components/responses/InvalidInputResponse"
   /v1/source_oauths/oauth_params/create:
     post:
       tags:
@@ -1922,6 +1748,19 @@ paths:
           $ref: "#/components/responses/ExceptionResponse"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
+  /v1/web_backend/check_updates:
+    post:
+      tags:
+        - web_backend
+      summary: Returns a summary of source and destination definitions that could be updated.
+      operationId: webBackendCheckUpdates
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebBackendCheckUpdatesRead"
   /v1/web_backend/connections/list:
     post:
       tags:
@@ -2680,16 +2519,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         sourceDefinition:
           $ref: "#/components/schemas/SourceDefinitionCreate"
-    CustomSourceDefinitionUpdate:
-      type: object
-      required:
-        - workspaceId
-        - sourceDefinition
-      properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        sourceDefinition:
-          $ref: "#/components/schemas/SourceDefinitionUpdate"
     SourceDefinitionIdWithWorkspaceId:
       type: object
       required:
@@ -2935,6 +2764,8 @@ components:
           $ref: "#/components/schemas/CatalogDiff"
         breakingChange:
           type: boolean
+        connectionStatus:
+          $ref: "#/components/schemas/ConnectionStatus"
     SourceSearch:
       type: object
       properties:
@@ -3048,16 +2879,6 @@ components:
           $ref: "#/components/schemas/WorkspaceId"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionCreate"
-    CustomDestinationDefinitionUpdate:
-      type: object
-      required:
-        - workspaceId
-        - destinationDefinition
-      properties:
-        workspaceId:
-          $ref: "#/components/schemas/WorkspaceId"
-        destinationDefinition:
-          $ref: "#/components/schemas/DestinationDefinitionUpdate"
     DestinationDefinitionIdWithWorkspaceId:
       type: object
       required:
@@ -3371,6 +3192,8 @@ components:
           format: uuid
         geography:
           $ref: "#/components/schemas/Geography"
+        nonBreakingChangesPreference:
+          $ref: "#/components/schemas/NonBreakingChangesPreference"
     ConnectionStateCreateOrUpdate:
       type: object
       required:
@@ -3778,19 +3601,35 @@ components:
           type: string
     OperatorWebhook:
       type: object
-      required:
-        - executionUrl
       properties:
-        executionUrl:
-          type: string
-          description: The URL to call to execute the webhook operation via POST request.
-        executionBody:
-          type: string
-          description: If populated, this will be sent with the POST request.
         webhookConfigId:
           type: string
           format: uuid
           description: The id of the webhook configs to use from the workspace.
+        webhookType:
+          type: string
+          enum:
+            - dbtCloud
+        dbtCloud:
+          type: object
+          required:
+            - accountId
+            - jobId
+          properties:
+            accountId:
+              type: integer
+              description: The account id associated with the job
+            jobId:
+              type: integer
+              description: The job id associated with the job
+        executionUrl:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
+        executionBody:
+          type: string
+          description: DEPRECATED. Populate dbtCloud instead.
+          deprecated: true
     CheckOperationRead:
       type: object
       required:
@@ -3905,7 +3744,25 @@ components:
           description: Alias name to the stream to be used in the destination
           type: string
         selected:
+          description: If this is true, the stream is selected with all of its properties.
           type: boolean
+        fieldSelectionEnabled:
+          description: Whether field selection should be enabled. If this is true, only the properties in `selectedFields` will be included.
+          type: boolean
+        selectedFields:
+          description: Paths to the fields that will be included in the configured catalog. This must be set if `fieldSelectedEnabled` is set. An empty list indicates that no properties will be included.
+          type: array
+          items:
+            $ref: "#/components/schemas/SelectedFieldInfo"
+    SelectedFieldInfo:
+      type: object
+      # TODO(mfsiega-airbyte): point to thorough documentation on nested fields and paths.
+      description: Path to a field/column/property in a stream to be selected. For example, if the field to be selected is a database column called "foo", this will be ["foo"]. Use multiple path elements for nested schemas.
+      properties:
+        fieldPath:
+          type: array
+          items:
+            type: string
     DataType:
       type: string
       enum:
@@ -4019,6 +3876,13 @@ components:
           $ref: "#/components/schemas/SourceDefinitionRead"
         destinationDefinition:
           $ref: "#/components/schemas/DestinationDefinitionRead"
+    WorkflowStateRead:
+      type: object
+      required:
+        - running
+      properties:
+        running:
+          type: boolean
     JobWithAttemptsRead:
       type: object
       properties:
@@ -4152,6 +4016,7 @@ components:
         - normalization
         - dbt
         - airbyte_platform
+        - unknown
     AttemptFailureType:
       description: Categorizes well known errors into types for programmatic handling. If not set, the type of error is not well known.
       type: string
@@ -4210,6 +4075,8 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/AttemptInfoRead"
+        workflowState:
+          $ref: "#/components/schemas/WorkflowStateRead"
     AttemptInfoRead:
       type: object
       required:
@@ -4649,6 +4516,8 @@ components:
           type: string
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
     DestinationOauthConsentRequest:
       type: object
       required:
@@ -4665,6 +4534,8 @@ components:
           type: string
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     OAuthConsentRead:
       type: object
       required:
@@ -4691,6 +4562,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        sourceId:
+          $ref: "#/components/schemas/SourceId"
     CompleteDestinationOAuthRequest:
       type: object
       required:
@@ -4710,6 +4583,8 @@ components:
           additionalProperties: true # Oauth parameters like code, state, etc.. will be different per API so we don't specify them in advance
         oAuthInputConfiguration:
           $ref: "#/components/schemas/OAuthInputConfiguration"
+        destinationId:
+          $ref: "#/components/schemas/DestinationId"
     CompleteOAuthResponse:
       type: object
       additionalProperties: true # Oauth parameters like refresh/access token etc.. will be different per API so we don't specify them in advance
@@ -4736,6 +4611,17 @@ components:
           type: object
           additionalProperties: true
     # Web Backend
+    WebBackendCheckUpdatesRead:
+      type: object
+      description: Summary of source and destination definitions that could be updated
+      required:
+        - destinationDefinitions
+        - sourceDefinitions
+      properties:
+        destinationDefinitions:
+          type: integer
+        sourceDefinitions:
+          type: integer
     WebBackendConnectionListItem:
       type: object
       description: Information about a connection that shows up in the connection list view.

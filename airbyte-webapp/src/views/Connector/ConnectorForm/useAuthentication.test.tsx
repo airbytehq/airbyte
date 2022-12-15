@@ -9,6 +9,7 @@ import { useAuthentication as useAuthenticationHook } from "./useAuthentication"
 import { noPredicateAdvancedAuth, predicateInsideConditional } from "./useAuthentication.mocks";
 import { makeConnectionConfigurationPath } from "./utils";
 
+jest.mock("hooks/services/AppMonitoringService");
 jest.mock("./connectorFormContext");
 jest.mock("formik", () => ({
   ...jest.requireActual("formik"),

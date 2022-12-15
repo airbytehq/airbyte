@@ -16,6 +16,7 @@ import io.airbyte.commons.temporal.scheduling.ConnectionManagerWorkflow;
 import io.airbyte.commons.temporal.scheduling.DiscoverCatalogWorkflow;
 import io.airbyte.commons.temporal.scheduling.SpecWorkflow;
 import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
+import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.JobCheckConnectionConfig;
 import io.airbyte.config.JobDiscoverCatalogConfig;
@@ -191,6 +192,10 @@ public class TemporalClient {
 
   }
 
+  public Optional<WorkflowState> getWorkflowState(final UUID connectionId) {
+    return connectionManagerUtils.getWorkflowState(client, connectionId);
+  }
+
   public ManualOperationResult startNewManualSync(final UUID connectionId) {
     log.info("Manual sync request");
 
@@ -327,7 +332,8 @@ public class TemporalClient {
     final IntegrationLauncherConfig launcherConfig = new IntegrationLauncherConfig()
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
-        .withDockerImage(config.getDockerImage());
+        .withDockerImage(config.getDockerImage())
+        .withIsCustomConnector(config.getIsCustomConnector());
     return execute(jobRunConfig,
         () -> getWorkflowStub(SpecWorkflow.class, TemporalJobType.GET_SPEC).run(jobRunConfig, launcherConfig));
 
@@ -341,7 +347,8 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
     final StandardCheckConnectionInput input = new StandardCheckConnectionInput().withConnectionConfiguration(config.getConnectionConfiguration());
 
     return execute(jobRunConfig,
@@ -356,7 +363,8 @@ public class TemporalClient {
         .withJobId(jobId.toString())
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDockerImage())
-        .withProtocolVersion(config.getProtocolVersion());
+        .withProtocolVersion(config.getProtocolVersion())
+        .withIsCustomConnector(config.getIsCustomConnector());
     final StandardDiscoverCatalogInput input = new StandardDiscoverCatalogInput().withConnectionConfiguration(config.getConnectionConfiguration())
         .withSourceId(config.getSourceId()).withConnectorVersion(config.getConnectorVersion()).withConfigHash(config.getConfigHash());
 
@@ -371,13 +379,15 @@ public class TemporalClient {
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getSourceDockerImage())
-        .withProtocolVersion(config.getSourceProtocolVersion());
+        .withProtocolVersion(config.getSourceProtocolVersion())
+        .withIsCustomConnector(config.getIsSourceCustomConnector());
 
     final IntegrationLauncherConfig destinationLauncherConfig = new IntegrationLauncherConfig()
         .withJobId(String.valueOf(jobId))
         .withAttemptId((long) attempt)
         .withDockerImage(config.getDestinationDockerImage())
-        .withProtocolVersion(config.getDestinationProtocolVersion());
+        .withProtocolVersion(config.getDestinationProtocolVersion())
+        .withIsCustomConnector(config.getIsDestinationCustomConnector());
 
     final StandardSyncInput input = new StandardSyncInput()
         .withNamespaceDefinition(config.getNamespaceDefinition())
@@ -476,13 +486,13 @@ public class TemporalClient {
     return connectionManagerWorkflow;
   }
 
-  public void deleteConnection(final UUID connectionId) {
-    try {
-      connectionManagerUtils.signalWorkflowAndRepairIfNecessary(client, connectionId,
-          connectionManagerWorkflow -> connectionManagerWorkflow::deleteConnection);
-    } catch (final DeletedWorkflowException e) {
-      log.info("Connection {} has already been deleted.", connectionId);
-    }
+  /**
+   * This will cancel a workflow even if the connection is deleted already
+   *
+   * @param connectionId - connectionId to cancel
+   */
+  public void forceDeleteWorkflow(final UUID connectionId) {
+    connectionManagerUtils.deleteWorkflowIfItExist(client, connectionId);
   }
 
   public void update(final UUID connectionId) {
