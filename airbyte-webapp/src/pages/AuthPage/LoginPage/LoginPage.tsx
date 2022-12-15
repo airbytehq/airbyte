@@ -1,13 +1,13 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
 import HeadTitle from "components/HeadTitle";
 
+import { useUser } from "core/AuthContext";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 // import useRouter from "hooks/useRouter";
 // import { CloudRoutes } from "packages/cloud/cloudRoutes";
@@ -33,7 +33,7 @@ const LoginPageValidationSchema = yup.object().shape({
 const LoginPage: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const { formatMessage } = useIntl();
-  const navigate = useNavigate();
+  const { setUser } = useUser();
   // const { login } = useAuthService();
   // const { query, replace } = useRouter();
   const Signin = useAuthenticationService();
@@ -62,8 +62,8 @@ const LoginPage: React.FC = () => {
         onSubmit={
           async (values) => {
             Signin.post(values)
-              .then(() => {
-                navigate(`/${RoutePaths.Connections}`);
+              .then((res: any) => {
+                setUser?.(res);
               })
               .catch((err: any) => {
                 setErrorMessage(err.message);

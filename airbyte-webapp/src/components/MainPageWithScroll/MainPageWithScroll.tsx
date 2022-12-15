@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React from "react";
 
 import styles from "./MainPageWithScroll.module.scss";
@@ -10,9 +11,10 @@ interface MainPageWithScrollProps {
   headTitle?: React.ReactNode;
   pageTitle?: React.ReactNode;
   children?: React.ReactNode;
+  withPadding?: boolean;
 }
 
-const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, children }) => {
+const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, pageTitle, withPadding, children }) => {
   return (
     <div className={styles.page}>
       <div>
@@ -20,7 +22,7 @@ const MainPageWithScroll: React.FC<MainPageWithScrollProps> = ({ headTitle, page
         {pageTitle}
       </div>
       <div className={styles.contentContainer}>
-        <div className={styles.content}>{children}</div>
+        <div className={classNames(styles.content, { [styles.withPadding]: withPadding })}>{children}</div>
       </div>
     </div>
   );

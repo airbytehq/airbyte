@@ -29,6 +29,7 @@ const CreditsPage: React.FC = () => {
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "credits.credits" }]} />}
       pageTitle={<PageTitle title={<FormattedMessage id="credits.credits" />} />}
+      withPadding
     >
       <Content>
         {!emailVerified && <EmailVerificationHintWithMargin />}

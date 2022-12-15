@@ -20,7 +20,7 @@ const LabeledInput: React.FC<LabeledInputProps> = ({
     label={label}
     labelAdditionLength={labelAdditionLength}
   >
-    <Input {...inputProps} error={error} />
+    <Input {...inputProps} error={error} focusedStyle />
   </ControlLabels>
 );
 

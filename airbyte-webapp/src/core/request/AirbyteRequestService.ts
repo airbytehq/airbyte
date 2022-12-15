@@ -8,7 +8,11 @@ import { VersionError } from "./VersionError";
 abstract class AirbyteRequestService {
   private readonly rootUrl: string;
 
-  constructor(rootUrl: string, private middlewares: RequestMiddleware[] = []) {
+  constructor(
+    rootUrl: string,
+    private middlewares: RequestMiddleware[] = [],
+    private redirectUnauthenticatedUser?: () => void
+  ) {
     // Remove the `/v1/` at the end of the URL if it exists, during the transition period
     // to remove it from all cloud environments
     // this.rootUrl = rootUrl.replace(/\/v1\/?$/, "");
@@ -19,6 +23,7 @@ abstract class AirbyteRequestService {
     return {
       config: { apiUrl: this.rootUrl },
       middlewares: this.middlewares,
+      redirectUnauthenticatedUser: this.redirectUnauthenticatedUser,
     };
   }
 

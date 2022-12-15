@@ -7,7 +7,7 @@ const BASE_DOCS_LINK = "https://docs.daspire.com";
 export const links = {
   dbtCommandsReference: "https://docs.getdbt.com/reference/dbt-commands",
   technicalSupport: `${BASE_DOCS_LINK}/troubleshooting/on-deploying`,
-  termsLink: "https://daspire.com/terms",
+  termsLink: "https://daspire.com/terms-of-services",
   privacyLink: "https://daspire.com/privacy-policy",
   helpLink: "https://daspire.com/community",
   gitLink: `${BASE_DOCS_LINK}/quickstart/deploy-airbyte`,

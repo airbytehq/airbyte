@@ -27,11 +27,15 @@ interface JobItemProps {
   job: SynchronousJobRead | JobsWithJobs;
 }
 
+// TODO: Jerry Lee told Akif to manage this condition on "status" basis rather than "succeeded"
+// "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
 const didJobSucceed = (job: SynchronousJobRead | JobsWithJobs): boolean =>
-  "succeeded" in job ? job.succeeded : getJobStatus(job) !== "failed";
+  "status" in job ? (job.status === JobStatus.succeeded ? true : false) : getJobStatus(job) !== "failed";
 
+// TODO: Jerry Lee told Akif to manage this condition on "status" basis rather than "succeeded"
+// "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
 export const getJobStatus: (job: SynchronousJobRead | JobsWithJobs) => JobStatus = (job) =>
-  "succeeded" in job ? (job.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
+  "status" in job ? (job.status === JobStatus.succeeded ? JobStatus.succeeded : JobStatus.failed) : job.job.status;
 
 export const getJobAttemps: (job: SynchronousJobRead | JobsWithJobs) => AttemptRead[] | undefined = (job) =>
   "attempts" in job ? job.attempts : undefined;

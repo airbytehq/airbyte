@@ -1,10 +1,11 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { useEffectOnce } from "react-use";
 
 import ApiErrorBoundary from "components/ApiErrorBoundary";
 
 // import { useAnalyticsIdentifyUser, useAnalyticsRegisterValues } from "hooks/services/Analytics";
+import { useUser } from "core/AuthContext";
 import { useApiHealthPoll } from "hooks/services/Health";
 import { OnboardingServiceProvider } from "hooks/services/Onboarding";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
@@ -14,12 +15,12 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import { getAuthenticatedUser } from "../services/auth/AuthService";
 import { LoginPage } from "./AuthPage/LoginPage";
 import SignupPage from "./AuthPage/SignupPage";
 import ConnectionPage from "./ConnectionPage";
 import DestinationPage from "./DestinationPage";
 // import OnboardingPage from "./OnboardingPage";
+import PaymentPage from "./PaymentPage";
 import PreferencesPage from "./PreferencesPage";
 import { RoutePaths } from "./routePaths";
 import SettingsPage from "./SettingsPage";
@@ -48,6 +49,7 @@ const MainViewRoutes: React.FC<{ workspace: WorkspaceRead }> = () =>
             <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
             <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
             <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
+            <Route path={`${RoutePaths.Payment}/*`} element={<PaymentPage />} />
             {/* {workspace ? <Route path={`${RoutePaths.Onboarding}/*`} element={<OnboardingPage />} /> : null}
           <Route path="*" element={<Navigate to={workspace ? RoutePaths.Onboarding : RoutePaths.Connections} />} /> */}
             <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />
@@ -76,23 +78,21 @@ export const AutoMoveToAuth = () => {
   return <Navigate to={`/${RoutePaths.Signin}`} replace />;
 };
 
-export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ includePath }) => {
-  // const location = useLocation();
-  // const workspaces = useListWorkspaces();
-  // const currentWorkspace = workspaces[0];
-  //
-  // return (
-  //   <Navigate
-  //     to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
-  //     replace
-  //   />
-  // );
+// export const AutoSelectFirstWorkspace: React.FC<{ includePath?: boolean }> = ({ includePath }) => {
+// const location = useLocation();
+// const workspaces = useListWorkspaces();
+// const currentWorkspace = workspaces[0];
+//
+// return (
+//   <Navigate
+//     to={`/${RoutePaths.Workspaces}/${currentWorkspace.workspaceId}${includePath ? location.pathname : ""}`}
+//     replace
+//   />
+// );
+export const AutoSelectFirstWorkspace: React.FC = () => {
   const location = useLocation();
-  const user = getAuthenticatedUser();
 
-  return (
-    <Navigate to={`/${RoutePaths.Workspaces}/${user.workspaceId}${includePath ? location.pathname : ""}`} replace />
-  );
+  return <Navigate to={`/${location.pathname}`} replace />;
 };
 
 const RoutingWithWorkspace: React.FC = () => {
@@ -109,31 +109,34 @@ const RoutingWithWorkspace: React.FC = () => {
 
 export const Routing: React.FC = () => {
   const { search } = useLocation();
+  const { user } = useUser();
 
   useEffectOnce(() => {
     storeUtmFromQuery(search);
   });
 
   // TODO: Remove this after it is verified there are no problems with current routing
-  const OldRoutes = useMemo(
-    () =>
-      Object.values(RoutePaths).map((r) => (
-        <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace includePath />} />
-      )),
-    []
-  );
-  const user = getAuthenticatedUser();
+  // const OldRoutes = useMemo(
+  //   () =>
+  //     Object.values(RoutePaths).map((r) => (
+  //       <Route path={`${r}/*`} key={r} element={<AutoSelectFirstWorkspace includePath />} />
+  //     )),
+  //   []
+  // );
+
   return (
     <>
-      {user && (
+      {user.token && (
         <Routes>
-          {OldRoutes}
+          {/* {OldRoutes} */}
           <Route path={RoutePaths.AuthFlow} element={<CompleteOauthRequest />} />
-          <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} />
+          {/* TODO: Xuan Ma told me to remove workspaceId from URLs
+          <Route path={`${RoutePaths.Workspaces}/:workspaceId/*`} element={<RoutingWithWorkspace />} /> */}
+          <Route path="/*" element={<RoutingWithWorkspace />} />
           <Route path="*" element={<AutoSelectFirstWorkspace />} />
         </Routes>
       )}
-      {!user && <AuthRoutes />}
+      {!user.token && <AuthRoutes />}
     </>
   );
 };

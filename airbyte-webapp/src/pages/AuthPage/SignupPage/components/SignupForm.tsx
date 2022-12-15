@@ -1,21 +1,22 @@
 import { Field, FieldProps, Formik } from "formik";
 import React, { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+
 // import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
 import { LabeledInput, Link, LoadingButton } from "components";
 import Alert from "components/Alert";
 
-// import { useConfig } from "config";
+import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
+
 // import { useExperiment } from "hooks/services/Experiment";
 // import { FieldError } from "packages/cloud/lib/errors/FieldError";
 // import { useAuthService } from "packages/cloud/services/auth/AuthService";
 import { useAuthenticationService } from "../../../../services/auth/AuthSpecificationService";
 
 // import CheckBoxControl from "../../components/CheckBoxControl";
-import { RoutePaths } from "../../../routePaths";
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
 // import {AuthService} from "../../../../services/auth/AuthService";
@@ -224,7 +225,7 @@ export const SignupFormStatusMessage: React.FC = ({ children }) => (
 export const SignupForm: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string>("");
   const signUp = useAuthenticationService();
-  const navigate = useNavigate();
+  const { setUser } = useUser();
 
   // const showName = !useExperiment("authPage.signup.hideName", false);
   // const showCompanyName = !useExperiment("authPage.signup.hideCompanyName", false);
@@ -252,6 +253,7 @@ export const SignupForm: React.FC = () => {
     return yup.object().shape(shape);
   }, []);
 
+  const config = useConfig();
   return (
     <>
       <Alert
@@ -274,8 +276,8 @@ export const SignupForm: React.FC = () => {
           async (values) => {
             signUp
               .create(values)
-              .then(() => {
-                navigate(`/${RoutePaths.Connections}`);
+              .then((res: any) => {
+                setUser?.(res);
               })
               .catch((err: any) => {
                 setErrorMessage(err.message);
@@ -319,12 +321,12 @@ export const SignupForm: React.FC = () => {
             </BottomBlock>
             <div className={styles.termsAndPrivacy}>
               <FormattedMessage id="signup.description" />
-              <Link to="" $clear className={styles.link}>
-                <FormattedMessage id="signup.privacy" />
+              <Link target="_blank" href={config.links.termsLink} as="a" $clear className={styles.link}>
+                <FormattedMessage id="signup.terms" />
               </Link>
               <FormattedMessage id="signup.and" />
-              <Link to="" $clear className={styles.link}>
-                <FormattedMessage id="signup.terms" />
+              <Link target="_blank" href={config.links.privacyLink} as="a" $clear className={styles.link}>
+                <FormattedMessage id="signup.privacy" />
               </Link>
             </div>
           </Form>

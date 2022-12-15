@@ -4,6 +4,7 @@ import styled from "styled-components";
 
 // import { H2 } from "components/base";
 import { BigButton } from "components/CenteredPageComponents";
+import HeadTitle from "components/HeadTitle";
 
 import TitlesBlock from "pages/OnboardingPage/components/TitlesBlock";
 
@@ -96,6 +97,7 @@ export const EmptyResourceListView: React.FC<EmptyResourceListViewProps> = ({
 
   return (
     <Container>
+      <HeadTitle titles={[{ title: resourceType === "connections" ? "Dashboard" : "" }]} />
       {/* <Heading>
         <FormattedMessage id={headingMessageId} />
       </Heading> */}

@@ -171,6 +171,10 @@ public class JobNotifier {
     notifyJob(null, SUCCESS_NOTIFICATION, job);
   }
 
+  public String getWorkspaceForJobId(Long jobId) {
+    return workspaceHelper.getWorkspaceForJobIdIgnoreExceptions(jobId).toString();
+  }
+
   public void autoDisableConnection(final Job job) {
     notifyJob(null, CONNECTION_DISABLED_NOTIFICATION, job);
   }

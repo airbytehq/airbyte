@@ -196,6 +196,7 @@ public class EnvConfigs implements Configs {
   private static final long DEFAULT_MAX_DISCOVER_WORKERS = 5;
   private static final long DEFAULT_MAX_SYNC_WORKERS = 5;
   private static final String DEFAULT_NETWORK = "host";
+  public static final String DASPIRE_URL = "DASPIRE_URL";
 
   public static final Map<String, Function<EnvConfigs, String>> JOB_SHARED_ENVS = Map.of(
       AIRBYTE_VERSION, (instance) -> instance.getAirbyteVersion().serialize(),
@@ -477,7 +478,7 @@ public class EnvConfigs implements Configs {
   // Airbyte Services
   @Override
   public String getTemporalHost() {
-    return getEnvOrDefault(TEMPORAL_HOST, "airbyte-temporal:7233");
+    return getEnvOrDefault(TEMPORAL_HOST, "daspire-temporal:7233");
   }
 
   @Override
@@ -1061,6 +1062,11 @@ public class EnvConfigs implements Configs {
   @Override
   public int getActivityNumberOfAttempt() {
     return Integer.parseInt(getEnvOrDefault(ACTIVITY_MAX_ATTEMPT, "5"));
+  }
+
+  @Override
+  public String getDaspireUrl() {
+    return getEnv(DASPIRE_URL);
   }
 
   // Helpers

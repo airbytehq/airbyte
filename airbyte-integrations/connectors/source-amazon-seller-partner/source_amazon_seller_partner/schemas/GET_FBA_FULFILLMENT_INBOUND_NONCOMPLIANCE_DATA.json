@@ -1,0 +1,71 @@
+{
+    "title": "FBA Inbound Performance Report",
+    "description": "FBA Inbound Performance Report GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+      "source_name": {
+        "type": ["null", "string"]
+      },
+      "issue-reported-date": {
+        "type": ["null", "string"]
+      },
+      "shipment-creation-date": {
+        "type": ["null", "string"]
+      },
+      "fba-shipment-id": {
+        "type": ["null", "string"]
+      },
+      "fba-carton-id": {
+        "type": ["null", "string"]
+      },
+      "fulfillment-center-id": {
+        "type": ["null", "string"]
+      },
+      "sku": {
+        "type": ["null", "string"]
+      },
+      "fnsku": {
+        "type": ["null", "string"]
+      },
+      "asin": {
+        "type": ["null", "string"]
+      },
+      "product-name": {
+        "type": ["null", "string"]
+      },
+      "problem-type": {
+        "type": ["null", "string"]
+      },
+      "problem-quantity": {
+        "type": ["null", "number"]
+      },
+      "expected-quantity": {
+        "type": ["null", "number"]
+      },
+      "received-quantity": {
+        "type": ["null", "number"]
+      },
+      "performance-measurement-unit": {
+        "type": ["null", "string"]
+      },
+      "coaching-level": {
+        "type": ["null", "string"]
+      },
+      "fee-type": {
+        "type": ["null", "string"]
+      },
+      "currency": {
+        "type": ["null", "string"]
+      },
+      "fee-total": {
+        "type": ["null", "string"]
+      },
+      "problem-level": {
+        "type": ["null", "string"]
+      },
+      "alert-status": {
+        "type": ["null", "string"]
+      }
+    }
+  }

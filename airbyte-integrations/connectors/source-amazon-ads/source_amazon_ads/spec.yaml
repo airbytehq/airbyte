@@ -9,13 +9,18 @@ connectionSpecification:
       const: oauth2.0
       order: 0
       type: string
+    source_name:
+      title: Store Name *
+      description:  The identification of one of your Amazon store
+      order: 1
+      type: string
     client_id:
       title: Client ID
       description:
         The client ID of your Amazon Ads developer application. See the
         <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
         for more information.
-      order: 1
+      order: 2
       type: string
     client_secret:
       title: Client Secret
@@ -24,7 +29,7 @@ connectionSpecification:
         the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens#retrieve-your-client-id-and-client-secret">docs</a>
         for more information.
       airbyte_secret: true
-      order: 2
+      order: 3
       type: string
     refresh_token:
       title: Refresh Token
@@ -32,7 +37,7 @@ connectionSpecification:
         Amazon Ads refresh token. See the <a href="https://advertising.amazon.com/API/docs/en-us/get-started/generate-api-tokens">docs</a>
         for more information on how to obtain this token.
       airbyte_secret: true
-      order: 3
+      order: 4
       type: string
     region:
       title: Region *
@@ -45,7 +50,7 @@ connectionSpecification:
         - FE
       type: string
       default: NA
-      order: 4
+      order: 5
     report_wait_timeout:
       title: Report Wait Timeout *
       description: Timeout duration in minutes for Reports. Default is 60 minutes.
@@ -53,7 +58,7 @@ connectionSpecification:
       examples:
         - 60
         - 120
-      order: 5
+      order: 6
       type: integer
     report_generation_max_retries:
       title: Report Generation Maximum Retries *
@@ -65,7 +70,7 @@ connectionSpecification:
         - 5
         - 10
         - 15
-      order: 6
+      order: 7
       type: integer
     start_date:
       title: Start Date (Optional)
@@ -75,14 +80,14 @@ connectionSpecification:
       examples:
         - "2022-10-10"
         - "2022-10-22"
-      order: 7
+      order: 8
       type: string
     profiles:
       title: Profile IDs (Optional)
       description:
         Profile IDs you want to fetch data for. See <a href="https://advertising.amazon.com/API/docs/en-us/concepts/authorization/profiles">docs</a>
         for more details.
-      order: 8
+      order: 9
       type: array
       items:
         type: integer

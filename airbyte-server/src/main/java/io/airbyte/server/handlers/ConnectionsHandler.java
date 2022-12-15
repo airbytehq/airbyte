@@ -9,20 +9,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import io.airbyte.analytics.TrackingClient;
-import io.airbyte.api.model.generated.AirbyteCatalog;
-import io.airbyte.api.model.generated.AirbyteStreamConfiguration;
-import io.airbyte.api.model.generated.CatalogDiff;
-import io.airbyte.api.model.generated.ConnectionCreate;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.ConnectionReadList;
-import io.airbyte.api.model.generated.ConnectionSearch;
-import io.airbyte.api.model.generated.ConnectionUpdate;
-import io.airbyte.api.model.generated.DestinationRead;
-import io.airbyte.api.model.generated.DestinationSearch;
-import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.SourceSearch;
-import io.airbyte.api.model.generated.StreamDescriptor;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ActorCatalog;
@@ -420,6 +407,14 @@ public class ConnectionsHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     return ApiPojoConverters.internalToConnectionRead(standardSync);
+  }
+
+  public ConnectionDisplayFlag connectionsDisabledAllForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) throws IOException {
+    return new ConnectionDisplayFlag().flag(configRepository.disabledConnections(workspaceIdRequestBody.getWorkspaceId()) > 0);
+  }
+
+  public ConnectionsCount connectionsCountForWorkspace(WorkspaceIdRequestBody workspaceIdRequestBody) throws IOException {
+    return new ConnectionsCount().count(configRepository.connectionsCount(workspaceIdRequestBody.getWorkspaceId()));
   }
 
 }

@@ -568,6 +568,8 @@ export interface SynchronousJobRead {
   endedAt: number;
   succeeded: boolean;
   logs?: LogRead;
+  status?: string;
+  job?: any;
 }
 
 export interface AttemptInfoRead {

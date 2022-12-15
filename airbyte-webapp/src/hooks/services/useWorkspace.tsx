@@ -1,6 +1,7 @@
 import { useMutation } from "react-query";
 
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { NotificationService } from "core/domain/notification/NotificationService";
 import { DestinationRead, SourceRead } from "core/request/AirbyteClient";
 import { useAnalyticsService } from "hooks/services/Analytics";
@@ -18,10 +19,11 @@ export interface WebhookPayload {
 
 function useGetNotificationService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new NotificationService(process.env.REACT_APP_API_URL as string, middlewares),
-    [process.env.REACT_APP_API_URL as string, middlewares]
+    () => new NotificationService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
+    [process.env.REACT_APP_API_URL as string, middlewares, removeUser]
   );
 }
 

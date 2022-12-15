@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef } from "react";
 import { useAsyncFn, useEffectOnce, useEvent } from "react-use";
 
 import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
 import { DestinationAuthService } from "core/domain/connector/DestinationAuthService";
 import { isSourceDefinitionSpecification } from "core/domain/connector/source";
@@ -47,16 +48,17 @@ export function useConnectorAuth(): {
 } {
   const { workspaceId } = useCurrentWorkspace();
   const { oauthRedirectUrl } = useConfig();
+  const { removeUser } = useUser();
 
   // TODO: move to separate initFacade and use refs instead
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   const sourceAuthService = useMemo(
-    () => new SourceAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new SourceAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
   const destinationAuthService = useMemo(
-    () => new DestinationAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
+    () => new DestinationAuthService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
     [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
   );
 

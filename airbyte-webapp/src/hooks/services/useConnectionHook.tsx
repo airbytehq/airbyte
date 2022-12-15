@@ -3,6 +3,7 @@ import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import { getFrequencyType } from "config/utils";
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { WebBackendConnectionService } from "core/domain/connection";
 import { ConnectionService } from "core/domain/connection/ConnectionService";
@@ -60,18 +61,20 @@ export interface ListConnection {
 
 function useWebConnectionService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new WebBackendConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    () => new WebBackendConnectionService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
     [process.env.REACT_APP_API_URL as string, middlewares]
   );
 }
 
 export function useConnectionService() {
   // const config = useConfig();
+  const { removeUser } = useUser();
   const middlewares = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new ConnectionService(process.env.REACT_APP_API_URL as string, middlewares),
+    () => new ConnectionService(process.env.REACT_APP_API_URL as string, middlewares, removeUser),
     [process.env.REACT_APP_API_URL as string, middlewares]
   );
 }

@@ -1,3 +1,4 @@
+
 # airbyte-webapp
 
 This module contains the Airbyte Webapp. It is a React app written in TypeScript. It runs in a Docker container. A very lightweight nginx server runs in that Docker container and serves the webapp.
@@ -29,3 +30,13 @@ Note: needs to be run from the root directory of the Airbyte project.
 ## Entrypoints
 * `airbyte-webapp/src/App.tsx` is the entrypoint into the OSS version of the webapp.
 * `airbyte-webapp/src/packages/cloud/App.tsx` is the entrypoint into the Cloud version of the webapp.
+
+
+## Change log:
+#### 2022.12.14
+1. Add sign out button in sidebar (file: en.json&SideBar.tsx)
+#### 2022.12.13
+1. Airbtyte replaced by Daspire (file: en.json)
+2. Hide error log (file: ConnectorCard.tsx)
+#### 2022.12.12
+1. Add privacy & terms jump link for webapp registration page(file：links.ts&SignupForm.tsx)

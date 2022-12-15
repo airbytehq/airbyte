@@ -5,8 +5,6 @@ import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Button, LoadingPage, MainPageWithScroll, PageTitle } from "components";
-// import { UpgradePlanBar } from "./components/UpgradePlanBar";
-// import { UnauthorizedModal } from "./components/UnauthorizedModal";
 import { EmptyResourceListView } from "components/EmptyResourceListView";
 import HeadTitle from "components/HeadTitle";
 
@@ -38,7 +36,6 @@ const BtnText = styled.div`
 `;
 
 const AllConnectionsPage: React.FC = () => {
-  // const [isAuthorized, setIsAuthorized] = useState<boolean>(true);
   const { push } = useRouter();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
@@ -50,10 +47,9 @@ const AllConnectionsPage: React.FC = () => {
 
   return (
     <Suspense fallback={<LoadingPage />}>
-      {/* {isAuthorized && <UnauthorizedModal onClose={() => {setIsAuthorized(false)}}/>}
-      <UpgradePlanBar /> */}
       {connections.length ? (
         <MainPageWithScroll
+          withPadding
           headTitle={<HeadTitle titles={[{ title: "Connections" }]} />}
           pageTitle={
             <PageTitle

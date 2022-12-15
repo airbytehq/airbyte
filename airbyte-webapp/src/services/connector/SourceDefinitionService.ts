@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
 import { SourceDefinitionService } from "core/domain/connector/SourceDefinitionService";
-import { getAuthenticatedUser } from "services/auth/AuthService";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 import { useInitService } from "services/useInitService";
 import { isDefined } from "utils/common";
@@ -19,12 +19,12 @@ export const sourceDefinitionKeys = {
 
 function useGetSourceDefinitionService(): SourceDefinitionService {
   // const { apiUrl } = useConfig();
-
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
 
   return useInitService(
-    () => new SourceDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
-    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+    () => new SourceDefinitionService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser]
   );
 }
 
@@ -36,7 +36,7 @@ const useSourceDefinitionList = (): {
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
 } => {
   const service = useGetSourceDefinitionService();
-  const user = getAuthenticatedUser();
+  const { user } = useUser();
 
   return useSuspenseQuery(sourceDefinitionKeys.lists(), async () => {
     const [
@@ -45,7 +45,7 @@ const useSourceDefinitionList = (): {
     ] = await Promise.all([
       // service.list(),
       // service.listLatest(),
-      service.listLatestForWorkspace({ workspaceId: user?.workspaceId }),
+      service.listLatestForWorkspace({ workspaceId: user.workspaceId }),
     ]);
 
     // const sourceDefinitions = definition.sourceDefinitions.map((source) => {

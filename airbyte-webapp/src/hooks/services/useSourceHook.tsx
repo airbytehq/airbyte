@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 // import { useConfig } from "config";
 import { Action, Namespace } from "core/analytics";
+import { useUser } from "core/AuthContext";
 import { SyncSchema } from "core/domain/catalog";
 import { ConnectionConfiguration } from "core/domain/connection";
 import { SourceService } from "core/domain/connector/SourceService";
@@ -39,10 +40,11 @@ interface ConnectorProps {
 
 function useSourceService() {
   // const { apiUrl } = useConfig();
+  const { removeUser } = useUser();
   const requestAuthMiddleware = useDefaultRequestMiddlewares();
   return useInitService(
-    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware),
-    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware]
+    () => new SourceService(process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser),
+    [process.env.REACT_APP_API_URL as string, requestAuthMiddleware, removeUser]
   );
 }
 
