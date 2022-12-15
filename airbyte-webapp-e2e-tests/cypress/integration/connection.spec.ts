@@ -162,7 +162,7 @@ describe("Connection - main actions", () => {
 
     goToReplicationTab();
 
-    console.log(Cypress.$("body").html());
+    cy.log(Cypress.$("body").html());
 
     selectSchedule("Cron");
     submitButtonClick();
