@@ -15,6 +15,7 @@ from airbyte_cdk.sources.streams.http import HttpStream
 class GitlabStream(HttpStream, ABC):
     primary_key = "id"
     raise_on_http_errors = True
+    availability_strategy = None
     stream_base_params = {}
     flatten_id_keys = []
     flatten_list_keys = []
