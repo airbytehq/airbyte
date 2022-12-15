@@ -23,7 +23,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CursorPagination
     "CursorPagination.decoder": "JsonDecoder",
     # DefaultErrorHandler
-    "response_filters": "HttpResponseFilter",
+    "DefaultErrorHandler.response_filters": "HttpResponseFilter",
     # DefaultPaginator
     "DefaultPaginator.decoder": "JsonDecoder",
     "DefaultPaginator.page_size_option": "RequestOption",
@@ -74,7 +74,7 @@ class ManifestComponentTransformer:
         components, not an in-place transformation.
 
         :param declarative_component: The current component that is having type and options added
-        :param parent_field: The name of the field of the current component coming from the parent component
+        :param parent_field_identifier: The name of the field of the current component coming from the parent component
         :param parent_options: The options set on parent components defined before the current component
         :return: A deep copy of the transformed component with types and options persisted to it
         """
