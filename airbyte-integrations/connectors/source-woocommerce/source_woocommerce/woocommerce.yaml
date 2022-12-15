@@ -20,7 +20,7 @@ definitions:
         order: "asc"
         dates_are_gmt: "true"
   date_stream_slicer:
-    type: DatetimeStreamSlicer
+    class_name: source_woocommerce.components.DatetimeStreamSlicerWoocommerce
     lookback_window: "{{ config.get('conversion_window_days', 0) }}d"
     start_datetime:
       datetime: "{{ format_datetime(config['start_date'], '%Y-%m-%dT%H:%M:%S') }}"
