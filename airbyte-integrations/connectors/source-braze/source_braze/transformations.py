@@ -16,7 +16,7 @@ class TransformToRecordComponent(AddFields):
         stream_slice: Optional[StreamSlice] = None,
     ) -> Record:
         """
-        Filter out AirbyteMessages from actual records and transform incoming string to a dictionary record
+        Transforms incoming string to a dictionary record.
         """
         _record = {}
         kwargs = {"record": record, "stream_state": stream_state, "stream_slice": stream_slice}
