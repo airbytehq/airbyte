@@ -1117,7 +1117,7 @@ jobs:
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
           AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           WORKFLOW_RUN_ID: ${{ github.run_id }}
-          AWS_S3_BUCKET: airbyte-buildcache
+          AWS_S3_BUCKET: airbyte-acceptance-test-source-s3
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
           SECRET_STORE_GCP_PROJECT_ID: ${{ secrets.SECRET_STORE_GCP_PROJECT_ID }}
         timeout-minutes: 20
