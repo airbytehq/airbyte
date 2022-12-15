@@ -3,16 +3,6 @@
 
 $deleteButtonWidth: 24px;
 
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: variables.$spacing-md;
-}
-
-.heading {
-  text-align: center;
-}
-
 .controls {
   display: flex;
   justify-content: center;

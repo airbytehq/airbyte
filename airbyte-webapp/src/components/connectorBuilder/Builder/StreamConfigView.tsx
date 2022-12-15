@@ -1,15 +1,14 @@
 import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useField } from "formik";
-import { FormattedMessage } from "react-intl";
-
-import { Heading } from "components/ui/Heading";
+import { useIntl } from "react-intl";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
 import { BuilderCard } from "./BuilderCard";
+import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
 import styles from "./StreamConfigView.module.scss";
@@ -19,7 +18,7 @@ interface StreamConfigViewProps {
 }
 
 export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum }) => {
-  // const { values, setValues } = useFormikContext<BuilderFormValues>();
+  const { formatMessage } = useIntl();
   const [field, , helpers] = useField<BuilderStream[]>("streams");
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
   const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
@@ -45,10 +44,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
   };
 
   return (
-    <div className={styles.container}>
-      <Heading className={styles.heading} as="h1" size="sm">
-        <FormattedMessage id="connectorBuilder.stream" />
-      </Heading>
+    <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.stream" })}>
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
       <div className={styles.controls}>
@@ -77,6 +73,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Pointer into the response that should be extracted as the final record"
         />
       </BuilderCard>
-    </div>
+    </BuilderConfigView>
   );
 };
