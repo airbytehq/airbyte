@@ -1,4 +1,4 @@
-import { useMemo, useCallback } from "react";
+import { useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import { CellProps } from "react-table";
 
@@ -8,7 +8,6 @@ import { Table } from "components/ui/Table";
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { DestinationDefinitionRead, SourceDefinitionRead } from "core/request/AirbyteClient";
 import { useAvailableConnectorDefinitions } from "hooks/domain/connector/useAvailableConnectorDefinitions";
-import { useExperiment } from "hooks/services/Experiment";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 
@@ -49,37 +48,23 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
 }) => {
   const allowUpdateConnectors = useFeature(FeatureItem.AllowUpdateConnectors);
   const allowUploadCustomImage = useFeature(FeatureItem.AllowUploadCustomImage);
-  const customCloudConnectorsExperiment = useExperiment("connector.uploadCustomCloudConnectors", false);
   const workspace = useCurrentWorkspace();
   const availableConnectorDefinitions = useAvailableConnectorDefinitions<ConnectorDefinition>(
     connectorsDefinitions,
     workspace
   );
-  const showVersionUpdateColumnForAvailable = useMemo(() => {
-    if (allowUpdateConnectors) {
-      return true;
-    }
-    if (
-      allowUploadCustomImage &&
-      availableConnectorDefinitions.some((definition) => definition.releaseStage === "custom")
-    ) {
-      return true;
-    }
-    return false;
-  }, [availableConnectorDefinitions, allowUpdateConnectors, allowUploadCustomImage]);
-
-  const showVersionUpdateColumnForUsed = useMemo(() => {
-    if (allowUpdateConnectors) {
-      return true;
-    }
-    if (
-      allowUploadCustomImage &&
-      usedConnectorsDefinitions.some((definition) => definition.releaseStage === "custom")
-    ) {
-      return true;
-    }
-    return false;
-  }, [usedConnectorsDefinitions, allowUpdateConnectors, allowUploadCustomImage]);
+  const showVersionUpdateColumn = useCallback(
+    (definitions: ConnectorDefinition[]) => {
+      if (allowUpdateConnectors) {
+        return true;
+      }
+      if (allowUploadCustomImage && definitions.some((definition) => definition.releaseStage === "custom")) {
+        return true;
+      }
+      return false;
+    },
+    [allowUpdateConnectors, allowUploadCustomImage]
+  );
 
   const renderColumns = useCallback(
     (showVersionUpdateColumn: boolean) => [
@@ -120,7 +105,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
               accessor: "latestDockerImageTag",
               collapse: true,
               Cell: ({ cell, row }: CellProps<ConnectorDefinition>) =>
-                allowUpdateConnectors || (customCloudConnectorsExperiment && row.original.releaseStage === "custom") ? (
+                allowUpdateConnectors || (allowUploadCustomImage && row.original.releaseStage === "custom") ? (
                   <VersionCell
                     version={cell.value || row.original.dockerImageTag}
                     id={Connector.id(row.original)}
@@ -133,14 +118,14 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           ]
         : []),
     ],
-    [feedbackList, onUpdateVersion, allowUpdateConnectors, customCloudConnectorsExperiment]
+    [feedbackList, onUpdateVersion, allowUpdateConnectors, allowUploadCustomImage]
   );
 
   const renderHeaderControls = (section: "used" | "available") =>
     ((section === "used" && usedConnectorsDefinitions.length > 0) ||
       (section === "available" && usedConnectorsDefinitions.length === 0)) && (
       <div className={styles.buttonsContainer}>
-        {(allowUploadCustomImage || customCloudConnectorsExperiment) && <CreateConnector type={type} />}
+        {allowUploadCustomImage && <CreateConnector type={type} />}
         {(hasNewConnectorVersion || isUpdateSuccess) && allowUpdateConnectors && (
           <UpgradeAllButton
             isLoading={loading}
@@ -164,7 +149,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
             {renderHeaderControls("used")}
           </Title>
           <Table
-            columns={renderColumns(showVersionUpdateColumnForUsed)}
+            columns={renderColumns(showVersionUpdateColumn(usedConnectorsDefinitions))}
             data={usedConnectorsDefinitions}
             sortBy={defaultSorting}
           />
@@ -177,7 +162,7 @@ const ConnectorsView: React.FC<ConnectorsViewProps> = ({
           {renderHeaderControls("available")}
         </Title>
         <Table
-          columns={renderColumns(showVersionUpdateColumnForAvailable)}
+          columns={renderColumns(showVersionUpdateColumn(availableConnectorDefinitions))}
           data={availableConnectorDefinitions}
           sortBy={defaultSorting}
         />
