@@ -1,5 +1,5 @@
 import { FormGroupItem } from "core/form/types";
-import { AirbyteJSONSchemaDefinition } from "core/jsonSchema";
+import { AirbyteJSONSchemaDefinition } from "core/jsonSchema/types";
 
 import { jsonSchemaToFormBlock } from "./schemaToFormBlock";
 

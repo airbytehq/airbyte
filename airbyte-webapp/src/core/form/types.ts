@@ -1,6 +1,6 @@
 import { JSONSchema7TypeName } from "json-schema";
 
-import { AirbyteJSONSchema } from "core/jsonSchema";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
 
 /**
  * When turning the JSON schema into `FormBlock`s,
