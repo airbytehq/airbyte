@@ -8,21 +8,17 @@ from typing import Any, Iterable, Mapping, TypedDict
 import requests
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
+from destination_convex.client import ConvexClient
+from destination_convex.config import ConvexConfig
 
-ConvexConfig = TypedDict(
-    "ConvexConfig",
-    {
-        "deployment_url": str,
-        "access_key": str,
-    },
-)
+from destination_convex.writer import ConvexWriter
+
 
 class DestinationConvex(Destination):
     def write(
         self, config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
-
         """
         TODO
         Reads the input stream of messages, config, and catalog to write data to the destination.
@@ -39,7 +35,53 @@ class DestinationConvex(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
 
-        pass
+        writer = ConvexWriter(ConvexClient(config))
+        # TODO put the stream metadata in the writer on initialization
+        streams_to_delete = []
+        for configured_stream in configured_catalog.streams:
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                streams_to_delete.append(configured_stream.stream.name)
+        if len(streams_to_delete) != 0:
+            writer.delete_stream_entries(streams_to_delete)
+
+        streams = []
+        for s in configured_catalog.streams:
+            if s.cursor_field is None:
+                cursor = []
+            else:
+                cursor = s.cursor_field
+            if s.primary_key is None:
+                primary_key = [[]]
+            else:
+                primary_key = s.primary_key
+            stream = {
+                "stream": s.stream.name,
+                "syncMode": str(s.sync_mode.name),  # TODO rename
+                "cursor": cursor,  # need some logic to combine here
+                "destinationSyncMode": str(s.destination_sync_mode.name),  # TODO rename
+                "primaryKey": primary_key,
+                "jsonSchema": str(s.stream.json_schema),  # FIXME
+                "namespace": s.stream.namespace,
+            }
+            streams.append(stream)
+        writer.stream_metadata = streams
+
+        for message in input_messages:
+            if message.type == Type.STATE:
+                # Emitting a state message indicates that all records which came before it have been written to the destination. So we flush
+                # the queue to ensure writes happen, then output the state message to indicate it's safe to checkpoint state
+                writer.flush()
+                yield message
+            elif message.type == Type.RECORD and message.record is not None:
+                msg = message.record.dict()
+                writer.queue_write_operation(msg)
+            else:
+                # ignore other message types for now
+                continue
+
+        # Make sure to flush any records still in the queue
+        writer.flush()
+
 
     def check(self, logger: AirbyteLogger, config: ConvexConfig) -> AirbyteConnectionStatus:
         """
