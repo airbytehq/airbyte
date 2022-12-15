@@ -84,6 +84,12 @@ class SourceJira(AbstractSource):
         kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
         labels_stream = Labels(**kwargs)
         next(read_full_refresh(labels_stream), None)
+        # check projects
+        projects_stream = Projects(**kwargs)
+        projects = {project["key"] for project in read_full_refresh(projects_stream)}
+        unknown_projects = set(config["projects"]) - projects
+        if unknown_projects:
+            return False, "unknown project(s): " + ", ".join(unknown_projects)
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
