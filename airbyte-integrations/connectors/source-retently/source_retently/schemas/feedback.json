@@ -18,16 +18,25 @@
       "customProps": {
          "type": "array",
          "items": { "type": "string" }
-       },     
+       },
       "campaignId": { "type": "string" },
       "campaignName": { "type": "string" },
       "createdDate": { "type": "string" },
       "score": { "type": "number" },
       "comment": { "type": "string" },
       "checkbox": { "type": "boolean" },
-      "additionalQuestions": [],
-      "feedbackTags": [],
-      "notes": [],
+      "additionalQuestions": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "feedbackTags":  {
+        "type": "array",
+        "items": { "type": "string" }
+      },
+      "notes": {
+        "type": "array",
+        "items": { "type": "string" }
+      },
       "status": { "type": "string" },
       "assigned": { "type": "string" },
       "ratingCategory": { "type": "string" },
