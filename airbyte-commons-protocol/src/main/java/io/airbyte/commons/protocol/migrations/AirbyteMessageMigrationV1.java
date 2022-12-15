@@ -38,9 +38,9 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   private final ConfiguredAirbyteCatalog catalog;
   private final JsonSchemaValidator validator;
 
-  public AirbyteMessageMigrationV1(ConfiguredAirbyteCatalog catalog) {
+  public AirbyteMessageMigrationV1(ConfiguredAirbyteCatalog catalog, JsonSchemaValidator validator) {
     this.catalog = catalog;
-    this.validator = new JsonSchemaValidator();
+    this.validator = validator;
   }
 
   @Override
@@ -499,7 +499,28 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   private DowngradedNode downgradeNode(JsonNode data, JsonNode schema) {
-    // TODO handle oneOf case
+    if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull("type") && schema.hasNonNull("oneOf")) {
+      // If this is a oneOf node that looks like an upgraded v0 message, then we need to handle each oneOf case.
+      JsonNode schemaOptions = schema.get("oneOf");
+      if (schemaOptions.size() == 0) {
+        // If the oneOf has no options, then don't do anything interesting.
+        return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
+      }
+
+      // Attempt to downgrade the node against each oneOf schema.
+      // Return the first schema that matches the data, or the first schema if none matched successfully.
+      DowngradedNode downgradedNode = null;
+      for (JsonNode maybeSchema : schemaOptions) {
+        DowngradedNode maybeDowngradedNode = downgradeNode(data, maybeSchema);
+        if (downgradedNode == null) {
+          downgradedNode = maybeDowngradedNode;
+        } else if (!downgradedNode.matchedSchema() && maybeDowngradedNode.matchedSchema()) {
+          downgradedNode = maybeDowngradedNode;
+          break;
+        }
+      }
+      return downgradedNode;
+    }
     if (data.isTextual()) {
       JsonNode refNode = schema.get(REF_KEY);
       if (refNode != null) {
@@ -519,8 +540,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             return new DowngradedNode(data, false);
           }
         } else {
-          // TODO uncomment this
-          return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
+          return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
         }
       } else {
         JsonNode typeNode = schema.get("type");
@@ -528,8 +548,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         if (typeNode != null) {
           // TODO check whether textual node is of the correct type
         }
-        // TODO uncomment this
-        return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
+        return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
       }
     } else if (data.isObject()) {
       boolean isObjectSchema;
@@ -650,8 +669,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       }
     } else {
       // TODO check whether non-textual node (i.e. number/boolean?) is of the correct type
-      // TODO uncomment this
-      return new DowngradedNode(data, /*validator.validate(schema, data).isEmpty()*/true);
+      return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
     }
   }
 

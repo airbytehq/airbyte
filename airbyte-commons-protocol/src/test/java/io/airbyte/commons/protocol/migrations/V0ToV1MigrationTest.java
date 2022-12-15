@@ -12,20 +12,29 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.validation.json.JsonSchemaValidator;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Resources;
 
 public class V0ToV1MigrationTest {
 
+
+  JsonSchemaValidator validator;
   private AirbyteMessageMigrationV1 migration;
 
   @BeforeEach
-  public void setup() {
-    migration = new AirbyteMessageMigrationV1(null);
+  public void setup() throws URISyntaxException {
+    URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
+    validator = new JsonSchemaValidator(parentUri);
+    migration = new AirbyteMessageMigrationV1(null, validator);
   }
 
   @Test
@@ -1172,7 +1181,7 @@ public class V0ToV1MigrationTest {
           "42"
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
           .downgrade(createRecordMessage(oldData));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
@@ -1249,7 +1258,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
           .downgrade(createRecordMessage(oldData));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
@@ -1344,7 +1353,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
           .downgrade(createRecordMessage(oldData));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
@@ -1397,7 +1406,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog)
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
           .downgrade(createRecordMessage(oldData));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
@@ -1411,6 +1420,91 @@ public class V0ToV1MigrationTest {
                 "empty_schema_primitive": "42",
                 "empty_schema_array": ["42", false],
                 "empty_schema_object": {"foo": "42"}
+              }
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    public void testBacktracking() {
+      // These test cases verify that we correctly choose the most-correct oneOf option.
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {
+                 "type": "object",
+                 "properties": {
+                   "valid_option": {
+                     "oneOf": [
+                       {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                       {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                       {"$ref": "WellKnownTypes.json#/definitions/String"}
+                     ]
+                   },
+                   "all_invalid": {
+                     "oneOf": [
+                       {
+                         "type": "array",
+                         "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                       },
+                       {
+                         "type": "array",
+                         "items": {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
+                       }
+                     ]
+                   },
+                   "nested_oneof": {
+                     "oneOf": [
+                       {
+                         "type": "array",
+                         "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                       },
+                       {
+                         "type": "array",
+                         "items": {
+                           "type": "object",
+                           "properties": {
+                             "foo": {
+                               "oneOf": [
+                                 {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                                 {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                               ]
+                             }
+                           }
+                         }
+                       }
+                     ]
+                   }
+                 }
+                }
+              }
+              """
+      );
+      JsonNode oldData = Jsons.deserialize(
+          """
+          {
+            "valid_option": "42",
+            "all_invalid": ["42", "arst"],
+            "nested_oneof": [{"foo": "42"}]
+          }
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": {
+                "valid_option": 42,
+                "all_invalid": [42, "arst"],
+                "nested_oneof": [{"foo": 42}]
               }
             }
           }
