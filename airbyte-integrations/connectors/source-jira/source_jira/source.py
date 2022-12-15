@@ -8,7 +8,7 @@ import pendulum
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
+from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator
 
 from .streams import (
     ApplicationRoles,
