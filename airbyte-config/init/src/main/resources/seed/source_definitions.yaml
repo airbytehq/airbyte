@@ -554,7 +554,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -626,6 +626,14 @@
   dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-directory
   icon: googledirectory.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Google PageSpeed Insights
+  sourceDefinitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
+  dockerRepository: airbyte/source-google-pagespeed-insights
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  icon: google-pagespeed-insights.svg
   sourceType: api
   releaseStage: alpha
 - name: Google Search Console
@@ -1522,7 +1530,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
@@ -1530,7 +1538,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.26
+  dockerImageTag: 0.1.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
