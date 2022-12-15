@@ -109,8 +109,10 @@ public class ApmTraceUtils {
    */
   public static void recordErrorOnRootSpan(final Throwable t) {
     final Span activeSpan = GlobalTracer.get().activeSpan();
-    activeSpan.setTag(Tags.ERROR, true);
-    activeSpan.log(Map.of(Fields.ERROR_OBJECT, t));
+    if (activeSpan != null) {
+      activeSpan.setTag(Tags.ERROR, true);
+      activeSpan.log(Map.of(Fields.ERROR_OBJECT, t));
+    }
     if (activeSpan instanceof MutableSpan) {
       final MutableSpan localRootSpan = ((MutableSpan) activeSpan).getLocalRootSpan();
       localRootSpan.setError(true);
