@@ -11,7 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
+import datadog.trace.api.interceptor.MutableSpan;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.util.GlobalTracerTestUtil;
@@ -87,6 +89,27 @@ class ApmTraceUtilsTest {
 
     final String result2 = ApmTraceUtils.formatTag(tagKey1, tagPrefix1);
     assertEquals("airbyte." + tagPrefix1 + "." + tagKey1, result2);
+  }
+
+  @Test
+  void testAddingTagsToRootSpan() {
+    final Span activeSpan = mock(Span.class, withSettings().extraInterfaces(MutableSpan.class));
+    final Tracer tracer = mock(Tracer.class);
+    final MutableSpan localRootSpan = mock(MutableSpan.class);
+    when(tracer.activeSpan()).thenReturn(activeSpan);
+    when(((MutableSpan) activeSpan).getLocalRootSpan()).thenReturn(localRootSpan);
+    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    ApmTraceUtils.addTagsToRootSpan(TAGS);
+    verify(localRootSpan, times(1)).setTag(String.format(TAG_FORMAT, TAG_PREFIX, TAG_1), VALUE_1);
+    verify(localRootSpan, times(1)).setTag(String.format(TAG_FORMAT, TAG_PREFIX, TAG_2), VALUE_2);
+  }
+
+  @Test
+  void testAddingTagsToRootSpanWhenActiveSpanIsNull() {
+    final Tracer tracer = mock(Tracer.class);
+    when(tracer.activeSpan()).thenReturn(null);
+    GlobalTracerTestUtil.setGlobalTracerUnconditionally(tracer);
+    Assertions.assertDoesNotThrow(() -> ApmTraceUtils.addTagsToRootSpan(TAGS));
   }
 
 }
