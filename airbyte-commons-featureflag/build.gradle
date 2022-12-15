@@ -9,6 +9,7 @@ dependencies {
     // this dependency is an exception to the above rule because it is only used INTERNALLY to the commons library.
     implementation 'com.jayway.jsonpath:json-path:2.7.0'
     implementation 'com.launchdarkly:launchdarkly-java-server-sdk:6.0.0'
+//    implementation 'com.launchdarkly:launchdarkly-java-server-sdk:5.10.3'
 }
 
 //Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)
