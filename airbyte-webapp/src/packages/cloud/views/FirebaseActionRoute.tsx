@@ -4,8 +4,9 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
+import { ToastType } from "components/ui/Toast";
 
-import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
 import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
@@ -38,8 +39,8 @@ export const VerifyEmailAction: React.FC = () => {
       // Show a notification that the mail got verified successfully
       registerNotification({
         id: "auth/email-verified",
-        title: formatMessage({ id: "verifyEmail.notification" }),
-        isError: false,
+        text: formatMessage({ id: "verifyEmail.notification" }),
+        type: ToastType.SUCCESS,
       });
       // Navigate the user to the homepage
       navigate("/");

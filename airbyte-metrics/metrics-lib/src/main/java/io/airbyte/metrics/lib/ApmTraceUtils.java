@@ -56,7 +56,7 @@ public class ApmTraceUtils {
   public static void addTagsToTrace(final Span span, final Map<String, Object> tags, final String tagPrefix) {
     if (span != null) {
       tags.entrySet().forEach(entry -> {
-        span.setTag(String.format(TAG_FORMAT, tagPrefix, entry.getKey()), entry.getValue().toString());
+        span.setTag(formatTag(entry.getKey(), tagPrefix), entry.getValue().toString());
       });
     }
   }
@@ -81,6 +81,29 @@ public class ApmTraceUtils {
       span.setTag(Tags.ERROR, true);
       span.log(Map.of(Fields.ERROR_OBJECT, t));
     }
+  }
+
+  /**
+   * Formats the tag key using {@link #TAG_FORMAT} provided by this utility, using the default tag
+   * prefix {@link #TAG_PREFIX}.
+   *
+   * @param tagKey The tag key to format.
+   * @return The formatted tag key.
+   */
+  public static String formatTag(final String tagKey) {
+    return formatTag(tagKey, TAG_PREFIX);
+  }
+
+  /**
+   * Formats the tag key using {@link #TAG_FORMAT} provided by this utility with the provided tag
+   * prefix.
+   *
+   * @param tagKey The tag key to format.
+   * @param tagPrefix The prefix to be added to each custom tag name.
+   * @return The formatted tag key.
+   */
+  public static String formatTag(final String tagKey, final String tagPrefix) {
+    return String.format(TAG_FORMAT, tagPrefix, tagKey);
   }
 
 }

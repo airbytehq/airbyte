@@ -1,3 +1,8 @@
+/**
+ * FeatureItems are for permanent flags to differentiate features between environments (e.g. Cloud vs. OSS),
+ * workspaces, specific user groups, etc.
+ */
+
 export enum FeatureItem {
   AllowUploadCustomImage = "ALLOW_UPLOAD_CUSTOM_IMAGE",
   AllowCustomDBT = "ALLOW_CUSTOM_DBT",
@@ -9,4 +14,4 @@ export enum FeatureItem {
   AllowSyncSubOneHourCronExpressions = "ALLOW_SYNC_SUB_ONE_HOUR_CRON_EXPRESSIONS",
 }
 
-export type FeatureSet = Record<FeatureItem, boolean>;
+export type FeatureSet = Partial<Record<FeatureItem, boolean>>;

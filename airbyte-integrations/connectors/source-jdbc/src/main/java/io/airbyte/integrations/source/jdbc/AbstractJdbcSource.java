@@ -621,5 +621,4 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
-
 }
