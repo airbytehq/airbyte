@@ -19,13 +19,13 @@ $removeButtonWidth: 20px;
 }
 
 .kvLabel {
-  color: colors.$grey;
+  color: colors.$grey-400;
 }
 
 .removeButton {
   border: none;
   background-color: transparent;
-  color: colors.$grey-200;
+  color: colors.$grey;
   cursor: pointer;
   padding: 0;
   width: $removeButtonWidth;
@@ -34,6 +34,6 @@ $removeButtonWidth: 20px;
   transition: variables.$transition;
 
   &:hover {
-    color: colors.$grey-300;
+    color: colors.$red;
   }
 }
