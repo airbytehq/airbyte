@@ -666,6 +666,9 @@
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
+  "connectorBuilder.key": "key",
+  "connectorBuilder.value": "value",
+  "connectorBuilder.addKeyValue": "Add",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
