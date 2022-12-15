@@ -12691,7 +12691,7 @@
           "$schema": "http://json-schema.org/draft-07/schema#",
           "title": "Snowflake Source Spec",
           "type": "object",
-          "required": ["host", "role", "warehouse", "database", "schema"],
+          "required": ["host", "role", "warehouse", "database"],
           "properties": {
             "credentials": {
               "title": "Authorization Method",
@@ -12799,7 +12799,7 @@
               "order": 4
             },
             "schema": {
-              "description": "The source Snowflake schema tables.",
+              "description": "The source Snowflake schema tables. Leave empty to access tables from multiple schemas.",
               "examples": ["AIRBYTE_SCHEMA"],
               "type": "string",
               "title": "Schema",
