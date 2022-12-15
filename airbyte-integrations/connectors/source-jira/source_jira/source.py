@@ -2,12 +2,10 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
 import pendulum
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
@@ -66,6 +64,7 @@ from .streams import (
     WorkflowStatusCategories,
     WorkflowStatuses,
 )
+from .utils import read_full_refresh
 
 
 class SourceJira(AbstractSource):
@@ -81,28 +80,11 @@ class SourceJira(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         config = self._validate_and_transform(config)
-
-        alive = True
-        error_msg = None
-
-        try:
-            authenticator = self.get_authenticator(config)
-            args = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
-            issue_resolutions = IssueResolutions(**args)
-            for item in issue_resolutions.read_records(sync_mode=SyncMode.full_refresh):
-                continue
-        except ConnectionError as error:
-            alive, error_msg = False, repr(error)
-        # If the input domain is incorrect or doesn't exist, then the response would be empty, resulting in a
-        # JSONDecodeError
-        except JSONDecodeError:
-            alive, error_msg = (
-                False,
-                "Unable to connect to the Jira API with the provided credentials. Please make sure the input "
-                "credentials and environment are correct.",
-            )
-
-        return alive, error_msg
+        authenticator = self.get_authenticator(config)
+        kwargs = {"authenticator": authenticator, "domain": config["domain"], "projects": config["projects"]}
+        labels_stream = Labels(**kwargs)
+        next(read_full_refresh(labels_stream), None)
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         config = self._validate_and_transform(config)
