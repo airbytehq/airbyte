@@ -1,3 +1,4 @@
+import intersection from "lodash/intersection";
 import pick from "lodash/pick";
 
 import { FormBlock } from "core/form/types";
@@ -38,36 +39,35 @@ export const jsonSchemaToFormBlock = (
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
-    let possibleConditionSelectionKeys = null as Set<string> | null;
+    let possibleConditionSelectionKeys = null as string[] | null;
     const conditions = jsonSchema.oneOf.flatMap((condition) => {
       if (typeof condition === "boolean") {
         throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
       }
       const formBlock = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
       if (formBlock._type !== "formGroup") {
-        return [];
+        throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
       }
 
-      const constProperties = new Set(
-        formBlock.properties.filter((property) => property.const).map((property) => property.fieldKey)
-      );
+      const constProperties = formBlock.properties
+        .filter((property) => property.const)
+        .map((property) => property.fieldKey);
+
       if (!possibleConditionSelectionKeys) {
         // if this is the first condition, all const properties are candidates
         possibleConditionSelectionKeys = constProperties;
       } else {
         // if there are candidates already, intersect with the const properties of the current condition
-        possibleConditionSelectionKeys = new Set(
-          Array.from(possibleConditionSelectionKeys.values()).filter((x) => constProperties.has(x))
-        );
+        possibleConditionSelectionKeys = intersection(possibleConditionSelectionKeys, constProperties);
       }
       return [formBlock];
     });
 
-    if (!possibleConditionSelectionKeys || possibleConditionSelectionKeys.size === 0) {
+    if (!possibleConditionSelectionKeys?.length) {
       // no shared const property in oneOf. This should never happen per specification, fail hard
       throw new FormBuildError("Spec uses oneOf without a shared const property");
     }
-    const selectionKey = possibleConditionSelectionKeys.values().next().value;
+    const selectionKey = possibleConditionSelectionKeys[0];
     const selectionPath = `${path}.${selectionKey}`;
     const selectionConstValues = conditions.map(
       (condition) => condition.properties.find((property) => property.path === selectionPath)?.const
