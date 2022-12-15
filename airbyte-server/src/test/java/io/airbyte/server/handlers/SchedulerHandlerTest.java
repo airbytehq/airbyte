@@ -100,7 +100,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 @SuppressWarnings("unchecked")
-@Disabled
 class SchedulerHandlerTest {
 
   private static final String SOURCE_DOCKER_REPO = "srcimage";
