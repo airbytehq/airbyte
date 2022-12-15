@@ -10,10 +10,16 @@ from urllib import parse
 import pendulum
 import requests
 from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.availability_strategy import AvailabilityStrategy
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.exceptions import DefaultBackoffException
-from requests.exceptions import HTTPError
 
+from .availability_strategies import (
+    OrganizationBasedAvailabilityStrategy,
+    ProjectsAvailabilityStrategy,
+    RepositoryBasedAvailabilityStrategy,
+    WorkflowRunsAvailabilityStrategy,
+)
 from .graphql import CursorStorage, QueryReactions, get_query_pull_requests, get_query_reviews
 from .utils import getter
 
@@ -124,60 +130,6 @@ class GithubStream(HttpStream, ABC):
             return f'Please try to decrease the "Page size for large streams" below {self.page_size}. The stream "{self.name}" is a large stream, such streams can fail with 502 for high "page_size" values.'
         return super().get_error_display_message(exception)
 
-    def read_records(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> Iterable[Mapping[str, Any]]:
-        # get out the stream_slice parts for later use.
-        organisation = stream_slice.get("organization", "")
-        repository = stream_slice.get("repository", "")
-        # Reading records while handling the errors
-        try:
-            yield from super().read_records(stream_slice=stream_slice, **kwargs)
-        except HTTPError as e:
-            # This whole try/except situation in `read_records()` isn't good but right now in `self._send_request()`
-            # function we have `response.raise_for_status()` so we don't have much choice on how to handle errors.
-            # Bocked on https://github.com/airbytehq/airbyte/issues/3514.
-            if e.response.status_code == requests.codes.NOT_FOUND:
-                # A lot of streams are not available for repositories owned by a user instead of an organization.
-                if isinstance(self, Organizations):
-                    error_msg = (
-                        f"Syncing `{self.__class__.__name__}` stream isn't available for organization `{stream_slice['organization']}`."
-                    )
-                else:
-                    error_msg = f"Syncing `{self.__class__.__name__}` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.FORBIDDEN:
-                error_msg = str(e.response.json().get("message"))
-                # When using the `check_connection` method, we should raise an error if we do not have access to the repository.
-                if isinstance(self, Repositories):
-                    raise e
-                # When `403` for the stream, that has no access to the organization's teams, based on OAuth Apps Restrictions:
-                # https://docs.github.com/en/organizations/restricting-access-to-your-organizations-data/enabling-oauth-app-access-restrictions-for-your-organization
-                # For all `Organisation` based streams
-                elif isinstance(self, Organizations) or isinstance(self, Teams) or isinstance(self, Users):
-                    error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for organization `{organisation}`. Full error message: {error_msg}"
-                    )
-                # For all other `Repository` base streams
-                else:
-                    error_msg = (
-                        f"Syncing `{self.name}` stream isn't available for repository `{repository}`. Full error message: {error_msg}"
-                    )
-            elif e.response.status_code == requests.codes.GONE and isinstance(self, Projects):
-                # Some repos don't have projects enabled and we we get "410 Client Error: Gone for
-                # url: https://api.github.com/repos/xyz/projects?per_page=100" error.
-                error_msg = f"Syncing `Projects` stream isn't available for repository `{stream_slice['repository']}`."
-            elif e.response.status_code == requests.codes.CONFLICT:
-                error_msg = (
-                    f"Syncing `{self.name}` stream isn't available for repository "
-                    f"`{stream_slice['repository']}`, it seems like this repository is empty."
-                )
-            elif e.response.status_code == requests.codes.SERVER_ERROR and isinstance(self, WorkflowRuns):
-                error_msg = f"Syncing `{self.name}` stream isn't available for repository `{stream_slice['repository']}`."
-            else:
-                # most probably here we're facing a 500 server error and a risk to get a non-json response, so lets output response.text
-                self.logger.error(f"Undefined error while reading records: {e.response.text}")
-                raise e
-
-            self.logger.warn(error_msg)
-
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -210,6 +162,10 @@ class GithubStream(HttpStream, ABC):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["repository"] = stream_slice["repository"]
         return record
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return RepositoryBasedAvailabilityStrategy()
 
 
 class SemiIncrementalMixin:
@@ -383,6 +339,10 @@ class Organizations(GithubStream):
     def transform(self, record: MutableMapping[str, Any], stream_slice: Mapping[str, Any]) -> MutableMapping[str, Any]:
         record["organization"] = stream_slice["organization"]
         return record
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return OrganizationBasedAvailabilityStrategy()
 
 
 class Repositories(SemiIncrementalMixin, Organizations):
@@ -591,6 +551,10 @@ class Projects(SemiIncrementalMixin, GithubStream):
         headers = {"Accept": "application/vnd.github.inertia-preview+json"}
 
         return {**base_headers, **headers}
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return ProjectsAvailabilityStrategy()
 
 
 class IssueEvents(SemiIncrementalMixin, GithubStream):
@@ -1356,6 +1320,10 @@ class WorkflowRuns(SemiIncrementalMixin, GithubStream):
                 yield record
             if created_at < break_point:
                 break
+
+    @property
+    def availability_strategy(self) -> Optional[AvailabilityStrategy]:
+        return WorkflowRunsAvailabilityStrategy()
 
 
 class WorkflowJobs(SemiIncrementalMixin, GithubStream):
