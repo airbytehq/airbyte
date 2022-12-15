@@ -17,7 +17,7 @@
       },
       "customProps": {
          "type": "array",
-         "items": { "type": "string" }
+         "items": { "type": "object" }
        },
       "campaignId": { "type": "string" },
       "campaignName": { "type": "string" },
@@ -27,7 +27,7 @@
       "checkbox": { "type": "boolean" },
       "additionalQuestions": {
         "type": "array",
-        "items": { "type": "string" }
+        "items": { "type": "object" }
       },
       "feedbackTags":  {
         "type": "array",
@@ -35,7 +35,7 @@
       },
       "notes": {
         "type": "array",
-        "items": { "type": "string" }
+        "items": { "type": "object" }
       },
       "status": { "type": "string" },
       "assigned": { "type": "string" },
