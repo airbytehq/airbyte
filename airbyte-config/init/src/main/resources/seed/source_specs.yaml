@@ -299,7 +299,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.33"
+- dockerImage: "airbyte/source-alloydb:1.0.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -373,24 +373,15 @@
           order: 7
         ssl_mode:
           title: "SSL Modes"
-          description: "SSL connection modes. \n <ul><li><b>disable</b> - Disables\
-            \ encryption of communication between Airbyte and source database</li>\n\
-            \ <li><b>allow</b> - Enables encryption only when required by the source\
-            \ database</li>\n <li><b>prefer</b> - allows unencrypted connection only\
-            \ if the source database does not support encryption</li>\n <li><b>require</b>\
-            \ - Always require encryption. If the source database server does not\
-            \ support encryption, connection will fail</li>\n  <li><b>verify-ca</b>\
-            \ - Always require encryption and verifies that the source database server\
-            \ has a valid SSL certificate</li>\n  <li><b>verify-full</b> - This is\
-            \ the most secure mode. Always require encryption and verifies the identity\
-            \ of the source database server</li></ul>\n Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
+          description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
             > in the docs</a>."
           type: "object"
           order: 7
           oneOf:
           - title: "disable"
             additionalProperties: true
-            description: "Disable SSL."
+            description: "Disables encryption of communication between Airbyte and\
+              \ source database."
             required:
             - "mode"
             properties:
@@ -400,7 +391,7 @@
                 order: 0
           - title: "allow"
             additionalProperties: true
-            description: "Allow SSL mode."
+            description: "Enables encryption only when required by the source database."
             required:
             - "mode"
             properties:
@@ -410,7 +401,8 @@
                 order: 0
           - title: "prefer"
             additionalProperties: true
-            description: "Prefer SSL mode."
+            description: "Allows unencrypted connection only if the source database\
+              \ does not support encryption."
             required:
             - "mode"
             properties:
@@ -420,7 +412,8 @@
                 order: 0
           - title: "require"
             additionalProperties: true
-            description: "Require SSL mode."
+            description: "Always require encryption. If the source database server\
+              \ does not support encryption, connection will fail."
             required:
             - "mode"
             properties:
@@ -430,7 +423,8 @@
                 order: 0
           - title: "verify-ca"
             additionalProperties: true
-            description: "Verify-ca SSL mode."
+            description: "Always require encryption and verifies that the source database\
+              \ server has a valid SSL certificate."
             required:
             - "mode"
             - "ca_certificate"
@@ -469,7 +463,8 @@
                 order: 4
           - title: "verify-full"
             additionalProperties: true
-            description: "Verify-full SSL mode."
+            description: "This is the most secure mode. Always require encryption\
+              \ and verifies the identity of the source database server."
             required:
             - "mode"
             - "ca_certificate"
@@ -1676,7 +1671,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-bigcommerce:0.1.7"
+- dockerImage: "airbyte/source-bigcommerce:0.1.8"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/bigcommerce"
     connectionSpecification:
@@ -3479,7 +3474,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-facebook-marketing:0.2.78"
+- dockerImage: "airbyte/source-facebook-marketing:0.2.79"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/facebook-marketing"
@@ -4548,7 +4543,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.8"
+- dockerImage: "airbyte/source-github:0.3.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4683,7 +4678,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.10"
+- dockerImage: "airbyte/source-gitlab:0.1.11"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -5574,6 +5569,65 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-google-pagespeed-insights:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-pagespeed-insights"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Google PageSpeed Insights Spec"
+      type: "object"
+      required:
+      - "urls"
+      - "strategies"
+      - "categories"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "Google PageSpeed API Key. See <a href=\"https://developers.google.com/speed/docs/insights/v5/get-started#APIKey\"\
+            >here</a>. The key is optional - however the API is heavily rate limited\
+            \ when using without API Key. Creating and using the API key therefore\
+            \ is recommended. The key is case sensitive."
+          airbyte_secret: true
+        urls:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^(?:origin:)?(http(s)?:\\/\\/)[\\w.-]+(?:\\.[\\w\\.-]+)+[\\\
+              w\\-\\._~:\\/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+          title: "URLs to analyse"
+          description: "The URLs to retrieve pagespeed information from. The connector\
+            \ will attempt to sync PageSpeed reports for all the defined URLs. Format:\
+            \ https://(www.)url.domain"
+          example: "https://example.com"
+        strategies:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "desktop"
+            - "mobile"
+          title: "Analyses Strategies"
+          description: "The analyses strategy to use. Either \"desktop\" or \"mobile\"\
+            ."
+        categories:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "accessibility"
+            - "best-practices"
+            - "performance"
+            - "pwa"
+            - "seo"
+          title: "Lighthouse Categories"
+          description: "Defines which Lighthouse category to run. One or many of:\
+            \ \"accessibility\", \"best-practices\", \"performance\", \"pwa\", \"\
+            seo\"."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-search-console:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
@@ -8733,7 +8787,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.16"
+- dockerImage: "airbyte/source-mysql:1.0.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -8795,21 +8849,14 @@
           order: 6
         ssl_mode:
           title: "SSL modes"
-          description: "SSL connection modes. <li><b>preferred</b> - Automatically\
-            \ attempt SSL connection. If the MySQL server does not support SSL, continue\
-            \ with a regular connection.</li><li><b>required</b> - Always connect\
-            \ with SSL. If the MySQL server doesn’t support SSL, the connection will\
-            \ not be established. Certificate Authority (CA) and Hostname are not\
-            \ verified.</li><li><b>verify-ca</b> - Always connect with SSL. Verifies\
-            \ CA, but allows connection even if Hostname does not match.</li><li><b>Verify\
-            \ Identity</b> - Always connect with SSL. Verify both CA and Hostname.</li></ul>Read\
-            \ more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"\
+          description: "SSL connection modes. Read more <a href=\"https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html\"\
             > in the docs</a>."
           type: "object"
           order: 7
           oneOf:
           - title: "preferred"
-            description: "Preferred SSL mode."
+            description: "Automatically attempt SSL connection. If the MySQL server\
+              \ does not support SSL, continue with a regular connection."
             required:
             - "mode"
             properties:
@@ -8818,7 +8865,9 @@
                 const: "preferred"
                 order: 0
           - title: "required"
-            description: "Require SSL mode."
+            description: "Always connect with SSL. If the MySQL server doesn’t support\
+              \ SSL, the connection will not be established. Certificate Authority\
+              \ (CA) and Hostname are not verified."
             required:
             - "mode"
             properties:
@@ -8827,7 +8876,8 @@
                 const: "required"
                 order: 0
           - title: "Verify CA"
-            description: "Verify CA SSL mode."
+            description: "Always connect with SSL. Verifies CA, but allows connection\
+              \ even if Hostname does not match."
             required:
             - "mode"
             - "ca_certificate"
@@ -8869,7 +8919,7 @@
                 airbyte_secret: true
                 order: 4
           - title: "Verify Identity"
-            description: "Verify-full SSL mode."
+            description: "Always connect with SSL. Verify both CA and Hostname."
             required:
             - "mode"
             - "ca_certificate"
@@ -11294,7 +11344,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.33"
+- dockerImage: "airbyte/source-postgres:1.0.34"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -11368,24 +11418,15 @@
           order: 7
         ssl_mode:
           title: "SSL Modes"
-          description: "SSL connection modes. \n <ul><li><b>disable</b> - Disables\
-            \ encryption of communication between Airbyte and source database</li>\n\
-            \ <li><b>allow</b> - Enables encryption only when required by the source\
-            \ database</li>\n <li><b>prefer</b> - allows unencrypted connection only\
-            \ if the source database does not support encryption</li>\n <li><b>require</b>\
-            \ - Always require encryption. If the source database server does not\
-            \ support encryption, connection will fail</li>\n  <li><b>verify-ca</b>\
-            \ - Always require encryption and verifies that the source database server\
-            \ has a valid SSL certificate</li>\n  <li><b>verify-full</b> - This is\
-            \ the most secure mode. Always require encryption and verifies the identity\
-            \ of the source database server</li></ul>\n Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
+          description: "SSL connection modes. \n  Read more <a href=\"https://jdbc.postgresql.org/documentation/head/ssl-client.html\"\
             > in the docs</a>."
           type: "object"
           order: 7
           oneOf:
           - title: "disable"
             additionalProperties: true
-            description: "Disable SSL."
+            description: "Disables encryption of communication between Airbyte and\
+              \ source database."
             required:
             - "mode"
             properties:
@@ -11395,7 +11436,7 @@
                 order: 0
           - title: "allow"
             additionalProperties: true
-            description: "Allow SSL mode."
+            description: "Enables encryption only when required by the source database."
             required:
             - "mode"
             properties:
@@ -11405,7 +11446,8 @@
                 order: 0
           - title: "prefer"
             additionalProperties: true
-            description: "Prefer SSL mode."
+            description: "Allows unencrypted connection only if the source database\
+              \ does not support encryption."
             required:
             - "mode"
             properties:
@@ -11415,7 +11457,8 @@
                 order: 0
           - title: "require"
             additionalProperties: true
-            description: "Require SSL mode."
+            description: "Always require encryption. If the source database server\
+              \ does not support encryption, connection will fail."
             required:
             - "mode"
             properties:
@@ -11425,7 +11468,8 @@
                 order: 0
           - title: "verify-ca"
             additionalProperties: true
-            description: "Verify-ca SSL mode."
+            description: "Always require encryption and verifies that the source database\
+              \ server has a valid SSL certificate."
             required:
             - "mode"
             - "ca_certificate"
@@ -11464,7 +11508,8 @@
                 order: 4
           - title: "verify-full"
             additionalProperties: true
-            description: "Verify-full SSL mode."
+            description: "This is the most secure mode. Always require encryption\
+              \ and verifies the identity of the source database server."
             required:
             - "mode"
             - "ca_certificate"
@@ -12449,7 +12494,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.26"
+- dockerImage: "airbyte/source-s3:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12582,6 +12627,8 @@
                   \ during schema detection, increasing this should solve it. Beware\
                   \ of raising this too high as you could hit OOM errors."
                 default: 10000
+                minimum: 1
+                maximum: 2147483647
                 order: 9
                 type: "integer"
           - title: "Parquet"
@@ -13542,7 +13589,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13603,7 +13650,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.26"
+- dockerImage: "airbyte/source-snowflake:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -16119,7 +16166,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.18"
+- dockerImage: "airbyte/source-zendesk-support:0.2.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
