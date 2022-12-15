@@ -10,7 +10,11 @@ on:
     inputs:
       debug_mode:
         description: "Enable or disable tmate session for debug during helm ac tests"
+        type: choice
         default: 'false'
+        options: 
+          - 'true'
+          - 'false'
         required: false
   schedule:
     - cron: "0 */1 * * *"
@@ -1070,7 +1074,7 @@ jobs:
           version: 'v1.21.2' # default is latest stable
 
       - name: Install tmate and it's dependencies
-        # if: inputs.debug_mode == 'true'
+        if: inputs.debug_mode == 'true'
         uses: Wandalen/wretry.action@master
         with:
           command: |
@@ -1079,7 +1083,7 @@ jobs:
           attempt_delay: 2000 # in ms
       
       - name: Start tmate session in background
-        # if: inputs.debug_mode == 'true'
+        if: inputs.debug_mode == 'true'
         shell: bash
         run: |  
           tmate -S /tmp/tmate.sock new-session -d               # Launch tmate in a headless mode
