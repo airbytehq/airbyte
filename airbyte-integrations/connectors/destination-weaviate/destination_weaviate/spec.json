@@ -41,9 +41,10 @@
       },
       "vectors" : {
         "type" : "string",
-        "description" : "Comma separated list of strings to configure which field holds the vector foreach stream. Using the following format <stream_name>.<vector_column_name>",
+        "description" : "Comma separated list of strings of `stream_name.vector_column_name` to specify which field holds the vectors.",
         "examples" : [
-          "my_table.my_vector_column, another_table.vector"
+          "my_table.my_vector_column, another_table.vector",
+          "mytable.vector"
         ]
       }
     }

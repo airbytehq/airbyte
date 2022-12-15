@@ -5,6 +5,7 @@
 import json
 import logging
 import time
+import uuid
 from typing import Any, Dict, List, Mapping
 import os
 
@@ -375,3 +376,31 @@ def test_weaviate_existing_class(config: Mapping, client: Client):
     actual = get_objects(client, class_name)[0]
     assert actual["properties"].get("title") == data.get("title"), "Title should match"
     assert actual["properties"].get("content") == data.get("content"), "Content should match"
+
+
+def test_id_starting_with_underscore(config: Mapping, client: Client):
+    # This is common scenario from mongoDB
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "_id": {"type": "integer"},
+        "title": {"type": "string"}
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"_id": "507f191e810c19729de860ea", "title": "test1"}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = stream_name[0].upper() + stream_name[1:]
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual.get("id") == str(uuid.UUID(int=int(data.get("_id"), 16))), "UUID should be created for _id field"
