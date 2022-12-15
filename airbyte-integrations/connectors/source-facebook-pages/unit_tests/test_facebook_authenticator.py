@@ -5,7 +5,6 @@
 import pytest
 import requests
 import requests_mock
-
 from source_facebook_pages.components import AuthenticatorFacebookPageAccessToken
 
 
