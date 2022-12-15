@@ -18,7 +18,7 @@
 {"stream": "purchases", "data": {"id": 8, "product_id": 67, "user_id": 6, "added_to_cart_at": "2008-03-02T18:14:15+00:00", "purchased_at": "2020-06-21T18:14:15+00:00", "returned_at": "2020-09-24T18:14:15+00:00"}, "emitted_at": 1669830193010}
 {"stream": "purchases", "data": {"id": 9, "product_id": 91, "user_id": 7, "added_to_cart_at": "2022-03-12T17:13:51+00:00", "purchased_at": null, "returned_at": null}, "emitted_at": 1669830193010}
 {"stream": "purchases", "data": {"id": 10, "product_id": 79, "user_id": 8, "added_to_cart_at": "2017-12-31T07:18:11+00:00", "purchased_at": "2019-05-14T07:18:11+00:00", "returned_at": null}, "emitted_at": 1669830193010}
-{"stream": "purchases", "data": {"id": 11, "product_id": 91, "user_id": 8, "added_to_cart_at": "2022-03-24T07:18:11+00:00", "purchased_at": "2022-05-11T07:18:11+00:00", "returned_at": null}, "emitted_at": 1669830193010}
+{"stream": "purchases", "data": {"id": 11, "product_id": 91, "user_id": 8, "added_to_cart_at": "2022-03-24T07:18:11+00:00", "purchased_at": "2022-06-29T07:18:11+00:00", "returned_at": null}, "emitted_at": 1669830193010}
 {"stream": "purchases", "data": {"id": 12, "product_id": 19, "user_id": 9, "added_to_cart_at": "2020-11-29T04:56:09+00:00", "purchased_at": "2022-03-02T04:56:09+00:00", "returned_at": "2022-04-12T04:56:09+00:00"}, "emitted_at": 1669830193010}
 {"stream": "purchases", "data": {"id": 13, "product_id": 63, "user_id": 10, "added_to_cart_at": "2003-08-05T17:43:25+00:00", "purchased_at": "2015-12-15T17:43:25+00:00", "returned_at": null}, "emitted_at": 1669830193010}
 {"stream": "products", "data": {"id": 1, "make": "Mazda", "model": "MX-5", "year": 2008, "price": 2869, "created_at": "2022-02-01T17:02:19+00:00"}, "emitted_at": 1669830193011}
