@@ -28,7 +28,7 @@ definitions:
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format: "%Y-%m-%dT%H:%M:%SZ"
+    datetime_format: "%Y-%m-%dT%H:%M:%S"
     step: 30d
     start_time_option:
       field_name: modified_after
