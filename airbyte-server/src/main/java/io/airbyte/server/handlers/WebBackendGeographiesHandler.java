@@ -9,10 +9,12 @@ import io.airbyte.api.model.generated.WebBackendGeographiesListResult;
 import jakarta.inject.Singleton;
 import java.util.Arrays;
 import java.util.Collections;
+import javax.transaction.Transactional;
 
 @Singleton
 public class WebBackendGeographiesHandler {
 
+  @Transactional
   public WebBackendGeographiesListResult listGeographiesOSS() {
     // for now, OSS only supports AUTO. This can evolve to account for complex OSS use cases, but for
     // now we expect OSS deployments to use a single default Task Queue for scheduling syncs in a vast
@@ -24,6 +26,7 @@ public class WebBackendGeographiesHandler {
   /**
    * Only called by the wrapped Cloud API to enable multi-cloud
    */
+  @Transactional
   public WebBackendGeographiesListResult listGeographiesCloud() {
     return new WebBackendGeographiesListResult().geographies(Arrays.asList(Geography.values()));
   }

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
+import javax.transaction.Transactional;
 
 @Singleton
 public class DestinationHandler {
@@ -87,6 +88,7 @@ public class DestinationHandler {
     this.secretsProcessor = secretsProcessor;
   }
 
+  @Transactional
   public DestinationRead createDestination(final DestinationCreate destinationCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
@@ -107,6 +109,7 @@ public class DestinationHandler {
     return buildDestinationRead(configRepository.getDestinationConnection(destinationId), spec);
   }
 
+  @Transactional
   public void deleteDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
@@ -115,6 +118,7 @@ public class DestinationHandler {
     deleteDestination(destination);
   }
 
+  @Transactional
   public void deleteDestination(final DestinationRead destination)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // disable all connections associated with this destination
@@ -140,6 +144,7 @@ public class DestinationHandler {
         true);
   }
 
+  @Transactional
   public DestinationRead updateDestination(final DestinationUpdate destinationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // get existing implementation
@@ -165,11 +170,13 @@ public class DestinationHandler {
         configRepository.getDestinationConnection(destinationUpdate.getDestinationId()), spec);
   }
 
+  @Transactional
   public DestinationRead getDestination(final DestinationIdRequestBody destinationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildDestinationRead(destinationIdRequestBody.getDestinationId());
   }
 
+  @Transactional
   public DestinationRead cloneDestination(final DestinationCloneRequestBody destinationCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read destination configuration from db
@@ -198,6 +205,7 @@ public class DestinationHandler {
     return createDestination(destinationCreate);
   }
 
+  @Transactional
   public DestinationReadList listDestinationsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
@@ -208,6 +216,7 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  @Transactional
   public DestinationReadList listDestinationsForDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<DestinationRead> reads = Lists.newArrayList();
@@ -220,6 +229,7 @@ public class DestinationHandler {
     return new DestinationReadList().destinations(reads);
   }
 
+  @Transactional
   public DestinationReadList searchDestinations(final DestinationSearch destinationSearch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<DestinationRead> reads = Lists.newArrayList();
@@ -240,6 +250,7 @@ public class DestinationHandler {
     validator.ensure(spec.getConnectionSpecification(), configuration);
   }
 
+  @Transactional
   public ConnectorSpecification getSpec(final UUID destinationDefinitionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return configRepository.getStandardDestinationDefinition(destinationDefinitionId).getSpec();

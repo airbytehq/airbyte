@@ -17,9 +17,11 @@ import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/jobs")
 @Context
+@Transactional
 public class JobsApiController implements JobsApi {
 
   private final JobHistoryHandler jobHistoryHandler;
@@ -32,36 +34,42 @@ public class JobsApiController implements JobsApi {
 
   @Post("/cancel")
   @Override
+  @Transactional
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.cancelJob(jobIdRequestBody));
   }
 
   @Post("/get_normalization_status")
   @Override
+  @Transactional
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatusesForJob(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getAttemptNormalizationStatuses(jobIdRequestBody));
   }
 
   @Post("/get_debug_info")
   @Override
+  @Transactional
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobDebugInfo(jobIdRequestBody));
   }
 
   @Post("/get")
   @Override
+  @Transactional
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobInfo(jobIdRequestBody));
   }
 
   @Post("/get_light")
   @Override
+  @Transactional
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.getJobInfoLight(jobIdRequestBody));
   }
 
   @Post("/list")
   @Override
+  @Transactional
   public JobReadList listJobsFor(final JobListRequestBody jobListRequestBody) {
     return ApiHelper.execute(() -> jobHistoryHandler.listJobsFor(jobListRequestBody));
   }

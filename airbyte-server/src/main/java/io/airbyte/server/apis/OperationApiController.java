@@ -17,8 +17,10 @@ import io.airbyte.server.handlers.OperationsHandler;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/operations")
+@Transactional
 public class OperationApiController implements OperationApi {
 
   private final OperationsHandler operationsHandler;
@@ -29,18 +31,21 @@ public class OperationApiController implements OperationApi {
 
   @Post("/check")
   @Override
+  @Transactional
   public CheckOperationRead checkOperation(@Body final OperatorConfiguration operatorConfiguration) {
     return ApiHelper.execute(() -> operationsHandler.checkOperation(operatorConfiguration));
   }
 
   @Post("/create")
   @Override
+  @Transactional
   public OperationRead createOperation(@Body final OperationCreate operationCreate) {
     return ApiHelper.execute(() -> operationsHandler.createOperation(operationCreate));
   }
 
   @Post("/delete")
   @Override
+  @Transactional
   public void deleteOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperation(operationIdRequestBody);
@@ -50,18 +55,21 @@ public class OperationApiController implements OperationApi {
 
   @Post("/get")
   @Override
+  @Transactional
   public OperationRead getOperation(@Body final OperationIdRequestBody operationIdRequestBody) {
     return ApiHelper.execute(() -> operationsHandler.getOperation(operationIdRequestBody));
   }
 
   @Post("/list")
   @Override
+  @Transactional
   public OperationReadList listOperationsForConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> operationsHandler.listOperationsForConnection(connectionIdRequestBody));
   }
 
   @Post("/update")
   @Override
+  @Transactional
   public OperationRead updateOperation(@Body final OperationUpdate operationUpdate) {
     return ApiHelper.execute(() -> operationsHandler.updateOperation(operationUpdate));
   }

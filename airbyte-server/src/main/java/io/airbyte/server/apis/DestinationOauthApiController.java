@@ -14,9 +14,11 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import java.util.Map;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/destination_oauths")
 @Context
+@Transactional
 public class DestinationOauthApiController implements DestinationOauthApi {
 
   private final OAuthHandler oAuthHandler;
@@ -27,18 +29,21 @@ public class DestinationOauthApiController implements DestinationOauthApi {
 
   @Post("/complete_oauth")
   @Override
+  @Transactional
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeDestinationOAuth(completeDestinationOAuthRequest));
   }
 
   @Post("/get_consent_url")
   @Override
+  @Transactional
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getDestinationOAuthConsent(destinationOauthConsentRequest));
   }
 
   @Post("/oauth_params/create")
   @Override
+  @Transactional
   public void setInstancewideDestinationOauthParams(final SetInstancewideDestinationOauthParamsRequestBody setInstancewideDestinationOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
       oAuthHandler.setDestinationInstancewideOauthParams(setInstancewideDestinationOauthParamsRequestBody);

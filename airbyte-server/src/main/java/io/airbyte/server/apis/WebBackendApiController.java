@@ -22,8 +22,10 @@ import io.airbyte.server.handlers.WebBackendConnectionsHandler;
 import io.airbyte.server.handlers.WebBackendGeographiesHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/web_backend")
+@Transactional
 public class WebBackendApiController implements WebBackendApi {
 
   private final WebBackendConnectionsHandler webBackendConnectionsHandler;
@@ -40,48 +42,56 @@ public class WebBackendApiController implements WebBackendApi {
 
   @Post("/state/get_type")
   @Override
+  @Transactional
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.getStateType(connectionIdRequestBody));
   }
 
   @Post("/check_updates")
   @Override
+  @Transactional
   public WebBackendCheckUpdatesRead webBackendCheckUpdates() {
     return ApiHelper.execute(webBackendCheckUpdatesHandler::checkUpdates);
   }
 
   @Post("/connections/create")
   @Override
+  @Transactional
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendCreateConnection(webBackendConnectionCreate));
   }
 
   @Post("/connections/get")
   @Override
+  @Transactional
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendGetConnection(webBackendConnectionRequestBody));
   }
 
   @Post("/workspace/state")
   @Override
+  @Transactional
   public WebBackendWorkspaceStateResult webBackendGetWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.getWorkspaceState(webBackendWorkspaceState));
   }
 
   @Post("/connections/list")
   @Override
+  @Transactional
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendListConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Post("/geographies/list")
   @Override
+  @Transactional
   public WebBackendGeographiesListResult webBackendListGeographies() {
     return ApiHelper.execute(webBackendGeographiesHandler::listGeographiesOSS);
   }
 
   @Post("/connections/update")
   @Override
+  @Transactional
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionUpdate) {
     return ApiHelper.execute(() -> webBackendConnectionsHandler.webBackendUpdateConnection(webBackendConnectionUpdate));
   }
