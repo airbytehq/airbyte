@@ -100,13 +100,6 @@ definitions:
     $ref: "*ref(definitions.datetime_100d_slicer)"
     step: "14d"
 
-  substream_slicer:
-    type: SubstreamSlicer
-    parent_stream_configs:
-      - stream: "*ref(definitions.list_stream)"
-        parent_key: id
-        stream_slice_field: id
-
   # ----- Sliced streams -----
   sliced_retriever:
     record_selector:
