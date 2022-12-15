@@ -13,7 +13,7 @@ import { TestWrapper } from "test-utils/testutils";
 
 import { WebBackendConnectionUpdate } from "core/request/AirbyteClient";
 import { ConnectionEditServiceProvider } from "hooks/services/ConnectionEdit/ConnectionEditService";
-import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 import * as connectionHook from "hooks/services/useConnectionHook";
 
 import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
@@ -134,7 +134,7 @@ describe("ConnectionReplicationTab", () => {
     it("should not allow cron expressions under one hour when feature not enabled", async () => {
       setupSpies();
 
-      const featuresToInject = defaultFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
+      const featuresToInject = defaultOssFeatures.filter((f) => f !== FeatureItem.AllowSyncSubOneHourCronExpressions);
 
       const container = tlr(
         <TestWrapper features={featuresToInject}>
