@@ -14,6 +14,7 @@ import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.UUID;
+import javax.transaction.Transactional;
 
 @Singleton
 public class StateHandler {
@@ -24,12 +25,14 @@ public class StateHandler {
     this.statePersistence = statePersistence;
   }
 
+  @Transactional
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     final UUID connectionId = connectionIdRequestBody.getConnectionId();
     final Optional<StateWrapper> currentState = statePersistence.getCurrentState(connectionId);
     return StateConverter.toApi(connectionId, currentState.orElse(null));
   }
 
+  @Transactional
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) throws IOException {
     final UUID connectionId = connectionStateCreateOrUpdate.getConnectionId();
 

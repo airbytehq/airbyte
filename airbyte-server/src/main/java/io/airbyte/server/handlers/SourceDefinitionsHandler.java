@@ -52,6 +52,7 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import javax.transaction.Transactional;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 @Singleton
@@ -122,6 +123,7 @@ public class SourceDefinitionsHandler {
     return LocalDate.parse(standardSourceDefinition.getReleaseDate());
   }
 
+  @Transactional
   public SourceDefinitionReadList listSourceDefinitions() throws IOException, JsonValidationException {
     return toSourceDefinitionReadList(configRepository.listStandardSourceDefinitions(false));
   }
@@ -133,6 +135,7 @@ public class SourceDefinitionsHandler {
     return new SourceDefinitionReadList().sourceDefinitions(reads);
   }
 
+  @Transactional
   public SourceDefinitionReadList listLatestSourceDefinitions() {
     return toSourceDefinitionReadList(getLatestSources());
   }
@@ -145,6 +148,7 @@ public class SourceDefinitionsHandler {
     }
   }
 
+  @Transactional
   public SourceDefinitionReadList listSourceDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException {
     return toSourceDefinitionReadList(MoreLists.concat(
@@ -152,6 +156,7 @@ public class SourceDefinitionsHandler {
         configRepository.listGrantedSourceDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
+  @Transactional
   public PrivateSourceDefinitionReadList listPrivateSourceDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException {
     final List<Entry<StandardSourceDefinition, Boolean>> standardSourceDefinitionBooleanMap =
@@ -168,11 +173,13 @@ public class SourceDefinitionsHandler {
     return new PrivateSourceDefinitionReadList().sourceDefinitions(reads);
   }
 
+  @Transactional
   public SourceDefinitionRead getSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildSourceDefinitionRead(configRepository.getStandardSourceDefinition(sourceDefinitionIdRequestBody.getSourceDefinitionId()));
   }
 
+  @Transactional
   public SourceDefinitionRead getSourceDefinitionForWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID definitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
@@ -183,6 +190,7 @@ public class SourceDefinitionsHandler {
     return getSourceDefinition(new SourceDefinitionIdRequestBody().sourceDefinitionId(definitionId));
   }
 
+  @Transactional
   public SourceDefinitionRead createCustomSourceDefinition(final CustomSourceDefinitionCreate customSourceDefinitionCreate)
       throws IOException {
     final StandardSourceDefinition sourceDefinition = sourceDefinitionFromCreate(customSourceDefinitionCreate.getSourceDefinition())
@@ -222,6 +230,7 @@ public class SourceDefinitionsHandler {
         .withResourceRequirements(ApiPojoConverters.actorDefResourceReqsToInternal(sourceDefinitionCreate.getResourceRequirements()));
   }
 
+  @Transactional
   public SourceDefinitionRead updateSourceDefinition(final SourceDefinitionUpdate sourceDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition currentSourceDefinition =
@@ -266,6 +275,7 @@ public class SourceDefinitionsHandler {
     return buildSourceDefinitionRead(newSource);
   }
 
+  @Transactional
   public void deleteSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all sources associated with the source definition as well. This will cascade to
@@ -298,6 +308,7 @@ public class SourceDefinitionsHandler {
     }
   }
 
+  @Transactional
   public PrivateSourceDefinitionRead grantSourceDefinitionToWorkspace(
                                                                       final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -311,6 +322,7 @@ public class SourceDefinitionsHandler {
         .granted(true);
   }
 
+  @Transactional
   public void revokeSourceDefinitionFromWorkspace(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws IOException {
     configRepository.deleteActorDefinitionWorkspaceGrant(

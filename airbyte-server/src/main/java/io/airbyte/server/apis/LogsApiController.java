@@ -11,9 +11,11 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import java.io.File;
+import javax.transaction.Transactional;
 
 @Controller("/api/v1/logs")
 @Context
+@Transactional
 public class LogsApiController implements LogsApi {
 
   private final LogsHandler logsHandler;
@@ -24,6 +26,7 @@ public class LogsApiController implements LogsApi {
 
   @Post("/get")
   @Override
+  @Transactional
   public File getLogs(final LogsRequestBody logsRequestBody) {
     return ApiHelper.execute(() -> logsHandler.getLogs(logsRequestBody));
   }

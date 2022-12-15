@@ -108,6 +108,7 @@ jakarta-inject = { module = "jakarta.annotation:jakarta.annotation-api", version
 javax-transaction = { module = "javax.transaction:javax.transaction-api", version = "1.3" }
 micronaut-bom = { module = "io.micronaut:micronaut-bom", version.ref = "micronaut" }
 micronaut-data-processor = { module = "io.micronaut.data:micronaut-data-processor", version = "3.8.1" }
+micronaut-data-tx = { module = "io.micronaut.data:micronaut-data-tx", version = "3.4.0" }
 micronaut-flyway = { module = "io.micronaut.flyway:micronaut-flyway", version = "5.4.1" }
 micronaut-inject = { module = "io.micronaut:micronaut-inject" }
 micronaut-http-client = { module = "io.micronaut:micronaut-http-client" }
@@ -134,7 +135,7 @@ slf4j = ["jul-to-slf4j", "jcl-over-slf4j", "log4j-over-slf4j"]
 junit = ["junit-jupiter-api", "junit-jupiter-params", "mockito-junit-jupiter"]
 micronaut = ["jakarta-inject", "javax-transaction", "micronaut-http-server-netty", "micronaut-http-client", "micronaut-inject", "micronaut-validation", "micronaut-runtime", "micronaut-management", "micronaut-security", "micronaut-jaxrs-server", "micronaut-flyway", "micronaut-jdbc-hikari", "micronaut-jooq"]
 micronaut-annotation = ["jakarta-inject", "micronaut-inject-java"]
-micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor"]
+micronaut-annotation-processor = ["micronaut-inject-java", "micronaut-management", "micronaut-validation", "micronaut-data-processor", "micronaut-jaxrs-processor", "micronaut-data-tx"]
 micronaut-server = ["micronaut-jaxrs-processor", "micronaut-jaxrs-server"]
 micronaut-test = ["micronaut-test-core", "micronaut-test-junit5", "h2-database"]
 micronaut-test-annotation-processor = ["micronaut-inject-java"]

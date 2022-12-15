@@ -10,6 +10,7 @@ import io.airbyte.config.persistence.ConfigRepository;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
+import javax.transaction.Transactional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -21,6 +22,7 @@ public class HealthCheckHandler {
     this.repository = repository;
   }
 
+  @Transactional
   public HealthCheckRead health() {
     return new HealthCheckRead().available(repository.healthCheck());
   }

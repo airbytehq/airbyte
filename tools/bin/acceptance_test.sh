@@ -26,7 +26,7 @@ VERSION=dev TRACKING_STRATEGY=logging USE_STREAM_CAPABLE_STATE=true BASIC_AUTH_U
 # Sometimes source/dest containers using airbyte volumes survive shutdown, which need to be killed in order to shut down properly.
 shutdown_cmd="docker-compose down -v || docker kill \$(docker ps -a -f volume=airbyte_workspace -f volume=airbyte_data -f volume=airbyte_db -q) && docker-compose down -v"
 # Uncomment for debugging. Warning, this is verbose.
-# trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 1000 && $shutdown_cmd" EXIT
+trap "echo 'docker-compose logs:' && docker-compose logs -t --tail 1000 && $shutdown_cmd" EXIT
 
 echo "Waiting for services to begin"
 starttime=`get_epoch_time`

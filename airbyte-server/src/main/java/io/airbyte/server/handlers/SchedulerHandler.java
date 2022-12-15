@@ -81,6 +81,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
+import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 @Singleton
@@ -149,6 +150,7 @@ public class SchedulerHandler {
     this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
+  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
@@ -160,6 +162,7 @@ public class SchedulerHandler {
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
   }
 
+  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
@@ -181,6 +184,7 @@ public class SchedulerHandler {
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
   }
 
+  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection updatedSource =
@@ -196,6 +200,7 @@ public class SchedulerHandler {
     return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
   }
 
+  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationId(final DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
@@ -207,6 +212,7 @@ public class SchedulerHandler {
         synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
+  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
@@ -227,6 +233,7 @@ public class SchedulerHandler {
         synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
+  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection updatedDestination = configurationUpdate
@@ -242,6 +249,7 @@ public class SchedulerHandler {
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
+  @Transactional
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
@@ -287,6 +295,7 @@ public class SchedulerHandler {
         .catalogId(currentCatalog.get().getId());
   }
 
+  @Transactional
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
@@ -327,6 +336,7 @@ public class SchedulerHandler {
     return sourceDiscoverSchemaRead;
   }
 
+  @Transactional
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID sourceDefinitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
@@ -347,6 +357,7 @@ public class SchedulerHandler {
     return specRead;
   }
 
+  @Transactional
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
                                                                             final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -372,16 +383,19 @@ public class SchedulerHandler {
     return specRead;
   }
 
+  @Transactional
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
+  @Transactional
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
   }
 
+  @Transactional
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
@@ -391,8 +405,8 @@ public class SchedulerHandler {
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
   // containsBreakingChange paramter, and connectionStatus parameter.
-  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
-                                                                 SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
+                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
@@ -400,12 +414,13 @@ public class SchedulerHandler {
           .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
       final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
           connectionRead.getSyncCatalog();
-      CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-          CatalogConverter.toProtocol(currentAirbyteCatalog));
-      boolean containsBreakingChange = containsBreakingChange(diff);
-      ConnectionUpdate updateObject =
+      final CatalogDiff diff =
+          connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+              CatalogConverter.toProtocol(currentAirbyteCatalog));
+      final boolean containsBreakingChange = containsBreakingChange(diff);
+      final ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
-      ConnectionStatus connectionStatus;
+      final ConnectionStatus connectionStatus;
       if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
         connectionStatus = ConnectionStatus.INACTIVE;
       } else {
