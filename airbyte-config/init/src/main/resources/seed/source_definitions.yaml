@@ -72,6 +72,7 @@
   dockerRepository: airbyte/source-amazon-sqs
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/amazon-sqs
+  icon: awssqs.svg
   sourceType: api
   releaseStage: alpha
 - name: Amplitude
@@ -103,6 +104,7 @@
   dockerRepository: airbyte/source-appsflyer
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/appsflyer
+  icon: appsflyer.svg
   sourceType: api
   releaseStage: alpha
 - name: Appstore
@@ -370,6 +372,7 @@
   dockerRepository: airbyte/source-datadog
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/datadog
+  icon: datadog.svg
   sourceType: api
   releaseStage: alpha
 - name: Datascope
@@ -423,6 +426,7 @@
   dockerRepository: airbyte/source-dynamodb
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/dynamodb
+  icon: dynamodb.svg
   sourceType: api
   releaseStage: alpha
 - name: E2E Testing
@@ -469,6 +473,7 @@
   dockerRepository: airbyte/source-faker
   dockerImageTag: 1.0.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/faker
+  icon: faker.svg
   sourceType: api
   releaseStage: alpha
 - name: Fastbill
@@ -704,6 +709,7 @@
   dockerRepository: airbyte/source-hellobaton
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/hellobaton
+  icon: hellobaton.svg
   sourceType: api
   releaseStage: alpha
 - name: Hubplanner
@@ -1031,6 +1037,7 @@
   dockerRepository: airbyte/source-netsuite
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/netsuite
+  icon: netsuite.svg
   sourceType: api
   releaseStage: alpha
 - name: News API
@@ -1206,6 +1213,7 @@
   dockerRepository: airbyte/source-pivotal-tracker
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/pivotal-tracker
+  icon: pivotal-tracker.svg
   sourceType: api
   releaseStage: alpha
 - name: Plaid
@@ -1396,6 +1404,7 @@
   dockerRepository: airbyte/source-rki-covid
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/rki-covid
+  icon: rki.svg
   sourceType: api
   releaseStage: alpha
 - name: RSS
@@ -1683,7 +1692,7 @@
   dockerRepository: airbyte/source-trello
   dockerImageTag: 0.1.6
   documentationUrl: https://docs.airbyte.com/integrations/sources/trello
-  icon: trelllo.svg
+  icon: trello.svg
   sourceType: api
   releaseStage: alpha
 - name: TVMaze Schedule
@@ -1691,7 +1700,6 @@
   dockerRepository: airbyte/source-tvmaze-schedule
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/tvmaze-schedule
-  icon: trelllo.svg
   sourceType: api
   releaseStage: alpha
 - name: Twilio
@@ -1715,6 +1723,7 @@
   dockerRepository: airbyte/source-twitter
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/twitter
+  icon: twitter.svg
   sourceType: api
   releaseStage: alpha
 - name: Tyntec SMS
@@ -1746,7 +1755,7 @@
   dockerRepository: airbyte/source-youtube-analytics
   dockerImageTag: 0.1.3
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics
-  icon: youtube.svg
+  icon: youtube-analytics.svg
   sourceType: api
   releaseStage: beta
 - sourceDefinitionId: 78752073-6d96-447d-8a93-2b6953f3c787
@@ -1754,7 +1763,7 @@
   dockerRepository: airbyte/source-youtube-analytics-business
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/youtube-analytics-business
-  icon: youtube.svg
+  icon: youtube-analytics.svg
   sourceType: api
   releaseStage: alpha
 - name: Vantage
@@ -1791,6 +1800,7 @@
   dockerRepository: airbyte/source-xero
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/xero
+  icon: xero.svg
   sourceType: api
   releaseStage: alpha
 - name: xkcd
@@ -1835,6 +1845,7 @@
   dockerRepository: airbyte/source-workable
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/workable
+  icon: workable.svg
   sourceType: api
   releaseStage: alpha
 - name: Wrike
@@ -1857,7 +1868,7 @@
   dockerRepository: airbyte/source-zendesk-chat
   dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-chat
-  icon: zendesk.svg
+  icon: zendesk-chat.svg
   sourceType: api
   releaseStage: generally_available
 - name: Zendesk Sell
@@ -1873,7 +1884,7 @@
   dockerRepository: airbyte/source-zendesk-sunshine
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-sunshine
-  icon: zendesk.svg
+  icon: zendesk-sunshine.svg
   sourceType: api
   releaseStage: alpha
 - name: Zendesk Support
@@ -1881,7 +1892,7 @@
   dockerRepository: airbyte/source-zendesk-support
   dockerImageTag: 0.2.19
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
-  icon: zendesk.svg
+  icon: zendesk-support.svg
   sourceType: api
   releaseStage: generally_available
 - name: Zendesk Talk
@@ -1889,7 +1900,7 @@
   dockerRepository: airbyte/source-zendesk-talk
   dockerImageTag: 0.1.5
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-talk
-  icon: zendesk.svg
+  icon: zendesk-talk.svg
   sourceType: api
   releaseStage: generally_available
 - name: Zenefits
@@ -1905,6 +1916,7 @@
   dockerRepository: airbyte/source-zenloop
   dockerImageTag: 0.1.4
   documentationUrl: https://docs.airbyte.com/integrations/sources/zenloop
+  icon: zenloop.svg
   sourceType: api
   releaseStage: beta
 - sourceDefinitionId: cdaf146a-9b75-49fd-9dd2-9d64a0bb4781
@@ -1928,6 +1940,7 @@
   dockerRepository: airbyte/source-kustomer-singer
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/kustomer
+  icon: kustomer.svg
   sourceType: api
   releaseStage: alpha
 - name: ZohoCRM
@@ -1942,6 +1955,7 @@
   dockerRepository: airbyte/source-sftp
   dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp
+  icon: sftp.svg
   sourceType: file
   releaseStage: alpha
 - name: SFTP Bulk
@@ -1949,6 +1963,7 @@
   dockerRepository: airbyte/source-sftp-bulk
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/sftp-bulk
+  icon: sftp.svg
   sourceType: file
   releaseStage: alpha
 - name: Firebolt
@@ -1956,6 +1971,7 @@
   dockerRepository: airbyte/source-firebolt
   dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/firebolt
+  icon: firebolt.svg
   sourceType: database
   releaseStage: alpha
 - name: Elasticsearch
@@ -1963,6 +1979,7 @@
   dockerRepository: airbyte/source-elasticsearch
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/elasticsearch
+  icon: elasticsearch.svg
   sourceType: api
   releaseStage: alpha
 - name: Waiteraid
