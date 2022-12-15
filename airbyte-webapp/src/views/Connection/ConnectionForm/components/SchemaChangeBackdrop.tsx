@@ -21,14 +21,6 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
 
   const { hasBreakingSchemaChange, hasNonBreakingSchemaChange } = useSchemaChanges(schemaChange);
 
-  const schemaChangeMessage = useMemo(() => {
-    return hasBreakingSchemaChange ? (
-      <FormattedMessage id="connectionForm.breakingChanges.backdrop.message" />
-    ) : hasNonBreakingSchemaChange ? (
-      <FormattedMessage id="connectionForm.nonBreakingChanges.backdrop.message" />
-    ) : null;
-  }, [hasBreakingSchemaChange, hasNonBreakingSchemaChange]);
-
   const schemaChangeImage = useMemo(() => {
     return hasBreakingSchemaChange ? <OctaviaRedFlag /> : hasNonBreakingSchemaChange ? <OctaviaYellowFlag /> : null;
   }, [hasBreakingSchemaChange, hasNonBreakingSchemaChange]);
@@ -46,7 +38,9 @@ export const SchemaChangeBackdrop: React.FC<React.PropsWithChildren<unknown>> = 
       <div className={styles.backdrop}>
         <div className={styles.contentContainer}>
           <div>{schemaChangeImage}</div>
-          <Text className={styles.text}>{schemaChangeMessage}</Text>
+          <Text className={styles.text}>
+            <FormattedMessage id="connectionForm.schemaChangesBackdrop.message" />
+          </Text>
         </div>
       </div>
       {children}

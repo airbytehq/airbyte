@@ -85,7 +85,7 @@ exports[`SchemaChangesBackdrop renders if there are non-breaking changes and pre
       <p
         class="text md text"
       >
-        connectionForm.breakingChangesBackdrop.message
+        Please review the schema updates before making changes to the connection
       </p>
     </div>
   </div>
@@ -182,7 +182,7 @@ exports[`SchemaChangesBackdrop renders with breaking changes and prevents backgr
       <p
         class="text md text"
       >
-        connectionForm.breakingChangesBackdrop.message
+        Please review the schema updates before making changes to the connection
       </p>
     </div>
   </div>
