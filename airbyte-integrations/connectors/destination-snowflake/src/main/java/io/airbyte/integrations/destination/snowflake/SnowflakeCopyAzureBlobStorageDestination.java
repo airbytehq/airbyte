@@ -23,6 +23,12 @@ import javax.sql.DataSource;
 
 public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
+  private final String airbyteEnvironment;
+
+  public SnowflakeCopyAzureBlobStorageDestination(final String airbyteEnvironment) {
+    this.airbyteEnvironment = airbyteEnvironment;
+  }
+
   @Override
   public AirbyteMessageConsumer getConsumer(final JsonNode config,
                                             final ConfiguredAirbyteCatalog catalog,
@@ -52,7 +58,7 @@ public class SnowflakeCopyAzureBlobStorageDestination extends CopyDestination {
 
   @Override
   public DataSource getDataSource(final JsonNode config) {
-    return SnowflakeDatabase.createDataSource(config);
+    return SnowflakeDatabase.createDataSource(config, airbyteEnvironment);
   }
 
   @Override

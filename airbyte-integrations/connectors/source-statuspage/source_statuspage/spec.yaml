@@ -10,7 +10,7 @@ connectionSpecification:
     api_key:
       title: API Key
       type: string
-      description: >- 
+      description: >-
         Your API Key. See <a
         href="https://developer.statuspage.io/#section/Authentication/api_key">here</a>.
       airbyte_secret: true

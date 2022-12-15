@@ -9,6 +9,7 @@ global:
     secretValue: ""
     host: "example.com"
     port: "5432"
+  secrets: {}
 
 enabled: true
 ##  cron.replicaCount Number of cron replicas

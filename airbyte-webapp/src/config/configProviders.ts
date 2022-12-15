@@ -11,6 +11,7 @@ const windowConfigProvider: ConfigProvider = async () => {
       token: window.SEGMENT_TOKEN,
     },
     apiUrl: window.API_URL,
+    connectorBuilderApiUrl: window.CONNECTOR_BUILDER_API_URL,
     version: window.AIRBYTE_VERSION,
     // cloud only start
     // TODO: remove when infra team supports proper webapp building
@@ -22,7 +23,6 @@ const windowConfigProvider: ConfigProvider = async () => {
 const envConfigProvider: ConfigProvider = async () => {
   return {
     apiUrl: process.env.REACT_APP_API_URL,
-    // connectorBuilderUrl: process.env.REACT_APP_CONNECTOR_BUILDER_API, #FIXME: Uncomment this when enabling the connector-builder
     integrationUrl: process.env.REACT_APP_INTEGRATION_DOCS_URLS,
     segment: {
       token: process.env.REACT_APP_SEGMENT_TOKEN,

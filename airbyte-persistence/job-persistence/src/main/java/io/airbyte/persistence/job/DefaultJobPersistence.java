@@ -24,6 +24,7 @@ import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.text.Names;
 import io.airbyte.commons.text.Sqls;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.AttemptFailureSummary;
@@ -347,7 +348,9 @@ public class DefaultJobPersistence implements JobPersistence {
           .execute();
       final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
-      writeSyncStats(now, syncStats, attemptId, ctx);
+      if (syncStats != null) {
+        writeSyncStats(now, syncStats, attemptId, ctx);
+      }
 
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
@@ -836,6 +839,27 @@ public class DefaultJobPersistence implements JobPersistence {
   @Override
   public void setAirbyteProtocolVersionMin(final Version version) throws IOException {
     setMetadata(AirbyteProtocolVersion.AIRBYTE_PROTOCOL_VERSION_MIN_KEY_NAME, version.serialize());
+  }
+
+  @Override
+  public Optional<AirbyteProtocolVersionRange> getCurrentProtocolVersionRange() throws IOException {
+    final Optional<Version> min = getAirbyteProtocolVersionMin();
+    final Optional<Version> max = getAirbyteProtocolVersionMax();
+
+    if (min.isPresent() != max.isPresent()) {
+      // Flagging this because this would be highly suspicious but not bad enough that we should fail
+      // hard.
+      // If the new config is fine, the system should self-heal.
+      LOGGER.warn("Inconsistent AirbyteProtocolVersion found, only one of min/max was found. (min:{}, max:{})",
+          min.map(Version::serialize).orElse(""), max.map(Version::serialize).orElse(""));
+    }
+
+    if (min.isEmpty() && max.isEmpty()) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new AirbyteProtocolVersionRange(min.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION),
+        max.orElse(AirbyteProtocolVersion.DEFAULT_AIRBYTE_PROTOCOL_VERSION)));
   }
 
   private Stream<String> getMetadata(final String keyName) throws IOException {

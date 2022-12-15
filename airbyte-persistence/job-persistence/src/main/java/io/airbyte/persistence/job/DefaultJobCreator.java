@@ -6,7 +6,6 @@ package io.airbyte.persistence.job;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.version.Version;
-import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.DestinationConnection;
 import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
@@ -16,6 +15,8 @@ import io.airbyte.config.JobTypeResourceLimit.JobType;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.SourceConnection;
+import io.airbyte.config.StandardDestinationDefinition;
+import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.State;
@@ -58,8 +59,8 @@ public class DefaultJobCreator implements JobCreator {
                                       final Version destinationProtocolVersion,
                                       final List<StandardSyncOperation> standardSyncOperations,
                                       @Nullable final JsonNode webhookOperationConfigs,
-                                      @Nullable final ActorDefinitionResourceRequirements sourceResourceReqs,
-                                      @Nullable final ActorDefinitionResourceRequirements destinationResourceReqs)
+                                      final StandardSourceDefinition sourceDefinition,
+                                      final StandardDestinationDefinition destinationDefinition)
       throws IOException {
     // reusing this isn't going to quite work.
 
@@ -68,12 +69,12 @@ public class DefaultJobCreator implements JobCreator {
         workerResourceRequirements);
     final ResourceRequirements mergedSrcResourceReq = ResourceRequirementsUtils.getResourceRequirements(
         standardSync.getResourceRequirements(),
-        sourceResourceReqs,
+        sourceDefinition.getResourceRequirements(),
         workerResourceRequirements,
         JobType.SYNC);
     final ResourceRequirements mergedDstResourceReq = ResourceRequirementsUtils.getResourceRequirements(
         standardSync.getResourceRequirements(),
-        destinationResourceReqs,
+        destinationDefinition.getResourceRequirements(),
         workerResourceRequirements,
         JobType.SYNC);
 
@@ -93,7 +94,9 @@ public class DefaultJobCreator implements JobCreator {
         .withState(null)
         .withResourceRequirements(mergedOrchestratorResourceReq)
         .withSourceResourceRequirements(mergedSrcResourceReq)
-        .withDestinationResourceRequirements(mergedDstResourceReq);
+        .withDestinationResourceRequirements(mergedDstResourceReq)
+        .withIsSourceCustomConnector(sourceDefinition.getCustom())
+        .withIsDestinationCustomConnector(destinationDefinition.getCustom());
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(jobSyncConfig::withState);
 
@@ -108,6 +111,7 @@ public class DefaultJobCreator implements JobCreator {
                                                  final StandardSync standardSync,
                                                  final String destinationDockerImage,
                                                  final Version destinationProtocolVersion,
+                                                 final boolean isDestinationCustomConnector,
                                                  final List<StandardSyncOperation> standardSyncOperations,
                                                  final List<StreamDescriptor> streamsToReset)
       throws IOException {
@@ -141,7 +145,9 @@ public class DefaultJobCreator implements JobCreator {
         .withResourceRequirements(ResourceRequirementsUtils.getResourceRequirements(
             standardSync.getResourceRequirements(),
             workerResourceRequirements))
-        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset));
+        .withResetSourceConfiguration(new ResetSourceConfiguration().withStreamsToReset(streamsToReset))
+        .withIsSourceCustomConnector(false)
+        .withIsDestinationCustomConnector(isDestinationCustomConnector);
 
     getCurrentConnectionState(standardSync.getConnectionId()).ifPresent(resetConnectionConfig::withState);
 

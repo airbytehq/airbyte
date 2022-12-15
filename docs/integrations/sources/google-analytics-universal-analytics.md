@@ -4,38 +4,42 @@ This page contains the setup guide and reference information for the Google Anal
 
 This connector supports Universal Analytics properties through the [Reporting API v4](https://developers.google.com/analytics/devguides/reporting/core/v4).
 
-## Set up Google Analytics as a source in Airbyte 
+## Setup guide
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 To set up Google Analytics as a source in Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ New source**.
-3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown. 
-4. For Name, enter a name for the Google Analytics connector. 
-5. Authenticate your Google account via OAuth or Service Account Key Authentication. 
+3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
+4. For Name, enter a name for the Google Analytics connector.
+5. Authenticate your Google account via OAuth or Service Account Key Authentication.
     - **(Recommended)** To authenticate your Google account via OAuth, click **Sign in with Google** and complete the authentication workflow.
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. <!---Make sure the Service Account has the Project Viewer permission. --->
 6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
 8. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 To set up Google Analytics as a source in Airbyte Open Source:
 
-1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user and enable the Reporting API for your account. Then go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user and enable the API for your account. 
+1. Go to the [Google Analytics Reporting API dashboard](https://console.developers.google.com/apis/api/analyticsreporting.googleapis.com/overview) in the project for your service user and enable the Reporting API for your account. Then go to the [Google Analytics API dashboard](https://console.developers.google.com/apis/api/analytics.googleapis.com/overview) in the project for your service user and enable the API for your account.
 2. Go to the Airbyte UI and click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown. 
-4. Enter a name for the Google Analytics connector. 
+3. On the Set up the source page, select **Google Analytics** from the **Source type** dropdown.
+4. Enter a name for the Google Analytics connector.
 5. Authenticate your Google account via OAuth or Service Account Key Authentication:
     - To authenticate your Google account via OAuth, enter your Google application's [client ID, client secret, and refresh token](https://developers.google.com/identity/protocols/oauth2).
     - To authenticate your Google account via Service Account Key Authentication, enter your [Google Cloud service account key](https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys) in JSON format. Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API and grant [Read and Analyze permissions](https://support.google.com/analytics/answer/2884495).
 6. Enter the **Replication Start Date** in YYYY-MM-DD format. The data added on and after this date will be replicated. If this field is blank, Airbyte will replicate all data.
 7. Enter the [**View ID**](https://ga-dev-tools.appspot.com/account-explorer/) for the Google Analytics View you want to fetch data from.
-8. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports) 
+8. Optionally, enter a JSON object as a string in the **Custom Reports** field. For details, refer to [Requesting custom reports](#requesting-custom-reports)
 9. Leave **Data request time increment in days (Optional)** blank or set to 1. For faster syncs, set this value to more than 1 but that might result in the Google Analytics API returning [sampled data](#sampled-data-in-reports), potentially causing inaccuracies in the returned results. The maximum allowed value is 364.
+<!-- /env:oss -->
 
 ## Supported sync modes
 
@@ -45,7 +49,7 @@ The Google Analytics source connector supports the following [sync modes](https:
 - [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
 - [Incremental Sync - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 - [Incremental Sync - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
- 
+
 ## Supported streams
 
 The Google Analytics (Universal Analytics) source connector can sync the following tables:
@@ -75,9 +79,9 @@ Reach out to us on Slack or [create an issue](https://github.com/airbytehq/airby
 * Number of requests per 100 seconds per project: 2,000
 * Number of requests per 100 seconds per user per project: 100 (can be increased in Google API Console to 1,000).
 
-The Google Analytics connector should not run into the "requests per 100 seconds" limitation under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully and try increasing the `window_in_days` value. 
+The Google Analytics connector should not run into the "requests per 100 seconds" limitation under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully and try increasing the `window_in_days` value.
 
-## Sampled data in reports 
+## Sampled data in reports
 
 If you are not on the Google Analytics 360 tier, the Google Analytics API may return sampled data if the amount of data in your Google Analytics account exceeds Google's [pre-determined compute thresholds](https://support.google.com/analytics/answer/2637192?hl=en&ref_topic=2601030&visit_id=637868645346124317-2833523666&rd=1#thresholds&zippy=%2Cin-this-article). This means the data returned in the report is an estimate which may have some inaccuracy. This [Google page](https://support.google.com/analytics/answer/2637192) provides a comprehensive overview of how Google applies sampling to your data.  
 
@@ -86,9 +90,9 @@ When sampling occurs, a warning is logged to the sync log.
 
 ## Data processing latency
 
-According to the [Google Analytics API documentation](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article), all report data may continue to be updated 48 hours after it appears in the Google Analytics API. This means if you request the same report twice within 48 hours of that data being sent to Google Analytics, the report data might be different across the two requests. This happens when Google Analytics is still processing all events it received. 
+According to the [Google Analytics API documentation](https://support.google.com/analytics/answer/1070983?hl=en#DataProcessingLatency&zippy=%2Cin-this-article), all report data may continue to be updated 48 hours after it appears in the Google Analytics API. This means if you request the same report twice within 48 hours of that data being sent to Google Analytics, the report data might be different across the two requests. This happens when Google Analytics is still processing all events it received.
 
-When this occurs, the returned data will set the flag `isDataGolden` to false. As mentioned in the [Google Analytics API docs](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#reportdata), the `isDataGolden` flag indicates if [data] is golden or not. Data is golden when the exact same request [for a report] will not produce any new results if asked at a later point in time. 
+When this occurs, the returned data will set the flag `isDataGolden` to false. As mentioned in the [Google Analytics API docs](https://developers.google.com/analytics/devguides/reporting/core/v4/rest/v4/reports/batchGet#reportdata), the `isDataGolden` flag indicates if [data] is golden or not. Data is golden when the exact same request [for a report] will not produce any new results if asked at a later point in time.
 
 To address this issue, the connector adds a lookback window of 2 days to ensure any previously synced non-golden data is re-synced with its potential updates. For example: If your last sync occurred 5 days ago and a sync is initiated today, the connector will attempt to sync data from 7 days ago up to the latest data available.
 

@@ -11,5 +11,6 @@ public enum TemporalJobType {
   SYNC,
   RESET_CONNECTION,
   CONNECTION_UPDATER,
-  REPLICATE
+  REPLICATE,
+  NOTIFY
 }

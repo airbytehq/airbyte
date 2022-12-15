@@ -5,7 +5,7 @@ plugins {
 }
 
 application {
-    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestination'
+    mainClass = 'io.airbyte.integrations.destination.snowflake.SnowflakeDestinationRunner'
 // enable when profiling
     applicationDefaultJvmArgs = [
             '-XX:+ExitOnOutOfMemoryError',

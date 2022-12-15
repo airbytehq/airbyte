@@ -83,7 +83,16 @@ class TestSpec(BaseTest):
     previous_spec_cache: ConnectorSpecification = None
 
     @pytest.fixture(name="skip_backward_compatibility_tests")
-    def skip_backward_compatibility_tests_fixture(self, inputs: SpecTestConfig, previous_connector_docker_runner: ConnectorRunner) -> bool:
+    def skip_backward_compatibility_tests_fixture(
+        self,
+        inputs: SpecTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        previous_connector_spec: ConnectorSpecification,
+        actual_connector_spec: ConnectorSpecification,
+    ) -> bool:
+        if actual_connector_spec == previous_connector_spec:
+            pytest.skip("The previous and actual specifications are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 
@@ -212,6 +221,7 @@ class TestSpec(BaseTest):
         A string, a number or an integer type can always store secrets.
         Objects and arrays can hold a secret in case they are generic,
         meaning their inner structure is not described in details with properties/items.
+        A field with a constant value can not hold a secret as well.
         """
         unsecure_types = {"string", "integer", "number"}
         type_ = prop["type"]
@@ -219,7 +229,8 @@ class TestSpec(BaseTest):
             [prop.get("properties", {}), prop.get("anyOf", []), prop.get("oneOf", []), prop.get("allOf", [])]
         )
         is_property_generic_array = type_ == "array" and not any([prop.get("items", []), prop.get("prefixItems", [])])
-        return any(
+        is_property_constant_value = bool(prop.get("const"))
+        can_store_secret = any(
             [
                 isinstance(type_, str) and type_ in unsecure_types,
                 is_property_generic_object,
@@ -227,6 +238,10 @@ class TestSpec(BaseTest):
                 isinstance(type_, list) and (set(type_) & unsecure_types),
             ]
         )
+        if not can_store_secret:
+            return False
+        # if a property can store a secret, additional check should be done if it's a constant value
+        return not is_property_constant_value
 
     def test_secret_is_properly_marked(self, connector_spec_dict: dict, detailed_logger, secret_property_names):
         """
@@ -352,8 +367,15 @@ class TestConnection(BaseTest):
 class TestDiscovery(BaseTest):
     @pytest.fixture(name="skip_backward_compatibility_tests")
     def skip_backward_compatibility_tests_fixture(
-        self, inputs: DiscoveryTestConfig, previous_connector_docker_runner: ConnectorRunner
+        self,
+        inputs: DiscoveryTestConfig,
+        previous_connector_docker_runner: ConnectorRunner,
+        discovered_catalog: MutableMapping[str, AirbyteStream],
+        previous_discovered_catalog: MutableMapping[str, AirbyteStream],
     ) -> bool:
+        if discovered_catalog == previous_discovered_catalog:
+            pytest.skip("The previous and actual discovered catalogs are identical.")
+
         if previous_connector_docker_runner is None:
             pytest.skip("The previous connector image could not be retrieved.")
 

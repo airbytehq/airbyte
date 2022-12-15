@@ -13,7 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaPrimitiveUtil.JsonSchemaPrimitive;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.Collections;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +27,11 @@ class IncrementalUtilsTest {
       STREAM_NAME,
       null,
       Field.of("ascending_inventory_uuid", JsonSchemaType.STRING));
+
+  private static final ConfiguredAirbyteStream STREAM_V1 = CatalogHelpers.createConfiguredAirbyteStream(
+      STREAM_NAME,
+      null,
+      Field.of("ascending_inventory_uuid", JsonSchemaType.STRING_V1));
   private static final String ABC = "abc";
 
   @Test
@@ -55,6 +60,11 @@ class IncrementalUtilsTest {
   }
 
   @Test
+  void testGetCursorType_V1() {
+    Assertions.assertEquals(JsonSchemaPrimitive.STRING_V1, IncrementalUtils.getCursorType(STREAM_V1, UUID_FIELD_NAME));
+  }
+
+  @Test
   void testGetCursorTypeNoProperties() {
     final ConfiguredAirbyteStream stream = Jsons.clone(STREAM);
     stream.getStream().setJsonSchema(Jsons.jsonNode(Collections.emptyMap()));
@@ -76,8 +86,10 @@ class IncrementalUtilsTest {
   @Test
   void testCompareCursors() {
     assertTrue(IncrementalUtils.compareCursors(ABC, "def", JsonSchemaPrimitive.STRING) < 0);
+    assertTrue(IncrementalUtils.compareCursors(ABC, "def", JsonSchemaPrimitive.STRING_V1) < 0);
     Assertions.assertEquals(0, IncrementalUtils.compareCursors(ABC, ABC, JsonSchemaPrimitive.STRING));
     assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.NUMBER) < 0);
+    assertTrue(IncrementalUtils.compareCursors("1", "2", JsonSchemaPrimitive.INTEGER_V1) < 0);
     assertTrue(IncrementalUtils.compareCursors("5000000000", "5000000001", JsonSchemaPrimitive.NUMBER) < 0);
     assertTrue(IncrementalUtils.compareCursors("false", "true", JsonSchemaPrimitive.BOOLEAN) < 0);
     assertTrue(IncrementalUtils.compareCursors(null, "def", JsonSchemaPrimitive.STRING) < 1);
