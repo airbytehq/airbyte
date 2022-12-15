@@ -4,11 +4,10 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.CONNECTION_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
@@ -21,7 +20,6 @@ import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
@@ -41,7 +39,6 @@ import org.quartz.CronExpression;
 
 @Slf4j
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
@@ -60,6 +57,12 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     this.jobPersistence = jobPersistence;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
+  }
+
+  @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
+  @Override
+  public StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
+    return configRepository.getStandardSync(connectionId);
   }
 
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
@@ -168,6 +171,28 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   @Override
   public GetMaxAttemptOutput getMaxAttempt() {
     return new GetMaxAttemptOutput(syncJobMaxAttempts);
+  }
+
+  @Override
+  public Optional<UUID> getSourceId(final UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getSourceId());
+    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's Source ID: ", e);
+      return Optional.empty();
+    }
+  }
+
+  @Override
+  public Optional<Status> getStatus(final UUID connectionId) {
+    try {
+      final StandardSync standardSync = getStandardSync(connectionId);
+      return Optional.ofNullable(standardSync.getStatus());
+    } catch (final JsonValidationException | ConfigNotFoundException | IOException e) {
+      log.info("Encountered an error fetching the connection's status: ", e);
+      return Optional.empty();
+    }
   }
 
 }

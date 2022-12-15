@@ -20,8 +20,10 @@ public interface EventRunner {
 
   ManualOperationResult resetConnection(final UUID connectionId, final List<StreamDescriptor> streamsToReset, final boolean runSyncImmediately);
 
-  void deleteConnection(final UUID connectionId);
+  void forceDeleteConnection(final UUID connectionId);
 
+  // TODO: Delete
+  @Deprecated(forRemoval = true)
   void migrateSyncIfNeeded(final Set<UUID> connectionIds);
 
   void update(final UUID connectionId);

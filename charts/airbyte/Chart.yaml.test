@@ -61,3 +61,11 @@ dependencies:
     name: metrics
     repository: "file://../airbyte-metrics"
     version: "*"
+  - condition: cron.enabled
+    name: cron
+    repository: "file://../airbyte-cron"
+    version: "*"
+  - condition: connector-builder-server.enabled
+    name: connector-builder-server
+    repository: "file://../airbyte-connector-builder-server"
+    version: "*"

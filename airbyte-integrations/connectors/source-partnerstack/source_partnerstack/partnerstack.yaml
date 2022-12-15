@@ -1,0 +1,105 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["data", "items"]
+  requester:
+    url_base: "https://api.partnerstack.com/api/v2/"
+    http_method: "GET"
+    authenticator:
+      type: BasicHttpAuthenticator
+      username: "{{ config['public_key'] }}"
+      password: "{{ config['private_key'] }}"
+    request_options_provider:
+      request_parameters:
+        min_created: "{{ timestamp(config['start_date']) * 1000 }}"
+  stream_slicer:
+    request_cursor_field: "min_updated"
+    cursor_field: "updated_at"
+    class_name: source_partnerstack.components.PartnerstackSlicer
+  retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      type: DefaultPaginator
+      pagination_strategy:
+        type: "CursorPagination"
+        cursor_value: "{{ last_records[-1]['key'] }}"
+        stop_condition: "{{ response.data.has_more is false }}"
+        page_size: 250
+      page_size_option:
+        field_name: "limit"
+        inject_into: "request_parameter"
+      page_token_option:
+        field_name: "starting_after"
+        inject_into: "request_parameter"
+      url_base:
+        $ref: "*ref(definitions.requester.url_base)"
+    requester:
+      $ref: "*ref(definitions.requester)"
+    stream_slicer:
+      $ref: "*ref(definitions.stream_slicer)"
+
+  # base stream
+  base_stream:
+    retriever:
+      $ref: "*ref(definitions.retriever)"
+
+  # stream definitions
+  customers_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "customers"
+      primary_key: "key"
+      path: "/customers"
+      stream_cursor_field: "updated_at"
+  deals_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "deals"
+      primary_key: "key"
+      path: "/deals"
+  groups_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "groups"
+      primary_key: "key"
+      path: "/groups"
+  leads_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "leads"
+      primary_key: "key"
+      path: "/leads"
+  partnerships_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "partnerships"
+      primary_key: "key"
+      path: "/partnerships"
+  rewards_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "rewards"
+      primary_key: "key"
+      path: "/rewards"
+  transactions_stream:
+    $ref: "*ref(definitions.base_stream)"
+    $options:
+      name: "transactions"
+      primary_key: "key"
+      path: "/transactions"
+
+streams:
+  - "*ref(definitions.customers_stream)"
+  - "*ref(definitions.deals_stream)"
+  - "*ref(definitions.groups_stream)"
+  - "*ref(definitions.leads_stream)"
+  - "*ref(definitions.partnerships_stream)"
+  - "*ref(definitions.rewards_stream)"
+  - "*ref(definitions.transactions_stream)"
+
+check:
+  stream_names:
+    - "groups"

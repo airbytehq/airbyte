@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Link, useLocation } from "react-router-dom";
 
-import EmptyResource from "components/EmptyResourceBlock";
+import { EmptyResourceBlock } from "components/common/EmptyResourceBlock";
 import { RotateIcon } from "components/icons/RotateIcon";
 import { useAttemptLink } from "components/JobItem/attemptLinkUtils";
 import { Button } from "components/ui/Button";
@@ -13,8 +13,7 @@ import { Tooltip } from "components/ui/Tooltip";
 
 import { Action, Namespace } from "core/analytics";
 import { getFrequencyFromScheduleData } from "core/analytics/utils";
-import { ConnectionStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
-import Status from "core/statuses";
+import { ConnectionStatus, JobStatus, JobWithAttemptsRead } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes, useAnalyticsService } from "hooks/services/Analytics";
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
@@ -41,7 +40,7 @@ interface ActiveJob {
 const getJobRunningOrPending = (jobs: JobWithAttemptsRead[]) => {
   return jobs.find((jobWithAttempts) => {
     const jobStatus = jobWithAttempts?.job?.status;
-    return jobStatus === Status.PENDING || jobStatus === Status.RUNNING || jobStatus === Status.INCOMPLETE;
+    return jobStatus === JobStatus.pending || jobStatus === JobStatus.running || jobStatus === JobStatus.incomplete;
   });
 };
 
@@ -177,7 +176,7 @@ export const ConnectionStatusTab: React.FC = () => {
                       onClick={onSyncNowButtonClick}
                       icon={
                         <div className={styles.iconRotate}>
-                          <RotateIcon />
+                          <RotateIcon height={styles.syncIconHeight} width={styles.syncIconHeight} />
                         </div>
                       }
                     >
@@ -199,7 +198,7 @@ export const ConnectionStatusTab: React.FC = () => {
         {jobs.length ? (
           <JobsList jobs={jobs} />
         ) : linkedJobNotFound ? (
-          <EmptyResource
+          <EmptyResourceBlock
             text={<FormattedMessage id="connection.linkedJobNotFound" />}
             description={
               <Link to={pathname}>
@@ -208,7 +207,7 @@ export const ConnectionStatusTab: React.FC = () => {
             }
           />
         ) : (
-          <EmptyResource text={<FormattedMessage id="sources.noSync" />} />
+          <EmptyResourceBlock text={<FormattedMessage id="sources.noSync" />} />
         )}
       </Card>
       {(moreJobPagesAvailable || isJobPageLoading) && (

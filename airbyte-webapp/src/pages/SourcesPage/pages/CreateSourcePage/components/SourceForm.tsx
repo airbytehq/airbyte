@@ -6,9 +6,9 @@ import { ConnectionConfiguration } from "core/domain/connection";
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { SourceDefinitionReadWithLatestTag } from "services/connector/SourceDefinitionService";
 import { useGetSourceDefinitionSpecificationAsync } from "services/connector/SourceDefinitionSpecificationService";
-import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
+import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
-import { ServiceFormValues } from "views/Connector/ServiceForm/types";
+import { ConnectorCardValues } from "views/Connector/ConnectorForm/types";
 
 interface SourceFormProps {
   onSubmit: (values: {
@@ -16,7 +16,7 @@ interface SourceFormProps {
     serviceType: string;
     sourceDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
+  }) => Promise<void>;
   sourceDefinitions: SourceDefinitionReadWithLatestTag[];
   hasSuccess?: boolean;
   error?: FormError | null;
@@ -47,28 +47,26 @@ export const SourceForm: React.FC<SourceFormProps> = ({ onSubmit, sourceDefiniti
     setSourceDefinitionId(sourceDefinitionId);
   };
 
-  const onSubmitForm = (values: ServiceFormValues) => {
+  const onSubmitForm = (values: ConnectorCardValues) => {
     onSubmit({
       ...values,
       sourceDefinitionId: sourceDefinitionSpecification?.sourceDefinitionId,
     });
   };
 
-  const errorMessage = error ? generateMessageFromError(error) : null;
-
   return (
     <ConnectorCard
-      onServiceSelect={onDropDownSelect}
-      onSubmit={onSubmitForm}
       formType="source"
-      availableServices={sourceDefinitions}
-      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      description={<FormattedMessage id="sources.description" />}
+      isLoading={isLoading}
       hasSuccess={hasSuccess}
       fetchingConnectorError={sourceDefinitionError instanceof Error ? sourceDefinitionError : null}
-      errorMessage={errorMessage}
-      isLoading={isLoading}
-      formValues={sourceDefinitionId ? { serviceType: sourceDefinitionId, name: "" } : undefined}
-      title={<FormattedMessage id="onboarding.sourceSetUp" />}
+      availableConnectorDefinitions={sourceDefinitions}
+      onConnectorDefinitionSelect={onDropDownSelect}
+      selectedConnectorDefinitionSpecification={sourceDefinitionSpecification}
+      selectedConnectorDefinitionId={sourceDefinitionId}
+      onSubmit={onSubmitForm}
       jobInfo={LogsRequestError.extractJobInfo(error)}
     />
   );

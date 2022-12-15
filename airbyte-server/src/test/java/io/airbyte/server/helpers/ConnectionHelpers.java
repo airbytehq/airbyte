@@ -4,6 +4,8 @@
 
 package io.airbyte.server.helpers;
 
+import static io.airbyte.server.handlers.helpers.CatalogConverter.toApi;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import io.airbyte.api.model.generated.AirbyteCatalog;
@@ -21,6 +23,7 @@ import io.airbyte.api.model.generated.DestinationRead;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobStatus;
 import io.airbyte.api.model.generated.ResourceRequirements;
+import io.airbyte.api.model.generated.SchemaChange;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.SyncMode;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
@@ -32,6 +35,7 @@ import io.airbyte.config.Schedule;
 import io.airbyte.config.Schedule.TimeUnit;
 import io.airbyte.config.ScheduleData;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StandardSync.Status;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
@@ -40,7 +44,6 @@ import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.StreamDescriptor;
 import io.airbyte.server.converters.ApiPojoConverters;
-import io.airbyte.server.handlers.helpers.CatalogConverter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -50,7 +53,9 @@ public class ConnectionHelpers {
 
   private static final String STREAM_NAME_BASE = "users-data";
   private static final String STREAM_NAME = STREAM_NAME_BASE + "0";
-  private static final String FIELD_NAME = "id";
+  public static final String FIELD_NAME = "id";
+
+  public static final String SECOND_FIELD_NAME = "id2";
   private static final String BASIC_SCHEDULE_TIME_UNIT = "days";
   private static final long BASIC_SCHEDULE_UNITS = 1L;
   private static final String BASIC_SCHEDULE_DATA_TIME_UNITS = "days";
@@ -85,7 +90,8 @@ public class ConnectionHelpers {
         .withOperationIds(List.of(UUID.randomUUID()))
         .withManual(false)
         .withSchedule(generateBasicSchedule())
-        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS);
+        .withResourceRequirements(TESTING_RESOURCE_REQUIREMENTS)
+        .withBreakingChange(false);
   }
 
   public static StandardSync generateSyncWithDestinationId(final UUID destinationId) {
@@ -105,7 +111,10 @@ public class ConnectionHelpers {
         .withManual(true);
   }
 
-  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId, final UUID destinationId) {
+  public static StandardSync generateSyncWithSourceAndDestinationId(final UUID sourceId,
+                                                                    final UUID destinationId,
+                                                                    final boolean isBroken,
+                                                                    final Status status) {
     final UUID connectionId = UUID.randomUUID();
 
     return new StandardSync()
@@ -114,12 +123,14 @@ public class ConnectionHelpers {
         .withNamespaceDefinition(NamespaceDefinitionType.SOURCE)
         .withNamespaceFormat(null)
         .withPrefix(STANDARD_SYNC_PREFIX)
-        .withStatus(StandardSync.Status.ACTIVE)
+        .withStatus(status)
         .withCatalog(generateBasicConfiguredAirbyteCatalog())
+        .withSourceCatalogId(UUID.randomUUID())
         .withSourceId(sourceId)
         .withDestinationId(destinationId)
         .withOperationIds(List.of(UUID.randomUUID()))
-        .withManual(true);
+        .withManual(true)
+        .withBreakingChange(isBroken);
   }
 
   public static ConnectionSchedule generateBasicConnectionSchedule() {
@@ -150,7 +161,8 @@ public class ConnectionHelpers {
                                                               final UUID destinationId,
                                                               final List<UUID> operationIds,
                                                               final UUID sourceCatalogId,
-                                                              final Geography geography) {
+                                                              final Geography geography,
+                                                              final boolean breaking) {
 
     return new ConnectionRead()
         .connectionId(connectionId)
@@ -161,7 +173,6 @@ public class ConnectionHelpers {
         .namespaceDefinition(io.airbyte.api.model.generated.NamespaceDefinitionType.SOURCE)
         .namespaceFormat(null)
         .prefix("presto_to_hudi")
-        .status(ConnectionStatus.ACTIVE)
         .schedule(generateBasicConnectionSchedule())
         .scheduleType(ConnectionScheduleType.BASIC)
         .scheduleData(generateBasicConnectionScheduleData())
@@ -172,7 +183,8 @@ public class ConnectionHelpers {
             .memoryRequest(TESTING_RESOURCE_REQUIREMENTS.getMemoryRequest())
             .memoryLimit(TESTING_RESOURCE_REQUIREMENTS.getMemoryLimit()))
         .sourceCatalogId(sourceCatalogId)
-        .geography(geography);
+        .geography(geography)
+        .breakingChange(breaking);
   }
 
   public static ConnectionRead generateExpectedConnectionRead(final StandardSync standardSync) {
@@ -182,7 +194,8 @@ public class ConnectionHelpers {
         standardSync.getDestinationId(),
         standardSync.getOperationIds(),
         standardSync.getSourceCatalogId(),
-        Enums.convertTo(standardSync.getGeography(), Geography.class));
+        Enums.convertTo(standardSync.getGeography(), Geography.class),
+        standardSync.getBreakingChange());
 
     if (standardSync.getSchedule() == null) {
       connectionRead.schedule(null);
@@ -190,6 +203,14 @@ public class ConnectionHelpers {
       connectionRead.schedule(new ConnectionSchedule()
           .timeUnit(TimeUnitEnum.fromValue(standardSync.getSchedule().getTimeUnit().value()))
           .units(standardSync.getSchedule().getUnits()));
+    }
+
+    if (standardSync.getStatus() == Status.INACTIVE) {
+      connectionRead.setStatus(ConnectionStatus.INACTIVE);
+    } else if (standardSync.getStatus() == Status.ACTIVE) {
+      connectionRead.setStatus(ConnectionStatus.ACTIVE);
+    } else if (standardSync.getStatus() == Status.DEPRECATED) {
+      connectionRead.setStatus(ConnectionStatus.DEPRECATED);
     }
 
     return connectionRead;
@@ -206,7 +227,8 @@ public class ConnectionHelpers {
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
         .sourceCatalogId(standardSync.getSourceCatalogId())
-        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()));
+        .geography(ApiPojoConverters.toApiGeography(standardSync.getGeography()))
+        .breakingChange(standardSync.getBreakingChange());
 
     if (standardSync.getNamespaceDefinition() != null) {
       connectionRead
@@ -218,7 +240,7 @@ public class ConnectionHelpers {
     ApiPojoConverters.populateConnectionReadSchedule(standardSync, connectionRead);
 
     if (standardSync.getCatalog() != null) {
-      connectionRead.syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()));
+      connectionRead.syncCatalog(toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()));
     }
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(new io.airbyte.api.model.generated.ResourceRequirements()
@@ -236,7 +258,8 @@ public class ConnectionHelpers {
                                                                                           final DestinationRead destination,
                                                                                           final boolean isSyncing,
                                                                                           final Long latestSyncJobCreatedAt,
-                                                                                          final JobStatus latestSynJobStatus) {
+                                                                                          final JobStatus latestSynJobStatus,
+                                                                                          final SchemaChange schemaChange) {
 
     final WebBackendConnectionListItem connectionListItem = new WebBackendConnectionListItem()
         .connectionId(standardSync.getConnectionId())
@@ -250,7 +273,8 @@ public class ConnectionHelpers {
         .latestSyncJobCreatedAt(latestSyncJobCreatedAt)
         .latestSyncJobStatus(latestSynJobStatus)
         .scheduleType(ApiPojoConverters.toApiConnectionScheduleType(standardSync))
-        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync));
+        .scheduleData(ApiPojoConverters.toApiConnectionScheduleData(standardSync))
+        .schemaChange(schemaChange);
 
     return connectionListItem;
   }
@@ -259,8 +283,27 @@ public class ConnectionHelpers {
     return CatalogHelpers.fieldsToJsonSchema(Field.of(FIELD_NAME, JsonSchemaType.STRING));
   }
 
+  public static JsonNode generateJsonSchemaWithTwoFields() {
+    return CatalogHelpers.fieldsToJsonSchema(
+        Field.of(FIELD_NAME, JsonSchemaType.STRING),
+        Field.of(SECOND_FIELD_NAME, JsonSchemaType.STRING));
+  }
+
   public static ConfiguredAirbyteCatalog generateBasicConfiguredAirbyteCatalog() {
     return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(generateBasicConfiguredStream(null)));
+  }
+
+  public static ConfiguredAirbyteCatalog generateAirbyteCatalogWithTwoFields() {
+    return new ConfiguredAirbyteCatalog().withStreams(Collections.singletonList(new ConfiguredAirbyteStream()
+        .withStream(
+            new io.airbyte.protocol.models.AirbyteStream()
+                .withName(STREAM_NAME)
+                .withJsonSchema(generateJsonSchemaWithTwoFields())
+                .withDefaultCursorField(Lists.newArrayList(FIELD_NAME))
+                .withSourceDefinedCursor(false)
+                .withSourceDefinedPrimaryKey(Collections.emptyList())
+                .withSupportedSyncModes(
+                    List.of(io.airbyte.protocol.models.SyncMode.FULL_REFRESH, io.airbyte.protocol.models.SyncMode.INCREMENTAL)))));
   }
 
   public static ConfiguredAirbyteCatalog generateMultipleStreamsConfiguredAirbyteCatalog(final int streamsCount) {
@@ -293,6 +336,17 @@ public class ConnectionHelpers {
         .config(generateBasicApiStreamConfig(null))));
   }
 
+  /**
+   * Generates an API catalog that has two fields, both selected.
+   *
+   * @return AirbyteCatalog
+   */
+  public static AirbyteCatalog generateApiCatalogWithTwoFields() {
+    return new AirbyteCatalog().streams(Lists.newArrayList(new AirbyteStreamAndConfiguration()
+        .stream(generateApiStreamWithTwoFields())
+        .config(generateBasicApiStreamConfig(null))));
+  }
+
   public static AirbyteCatalog generateMultipleStreamsApiCatalog(final int streamsCount) {
     final List<AirbyteStreamAndConfiguration> streamAndConfigurations = new ArrayList<>();
     for (int i = 0; i < streamsCount; i++) {
@@ -310,13 +364,24 @@ public class ConnectionHelpers {
         .destinationSyncMode(io.airbyte.api.model.generated.DestinationSyncMode.APPEND)
         .primaryKey(Collections.emptyList())
         .aliasName(Names.toAlphanumericAndUnderscore(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix))
-        .selected(true);
+        .selected(true)
+        .fieldSelectionEnabled(false);
   }
 
   private static AirbyteStream generateBasicApiStream(final String nameSuffix) {
     return new AirbyteStream()
         .name(nameSuffix == null ? STREAM_NAME : STREAM_NAME_BASE + nameSuffix)
         .jsonSchema(generateBasicJsonSchema())
+        .defaultCursorField(Lists.newArrayList(FIELD_NAME))
+        .sourceDefinedCursor(false)
+        .sourceDefinedPrimaryKey(Collections.emptyList())
+        .supportedSyncModes(List.of(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL));
+  }
+
+  private static AirbyteStream generateApiStreamWithTwoFields() {
+    return new AirbyteStream()
+        .name(STREAM_NAME)
+        .jsonSchema(generateJsonSchemaWithTwoFields())
         .defaultCursorField(Lists.newArrayList(FIELD_NAME))
         .sourceDefinedCursor(false)
         .sourceDefinedPrimaryKey(Collections.emptyList())

@@ -4,47 +4,27 @@ This page contains the setup guide and reference information for the Chargebee s
 
 ## Prerequisites
 
-This Chargebee source uses the [Chargebee Python Client Library](https://github.com/chargebee/chargebee-python/).
+To set up the Chargebee source connector, you'll need the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication) and the [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
 
-## Setup guide
-### Step 1: Set up Chargebee
+## Set up the Chargebee connector in Airbyte
 
-Log into Chargebee and then generate an [API Key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication). 
-Then follow [these](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2) instructions, under `API Version` section, on how to find your Product Catalog version.
-
-### Step 2: Set up the Chargebee connector in Airbyte
-
-#### For Airbyte Cloud:
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
-2. Click **Sources** and then click **+New source**.
-3. On the Set up the source page, enter the name for the Harvest connector and select **Chargebee** from the Source type dropdown. 
-4. Enter a name for your source 
-5. Enter your `site_api_key`
-6. Enter your `site` 
-7. Enter your `product_catalog` 
-8. Enter the `start_date` you want your sync to start from
-9. Click **Set up source**
-
-#### For Airbyte OSS:
-1. Navigate to the Airbyte Open Source dashboard
-2. Enter a name for your source 
-3. Enter your `site_api_key`
-4. Enter your `site` 
-5. Enter your `product_catalog` 
-6. Enter the `start_date` you want your sync to start from
-7. Click **Set up source**
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Chargebee** from the Source type dropdown.
+4. Enter the name for the Chargebee connector.
+5. For **Site**, enter the site prefix for your Chargebee instance.
+6. For **Start Date**, enter the date in YYYY-MM-DDTHH:mm:ssZ format. The data added on and after this date will be replicated.
+7. For **API Key**, enter the [Chargebee API key](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_authentication).
+8. For **Product Catalog**, enter the Chargebee [Product Catalog version](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2).
+9. Click **Set up source**.
 
 ## Supported sync modes
 
 The Chargebee source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Replicate Incremental Deletes | No |
-| SSL connection | Yes |
-| Namespaces | No |
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
 
 ## Supported Streams
 
@@ -58,16 +38,9 @@ The Chargebee source connector supports the following [sync modes](https://docs.
 * [Item Prices](https://apidocs.chargebee.com/docs/api/item_prices?prod_cat_ver=2#list_item_prices)
 * [Attached Items](https://apidocs.chargebee.com/docs/api/attached_items?prod_cat_ver=2#list_attached_items)
 
-## Performance considerations
+Some streams are available only for specific on Product Catalog versions:
 
-The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. 
-Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
-
-## Tutorials
-
-Some streams may depend on Product Catalog version and be accessible only on sites with specific Product Catalog version. This means that we have following streams:
-
-1. presented in both `Product Catalog 1.0` and `Product Catalog 2.0`:
+1. Available in `Product Catalog 1.0` and `Product Catalog 2.0`:
    * Customers
    * Events
    * Invoices
@@ -76,27 +49,26 @@ Some streams may depend on Product Catalog version and be accessible only on sit
    * Coupons
    * Subscriptions
    * Transactions
-2. presented only in `Product Catalog 1.0`:
+2. Available only in `Product Catalog 1.0`:
    * Plans
    * Addons
-3. presented only in `Product Catalog 2.0`:
+3. Available only in `Product Catalog 2.0`:
    * Items
    * Item Prices
    * Attached Items
 
-Also, 12 streams from the above 13 incremental streams are pure incremental meaning that they:
+Note that except the `Attached Items` stream, all the streams listed above are incremental streams, which means they:
 
-* read only new records;
-* output only new records.
+* Read only new records
+* Output only new records
 
-`Attached Items` incremental stream is also incremental but with one difference, it:
+The `Attached Items` stream is also incremental but it reads _all_ records and outputs only new records, which is why syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. 
 
-* read all records;
-* output only new records.
+Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, regardless of how many `AttachedItems` were actually changed or synced in a particular sync job.
 
-This means that syncing the `Attached Items` stream, even in incremental mode, is expensive in terms of your Chargebee API quota. 
-Generally speaking, it incurs a number of API calls equal to the total number of attached items in your chargebee instance divided by 100, 
-regardless of how many AttachedItems were actually changed or synced in a particular sync job.
+## Performance considerations
+
+The Chargebee connector should not run into [Chargebee API](https://apidocs.chargebee.com/docs/api?prod_cat_ver=2#api_rate_limits) limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 ## Changelog
 

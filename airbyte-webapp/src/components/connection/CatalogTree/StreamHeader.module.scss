@@ -1,6 +1,6 @@
 @use "scss/colors";
 @use "scss/variables";
-@forward "./CatalogTreeBody.module.scss";
+@forward "./CatalogTreeHeader.module.scss";
 
 .icon {
   margin-right: 7px;
@@ -59,4 +59,8 @@
 
 .purpleBackground {
   background-color: colors.$blue-transparent;
+}
+
+.noHeader {
+  color: colors.$grey-300;
 }

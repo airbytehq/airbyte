@@ -1,16 +1,18 @@
 import { FormikErrors, getIn } from "formik";
+import isEqual from "lodash/isEqual";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
-import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+import { traverseSchemaToField } from "core/domain/catalog/traverseSchemaToField";
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   NamespaceDefinitionType,
   SyncMode,
+  SelectedFieldInfo,
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -18,6 +20,8 @@ import { equal, naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CatalogSection.module.scss";
+import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
+import { StreamDetailsPanel } from "./next/StreamDetailsPanel/StreamDetailsPanel";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -41,6 +45,8 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   errors,
   changedSelected,
 }) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
   const {
     destDefinition: { supportedDestinationSyncModes },
   } = useConnectionFormService();
@@ -92,6 +98,32 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     [updateStreamWithConfig]
   );
 
+  const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
+
+  const onSelectedFieldsUpdate = (selectedFields: SelectedFieldInfo[]) => {
+    updateStreamWithConfig({
+      selectedFields,
+      fieldSelectionEnabled: true,
+    });
+  };
+
+  // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
+  const onFirstFieldDeselected = (fieldPath: string[]) => {
+    const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
+    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
+    updateStreamWithConfig({
+      selectedFields,
+      fieldSelectionEnabled: true,
+    });
+  };
+
+  const onAllFieldsSelected = () => {
+    updateStreamWithConfig({
+      selectedFields: [],
+      fieldSelectionEnabled: false,
+    });
+  };
+
   const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
   const cursorRequired = config?.syncMode === SyncMode.incremental;
   const shouldDefinePk = stream?.sourceDefinedPrimaryKey?.length === 0 && pkRequired;
@@ -135,9 +167,11 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   const hasFields = fields?.length > 0;
   const disabled = mode === "readonly";
 
+  const StreamComponent = isNewStreamsTableEnabled ? CatalogTreeTableRow : StreamHeader;
+
   return (
     <div className={styles.catalogSection}>
-      <StreamHeader
+      <StreamComponent
         stream={streamNode}
         destNamespace={destNamespace}
         destName={destName}
@@ -156,18 +190,37 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         hasError={hasError}
         disabled={disabled}
       />
-      {isRowExpanded && hasFields && (
-        <div className={styles.streamFieldTableContainer}>
-          <StreamFieldTable
+      {isRowExpanded &&
+        hasFields &&
+        (isNewStreamsTableEnabled ? (
+          <StreamDetailsPanel
             config={config}
+            disabled={mode === "readonly"}
             syncSchemaFields={flattenedFields}
+            onClose={onExpand}
             onCursorSelect={onCursorSelect}
             onPkSelect={onPkSelect}
+            onSelectedChange={onSelectStream}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
+            stream={stream}
           />
-        </div>
-      )}
+        ) : (
+          <div className={styles.streamFieldTableContainer}>
+            <StreamFieldTable
+              config={config}
+              syncSchemaFields={flattenedFields}
+              numberOfSelectableFields={numberOfFieldsInStream}
+              onCursorSelect={onCursorSelect}
+              onPkSelect={onPkSelect}
+              onSelectedFieldsUpdate={onSelectedFieldsUpdate}
+              onFirstFieldDeselected={onFirstFieldDeselected}
+              onAllFieldsSelected={onAllFieldsSelected}
+              shouldDefinePk={shouldDefinePk}
+              shouldDefineCursor={shouldDefineCursor}
+            />
+          </div>
+        ))}
     </div>
   );
 };

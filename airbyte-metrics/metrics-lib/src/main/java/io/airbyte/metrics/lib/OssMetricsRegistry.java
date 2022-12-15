@@ -42,7 +42,7 @@ public enum OssMetricsRegistry implements MetricsRegistry {
   ATTEMPT_FAILED_BY_FAILURE_ORIGIN(
       MetricEmittingApps.WORKER,
       "attempt_failed_by_failure_origin",
-      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin."),
+      "increments for every failure origin a failed attempt has. since a failure can have multiple origins, a single failure can be counted more than once. tagged by failure origin and failure type."),
   ATTEMPT_SUCCEEDED_BY_RELEASE_STAGE(
       MetricEmittingApps.WORKER,
       "attempt_succeeded_by_release_stage",
@@ -71,10 +71,6 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       MetricEmittingApps.WORKER,
       "json_string_length",
       "string length of a raw json string"),
-  JSON_SIZE(
-      MetricEmittingApps.WORKER,
-      "json_size",
-      "size of the json object"),
   KUBE_POD_PROCESS_CREATE_TIME_MILLISECS(
       MetricEmittingApps.WORKER,
       "kube_pod_process_create_time_millisecs",
@@ -132,7 +128,16 @@ public enum OssMetricsRegistry implements MetricsRegistry {
       "count of the number of successful workflow syncs."),
   TEMPORAL_WORKFLOW_FAILURE(MetricEmittingApps.WORKER,
       "temporal_workflow_failure",
-      "count of the number of workflow failures");
+      "count of the number of workflow failures"),
+  REPLICATION_BYTES_SYNCED(MetricEmittingApps.WORKER,
+      "replication_bytes_synced",
+      "number of bytes synced during replication"),
+  REPLICATION_RECORDS_SYNCED(MetricEmittingApps.WORKER,
+      "replication_records_synced",
+      "number of records synced during replication"),
+  RESET_REQUEST(MetricEmittingApps.WORKER,
+      "reset_request",
+      "number of requested resets");
 
   private final MetricEmittingApp application;
   private final String metricName;

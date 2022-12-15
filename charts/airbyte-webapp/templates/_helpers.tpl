@@ -64,10 +64,10 @@ Define imageTag
 */}}
 
 {{- define "webapp.imageTag" -}}
-{{- if ((.Values.global.image).tag) }}
-    {{- printf "%s" .Values.global.image.tag }}
-{{- else if .Values.image.tag }}
+{{- if .Values.image.tag }}
     {{- printf "%s" .Values.image.tag }}
+{{- else if ((.Values.global.image).tag) }}
+    {{- printf "%s" .Values.global.image.tag }}
 {{- else }}
     {{- printf "%s" .Chart.AppVersion }}
 {{- end }}

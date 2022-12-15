@@ -4,6 +4,9 @@
 
 package io.airbyte.workers.internal;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ResetSourceConfiguration;
 import io.airbyte.config.StateType;
@@ -50,6 +53,7 @@ public class EmptyAirbyteSource implements AirbyteSource {
     this.useStreamCapableState = useStreamCapableState;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void start(final WorkerSourceConfig workerSourceConfig, final Path jobRoot) throws Exception {
 
@@ -105,16 +109,19 @@ public class EmptyAirbyteSource implements AirbyteSource {
   }
 
   // always finished. it has no data to send.
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public boolean isFinished() {
     return hasEmittedState.get();
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public int getExitValue() {
     return 0;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public Optional<AirbyteMessage> attemptRead() {
     if (!isStarted) {
@@ -134,11 +141,13 @@ public class EmptyAirbyteSource implements AirbyteSource {
     }
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void close() throws Exception {
     // no op.
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() throws Exception {
     // no op.

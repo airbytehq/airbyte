@@ -14,6 +14,7 @@ import io.airbyte.api.model.generated.ConnectionStatus;
 import io.airbyte.api.model.generated.Geography;
 import io.airbyte.api.model.generated.JobType;
 import io.airbyte.api.model.generated.JobTypeResourceLimit;
+import io.airbyte.api.model.generated.NonBreakingChangesPreference;
 import io.airbyte.api.model.generated.ResourceRequirements;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.config.BasicSchedule;
@@ -91,9 +92,12 @@ public class ApiPojoConverters {
         .namespaceDefinition(Enums.convertTo(standardSync.getNamespaceDefinition(), io.airbyte.api.model.generated.NamespaceDefinitionType.class))
         .namespaceFormat(standardSync.getNamespaceFormat())
         .prefix(standardSync.getPrefix())
-        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog()))
+        .syncCatalog(CatalogConverter.toApi(standardSync.getCatalog(), standardSync.getFieldSelectionData()))
         .sourceCatalogId(standardSync.getSourceCatalogId())
-        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class));
+        .breakingChange(standardSync.getBreakingChange())
+        .geography(Enums.convertTo(standardSync.getGeography(), Geography.class))
+        .nonBreakingChangesPreference(Enums.convertTo(standardSync.getNonBreakingChangesPreference(), NonBreakingChangesPreference.class))
+        .notifySchemaChanges(standardSync.getNotifySchemaChanges());
 
     if (standardSync.getResourceRequirements() != null) {
       connectionRead.resourceRequirements(resourceRequirementsToApi(standardSync.getResourceRequirements()));
@@ -127,6 +131,10 @@ public class ApiPojoConverters {
 
   public static StandardSync.Status toPersistenceStatus(final ConnectionStatus apiStatus) {
     return Enums.convertTo(apiStatus, StandardSync.Status.class);
+  }
+
+  public static StandardSync.NonBreakingChangesPreference toPersistenceNonBreakingChangesPreference(final NonBreakingChangesPreference preference) {
+    return Enums.convertTo(preference, StandardSync.NonBreakingChangesPreference.class);
   }
 
   public static Geography toApiGeography(final io.airbyte.config.Geography geography) {

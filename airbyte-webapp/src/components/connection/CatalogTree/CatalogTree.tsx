@@ -8,10 +8,14 @@ import { useConnectionFormService } from "hooks/services/ConnectionForm/Connecti
 import { naturalComparatorBy } from "utils/objects";
 
 import { BulkHeader } from "./BulkHeader";
+import styles from "./CatalogTree.module.scss";
 import { CatalogTreeBody } from "./CatalogTreeBody";
 import { CatalogTreeHeader } from "./CatalogTreeHeader";
 import { CatalogTreeSearch } from "./CatalogTreeSearch";
 import { CatalogTreeSubheader } from "./CatalogTreeSubheader";
+import { BulkEditPanel } from "./next/BulkEditPanel";
+import { CatalogTreeTableHeader } from "./next/CatalogTreeTableHeader";
+import { StreamConnectionHeader } from "./next/StreamConnectionHeader";
 
 interface CatalogTreeProps {
   streams: SyncSchemaStream[];
@@ -24,7 +28,8 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   onStreamsChanged,
   isLoading,
 }) => {
-  const { mode } = useConnectionFormService();
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+  const { initialValues, mode } = useConnectionFormService();
 
   const [searchString, setSearchString] = useState("");
 
@@ -34,7 +39,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
   );
 
   const sortedSchema = useMemo(
-    () => streams.sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
+    () => [...streams].sort(naturalComparatorBy((syncStream) => syncStream.stream?.name ?? "")),
     [streams]
   );
 
@@ -49,15 +54,49 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     return sortedSchema.filter((stream) => filters.every((f) => f(stream)));
   }, [searchString, sortedSchema]);
 
+  const changedStreams = useMemo(
+    () =>
+      streams.filter((stream) => {
+        const matchingInitialValue = initialValues.syncCatalog.streams.find((initialStream) => {
+          if (!stream.stream || !initialStream.stream) {
+            return false;
+          }
+
+          return (
+            initialStream.stream.name === stream.stream.name &&
+            initialStream.stream.namespace === stream.stream.namespace
+          );
+        });
+        return stream.config?.selected !== matchingInitialValue?.config?.selected;
+      }),
+    [initialValues.syncCatalog.streams, streams]
+  );
+
   return (
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <CatalogTreeHeader />
-        <CatalogTreeSubheader />
-        <BulkHeader />
-        <CatalogTreeBody streams={filteredStreams} onStreamChanged={onSingleStreamChanged} />
+        <div className={isNewStreamsTableEnabled ? undefined : styles.catalogTreeTable}>
+          {isNewStreamsTableEnabled ? (
+            <>
+              <StreamConnectionHeader />
+              <CatalogTreeTableHeader />
+            </>
+          ) : (
+            <>
+              <CatalogTreeHeader />
+              <CatalogTreeSubheader />
+              <BulkHeader />
+            </>
+          )}
+          <CatalogTreeBody
+            streams={filteredStreams}
+            changedStreams={changedStreams}
+            onStreamChanged={onSingleStreamChanged}
+          />
+        </div>
       </LoadingBackdrop>
+      {isNewStreamsTableEnabled && <BulkEditPanel />}
     </BulkEditServiceProvider>
   );
 };

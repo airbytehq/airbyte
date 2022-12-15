@@ -18,11 +18,11 @@ def test_spec(config):
 
 def test_discover(config, mocker):
     source = SourceAirtable()
-    logger_mock, Helpers.get_first_row = MagicMock(), MagicMock()
+    logger_mock, Helpers.get_most_complete_row = MagicMock(), MagicMock()
     airbyte_catalog = source.discover(logger_mock, config)
     assert [stream.name for stream in airbyte_catalog.streams] == config["tables"]
     assert isinstance(airbyte_catalog, AirbyteCatalog)
-    assert Helpers.get_first_row.call_count == 2
+    assert Helpers.get_most_complete_row.call_count == 2
 
 
 @patch("requests.get")
@@ -34,7 +34,7 @@ def test_check_connection(config):
 
 def test_streams(config):
     source = SourceAirtable()
-    Helpers.get_first_row = MagicMock()
+    Helpers.get_most_complete_row = MagicMock()
     streams = source.streams(config)
     assert len(streams) == 2
     assert [stream.name for stream in streams] == config["tables"]

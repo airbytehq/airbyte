@@ -17,6 +17,7 @@ dependencies {
     implementation project(':airbyte-config:config-models')
     implementation project(':airbyte-config:config-persistence')
     implementation project(':airbyte-config:specs')
+    implementation project(':airbyte-metrics:metrics-lib')
     implementation project(':airbyte-db:db-lib')
     implementation project(":airbyte-json-validation")
     implementation project(':airbyte-notification')
@@ -27,7 +28,7 @@ dependencies {
     implementation libs.flyway.core
     implementation 'com.github.slugify:slugify:2.4'
     implementation 'commons-cli:commons-cli:1.4'
-    implementation 'io.temporal:temporal-sdk:1.8.1'
+    implementation libs.temporal.sdk
     implementation 'org.apache.cxf:cxf-core:3.4.2'
     implementation 'org.eclipse.jetty:jetty-server:9.4.31.v20200723'
     implementation 'org.eclipse.jetty:jetty-servlet:9.4.31.v20200723'

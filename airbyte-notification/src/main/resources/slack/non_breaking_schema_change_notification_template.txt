@@ -1,0 +1,3 @@
+Your source schema has changed for connection ID: %s
+
+Visit your connection page, refresh your source schema, and reset your data in order to update this connection.

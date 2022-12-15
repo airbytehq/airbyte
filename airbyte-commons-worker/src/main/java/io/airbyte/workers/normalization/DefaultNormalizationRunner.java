@@ -5,7 +5,6 @@
 package io.airbyte.workers.normalization;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
@@ -46,7 +45,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       .setLogPrefix("normalization")
       .setPrefixColor(Color.GREEN_BACKGROUND);
 
-  private final DestinationType destinationType;
+  private final String normalizationIntegrationType;
   private final ProcessFactory processFactory;
   private final String normalizationImageName;
   private final NormalizationAirbyteStreamFactory streamFactory = new NormalizationAirbyteStreamFactory(CONTAINER_LOG_MDC_BUILDER);
@@ -55,24 +54,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private Process process = null;
 
-  public enum DestinationType {
-    BIGQUERY,
-    MSSQL,
-    MYSQL,
-    ORACLE,
-    POSTGRES,
-    REDSHIFT,
-    SNOWFLAKE,
-    CLICKHOUSE,
-    TIDB
-  }
-
-  public DefaultNormalizationRunner(final DestinationType destinationType,
-                                    final ProcessFactory processFactory,
-                                    final String normalizationImageName) {
-    this.destinationType = destinationType;
+  public DefaultNormalizationRunner(final ProcessFactory processFactory,
+                                    final String normalizationImage,
+                                    final String normalizationIntegrationType) {
     this.processFactory = processFactory;
-    this.normalizationImageName = normalizationImageName;
+    this.normalizationImageName = normalizationImage;
+    this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
   @Override
@@ -92,12 +79,12 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     final String gitRepoBranch = dbtConfig.getGitRepoBranch();
     if (Strings.isNullOrEmpty(gitRepoBranch)) {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl);
     } else {
       return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "configure-dbt",
-          "--integration-type", destinationType.toString().toLowerCase(),
+          "--integration-type", normalizationIntegrationType.toLowerCase(),
           "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
           "--git-repo", gitRepoUrl,
           "--git-branch", gitRepoBranch);
@@ -117,7 +104,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
     return runProcess(jobId, attempt, jobRoot, files, resourceRequirements, "run",
-        "--integration-type", destinationType.toString().toLowerCase(),
+        "--integration-type", normalizationIntegrationType.toLowerCase(),
         "--config", WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME,
         "--catalog", WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME);
   }
@@ -138,6 +125,8 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           attempt,
           jobRoot,
           normalizationImageName,
+          // custom connector does not use normalization
+          false,
           false, files,
           null,
           resourceRequirements,
@@ -194,10 +183,20 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
       return;
     }
 
-    LOGGER.debug("Closing normalization process");
+    LOGGER.info("Terminating normalization process...");
     WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
-    if (process.isAlive() || process.exitValue() != 0) {
-      throw new WorkerException("Normalization process wasn't successful");
+
+    /*
+     * After attempting to close the process check the following:
+     *
+     * Did the process actually terminate? If "yes", did it do so nominally?
+     */
+    if (process.isAlive()) {
+      throw new WorkerException("Normalization process did not terminate after 1 minute.");
+    } else if (process.exitValue() != 0) {
+      throw new WorkerException("Normalization process did not terminate normally (exit code: " + process.exitValue() + ")");
+    } else {
+      LOGGER.info("Normalization process successfully terminated.");
     }
   }
 
@@ -212,11 +211,6 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
   private String buildInternalErrorMessageFromDbtStackTrace() {
     final Map<SentryExceptionHelper.ERROR_MAP_KEYS, String> errorMap = SentryExceptionHelper.getUsefulErrorMessageAndTypeFromDbtError(dbtErrorStack);
     return errorMap.get(SentryExceptionHelper.ERROR_MAP_KEYS.ERROR_MAP_MESSAGE_KEY);
-  }
-
-  @VisibleForTesting
-  DestinationType getDestinationType() {
-    return destinationType;
   }
 
 }

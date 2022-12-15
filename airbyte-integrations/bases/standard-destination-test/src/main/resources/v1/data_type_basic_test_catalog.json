@@ -1,0 +1,104 @@
+{
+  "streams": [
+    {
+      "name": "string_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/String"
+          }
+        }
+      }
+    },
+    {
+      "name": "date_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Date"
+          }
+        }
+      }
+    },
+    {
+      "name": "datetime_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/TimestampWithTimezone"
+          }
+        }
+      }
+    },
+    {
+      "name": "datetime_test_2",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/TimestampWithoutTimezone"
+          }
+        }
+      }
+    },
+    {
+      "name": "time_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/TimeWithTimezone"
+          }
+        }
+      }
+    },
+    {
+      "name": "time_test_2",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/TimeWithoutTimezone"
+          }
+        }
+      }
+    },
+    {
+      "name": "number_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Number"
+          }
+        }
+      }
+    },
+    {
+      "name": "integer_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Integer"
+          }
+        }
+      }
+    },
+    {
+      "name": "boolean_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/Boolean"
+          }
+        }
+      }
+    },
+    {
+      "name": "binary_test_1",
+      "json_schema": {
+        "properties": {
+          "data": {
+            "$ref": "WellKnownTypes.json#/definitions/BinaryData"
+          }
+        }
+      }
+    }
+  ]
+}

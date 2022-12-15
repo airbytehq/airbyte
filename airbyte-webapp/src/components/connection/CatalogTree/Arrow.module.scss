@@ -1,0 +1,19 @@
+@use "scss/colors";
+
+.container {
+  padding: 0 12px;
+  width: 30px;
+  display: inline-block;
+}
+
+.arrow {
+  font-size: 16px;
+  line-height: 16px;
+  color: colors.$dark-blue-900;
+  transition: 0.3s;
+  cursor: pointer;
+
+  &--rotated {
+    transform: rotate(90deg);
+  }
+}

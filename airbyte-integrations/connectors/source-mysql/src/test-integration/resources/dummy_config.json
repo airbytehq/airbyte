@@ -1,0 +1,7 @@
+{
+  "host": "default",
+  "port": 5555,
+  "database": "default",
+  "username": "default",
+  "replication_method": { "method": "STANDARD" }
+}

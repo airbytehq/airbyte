@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -24,6 +25,7 @@ import io.airbyte.api.model.generated.SourceDefinitionRead;
 import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.commons.enums.Enums;
+import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.JobConfig;
@@ -34,6 +36,7 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.server.converters.JobConverter;
+import io.airbyte.server.converters.WorkflowStateConverter;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.Collections;
@@ -53,7 +56,9 @@ public class JobHistoryHandler {
   public static final int DEFAULT_PAGE_SIZE = 200;
   private final JobPersistence jobPersistence;
   private final JobConverter jobConverter;
+  private final WorkflowStateConverter workflowStateConverter;
   private final AirbyteVersion airbyteVersion;
+  private final TemporalClient temporalClient;
 
   public JobHistoryHandler(final JobPersistence jobPersistence,
                            final WorkerEnvironment workerEnvironment,
@@ -63,8 +68,10 @@ public class JobHistoryHandler {
                            final SourceDefinitionsHandler sourceDefinitionsHandler,
                            final DestinationHandler destinationHandler,
                            final DestinationDefinitionsHandler destinationDefinitionsHandler,
-                           final AirbyteVersion airbyteVersion) {
+                           final AirbyteVersion airbyteVersion,
+                           final TemporalClient temporalClient) {
     jobConverter = new JobConverter(workerEnvironment, logConfigs);
+    workflowStateConverter = new WorkflowStateConverter();
     this.jobPersistence = jobPersistence;
     this.connectionsHandler = connectionsHandler;
     this.sourceHandler = sourceHandler;
@@ -72,6 +79,21 @@ public class JobHistoryHandler {
     this.destinationHandler = destinationHandler;
     this.destinationDefinitionsHandler = destinationDefinitionsHandler;
     this.airbyteVersion = airbyteVersion;
+    this.temporalClient = temporalClient;
+  }
+
+  @Deprecated(forRemoval = true)
+  public JobHistoryHandler(final JobPersistence jobPersistence,
+                           final WorkerEnvironment workerEnvironment,
+                           final LogConfigs logConfigs,
+                           final ConnectionsHandler connectionsHandler,
+                           final SourceHandler sourceHandler,
+                           final SourceDefinitionsHandler sourceDefinitionsHandler,
+                           final DestinationHandler destinationHandler,
+                           final DestinationDefinitionsHandler destinationDefinitionsHandler,
+                           final AirbyteVersion airbyteVersion) {
+    this(jobPersistence, workerEnvironment, logConfigs, connectionsHandler, sourceHandler, sourceDefinitionsHandler, destinationHandler,
+        destinationDefinitionsHandler, airbyteVersion, null);
   }
 
   @SuppressWarnings("UnstableApiUsage")
@@ -121,7 +143,15 @@ public class JobHistoryHandler {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
 
-    return buildJobDebugInfoRead(jobinfoRead);
+    final JobDebugInfoRead jobDebugInfoRead = buildJobDebugInfoRead(jobinfoRead);
+    if (temporalClient != null) {
+      final UUID connectionId = UUID.fromString(job.getScope());
+      temporalClient.getWorkflowState(connectionId)
+          .map(workflowStateConverter::getWorkflowStateRead)
+          .ifPresent(jobDebugInfoRead::setWorkflowState);
+    }
+
+    return jobDebugInfoRead;
   }
 
   public Optional<JobRead> getLatestRunningSyncJob(final UUID connectionId) throws IOException {
@@ -144,6 +174,12 @@ public class JobHistoryHandler {
     return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
         .map(JobConverter::getJobRead)
         .collect(Collectors.toList());
+  }
+
+  public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
+    return new AttemptNormalizationStatusReadList()
+        .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
+            .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
   }
 
   public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {

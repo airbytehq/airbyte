@@ -6,7 +6,12 @@ from typing import Mapping, Type
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.oauth import DeclarativeOauth2Authenticator
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    SessionTokenAuthenticator,
+)
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -32,7 +37,9 @@ from airbyte_cdk.sources.declarative.requesters.paginators.strategies.cursor_pag
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.offset_increment import OffsetIncrement
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies.page_increment import PageIncrement
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema.json_schema import JsonSchema
+from airbyte_cdk.sources.declarative.schema.inline_schema_loader import InlineSchemaLoader
+from airbyte_cdk.sources.declarative.schema.json_file_schema_loader import JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.spec import Spec
 from airbyte_cdk.sources.declarative.stream_slicers.cartesian_product_stream_slicer import CartesianProductStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
@@ -60,9 +67,11 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "DpathExtractor": DpathExtractor,
     "ExponentialBackoffStrategy": ExponentialBackoffStrategy,
     "HttpRequester": HttpRequester,
+    "InlineSchemaLoader": InlineSchemaLoader,
     "InterpolatedBoolean": InterpolatedBoolean,
     "InterpolatedString": InterpolatedString,
-    "JsonSchema": JsonSchema,
+    "JsonSchema": JsonFileSchemaLoader,  # todo remove after hacktoberfest and update connectors to use JsonFileSchemaLoader
+    "JsonFileSchemaLoader": JsonFileSchemaLoader,
     "ListStreamSlicer": ListStreamSlicer,
     "MinMaxDatetime": MinMaxDatetime,
     "NoAuth": NoAuth,
@@ -74,7 +83,9 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "RemoveFields": RemoveFields,
     "SimpleRetriever": SimpleRetriever,
     "SingleSlice": SingleSlice,
+    "Spec": Spec,
     "SubstreamSlicer": SubstreamSlicer,
+    "SessionTokenAuthenticator": SessionTokenAuthenticator,
     "WaitUntilTimeFromHeader": WaitUntilTimeFromHeaderBackoffStrategy,
     "WaitTimeFromHeader": WaitTimeFromHeaderBackoffStrategy,
 }
