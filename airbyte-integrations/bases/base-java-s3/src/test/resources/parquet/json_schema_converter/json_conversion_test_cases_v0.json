@@ -588,7 +588,7 @@
       }
     },
     "jsonObject": {
-      "identifiers": [151, 152, "153", true, false]
+      "identifiers": [151, 152, "153", "text", true, false]
     },
     "avroSchema": {
       "type": "record",
@@ -620,7 +620,7 @@
       ]
     },
     "avroObject": {
-      "identifiers": [151, 152, "153", true, false],
+      "identifiers": [151, 152, 153, "text", true, false],
       "_airbyte_additional_properties": null
     }
   },

@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from typing import Any, List, Mapping, Sequence, Tuple
+from typing import Any, List, Mapping, Sequence, Tuple, Union
 
 import dpath
 import pendulum
@@ -25,6 +25,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         refresh_token: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_request_body: Mapping[str, Any] = None,
@@ -41,6 +42,7 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
         self._grant_type = grant_type
 
         self._token_expiry_date = token_expiry_date or pendulum.now().subtract(days=1)
+        self._token_expiry_date_format = token_expiry_date_format
         self._access_token = None
 
     def get_token_refresh_endpoint(self) -> str:
@@ -73,8 +75,11 @@ class Oauth2Authenticator(AbstractOauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return self._token_expiry_date
 
-    def set_token_expiry_date(self, value: pendulum.DateTime):
-        self._token_expiry_date = value
+    def set_token_expiry_date(self, initial_time: pendulum.DateTime, value: Union[str, int]):
+        if self._token_expiry_date_format:
+            self._token_expiry_date = pendulum.from_format(value, self._token_expiry_date_format)
+        else:
+            self._token_expiry_date = initial_time.add(seconds=value)
 
     @property
     def access_token(self) -> str:
@@ -100,6 +105,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         token_refresh_endpoint: str,
         scopes: List[str] = None,
         token_expiry_date: pendulum.DateTime = None,
+        token_expiry_date_format: str = None,
         access_token_name: str = "access_token",
         expires_in_name: str = "expires_in",
         refresh_token_name: str = "refresh_token",
@@ -138,6 +144,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             self.get_refresh_token(),
             scopes,
             token_expiry_date,
+            token_expiry_date_format,
             access_token_name,
             expires_in_name,
             refresh_request_body,
@@ -192,7 +199,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             t0 = pendulum.now()
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
             self.access_token = new_access_token
-            self.set_token_expiry_date(t0.add(seconds=access_token_expires_in))
+            self.set_token_expiry_date(t0, access_token_expires_in)
             self.set_refresh_token(new_refresh_token)
         return self.access_token
 
