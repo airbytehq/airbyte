@@ -524,8 +524,8 @@ public class WebBackendConnectionsHandler {
       AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
       // Get the diff between these two catalogs to check for breaking changes
       if (mostRecentActorCatalog.isPresent()) {
-        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
-            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+        final io.airbyte.protocol.models.v1.AirbyteCatalog mostRecentAirbyteCatalog =
+            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.v1.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
                 CatalogConverter.toProtocol(newAirbyteCatalog));
