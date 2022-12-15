@@ -119,6 +119,7 @@ class AdsInsights(FBMarketingIncrementalStream):
     ) -> Iterable[Mapping[str, Any]]:
         """Waits for current job to finish (slice) and yield its result"""
         job = stream_slice["insight_job"]
+        self._next_cursor_value = self._get_start_date()
         try:
             for obj in job.get_result():
                 yield obj.export_all_data()

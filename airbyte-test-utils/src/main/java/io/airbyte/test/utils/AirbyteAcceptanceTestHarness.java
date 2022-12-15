@@ -95,6 +95,7 @@ import org.jooq.JSONB;
 import org.jooq.Record;
 import org.jooq.Result;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.containers.PostgreSQLContainer;
@@ -458,6 +459,29 @@ public class AirbyteAcceptanceTestHarness {
     }
   }
 
+  /**
+   * Assert that the normalized destination matches the input records, only expecting a single id
+   * column.
+   *
+   * @param sourceRecords
+   * @throws Exception
+   */
+  public void assertNormalizedDestinationContainsIdColumn(final List<JsonNode> sourceRecords) throws Exception {
+    final Database destination = getDestinationDatabase();
+    final String finalDestinationTable = String.format("%spublic.%s%s", OUTPUT_NAMESPACE_PREFIX, OUTPUT_STREAM_PREFIX, STREAM_NAME.replace(".", "_"));
+    final List<JsonNode> destinationRecords = retrieveSourceRecords(destination, finalDestinationTable);
+
+    assertEquals(sourceRecords.size(), destinationRecords.size(),
+        String.format("destination contains: %s record. source contains: %s", sourceRecords.size(), destinationRecords.size()));
+
+    for (final JsonNode sourceStreamRecord : sourceRecords) {
+      assertTrue(
+          destinationRecords.stream()
+              .anyMatch(r -> r.get(COLUMN_ID).asInt() == sourceStreamRecord.get(COLUMN_ID).asInt()),
+          String.format("destination does not contain record:\n %s \n destination contains:\n %s\n", sourceStreamRecord, destinationRecords));
+    }
+  }
+
   public ConnectionRead createConnection(final String name,
                                          final UUID sourceId,
                                          final UUID destinationId,
@@ -493,6 +517,13 @@ public class AirbyteAcceptanceTestHarness {
             .connectionId(connectionId)
             .scheduleType(newScheduleType)
             .scheduleData(newScheduleData));
+  }
+
+  public void updateConnectionCatalog(final UUID connectionId, final AirbyteCatalog catalog) throws ApiException {
+    apiClient.getConnectionApi().updateConnection(
+        new ConnectionUpdate()
+            .connectionId(connectionId)
+            .syncCatalog(catalog));
   }
 
   public DestinationRead createPostgresDestination(final boolean isLegacy) throws ApiException {
@@ -838,10 +869,19 @@ public class AirbyteAcceptanceTestHarness {
     }
 
     JobRead mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
-    while (mostRecentSyncJob.getId().equals(lastJob.getId())) {
+    int count = 0;
+    while (count < 60 && mostRecentSyncJob.getId().equals(lastJob.getId())) {
       Thread.sleep(Duration.ofSeconds(1).toMillis());
       mostRecentSyncJob = getMostRecentSyncJobId(connectionId);
+      ++count;
     }
+    final boolean exceeded60seconds = count >= 60;
+    if (exceeded60seconds) {
+      // Fail because taking more than 60seconds to start a job is not expected
+      // Returning the current mostRecencSyncJob here could end up hiding some issues
+      Assertions.fail("unable to find the next job within 60seconds");
+    }
+
     return mostRecentSyncJob;
   }
 

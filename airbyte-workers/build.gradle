@@ -125,7 +125,7 @@ task generateWellKnownTypes() {
         def wellKnownTypesYaml = project(':airbyte-protocol').file('protocol-models/src/main/resources/airbyte_protocol/well_known_types.yaml').text
         def parsedYaml = new YamlSlurper().parseText(wellKnownTypesYaml)
         def wellKnownTypesJson = new JsonBuilder(parsedYaml).toPrettyString()
-        def targetFile = project.file("${buildDir}/docker/WellKnownTypes.json")
+        def targetFile = project.file("build/docker/WellKnownTypes.json")
         targetFile.getParentFile().mkdirs()
         targetFile.text = wellKnownTypesJson
     }
