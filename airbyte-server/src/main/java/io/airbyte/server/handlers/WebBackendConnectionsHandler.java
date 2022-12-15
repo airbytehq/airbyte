@@ -20,6 +20,7 @@ import io.airbyte.api.model.generated.ConnectionStateType;
 import io.airbyte.api.model.generated.ConnectionUpdate;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
+import io.airbyte.api.model.generated.FieldTransform;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.OperationCreate;
 import io.airbyte.api.model.generated.OperationReadList;
@@ -32,6 +33,7 @@ import io.airbyte.api.model.generated.SourceIdRequestBody;
 import io.airbyte.api.model.generated.SourceRead;
 import io.airbyte.api.model.generated.StreamDescriptor;
 import io.airbyte.api.model.generated.StreamTransform;
+import io.airbyte.api.model.generated.StreamTransform.TransformTypeEnum;
 import io.airbyte.api.model.generated.WebBackendConnectionCreate;
 import io.airbyte.api.model.generated.WebBackendConnectionListItem;
 import io.airbyte.api.model.generated.WebBackendConnectionRead;
@@ -45,6 +47,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -510,6 +513,25 @@ public class WebBackendConnectionsHandler {
 
     final UUID connectionId = webBackendConnectionPatch.getConnectionId();
     final ConnectionRead originalConnectionRead = connectionsHandler.getConnection(connectionId);
+    boolean breakingChange = originalConnectionRead.getBreakingChange() != null && originalConnectionRead.getBreakingChange();
+
+    // If there have been changes to the sync catalog, check whether these changes result in or fix a
+    // broken connection
+    if (webBackendConnectionPatch.getSyncCatalog() != null) {
+      // Get the most recent actor catalog fetched for this connection's source and the newly updated sync
+      // catalog
+      Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(originalConnectionRead.getSourceId());
+      AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
+      // Get the diff between these two catalogs to check for breaking changes
+      if (mostRecentActorCatalog.isPresent()) {
+        final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
+            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+        final CatalogDiff catalogDiff =
+            connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
+                CatalogConverter.toProtocol(newAirbyteCatalog));
+        breakingChange = containsBreakingChange(catalogDiff);
+      }
+    }
 
     // before doing any updates, fetch the existing catalog so that it can be diffed
     // with the final catalog to determine which streams might need to be reset.
@@ -520,7 +542,7 @@ public class WebBackendConnectionsHandler {
 
     // pass in operationIds because the patch object doesn't include operationIds that were just created
     // above.
-    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, newAndExistingOperationIds);
+    final ConnectionUpdate connectionPatch = toConnectionPatch(webBackendConnectionPatch, newAndExistingOperationIds, breakingChange);
 
     // persist the update and set the connectionRead to the updated form.
     final ConnectionRead updatedConnectionRead = connectionsHandler.updateConnection(connectionPatch);
@@ -685,7 +707,8 @@ public class WebBackendConnectionsHandler {
    */
   @VisibleForTesting
   protected static ConnectionUpdate toConnectionPatch(final WebBackendConnectionUpdate webBackendConnectionPatch,
-                                                      final List<UUID> finalOperationIds) {
+                                                      final List<UUID> finalOperationIds,
+                                                      boolean breakingChange) {
     final ConnectionUpdate connectionPatch = new ConnectionUpdate();
 
     connectionPatch.connectionId(webBackendConnectionPatch.getConnectionId());
@@ -703,6 +726,7 @@ public class WebBackendConnectionsHandler {
     connectionPatch.geography(webBackendConnectionPatch.getGeography());
     connectionPatch.notifySchemaChanges(webBackendConnectionPatch.getNotifySchemaChanges());
     connectionPatch.nonBreakingChangesPreference(webBackendConnectionPatch.getNonBreakingChangesPreference());
+    connectionPatch.breakingChange(breakingChange);
 
     connectionPatch.operationIds(finalOperationIds);
 
@@ -721,6 +745,21 @@ public class WebBackendConnectionsHandler {
    */
   private record Stream(String name, String namespace) {
 
+  }
+
+  private boolean containsBreakingChange(final CatalogDiff diff) {
+    for (final StreamTransform streamTransform : diff.getTransforms()) {
+      if (streamTransform.getTransformType() != TransformTypeEnum.UPDATE_STREAM) {
+        continue;
+      }
+
+      final boolean anyBreakingFieldTransforms = streamTransform.getUpdateStream().stream().anyMatch(FieldTransform::getBreaking);
+      if (anyBreakingFieldTransforms) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
 }
