@@ -23,8 +23,6 @@ This Source is capable of syncing the following core Streams:
 - [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
 - [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)
 
->>>>>>> origin/master
-
 ### Data type mapping
 
 | Integration Type | Airbyte Type | Notes |
@@ -58,7 +56,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 ## Changelog
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
+| :------ | :--------- | :------------------------------------------------------- | :---------------------------------------------------------- |
 | 0.1.9   | 2022-12-14 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
 | 0.1.8   | 2022-12-05 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream                                   |
 | 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                    |
