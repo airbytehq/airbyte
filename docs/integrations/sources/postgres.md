@@ -145,23 +145,23 @@ Refer to [Connect via SSH Tunnel](#connect-via-ssh-tunnel​) for more informati
 
 You can connect to a Postgres instance via an SSH tunnel.
 
-When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
+When using an SSH tunnel, you are configuring Airbyte to connect to an intermediate server (also called a bastion or a jump server) that has direct access to the database. Airbyte connects to the bastion and then asks the bastion to connect directly to the server.
 
 To connect to a Postgres instance via an SSH tunnel:
 
 1. While [setting up](#setup-guide) the Postgres source connector, from the SSH tunnel dropdown, select:
-   - SSH Key Authentication to use an RSA Private as your secret for establishing the SSH tunnel
+   - SSH Key Authentication to use a private as your secret for establishing the SSH tunnel
    - Password Authentication to use a password as your secret for establishing the SSH Tunnel
 2. For **SSH Tunnel Jump Server Host**, enter the hostname or IP address for the intermediate (bastion) server that Airbyte will connect to.
 3. For **SSH Connection Port**, enter the port on the bastion server. The default port for SSH connections is 22.
 4. For **SSH Login Username**, enter the username to use when connecting to the bastion server. **Note:** This is the operating system username and not the Postgres username.
 5. For authentication:
-   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [RSA Private Key](#generating-an-rsa-private-key​) that you are using to create the SSH connection.
+   - If you selected **SSH Key Authentication**, set the **SSH Private Key** to the [private Key](#generating-a-private-key​) that you are using to create the SSH connection.
    - If you selected **Password Authentication**, enter the password for the operating system user to connect to the bastion server. **Note:** This is the operating system password and not the Postgres password.
 
-#### Generating an RSA Private Key​
+#### Generating a private Key​
 
-The connector expects an RSA key in PEM format. To generate this key, run:
+The connector supports any SSH compatible key format such as RSA or Ed25519. To generate an RSA key, for example, run:
 
 ```
 ssh-keygen -t rsa -m PEM -f myuser_rsa
@@ -415,6 +415,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378)   | Improve descriptions                                               |
 | 1.0.33  | 2022-12-12 | [18959](https://github.com/airbytehq/airbyte/pull/18959) | CDC : Don't timeout if snapshot is not complete.                                                                                                                           |
 | 1.0.32  | 2022-12-12 | [20192](https://github.com/airbytehq/airbyte/pull/20192) | Only throw a warning if cursor column contains null values.                                                                                                                |
 | 1.0.31  | 2022-12-02 | [19889](https://github.com/airbytehq/airbyte/pull/19889) | Check before each sync and stop if an incremental sync cursor column contains a null value.                                                                                |
