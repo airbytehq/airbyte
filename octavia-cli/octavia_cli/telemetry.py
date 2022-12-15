@@ -75,7 +75,8 @@ class TelemetryClient:
             error (Optional[Exception], optional): The error that was raised. Defaults to None.
             extra_info_name (Optional[str], optional): Extra info name if the context was not built yet. Defaults to None.
         """
-        user_id = ctx.obj.get("WORKSPACE_ID") if ctx.obj.get("ANONYMOUS_DATA_COLLECTION", True) is False else "anonymous"
+        user_id = ctx.obj.get("WORKSPACE_ID") if ctx.obj.get("ANONYMOUS_DATA_COLLECTION", True) is False else None
+        anonymous_user_id = "anonymous" if not user_id else None
         segment_context = {"app": {"name": "octavia-cli", "version": ctx.obj.get("OCTAVIA_VERSION")}}
         segment_properties = {
             "success": error is None,
@@ -86,5 +87,5 @@ class TelemetryClient:
         }
         command_name = self._create_command_name(ctx, extra_info_name=extra_info_name)
         self.segment_client.track(
-            user_id=user_id, anonymous_id=None, event=command_name, properties=segment_properties, context=segment_context
+            user_id=user_id, anonymous_id=anonymous_user_id, event=command_name, properties=segment_properties, context=segment_context
         )

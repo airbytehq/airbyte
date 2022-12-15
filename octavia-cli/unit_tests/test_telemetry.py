@@ -92,7 +92,8 @@ class TestTelemetryClient:
     ):
         extra_info_name = "foo"
         mocker.patch.object(telemetry.os, "getenv", mocker.Mock(return_value=airbyte_role))
-        expected_user_id = workspace_id if workspace_id is not None and anonymous_data_collection is False else "anonymous"
+        expected_user_id = workspace_id if workspace_id is not None and anonymous_data_collection is False else None
+        expected_anonymous_id = "anonymous" if expected_user_id is None else None
         mock_ctx = mocker.Mock(
             obj={
                 "OCTAVIA_VERSION": octavia_version,
@@ -116,7 +117,7 @@ class TestTelemetryClient:
         telemetry_client._create_command_name.assert_called_with(mock_ctx, extra_info_name=extra_info_name)
         telemetry_client.segment_client.track.assert_called_with(
             user_id=expected_user_id,
-            anonymous_id=None,
+            anonymous_id=expected_anonymous_id,
             event="my_command",
             properties=expected_properties,
             context=expected_segment_context,
