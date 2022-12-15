@@ -38,7 +38,7 @@
 - name: AlloyDB for PostgreSQL
   sourceDefinitionId: 1fa90628-2b9e-11ed-a261-0242ac120002
   dockerRepository: airbyte/source-alloydb
-  dockerImageTag: 1.0.33
+  dockerImageTag: 1.0.34
   documentationUrl: https://docs.airbyte.com/integrations/sources/alloydb
   icon: alloydb.svg
   sourceType: database
@@ -236,7 +236,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/chartmogul
   icon: chartmogul.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: ClickHouse
   sourceDefinitionId: bad83517-5e54-4a3d-9b53-63e85fbd4d7c
   dockerRepository: airbyte/source-clickhouse
@@ -259,7 +259,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/close-com
   icon: close.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: CoinGecko Coins
   sourceDefinitionId: 9cdd4183-d0ba-40c3-aad3-6f46d4103974
   dockerRepository: airbyte/source-coingecko-coins
@@ -267,7 +267,7 @@
   documentationUrl: https://docs.airbyte.com/integrations/sources/coingecko-coins
   icon: coingeckocoins.svg
   sourceType: api
-  releaseStage: beta
+  releaseStage: alpha
 - name: Cockroachdb
   sourceDefinitionId: 9fa5862c-da7c-11eb-8d19-0242ac130003
   dockerRepository: airbyte/source-cockroachdb
@@ -451,7 +451,7 @@
 - name: Facebook Marketing
   sourceDefinitionId: e7778cfc-e97c-4458-9ecb-b4f2bba8946c
   dockerRepository: airbyte/source-facebook-marketing
-  dockerImageTag: 0.2.78
+  dockerImageTag: 0.2.79
   documentationUrl: https://docs.airbyte.com/integrations/sources/facebook-marketing
   icon: facebook.svg
   sourceType: api
@@ -554,7 +554,7 @@
 - name: GitHub
   sourceDefinitionId: ef69ef6e-aa7f-4af1-a01d-ef775033524e
   dockerRepository: airbyte/source-github
-  dockerImageTag: 0.3.8
+  dockerImageTag: 0.3.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/github
   icon: github.svg
   sourceType: api
@@ -562,7 +562,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.10
+  dockerImageTag: 0.1.11
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -626,6 +626,14 @@
   dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/google-directory
   icon: googledirectory.svg
+  sourceType: api
+  releaseStage: alpha
+- name: Google PageSpeed Insights
+  sourceDefinitionId: 1e9086ab-ddac-4c1d-aafd-ba43ff575fe4
+  dockerRepository: airbyte/source-google-pagespeed-insights
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/google-pagespeed-insights
+  icon: google-pagespeed-insights.svg
   sourceType: api
   releaseStage: alpha
 - name: Google Search Console
@@ -935,11 +943,11 @@
 - name: Metabase
   sourceDefinitionId: c7cb421b-942e-4468-99ee-e369bcabaec5
   dockerRepository: airbyte/source-metabase
-  dockerImageTag: 0.2.0
+  dockerImageTag: 0.3.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/metabase
   icon: metabase.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: Microsoft SQL Server (MSSQL)
   sourceDefinitionId: b5ea17b1-f170-46dc-bc31-cc744ca984c1
   dockerRepository: airbyte/source-mssql
@@ -974,11 +982,11 @@
 - name: Monday
   sourceDefinitionId: 80a54ea2-9959-4040-aac1-eee42423ec9b
   dockerRepository: airbyte/source-monday
-  dockerImageTag: 0.1.4
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/monday
   icon: monday.svg
   sourceType: api
-  releaseStage: alpha
+  releaseStage: beta
 - name: MongoDb
   sourceDefinitionId: b2e713cd-cc36-4c0a-b5bd-b47cb8a0561e
   dockerRepository: airbyte/source-mongodb-v2
@@ -998,7 +1006,7 @@
 - name: MySQL
   sourceDefinitionId: 435bb9a5-7887-4809-aa58-28c27df0d7ad
   dockerRepository: airbyte/source-mysql
-  dockerImageTag: 1.0.16
+  dockerImageTag: 1.0.18
   documentationUrl: https://docs.airbyte.com/integrations/sources/mysql
   icon: mysql.svg
   sourceType: database
@@ -1180,7 +1188,7 @@
 - name: Pinterest
   sourceDefinitionId: 5cb7e5fe-38c2-11ec-8d3d-0242ac130003
   dockerRepository: airbyte/source-pinterest
-  dockerImageTag: 0.1.9
+  dockerImageTag: 0.2.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/pinterest
   icon: pinterest.svg
   sourceType: api
@@ -1250,7 +1258,7 @@
 - name: Postgres
   sourceDefinitionId: decd338e-5647-4c0b-adf4-da0e75f5a750
   dockerRepository: airbyte/source-postgres
-  dockerImageTag: 1.0.33
+  dockerImageTag: 1.0.34
   documentationUrl: https://docs.airbyte.com/integrations/sources/postgres
   icon: postgresql.svg
   sourceType: database
@@ -1407,7 +1415,7 @@
 - name: S3
   sourceDefinitionId: 69589781-7828-43c5-9f63-8925b1c1ccc2
   dockerRepository: airbyte/source-s3
-  dockerImageTag: 0.1.26
+  dockerImageTag: 0.1.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/s3
   icon: s3.svg
   sourceType: file
@@ -1522,7 +1530,7 @@
 - name: Snapchat Marketing
   sourceDefinitionId: 200330b2-ea62-4d11-ac6d-cfe3e3f8ab2b
   dockerRepository: airbyte/source-snapchat-marketing
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/snapchat-marketing
   icon: snapchat.svg
   sourceType: api
@@ -1530,7 +1538,7 @@
 - name: Snowflake
   sourceDefinitionId: e2d65910-8c8b-40a1-ae7d-ee2416b2bfa2
   dockerRepository: airbyte/source-snowflake
-  dockerImageTag: 0.1.26
+  dockerImageTag: 0.1.27
   documentationUrl: https://docs.airbyte.com/integrations/sources/snowflake
   icon: snowflake.svg
   sourceType: database
@@ -1871,7 +1879,7 @@
 - name: Zendesk Support
   sourceDefinitionId: 79c1aa37-dae3-42ae-b333-d1c105477715
   dockerRepository: airbyte/source-zendesk-support
-  dockerImageTag: 0.2.18
+  dockerImageTag: 0.2.19
   documentationUrl: https://docs.airbyte.com/integrations/sources/zendesk-support
   icon: zendesk.svg
   sourceType: api

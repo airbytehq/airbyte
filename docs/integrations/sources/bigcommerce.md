@@ -23,6 +23,7 @@ This Source is capable of syncing the following core Streams:
 - [Brands](https://developer.bigcommerce.com/api-reference/c2610608c20c8-get-all-brands)
 - [Categories](https://developer.bigcommerce.com/api-reference/9cc3a53863922-get-all-categories)
 
+>>>>>>> origin/master
 
 ### Data type mapping
 
