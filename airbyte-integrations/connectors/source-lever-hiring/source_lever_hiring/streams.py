@@ -14,7 +14,6 @@ from .schemas import (
     Application,
     ArchiveReason,
     BaseSchemaModel,
-    Contact,
     Interview,
     Note,
     Offer,
@@ -69,6 +68,7 @@ class LeverHiringStream(HttpStream, ABC):
     def get_json_schema(self) -> Mapping[str, Any]:
         """Use Pydantic schema"""
         return self.schema.schema()
+
 
 class IncrementalLeverHiringStream(LeverHiringStream, ABC):
 
@@ -195,4 +195,3 @@ class Sources(LeverHiringStream):
     """
 
     schema = Source
-
