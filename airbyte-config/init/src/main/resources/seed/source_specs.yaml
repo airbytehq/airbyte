@@ -299,7 +299,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-alloydb:1.0.32"
+- dockerImage: "airbyte/source-alloydb:1.0.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -1176,7 +1176,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-amplitude:0.1.18"
+- dockerImage: "airbyte/source-amplitude:0.1.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/amplitude"
     connectionSpecification:
@@ -1184,7 +1184,6 @@
       title: "Amplitude Spec"
       type: "object"
       required:
-      - "data_region"
       - "api_key"
       - "secret_key"
       - "start_date"
@@ -4549,7 +4548,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.8"
+- dockerImage: "airbyte/source-github:0.3.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -4684,7 +4683,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-gitlab:0.1.9"
+- dockerImage: "airbyte/source-gitlab:0.1.10"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/gitlab"
     connectionSpecification:
@@ -5575,6 +5574,65 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-google-pagespeed-insights:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-pagespeed-insights"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Google PageSpeed Insights Spec"
+      type: "object"
+      required:
+      - "urls"
+      - "strategies"
+      - "categories"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "Google PageSpeed API Key. See <a href=\"https://developers.google.com/speed/docs/insights/v5/get-started#APIKey\"\
+            >here</a>. The key is optional - however the API is heavily rate limited\
+            \ when using without API Key. Creating and using the API key therefore\
+            \ is recommended. The key is case sensitive."
+          airbyte_secret: true
+        urls:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^(?:origin:)?(http(s)?:\\/\\/)[\\w.-]+(?:\\.[\\w\\.-]+)+[\\\
+              w\\-\\._~:\\/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+          title: "URLs to analyse"
+          description: "The URLs to retrieve pagespeed information from. The connector\
+            \ will attempt to sync PageSpeed reports for all the defined URLs. Format:\
+            \ https://(www.)url.domain"
+          example: "https://example.com"
+        strategies:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "desktop"
+            - "mobile"
+          title: "Analyses Strategies"
+          description: "The analyses strategy to use. Either \"desktop\" or \"mobile\"\
+            ."
+        categories:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "accessibility"
+            - "best-practices"
+            - "performance"
+            - "pwa"
+            - "seo"
+          title: "Lighthouse Categories"
+          description: "Defines which Lighthouse category to run. One or many of:\
+            \ \"accessibility\", \"best-practices\", \"performance\", \"pwa\", \"\
+            seo\"."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-search-console:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
@@ -7832,7 +7890,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-metabase:0.2.0"
+- dockerImage: "airbyte/source-metabase:0.3.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/metabase"
     connectionSpecification:
@@ -7871,7 +7929,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mssql:0.4.25"
+- dockerImage: "airbyte/source-mssql:0.4.26"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/mssql"
     connectionSpecification:
@@ -7949,9 +8007,6 @@
               ssl_method:
                 type: "string"
                 const: "unencrypted"
-                enum:
-                - "unencrypted"
-                default: "unencrypted"
           - title: "Encrypted (trust server certificate)"
             description: "Use the certificate provided by the server without verification.\
               \ (For testing purposes only!)"
@@ -7961,9 +8016,6 @@
               ssl_method:
                 type: "string"
                 const: "encrypted_trust_server_certificate"
-                enum:
-                - "encrypted_trust_server_certificate"
-                default: "encrypted_trust_server_certificate"
           - title: "Encrypted (verify certificate)"
             description: "Verify and use the certificate provided by the server."
             required:
@@ -7974,9 +8026,6 @@
               ssl_method:
                 type: "string"
                 const: "encrypted_verify_certificate"
-                enum:
-                - "encrypted_verify_certificate"
-                default: "encrypted_verify_certificate"
               hostNameInCertificate:
                 title: "Host Name In Certificate"
                 type: "string"
@@ -8003,9 +8052,6 @@
               method:
                 type: "string"
                 const: "STANDARD"
-                enum:
-                - "STANDARD"
-                default: "STANDARD"
                 order: 0
           - title: "Logical Replication (CDC)"
             description: "CDC uses {TBC} to detect inserts, updates, and deletes.\
@@ -8016,9 +8062,6 @@
               method:
                 type: "string"
                 const: "CDC"
-                enum:
-                - "CDC"
-                default: "CDC"
                 order: 0
               data_to_sync:
                 title: "Data to Sync"
@@ -8045,18 +8088,6 @@
                   \ the \"Snapshot\" level, you must enable the <a href=\"https://docs.microsoft.com/en-us/dotnet/framework/data/adonet/sql/snapshot-isolation-in-sql-server\"\
                   >snapshot isolation mode</a> on the database."
                 order: 2
-              initial_waiting_seconds:
-                type: "integer"
-                title: "Initial Waiting Time in Seconds (Advanced)"
-                description: "The amount of time the connector will wait when it launches\
-                  \ to determine if there is new data to sync or not. Defaults to\
-                  \ 300 seconds. Valid range: 120 seconds to 1200 seconds. Read about\
-                  \ <a href=\"https://docs.airbyte.com/integrations/sources/mysql/#change-data-capture-cdc\"\
-                  >initial waiting time</a>."
-                default: 300
-                min: 120
-                max: 1200
-                order: 3
         tunnel_method:
           type: "object"
           title: "SSH Tunnel Method"
@@ -8484,7 +8515,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-monday:0.1.4"
+- dockerImage: "airbyte/source-monday:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/monday"
     connectionSpecification:
@@ -8761,7 +8792,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.15"
+- dockerImage: "airbyte/source-mysql:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -10783,7 +10814,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-pinterest:0.1.9"
+- dockerImage: "airbyte/source-pinterest:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/pinterest"
     connectionSpecification:
@@ -11322,7 +11353,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-postgres:1.0.32"
+- dockerImage: "airbyte/source-postgres:1.0.33"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/postgres"
     connectionSpecification:
@@ -12477,7 +12508,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.26"
+- dockerImage: "airbyte/source-s3:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12610,6 +12641,8 @@
                   \ during schema detection, increasing this should solve it. Beware\
                   \ of raising this too high as you could hit OOM errors."
                 default: 10000
+                minimum: 1
+                maximum: 2147483647
                 order: 9
                 type: "integer"
           - title: "Parquet"
@@ -13570,7 +13603,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13631,7 +13664,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.26"
+- dockerImage: "airbyte/source-snowflake:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -16147,7 +16180,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.18"
+- dockerImage: "airbyte/source-zendesk-support:0.2.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:
