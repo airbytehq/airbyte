@@ -73,6 +73,8 @@ class CsvFormat(BaseModel):
     )
     block_size: int = Field(
         default=10000,
+        ge=1,
+        le=2_147_483_647,  # int32_t max
         description="The chunk size in bytes to process at a time in memory from each file. If your data is particularly wide and failing during schema detection, increasing this should solve it. Beware of raising this too high as you could hit OOM errors.",
         order=9,
     )
