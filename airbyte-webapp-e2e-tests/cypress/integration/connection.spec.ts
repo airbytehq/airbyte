@@ -23,7 +23,7 @@ import {
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
-  expandStreamDetails
+  expandStreamDetails,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
@@ -161,6 +161,8 @@ describe("Connection - main actions", () => {
     openSourceDestinationFromGrid(sourceName);
 
     goToReplicationTab();
+
+    console.log(Cypress.$("body").html());
 
     selectSchedule("Cron");
     submitButtonClick();
