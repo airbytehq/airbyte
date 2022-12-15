@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.auth;
 
 import java.util.Comparator;
@@ -8,8 +12,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * This enum describes the standard auth levels for a given resource. It currently is only used for 2
- * resources Workspace and Instance (i.e. the entire instance or deployment of Airbyte).
+ * This enum describes the standard auth levels for a given resource. It currently is only used for
+ * 2 resources Workspace and Instance (i.e. the entire instance or deployment of Airbyte).
  *
  * In the context of a workspace, there is a 1:1 mapping.
  * <ul>
@@ -55,8 +59,8 @@ public enum AuthRole {
   /**
    * Builds the set of roles based on the provided {@link AuthRole} value.
    * <p>
-   * The generated set of auth roles contains the provided {@link AuthRole} (if not {@code null})
-   * and any other authentication roles with a lesser {@link #getAuthority()} value.
+   * The generated set of auth roles contains the provided {@link AuthRole} (if not {@code null}) and
+   * any other authentication roles with a lesser {@link #getAuthority()} value.
    * </p>
    *
    * @param authRole An {@link AuthRole} (may be {@code null}).
@@ -65,7 +69,7 @@ public enum AuthRole {
   public static Set<AuthRole> buildAuthRolesSet(final AuthRole authRole) {
     final Set<AuthRole> authRoles = new HashSet<>();
 
-    if(authRole != null) {
+    if (authRole != null) {
       authRoles.add(authRole);
       authRoles.addAll(Stream.of(values())
           .filter(role -> !NONE.equals(role))

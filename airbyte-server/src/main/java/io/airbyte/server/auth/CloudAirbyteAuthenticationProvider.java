@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.auth;
 
 import io.micronaut.context.annotation.Replaces;
@@ -12,7 +16,7 @@ import org.reactivestreams.Publisher;
 import reactor.core.publisher.Flux;
 
 @Singleton
-@Replaces(bean=AirbyteAuthenticationProvider.class)
+@Replaces(bean = AirbyteAuthenticationProvider.class)
 @Slf4j
 public class CloudAirbyteAuthenticationProvider implements AuthenticationProvider {
 
@@ -26,7 +30,7 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
   public Publisher<AuthenticationResponse> authenticate(final HttpRequest<?> httpRequest, final AuthenticationRequest<?, ?> authenticationRequest) {
     log.info("Authenticating identity {}...", authenticationRequest.getIdentity());
 
-    final String username = (String)authenticationRequest.getIdentity();
+    final String username = (String) authenticationRequest.getIdentity();
     final Collection<String> roles = permissionService.getUserPermissions(username);
     log.info("Got roles {} for user {}.", roles, username);
     final AuthenticationResponse authenticationResponse = AuthenticationResponse.success(username, roles);
@@ -36,4 +40,5 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
       emitter.complete();
     });
   }
+
 }

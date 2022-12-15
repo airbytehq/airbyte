@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.auth;
 
 import io.airbyte.commons.auth.AuthRole;
@@ -11,4 +15,5 @@ public class PermissionService {
   public Collection<String> getUserPermissions(final String username) {
     return AuthRole.buildAuthRolesSet(AuthRole.EDITOR).stream().map(r -> r.name()).collect(Collectors.toSet());
   }
+
 }

@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server.auth;
 
 import io.airbyte.commons.auth.AuthRole;
@@ -20,7 +24,7 @@ public class AirbyteAuthenticationProvider implements AuthenticationProvider {
   public Publisher<AuthenticationResponse> authenticate(final HttpRequest<?> httpRequest, final AuthenticationRequest<?, ?> authenticationRequest) {
     log.info("Authenticating identity {}...", authenticationRequest.getIdentity());
 
-    final String username = (String)authenticationRequest.getIdentity();
+    final String username = (String) authenticationRequest.getIdentity();
     final AuthenticationResponse authenticationResponse = AuthenticationResponse.success(username, getDefaultRoles());
 
     return Flux.create(emitter -> {
@@ -34,4 +38,5 @@ public class AirbyteAuthenticationProvider implements AuthenticationProvider {
         .map(r -> r.name())
         .collect(Collectors.toSet());
   }
+
 }
