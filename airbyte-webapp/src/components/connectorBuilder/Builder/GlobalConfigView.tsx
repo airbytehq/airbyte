@@ -7,14 +7,14 @@ export const GlobalConfigView: React.FC = () => {
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderCard>
         <BuilderField
-          type="text"
+          type="string"
           path="global.connectorName"
           label="Connector Name"
           tooltip="Name of the connector being built"
         />
       </BuilderCard>
       <BuilderCard>
-        <BuilderField type="text" path="global.urlBase" label="API URL" tooltip="Base URL of the source API" />
+        <BuilderField type="string" path="global.urlBase" label="API URL" tooltip="Base URL of the source API" />
       </BuilderCard>
     </>
   );

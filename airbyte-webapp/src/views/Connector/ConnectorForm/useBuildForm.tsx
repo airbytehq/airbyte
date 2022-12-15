@@ -18,23 +18,29 @@ export interface BuildFormHook {
   jsonSchema: JSONSchema7;
 }
 
-function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
+function setDefaultValues(
+  formGroup: FormGroupItem,
+  values: Record<string, unknown>,
+  options: { respectExistingValues: boolean } = { respectExistingValues: false }
+) {
   formGroup.properties.forEach((property) => {
-    if (property.const) {
+    if (property.const && (!options.respectExistingValues || !values[property.fieldKey])) {
       values[property.fieldKey] = property.const;
     }
-    if (property.default) {
+    if (property.default && (!options.respectExistingValues || !values[property.fieldKey])) {
       values[property.fieldKey] = property.default;
     }
     switch (property._type) {
       case "formGroup":
-        values[property.fieldKey] = {};
-        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
+        values[property.fieldKey] =
+          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
+        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>, options);
         break;
       case "formCondition":
         // implicitly select the first option (do not respect a potential default value)
-        values[property.fieldKey] = {};
-        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
+        values[property.fieldKey] =
+          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
+        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>, options);
     }
   });
 }
@@ -78,7 +84,7 @@ export function useBuildForm(
   }
 
   const startValues = useMemo<ConnectorFormValues>(() => {
-    if (isEditMode || isDraft) {
+    if (isEditMode) {
       return {
         name: "",
         connectionConfiguration: {},
@@ -91,7 +97,7 @@ export function useBuildForm(
       ...initialValues,
     };
 
-    setDefaultValues(formFields, baseValues as Record<string, unknown>);
+    setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: isDraft });
 
     return baseValues;
   }, [formFields, initialValues, isDraft, isEditMode]);

@@ -36,7 +36,8 @@ interface BaseFieldProps {
 
 type BuilderFieldProps = BaseFieldProps &
   (
-    | { type: "text" }
+    | { type: "string" }
+    | { type: "integer" }
     | { type: "number" }
     | { type: "boolean" }
     | { type: "array" }
@@ -88,7 +89,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
 
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
-      {(props.type === "text" || props.type === "number") && (
+      {(props.type === "number" || props.type === "string" || props.type === "integer") && (
         <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} readOnly={readOnly} />
       )}
       {props.type === "array" && (

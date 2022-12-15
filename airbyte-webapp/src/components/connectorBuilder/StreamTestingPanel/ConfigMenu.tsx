@@ -61,6 +61,9 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
                 onCancel={() => {
                   setIsOpen(false);
                 }}
+                onReset={() => {
+                  setConfigString("{}");
+                }}
                 submitLabel={formatMessage({ id: "connectorForm.saveInputsForm" })}
               />
             ) : (

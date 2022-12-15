@@ -38,6 +38,10 @@ export interface ConnectorFormProps {
    * Called in case the user cancels the form - if not provided, no cancel button is rendered
    */
   onCancel?: () => void;
+  /**
+   * Called in case the user reset the form - if not provided, no reset button is rendered
+   */
+  onReset?: () => void;
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;

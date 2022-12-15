@@ -14,6 +14,10 @@ interface CreateControlProps {
    * Called in case the user cancels the form - if not provided, no cancel button is rendered
    */
   onCancel?: () => void;
+  /**
+   * Called in case the user reset the form - if not provided, no reset button is rendered
+   */
+  onReset?: () => void;
   submitLabel?: string;
   isSubmitting: boolean;
   errorMessage?: React.ReactNode;
@@ -31,6 +35,7 @@ const CreateControls: React.FC<CreateControlProps> = ({
   errorMessage,
   onCancelTesting,
   onCancel,
+  onReset,
   submitLabel,
 }) => {
   if (isSubmitting) {
@@ -44,6 +49,13 @@ const CreateControls: React.FC<CreateControlProps> = ({
   return (
     <div className={styles.controlContainer}>
       {errorMessage && <TestingConnectionError errorMessage={errorMessage} />}
+      {onReset && (
+        <div className={styles.deleteButtonContainer}>
+          <Button onClick={onReset} type="button" variant="danger">
+            <FormattedMessage id="form.reset" />
+          </Button>
+        </div>
+      )}
       <div className={styles.buttonContainer}>
         {onCancel && (
           <Button onClick={onCancel} type="button" variant="secondary">

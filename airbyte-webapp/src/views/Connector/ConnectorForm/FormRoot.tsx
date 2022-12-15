@@ -23,6 +23,10 @@ interface FormRootProps {
    * Called in case the user cancels the form - if not provided, no cancel button is rendered
    */
   onCancel?: () => void;
+  /**
+   * Called in case the user reset the form - if not provided, no reset button is rendered
+   */
+  onReset?: () => void;
 }
 
 export const FormRoot: React.FC<FormRootProps> = ({
@@ -36,6 +40,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   submitLabel,
   footerClassName,
   onCancel,
+  onReset,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
   const { resetConnectorForm, isEditMode, formType } = useConnectorForm();
@@ -68,6 +73,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
             formType={formType}
             submitLabel={submitLabel}
             onCancel={onCancel}
+            onReset={onReset}
             hasSuccess={hasSuccess}
           />
         )}

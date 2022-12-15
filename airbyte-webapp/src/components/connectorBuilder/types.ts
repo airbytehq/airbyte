@@ -5,16 +5,18 @@ import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { DeclarativeStream } from "core/request/ConnectorManifest";
 
+export interface BuilderFormInput {
+  key: string;
+  required: boolean;
+  definition: JSONSchema7;
+}
+
 export interface BuilderFormValues {
   global: {
     connectorName: string;
     urlBase: string;
   };
-  inputs: Array<{
-    key: string;
-    required: boolean;
-    definition: JSONSchema7;
-  }>;
+  inputs: BuilderFormInput[];
   streams: BuilderStream[];
 }
 

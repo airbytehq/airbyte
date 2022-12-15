@@ -13,7 +13,7 @@ import { Text } from "components/ui/Text";
 
 import { FormikPatch } from "core/form/FormikPatch";
 
-import { BuilderFormValues } from "../types";
+import { BuilderFormInput } from "../types";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsView.module.scss";
 
@@ -22,15 +22,56 @@ interface InputInEditing {
   definition: JSONSchema7;
   required: boolean;
   isNew?: boolean;
-  showDefaultValueField?: boolean;
+  showDefaultValueField: boolean;
+  type: "string" | "integer" | "number" | "array" | "boolean" | "enum";
 }
 
 function sluggify(str: string) {
   return str.toLowerCase().replaceAll(/[^a-zA-Z\d]/g, "_");
 }
 
+function newInputInEditing(): InputInEditing {
+  return {
+    key: "",
+    definition: {},
+    required: false,
+    isNew: true,
+    showDefaultValueField: false,
+    type: "string",
+  };
+}
+
+function formInputToInputInEditing({ key, definition, required }: BuilderFormInput): InputInEditing {
+  return {
+    key,
+    definition,
+    required,
+    isNew: false,
+    showDefaultValueField: Boolean(definition.default),
+    type: definition.enum ? "enum" : (definition.type as InputInEditing["type"]),
+  };
+}
+
+function inputInEditingToFormInput({
+  type,
+  showDefaultValueField,
+  isNew,
+  ...values
+}: InputInEditing): BuilderFormInput {
+  return {
+    ...values,
+    definition: {
+      ...values.definition,
+      type: type === "enum" ? "string" : type,
+      // only respect the enum values if the user explicitly selected enum as type
+      enum: type === "enum" && values.definition.enum?.length ? values.definition.enum : undefined,
+      default: showDefaultValueField ? values.definition.default : undefined,
+    },
+  };
+}
+
 export const InputsView: React.FC = () => {
-  const [inputs, , helpers] = useField<BuilderFormValues["inputs"]>("inputs");
+  const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
   const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
   const inputInEditValidation = useMemo(
@@ -58,22 +99,16 @@ export const InputsView: React.FC = () => {
       </Text>
       <Card withPadding className={styles.inputsCard}>
         <ol className={styles.list}>
-          {inputs.value.map(({ key, definition, required }) => (
-            <li className={styles.listItem} key={key}>
-              <div className={styles.itemLabel}>{definition.title || key}</div>
+          {inputs.value.map((input) => (
+            <li className={styles.listItem} key={input.key}>
+              <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
               <Button
                 className={styles.itemButton}
                 size="sm"
                 variant="secondary"
                 aria-label="Edit"
                 onClick={() => {
-                  setInputInEditing({
-                    key,
-                    definition,
-                    required,
-                    isNew: false,
-                    showDefaultValueField: Boolean(definition.default),
-                  });
+                  setInputInEditing(formInputToInputInEditing(input));
                 }}
               >
                 <FontAwesomeIcon className={styles.icon} icon={faGear} />
@@ -84,15 +119,7 @@ export const InputsView: React.FC = () => {
       </Card>
       <Button
         onClick={() => {
-          setInputInEditing({
-            key: "",
-            definition: {
-              type: "string",
-            },
-            required: false,
-            isNew: true,
-            showDefaultValueField: false,
-          });
+          setInputInEditing(newInputInEditing());
         }}
         icon={<FontAwesomeIcon icon={faPlus} />}
         iconPosition="left"
@@ -104,11 +131,12 @@ export const InputsView: React.FC = () => {
         <Formik
           initialValues={inputInEditing}
           validationSchema={inputInEditValidation}
-          onSubmit={({ isNew, ...values }: InputInEditing) => {
+          onSubmit={(values: InputInEditing) => {
+            const newInput = inputInEditingToFormInput(values);
             helpers.setValue(
               inputInEditing.isNew
-                ? [...inputs.value, values]
-                : inputs.value.map((input) => (input.key === inputInEditing.key ? values : input))
+                ? [...inputs.value, newInput]
+                : inputs.value.map((input) => (input.key === inputInEditing.key ? newInput : input))
             );
             setInputInEditing(undefined);
           }}
@@ -163,13 +191,13 @@ const InputModal = ({
         <ModalBody className={styles.inputForm}>
           <BuilderField
             path="definition.title"
-            type="text"
+            type="string"
             label={formatMessage({ id: "connectorBuilder.inputModal.inputName" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.inputNameTooltip" })}
           />
           <BuilderField
             path="key"
-            type="text"
+            type="string"
             readOnly
             label={formatMessage({ id: "connectorBuilder.inputModal.fieldId" })}
             tooltip={formatMessage(
@@ -182,17 +210,26 @@ const InputModal = ({
           <BuilderField
             path="definition.description"
             optional
-            type="text"
+            type="string"
             label={formatMessage({ id: "connectorBuilder.inputModal.description" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.descriptionTooltip" })}
           />
           <BuilderField
-            path="definition.type"
+            path="type"
             type="enum"
-            options={["string", "number", "integer"]}
+            options={["string", "number", "integer", "array", "boolean", "enum"]}
             label={formatMessage({ id: "connectorBuilder.inputModal.type" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.typeTooltip" })}
           />
+          {values.type === "enum" && (
+            <BuilderField
+              path="definition.enum"
+              type="array"
+              optional
+              label={formatMessage({ id: "connectorBuilder.inputModal.enum" })}
+              tooltip={formatMessage({ id: "connectorBuilder.inputModal.enumTooltip" })}
+            />
+          )}
           <BuilderField
             path="definition.airbyte_secret"
             type="boolean"
@@ -217,14 +254,15 @@ const InputModal = ({
           {values.showDefaultValueField && (
             <BuilderField
               path="definition.default"
-              type={values.definition.type === "string" ? "text" : "number"}
+              type={values.type}
+              options={(values.definition.enum || []) as string[]}
               optional
               label={formatMessage({ id: "connectorBuilder.inputModal.default" })}
             />
           )}
           <BuilderField
             path="definition.placeholder"
-            type="text"
+            type="string"
             optional
             label={formatMessage({ id: "connectorBuilder.inputModal.placeholder" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.placeholderTooltip" })}
@@ -232,9 +270,11 @@ const InputModal = ({
         </ModalBody>
         <ModalFooter>
           {!inputInEditing.isNew && (
-            <Button variant="danger" type="button" onClick={onDelete}>
-              <FormattedMessage id="form.delete" />
-            </Button>
+            <div className={styles.deleteButtonContainer}>
+              <Button variant="danger" type="button" onClick={onDelete}>
+                <FormattedMessage id="form.delete" />
+              </Button>
+            </div>
           )}
           <Button variant="secondary" type="reset" onClick={onClose}>
             <FormattedMessage id="form.cancel" />

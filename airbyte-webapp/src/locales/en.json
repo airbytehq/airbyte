@@ -687,6 +687,8 @@
   "connectorBuilder.inputModal.default": "Default value",
   "connectorBuilder.inputModal.placeholder": "Placeholder",
   "connectorBuilder.inputModal.placeholderTooltip": "Placeholder shown in the form in case the user did not pick a value yet",
+  "connectorBuilder.inputModal.enum": "Allowed values",
+  "connectorBuilder.inputModal.enumTooltip": "The user will only be able to choose from one of these values. If none are provided the user will be able to enter any value",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
