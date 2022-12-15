@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.string.Strings;
-import io.airbyte.db.PgLsn;
 import io.airbyte.db.PostgresUtils;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
@@ -134,7 +133,7 @@ public class PostgresDebeziumStateUtilTest {
 
   @ParameterizedTest
   @ValueSource(strings = {"pgoutput", "wal2json"})
-  public void test(final String plugin) throws SQLException {
+  public void LsnCommitTest(final String plugin) throws SQLException {
     final DockerImageName myImage = DockerImageName.parse("debezium/postgres:13-alpine").asCompatibleSubstituteFor("postgres");
     final String dbName = Strings.addRandomSuffix("db", "_", 10).toLowerCase();
     final String fullReplicationSlot = "debezium_slot" + "_" + dbName;
@@ -170,9 +169,9 @@ public class PostgresDebeziumStateUtilTest {
       final Lsn lsnAtTheBeginning = Lsn.valueOf(
           getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
 
-      final PgLsn targetLsn = PostgresUtils.getLsn(database);
+      final long targetLsn = PostgresUtils.getLsn(database).asLong();
       postgresDebeziumStateUtil.commitLSNToPostgresDatabase(Jsons.jsonNode(databaseConfig),
-          OptionalLong.of(targetLsn.asLong()),
+          OptionalLong.of(targetLsn),
           fullReplicationSlot,
           publication,
           plugin);
@@ -181,7 +180,7 @@ public class PostgresDebeziumStateUtilTest {
           getReplicationSlot(database, fullReplicationSlot, plugin, dbName).get("confirmed_flush_lsn").asText());
 
       Assertions.assertEquals(1, lsnAfterCommit.compareTo(lsnAtTheBeginning));
-      Assertions.assertEquals(targetLsn.asLong(), lsnAfterCommit.asLong());
+      Assertions.assertEquals(targetLsn, lsnAfterCommit.asLong());
       container.stop();
     }
   }

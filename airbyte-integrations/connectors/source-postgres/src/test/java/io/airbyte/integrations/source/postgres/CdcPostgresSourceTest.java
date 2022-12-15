@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import javax.sql.DataSource;
 import org.apache.kafka.connect.source.SourceRecord;
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
@@ -388,7 +389,7 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     }
 
     // Triggering sync with the first sync's state only which would mimic a scenario that the second
-    // sync failed on destination end and we didn't save state
+    // sync failed on destination end, and we didn't save state
     final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
         .read(config, CONFIGURED_CATALOG, state);
 
@@ -446,6 +447,104 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
     assertEquals(lsn, 358824993496L);
 
     assertNull(pctp.getHeartbeatPosition(null));
+  }
+
+  @Test
+  protected void syncShouldIncrementLSN() throws Exception {
+    final int recordsToCreate = 20;
+
+    final DataSource dataSource = DataSourceFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            config.get(JdbcUtils.HOST_KEY).asText(),
+            config.get(JdbcUtils.PORT_KEY).asInt(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()));
+
+    final JdbcDatabase defaultJdbcDatabase = new DefaultJdbcDatabase(dataSource);
+
+    final Long replicationSlotAtTheBeginning = PgLsn.fromPgString(
+        source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+
+    final AutoCloseableIterator<AirbyteMessage> firstBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, null);
+    final List<AirbyteMessage> dataFromFirstBatch = AutoCloseableIterators
+        .toListAndClose(firstBatchIterator);
+    final List<AirbyteStateMessage> stateAfterFirstBatch = extractStateMessages(dataFromFirstBatch);
+
+    final Long replicationSlotAfterFirstSync = PgLsn.fromPgString(
+        source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    assertEquals(0, replicationSlotAfterFirstSync.compareTo(replicationSlotAtTheBeginning));
+
+    // second batch of records again 20 being created
+    for (int recordsCreated = 0; recordsCreated < recordsToCreate; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 200 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "F-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final JsonNode stateAfterFirstSync = Jsons.jsonNode(stateAfterFirstBatch);
+    final AutoCloseableIterator<AirbyteMessage> secondBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromSecondBatch = AutoCloseableIterators
+        .toListAndClose(secondBatchIterator);
+    final List<AirbyteStateMessage> stateAfterSecondBatch = extractStateMessages(dataFromSecondBatch);
+    assertExpectedStateMessages(stateAfterSecondBatch);
+
+    final Long replicationSlotAfterSecondSync = PgLsn.fromPgString(
+        source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    assertEquals(1, replicationSlotAfterSecondSync.compareTo(replicationSlotAfterFirstSync));
+
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 400 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    // Triggering sync with the first sync's state only which would mimic a scenario that the second
+    // sync failed on destination end, and we didn't save state
+    final AutoCloseableIterator<AirbyteMessage> thirdBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, stateAfterFirstSync);
+    final List<AirbyteMessage> dataFromThirdBatch = AutoCloseableIterators
+        .toListAndClose(thirdBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterThirdBatch = extractStateMessages(dataFromThirdBatch);
+    assertExpectedStateMessages(stateAfterThirdBatch);
+    final Set<AirbyteRecordMessage> recordsFromThirdBatch = extractRecordMessages(
+        dataFromThirdBatch);
+
+    final Long replicationSlotAfterThirdSync = PgLsn.fromPgString(
+        source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    assertEquals(0, replicationSlotAfterThirdSync.compareTo(replicationSlotAfterSecondSync));
+    assertEquals(recordsToCreate + 1, recordsFromThirdBatch.size());
+
+    for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
+      final JsonNode record =
+          Jsons.jsonNode(ImmutableMap
+              .of(COL_ID, 500 + recordsCreated, COL_MAKE_ID, 1, COL_MODEL,
+                  "H-" + recordsCreated));
+      writeModelRecord(record);
+    }
+
+    final AutoCloseableIterator<AirbyteMessage> fourthBatchIterator = getSource()
+        .read(config, CONFIGURED_CATALOG, Jsons.jsonNode(stateAfterThirdBatch));
+    final List<AirbyteMessage> dataFromFourthBatch = AutoCloseableIterators
+        .toListAndClose(fourthBatchIterator);
+
+    final List<AirbyteStateMessage> stateAfterFourthBatch = extractStateMessages(dataFromFourthBatch);
+    assertExpectedStateMessages(stateAfterFourthBatch);
+    final Set<AirbyteRecordMessage> recordsFromFourthBatch = extractRecordMessages(
+        dataFromFourthBatch);
+
+    final Long replicationSlotAfterFourthSync = PgLsn.fromPgString(
+        source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+    assertEquals(1, replicationSlotAfterFourthSync.compareTo(replicationSlotAfterThirdSync));
+    assertEquals(1, recordsFromFourthBatch.size());
   }
 
 }

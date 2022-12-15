@@ -255,7 +255,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     }
   }
 
-  private List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
+  @VisibleForTesting
+  List<JsonNode> getReplicationSlot(final JdbcDatabase database, final JsonNode config) {
     try {
       return database.queryJsons(connection -> {
         final String sql = "SELECT * FROM pg_replication_slots WHERE slot_name = ? AND plugin = ? AND database = ?";

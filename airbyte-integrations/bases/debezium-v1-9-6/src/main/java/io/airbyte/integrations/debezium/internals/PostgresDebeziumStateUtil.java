@@ -109,7 +109,7 @@ public class PostgresDebeziumStateUtil {
       return;
     }
 
-    final LogSequenceNumber logSequenceNumber = Lsn.valueOf(savedOffset.getAsLong()).asLogSequenceNumber();
+    final LogSequenceNumber logSequenceNumber = LogSequenceNumber.valueOf(savedOffset.getAsLong());
 
     try (final BaseConnection pgConnection = ((BaseConnection) connection(jdbcConfig))) {
       validateReplicationConnection(pgConnection);
