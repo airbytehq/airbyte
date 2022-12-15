@@ -23,6 +23,10 @@ acceptance_tests:
         empty_streams:
           - name: page
             bypass_reason: "This stream has access_token inside"
+          - name: post
+            bypass_reason: "Data is not permanent"
+          - name: page_insights
+            bypass_reason: "Data is not permanent"
         expect_records:
           path: "integration_tests/expected_records.txt"
           extra_fields: no
