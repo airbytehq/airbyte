@@ -415,6 +415,7 @@ The root causes is that the WALs needed for the incremental sync has been remove
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                    |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 1.0.34  | 2022-12-13 | [20378](https://github.com/airbytehq/airbyte/pull/20378)   | Improve descriptions                                               |
 | 1.0.33  | 2022-12-12 | [18959](https://github.com/airbytehq/airbyte/pull/18959) | CDC : Don't timeout if snapshot is not complete.                                                                                                                           |
 | 1.0.32  | 2022-12-12 | [20192](https://github.com/airbytehq/airbyte/pull/20192) | Only throw a warning if cursor column contains null values.                                                                                                                |
 | 1.0.31  | 2022-12-02 | [19889](https://github.com/airbytehq/airbyte/pull/19889) | Check before each sync and stop if an incremental sync cursor column contains a null value.                                                                                |
