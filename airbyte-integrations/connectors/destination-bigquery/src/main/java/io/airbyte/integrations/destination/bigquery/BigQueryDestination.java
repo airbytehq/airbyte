@@ -100,7 +100,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        checkGcsPermission(config);
+        final AirbyteConnectionStatus status = checkGcsPermission(config);
+        if(!status.getStatus().equals(Status.SUCCEEDED)) {
+          return status;
+        }
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
@@ -120,7 +123,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * and delete an actual file. The latter is important because even if the service account may have
    * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
    */
-  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
+  private AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
     final List<String> missingPermissions = new ArrayList<>();
