@@ -4,6 +4,8 @@ connector_image: airbyte/source-s3:dev
 tests:
   spec:
     - spec_path: "integration_tests/spec.json"
+      backward_compatibility_tests_config:
+        disable_for_version: "0.1.26"
   connection:
     # for CSV format
     - config_path: "secrets/config.json"
