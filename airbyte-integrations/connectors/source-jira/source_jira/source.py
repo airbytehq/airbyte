@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from base64 import b64encode
 from json.decoder import JSONDecodeError
 from typing import Any, List, Mapping, Optional, Tuple
 
@@ -11,7 +10,7 @@ from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
-from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import BasicHttpAuthenticator
 
 from .streams import (
     ApplicationRoles,
@@ -78,9 +77,7 @@ class SourceJira(AbstractSource):
 
     @staticmethod
     def get_authenticator(config: Mapping[str, Any]):
-        token = b64encode(bytes(config["email"] + ":" + config["api_token"], "utf-8")).decode("ascii")
-        authenticator = TokenAuthenticator(token, auth_method="Basic")
-        return authenticator
+        return BasicHttpAuthenticator(config["email"], config["api_token"])
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         config = self._validate_and_transform(config)
