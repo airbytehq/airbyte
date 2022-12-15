@@ -165,7 +165,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         end_field = self.stream_slice_field_end.eval(self.config)
         dates = []
         while start <= end:
-            end_date = self._get_date(start + step - datetime.timedelta(days=1), end, min)
+            end_date = self._get_date(start + step, end, min)
             dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
             start += step
         return dates
