@@ -4548,7 +4548,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-github:0.3.8"
+- dockerImage: "airbyte/source-github:0.3.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/github"
     connectionSpecification:
@@ -5574,6 +5574,65 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
+- dockerImage: "airbyte/source-google-pagespeed-insights:0.1.0"
+  spec:
+    documentationUrl: "https://docs.airbyte.io/integrations/sources/google-pagespeed-insights"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Google PageSpeed Insights Spec"
+      type: "object"
+      required:
+      - "urls"
+      - "strategies"
+      - "categories"
+      additionalProperties: true
+      properties:
+        api_key:
+          type: "string"
+          title: "API Key"
+          description: "Google PageSpeed API Key. See <a href=\"https://developers.google.com/speed/docs/insights/v5/get-started#APIKey\"\
+            >here</a>. The key is optional - however the API is heavily rate limited\
+            \ when using without API Key. Creating and using the API key therefore\
+            \ is recommended. The key is case sensitive."
+          airbyte_secret: true
+        urls:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^(?:origin:)?(http(s)?:\\/\\/)[\\w.-]+(?:\\.[\\w\\.-]+)+[\\\
+              w\\-\\._~:\\/?#[\\]@!\\$&'\\(\\)\\*\\+,;=.]+$"
+          title: "URLs to analyse"
+          description: "The URLs to retrieve pagespeed information from. The connector\
+            \ will attempt to sync PageSpeed reports for all the defined URLs. Format:\
+            \ https://(www.)url.domain"
+          example: "https://example.com"
+        strategies:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "desktop"
+            - "mobile"
+          title: "Analyses Strategies"
+          description: "The analyses strategy to use. Either \"desktop\" or \"mobile\"\
+            ."
+        categories:
+          type: "array"
+          items:
+            type: "string"
+            enum:
+            - "accessibility"
+            - "best-practices"
+            - "performance"
+            - "pwa"
+            - "seo"
+          title: "Lighthouse Categories"
+          description: "Defines which Lighthouse category to run. One or many of:\
+            \ \"accessibility\", \"best-practices\", \"performance\", \"pwa\", \"\
+            seo\"."
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
 - dockerImage: "airbyte/source-google-search-console:0.1.18"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/google-search-console"
@@ -8733,7 +8792,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-mysql:1.0.16"
+- dockerImage: "airbyte/source-mysql:1.0.17"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/mysql"
     connectionSpecification:
@@ -12449,7 +12508,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-s3:0.1.26"
+- dockerImage: "airbyte/source-s3:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/s3"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/s3"
@@ -12582,6 +12641,8 @@
                   \ during schema detection, increasing this should solve it. Beware\
                   \ of raising this too high as you could hit OOM errors."
                 default: 10000
+                minimum: 1
+                maximum: 2147483647
                 order: 9
                 type: "integer"
           - title: "Parquet"
@@ -13542,7 +13603,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-snapchat-marketing:0.1.8"
+- dockerImage: "airbyte/source-snapchat-marketing:0.1.9"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snapchat-marketing"
     connectionSpecification:
@@ -13603,7 +13664,7 @@
         - - "client_secret"
         oauthFlowOutputParameters:
         - - "refresh_token"
-- dockerImage: "airbyte/source-snowflake:0.1.26"
+- dockerImage: "airbyte/source-snowflake:0.1.27"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/snowflake"
     connectionSpecification:
@@ -16119,7 +16180,7 @@
               path_in_connector_config:
               - "credentials"
               - "client_secret"
-- dockerImage: "airbyte/source-zendesk-support:0.2.18"
+- dockerImage: "airbyte/source-zendesk-support:0.2.19"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/zendesk-support"
     connectionSpecification:

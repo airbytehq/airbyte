@@ -40,6 +40,16 @@ export const buildYupFormForJsonSchema = (
     // for the condition plus the sub schema for that property in that condition.
     // As not all keys will show up in every condition, there can be a different number of possible sub schemas
     // per key; at least one and at max the number of conditions (if a key is part of every oneOf)
+    // For example:
+    // If there are three possible schemas with the following properties:
+    //   A: { type: "A", prop1: number, prop2: string }
+    //   B: { type: "B", prop1: string, prop2: string }
+    //   C: { type: "C", prop2: boolean }
+    // Then the map will look like this:
+    //  {
+    //    prop1: [["A", number], ["B", string]]
+    //    prop2: [["A", string], ["B", string], ["C", boolean]]
+    //  }
     const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
     jsonSchema.oneOf.forEach((condition, index) => {
       if (typeof condition !== "object") {
@@ -56,7 +66,7 @@ export const buildYupFormForJsonSchema = (
           ?.push([
             selectionConstValue,
             typeof prop === "boolean"
-              ? yup.mixed()
+              ? yup.bool()
               : buildYupFormForJsonSchema(
                   prop,
                   selectionFormField.properties[propertyIndex],
@@ -73,6 +83,11 @@ export const buildYupFormForJsonSchema = (
     // right sub-schema depending on which selection const value is defined.
     // if a key doesn't have a sub schema for a selection const value, set it to "strip"
     // so it's removed before the form is sent to the server
+    // For example (the map from above):
+    // {
+    //   prop1: number.when(type == "A"), string.when(type == "B"), strip.when(type neither "A" nor "B")
+    //   prop2: string.when(type == "A"), string.when(type == "B"), boolean.when(type == "C"), strip.when(type neither "A" nor "B" nor "C")
+    // }
     return yup.object().shape(
       Object.fromEntries(
         Array.from(flattenedKeys.entries()).map(([key, schemaByCondition]) => {
@@ -150,7 +165,7 @@ export const buildYupFormForJsonSchema = (
           (property) => property.fieldKey === propertyKey
         );
         if (!correspondingFormField) {
-          throw new FormBuildError("mistmatch between form fields and schema");
+          throw new FormBuildError("mismatch between form fields and schema");
         }
         return [
           propertyKey,
@@ -162,7 +177,7 @@ export const buildYupFormForJsonSchema = (
                 propertyKey,
                 propertyPath ? `${propertyPath}.${propertyKey}` : propertyKey
               )
-            : yup.mixed(),
+            : yup.bool(),
         ];
       });
 

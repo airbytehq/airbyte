@@ -7,6 +7,7 @@ import { LocationSensorState } from "react-use/lib/useLocation";
 
 import { isFormBuildError } from "core/form/FormBuildError";
 import { isVersionError } from "core/request/VersionError";
+import { TrackErrorFn, useAppMonitoringService } from "hooks/services/AppMonitoringService";
 import { ErrorOccurredView } from "views/common/ErrorOccurredView";
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
 import { StartOverErrorView } from "views/common/StartOverErrorView";
@@ -31,6 +32,7 @@ interface ApiErrorBoundaryHookProps {
   location: LocationSensorState;
   onRetry?: () => void;
   navigate: NavigateFunction;
+  trackError: TrackErrorFn;
 }
 
 interface ApiErrorBoundaryProps {
@@ -75,6 +77,12 @@ class ApiErrorBoundaryComponent extends React.Component<
       this.props.onError?.(undefined);
     } else {
       this.props.onError?.(this.state.errorId);
+    }
+  }
+
+  componentDidCatch(error: { message: string; status?: number; __type?: string }) {
+    if (isFormBuildError(error)) {
+      this.props.trackError(error);
     }
   }
 
@@ -126,9 +134,16 @@ export const ApiErrorBoundary: React.FC<React.PropsWithChildren<ApiErrorBoundary
   const { reset } = useQueryErrorResetBoundary();
   const location = useLocation();
   const navigate = useNavigate();
+  const { trackError } = useAppMonitoringService();
 
   return (
-    <ApiErrorBoundaryComponent {...props} location={location} navigate={navigate} onRetry={reset}>
+    <ApiErrorBoundaryComponent
+      {...props}
+      location={location}
+      navigate={navigate}
+      onRetry={reset}
+      trackError={trackError}
+    >
       {children}
     </ApiErrorBoundaryComponent>
   );
