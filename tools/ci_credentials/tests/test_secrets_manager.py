@@ -121,6 +121,11 @@ def test_read(matchers, connector_name, gsm_secrets, expected_secrets):
                 "airbyte-integrations/bases/base-normalization/secrets/auth.json",
             ],
         ),
+        (
+            "source-no-secret",
+            [],
+            [],
+        ),
     ),
 )
 def test_write(tmp_path, connector_name, secrets, expected_files):
