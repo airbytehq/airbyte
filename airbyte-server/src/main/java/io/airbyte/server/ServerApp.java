@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.server;
 
 import io.airbyte.analytics.Deployment;
@@ -305,7 +309,8 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler =
-        new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler, airbyteProtocolVersionRange);
+        new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler,
+            airbyteProtocolVersionRange);
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,
