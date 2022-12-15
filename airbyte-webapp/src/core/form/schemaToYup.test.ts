@@ -1,6 +1,6 @@
 import * as yup from "yup";
 
-import { AirbyteJSONSchema } from "core/jsonSchema";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
 
 import { jsonSchemaToFormBlock } from "./schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "./schemaToYup";

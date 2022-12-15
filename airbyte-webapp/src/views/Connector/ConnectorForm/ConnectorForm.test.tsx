@@ -6,7 +6,7 @@ import selectEvent from "react-select-event";
 import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
 import { ConnectorDefinition } from "core/domain/connector";
-import { AirbyteJSONSchema } from "core/jsonSchema";
+import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
 

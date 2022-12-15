@@ -2,7 +2,7 @@ import intersection from "lodash/intersection";
 import pick from "lodash/pick";
 
 import { FormBlock } from "core/form/types";
-import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "core/jsonSchema";
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "core/jsonSchema/types";
 import { isDefined } from "utils/common";
 
 import { FormBuildError } from "./FormBuildError";
