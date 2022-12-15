@@ -3,7 +3,6 @@
 #
 
 from enum import Enum
-from copy import copy
 
 from .report_streams import RecordType, ReportStream
 
@@ -103,7 +102,7 @@ METRICS_MAP = {
         "adGroupName",
         "adGroupId",
         "asin",
-        "sku",  # seller only
+        "sku",  # Available for seller accounts only.
         "adId",
         "impressions",
         "clicks",
@@ -199,7 +198,7 @@ METRICS_MAP = {
         "adGroupId",
         "asin",
         "otherAsin",
-        "sku",  # seller only
+        "sku",  # Available for seller accounts only.
         "currency",
         "attributedUnitsOrdered1dOtherSKU",
         "attributedUnitsOrdered7dOtherSKU",
@@ -231,16 +230,15 @@ class SponsoredDisplayReportStream(ReportStream):
     metrics_map = METRICS_MAP
 
     def _get_init_report_body(self, report_date: str, record_type: str, profile):
+        metrics_list = self.metrics_map[record_type]
         if record_type == RecordType.ASINS and profile.accountInfo.type == "vendor":
             return None
         elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
             # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
-            metrics_list = self.metrics_map[record_type]
-            metrics_list = copy(metrics_list)
-            metrics_list.remove("sku")
+            metrics_list = [m for m in metrics_list if m != "sku"]
         return {
             "reportDate": report_date,
             # Only for most common T00020 tactic for now
             "tactic": Tactics.T00020,
-            "metrics": ",".join(self.metrics_map[record_type]),
+            "metrics": ",".join(metrics_list),
         }

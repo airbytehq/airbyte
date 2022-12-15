@@ -3,8 +3,6 @@
 #
 
 
-from copy import copy
-
 from .report_streams import RecordType, ReportStream
 
 METRICS_MAP = {
@@ -162,7 +160,7 @@ METRICS_MAP = {
         "campaignBudget",
         "campaignBudgetType",
         "campaignStatus",
-        "sku",  # seller only
+        "sku",  # Available for seller accounts only.
     ],
     "asins_keywords": [
         "campaignName",
@@ -278,12 +276,10 @@ class SponsoredProductsReportStream(ReportStream):
         if RecordType.ASINS in record_type:
             body["campaignType"] = "sponsoredProducts"
             if profile.accountInfo.type == "vendor":
-                metrics_list = copy(metrics_list)
-                metrics_list.remove("sku")
+                metrics_list = [m for m in metrics_list if m != "sku"]
         elif record_type == RecordType.PRODUCTADS and profile.accountInfo.type != "seller":
             # Remove SKU from metrics since it is only available for seller accounts in Product Ad report
-            metrics_list = copy(metrics_list)
-            metrics_list.remove("sku")
+            metrics_list = [m for m in metrics_list if m != "sku"]
 
         # adId is automatically added to the report by amazon and requesting adId causes an amazon error
         if "adId" in metrics_list:

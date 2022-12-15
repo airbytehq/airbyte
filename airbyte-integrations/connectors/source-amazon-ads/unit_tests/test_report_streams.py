@@ -27,7 +27,7 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
-from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests
+from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests, RecordType
 
 from .utils import read_incremental
 
@@ -136,6 +136,20 @@ def test_display_report_stream(config):
     assert len(metrics) == METRICS_COUNT * (len(stream.metrics_map) - 1)
 
 
+def test_display_report_stream_report_body(config):
+    # Seller profile should have sku in the request metrics
+    profiles = make_profiles()
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+    report_body = stream._get_init_report_body(report_date="20210725", record_type=RecordType.PRODUCTADS, profile=profiles[0])
+    assert "sku" in report_body["metrics"]
+
+    # Vendor profile should not have sku in the request metrics
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredDisplayReportStream(config, profiles, authenticator=mock.MagicMock())
+    report_body = stream._get_init_report_body(report_date="20210725", record_type=RecordType.PRODUCTADS, profile=profiles[0])
+    assert "sku" not in report_body["metrics"]
+
+
 @responses.activate
 def test_products_report_stream(config):
     setup_responses(
@@ -150,6 +164,21 @@ def test_products_report_stream(config):
     stream_slice = {"profile": profiles[0], "reportDate": "20210725", "retry_count": 3}
     metrics = [m for m in stream.read_records(SyncMode.incremental, stream_slice=stream_slice)]
     assert len(metrics) == METRICS_COUNT * len(stream.metrics_map)
+
+
+def test_products_report_stream_report_body(config):
+    # Seller profile should have sku in the request metrics
+    profiles = make_profiles()
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    report_body = stream._get_init_report_body(report_date="20210725", record_type=RecordType.PRODUCTADS, profile=profiles[0])
+    assert "sku" in report_body["metrics"]
+
+    # Vendor profile should not have sku in the request metrics
+    profiles = make_profiles(profile_type="vendor")
+    stream = SponsoredProductsReportStream(config, profiles, authenticator=mock.MagicMock())
+    report_body = stream._get_init_report_body(report_date="20210725", record_type=RecordType.PRODUCTADS, profile=profiles[0])
+    assert "sku" not in report_body["metrics"]
+
 
 
 @responses.activate
