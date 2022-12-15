@@ -527,15 +527,15 @@ where 1 = 1
         elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             sql_type = jinja_call("type_json()")
         # Treat simple types from narrower to wider scope type: boolean < integer < number < string
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition, definition)
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition)
         ):
             cast_operation = jinja_call(f"cast_to_boolean({jinja_column})")
             return f"{cast_operation} as {column_name}"
         elif is_big_integer(definition):
             sql_type = jinja_call("type_very_large_integer()")
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition[data_type.REF_TYPE_VAR_NAME], definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_long(definition, definition)
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_long(definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_long(definition)
         ):
             sql_type = jinja_call("dbt_utils.type_bigint()")
         elif (data_type.REF_TYPE_VAR_NAME in definition and is_number(definition)) or (
@@ -790,7 +790,7 @@ where 1 = 1
             and data_type.ONE_OF_VAR_NAME not in definition
         ):
             col = column_name
-        elif data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition[data_type.REF_TYPE_VAR_NAME], definition):
+        elif data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition):
             col = f"boolean_to_string({column_name})"
         elif data_type.TYPE_VAR_NAME in definition and is_array(definition[data_type.TYPE_VAR_NAME]):
             col = f"array_to_string({column_name})"
