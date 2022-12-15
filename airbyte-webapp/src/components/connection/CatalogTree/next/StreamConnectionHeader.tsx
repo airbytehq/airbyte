@@ -43,7 +43,6 @@ export const StreamConnectionHeader: React.FC = () => {
           </Heading>
         </div>
       </div>
-      <div />
     </div>
   );
 };
