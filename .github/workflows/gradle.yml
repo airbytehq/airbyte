@@ -1111,21 +1111,12 @@ jobs:
           attempt_limit: 3
           attempt_delay: 5000 # in ms
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        id: logs-creds
-        with:
-          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/${{ secrets.AWS_ASSUME_ROLE_NAME }}
-          aws-region: us-east-2
-
-
-
       - name: Run Helm End-to-End Acceptance Tests
         env:
           # USER: root
           # HOME: /home/runner
           # AWS_S3_INTEGRATION_TEST_CREDS can be found in LastPass as AWS_S3_INTEGRATION_TEST_CREDS
-          # AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
+          AWS_S3_INTEGRATION_TEST_CREDS: ${{ secrets.AWS_S3_INTEGRATION_TEST_CREDS }}
           WORKFLOW_RUN_ID: ${{ github.run_id }}
           AWS_S3_BUCKET: airbyte-acceptance-test-source-s3
           SECRET_STORE_GCP_CREDENTIALS: ${{ secrets.SECRET_STORE_GCP_CREDENTIALS }}
