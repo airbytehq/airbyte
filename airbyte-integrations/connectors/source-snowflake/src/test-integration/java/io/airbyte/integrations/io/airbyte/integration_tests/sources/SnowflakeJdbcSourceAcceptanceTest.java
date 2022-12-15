@@ -228,6 +228,7 @@ class SnowflakeJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return expectedMessages;
   }
 
+  /* Test that schema config key is making discover pull tables of this schema only */
   @Test
   void testDiscoverSchemaConfig() throws Exception {
     // add table and data to a separate schema.
