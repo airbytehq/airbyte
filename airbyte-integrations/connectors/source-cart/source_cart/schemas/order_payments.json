@@ -20,10 +20,10 @@
       "type": ["string", "null"]
     },
     "is_approved": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "is_declined": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "card_type": {
       "type": ["string", "null"]
@@ -65,16 +65,16 @@
       "type": ["string", "null"]
     },
     "updated_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "created_at": {
-      "type": "string"
+      "type": ["string", "null"]
     },
     "gift_certificate_id": {
       "type": ["integer", "null"]
     },
     "is_captured": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "transaction_id": {
       "type": ["string", "null"]
@@ -83,7 +83,7 @@
       "type": ["string", "null"]
     },
     "is_void": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "gateway_response_code": {
       "type": ["string", "null"]
@@ -92,7 +92,7 @@
       "type": ["string", "null"]
     },
     "sent_to_spark_pay": {
-      "type": "boolean"
+      "type": ["boolean", "null"]
     },
     "token": {
       "type": ["string", "null"]

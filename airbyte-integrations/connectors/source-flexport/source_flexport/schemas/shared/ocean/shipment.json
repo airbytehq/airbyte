@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "_object": {
+      "type": "string",
+      "description": "String representing the object's type. Always /ocean/shipment for this object.",
+      "pattern": "^/ocean/shipment$"
+    },
+    "is_lcl": {
+      "type": "boolean",
+      "description": "Flag that indicates whether the object is a LCL shipment."
+    },
+    "house_bill_number": {
+      "type": "string",
+      "description": "House bill of lading number."
+    },
+    "master_bill_number": {
+      "type": ["null", "string"],
+      "description": "Master bill of lading number."
+    },
+    "carrier_booking_number": {
+      "type": ["null", "string"],
+      "description": "Ocean carrier booking reference number."
+    },
+    "confirmed_space_released_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "containers": {
+      "description": "Expandable API link to the containers of the shipment, represented by the Container object.",
+      "$ref": "../api/refs/collection.json"
+    }
+  }
+}

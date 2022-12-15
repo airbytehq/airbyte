@@ -1,0 +1,51 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "created_at": {
+      "type": ["null", "integer"]
+    },
+    "customer_key": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "field_data": {
+      "type": ["null", "object"]
+    },
+    "fields": {
+      "type": ["null", "array"]
+    },
+    "key": {
+      "type": ["null", "string"]
+    },
+    "meta": {
+      "type": ["null", "object"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "partner_key": {
+      "type": ["null", "string"]
+    },
+    "partnership_key": {
+      "type": ["null", "string"]
+    },
+    "provider_key": {
+      "type": ["null", "string"]
+    },
+    "source_key": {
+      "type": ["null", "string"]
+    },
+    "source_type": {
+      "type": ["null", "string"]
+    },
+    "test": {
+      "type": ["null", "boolean"]
+    },
+    "updated_at": {
+      "type": ["null", "integer"]
+    }
+  }
+}

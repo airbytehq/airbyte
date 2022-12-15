@@ -1,31 +1,72 @@
-{
-  "subscription": {
-    "updated_at": 2147483647
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "subscription" }
+    }
   },
-  "customer": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "coupon" }
+    }
   },
-  "invoice": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "customer" }
+    }
   },
-  "order": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "invoice" }
+    }
   },
-  "addon": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "order" }
+    }
   },
-  "plan": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "addon" }
+    }
   },
-  "item": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "plan" }
+    }
   },
-  "item_price": {
-    "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item" }
+    }
   },
-  "attached_item": {
-    "cbdemo_standard": {
-      "updated_at": 2147483647
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "updated_at": 2147483647 },
+      "stream_descriptor": { "name": "item_price" }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "cbdemo_standard": { "updated_at": 2147483647 } },
+      "stream_descriptor": { "name": "attached_item" }
     }
   }
-}
+]

@@ -1,17 +1,36 @@
 {
-  "type": ["null", "array"],
-  "items": {
-    "type": ["null", "object"],
-    "properties": {
-      "id": {
-        "type": ["null", "integer"]
-      },
-      "key": {
-        "type": ["null", "string"]
-      },
-      "value": {
-        "type": ["null", "string"]
+  "type": ["null", "array", "object"],
+  "oneOf": [
+    {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "integer"]
+        },
+        "key": {
+          "type": ["null", "string"]
+        },
+        "value": {
+          "type": ["null", "object", "string"]
+        }
+      }
+    },
+    {
+      "type": "array",
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "key": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "object", "string"]
+          }
+        }
       }
     }
-  }
+  ]
 }

@@ -1,0 +1,1764 @@
+[
+  {
+    "kind": "story_move_activity",
+    "guid": "99_65",
+    "project_version": 65,
+    "message": "Darth Vader moved 2 stories",
+    "highlight": "moved",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 562,
+        "original_values": {
+          "before_id": 551
+        },
+        "new_values": {
+          "before_id": 557
+        },
+        "name": "Garbage smashers on the detention level have malfunctioned",
+        "story_type": "bug",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 564,
+        "original_values": {
+          "after_id": 557
+        },
+        "new_values": {
+          "after_id": 565
+        },
+        "name": "Evacuate, in our moment of triumph",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 564,
+        "name": "Evacuate, in our moment of triumph",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/564",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "story",
+        "id": 562,
+        "name": "Garbage smashers on the detention level have malfunctioned",
+        "story_type": "bug",
+        "url": "http://localhost/story/show/562",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_move_activity",
+    "guid": "99_64",
+    "project_version": 64,
+    "message": "Darth Vader moved 2 stories",
+    "highlight": "moved",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 562,
+        "original_values": {
+          "before_id": 557
+        },
+        "new_values": {
+          "before_id": 551
+        },
+        "name": "Garbage smashers on the detention level have malfunctioned",
+        "story_type": "bug",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 564,
+        "original_values": {
+          "after_id": 565
+        },
+        "new_values": {
+          "after_id": 557
+        },
+        "name": "Evacuate, in our moment of triumph",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 564,
+        "name": "Evacuate, in our moment of triumph",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/564",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "story",
+        "id": 562,
+        "name": "Garbage smashers on the detention level have malfunctioned",
+        "story_type": "bug",
+        "url": "http://localhost/story/show/562",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "comment_create_activity",
+    "guid": "99_62",
+    "project_version": 62,
+    "message": "Darth Vader added comment: \"I want them alive!\"",
+    "highlight": "added comment:",
+    "changes": [
+      {
+        "kind": "comment",
+        "change_type": "create",
+        "id": 112,
+        "new_values": {
+          "id": 112,
+          "story_id": 555,
+          "text": "I want them alive!",
+          "person_id": 101,
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "file_attachment_ids": [],
+          "google_attachment_ids": [],
+          "attachment_ids": [],
+          "file_attachments": [],
+          "google_attachments": []
+        }
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 555,
+        "original_values": {
+          "follower_ids": []
+        },
+        "new_values": {
+          "follower_ids": [101]
+        },
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 555,
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/555",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_update_activity",
+    "guid": "99_56",
+    "project_version": 56,
+    "message": "Darth Vader unstarted this feature",
+    "highlight": "unstarted",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 555,
+        "original_values": {
+          "current_state": "unscheduled",
+          "before_id": 551,
+          "after_id": 557
+        },
+        "new_values": {
+          "current_state": "unstarted",
+          "before_id": 567,
+          "after_id": 552
+        },
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 555,
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/555",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_update_activity",
+    "guid": "99_54",
+    "project_version": 54,
+    "message": "Darth Vader rejected this feature",
+    "highlight": "rejected",
+    "changes": [
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2009,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 2,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 3,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 1,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 1,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 2,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 3,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 1,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 1,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "plans"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 559,
+        "original_values": {
+          "current_state": "delivered"
+        },
+        "new_values": {
+          "current_state": "rejected"
+        },
+        "name": "All exhaust ports should be shielded",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 559,
+        "name": "All exhaust ports should be shielded",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/559",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_update_activity",
+    "guid": "99_48",
+    "project_version": 48,
+    "message": "Darth Vader started this feature",
+    "highlight": "started",
+    "changes": [
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2008,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 4,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 2,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 4,
+              "started": 2,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 2,
+              "started": 1,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "rebel bases"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2009,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 5,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 2,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 3,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 1,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "plans"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 556,
+        "original_values": {
+          "current_state": "unscheduled",
+          "before_id": 555,
+          "after_id": 557
+        },
+        "new_values": {
+          "current_state": "started",
+          "before_id": 567,
+          "after_id": 560
+        },
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 556,
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/556",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_update_activity",
+    "guid": "99_47",
+    "project_version": 47,
+    "message": "Darth Vader accepted this feature",
+    "highlight": "accepted",
+    "changes": [
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2008,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 1,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 1,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 4,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 2,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "rebel bases"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 560,
+        "original_values": {
+          "current_state": "delivered",
+          "accepted_at": null
+        },
+        "new_values": {
+          "current_state": "accepted",
+          "accepted_at": "2022-03-08T12:00:05Z"
+        },
+        "name": "Destroy Alderaan",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 560,
+        "name": "Destroy Alderaan",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/560",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_update_activity",
+    "guid": "99_43",
+    "project_version": 43,
+    "message": "Darth Vader edited this feature",
+    "highlight": "edited",
+    "changes": [
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2008,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 3,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "rebel bases"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2009,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 3,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 5,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "plans"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2015,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 3,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "diplomatic relations"
+      },
+      {
+        "kind": "story",
+        "change_type": "update",
+        "id": 556,
+        "original_values": {
+          "label_ids": [2015],
+          "labels": ["diplomatic relations"]
+        },
+        "new_values": {
+          "label_ids": [2009, 2008],
+          "labels": ["plans", "rebel bases"]
+        },
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 556,
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/556",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "98_2",
+    "project_version": 2,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 568,
+        "new_values": {
+          "id": 568,
+          "project_id": 98,
+          "name": "Midi-chlorians",
+          "description": "Without the midi-chlorians, life could not exist, and we would have no knowledge of the Force. They continually speak to us, telling us the will of the Force. When you learn to quiet your mind, you'll hear them speaking to you",
+          "story_type": "feature",
+          "current_state": "unstarted",
+          "estimate": 3,
+          "requested_by_id": 101,
+          "owned_by_id": 101,
+          "owner_ids": [101],
+          "label_ids": [],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": []
+        },
+        "name": "Midi-chlorians",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 568,
+        "name": "Midi-chlorians",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/568",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 98,
+      "name": "Learn About the Force"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_11",
+    "project_version": 11,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 558,
+        "new_values": {
+          "id": 558,
+          "project_id": 99,
+          "name": "Contact Lando",
+          "story_type": "feature",
+          "current_state": "accepted",
+          "estimate": 1,
+          "accepted_at": "2022-03-08T12:00:05Z",
+          "requested_by_id": 101,
+          "owner_ids": [],
+          "label_ids": [],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 557,
+          "after_id": 553,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": []
+        },
+        "name": "Contact Lando",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 558,
+        "name": "Contact Lando",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/558",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_10",
+    "project_version": 10,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 557,
+        "new_values": {
+          "id": 557,
+          "project_id": 99,
+          "name": "Prepare carbonite freezing chamber",
+          "description": "Test first on Solo, we don't want the Emperor's prize damaged.",
+          "story_type": "feature",
+          "current_state": "unscheduled",
+          "requested_by_id": 101,
+          "owner_ids": [],
+          "label_ids": [2014],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 556,
+          "after_id": 553,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": ["r&d"]
+        },
+        "name": "Prepare carbonite freezing chamber",
+        "story_type": "feature",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2014,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "r&d"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 557,
+        "name": "Prepare carbonite freezing chamber",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/557",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_9",
+    "project_version": 9,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 556,
+        "new_values": {
+          "id": 556,
+          "project_id": 99,
+          "name": "Interrogate Leia Organa",
+          "description": "She is proving to be resistant to our mind probes",
+          "story_type": "feature",
+          "current_state": "unscheduled",
+          "requested_by_id": 101,
+          "owned_by_id": 101,
+          "owner_ids": [101, 105],
+          "label_ids": [2015],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 555,
+          "after_id": 553,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": ["diplomatic relations"]
+        },
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2015,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 1,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 2,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "diplomatic relations"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 556,
+        "name": "Interrogate Leia Organa",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/556",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_8",
+    "project_version": 8,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 555,
+        "new_values": {
+          "id": 555,
+          "project_id": 99,
+          "name": "Bring me the passengers",
+          "description": "ignore the droids",
+          "story_type": "feature",
+          "current_state": "unscheduled",
+          "requested_by_id": 101,
+          "owner_ids": [],
+          "label_ids": [],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 554,
+          "after_id": 553,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": []
+        },
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 555,
+        "name": "Bring me the passengers",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/555",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_7",
+    "project_version": 7,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 554,
+        "new_values": {
+          "id": 554,
+          "project_id": 99,
+          "name": "Identify Bothan spies",
+          "description": "Infiltrate their spy network.",
+          "story_type": "feature",
+          "current_state": "unscheduled",
+          "requested_by_id": 101,
+          "owned_by_id": 106,
+          "owner_ids": [106],
+          "label_ids": [],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 552,
+          "after_id": 553,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": []
+        },
+        "name": "Identify Bothan spies",
+        "story_type": "feature",
+        "story_priority": "p3"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 554,
+        "name": "Identify Bothan spies",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/554",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  },
+  {
+    "kind": "story_create_activity",
+    "guid": "99_6",
+    "project_version": 6,
+    "message": "Darth Vader added this feature",
+    "highlight": "added",
+    "changes": [
+      {
+        "kind": "story",
+        "change_type": "create",
+        "id": 553,
+        "new_values": {
+          "id": 553,
+          "project_id": 99,
+          "name": "Build protocol droid",
+          "description": "I want a friend",
+          "story_type": "feature",
+          "current_state": "accepted",
+          "estimate": 3,
+          "accepted_at": "2022-03-08T12:00:05Z",
+          "requested_by_id": 101,
+          "owned_by_id": 101,
+          "owner_ids": [101],
+          "label_ids": [2014, 2008],
+          "follower_ids": [],
+          "created_at": "2022-03-08T12:00:05Z",
+          "updated_at": "2022-03-08T12:00:05Z",
+          "before_id": 552,
+          "blocked_story_ids": [],
+          "story_priority": "p3",
+          "labels": ["r&d", "rebel bases"]
+        },
+        "name": "Build protocol droid",
+        "story_type": "feature",
+        "story_priority": "p3"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2008,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "rebel bases"
+      },
+      {
+        "kind": "label",
+        "change_type": "update",
+        "id": 2014,
+        "original_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "new_values": {
+          "counts": {
+            "number_of_zero_point_stories_by_state": {
+              "accepted": 0,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "sum_of_story_estimates_by_state": {
+              "accepted": 3,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "number_of_stories_by_state": {
+              "accepted": 1,
+              "started": 0,
+              "finished": 0,
+              "unstarted": 0,
+              "planned": 0,
+              "delivered": 0,
+              "unscheduled": 0,
+              "rejected": 0,
+              "kind": "counts_by_story_state"
+            },
+            "kind": "story_counts"
+          }
+        },
+        "name": "r&d"
+      }
+    ],
+    "primary_resources": [
+      {
+        "kind": "story",
+        "id": 553,
+        "name": "Build protocol droid",
+        "story_type": "feature",
+        "url": "http://localhost/story/show/553",
+        "story_priority": "p3"
+      }
+    ],
+    "secondary_resources": [],
+    "project": {
+      "kind": "project",
+      "id": 99,
+      "name": "Death Star"
+    },
+    "performed_by": {
+      "kind": "person",
+      "id": 101,
+      "name": "Darth Vader",
+      "initials": "DV"
+    },
+    "occurred_at": "2022-03-08T12:00:05Z"
+  }
+]

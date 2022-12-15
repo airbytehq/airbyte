@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/appstore",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/appstore",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Source Appstore Singer Spec",
@@ -9,25 +9,30 @@
     "properties": {
       "key_id": {
         "type": "string",
-        "description": "<a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">Key_id</a> is the API key you use to connect to appstore's API."
+        "title": "Key ID",
+        "description": "Appstore Key ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this key."
       },
       "private_key": {
         "type": "string",
-        "description": "Private_key is the contents of the <a href=\"https://developer.apple.com/documentation/appstoreconnectapi/creating_api_keys_for_app_store_connect_api\">key file</a> you use to connect to appstore's API.",
+        "title": "Private Key",
+        "description": "Appstore Private Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this key.",
         "airbyte_secret": true,
         "multiline": true
       },
       "issuer_id": {
         "type": "string",
-        "description": "<a href=\"https://developer.apple.com/documentation/appstoreconnectapi/generating_tokens_for_api_requests\">Issuer_id</a> is used to generate the credentials to connect to appstore's API."
+        "title": "Issuer ID",
+        "description": "Appstore Issuer ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "vendor": {
         "type": "string",
-        "description": "This is the Apple ID of your account."
+        "title": "Vendor ID",
+        "description": "Appstore Vendor ID. See the <a href=\"https://docs.airbyte.com/integrations/sources/appstore\">docs</a> for more information on how to obtain this ID."
       },
       "start_date": {
         "type": "string",
-        "description": "Date from which to start pulling data.",
+        "title": "Start Date",
+        "description": "UTC date and time in the format 2017-01-25T00:00:00Z. Any data before this date will not be replicated.",
         "examples": ["2020-11-16T00:00:00Z"],
         "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
       }

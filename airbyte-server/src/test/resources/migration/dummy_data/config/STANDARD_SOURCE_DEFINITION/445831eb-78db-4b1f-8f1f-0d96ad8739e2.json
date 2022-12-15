@@ -3,5 +3,9 @@
   "name": "Drift",
   "dockerRepository": "airbyte/source-drift",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-drift"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-drift",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/drift",
+    "connectionSpecification": {}
+  }
 }

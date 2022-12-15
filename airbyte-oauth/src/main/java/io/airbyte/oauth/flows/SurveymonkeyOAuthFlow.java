@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -24,8 +24,19 @@ import org.apache.http.client.utils.URIBuilder;
  */
 public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
 
-  private static final String AUTHORIZE_URL = "https://api.surveymonkey.com/oauth/authorize";
-  private static final String ACCESS_TOKEN_URL = "https://api.surveymonkey.com/oauth/token";
+  /**
+   * https://developer.surveymonkey.com/api/v3/#access-url
+   */
+  private static final String API_ACCESS_URL_USA = "https://api.surveymonkey.com/";
+  private static final String API_ACCESS_URL_EU = "https://api.eu.surveymonkey.com/";
+  private static final String API_ACCESS_URL_CA = "https://api.surveymonkey.ca/";
+
+  private static final String EUROPE = "Europe";
+  private static final String CANADA = "Canada";
+  private static final String USA = "USA";
+
+  private static final String AUTHORIZE_URL = "oauth/authorize";
+  private static final String ACCESS_TOKEN_URL = "oauth/token";
 
   public SurveymonkeyOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -36,10 +47,29 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient, stateSupplier);
   }
 
+  protected String getBaseURLByOrigin(final JsonNode inputOAuthConfiguration) throws Error {
+    final String origin = getConfigValueUnsafe(inputOAuthConfiguration, "origin");
+    if (EUROPE.equals(origin)) {
+      return API_ACCESS_URL_EU;
+    } else if (CANADA.equals(origin)) {
+      return API_ACCESS_URL_CA;
+    } else if (USA.equals(origin)) {
+      return API_ACCESS_URL_USA;
+    } else {
+      throw new Error("Unknown Origin: " + origin);
+    }
+  }
+
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
-      return new URIBuilder(AUTHORIZE_URL)
+      final String baseUrl = getBaseURLByOrigin(inputOAuthConfiguration);
+      return new URIBuilder(baseUrl)
+          .setPath(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
@@ -51,8 +81,9 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    final String baseURL = getBaseURLByOrigin(inputOAuthConfiguration);
+    return baseURL + ACCESS_TOKEN_URL;
   }
 
   @Override
@@ -73,7 +104,7 @@ public class SurveymonkeyOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
   }
 

@@ -1,78 +1,77 @@
 import React, { Suspense } from "react";
 import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import { Redirect, Route, Switch } from "react-router";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
+
+import { HeadTitle } from "components/common/HeadTitle";
+import { MainPageWithScroll } from "components/common/MainPageWithScroll";
+import LoadingPage from "components/LoadingPage";
+import { PageHeader } from "components/ui/PageHeader";
+import { SideMenu, CategoryItem, SideMenuItem } from "components/ui/SideMenu";
 
 import useConnector from "hooks/services/useConnector";
-import MainPageWithScroll from "components/MainPageWithScroll";
-import PageTitle from "components/PageTitle";
-import LoadingPage from "components/LoadingPage";
-import HeadTitle from "components/HeadTitle";
-import SideMenu from "components/SideMenu";
-import { Routes } from "pages/routes";
-import useRouter from "hooks/useRouter";
-import NotificationPage from "./pages/NotificationPage";
-import ConfigurationsPage from "./pages/ConfigurationsPage";
-import MetricsPage from "./pages/MetricsPage";
+
 import AccountPage from "./pages/AccountPage";
+import ConfigurationsPage from "./pages/ConfigurationsPage";
 import { DestinationsPage, SourcesPage } from "./pages/ConnectorsPage";
-import { CategoryItem } from "components/SideMenu/SideMenu";
+import MetricsPage from "./pages/MetricsPage";
+import NotificationPage from "./pages/NotificationPage";
+import styles from "./SettingsPage.module.scss";
 
-const Content = styled.div`
-  margin: 0 33px 0 27px;
-  display: flex;
-  flex-direction: row;
-  padding-bottom: 15px;
-`;
-const MainView = styled.div`
-  width: 100%;
-  margin-left: 47px;
-`;
-
-export type PageConfig = {
+export interface PageConfig {
   menuConfig: CategoryItem[];
-};
+}
 
-type SettingsPageProps = {
+interface SettingsPageProps {
   pageConfig?: PageConfig;
-};
+}
+
+export const SettingsRoute = {
+  Account: "account",
+  Destination: "destination",
+  Source: "source",
+  Configuration: "configuration",
+  Notifications: "notifications",
+  Metrics: "metrics",
+  DataResidency: "data-residency",
+} as const;
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
-  const { push, pathname } = useRouter();
+  const push = useNavigate();
+  const { pathname } = useLocation();
   const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
         {
-          path: `${Routes.Settings}${Routes.Account}`,
+          path: `${SettingsRoute.Account}`,
           name: <FormattedMessage id="settings.account" />,
           component: AccountPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Source}`,
+          path: `${SettingsRoute.Source}`,
           name: <FormattedMessage id="tables.sources" />,
           indicatorCount: countNewSourceVersion,
           component: SourcesPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Destination}`,
+          path: `${SettingsRoute.Destination}`,
           name: <FormattedMessage id="tables.destinations" />,
           indicatorCount: countNewDestinationVersion,
           component: DestinationsPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Configuration}`,
+          path: `${SettingsRoute.Configuration}`,
           name: <FormattedMessage id="admin.configuration" />,
           component: ConfigurationsPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Notifications}`,
+          path: `${SettingsRoute.Notifications}`,
           name: <FormattedMessage id="settings.notifications" />,
           component: NotificationPage,
         },
         {
-          path: `${Routes.Settings}${Routes.Metrics}`,
+          path: `${SettingsRoute.Metrics}`,
           name: <FormattedMessage id="settings.metrics" />,
           component: MetricsPage,
         },
@@ -81,46 +80,34 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   ];
 
   const onSelectMenuItem = (newPath: string) => push(newPath);
-  const firstRoute = menuItems?.[0].routes?.[0]?.path;
+  const firstRoute = menuItems[0].routes?.[0]?.path;
 
   return (
     <MainPageWithScroll
       headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
-      pageTitle={
-        <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
-      }
+      pageTitle={<PageHeader title={<FormattedMessage id="sidebar.settings" />} />}
     >
-      <Content>
-        <SideMenu
-          data={menuItems}
-          onSelect={onSelectMenuItem}
-          activeItem={pathname}
-        />
+      <div className={styles.content}>
+        <SideMenu data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
 
-        <MainView>
+        <div className={styles.mainView}>
           <Suspense fallback={<LoadingPage />}>
-            <Switch>
-              {menuItems.flatMap((menuItem) =>
-                menuItem.routes.map((route) => (
-                  <Route
-                    key={`${route.path}`}
-                    path={`${route.path}`}
-                    component={route.component}
-                  />
-                ))
-              )}
+            <Routes>
+              {menuItems
+                .flatMap((menuItem) => menuItem.routes)
+                .filter(
+                  (menuItem): menuItem is SideMenuItem & { component: NonNullable<SideMenuItem["component"]> } =>
+                    !!menuItem.component
+                )
+                .map(({ path, component: Component }) => (
+                  <Route key={path} path={path} element={<Component />} />
+                ))}
 
-              <Redirect
-                to={
-                  firstRoute
-                    ? `${menuItems?.[0].routes?.[0]?.path}`
-                    : Routes.Root
-                }
-              />
-            </Switch>
+              <Route path="*" element={<Navigate to={firstRoute} replace />} />
+            </Routes>
           </Suspense>
-        </MainView>
-      </Content>
+        </div>
+      </div>
     </MainPageWithScroll>
   );
 };

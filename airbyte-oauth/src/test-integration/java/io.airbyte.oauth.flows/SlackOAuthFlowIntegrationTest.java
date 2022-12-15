@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -37,7 +37,7 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
     return new SlackOAuthFlow(configRepository, httpClient);
   }
 
@@ -46,7 +46,7 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
+    final String fullConfigAsString = Files.readString(getCredentialsPath());
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get("credentials");
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -56,7 +56,8 @@ public class SlackOAuthFlowIntegrationTest extends OAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
+    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl(),
+        Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...

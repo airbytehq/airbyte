@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.jdbc.copy.gcs;
@@ -17,6 +17,7 @@ import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsConfig> {
 
@@ -36,7 +37,7 @@ public abstract class GcsStreamCopierFactory implements StreamCopierFactory<GcsC
       final DestinationSyncMode syncMode = configuredStream.getDestinationSyncMode();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
 
-      final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes());
+      final InputStream credentialsInputStream = new ByteArrayInputStream(gcsConfig.getCredentialsJson().getBytes(StandardCharsets.UTF_8));
       final GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsInputStream);
       final Storage storageClient = StorageOptions.newBuilder()
           .setCredentials(credentials)

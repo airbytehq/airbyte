@@ -1,7 +1,6 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
-
 
 from abc import ABC, abstractmethod
 from traceback import format_exc
@@ -41,7 +40,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
     @abstractmethod
     def documentation_url(self) -> str:
         """
-        :return: link to docs page for this source e.g. "https://docs.airbyte.io/integrations/sources/s3"
+        :return: link to docs page for this source e.g. "https://docs.airbyte.com/integrations/sources/s3"
         """
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
@@ -58,24 +57,22 @@ class SourceFilesAbstract(AbstractSource, ABC):
         Otherwise, the input config cannot be used to connect to the underlying data source, and the "error" object should describe what went wrong.
         The error object will be cast to string to display the problem to the user.
         """
-
-        found_a_file = False
         try:
-            for filepath in self.stream_class(**config).filepath_iterator():
-                found_a_file = True
+            stream = self.stream_class(**config)
+            stream.fileformatparser_class(stream._format)._validate_config(config)
+            for file_info in stream.filepath_iterator():
                 # TODO: will need to split config.get("path_pattern") up by stream once supporting multiple streams
                 # test that matching on the pattern doesn't error
-                globmatch(filepath, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
-                break  # just need first file here to test connection and valid patterns
+                globmatch(file_info.key, config.get("path_pattern"), flags=GLOBSTAR | SPLIT)
+                # just need first file here to test connection and valid patterns
+                return True, None
 
         except Exception as e:
             logger.error(format_exc())
-            return (False, e)
+            return False, e
 
-        else:
-            if not found_a_file:
-                logger.warn("Found 0 files (but connection is valid).")
-            return (True, None)
+        logger.warn("Found 0 files (but connection is valid).")
+        return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         """
@@ -86,7 +83,7 @@ class SourceFilesAbstract(AbstractSource, ABC):
         """
         return [self.stream_class(**config)]
 
-    def spec(self, *args, **kwargs) -> ConnectorSpecification:
+    def spec(self, *args: Any, **kwargs: Any) -> ConnectorSpecification:
         """
         Returns the spec for this integration. The spec is a JSON-Schema object describing the required configurations (e.g: username and password)
         required to run this integration.
@@ -103,5 +100,5 @@ class SourceFilesAbstract(AbstractSource, ABC):
             changelogUrl=self.documentation_url,
             supportsIncremental=incremental,
             supported_destination_sync_modes=supported_dest_sync_modes,
-            connectionSpecification=self.spec_class.schema(),
+            connectionSpecification=self.spec_class.schema(),  # type: ignore[attr-defined]
         )

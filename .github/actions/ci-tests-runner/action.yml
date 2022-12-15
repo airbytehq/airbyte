@@ -1,0 +1,192 @@
+name: "Setup CI Tests Env"
+description: "Setup CI Tests Env for all module types"
+inputs:
+  module-name:
+    description: "Unique module name. e.g.: connectors/source-s3, connectors/destination-s3"
+    required: true
+  module-folder:
+    description: "Path to module folder"
+    required: true
+  module-lang:
+    description: "Detected module language. Available values: py, java"
+    required: true
+  sonar-gcp-access-key:
+    required: true
+  sonar-token:
+    description: "Access token for using SonarQube API"
+    required: true
+  pull-request-id:
+    description: "Unique PR ID. For example: airbyte/1234"
+    default: "0"
+  token:
+    required: true
+  remove-sonar-project:
+    description: "This flag should be used if needed to remove sonar project after using"
+    default: false
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: 3.9
+
+    - name: Install Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: "zulu"
+        java-version: "17"
+
+    - name: Tests of CI
+      shell: bash
+      run: |
+        # all CI python packages have the prefix "ci_"
+        pip install --quiet tox==3.24.4
+        pip install --quiet -e ./tools/ci_*
+        tox -r -c ./tools/tox_ci.ini
+        echo "::echo::off"
+
+    - name: Auth with gcloud CLI
+      uses: google-github-actions/setup-gcloud@v0
+      with:
+        service_account_key: ${{ inputs.sonar-gcp-access-key }}
+        project_id: dataline-integration-testing
+        export_default_credentials: true
+
+    - name: Create IAP tunnel
+      id: gcloud-tunnel
+      shell: bash
+      run: |
+        while true; do
+          PORT=$(( ((RANDOM<<15)|RANDOM) % 49152 + 10000 ))
+          status="$(nc -z 127.0.0.1 $PORT < /dev/null &>/dev/null; echo $?)"
+          if [ "${status}" != "0" ]; then
+              echo "$PORT is free to use";
+              break;
+          fi
+        done
+        IPS=($(hostname -I))
+        LOCAL_IP_PORT="${IPS[0]}:${PORT}"
+        gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
+        echo pid=$! >> $GITHUB_OUTPUT
+        echo "sonar-host=http://${LOCAL_IP_PORT}/" >> $GITHUB_OUTPUT
+        echo "::echo::on"
+
+    - name: Python Tests
+      id: ci-py-tests
+      if: ${{ inputs.module-lang == 'py' }}
+      uses: ./.github/actions/ci-py-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+
+    - name: Java Tests
+      id: ci-java-tests
+      if: ${{ inputs.module-lang == 'java' }}
+      uses: ./.github/actions/ci-java-tests
+      with:
+        module-name: ${{ inputs.module-name }}
+        module-folder: ${{ inputs.module-folder }}
+
+    - name: Prepare SQ Options
+      shell: bash
+      id: sq-options
+      working-directory: ${{ inputs.module-folder }}
+      run: |
+        REPORT_FOLDER=reports
+        mkdir -p ${REPORT_FOLDER}
+        declare -a REPORT_FILES
+        declare -a OPTIONS
+        if [ ${{ inputs.module-lang }} == 'py' ]; then
+          [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && ci_sonar_qube --mypy_log ${{ steps.ci-py-tests.outputs.mypy-logs }} --output_file ${REPORT_FOLDER}/issues_mypy.json --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+          [ -f ${{ steps.ci-py-tests.outputs.mypy-logs }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_mypy.json)
+
+          [ -f ${{ steps.ci-py-tests.outputs.black-diff }} ] && ci_sonar_qube --black_diff ${{ steps.ci-py-tests.outputs.black-diff }} --output_file ${REPORT_FOLDER}/issues_black.json --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+          [ -f ${{ steps.ci-py-tests.outputs.black-diff }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_black.json)
+
+          [ -f ${{ steps.ci-py-tests.outputs.isort-diff }} ] && ci_sonar_qube --isort_diff ${{ steps.ci-py-tests.outputs.isort-diff }} --output_file ${REPORT_FOLDER}/issues_isort.json --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+          [ -f ${{ steps.ci-py-tests.outputs.isort-diff }} ] && REPORT_FILES+=(${REPORT_FOLDER}/issues_isort.json)
+
+          [ -f ${{ steps.ci-py-tests.outputs.coverage-paths }} ] && OPTIONS+=("-Dsonar.python.coverage.reportPaths=${{ steps.ci-py-tests.outputs.coverage-paths }}")
+          [ -f ${{ steps.ci-py-tests.outputs.flake8-logs }} ] && OPTIONS+=("-Dsonar.python.flake8.reportPaths=${{ steps.ci-py-tests.outputs.flake8-logs }}")
+          # TODO: figure out how to make this check work for Java-based connectors
+          # See more in https://github.com/airbytehq/airbyte/issues/10924
+          cat ${REPORT_FOLDER}/*
+        fi
+
+        if [ ${{ inputs.module-lang }} == 'java' ]; then
+             [ -d "./src/main/java" ] && OPTIONS+=("-Dsonar.sources=./src/main/java")
+             [ -d "./src/test/java" ] && OPTIONS+=("-Dsonar.tests=./src/test/java")
+             [ -d "./build/test-results" ] && OPTIONS+=("-Dsonar.junit.reportsPath=./build/test-results")
+             [ -f "./build/jacoco/test.exec" ] && OPTIONS+=("-Dsonar.jacoco.reportPaths=./build/jacoco/test.exec")
+             [ -d "./build/classes/java/main" ] && OPTIONS+=("-Dsonar.java.binaries=./build/classes/java/main")
+             [ -d "./build/classes/java/test" ] && OPTIONS+=("-Dsonar.test.binaries=./build/classes/java/test")
+
+        fi
+
+        # join the array to string format
+        echo external_reports=$(IFS=, ; echo "${REPORT_FILES[*]}") >> $GITHUB_OUTPUT
+        echo options=$(IFS=' ' ; echo "${OPTIONS[*]}") >> $GITHUB_OUTPUT
+
+    - name: Create SonarQube Project
+      shell: bash
+      id: create-sq-project
+      run: |
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        echo "sq_project_name=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})" >> $GITHUB_OUTPUT
+        ROOT_DIR=$(git rev-parse --show-toplevel)
+        MODULE_DIR=$(python -c "print('${{ inputs.module-folder }}'.replace('${ROOT_DIR}', '.'))")
+        echo "module_dir::${MODULE_DIR}" >> $GITHUB_OUTPUT
+
+    - name: SonarQube Scan
+
+      uses: sonarsource/sonarqube-scan-action@master
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar-token }}
+        SONAR_HOST_URL: ${{ steps.gcloud-tunnel.outputs.sonar-host }}
+      with:
+        projectBaseDir: ${{ steps.create-sq-project.outputs.module_dir }}
+        args: >
+          -Dsonar.projectKey=${{ steps.create-sq-project.outputs.sq_project_name }}
+          -Dsonar.verbose=true
+          -Dsonar.working.directory=/tmp/scannerwork
+          -Dsonar.language=${{ inputs.module-lang }}
+          -Dsonar.sourceEncoding=UTF-8
+          -Dsonar.projectBaseDir=${{ steps.create-sq-project.outputs.module_dir }}
+          -Dsonar.exclusions=reports/**,*.toml,*_tests/**,setup.py,main.py
+          -Dsonar.externalIssuesReportPaths=${{ steps.sq-options.outputs.external_reports }}
+          ${{ steps.sq-options.outputs.options }}
+
+    - name: Generate SonarQube Report
+      shell: bash
+      id: generate-sq-report
+      run: |
+        # delay because SQ needs time for processing of all input data
+        sleep 10
+        REPORT_FILE=/tmp/sq_report_$RANDOM.md
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --report ${REPORT_FILE} --module ${{ inputs.module-name }} --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+        body="$(cat ${REPORT_FILE})"
+        body="${body//'%'/'%25'}"
+        body="${body//$'\n'/'%0A'}"
+        body="${body//$'\r'/'%0D'}"
+        echo "sq-report=$body" >> $GITHUB_OUTPUT
+
+    - name: Add Comment
+      if: ${{ github.event_name == 'pull_request' }}
+      uses: peter-evans/commit-comment@v1
+      with:
+        body: ${{ steps.generate-sq-report.outputs.sq-report }}
+        token: ${{ inputs.token }}
+
+    - name: Remove SonarQube Project
+      if: ${{ inputs.remove-sonar-project == true }}
+      shell: bash
+      id: remove-sq-project
+      run: |
+        ci_sonar_qube --pr ${{ inputs.pull-request-id }} --remove --module ${{ inputs.module-name }} --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
+
+    - name: Remove IAP tunnel
+      if: always()
+      shell: bash
+      run: |
+        kill ${{ steps.gcloud-tunnel.outputs.pid }}

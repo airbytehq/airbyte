@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.elasticsearch;
@@ -19,7 +19,7 @@ public class ElasticsearchWriteConfig {
   private List<List<String>> primaryKey;
   private boolean upsert;
 
-  ElasticsearchWriteConfig() {}
+  public ElasticsearchWriteConfig() {}
 
   ElasticsearchWriteConfig(
                            String namespace,

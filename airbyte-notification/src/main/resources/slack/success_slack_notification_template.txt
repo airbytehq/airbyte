@@ -1,0 +1,6 @@
+Your connection from %s to %s succeeded
+This was for %s
+
+You can access its logs here: %s
+
+Job ID: %s

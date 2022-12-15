@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.databricks;
@@ -29,7 +29,7 @@ public class DatabricksNameTransformer extends ExtendedNameTransformer {
   }
 
   @Override
-  protected String applyDefaultCase(final String input) {
+  public String applyDefaultCase(final String input) {
     return input.toLowerCase();
   }
 

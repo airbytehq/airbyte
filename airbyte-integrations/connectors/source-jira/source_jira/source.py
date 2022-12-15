@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from base64 import b64encode
@@ -52,6 +52,7 @@ from .streams import (
     Projects,
     ProjectTypes,
     ProjectVersions,
+    PullRequests,
     Screens,
     ScreenSchemes,
     ScreenTabFields,
@@ -60,6 +61,7 @@ from .streams import (
     Sprints,
     TimeTracking,
     Users,
+    UsersGroupsDetailed,
     Workflows,
     WorkflowSchemes,
     WorkflowStatusCategories,
@@ -101,23 +103,32 @@ class SourceJira(AbstractSource):
         authenticator = self.get_authenticator(config)
         args = {"authenticator": authenticator, "domain": config["domain"], "projects": config.get("projects", [])}
         incremental_args = {**args, "start_date": config.get("start_date", "")}
+        render_fields = config.get("render_fields", False)
+        issues_stream = Issues(
+            **incremental_args,
+            additional_fields=config.get("additional_fields", []),
+            expand_changelog=config.get("expand_issue_changelog", False),
+            render_fields=render_fields,
+        )
+        issue_fields_stream = IssueFields(**args)
+        experimental_streams = []
+        if config.get("enable_experimental_streams", False):
+            experimental_streams.append(
+                PullRequests(issues_stream=issues_stream, issue_fields_stream=issue_fields_stream, **incremental_args)
+            )
         return [
             ApplicationRoles(**args),
             Avatars(**args),
             Boards(**args),
             BoardIssues(**incremental_args),
             Dashboards(**args),
-            Epics(**incremental_args),
+            Epics(render_fields=render_fields, **incremental_args),
             Filters(**args),
             FilterSharing(**args),
             Groups(**args),
-            Issues(
-                **incremental_args,
-                additional_fields=config.get("additional_fields", []),
-                expand_changelog=config.get("expand_issue_changelog", False)
-            ),
+            issues_stream,
             IssueComments(**incremental_args),
-            IssueFields(**args),
+            issue_fields_stream,
             IssueFieldConfigurations(**args),
             IssueCustomFieldContexts(**args),
             IssueLinkTypes(**args),
@@ -153,8 +164,9 @@ class SourceJira(AbstractSource):
             SprintIssues(**incremental_args),
             TimeTracking(**args),
             Users(**args),
+            UsersGroupsDetailed(**args),
             Workflows(**args),
             WorkflowSchemes(**args),
             WorkflowStatuses(**args),
             WorkflowStatusCategories(**args),
-        ]
+        ] + experimental_streams

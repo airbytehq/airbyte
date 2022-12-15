@@ -1,0 +1,10 @@
+repositories {
+    maven {
+        name = 'cloudrepo'
+        url = 'https://airbyte.mycloudrepo.io/repositories/airbyte-public-jars'
+        credentials {
+            username System.getenv('CLOUDREPO_USER')
+            password System.getenv('CLOUDREPO_PASSWORD')
+        }
+    }
+}

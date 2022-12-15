@@ -1,0 +1,140 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "logId": {
+      "type": ["number"]
+    },
+    "userId": {
+      "type": ["null", "number"]
+    },
+    "date": {
+      "type": ["null", "string"]
+    },
+    "userName": {
+      "type": ["null", "string"]
+    },
+    "clientId": {
+      "type": ["null", "number"]
+    },
+    "clientName": {
+      "type": ["null", "string"]
+    },
+    "projectId": {
+      "type": ["null", "number"]
+    },
+    "projectName": {
+      "type": ["null", "string"]
+    },
+    "projectInvoiceMethod": {
+      "type": ["null", "number"]
+    },
+    "taskId": {
+      "type": ["null", "number"]
+    },
+    "taskName": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "string"]
+    },
+    "rate": {
+      "type": ["null", "number"]
+    },
+    "billable": {
+      "type": ["null", "boolean"]
+    },
+    "inLockedPeriod": {
+      "type": ["null", "boolean"]
+    },
+    "billableAmount": {
+      "type": ["null", "number"]
+    },
+    "amount": {
+      "type": ["null", "number"]
+    },
+    "laborCost": {
+      "type": ["null", "number"]
+    },
+    "laborRate": {
+      "type": ["null", "number"]
+    },
+    "laborDuration": {
+      "type": ["null", "number"]
+    },
+    "logDuration": {
+      "type": ["null", "number"]
+    },
+    "expense": {
+      "type": ["null", "number"]
+    },
+    "cost": {
+      "type": ["null", "number"]
+    },
+    "note": {
+      "type": ["null", "string"]
+    },
+    "status": {
+      "type": ["null", "number"]
+    },
+    "invoiceId": {
+      "type": ["null", "number"]
+    },
+    "invoiced": {
+      "type": ["null", "boolean"]
+    },
+    "billableHours": {
+      "type": ["null", "number"]
+    },
+    "laborHours": {
+      "type": ["null", "number"]
+    },
+    "customField1": {
+      "type": ["null", "number"]
+    },
+    "customField2": {
+      "type": ["null", "number"]
+    },
+    "customField3": {
+      "type": ["null", "number"]
+    },
+    "monthOfYear": {
+      "type": ["null", "string"]
+    },
+    "weekNo": {
+      "type": ["null", "number"]
+    },
+    "weekOfYear": {
+      "type": ["null", "string"]
+    },
+    "times": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["object"],
+        "properties": {
+          "id": {
+            "type": ["null", "number"]
+          },
+          "duration": {
+            "type": ["null", "number"]
+          },
+          "startTime": {
+            "type": ["null", "string"]
+          },
+          "endTime": {
+            "type": ["null", "string"]
+          },
+          "running": {
+            "type": ["null", "boolean"]
+          },
+          "deleted": {
+            "type": ["null", "boolean"]
+          }
+        }
+      }
+    },
+    "roundtype": {
+      "type": ["null", "number"]
+    }
+  }
+}

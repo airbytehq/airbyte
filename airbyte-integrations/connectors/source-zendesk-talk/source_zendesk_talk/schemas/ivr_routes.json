@@ -27,7 +27,7 @@
       "type": ["null", "object"]
     },
     "overflow_options": {
-      "type": ["null", "object"]
+      "type": ["null", "array"]
     }
   }
 }

@@ -1,18 +1,22 @@
-import React from "react";
 import { Field, FieldProps, Form, Formik } from "formik";
-import styled from "styled-components";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import styled from "styled-components";
 
-import { Input, LoadingButton } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
+
+import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
+
 import { FormContent } from "./PageComponents";
 
-type IProps = {
+interface IProps {
   version: string;
   currentVersion: string;
   id: string;
   onChange: ({ version, id }: { version: string; id: string }) => void;
   feedback?: "success" | string;
-};
+}
 
 const VersionInput = styled(Input)`
   max-width: 145px;
@@ -60,14 +64,8 @@ const ErrorMessage = styled(SuccessMessage)`
   line-height: 14px;
 `;
 
-const VersionCell: React.FC<IProps> = ({
-  id,
-  version,
-  onChange,
-  feedback,
-  currentVersion,
-}) => {
-  const formatMessage = useIntl().formatMessage;
+const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, currentVersion }) => {
+  const { formatMessage } = useIntl();
 
   const renderFeedback = (dirty: boolean, feedback?: string) => {
     if (feedback && !dirty) {
@@ -77,13 +75,14 @@ const VersionCell: React.FC<IProps> = ({
             <FormattedMessage id="form.savedChange" />
           </SuccessMessage>
         );
-      } else {
-        return <ErrorMessage>{feedback}</ErrorMessage>;
       }
+      return <ErrorMessage>{feedback}</ErrorMessage>;
     }
 
     return null;
   };
+
+  const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>
@@ -108,13 +107,14 @@ const VersionCell: React.FC<IProps> = ({
                 </InputField>
               )}
             </Field>
-            <LoadingButton
+            <Button
+              size="xs"
               isLoading={isSubmitting}
               type="submit"
-              disabled={(isSubmitting || !dirty) && currentVersion === version}
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
             >
               <FormattedMessage id="form.change" />
-            </LoadingButton>
+            </Button>
           </Form>
         )}
       </Formik>

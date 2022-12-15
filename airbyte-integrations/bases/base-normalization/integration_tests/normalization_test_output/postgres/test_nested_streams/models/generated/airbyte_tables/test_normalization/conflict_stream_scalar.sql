@@ -1,10 +1,11 @@
 {{ config(
-    indexes = [{'columns':['_airbyte_emitted_at'],'type':'hash'}],
+    indexes = [{'columns':['_airbyte_emitted_at'],'type':'btree'}],
     unique_key = '_airbyte_ab_id',
     schema = "test_normalization",
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('conflict_stream_scalar_ab3') }}
 select
     {{ adapter.quote('id') }},
     conflict_stream_scalar,

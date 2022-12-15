@@ -1,65 +1,47 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
-import styled from "styled-components";
-import { useAsyncFn } from "react-use";
 
-import { LoadingButton, Toggle } from "components";
+import { SchemaChange } from "core/request/AirbyteClient";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
-type IProps = {
+import { ChangesStatusIcon } from "./ChangesStatusIcon";
+import styles from "./StatusCell.module.scss";
+import { StatusCellControl } from "./StatusCellControl";
+
+interface StatusCellProps {
+  allowSync?: boolean;
+  hasBreakingChange?: boolean;
   enabled?: boolean;
   isSyncing?: boolean;
   isManual?: boolean;
   id: string;
-  onChangeStatus: (id: string) => void;
   onSync: (id: string) => void;
-};
+  schemaChange?: SchemaChange;
+}
 
-const SmallButton = styled(LoadingButton)`
-  padding: 6px 8px 7px;
-`;
-
-const ProgressMessage = styled.div`
-  padding: 7px 0;
-`;
-
-const StatusCell: React.FC<IProps> = ({
+export const StatusCell: React.FC<StatusCellProps> = ({
   enabled,
   isManual,
   id,
-  onChangeStatus,
   isSyncing,
   onSync,
+  allowSync,
+  schemaChange,
+  hasBreakingChange,
 }) => {
-  const [{ loading }, OnLaunch] = useAsyncFn(
-    async (event: React.SyntheticEvent) => {
-      event.stopPropagation();
-      await onSync(id);
-    },
-    []
-  );
-
-  const OnToggleClick = (event: React.SyntheticEvent) => {
-    event.stopPropagation();
-    onChangeStatus(id);
-  };
-
-  if (!isManual) {
-    return <Toggle checked={enabled} onChange={OnToggleClick} />;
-  }
-
-  if (isSyncing) {
-    return (
-      <ProgressMessage>
-        <FormattedMessage id="tables.progress" />
-      </ProgressMessage>
-    );
-  }
+  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
 
   return (
-    <SmallButton onClick={OnLaunch} isLoading={loading}>
-      <FormattedMessage id="tables.launch" />
-    </SmallButton>
+    <div className={styles.container}>
+      <StatusCellControl
+        enabled={enabled}
+        id={id}
+        isSyncing={isSyncing}
+        isManual={isManual}
+        onSync={onSync}
+        hasBreakingChange={hasBreakingChange}
+        allowSync={allowSync}
+      />
+      {allowAutoDetectSchemaChanges && <ChangesStatusIcon schemaChange={schemaChange} />}
+    </div>
   );
 };
-
-export default StatusCell;

@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "integer"]
+    },
+    "kind": {
+      "type": ["null", "string"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "project_id": {
+      "type": ["null", "integer"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "account_id": {
+      "type": ["null", "integer"]
+    },
+    "version": {
+      "type": ["null", "integer"]
+    },
+    "iteration_length": {
+      "type": ["null", "integer"]
+    },
+    "current_iteration_number": {
+      "type": ["null", "integer"]
+    },
+    "week_start_day": {
+      "type": ["null", "string"]
+    },
+    "point_scale": {
+      "type": ["null", "string"]
+    },
+    "point_scale_is_custom": {
+      "type": ["null", "boolean"]
+    },
+    "bugs_and_chores_are_estimatable": {
+      "type": ["null", "boolean"]
+    },
+    "automatic_planning": {
+      "type": ["null", "boolean"]
+    },
+    "enable_tasks": {
+      "type": ["null", "boolean"]
+    },
+    "time_zone": {
+      "type": ["null", "object"]
+    },
+    "velocity_averaged_over": {
+      "type": ["null", "integer"]
+    },
+    "number_of_done_iterations_to_show": {
+      "type": ["null", "integer"]
+    },
+    "has_google_domain": {
+      "type": ["null", "boolean"]
+    },
+    "enable_incoming_emails": {
+      "type": ["null", "boolean"]
+    },
+    "initial_velocity": {
+      "type": ["null", "integer"]
+    },
+    "public": {
+      "type": ["null", "boolean"]
+    },
+    "atom_enabled": {
+      "type": ["null", "boolean"]
+    },
+    "enable_following": {
+      "type": ["null", "boolean"]
+    },
+    "show_story_priority": {
+      "type": ["null", "boolean"]
+    },
+    "project_type": {
+      "type": ["null", "string"]
+    },
+    "start_time": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 name: Feature request
 about: Suggest an idea for Airbyte
 title: ''
-labels: type/enhancement
+labels: type/enhancement, needs-triage
 assignees: ''
 
 ---

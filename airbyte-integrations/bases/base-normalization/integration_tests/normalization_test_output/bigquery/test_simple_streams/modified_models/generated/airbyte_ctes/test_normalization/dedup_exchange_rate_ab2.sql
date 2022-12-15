@@ -6,6 +6,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('dedup_exchange_rate_ab1') }}
 select
     cast(id as {{ dbt_utils.type_float() }}) as id,
     cast(currency as {{ dbt_utils.type_string() }}) as currency,
@@ -21,5 +22,5 @@ select
 from {{ ref('dedup_exchange_rate_ab1') }}
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

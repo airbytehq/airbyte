@@ -6,9 +6,11 @@ description: Start triggering Airbyte jobs with Apache Airflow in minutes
 
 Airbyte is an official community provider for the Apache Airflow project. The Airbyte operator allows you to trigger synchronization jobs in Apache Airflow, and this tutorial will walk through configuring your Airflow DAG to do so.
 
-{% hint style="warning" %}
+:::caution
+
 Due to some difficulties in setting up Airflow, we recommend first trying out the deployment using the local example [here](https://github.com/airbytehq/airbyte/tree/master/resources/examples/airflow), as it contains accurate configuration required to get the Airbyte operator up and running.
-{% endhint %}
+
+:::
 
 The Airbyte Provider documentation on Airflow project can be found [here](https://airflow.apache.org/docs/apache-airflow-providers-airbyte/stable/index.html).
 

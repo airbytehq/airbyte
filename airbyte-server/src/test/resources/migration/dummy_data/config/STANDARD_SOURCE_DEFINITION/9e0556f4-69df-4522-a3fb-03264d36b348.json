@@ -3,5 +3,9 @@
   "name": "Marketo",
   "dockerRepository": "airbyte/source-marketo-singer",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/source-marketo-singer"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/source-marketo-singer",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/marketo",
+    "connectionSpecification": {}
+  }
 }

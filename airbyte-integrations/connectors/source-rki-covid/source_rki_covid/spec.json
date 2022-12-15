@@ -1,0 +1,18 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/rki-covid",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "RKI Covid Spec",
+    "type": "object",
+    "required": ["start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "start_date": {
+        "type": "string",
+        "title": "Start Date",
+        "description": "UTC date in the format 2017-01-25. Any data before this date will not be replicated.",
+        "order": 1
+      }
+    }
+  }
+}

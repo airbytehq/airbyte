@@ -2,6 +2,9 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
   "properties": {
+    "expand": {
+      "type": "string"
+    },
     "self": {
       "type": "string",
       "description": "The URL of the filter.",
@@ -1671,11 +1674,7 @@
               },
               "roles": {
                 "type": "object",
-                "additionalProperties": {
-                  "type": "string",
-                  "format": "uri",
-                  "readOnly": true
-                },
+                "additionalProperties": true,
                 "description": "The name and self URL for each role defined in the project. For more information, see [Create project role](#api-rest-api-3-role-post).",
                 "readOnly": true
               },
@@ -1825,9 +1824,7 @@
               },
               "properties": {
                 "type": "object",
-                "additionalProperties": {
-                  "readOnly": true
-                },
+                "additionalProperties": true,
                 "description": "Map of project properties",
                 "readOnly": true
               },
@@ -2590,6 +2587,9 @@
         }
       }
     },
+    "isWritable": {
+      "type": "boolean"
+    },
     "subscriptions": {
       "type": "array",
       "description": "The users that are subscribed to the filter.",
@@ -2856,6 +2856,6 @@
       }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of a filter."
 }

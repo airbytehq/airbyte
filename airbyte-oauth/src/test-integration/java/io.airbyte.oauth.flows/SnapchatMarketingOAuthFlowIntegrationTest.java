@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -36,12 +36,13 @@ public class SnapchatMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
     return "https://f215-195-114-147-152.ngrok.io/auth_flow";
   }
 
+  @Override
   protected int getServerListeningPort() {
     return 3000;
   }
 
   @Override
-  protected OAuthFlowImplementation getFlowImplementation(ConfigRepository configRepository, HttpClient httpClient) {
+  protected OAuthFlowImplementation getFlowImplementation(final ConfigRepository configRepository, final HttpClient httpClient) {
     return new SnapchatMarketingOAuthFlow(configRepository, httpClient);
   }
 
@@ -49,7 +50,7 @@ public class SnapchatMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
   public void testFullSnapchatMarketingOAuthFlow() throws InterruptedException, ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(getCredentialsPath()));
+    final String fullConfigAsString = Files.readString(getCredentialsPath());
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -59,7 +60,8 @@ public class SnapchatMarketingOAuthFlowIntegrationTest extends OAuthFlowIntegrat
             .put("client_id", credentialsJson.get("client_id").asText())
             .put("client_secret", credentialsJson.get("client_secret").asText())
             .build()))));
-    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl());
+    final String url = getFlowImplementation(configRepository, httpClient).getSourceConsentUrl(workspaceId, definitionId, getRedirectUrl(),
+        Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     waitForResponse(20);
     assertTrue(serverHandler.isSucceeded(), "Failed to get User consent on time");

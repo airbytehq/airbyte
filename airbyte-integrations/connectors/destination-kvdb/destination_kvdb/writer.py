@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from collections import Mapping
@@ -25,7 +25,7 @@ class KvDbWriter:
         self.client = client
 
     def delete_stream_entries(self, stream_name: str):
-        """ Deletes all the records belonging to the input stream """
+        """Deletes all the records belonging to the input stream"""
         keys_to_delete = []
         for key in self.client.list_keys(prefix=f"{stream_name}__ab__"):
             keys_to_delete.append(key)

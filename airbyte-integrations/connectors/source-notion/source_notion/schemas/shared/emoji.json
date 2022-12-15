@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": ["null", "object"],
+  "additionalProperties": true,
+  "properties": {
+    "type": {
+      "type": "string"
+    },
+    "emoji": {
+      "type": "string"
+    }
+  }
+}

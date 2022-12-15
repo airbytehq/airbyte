@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/pokeapi",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/pokeapi",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Pokeapi Spec",
@@ -9,9 +9,10 @@
     "properties": {
       "pokemon_name": {
         "type": "string",
+        "title": "Pokemon Name",
         "description": "Pokemon requested from the API.",
         "pattern": "^[a-z0-9_\\-]+$",
-        "examples": ["ditto, luxray, snorlax"]
+        "examples": ["ditto", "luxray", "snorlax"]
       }
     }
   }

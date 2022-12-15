@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -26,4 +26,7 @@ def config_with_wrong_account_fixture(config):
 
 @pytest.fixture(scope="session", name="config_with_include_deleted")
 def config_with_include_deleted_fixture(config):
-    return {**config, "include_deleted": True}
+    new_config = {**config, "include_deleted": True}
+    new_config.pop("_limit", None)
+    new_config.pop("end_date", None)
+    return new_config

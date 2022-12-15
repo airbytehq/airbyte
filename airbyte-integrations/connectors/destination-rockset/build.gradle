@@ -1,0 +1,32 @@
+plugins {
+    id 'application'
+    id 'airbyte-docker'
+    id 'airbyte-integration-test-java'
+}
+
+application {
+    mainClass = 'io.airbyte.integrations.destination.rockset.RocksetDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+repositories {
+    maven { url "https://mvnrepository.com/artifact/com.rockset/rockset-java" }
+    maven { url "https://mvnrepository.com/artifact/org.awaitility/awaitility" }
+}
+
+dependencies {
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-integrations:bases:base-java')
+    implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
+    implementation project(':airbyte-integrations:connectors:destination-jdbc')
+
+    implementation group: 'com.rockset', name: 'rockset-java', version: '0.9.0'
+    implementation group: 'org.awaitility', name: 'awaitility', version: '4.1.1'
+
+    testImplementation project(':airbyte-integrations:bases:standard-destination-test')
+
+
+    integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
+    integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-rockset')
+}

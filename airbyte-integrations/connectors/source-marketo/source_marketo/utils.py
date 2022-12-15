@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -37,8 +37,15 @@ def clean_string(string: str) -> str:
     "updatedat" -> "updatedat"
     """
 
-    abbreviations = ("URL", "GUID", "IP")
-    if any(map(lambda w: w in string, abbreviations)):
+    fix = {
+        "api method name": "Api Method Name",
+        "modifying user": "Modifying User",
+        "request id": "Request Id",
+    }
+
+    string = fix.get(string, string)
+    abbreviations = ("URL", "GUID", "IP", "ID", "IDs", "API", "SFDC", "CRM", "SLA")
+    if any(map(lambda w: w in string.split(), abbreviations)):
         return string.lower().replace(" ", "_")
     return "".join("_" + c.lower() if c.isupper() else c for c in string if c != " ").strip("_")
 

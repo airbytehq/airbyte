@@ -5,6 +5,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('renamed_dedup_cdc_excluded_scd') }}
 select
     _airbyte_unique_key,
     {{ adapter.quote('id') }},
@@ -20,5 +21,5 @@ from {{ ref('renamed_dedup_cdc_excluded_scd') }}
 -- renamed_dedup_cdc_excluded from {{ source('test_normalization', '_airbyte_raw_renamed_dedup_cdc_excluded') }}
 where 1 = 1
 and _airbyte_active_row = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

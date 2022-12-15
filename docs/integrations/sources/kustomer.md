@@ -42,5 +42,6 @@ Kustomer has some [rate limit restrictions](https://developer.kustomer.com/kusto
 
 | Version | Date | Pull Request | Subject |
 | :--- | :--- | :--- | :--- |
+| 0.1.1 | 2021-12-13 | [8738](https://github.com/airbytehq/airbyte/pull/8738) | Deleted `user-agent`, `date_window_size`, `page_size_limit` from `spec.json` file  |
 | 0.1.0 | 2021-07-22 | [4550](https://github.com/airbytehq/airbyte/pull/4550) | Add Kustomer Source Connector |
 

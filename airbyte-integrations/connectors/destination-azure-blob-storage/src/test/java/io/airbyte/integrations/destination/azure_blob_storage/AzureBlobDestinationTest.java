@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.destination.azure_blob_storage;
@@ -78,6 +78,22 @@ public class AzureBlobDestinationTest {
     final JsonNode connectionSpecification = spec.getConnectionSpecification();
 
     assertNotNull(connectionSpecification);
+  }
+
+  @Test
+  public void testConfigObjectCustomOutputBufferSize() {
+    final JsonNode config = Jsons.jsonNode(ImmutableMap.builder()
+        .put("azure_blob_storage_account_name", "accName")
+        .put("azure_blob_storage_account_key", "accKey")
+        .put("azure_blob_storage_endpoint_domain_name", "accDomainName.com")
+        .put("azure_blob_storage_output_buffer_size", 10)
+        .put("format", getFormatConfig())
+        .build());
+    final AzureBlobStorageDestinationConfig azureBlobStorageConfig = AzureBlobStorageDestinationConfig
+        .getAzureBlobStorageConfig(config);
+
+    assertEquals(10 * 1024 * 1024,
+        azureBlobStorageConfig.getOutputStreamBufferSize());
   }
 
   private JsonNode getFormatConfig() {

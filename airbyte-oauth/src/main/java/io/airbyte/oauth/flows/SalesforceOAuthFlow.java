@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -25,8 +26,8 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   // Clickable link for IDE
   // https://help.salesforce.com/s/articleView?language=en_US&id=sf.remoteaccess_oauth_web_server_flow.htm
 
-  private static final String AUTHORIZE_URL = "https://login.salesforce.com/services/oauth2/authorize";
-  private static final String ACCESS_TOKEN_URL = "https://login.salesforce.com/services/oauth2/token";
+  private static final String AUTHORIZE_URL = "https://%s.salesforce.com/services/oauth2/authorize";
+  private static final String ACCESS_TOKEN_URL = "https://%s.salesforce.com/services/oauth2/token";
 
   public SalesforceOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -38,9 +39,13 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
-      return new URIBuilder(AUTHORIZE_URL)
+      return new URIBuilder(String.format(AUTHORIZE_URL, getEnvironment(inputOAuthConfiguration)))
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
@@ -52,8 +57,8 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String getAccessTokenUrl() {
-    return ACCESS_TOKEN_URL;
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    return String.format(ACCESS_TOKEN_URL, getEnvironment(inputOAuthConfiguration));
   }
 
   @Override
@@ -68,8 +73,16 @@ public class SalesforceOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected List<String> getDefaultOAuthOutputPath() {
+  public List<String> getDefaultOAuthOutputPath() {
     return List.of();
+  }
+
+  private String getEnvironment(JsonNode inputOAuthConfiguration) {
+    var isSandbox = inputOAuthConfiguration.get("is_sandbox");
+    if (isSandbox == null) {
+      return "login";
+    }
+    return (isSandbox.asBoolean() == true) ? "test" : "login";
   }
 
 }

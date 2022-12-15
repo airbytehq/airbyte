@@ -1,14 +1,20 @@
-import React from "react";
 import { Field, FieldProps, Formik } from "formik";
-import * as yup from "yup";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import * as yup from "yup";
 
-import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
-import { LoadingButton, LabeledInput, Link } from "components";
-import { FormTitle } from "../components/FormTitle";
-import { Routes } from "../../../routes";
-import { useAuthService } from "packages/cloud/services/auth/AuthService";
+import { LabeledInput, Link } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
+
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
+import { useAuthService } from "packages/cloud/services/auth/AuthService";
+
+import { CloudRoutes } from "../../../cloudRoutes";
+import { BottomBlock, FieldItem, Form } from "../components/FormComponents";
+import { FormTitle } from "../components/FormTitle";
 
 const ResetPasswordPageValidationSchema = yup.object().shape({
   email: yup.string().email("form.email.error").required("form.empty.error"),
@@ -17,11 +23,13 @@ const ResetPasswordPageValidationSchema = yup.object().shape({
 const ResetPasswordPage: React.FC = () => {
   const { requirePasswordReset } = useAuthService();
   const { registerNotification } = useNotificationService();
-  const formatMessage = useIntl().formatMessage;
+  const { formatMessage } = useIntl();
 
+  useTrackPage(PageTrackingCodes.RESET_PASSWORD);
   return (
     <div>
-      <FormTitle bold>
+      <HeadTitle titles={[{ id: "login.resetPassword" }]} />
+      <FormTitle>
         <FormattedMessage id="login.resetPassword" />
       </FormTitle>
 
@@ -30,15 +38,21 @@ const ResetPasswordPage: React.FC = () => {
           email: "",
         }}
         validationSchema={ResetPasswordPageValidationSchema}
-        onSubmit={async ({ email }) => {
-          await requirePasswordReset(email);
-          registerNotification({
-            id: "resetPassword.emailSent",
-            title: formatMessage({ id: "login.resetPassword.emailSent" }),
-            isError: false,
-          });
+        onSubmit={async ({ email }, FormikBag) => {
+          try {
+            await requirePasswordReset(email);
+            registerNotification({
+              id: "resetPassword.emailSent",
+              text: formatMessage({ id: "login.resetPassword.emailSent" }),
+              type: ToastType.SUCCESS,
+            });
+          } catch (err) {
+            err.message.includes("user-not-found")
+              ? FormikBag.setFieldError("email", "login.yourEmail.notFound")
+              : FormikBag.setFieldError("email", "login.unknownError");
+          }
         }}
-        validateOnBlur={true}
+        validateOnBlur
         validateOnChange={false}
       >
         {({ isSubmitting }) => (
@@ -54,22 +68,18 @@ const ResetPasswordPage: React.FC = () => {
                     })}
                     type="text"
                     error={!!meta.error && meta.touched}
-                    message={
-                      meta.touched &&
-                      meta.error &&
-                      formatMessage({ id: meta.error })
-                    }
+                    message={meta.touched && meta.error && formatMessage({ id: meta.error })}
                   />
                 )}
               </Field>
             </FieldItem>
             <BottomBlock>
-              <Link to={Routes.Login} $light>
+              <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting}>
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              </Button>
             </BottomBlock>
           </Form>
         )}

@@ -1,0 +1,37 @@
+connector_image: airbyte/source-metabase:dev
+acceptance_tests:
+  spec:
+    tests:
+      - spec_path: "source_metabase/spec.yaml"
+  connection:
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
+      - config_path: "integration_tests/config_http_url.json"
+        status: "failed"
+  discovery:
+    tests:
+      - config_path: "secrets/config.json"
+  basic_read:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: activity
+            bypass_reason: "data changes very fast"
+          - name: cards
+            bypass_reason: "data changes very fast"
+          - name: collections
+            bypass_reason: "data changes very fast"
+          - name: dashboards
+            bypass_reason: "data changes very fast"
+          - name: users
+            bypass_reason: "data changes very fast"
+  full_refresh:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+      bypass_reason: "This connector does not implement incremental sync"

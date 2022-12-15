@@ -4,7 +4,8 @@
     tags = [ "nested-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
-{{ unnest_cte('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION', 'PARTITION', 'DOUBLE_ARRAY_DATA') }}
+-- depends_on: {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION') }}
+{{ unnest_cte(ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTITION'), 'PARTITION', 'DOUBLE_ARRAY_DATA') }}
 select
     _AIRBYTE_PARTITION_HASHID,
     {{ json_extract_scalar(unnested_column_value('DOUBLE_ARRAY_DATA'), ['id'], ['id']) }} as ID,
@@ -16,5 +17,5 @@ from {{ ref('NESTED_STREAM_WITH_COMPLEX_COLUMNS_RESULTING_INTO_LONG_NAMES_PARTIT
 {{ cross_join_unnest('PARTITION', 'DOUBLE_ARRAY_DATA') }}
 where 1 = 1
 and DOUBLE_ARRAY_DATA is not null
-{{ incremental_clause('_AIRBYTE_EMITTED_AT') }}
+{{ incremental_clause('_AIRBYTE_EMITTED_AT', this) }}
 

@@ -1,0 +1,38 @@
+---
+"$schema": http://json-schema.org/draft-07/schema#
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-config/models/src/main/resources/types/JobDiscoverCatalogConfig.yaml
+title: JobDiscoverCatalogConfig
+description: job discover catalog config
+type: object
+additionalProperties: false
+required:
+  - connectionConfiguration
+  - dockerImage
+  - sourceId
+  - connectorVersion
+  - configHash
+properties:
+  connectionConfiguration:
+    description: Integration specific blob. Must be a valid JSON string.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
+  dockerImage:
+    type: string
+    description: The connector image
+    example: airbyte/source-postgres:1.0.12
+  sourceId:
+    description: The ID of the source being discovered, so we can persist this alongside the discovered catalog
+    type: string
+  connectorVersion:
+    description: Connector version, so we can persist this alongside the discovered catalog
+    type: string
+    example: 1.0.12
+  configHash:
+    description: Hash of the source configuration -- see `configuration` field in SourceConnection.yaml -- so we can persist this alongside the discovered catalog.
+    type: string
+  protocolVersion:
+    type: object
+    existingJavaType: io.airbyte.commons.version.Version
+  isCustomConnector:
+    description: determine if the running image is a custom connector.
+    type: boolean

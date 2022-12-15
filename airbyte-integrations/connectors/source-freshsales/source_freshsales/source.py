@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 
@@ -65,13 +65,10 @@ class FreshsalesStream(HttpStream, ABC):
 
     def get_view_id(self):
         """
-        This function iterate over all available filters and get the relevant filter_id.
+        This function finds a relevant filter_id among all available filters by its name.
         """
-        if hasattr(self, "filter_name"):
-            filters = self._get_filters()
-            return next(filter["id"] for filter in filters if filter["name"] == self.filter_name)
-        else:
-            return
+        filters = self._get_filters()
+        return next(_filter["id"] for _filter in filters if _filter["name"] == self.filter_name)
 
     def path(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None

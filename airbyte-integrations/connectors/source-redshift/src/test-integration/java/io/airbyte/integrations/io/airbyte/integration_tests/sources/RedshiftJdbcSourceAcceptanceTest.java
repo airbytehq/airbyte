@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
@@ -11,8 +11,10 @@ import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.redshift.RedshiftSource;
 import java.nio.file.Path;
+import java.sql.JDBCType;
 import java.sql.SQLException;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 // Run as part of integration tests, instead of unit tests, because there is no test container for
@@ -25,10 +27,15 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return Jsons.deserialize(IOs.readFile(Path.of("secrets/config.json")));
   }
 
+  @BeforeAll
+  static void init() {
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s GEOMETRY)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(ST_Point(129.77099609375, 62.093299865722656))";
+  }
+
   @BeforeEach
   public void setup() throws Exception {
     config = getStaticConfig();
-
     super.setup();
   }
 
@@ -38,7 +45,7 @@ class RedshiftJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new RedshiftSource();
   }
 

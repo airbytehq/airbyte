@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Date Merge Field Segment",
+  "description": "Segment by a given date merge field.",
+  "required": ["field", "op"],
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "DateMerge",
+      "enum": ["DateMerge"]
+    },
+    "field": {
+      "type": "string",
+      "title": "Segment Field",
+      "description": "A date merge field to segment.",
+      "example": "MMERGE5"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["is", "not", "less", "blank", "blank_not", "greater"],
+      "title": "Segment Operator",
+      "description": "Whether the member's merge information is/is not, is greater/less than a value or is/is not blank.",
+      "example": "is"
+    },
+    "value": {
+      "type": "string",
+      "title": "Segment Value",
+      "description": "A date to segment against.",
+      "example": "01/30/2015"
+    }
+  }
+}

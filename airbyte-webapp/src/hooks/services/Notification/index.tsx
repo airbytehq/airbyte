@@ -1,4 +1,5 @@
-import NotificationService from "./NotificationService";
+import NotificationService, { useNotificationService } from "./NotificationService";
+export * from "./types";
 
 export default NotificationService;
-export { NotificationService };
+export { NotificationService, useNotificationService };

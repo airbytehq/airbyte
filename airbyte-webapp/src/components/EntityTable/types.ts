@@ -1,39 +1,43 @@
-import { ScheduleProperties } from "core/resources/Connection";
+import { ConnectionScheduleData, ConnectionScheduleType, SchemaChange } from "../../core/request/AirbyteClient";
 
-type EntityTableDataItem = {
+interface EntityTableDataItem {
   entityId: string;
   entityName: string;
   connectorName: string;
-  connectEntities: {
+  connectEntities: Array<{
     name: string;
     connector: string;
     status: string;
     lastSyncStatus: string | null;
-  }[];
+  }>;
   enabled: boolean;
   lastSync?: number | null;
   connectorIcon?: string;
-};
+}
 
-type ITableDataItem = {
+interface ITableDataItem {
   connectionId: string;
+  name: string;
   entityName: string;
   connectorName: string;
   enabled: boolean;
   isSyncing?: boolean;
   status?: string;
   lastSync?: number | null;
-  schedule: ScheduleProperties | null;
+  scheduleData?: ConnectionScheduleData;
+  scheduleType?: ConnectionScheduleType;
+  schemaChange: SchemaChange;
   lastSyncStatus: string | null;
   connectorIcon?: string;
   entityIcon?: string;
-};
+}
 
 enum Status {
   ACTIVE = "active",
   INACTIVE = "inactive",
   FAILED = "failed",
   EMPTY = "empty",
+  PENDING = "pending",
 }
 
 enum SortOrderEnum {

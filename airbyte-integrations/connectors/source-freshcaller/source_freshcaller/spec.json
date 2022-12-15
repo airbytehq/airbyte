@@ -1,0 +1,41 @@
+{
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/freshcaller",
+  "connectionSpecification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Freshcaller Spec",
+    "type": "object",
+    "required": ["domain", "api_key", "start_date"],
+    "additionalProperties": true,
+    "properties": {
+      "domain": {
+        "type": "string",
+        "title": "Domain for Freshcaller account",
+        "description": "Used to construct Base URL for the Freshcaller APIs",
+        "examples": ["snaptravel"]
+      },
+      "api_key": {
+        "type": "string",
+        "title": "API Key",
+        "description": "Freshcaller API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/freshcaller\">docs</a> for more information on how to obtain this key.",
+        "airbyte_secret": true
+      },
+      "requests_per_minute": {
+        "title": "Requests per minute",
+        "type": "integer",
+        "description": "The number of requests per minute that this source allowed to use. There is a rate limit of 50 requests per minute per app per account."
+      },
+      "start_date": {
+        "title": "Start Date",
+        "description": "UTC date and time. Any data created after this date will be replicated.",
+        "format": "date-time",
+        "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$",
+        "examples": ["2022-01-01T12:00:00Z"]
+      },
+      "sync_lag_minutes": {
+        "title": "Lag in minutes for each sync",
+        "type": "integer",
+        "description": "Lag in minutes for each sync, i.e., at time T, data for the time range [prev_sync_time, T-30] will be fetched"
+      }
+    }
+  }
+}

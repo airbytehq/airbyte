@@ -1,4 +1,4 @@
-# Change Data Capture \(CDC\)
+# Change Data Capture (CDC)
 
 ## What is log-based incremental replication?
 
@@ -38,4 +38,10 @@ We add some metadata columns for CDC sources:
 
 * Oracle DB
 * Please [create a ticket](https://github.com/airbytehq/airbyte/issues/new/choose) if you need CDC support on another database!
+
+## Additional information
+
+* [An overview of Airbyte’s replication modes](https://airbyte.com/blog/understanding-data-replication-modes).
+* [Understanding Change Data Capture (CDC): Definition, Methods and Benefits](https://airbyte.com/blog/change-data-capture-definition-methods-and-benefits)
+* [Explore Airbyte's Change Data Capture (CDC) synchronization](https://airbyte.com/tutorials/incremental-change-data-capture-cdc-replication)
 

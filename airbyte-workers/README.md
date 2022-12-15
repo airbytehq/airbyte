@@ -1,6 +1,10 @@
-# Temporal Development
+# airbyte-workers
 
-## Versioning
+This module contains the logic for how Jobs are executed. Jobs are executed using a tool called Temporal.
+
+## Temporal Development
+
+### Versioning
 
 Temporal is maintaining an internal history of the activity it runs. This history is based on a specific order. If we restart a temporal workflow with
 a new implementation that has a different order, the workflow will be stuck and will need manual action to be properly restarted. Temporal provides
@@ -38,7 +42,7 @@ if (version <= 4 && version >= MINIMAL_VERSION) {
 }
 ```
 
-## Removing a version
+### Removing a version
 
 Removing a version is a potential breaking change and should be done version carefully. We should maintain a MINIMAL_VERSION to keep track of the
 current minimal version. Both MINIMAL_VERSION and CURRENT_VERSION needs to be present on the workflow file even if they are unused (if they have been

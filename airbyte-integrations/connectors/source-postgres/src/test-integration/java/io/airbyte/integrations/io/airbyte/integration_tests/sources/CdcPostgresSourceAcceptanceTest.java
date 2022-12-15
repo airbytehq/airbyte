@@ -1,30 +1,40 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.io.airbyte.integration_tests.sources;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.Database;
-import io.airbyte.db.Databases;
+import io.airbyte.db.factory.DSLContextFactory;
+import io.airbyte.db.factory.DatabaseDriver;
+import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.standardtest.source.SourceAcceptanceTest;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
+import io.airbyte.integrations.util.HostPortResolver;
+import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.CatalogHelpers;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
-import io.airbyte.protocol.models.JsonSchemaPrimitive;
+import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.protocol.models.SyncMode;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
+import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
+import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.utility.MountableFile;
 
@@ -37,14 +47,15 @@ import org.testcontainers.utility.MountableFile;
  */
 public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
 
-  private static final String SLOT_NAME_BASE = "debezium_slot";
-  private static final String NAMESPACE = "public";
+  protected static final String SLOT_NAME_BASE = "debezium_slot";
+  protected static final String NAMESPACE = "public";
   private static final String STREAM_NAME = "id_and_name";
   private static final String STREAM_NAME2 = "starships";
-  private static final String PUBLICATION = "publication";
+  protected static final String PUBLICATION = "publication";
+  protected static final int INITIAL_WAITING_SECONDS = 5;
 
-  private PostgreSQLContainer<?> container;
-  private JsonNode config;
+  protected PostgreSQLContainer<?> container;
+  protected JsonNode config;
 
   @Override
   protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
@@ -62,41 +73,45 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
         .put("method", "CDC")
         .put("replication_slot", SLOT_NAME_BASE)
         .put("publication", PUBLICATION)
+        .put("initial_waiting_seconds", INITIAL_WAITING_SECONDS)
         .build());
     config = Jsons.jsonNode(ImmutableMap.builder()
-        .put("host", container.getHost())
-        .put("port", container.getFirstMappedPort())
-        .put("database", container.getDatabaseName())
-        .put("username", container.getUsername())
-        .put("password", container.getPassword())
+        .put(JdbcUtils.HOST_KEY, HostPortResolver.resolveHost(container))
+        .put(JdbcUtils.PORT_KEY, HostPortResolver.resolvePort(container))
+        .put(JdbcUtils.DATABASE_KEY, container.getDatabaseName())
+        .put(JdbcUtils.SCHEMAS_KEY, List.of(NAMESPACE))
+        .put(JdbcUtils.USERNAME_KEY, container.getUsername())
+        .put(JdbcUtils.PASSWORD_KEY, container.getPassword())
         .put("replication_method", replicationMethod)
-        .put("ssl", false)
+        .put(JdbcUtils.SSL_KEY, false)
+        .put("is_test", true)
         .build());
 
-    final Database database = Databases.createDatabase(
-        config.get("username").asText(),
-        config.get("password").asText(),
-        String.format("jdbc:postgresql://%s:%s/%s",
-            config.get("host").asText(),
-            config.get("port").asText(),
-            config.get("database").asText()),
-        "org.postgresql.Driver",
-        SQLDialect.POSTGRES);
-    /**
-     * cdc expects the INCREMENTAL tables to contain primary key checkout
-     * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
-     */
-    database.query(ctx -> {
-      ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
-      ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
-      ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
-      ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
-      ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
-      ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
-      return null;
-    });
+    try (final DSLContext dslContext = DSLContextFactory.create(
+        config.get(JdbcUtils.USERNAME_KEY).asText(),
+        config.get(JdbcUtils.PASSWORD_KEY).asText(),
+        DatabaseDriver.POSTGRESQL.getDriverClassName(),
+        String.format(DatabaseDriver.POSTGRESQL.getUrlFormatString(),
+            container.getHost(),
+            container.getFirstMappedPort(),
+            config.get(JdbcUtils.DATABASE_KEY).asText()),
+        SQLDialect.POSTGRES)) {
+      final Database database = new Database(dslContext);
 
-    database.close();
+      /**
+       * cdc expects the INCREMENTAL tables to contain primary key checkout
+       * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
+       */
+      database.query(ctx -> {
+        ctx.execute("CREATE TABLE id_and_name(id INTEGER, name VARCHAR(200));");
+        ctx.execute("INSERT INTO id_and_name (id, name) VALUES (1,'picard'),  (2, 'crusher'), (3, 'vash');");
+        ctx.execute("CREATE TABLE starships(id INTEGER, name VARCHAR(200));");
+        ctx.execute("INSERT INTO starships (id, name) VALUES (1,'enterprise-d'),  (2, 'defiant'), (3, 'yamato');");
+        ctx.execute("SELECT pg_create_logical_replication_slot('" + SLOT_NAME_BASE + "', 'pgoutput');");
+        ctx.execute("CREATE PUBLICATION " + PUBLICATION + " FOR ALL TABLES;");
+        return null;
+      });
+    }
   }
 
   @Override
@@ -137,8 +152,8 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME,
                 NAMESPACE,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
         new ConfiguredAirbyteStream()
             .withSyncMode(SyncMode.INCREMENTAL)
@@ -147,19 +162,77 @@ public class CdcPostgresSourceAcceptanceTest extends SourceAcceptanceTest {
             .withStream(CatalogHelpers.createAirbyteStream(
                 STREAM_NAME2,
                 NAMESPACE,
-                Field.of("id", JsonSchemaPrimitive.NUMBER),
-                Field.of("name", JsonSchemaPrimitive.STRING))
+                Field.of("id", JsonSchemaType.INTEGER),
+                Field.of("name", JsonSchemaType.STRING))
                 .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
-  @Override
-  protected List<String> getRegexTests() {
-    return Collections.emptyList();
+  protected ConfiguredAirbyteCatalog getConfiguredCatalogWithPartialColumns() {
+    /**
+     * This catalog config is incorrect for CDC replication. We specify
+     * withCursorField(Lists.newArrayList("id")) but with CDC customers can't/shouldn't be able to
+     * specify cursor field for INCREMENTAL tables Take a look at
+     * {@link io.airbyte.integrations.source.postgres.PostgresSource#setIncrementalToSourceDefined(AirbyteStream)}
+     * We should also specify the primary keys for INCREMENTAL tables checkout
+     * {@link io.airbyte.integrations.source.postgres.PostgresSource#removeIncrementalWithoutPk(AirbyteStream)}
+     */
+    return new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("id"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME,
+                    NAMESPACE,
+                    Field.of("id", JsonSchemaType.INTEGER)
+                    /*no name field */)
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL))),
+        new ConfiguredAirbyteStream()
+            .withSyncMode(SyncMode.INCREMENTAL)
+            .withCursorField(Lists.newArrayList("name"))
+            .withDestinationSyncMode(DestinationSyncMode.APPEND)
+            .withStream(CatalogHelpers.createAirbyteStream(
+                    STREAM_NAME2,
+                    NAMESPACE,
+                    /* no id field */
+                    Field.of("name", JsonSchemaType.STRING))
+                .withSupportedSyncModes(Lists.newArrayList(SyncMode.FULL_REFRESH, SyncMode.INCREMENTAL)))));
   }
 
   @Override
   protected JsonNode getState() {
     return Jsons.jsonNode(new HashMap<>());
+  }
+
+  @Test
+  public void testFullRefreshReadSelectedColumns() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = withFullRefreshSyncModes(getConfiguredCatalogWithPartialColumns());
+    final List<AirbyteMessage> allMessages = runRead(catalog);
+
+    final List<AirbyteRecordMessage> records = filterRecords(allMessages);
+    assertFalse(records.isEmpty(), "Expected a full refresh sync to produce records");
+    verifyFieldNotExist(records, STREAM_NAME, "name");
+    verifyFieldNotExist(records, STREAM_NAME2, "id");
+  }
+
+  @Test
+  public void testIncrementalReadSelectedColumns() throws Exception {
+    final ConfiguredAirbyteCatalog catalog = getConfiguredCatalogWithPartialColumns();
+    final List<AirbyteMessage> allMessages = runRead(catalog);
+
+    final List<AirbyteRecordMessage> records = filterRecords(allMessages);
+    assertFalse(records.isEmpty(), "Expected a incremental sync to produce records");
+    verifyFieldNotExist(records, STREAM_NAME, "name");
+    verifyFieldNotExist(records, STREAM_NAME2, "id");
+  }
+
+  private void verifyFieldNotExist(final List<AirbyteRecordMessage> records, final String stream, final String field) {
+    assertTrue(records.stream()
+        .filter(r -> {
+          return r.getStream().equals(stream)
+              && r.getData().get(field) != null;})
+        .collect(Collectors.toList())
+        .isEmpty(), "Records contain unselected columns [%s:%s]".formatted(stream, field));
   }
 
 }

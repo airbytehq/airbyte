@@ -35,7 +35,7 @@ Using either authenticator is as simple as passing the created authenticator int
 
 ## Pagination
 
-Most APIs, when facing a large call, tend to return the results in pages. The CDK accommodates paging via the `next_page_token` function. This function is meant to extract the next page "token" from the latest response. The contents of a "token" are completely up to the developer: it can be an ID, a page number, a partial URL etc.. The CDK will continue making requests as long as the `next_page_token` function. The CDK will continue making requests as long as the `next_page_token` continues returning non-`None` results. This can then be used in the `request_params` and other methods in `HttpStream` to page through API responses. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/source.py#L41) from the Stripe API.
+Most APIs, when facing a large call, tend to return the results in pages. The CDK accommodates paging via the `next_page_token` function. This function is meant to extract the next page "token" from the latest response. The contents of a "token" are completely up to the developer: it can be an ID, a page number, a partial URL etc.. The CDK will continue making requests as long as the `next_page_token` function. The CDK will continue making requests as long as the `next_page_token` continues returning non-`None` results. This can then be used in the `request_params` and other methods in `HttpStream` to page through API responses. Here is an [example](https://github.com/airbytehq/airbyte/blob/master/airbyte-integrations/connectors/source-stripe/source_stripe/streams.py#L34) from the Stripe API.
 
 ## Rate Limiting
 
@@ -49,7 +49,7 @@ Note that Airbyte will always attempt to make as many requests as possible and o
 
 When implementing [stream slicing](incremental-stream.md#streamstream_slices) in an `HTTPStream` each Slice is equivalent to a HTTP request; the stream will make one request per element returned by the `stream_slices` function. The current slice being read is passed into every other method in `HttpStream` e.g: `request_params`, `request_headers`, `path`, etc.. to be injected into a request. This allows you to dynamically determine the output of the `request_params`, `path`, and other functions to read the input slice and return the appropriate value.
 
-## Caching
+## Nested Streams & Caching
 It's possible to cache data from a stream onto a temporary file on disk. 
 
 This is especially useful when dealing with streams that depend on the results of another stream e.g: `/employees/{id}/details`. In this case, we can use caching to write the data of the parent stream to a file to use this data when the child stream synchronizes, rather than performing a full HTTP request again.

@@ -8,6 +8,7 @@ Subpackages
    airbyte_cdk.destinations
    airbyte_cdk.models
    airbyte_cdk.sources
+   airbyte_cdk.utils
 
 Submodules
 ----------
@@ -24,6 +25,14 @@ airbyte\_cdk.entrypoint module
 ------------------------------
 
 .. automodule:: airbyte_cdk.entrypoint
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+airbyte\_cdk.exception\_handler module
+--------------------------------------
+
+.. automodule:: airbyte_cdk.exception_handler
    :members:
    :undoc-members:
    :show-inheritance:

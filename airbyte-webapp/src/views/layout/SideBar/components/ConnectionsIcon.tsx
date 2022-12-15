@@ -1,8 +1,4 @@
-const ConnectionsIcon = ({
-  color = "currentColor",
-}: {
-  color?: string;
-}): JSX.Element => (
+const ConnectionsIcon = ({ color = "currentColor" }: { color?: string }): JSX.Element => (
   <svg width="30" height="18" viewBox="0 0 30 18" fill="none">
     <path
       fillRule="evenodd"

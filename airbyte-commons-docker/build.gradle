@@ -9,3 +9,5 @@ dependencies {
 
     testImplementation 'org.apache.commons:commons-lang3:3.11'
 }
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

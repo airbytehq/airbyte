@@ -3,5 +3,10 @@
   "name": "Local JSON",
   "dockerRepository": "airbyte/destination-local-json",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-json"
+  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-json",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/destinations/local-json",
+    "connectionSpecification": {},
+    "supportsIncremental": true
+  }
 }

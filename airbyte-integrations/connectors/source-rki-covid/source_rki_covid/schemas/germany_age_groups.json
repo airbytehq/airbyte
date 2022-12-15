@@ -1,0 +1,337 @@
+{
+  "$schema": "http://json-schema.org/schema#",
+  "type": "object",
+  "properties": {
+    "A00-A04": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    },
+    "A05-A14": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    },
+    "A15-A34": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    },
+    "A35-A59": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    },
+    "A60-A79": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    },
+    "A80+": {
+      "type": "object",
+      "properties": {
+        "casesMale": {
+          "type": ["number", "integer"]
+        },
+        "casesFemale": {
+          "type": ["number", "integer"]
+        },
+        "deathsMale": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemale": {
+          "type": ["number", "integer"]
+        },
+        "casesMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "casesFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsMalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "deathsFemalePer100k": {
+          "type": ["number", "integer"]
+        },
+        "hospitalization": {
+          "type": "object",
+          "properties": {
+            "cases7Days": {
+              "type": ["number", "integer"]
+            },
+            "incidence7Days": {
+              "type": ["number", "integer"]
+            },
+            "date": {
+              "type": "string"
+            }
+          },
+          "required": ["cases7Days", "date", "incidence7Days"]
+        }
+      },
+      "required": [
+        "casesFemale",
+        "casesFemalePer100k",
+        "casesMale",
+        "casesMalePer100k",
+        "deathsFemale",
+        "deathsFemalePer100k",
+        "deathsMale",
+        "deathsMalePer100k",
+        "hospitalization"
+      ]
+    }
+  },
+  "required": ["A00-A04", "A05-A14", "A15-A34", "A35-A59", "A60-A79", "A80+"]
+}

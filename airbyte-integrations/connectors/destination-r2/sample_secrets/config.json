@@ -1,0 +1,7 @@
+{
+  "s3_bucket_name": "paste-bucket-name-here",
+  "s3_bucket_path": "integration-test",
+  "account_id": "paster-account-id-here",
+  "access_key_id": "paste-access-key-id-here",
+  "secret_access_key": "paste-secret-access-key-here"
+}

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows.google;
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -73,7 +74,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
     int limit = 20;
     final UUID workspaceId = UUID.randomUUID();
     final UUID definitionId = UUID.randomUUID();
-    final String fullConfigAsString = new String(Files.readAllBytes(CREDENTIALS_PATH));
+    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH, StandardCharsets.UTF_8);
     final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString);
     when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
         .withOauthParameterId(UUID.randomUUID())
@@ -83,7 +84,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
             .put("client_id", credentialsJson.get("credentials").get("client_id").asText())
             .put("client_secret", credentialsJson.get("credentials").get("client_secret").asText())
             .build())))));
-    final String url = googleAdsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
+    final String url = googleAdsOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL, Jsons.emptyObject(), null);
     LOGGER.info("Waiting for user consent at: {}", url);
     // TODO: To automate, start a selenium job to navigate to the Consent URL and click on allowing
     // access...
@@ -143,7 +144,7 @@ public class GoogleAdsOAuthFlowIntegrationTest {
           t.sendResponseHeaders(500, response.length());
         }
         final OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write(response.getBytes(StandardCharsets.UTF_8));
         os.close();
       } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);

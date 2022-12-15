@@ -1,0 +1,56 @@
+name: Run Performance Test
+on:
+  workflow_dispatch:
+    inputs:
+      repo:
+        description: "Repo to check out code from. Defaults to the main airbyte repo. Set this when building connectors from forked repos."
+        required: false
+        default: "airbytehq/airbyte"
+      gitref:
+        description: "The git ref to check out from the specified repository."
+        required: false
+        default: master
+      test-name:
+        description: "Test to run classname"
+        required: true
+
+jobs:
+  single-test-runner:
+    timeout-minutes: 300
+    needs: start-platform-build-runner # required to start the main job when the runner is ready
+    runs-on: ${{ needs.start-platform-build-runner.outputs.label }} # run the job on the newly created runner
+    environment: more-secrets
+    steps:
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
+
+      - name: Npm Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.npm
+          key: ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ secrets.CACHE_VERSION }}-npm-${{ runner.os }}-
+
+      # this intentionally does not use restore-keys so we don't mess with gradle caching
+      - name: Gradle Caching
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            **/.venv
+          key: ${{ secrets.CACHE_VERSION }}-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/package-lock.json') }}
+
+      - uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "14"
+
+      - name: Build
+        id: run-specific-test
+        run: ./gradlew allTest --tests *${{ github.event.inputs.test-name }}

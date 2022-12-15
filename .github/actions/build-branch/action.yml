@@ -1,0 +1,42 @@
+name: "Build OSS Branch"
+description: "Build jars and docker images tagged for a particular branch. Primarily used for running OSS branch code in Cloud."
+inputs:
+  branch_version_tag:
+    description: 'Used to tag jars and docker images with a branch-specific version (should use the form "dev-<commit_hash>" to pass AirbyteVersion validation)'
+    required: false
+  build_docker_images:
+    description: 'Build docker images'
+    default: 'true'
+    required: false
+outputs:
+  branch_version_tag:
+    description: "Tag used for jars and docker images. Either user specified or auto generated as `dev-<commit_hash>`"
+    value: ${{ steps.parse-input.outputs.branch_version_tag }}
+runs:
+  using: "composite"
+  steps:
+    - name: "Parse Input"
+      id: parse-input
+      shell: bash
+      run: |-
+        # if the *branch_version_tag* input param is not specified, then generate it as 'dev-<commit_hash>`
+        #
+        [[ "${{ inputs.branch_version_tag }}" != '' ]] && echo "branch_version_tag=${{ inputs.branch_version_tag }}" >> $GITHUB_OUTPUT \
+          || { short_hash=$(git rev-parse --short=10 HEAD); echo "branch_version_tag=dev-$short_hash" >> $GITHUB_OUTPUT ; }
+
+    - name: Prepare Runner for Building
+      uses: ./.github/actions/runner-prepare-for-build
+
+    - name: Build with Docker Images
+      if: inputs.build_docker_images == 'true'
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew build --scan
+      shell: bash
+
+    - name: Build without Docker Images
+      if: inputs.build_docker_images != 'true'
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew test --scan
+      shell: bash
+
+    - name: Publish to Maven Local
+      run: VERSION=${{ steps.parse-input.outputs.branch_version_tag }} SUB_BUILD=PLATFORM ./gradlew publishToMavenLocal
+      shell: bash

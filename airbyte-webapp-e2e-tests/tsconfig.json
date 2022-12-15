@@ -1,0 +1,30 @@
+{
+  "include": ["./**/*.ts"],
+  "exclude": [],
+  "compilerOptions": {
+    "baseUrl": "cypress",
+    "target": "es5",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "noFallthroughCasesInSwitch": true,
+    "types": ["cypress", "node"],
+    "lib": ["es2015", "dom"],
+    "isolatedModules": false,
+    "allowJs": true,
+    "noEmit": true,
+    "paths": {
+      "commands/*": ["commands/*"],
+      "fixtures/*": ["fixtures/*"],
+      "integration": ["integration/*"],
+      "pages/*": ["pages/*"],
+      "plugins/*": ["plugins/*"]
+    }
+  }
+}

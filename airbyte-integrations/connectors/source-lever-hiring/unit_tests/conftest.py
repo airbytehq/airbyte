@@ -1,19 +1,8 @@
 #
-# Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
 from pytest import fixture
-
-
-@fixture
-def test_config():
-    return {
-        "client_id": "test_client_id",
-        "client_secret": "test_client_secret",
-        "refresh_token": "test_refresh_token",
-        "environment": "Sandbox",
-        "start_date": "2021-05-07T00:00:00Z",
-    }
 
 
 @fixture

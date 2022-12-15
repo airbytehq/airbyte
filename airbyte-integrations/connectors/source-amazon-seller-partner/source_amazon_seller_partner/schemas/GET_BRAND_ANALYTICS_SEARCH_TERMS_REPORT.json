@@ -1,0 +1,29 @@
+{
+  "title": "Brand Analytics Search Terms Reports",
+  "description": "Brand Analytics Search Terms Reports",
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "properties": {
+    "departmentName": {
+      "type": ["null", "string"]
+    },
+    "searchTerm": {
+      "type": ["null", "string"]
+    },
+    "searchFrequencyRank": {
+      "type": ["null", "number"]
+    },
+    "clickedAsin": {
+      "type": ["null", "string"]
+    },
+    "clickShareRank": {
+      "type": ["null", "number"]
+    },
+    "clickShare": {
+      "type": ["null", "number"]
+    },
+    "conversionShare": {
+      "type": ["null", "number"]
+    }
+  }
+}

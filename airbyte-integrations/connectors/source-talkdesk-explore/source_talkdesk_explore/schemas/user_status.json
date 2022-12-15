@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "User status",
+  "description": "The User Status report provides a raw log of agent status changes occurring in Talkdesk.",
+  "properties": {
+    "user_id": {
+      "type": "string",
+      "examples": ["13da-3ccd-3423"]
+    },
+    "user_name": {
+      "type": "string",
+      "examples": ["Foo bar"]
+    },
+    "user_email": {
+      "type": "string",
+      "examples": ["robert@talkdesk.com"]
+    },
+    "status_label": {
+      "type": "string",
+      "examples": ["Away"]
+    },
+    "status_start_at": {
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2016-01-29 10:30:00"]
+    },
+    "status_end_at": {
+      "type": "string",
+      "format": "date-time",
+      "examples": ["2016-01-29 10:30:14"]
+    },
+    "status_time": {
+      "type": "integer",
+      "examples": [14]
+    },
+    "is_user_active": {
+      "type": "boolean",
+      "examples": [true]
+    },
+    "team_id": {
+      "type": ["string", "null"],
+      "examples": ["69bd4bed944f4de99cb79736f2ca15b1"]
+    },
+    "team_name": {
+      "type": ["string", "null"],
+      "examples": ["The A-Team"]
+    }
+  }
+}

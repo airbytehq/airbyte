@@ -1,47 +1,55 @@
-import { Router } from "react-router-dom";
-import * as React from "react";
+import React from "react";
+
+import { MemoryRouter } from "react-router-dom";
 import { IntlProvider } from "react-intl";
-import { createMemoryHistory } from "history";
 import { ThemeProvider } from "styled-components";
+import { QueryClientProvider, QueryClient } from "react-query";
 
 // TODO: theme was not working correctly so imported directly
-import { theme, Theme } from "../src/theme";
-import GlobalStyle from "../src/global-styles";
+import { theme } from "../src/theme";
 import messages from "../src/locales/en.json";
 import { FeatureService } from "../src/hooks/services/Feature";
 import { ConfigServiceProvider, defaultConfig } from "../src/config";
+import { DocumentationPanelProvider } from "../src/views/Connector/ConnectorDocumentationLayout/DocumentationPanelContext";
+import { ServicesProvider } from "../src/core/servicesProvider";
+import { analyticsServiceContext } from "../src/hooks/services/Analytics";
+import type { AnalyticsService } from "../src/core/analytics";
 
-interface Props {
-  theme?: Theme;
-}
+const analyticsContextMock: AnalyticsService = {
+    track: () => {},
+    setContext: () => {},
+    removeFromContext: () => {},
+} as unknown as AnalyticsService;
 
-interface Props {
-  children?: React.ReactNode;
-  theme?: Theme;
-}
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: false,
+      suspense: true,
+    },
+  },
+});
 
-class WithProviders extends React.Component<Props> {
-  render() {
-    const { children } = this.props;
-
-    return (
-      <Router history={createMemoryHistory()}>
-        <FeatureService>
-          <IntlProvider messages={messages} locale={"en"}>
-            <ThemeProvider theme={theme}>
-              <ConfigServiceProvider
-                defaultConfig={defaultConfig}
-                providers={[]}
-              >
-                <GlobalStyle />
-                {children}
-              </ConfigServiceProvider>
-            </ThemeProvider>
-          </IntlProvider>
-        </FeatureService>
-      </Router>
-    );
-  }
-}
-
-export default WithProviders;
+export const withProviders = (getStory) => (
+  <React.Suspense fallback={null}>
+    <analyticsServiceContext.Provider value={analyticsContextMock}>
+      <QueryClientProvider client={queryClient}>
+        <ServicesProvider>
+          <MemoryRouter>
+            <IntlProvider messages={messages} locale={"en"}>
+              <ThemeProvider theme={theme}>
+                <ConfigServiceProvider defaultConfig={defaultConfig} providers={[]}>
+                  <DocumentationPanelProvider>
+                    <FeatureService features={[]}>
+                      {getStory()}
+                    </FeatureService>
+                  </DocumentationPanelProvider>
+                </ConfigServiceProvider>
+              </ThemeProvider>
+            </IntlProvider>
+          </MemoryRouter>
+        </ServicesProvider>
+      </QueryClientProvider>
+    </analyticsServiceContext.Provider>
+  </React.Suspense>
+);

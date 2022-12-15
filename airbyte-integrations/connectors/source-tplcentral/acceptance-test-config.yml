@@ -1,0 +1,52 @@
+# See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
+# for more information about how to configure these tests
+connector_image: airbyte/source-tplcentral:dev
+tests:
+  spec:
+    - spec_path: "source_tplcentral/spec.json"
+  connection:
+    - config_path: "secrets/config.json"
+      status: "succeed"
+    - config_path: "integration_tests/invalid_config.json"
+      status: "failed"
+    - config_path: "integration_tests/config_http_url.json"
+      status: "failed"
+  discovery:
+    - config_path: "secrets/config.json"
+  basic_read:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_stock_summaries.json"
+      empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_customers.json"
+      empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_items.json"
+      empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_stock_details.json"
+      empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_inventory.json"
+      empty_streams: []
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_orders.json"
+      empty_streams: []
+  incremental:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_items.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_stock_details.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_inventory.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_orders.json"
+      future_state_path: "integration_tests/abnormal_state.json"
+  full_refresh:
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_stock_summaries.json"
+    - config_path: "secrets/config.json"
+      configured_catalog_path: "integration_tests/configured_catalog_customers.json"

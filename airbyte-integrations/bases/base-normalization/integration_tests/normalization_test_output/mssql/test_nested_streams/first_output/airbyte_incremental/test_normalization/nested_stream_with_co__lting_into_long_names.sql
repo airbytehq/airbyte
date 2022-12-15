@@ -21,6 +21,7 @@
    EXEC('create view test_normalization."nested_stream_with_co__lting_into_long_names_temp_view" as
     
 -- Final base SQL model
+-- depends_on: "test_normalization".test_normalization."nested_stream_with_co__lting_into_long_names_scd"
 select
     _airbyte_unique_key,
     id,

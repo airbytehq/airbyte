@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -11,6 +11,8 @@ import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -24,6 +26,24 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://github.com/login/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://github.com/login/oauth/access_token";
+  // Setting "repo" scope would allow grant not only read but also write
+  // access to our application. Unfortunatelly we cannot follow least
+  // privelege principle here cause github has no option of granular access
+  // tune up.
+  // This is necessary to pull data from private repositories.
+  // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+
+  private static final List<String> SCOPES = Arrays.asList(
+      "repo",
+      "read:org",
+      "read:repo_hook",
+      "read:user",
+      "read:discussion",
+      "workflow");
+
+  public String getScopes() {
+    return String.join("%20", SCOPES);
+  }
 
   public GithubOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -35,22 +55,27 @@ public class GithubOAuthFlow extends BaseOAuth2Flow {
   }
 
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
+
     try {
-      // No scope means read-only access to public information
-      // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
-          .addParameter("state", getState())
-          .build().toString();
+          // we add `scopes` and `state` after we've already built the url, to prevent url encoding for scopes
+          // https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps#available-scopes
+          // we need to keep scopes in the format of: < scope1%20scope2:sub_scope%20scope3 >
+          .build().toString() + "&scope=" + getScopes() + "&state=" + getState();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 

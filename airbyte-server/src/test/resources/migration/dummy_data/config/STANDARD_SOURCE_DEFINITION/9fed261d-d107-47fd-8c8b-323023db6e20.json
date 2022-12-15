@@ -3,5 +3,9 @@
   "name": "Exchange Rates Api",
   "dockerRepository": "airbyte/source-exchangeratesapi-singer",
   "dockerImageTag": "0.2.0",
-  "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-exchangeratesapi_io-source"
+  "documentationUrl": "https://hub.docker.com/r/airbyte/integration-singer-exchangeratesapi_io-source",
+  "spec": {
+    "documentationUrl": "https://docs.airbyte.io/integrations/sources/exchangeratesapi",
+    "connectionSpecification": {}
+  }
 }

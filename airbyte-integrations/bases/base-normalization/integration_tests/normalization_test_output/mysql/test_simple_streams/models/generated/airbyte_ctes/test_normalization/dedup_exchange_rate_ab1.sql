@@ -4,6 +4,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to parse JSON blob stored in a single column and extract into separated field columns as described by the JSON Schema
+-- depends_on: {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }}
 select
     {{ json_extract_scalar('_airbyte_data', ['id'], ['id']) }} as id,
     {{ json_extract_scalar('_airbyte_data', ['currency'], ['currency']) }} as currency,
@@ -19,5 +20,5 @@ select
 from {{ source('test_normalization', '_airbyte_raw_dedup_exchange_rate') }} as table_alias
 -- dedup_exchange_rate
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

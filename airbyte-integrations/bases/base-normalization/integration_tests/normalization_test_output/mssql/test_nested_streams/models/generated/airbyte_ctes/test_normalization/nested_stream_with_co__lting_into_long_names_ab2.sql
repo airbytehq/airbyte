@@ -4,6 +4,7 @@
     tags = [ "top-level-intermediate" ]
 ) }}
 -- SQL model to cast each column to its adequate SQL type converted from the JSON schema type
+-- depends_on: {{ ref('nested_stream_with_co__lting_into_long_names_ab1') }}
 select
     cast(id as {{ dbt_utils.type_string() }}) as id,
     cast({{ adapter.quote('date') }} as {{ dbt_utils.type_string() }}) as {{ adapter.quote('date') }},
@@ -14,5 +15,5 @@ select
 from {{ ref('nested_stream_with_co__lting_into_long_names_ab1') }}
 -- nested_stream_with_co__lting_into_long_names
 where 1 = 1
-{{ incremental_clause('_airbyte_emitted_at') }}
+{{ incremental_clause('_airbyte_emitted_at', this) }}
 

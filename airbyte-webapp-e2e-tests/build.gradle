@@ -1,0 +1,28 @@
+plugins {
+    id "base"
+    id "com.github.node-gradle.node" version "3.3.0"
+}
+
+def nodeVersion = new File("${projectDir}/.nvmrc").text.trim();
+
+node {
+    download = true
+    version = nodeVersion
+}
+
+task e2etest(type: NpmTask) {
+    dependsOn npmInstall
+    // If the cypressWebappKey property has been set from the outside (see tools/bin/e2e_test.sh)
+    // we'll record the cypress session, otherwise we're not recording
+    def recordCypress = project.hasProperty('cypressWebappKey') && project.getProperty('cypressWebappKey')
+    if (recordCypress) {
+        environment = [CYPRESS_KEY: project.getProperty('cypressWebappKey')]
+        args = ['run', 'cypress:ci:record']
+    } else {
+        args = ['run', 'cypress:ci']
+    }
+    inputs.files fileTree('cypress')
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+}
+

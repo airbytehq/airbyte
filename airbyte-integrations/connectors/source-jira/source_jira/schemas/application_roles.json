@@ -50,8 +50,13 @@
     "platform": {
       "type": "boolean",
       "description": "Indicates if the application role belongs to Jira platform (`jira-core`)."
+    },
+    "groupDetails": {
+      "type": ["null", "array"],
+      "description": "Group Details",
+      "items": { "type": ["null", "object"] }
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "description": "Details of an application role."
 }

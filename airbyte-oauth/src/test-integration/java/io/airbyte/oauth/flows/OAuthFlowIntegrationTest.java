@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.http.HttpClient;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@SuppressWarnings("PMD.AvoidReassigningParameters")
 public abstract class OAuthFlowIntegrationTest {
 
   /**
@@ -60,14 +62,17 @@ public abstract class OAuthFlowIntegrationTest {
     httpClient = HttpClient.newBuilder().version(HttpClient.Version.HTTP_1_1).build();
     flow = this.getFlowImplementation(configRepository, httpClient);
 
-    System.out.println(getServerListeningPort());
     server = HttpServer.create(new InetSocketAddress(getServerListeningPort()), 0);
     server.setExecutor(null); // creates a default executor
     server.start();
     serverHandler = new ServerHandler("code");
     // Same endpoint as we use for airbyte instance
-    server.createContext("/auth_flow", serverHandler);
+    server.createContext(getCallBackServerPath(), serverHandler);
 
+  }
+
+  protected String getCallBackServerPath() {
+    return "/auth_flow";
   }
 
   protected int getServerListeningPort() {
@@ -94,7 +99,7 @@ public abstract class OAuthFlowIntegrationTest {
     private String paramValue;
     private boolean succeeded;
 
-    public ServerHandler(String expectedParam) {
+    public ServerHandler(final String expectedParam) {
       this.expectedParam = expectedParam;
       this.paramValue = "";
       this.succeeded = false;
@@ -109,7 +114,7 @@ public abstract class OAuthFlowIntegrationTest {
     }
 
     @Override
-    public void handle(HttpExchange t) {
+    public void handle(final HttpExchange t) {
       final String query = t.getRequestURI().getQuery();
       LOGGER.info("Received query: '{}'", query);
       final Map<String, String> data;
@@ -128,20 +133,20 @@ public abstract class OAuthFlowIntegrationTest {
           t.sendResponseHeaders(500, response.length());
         }
         final OutputStream os = t.getResponseBody();
-        os.write(response.getBytes());
+        os.write(response.getBytes(StandardCharsets.UTF_8));
         os.close();
-      } catch (RuntimeException | IOException e) {
+      } catch (final RuntimeException | IOException e) {
         LOGGER.error("Failed to parse from body {}", query, e);
       }
     }
 
-    private static Map<String, String> deserialize(String query) {
+    private static Map<String, String> deserialize(final String query) {
       if (query == null) {
         return null;
       }
       final Map<String, String> result = new HashMap<>();
-      for (String param : query.split("&")) {
-        String[] entry = param.split("=", 2);
+      for (final String param : query.split("&")) {
+        final String[] entry = param.split("=", 2);
         if (entry.length > 1) {
           result.put(entry[0], entry[1]);
         } else {

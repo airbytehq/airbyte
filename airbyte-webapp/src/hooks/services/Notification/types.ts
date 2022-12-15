@@ -1,18 +1,16 @@
-export type Notification = {
-  id: string | number;
-  title: string;
-  text?: string;
-  isError?: boolean;
-  nonClosable?: boolean;
-  onClose?: () => void;
-};
+import { ToastProps } from "components/ui/Toast";
 
-export type NotificationServiceApi = {
+export interface Notification extends ToastProps {
+  id: string | number;
+  nonClosable?: boolean;
+}
+
+export interface NotificationServiceApi {
   addNotification: (notification: Notification) => void;
   deleteNotificationById: (notificationId: string | number) => void;
   clearAll: () => void;
-};
+}
 
-export type NotificationServiceState = {
+export interface NotificationServiceState {
   notifications: Notification[];
-};
+}

@@ -3,7 +3,7 @@
 ## Airbyte's Standard Tests (v1)
 
 This document describes the old version Standard Tests, please check the latest version [here](../../connector-development/testing-connectors/README.md)
-To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
+To ensure a minimum quality bar, Airbyte runs all connectors against the same set of integration tests \(sources & destinations have two different test suites\). Those tests ensure that each connector adheres to the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and responds correctly to Airbyte commands when provided valid \(or invalid\) inputs.
 
 ### Architecture of standard tests
 
@@ -41,7 +41,7 @@ airbyteStandardSourceTestFile {
 }
 ```
 
-These inputs are all described in the [Airbyte Specification](../../understanding-airbyte/airbyte-specification.md) and will be used as follows:
+These inputs are all described in the [Airbyte Specification](../../understanding-airbyte/airbyte-protocol.md) and will be used as follows:
 
 * **Spec file** will be compared to the spec file output by the connector when the `spec` command is called. 
 * **Config file** is expected to be a valid config file. It's expected that calling `check` with this config will succeed. 
@@ -61,9 +61,11 @@ First, you can run the image locally. Connectors should have instructions in the
 
 ### 2. Requesting GitHub PR Integration Test Runs
 
-{% hint style="warning" %}
+:::caution
+
 This option is not available to PRs from forks, so it is effectively limited to Airbyte employees.
-{% endhint %}
+
+:::
 
 If you don't want to handle secrets, you're making a relatively minor change, or you want to ensure the connector's integration test will run remotely, you should request builds on GitHub. You can request an integration test run by creating a comment with a slash command.
 

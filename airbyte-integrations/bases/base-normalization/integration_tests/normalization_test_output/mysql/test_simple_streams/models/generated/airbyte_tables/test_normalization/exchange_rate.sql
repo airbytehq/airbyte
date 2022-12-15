@@ -4,6 +4,7 @@
     tags = [ "top-level" ]
 ) }}
 -- Final base SQL model
+-- depends_on: {{ ref('exchange_rate_ab3') }}
 select
     id,
     currency,
@@ -14,6 +15,10 @@ select
     nzd,
     usd,
     {{ adapter.quote('column__\'with"_quotes') }},
+    datetime_tz,
+    datetime_no_tz,
+    time_tz,
+    time_no_tz,
     _airbyte_ab_id,
     _airbyte_emitted_at,
     {{ current_timestamp() }} as _airbyte_normalized_at,

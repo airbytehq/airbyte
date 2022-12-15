@@ -1,0 +1,45 @@
+plugins {
+    id "java-library"
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation libs.guava
+    implementation (libs.temporal.sdk) {
+        exclude module: 'guava'
+    }
+    implementation 'org.apache.ant:ant:1.10.10'
+    implementation 'org.apache.commons:commons-text:1.10.0'
+    implementation libs.bundles.datadog
+
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-commons-protocol')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
+    implementation project(':airbyte-protocol:protocol-models')
+    implementation project(':airbyte-worker-models')
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    testImplementation libs.bundles.micronaut.test
+    testImplementation 'com.jayway.jsonpath:json-path:2.7.0'
+    testImplementation 'org.mockito:mockito-inline:4.7.0'
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers
+    testImplementation libs.platform.testcontainers.postgresql
+
+    testImplementation project(':airbyte-commons-docker')
+}
+
+Task publishArtifactsTask = getPublishArtifactsTask("$rootProject.ext.version", project)

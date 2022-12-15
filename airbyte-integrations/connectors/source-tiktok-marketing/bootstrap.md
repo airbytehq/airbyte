@@ -11,5 +11,3 @@ The basic entity is 'advertiser'. All other streams use this required parameter 
 
 Dependent streams have required parameter advertiser_id.
 As cursor field this connector uses "modify_time" values. But endpoints don't provide any mechanism for correct data filtering and sorting thus for incremental sync this connector tries to load all data and to validate a cursor field value on own side.
-
-

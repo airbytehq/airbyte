@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "title": "Ecommerce Spent Segment",
+  "description": "Segment by amount spent on a single order or across all orders.",
+  "properties": {
+    "condition_type": {
+      "type": "string",
+      "x-value": "EcommSpent",
+      "enum": ["EcommSpent"]
+    },
+    "field": {
+      "type": "string",
+      "enum": ["ecomm_spent_one", "ecomm_spent_all"],
+      "title": "Segment Field",
+      "description": "Segment by amount spent on a single order or across all orders.",
+      "example": "ecomm_spent_one"
+    },
+    "op": {
+      "type": "string",
+      "enum": ["greater", "less"],
+      "title": "Segment Operator",
+      "description": "Members who have spent 'more' or 'less' than then specified value.",
+      "example": "greater"
+    },
+    "value": {
+      "type": "integer",
+      "title": "Segment Data",
+      "description": "The total amount a member spent.",
+      "example": 42
+    }
+  }
+}

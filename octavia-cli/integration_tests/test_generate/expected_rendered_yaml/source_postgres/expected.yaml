@@ -1,0 +1,40 @@
+# Configuration for airbyte/source-postgres
+# Documentation about this connector can be found at https://docs.airbyte.com/integrations/sources/postgres
+resource_name: "my_postgres_source"
+definition_type: source
+definition_id: foobar
+definition_image: airbyte/source-postgres
+definition_version: 0.4.4
+
+# EDIT THE CONFIGURATION BELOW!
+configuration:
+  host: # REQUIRED | string | Hostname of the database.
+  port: 5432 # REQUIRED | integer | Port of the database. | Example: 5432
+  database: # REQUIRED | string | Name of the database.
+  schemas: ["public"] # OPTIONAL | array | The list of schemas to sync from. Defaults to user. Case sensitive.
+  username: # REQUIRED | string | Username to use to access the database.
+  password: ${PASSWORD} # SECRET (please store in environment variables) | OPTIONAL | string | Password associated with the username.
+  ssl: # OPTIONAL | boolean | Encrypt client/server communications for increased security.
+  replication_method:
+    ## -------- Pick one valid structure among the examples below: --------
+    method: "Standard" # REQUIRED | string
+    ## -------- Another valid structure for replication_method: --------
+    # method: "CDC" # REQUIRED | string
+    # plugin: "pgoutput" # OPTIONAL | string | A logical decoding plug-in installed on the PostgreSQL server. `pgoutput` plug-in is used by default.If replication table contains a lot of big jsonb values it is recommended to use `wal2json` plug-in. For more information about `wal2json` plug-in read <a href="https://docs.airbyte.com/integrations/sources/postgres">Postgres Source</a> docs.
+    # replication_slot: # REQUIRED | string | A plug-in logical replication slot.
+    # publication: # REQUIRED | string | A Postgres publication used for consuming changes.
+  tunnel_method:
+    ## -------- Pick one valid structure among the examples below: --------
+    tunnel_method: "NO_TUNNEL" # REQUIRED | string | No ssh tunnel needed to connect to database
+    ## -------- Another valid structure for tunnel_method: --------
+    # tunnel_method: "SSH_KEY_AUTH" # REQUIRED | string | Connect through a jump server tunnel host using username and ssh key
+    # tunnel_host: # REQUIRED | string | Hostname of the jump server host that allows inbound ssh tunnel.
+    # tunnel_port: 22 # REQUIRED | integer | Port on the proxy/jump server that accepts inbound ssh connections. | Example: 22
+    # tunnel_user: # REQUIRED | string | OS-level username for logging into the jump server host.
+    # ssh_key: ${SSH_KEY} # SECRET (please store in environment variables) | REQUIRED | string | OS-level user account ssh key credentials in RSA PEM format ( created with ssh-keygen -t rsa -m PEM -f myuser_rsa )
+    ## -------- Another valid structure for tunnel_method: --------
+    # tunnel_method: "SSH_PASSWORD_AUTH" # REQUIRED | string | Connect through a jump server tunnel host using username and password authentication
+    # tunnel_host: # REQUIRED | string | Hostname of the jump server host that allows inbound ssh tunnel.
+    # tunnel_port: 22 # REQUIRED | integer | Port on the proxy/jump server that accepts inbound ssh connections. | Example: 22
+    # tunnel_user: # REQUIRED | string | OS-level username for logging into the jump server host
+    # tunnel_user_password: ${TUNNEL_USER_PASSWORD} # SECRET (please store in environment variables) | REQUIRED | string | OS-level password for logging into the jump server host

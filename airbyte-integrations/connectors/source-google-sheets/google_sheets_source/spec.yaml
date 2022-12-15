@@ -1,0 +1,81 @@
+documentationUrl: https://docs.airbyte.com/integrations/sources/google-sheets
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Google Sheets Source Spec
+  type: object
+  required:
+    - spreadsheet_id
+    - credentials
+  additionalProperties: true
+  properties:
+    spreadsheet_id:
+      type: string
+      title: Spreadsheet Link
+      description: >-
+        Enter the link to the Google spreadsheet you want to sync
+      examples:
+        - https://docs.google.com/spreadsheets/d/1hLd9Qqti3UyLXZB2aFfUWDT7BG-arw2xy4HR3D-dwUb/edit
+    row_batch_size:
+      type: integer
+      title: Row Batch Size
+      description: Number of rows fetched when making a Google Sheet API call. Defaults to 200.
+      default: 200
+    credentials:
+      type: object
+      title: Authentication
+      description: >-
+        Credentials for connecting to the Google Sheets API
+      oneOf:
+        - title: Authenticate via Google (OAuth)
+          type: object
+          required:
+            - auth_type
+            - client_id
+            - client_secret
+            - refresh_token
+          properties:
+            auth_type:
+              type: string
+              const: Client
+            client_id:
+              title: Client ID
+              type: string
+              description: "Enter your Google application's Client ID"
+              airbyte_secret: true
+            client_secret:
+              title: Client Secret
+              type: string
+              description: "Enter your Google application's Client Secret"
+              airbyte_secret: true
+            refresh_token:
+              title: Refresh Token
+              type: string
+              description: "Enter your Google application's refresh token"
+              airbyte_secret: true
+        - title: Service Account Key Authentication
+          type: object
+          required:
+            - auth_type
+            - service_account_info
+          properties:
+            auth_type:
+              type: string
+              const: Service
+            service_account_info:
+              type: string
+              title: Service Account Information.
+              description: 'Enter your Google Cloud <a href="https://cloud.google.com/iam/docs/creating-managing-service-account-keys#creating_service_account_keys">service account key</a> in JSON format'
+              airbyte_secret: true
+              examples:
+                - '{ "type": "service_account", "project_id": YOUR_PROJECT_ID, "private_key_id": YOUR_PRIVATE_KEY, ... }'
+authSpecification:
+  auth_type: oauth2.0
+  oauth2Specification:
+    rootObject:
+      - credentials
+      - 0
+    oauthFlowInitParameters:
+      - ["client_id"]
+      - ["client_secret"]
+    oauthFlowOutputParameters:
+      - ["refresh_token"]

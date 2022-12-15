@@ -5,6 +5,7 @@
   as (
     
 -- Final base SQL model
+-- depends_on: "postgres".test_normalization."pos_dedup_cdcx_scd"
 select
     _airbyte_unique_key,
     "id",

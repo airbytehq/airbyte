@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.integrations.source.db2_strict_encrypt;
@@ -19,6 +19,8 @@ import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -47,7 +49,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     certificate = getCertificate();
     try {
       convertAndImportCertificate(certificate);
-    } catch (IOException | InterruptedException e) {
+    } catch (final IOException | InterruptedException e) {
       throw new RuntimeException("Failed to import certificate into Java Keystore");
     }
 
@@ -59,14 +61,18 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     TABLE_NAME_WITH_SPACES = "ID AND NAME";
     TABLE_NAME_WITHOUT_PK = "ID_AND_NAME_WITHOUT_PK";
     TABLE_NAME_COMPOSITE_PK = "FULL_NAME_COMPOSITE_PK";
+    TABLE_NAME_WITHOUT_CURSOR_TYPE = "TABLE_NAME_WITHOUT_CURSOR_TYPE";
+    TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE = "TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE";
+    TABLE_NAME_AND_TIMESTAMP = "NAME_AND_TIMESTAMP";
     TEST_TABLES = ImmutableSet
-        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK);
+        .of(TABLE_NAME, TABLE_NAME_WITHOUT_PK, TABLE_NAME_COMPOSITE_PK, TABLE_NAME_AND_TIMESTAMP);
     COL_ID = "ID";
     COL_NAME = "NAME";
     COL_UPDATED_AT = "UPDATED_AT";
     COL_FIRST_NAME = "FIRST_NAME";
     COL_LAST_NAME = "LAST_NAME";
     COL_LAST_NAME_WITH_SPACE = "LAST NAME";
+    COL_TIMESTAMP = "TIMESTAMP";
     // In Db2 PK columns must be declared with NOT NULL statement.
     COLUMN_CLAUSE_WITH_PK = "id INTEGER NOT NULL, name VARCHAR(200), updated_at DATE";
     COLUMN_CLAUSE_WITH_COMPOSITE_PK = "first_name VARCHAR(200) NOT NULL, last_name VARCHAR(200) NOT NULL, updated_at DATE";
@@ -74,6 +80,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     // The schema name must be in the catalog when attempting the DROP statement; otherwise an error is
     // returned.
     DROP_SCHEMA_QUERY = "DROP SCHEMA %s RESTRICT";
+    CREATE_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "CREATE TABLE %s (%s boolean)";
+    INSERT_TABLE_WITHOUT_CURSOR_TYPE_QUERY = "INSERT INTO %s VALUES(true)";
   }
 
   @BeforeEach
@@ -117,7 +125,12 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
             sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
-
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_TYPE))));
+    super.database.execute(connection -> connection.createStatement().execute(String
+        .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
+            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE))));
     super.tearDown();
   }
 
@@ -145,7 +158,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
   }
 
   @Override
-  public AbstractJdbcSource getJdbcSource() {
+  public AbstractJdbcSource<JDBCType> getJdbcSource() {
     return new Db2Source();
   }
 
@@ -175,6 +188,7 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_KEYDB /database/config/db2inst1/server.kdb");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_STASH /database/config/db2inst1/server.sth");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVR_LABEL mylabel");
+    db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_VERSIONS TLSV12");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2 update dbm cfg using SSL_SVCENAME 50000");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2set -i db2inst1 DB2COMM=SSL");
     db.execInContainer("su", "-", "db2inst1", "-c", "db2stop force");
@@ -182,9 +196,9 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     return db.execInContainer("su", "-", "db2inst1", "-c", "cat server.arm").getStdout();
   }
 
-  private static void convertAndImportCertificate(String certificate) throws IOException, InterruptedException {
-    Runtime run = Runtime.getRuntime();
-    try (PrintWriter out = new PrintWriter("certificate.pem")) {
+  private static void convertAndImportCertificate(final String certificate) throws IOException, InterruptedException {
+    final Runtime run = Runtime.getRuntime();
+    try (final PrintWriter out = new PrintWriter("certificate.pem", StandardCharsets.UTF_8)) {
       out.print(certificate);
     }
     runProcess("openssl x509 -outform der -in certificate.pem -out certificate.der", run);
@@ -194,8 +208,8 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
         run);
   }
 
-  private static void runProcess(String cmd, Runtime run) throws IOException, InterruptedException {
-    Process pr = run.exec(cmd);
+  private static void runProcess(final String cmd, final Runtime run) throws IOException, InterruptedException {
+    final Process pr = run.exec(cmd);
     if (!pr.waitFor(30, TimeUnit.SECONDS)) {
       pr.destroy();
       throw new RuntimeException("Timeout while executing: " + cmd);

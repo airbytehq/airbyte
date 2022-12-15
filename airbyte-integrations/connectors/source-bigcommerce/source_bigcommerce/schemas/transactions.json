@@ -9,7 +9,7 @@
       "type": ["null", "string"]
     },
     "amount": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "currency": {
       "type": ["null", "string"]

@@ -1,23 +1,25 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
 public class SlackOAuthFlow extends BaseOAuth2Flow {
 
-  final String SLACK_CONSENT_URL_BASE = "https://slack.com/oauth/authorize";
-  final String SLACK_TOKEN_URL = "https://slack.com/api/oauth.access";
+  private static final String AUTHORIZE_URL = "https://slack.com/oauth/authorize";
+  private static final String ACCESS_TOKEN_URL = "https://slack.com/api/oauth.access";
 
   public SlackOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
@@ -34,9 +36,13 @@ public class SlackOAuthFlow extends BaseOAuth2Flow {
    * accordingly.
    */
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
-      return new URIBuilder(SLACK_CONSENT_URL_BASE)
+      return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
@@ -51,8 +57,17 @@ public class SlackOAuthFlow extends BaseOAuth2Flow {
    * Returns the URL where to retrieve the access token from.
    */
   @Override
-  protected String getAccessTokenUrl() {
-    return SLACK_TOKEN_URL;
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
+    return ACCESS_TOKEN_URL;
+  }
+
+  @Override
+  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) throws IOException {
+    if (data.has("access_token")) {
+      return Map.of("access_token", data.get("access_token").asText());
+    } else {
+      throw new IOException(String.format("Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL));
+    }
   }
 
 }

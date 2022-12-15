@@ -1,5 +1,6 @@
 {
-  "type": "object",
+  "type": ["null", "object"],
+  "additionalProperties": true,
   "properties": {
     "allocation_method": {
       "type": ["null", "string"]
@@ -146,6 +147,9 @@
     },
     "allocation_limit": {
       "type": ["null", "integer"]
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

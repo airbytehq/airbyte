@@ -20,12 +20,7 @@ const useWorkspaceEditor = (): {
   const [successMessage, setSuccessMessage] = useState<React.ReactNode>(null);
 
   const [{ loading }, updateData] = useAsyncFn(
-    async (data: {
-      news: boolean;
-      securityUpdates: boolean;
-      anonymousDataCollection: boolean;
-      email?: string;
-    }) => {
+    async (data: { news: boolean; securityUpdates: boolean; anonymousDataCollection: boolean; email?: string }) => {
       setErrorMessage(null);
       setSuccessMessage(null);
       try {

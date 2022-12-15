@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "name": "Item",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"],
+      "maxLength": 40
+    },
+    "occurred_at": {
+      "type": ["integer", "null"]
+    },
+    "source": {
+      "type": ["string", "null"],
+      "enum": [
+        "admin_console",
+        "api",
+        "scheduled_job",
+        "hosted_page",
+        "portal",
+        "system",
+        "none",
+        "js_api",
+        "migration",
+        "bulk_operation",
+        "external_service"
+      ]
+    },
+    "user": {
+      "type": ["string", "null"],
+      "maxLength": 150
+    },
+    "event_type": {
+      "type": ["string", "null"]
+    },
+    "api_version": {
+      "type": ["string", "null"],
+      "enum": ["v1", "v2"]
+    },
+    "webhook_status": {
+      "type": ["string", "null"],
+      "enum": [
+        "not_configured",
+        "scheduled",
+        "succeeded",
+        "re_scheduled",
+        "failed",
+        "skipped",
+        "not_applicable"
+      ]
+    },
+    "content": {
+      "type": ["object", "null"]
+    },
+    "webhooks": {
+      "type": ["array", "null"],
+      "items": {
+        "type": ["object", "null"],
+        "properties": {
+          "id": {
+            "type": ["string", "null"],
+            "maxLength": 40
+          },
+          "webhook_status": {
+            "type": ["string", "null"],
+            "enum": [
+              "not_configured",
+              "scheduled",
+              "succeeded",
+              "re_scheduled",
+              "failed",
+              "skipped",
+              "not_applicable"
+            ]
+          }
+        }
+      }
+    },
+    "custom_fields": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "name": {
+            "type": ["null", "string"]
+          },
+          "value": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    }
+  }
+}

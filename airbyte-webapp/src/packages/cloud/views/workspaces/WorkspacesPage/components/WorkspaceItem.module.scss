@@ -1,0 +1,22 @@
+@use "scss/colors";
+@use "scss/mixins";
+@use "scss/variables";
+
+.button {
+  @include mixins.shadow;
+
+  padding: 20px 28px 20px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  cursor: pointer;
+  width: 100%;
+  background: colors.$white;
+  border-radius: variables.$border-radius-lg;
+  border: none;
+}
+
+.iconColor {
+  color: colors.$blue-400;
+}

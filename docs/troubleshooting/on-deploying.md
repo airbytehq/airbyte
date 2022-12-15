@@ -41,14 +41,13 @@ Check if all Airbyte containers are running, executing: `docker ps`
 
 ```text
 CONTAINER ID   IMAGE                            COMMAND                  CREATED        STATUS        PORTS                              NAMES
-f45f3cfe1e16   airbyte/scheduler:1.11.1-alpha   "/bin/bash -c './wai…"   2 hours ago    Up 2 hours                                      airbyte-scheduler
 f02fc709b130   airbyte/server:1.11.1-alpha      "/bin/bash -c './wai…"   2 hours ago    Up 2 hours   8000/tcp, [...] :::8001->8001/tcp  airbyte-server
 153b2b322870   airbyte/webapp:1.11.1-alpha      "/docker-entrypoint.…"   2 hours ago    Up 2 hours   :::8000->80/tcp                    airbyte-webapp
 b88d94652268   airbyte/db:1.11.1-alpha          "docker-entrypoint.s…"   2 hours ago    Up 2 hours   5432/tcp                           airbyte-db
 0573681a10e0   temporalio/auto-setup:1.7.0      "/entrypoint.sh /bin…"   2 hours ago    Up 2 hours   6933-6935/tcp, [...]               airbyte-temporal
 ```
 
-You must see 5 containers running. If you are not seeing execute the following steps:
+You must see 4 containers running. If you are not seeing execute the following steps:
 
 * `docker-compose down -v`
 * `docker-compose up`
@@ -61,11 +60,11 @@ First, let's check the server logs by running `docker logs airbyte-server | grep
  If this command returns any output, please run `docker logs airbyte-server > airbyte-server.log`.   
  This command will create a file in the current directory. We advise you to send a message on our \#issues on Slack channel
 
-If you don't have any server errors let's check the scheduler, `docker logs airbyte-scheduler | grep ERROR`.   
- If this command returns any output, please run `docker logs airbyte-scheduler > airbyte-scheduler.log`.   
+If you don't have any server errors let's check the worker, `docker logs airbyte-worker | grep ERROR`.   
+ If this command returns any output, please run `docker logs airbyte-worker > airbyte-worker.log`.   
  This command will create a file in the current directory. We advise you to send a message on our \#issues on Slack channel
 
-If there is no error printed in both cases, we recommend running: `docker restart airbyte-server airbyte-scheduler`   
+If there is no error printed in both cases, we recommend running: `docker restart airbyte-server airbyte-worker`   
  Wait a few moments and try to access the interface again.
 
 ## `docker.errors.DockerException`: Error while fetching server API version
@@ -86,3 +85,36 @@ This happens \(sometimes\) on Windows system when you first install `docker`. Yo
 
 If you are okay with losing your previous Airbyte configurations, you can run `docker-compose down -v` and that should fix things then `docker-compose up`.
 
+## `unauthorized: incorrect username or password` when running `docker-compose up`
+
+If you see the following error:
+
+```bash
+ERROR: Head "https://registry-1.docker.io/v2/airbyte/init/manifests/{XXX}": unauthorized: incorrect username or password
+```
+
+You are most likely logged into Docker with your email address instead of your Docker ID.
+Log out of Docker by running `docker logout` and try running `docker-compose up` again.
+
+## Protocol Version errors from the bootloader when trying to upgrade
+
+When starting up Airbyte, the bootloader may fail with the following error:
+```
+Aborting bootloader to avoid breaking existing connection after an upgrade. Please address airbyte protocol version support issues in the connectors before retrying.
+```
+
+We aborted the upgrade to avoid breaking existing connections due to a deprecation of protocol version.
+
+Looking at the `airbyte-bootloader` logs, there should be a few messages describing the change of support range of the Airbyte Protocol:
+
+```
+2022-11-21 22:07:20 INFO i.a.b.ProtocolVersionChecker(validate):81 - Detected an AirbyteProtocolVersion range change from [0.0.0:2.0.0] to [1.0.0:2.0.0]
+2022-11-21 22:07:20 WARN i.a.b.ProtocolVersionChecker(validate):98 - The following connectors need to be upgraded before being able to upgrade the platform
+2022-11-21 22:07:20 WARN j.u.s.ReferencePipeline$3$1(accept):197 - Source: d53f9084-fa6b-4a5a-976c-5b8392f4ad8a: E2E Testing: protocol version: 0.2.1
+```
+
+From this example, this upgrade will drop the support for the major version 0 of the Airbyte Protocol. One connector here is problematic, we have the `E2E Testing` source connector that is blocking the upgrade because it is still using protocol version 0.2.1.
+
+In order to resolve this situation, all the problematic connectors must be upgraded to a version that is using a newer version of the Airbyte Protocol. In this specific example, we should target version 1 or 2, our recommendation is to always target the most recent version.
+
+For more details on how to upgrade a custom connector, you may want to refer to the [custom connector](../operator-guides/using-custom-connectors.md) documentation.

@@ -1,0 +1,71 @@
+{
+  "type": ["object", "null"],
+  "properties": {
+    "ad_break_failure_reason": {
+      "type": ["string", "null"]
+    },
+    "broadcast_start_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "creation_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "dash_ingest_url": {
+      "type": ["string", "null"]
+    },
+    "dash_preview_url": {
+      "type": ["string", "null"]
+    },
+    "description": {
+      "type": ["string", "null"]
+    },
+    "embed_html": {
+      "type": ["string", "null"]
+    },
+    "from": {
+      "type": ["string", "null"]
+    },
+    "id": {
+      "type": ["string", "null"]
+    },
+    "is_manual_mode": {
+      "type": ["boolean", "null"]
+    },
+    "is_reference_only": {
+      "type": ["boolean", "null"]
+    },
+    "live_views": {
+      "type": ["integer", "null"]
+    },
+    "overlay_url": {
+      "type": ["string", "null"]
+    },
+    "permalink_url": {
+      "type": ["string", "null"]
+    },
+    "planned_start_time": {
+      "type": ["string", "null"],
+      "format": "datetime"
+    },
+    "seconds_left": {
+      "type": ["integer", "null"]
+    },
+    "secure_stream_url": {
+      "type": ["string", "null"]
+    },
+    "status": {
+      "type": ["string", "null"]
+    },
+    "stream_url": {
+      "type": ["string", "null"]
+    },
+    "title": {
+      "type": ["string", "null"]
+    },
+    "total_views": {
+      "type": ["string", "null"]
+    }
+  }
+}

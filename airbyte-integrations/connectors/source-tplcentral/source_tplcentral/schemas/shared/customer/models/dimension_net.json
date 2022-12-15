@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "NetWeight": {
+      "type": ["null", "number"]
+    },
+    "Length": {
+      "type": ["null", "number"]
+    },
+    "Width": {
+      "type": ["null", "number"]
+    },
+    "Height": {
+      "type": ["null", "number"]
+    },
+    "Weight": {
+      "type": ["null", "number"]
+    }
+  }
+}

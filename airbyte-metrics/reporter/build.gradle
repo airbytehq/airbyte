@@ -1,0 +1,42 @@
+plugins {
+    id 'application'
+}
+
+configurations {
+    jdbc
+}
+
+dependencies {
+    annotationProcessor platform(libs.micronaut.bom)
+    annotationProcessor libs.bundles.micronaut.annotation.processor
+
+    implementation platform(libs.micronaut.bom)
+    implementation libs.bundles.micronaut
+
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-db:jooq')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
+
+    implementation(libs.jooq) {
+        force = true
+    }
+
+    testAnnotationProcessor platform(libs.micronaut.bom)
+    testAnnotationProcessor libs.bundles.micronaut.test.annotation.processor
+
+    testImplementation project(':airbyte-test-utils')
+    testImplementation libs.bundles.micronaut.test
+    testImplementation libs.postgresql
+    testImplementation libs.platform.testcontainers.postgresql
+}
+
+application {
+    applicationName = "airbyte-metrics-reporter"
+    mainClass = 'io.airbyte.metrics.reporter.Application'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
+}
+
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}

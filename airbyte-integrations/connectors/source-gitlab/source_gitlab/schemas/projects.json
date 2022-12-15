@@ -138,7 +138,7 @@
       "type": ["null", "boolean"]
     },
     "container_expiration_policy": {
-      "type": "object",
+      "type": ["null", "object"],
       "properties": {
         "cadence": {
           "type": ["null", "string"]

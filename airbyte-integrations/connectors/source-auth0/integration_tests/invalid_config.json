@@ -1,0 +1,7 @@
+{
+  "base_url": "https://dev-kxzbr15d.us.auth0.com/",
+  "credentials": {
+    "auth_type": "oauth2_access_token",
+    "access_token": "Invalid-token"
+  }
+}

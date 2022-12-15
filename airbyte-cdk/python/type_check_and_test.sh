@@ -5,8 +5,7 @@
 
 # Static Type Checking
 echo "Running MyPy to static check and test files."
-# Exclude Singer for the time being.
-mypy --exclude '/*singer*/' airbyte_cdk/ unit_tests/
+mypy airbyte_cdk/ unit_tests/
 
 printf "\n"
 

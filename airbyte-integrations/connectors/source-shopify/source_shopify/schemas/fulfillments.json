@@ -1,5 +1,6 @@
 {
   "type": "object",
+  "additionalProperties": true,
   "properties": {
     "created_at": {
       "type": ["null", "string"],
@@ -264,6 +265,9 @@
           }
         }
       }
+    },
+    "shop_url": {
+      "type": ["null", "string"]
     }
   }
 }

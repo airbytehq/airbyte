@@ -1,9 +1,10 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.oauth.BaseOAuth2Flow;
@@ -27,23 +28,25 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
     super(configRepository, httpClient, stateSupplier, TOKEN_REQUEST_CONTENT_TYPE.JSON);
   }
 
-  /**
-   * Depending on the OAuth flow implementation, the URL to grant user's consent may differ,
-   * especially in the query parameters to be provided. This function should generate such consent URL
-   * accordingly.
-   *
-   * @param definitionId The configured definition ID of this client
-   * @param clientId The configured client ID
-   * @param redirectUrl the redirect URL
-   */
   @Override
-  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId,
+                                    final String clientId,
+                                    final String redirectUrl,
+                                    final JsonNode inputOAuthConfiguration)
+      throws IOException {
     try {
+      /*
+       * Not all accounts have access to all scopes so we're requesting them as optional. Hubspot still
+       * expects scopes to be defined, so the contacts scope is left as required as it is accessible by
+       * any marketing or CRM account according to
+       * https://legacydocs.hubspot.com/docs/methods/oauth2/initiate-oauth-integration#scopes
+       */
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("state", getState())
-          .addParameter("scopes", getScopes())
+          .addParameter("scopes", getRequiredScopes())
+          .addParameter("optional_scopes", getOptionalScopes())
           .build().toString();
     } catch (final URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
@@ -65,7 +68,7 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         .build();
   }
 
-  private String getScopes() {
+  private String getOptionalScopes() {
     return String.join(" ", "content",
         "crm.schemas.deals.read",
         "crm.objects.owners.read",
@@ -75,20 +78,25 @@ public class HubspotOAuthFlow extends BaseOAuth2Flow {
         "crm.objects.companies.read",
         "crm.lists.read",
         "crm.objects.deals.read",
-        "crm.schemas.contacts.read",
         "crm.objects.contacts.read",
         "crm.schemas.companies.read",
         "files",
         "forms-uploaded-files",
-        "files.ui_hidden.read");
+        "files.ui_hidden.read",
+        "crm.objects.feedback_submissions.read",
+        "sales-email-read",
+        "automation");
+  }
+
+  private String getRequiredScopes() {
+    return "crm.schemas.contacts.read";
   }
 
   /**
    * Returns the URL where to retrieve the access token from.
-   *
    */
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return "https://api.hubapi.com/oauth/v1/token";
   }
 

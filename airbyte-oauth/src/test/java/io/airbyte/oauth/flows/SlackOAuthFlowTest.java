@@ -1,79 +1,44 @@
 /*
- * Copyright (c) 2021 Airbyte, Inc., all rights reserved.
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
 package io.airbyte.oauth.flows;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.SourceOAuthParameter;
-import io.airbyte.config.persistence.ConfigNotFoundException;
-import io.airbyte.config.persistence.ConfigRepository;
-import io.airbyte.validation.json.JsonValidationException;
-import java.io.IOException;
-import java.net.http.HttpClient;
-import java.net.http.HttpResponse;
-import java.util.List;
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.oauth.BaseOAuthFlow;
+import io.airbyte.oauth.MoreOAuthParameters;
 import java.util.Map;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
-public class SlackOAuthFlowTest {
+public class SlackOAuthFlowTest extends BaseOAuthFlowTest {
 
-  private UUID workspaceId;
-  private UUID definitionId;
-  private ConfigRepository configRepository;
-  private SlackOAuthFlow slackOAuthFlow;
-  private HttpClient httpClient;
-
-  private static final String REDIRECT_URL = "https://airbyte.io";
-
-  private static String getConstantState() {
-    return "state";
+  @Override
+  protected BaseOAuthFlow getOAuthFlow() {
+    return new SlackOAuthFlow(getConfigRepository(), getHttpClient(), this::getConstantState);
   }
 
-  @BeforeEach
-  public void setup() throws IOException, JsonValidationException {
-    workspaceId = UUID.randomUUID();
-    definitionId = UUID.randomUUID();
-    configRepository = mock(ConfigRepository.class);
-    httpClient = mock(HttpClient.class);
-    when(configRepository.listSourceOAuthParam()).thenReturn(List.of(new SourceOAuthParameter()
-        .withOauthParameterId(UUID.randomUUID())
-        .withSourceDefinitionId(definitionId)
-        .withWorkspaceId(workspaceId)
-        .withConfiguration(Jsons.jsonNode(Map.of("credentials", ImmutableMap.builder()
-            .put("client_id", "test_client_id")
-            .put("client_secret", "test_client_secret")
-            .build())))));
-    slackOAuthFlow = new SlackOAuthFlow(configRepository, httpClient, SlackOAuthFlowTest::getConstantState);
-
+  @Override
+  protected String getExpectedConsentUrl() {
+    return "https://slack.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=read";
   }
 
-  @Test
-  public void testGetSourceConsentUrl() throws IOException, ConfigNotFoundException {
-    final String consentUrl = slackOAuthFlow.getSourceConsentUrl(workspaceId, definitionId, REDIRECT_URL);
-    assertEquals("https://slack.com/oauth/authorize?client_id=test_client_id&redirect_uri=https%3A%2F%2Fairbyte.io&state=state&scope=read",
-        consentUrl);
+  @Override
+  protected Map<String, String> getExpectedOutput() {
+    return Map.of(
+        "access_token", "access_token_response",
+        "client_id", MoreOAuthParameters.SECRET_MASK,
+        "client_secret", MoreOAuthParameters.SECRET_MASK);
   }
 
-  @Test
-  public void testCompleteSourceOAuth() throws IOException, JsonValidationException, InterruptedException, ConfigNotFoundException {
+  @Override
+  protected JsonNode getCompleteOAuthOutputSpecification() {
+    return getJsonSchema(Map.of("access_token", Map.of("type", "string")));
+  }
 
-    final Map<String, String> returnedCredentials = Map.of("refresh_token", "refresh_token_response");
-    final HttpResponse response = mock(HttpResponse.class);
-    when(response.body()).thenReturn(Jsons.serialize(returnedCredentials));
-    when(httpClient.send(any(), any())).thenReturn(response);
-    final Map<String, Object> queryParams = Map.of("code", "test_code");
-    final Map<String, Object> actualQueryParams =
-        slackOAuthFlow.completeSourceOAuth(workspaceId, definitionId, queryParams, REDIRECT_URL);
-    assertEquals(Jsons.serialize(Map.of("credentials", returnedCredentials)), Jsons.serialize(actualQueryParams));
+  @Override
+  protected Map<String, String> getExpectedFilteredOutput() {
+    return Map.of(
+        "access_token", "access_token_response",
+        "client_id", MoreOAuthParameters.SECRET_MASK);
   }
 
 }

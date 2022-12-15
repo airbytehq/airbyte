@@ -1,47 +1,39 @@
+import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import { useIntl } from "react-intl";
-import styled from "styled-components";
 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFileDownload } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "components/ui/Button";
 
-import { Button } from "components";
-type IProps = {
-  logs: string[];
+import { JobDebugInfoRead } from "core/request/AirbyteClient";
+import { useCurrentWorkspaceId, useGetWorkspace } from "services/workspaces/WorkspacesService";
+import { downloadFile, fileizeString } from "utils/file";
+
+interface DownloadButtonProps {
+  jobDebugInfo: JobDebugInfoRead;
   fileName: string;
-};
+}
 
-const Download = styled(Button)`
-  position: absolute;
-  top: 9px;
-  right: 11px;
-`;
-
-const DownloadButton: React.FC<IProps> = ({ logs, fileName }) => {
-  const formatMessage = useIntl().formatMessage;
+const DownloadButton: React.FC<DownloadButtonProps> = ({ jobDebugInfo, fileName }) => {
+  const { formatMessage } = useIntl();
+  const { name } = useGetWorkspace(useCurrentWorkspaceId());
 
   const downloadFileWithLogs = () => {
-    const element = document.createElement("a");
-    const file = new Blob([logs.join("\n")], {
+    const file = new Blob([jobDebugInfo.attempts.flatMap((info) => info.logs.logLines).join("\n")], {
       type: "text/plain;charset=utf-8",
     });
-    element.href = URL.createObjectURL(file);
-    element.download = `${fileName}.txt`;
-    document.body.appendChild(element); // Required for this to work in FireFox
-    element.click();
-    document.body.removeChild(element);
+    downloadFile(file, fileizeString(`${name}-${fileName}.txt`));
   };
 
   return (
-    <Download
+    <Button
       onClick={downloadFileWithLogs}
-      secondary
+      variant="secondary"
       title={formatMessage({
         id: "sources.downloadLogs",
       })}
-    >
-      <FontAwesomeIcon icon={faFileDownload} />
-    </Download>
+      icon={<FontAwesomeIcon icon={faFileDownload} />}
+    />
   );
 };
 

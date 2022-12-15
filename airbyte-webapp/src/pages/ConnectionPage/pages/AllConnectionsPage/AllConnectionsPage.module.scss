@@ -1,0 +1,10 @@
+@use "scss/colors";
+
+.link {
+  color: colors.$dark-blue;
+
+  &:hover,
+  &:focus {
+    color: colors.$blue-400;
+  }
+}

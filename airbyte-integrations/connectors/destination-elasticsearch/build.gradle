@@ -6,17 +6,18 @@ plugins {
 
 application {
     mainClass = 'io.airbyte.integrations.destination.elasticsearch.ElasticsearchDestination'
+    applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
 dependencies {
-    implementation project(':airbyte-config:models')
-    implementation project(':airbyte-protocol:models')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-protocol:protocol-models')
     implementation project(':airbyte-integrations:bases:base-java')
     implementation files(project(':airbyte-integrations:bases:base-java').airbyteDocker.outputs)
 
     implementation 'co.elastic.clients:elasticsearch-java:7.15.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.12.3'
-    implementation 'org.projectlombok:lombok:1.18.20'
 
     // EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
     // https://eclipse-ee4j.github.io/jsonp/
@@ -29,9 +30,8 @@ dependencies {
 
     // MIT
     // https://www.testcontainers.org/
-    //implementation "org.testcontainers:testcontainers:1.16.0"
-    testImplementation "org.testcontainers:elasticsearch:1.15.3"
-    integrationTestJavaImplementation "org.testcontainers:elasticsearch:1.15.3"
+    testImplementation libs.connectors.testcontainers.elasticsearch
+    integrationTestJavaImplementation libs.connectors.testcontainers.elasticsearch
 
     integrationTestJavaImplementation project(':airbyte-integrations:bases:standard-destination-test')
     integrationTestJavaImplementation project(':airbyte-integrations:connectors:destination-elasticsearch')
