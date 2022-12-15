@@ -201,3 +201,16 @@ class Posting(BaseSchemaModel):
 class Stage(BaseSchemaModel):
     id: str
     text: str
+
+class Contact(BaseSchemaModel):
+    id: str
+    name: str
+    headline: str
+    location: dict
+    emails: List
+    phones: List
+
+class Source(BaseSchemaModel):
+    text: str
+    count: int
+

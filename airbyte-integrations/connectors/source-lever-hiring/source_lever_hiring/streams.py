@@ -10,7 +10,7 @@ import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.streams.http import HttpStream
 
-from .schemas import Application, BaseSchemaModel, Interview, Note, Offer, Opportunity, Referral, User, ArchiveReason, Posting, Stage
+from .schemas import Application, BaseSchemaModel, Interview, Note, Offer, Opportunity, Referral, User, ArchiveReason, Posting, Stage, Contact, Source
 
 
 class LeverHiringStream(HttpStream, ABC):
@@ -166,11 +166,23 @@ class Stages(LeverHiringStream):
     schema = Stage
 
 
-class Postings(IncrementalLeverHiringStream):
+class Postings(LeverHiringStream):
     """
     Postings stream: https://hire.lever.co/developer/documentation#postings
     """
 
     schema = Posting
-    
 
+class Contacts(LeverHiringStream):
+    """
+    Postings stream: https://hire.lever.co/developer/documentation#contacts
+    """
+
+    schema = Contact
+    
+class Sources(LeverHiringStream):
+    """
+    Postings stream: https://hire.lever.co/developer/documentation#sources
+    """
+
+    schema = Source
