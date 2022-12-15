@@ -1,5 +1,6 @@
 @use "scss/_colors";
 @use "scss/_variables";
+@forward "./CatalogTreeTableRow.module.scss";
 
 .cellText {
   color: colors.$grey;
@@ -18,12 +19,5 @@
 }
 
 .checkboxCell {
-  margin-right: variables.$spacing-sm;
-  max-width: 43px;
-  font-size: 10px;
-  line-height: 13px;
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  padding-left: variables.$spacing-xl + variables.$spacing-sm;
+  @extend %streamRowCheckboxCell;
 }
