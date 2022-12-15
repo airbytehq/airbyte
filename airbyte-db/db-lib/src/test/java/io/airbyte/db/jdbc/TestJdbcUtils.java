@@ -390,9 +390,7 @@ class TestJdbcUtils {
     expected.put("decimal", new BigDecimal(1));
     expected.put("char", "a");
     expected.put("varchar", "a");
-    // todo (cgardens) we should parse this to a date string
     expected.put("date", "2020-11-01");
-    // todo (cgardens) we should parse this to a time string
     expected.put("time", "05:00:00.000000");
     expected.put("timestamp", "2001-09-29T03:00:00.000000Z");
     expected.put("binary1", "aaaa".getBytes(Charsets.UTF_8));

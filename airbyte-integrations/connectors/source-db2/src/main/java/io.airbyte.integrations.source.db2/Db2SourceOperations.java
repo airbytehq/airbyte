@@ -4,18 +4,18 @@
 
 package io.airbyte.integrations.source.db2;
 
+import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLDate;
+import static io.airbyte.db.jdbc.DateTimeConverter.putJavaSQLTime;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.db.jdbc.DateTimeConverter;
 import io.airbyte.db.jdbc.JdbcSourceOperations;
-
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
@@ -80,9 +80,8 @@ public class Db2SourceOperations extends JdbcSourceOperations {
                          final String columnName,
                          final ResultSet resultSet,
                          final int index)
-          throws SQLException {
-    final Date date = resultSet.getDate(index);
-    node.put(columnName, DateTimeConverter.convertToDate(date));
+      throws SQLException {
+    putJavaSQLDate(node, columnName, resultSet, index);
   }
 
   @Override
@@ -90,10 +89,8 @@ public class Db2SourceOperations extends JdbcSourceOperations {
                          final String columnName,
                          final ResultSet resultSet,
                          final int index)
-          throws SQLException {
-    // resultSet.getTime() will lose nanoseconds precision
-    final LocalTime localTime = resultSet.getTimestamp(index).toLocalDateTime().toLocalTime();
-    node.put(columnName, DateTimeConverter.convertToTime(localTime));
+      throws SQLException {
+    putJavaSQLTime(node, columnName, resultSet, index);
   }
 
   @Override

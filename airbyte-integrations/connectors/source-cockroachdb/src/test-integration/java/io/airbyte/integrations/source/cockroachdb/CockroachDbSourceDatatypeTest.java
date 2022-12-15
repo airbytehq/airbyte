@@ -322,6 +322,16 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addNullExpectedValue()
             .build());
 
+    // Time (04:05:06) would be represented like "1970-01-01T04:05:06Z"
+    addDataTypeTestData(
+        TestDataHolder.builder()
+            .sourceType("timetz")
+            .airbyteType(JsonSchemaType.STRING)
+            .addInsertValues("'04:05:06Z'", null)
+            .addExpectedValues("04:05:06.000000Z")
+            .addNullExpectedValue()
+            .build());
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("timestamp")
