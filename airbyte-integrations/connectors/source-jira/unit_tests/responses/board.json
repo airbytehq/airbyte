@@ -18,7 +18,7 @@
       "projectKey": "Project1"
     },
     {
-      "id": 17,
+      "id": 2,
       "self": "https://test/rest/agile/1.0/board/17",
       "name": "Project1 board",
       "type": "scrum",
@@ -35,7 +35,7 @@
       "projectKey": "Project1"
     },
     {
-      "id": 20,
+      "id": 3,
       "self": "https://test/rest/agile/1.0/board/17",
       "name": "Project1 board",
       "type": "scrum",

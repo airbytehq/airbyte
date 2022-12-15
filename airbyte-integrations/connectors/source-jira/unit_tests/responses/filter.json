@@ -3,7 +3,7 @@
     {
       "expand": "description,owner,jql,viewUrl,searchUrl,favourite,favouritedCount,sharePermissions,editPermissions,isWritable,subscriptions",
       "self": "test",
-      "id": "10003",
+      "id": "1",
       "name": "Filter for EX board",
       "owner": {
         "self": "test",
@@ -24,7 +24,7 @@
       "favouritedCount": 0,
       "sharePermissions": [
         {
-          "id": 10004,
+          "id": 2,
           "type": "project",
           "project": {
             "self": "test",

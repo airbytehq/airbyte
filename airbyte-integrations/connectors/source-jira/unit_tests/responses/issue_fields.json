@@ -19,7 +19,7 @@
     "id": "issuetype",
     "key": "issuetype",
     "name": "Issue Type",
-    "custom": false,
+    "custom": true,
     "orderable": true,
     "navigable": true,
     "searchable": true,
