@@ -59,7 +59,7 @@ BigCommerce has some [rate limit restrictions](https://developer.bigcommerce.com
 
 | Version | Date       | Pull Request                                             | Subject                                                     |
 |:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------|
-| 0.1.9   | 2022-12-14 | []()                                                     | Add brands and category streams                             |
+| 0.1.9   | 2022-12-14 | [20518](https://github.com/airbytehq/airbyte/pull/20518) | Add brands and categories streams                           |
 | 0.1.8   | 2022-12-05 | [20090](https://github.com/airbytehq/airbyte/pull/20090) | Add order_products stream                                   |
 | 0.1.7   | 2022-09-13 | [16647](https://github.com/airbytehq/airbyte/pull/16647) | Add channel and store stream goes beyond                    |
 | 0.1.6   | 2022-07-27 | [14940](https://github.com/airbytehq/airbyte/pull/14940) | Fix infinite loop when the page stream goes beyond one page |
