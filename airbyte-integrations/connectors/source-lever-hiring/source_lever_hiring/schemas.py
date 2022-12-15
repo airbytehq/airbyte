@@ -179,6 +179,7 @@ class ArchiveReason(BaseSchemaModel):
     status: str
     type: str
 
+
 class Posting(BaseSchemaModel):
     id: str
     text: str
@@ -189,10 +190,10 @@ class Posting(BaseSchemaModel):
     hiringManager: str
     confidentiality: str
     categories: dict
-    content:dict
-    tags : List[str]
+    content: dict
+    tags: List[str]
     state: str
-    distributionChannels : List[str]
+    distributionChannels: List[str]
     reqCode: str
     requisitionCodes: List[str]
     urls: dict
@@ -202,6 +203,7 @@ class Stage(BaseSchemaModel):
     id: str
     text: str
 
+
 class Contact(BaseSchemaModel):
     id: str
     name: str
@@ -210,7 +212,7 @@ class Contact(BaseSchemaModel):
     emails: List
     phones: List
 
+
 class Source(BaseSchemaModel):
     text: str
     count: int
-

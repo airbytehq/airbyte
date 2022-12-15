@@ -8,7 +8,20 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.auth import BasicHttpAuthenticator, Oauth2Authenticator
 
-from .streams import Applications, Interviews, Notes, Offers, Opportunities, Referrals, Users, ArchiveReasons, Postings, Stages, Contacts, Sources
+from .streams import (
+    Applications,
+    ArchiveReasons,
+    Contacts,
+    Interviews,
+    Notes,
+    Offers,
+    Opportunities,
+    Postings,
+    Referrals,
+    Sources,
+    Stages,
+    Users,
+)
 
 
 def _auth_from_config(config):
