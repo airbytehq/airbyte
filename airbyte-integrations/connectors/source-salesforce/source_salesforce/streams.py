@@ -54,7 +54,7 @@ class SalesforceStream(HttpStream, ABC):
         Check availability is disabled because of the Salesforce stream implementation doesn't support sending additional API requests.
         As far as `check_availability` returns error for all next subsequent requests, if 403 or similar.
         """
-        return False
+        return None
 
     @property
     def name(self) -> str:
