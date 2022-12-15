@@ -112,10 +112,12 @@ public abstract class AbstractSourceConnectorTest {
 
   private ConfigRepository mConfigRepository;
 
-  private final ArgumentCaptor<AirbyteCatalog> lastPersistedCatalog = ArgumentCaptor.forClass(AirbyteCatalog.class);
+  // This has to be using the protocol version of the platform in order to capture the arg
+  private final ArgumentCaptor<io.airbyte.protocol.models.AirbyteCatalog> lastPersistedCatalog =
+      ArgumentCaptor.forClass(io.airbyte.protocol.models.AirbyteCatalog.class);
 
   protected AirbyteCatalog getLastPersistedCatalog() {
-    return lastPersistedCatalog.getValue();
+    return convertProtocolObject(lastPersistedCatalog.getValue(), AirbyteCatalog.class);
   }
 
   @BeforeEach
@@ -175,8 +177,7 @@ public abstract class AbstractSourceConnectorTest {
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false))
             .run(new StandardDiscoverCatalogInput().withSourceId(SOURCE_ID.toString()).withConnectionConfiguration(getConfig()), jobRoot)
             .getDiscoverCatalogId();
-    verify(mConfigRepository).writeActorCatalogFetchEvent(
-        convertProtocolObject(lastPersistedCatalog.capture(), io.airbyte.protocol.models.AirbyteCatalog.class), any(), any(), any());
+    verify(mConfigRepository).writeActorCatalogFetchEvent(lastPersistedCatalog.capture(), any(), any(), any());
     return toReturn;
   }
 
