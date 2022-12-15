@@ -78,7 +78,7 @@ export const ConnectionName: React.FC = () => {
               onEnter={onEnter}
               disabled={loading}
               // eslint-disable-next-line jsx-a11y/no-autofocus
-              autoFocus
+              // autoFocus
             />
           </div>
         </div>
