@@ -84,11 +84,12 @@ class DestinationWeaviate(Destination):
         try:
             client = Client.get_weaviate_client(config)
             ready = client.is_ready()
+            if not ready:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"Weaviate server {config.get('url')} not ready")
+
             class_name = ''.join(random.choices(string.ascii_uppercase, k=10))
             client.schema.create_class({"class": class_name})
             client.schema.delete_class(class_name)
-            if not ready:
-                return AirbyteConnectionStatus(status=Status.FAILED, message=f"Weaviate server {config.get('url')} not ready")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
