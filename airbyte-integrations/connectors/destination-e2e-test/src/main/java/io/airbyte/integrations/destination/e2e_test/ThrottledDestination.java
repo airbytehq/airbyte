@@ -61,6 +61,7 @@ public class ThrottledDestination extends BaseConnector implements Destination {
       }
 
       if (message.getType() == Type.STATE) {
+        LOGGER.info("Emitting state: {}", message);
         outputRecordCollector.accept(message);
       }
     }
