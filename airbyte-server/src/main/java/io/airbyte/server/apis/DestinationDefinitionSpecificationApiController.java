@@ -10,10 +10,8 @@ import io.airbyte.api.model.generated.DestinationDefinitionSpecificationRead;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/destination_definition_specifications")
-@Transactional
 public class DestinationDefinitionSpecificationApiController implements DestinationDefinitionSpecificationApi {
 
   private final SchedulerHandler schedulerHandler;
@@ -24,7 +22,6 @@ public class DestinationDefinitionSpecificationApiController implements Destinat
 
   @Post("/get")
   @Override
-  @Transactional
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
     return ApiHelper.execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
   }

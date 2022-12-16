@@ -11,10 +11,8 @@ import io.airbyte.api.model.generated.ConnectionStateCreateOrUpdate;
 import io.airbyte.server.handlers.StateHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/state")
-@Transactional
 public class StateApiController implements StateApi {
 
   private final StateHandler stateHandler;
@@ -25,14 +23,12 @@ public class StateApiController implements StateApi {
 
   @Post("/create_or_update")
   @Override
-  @Transactional
   public ConnectionState createOrUpdateState(final ConnectionStateCreateOrUpdate connectionStateCreateOrUpdate) {
     return ApiHelper.execute(() -> stateHandler.createOrUpdateState(connectionStateCreateOrUpdate));
   }
 
   @Post("/get")
   @Override
-  @Transactional
   public ConnectionState getState(final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> stateHandler.getState(connectionIdRequestBody));
   }

@@ -11,10 +11,8 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/notifications/try")
-@Transactional
 public class NotificationsApiController implements NotificationsApi {
 
   private final WorkspacesHandler workspacesHandler;
@@ -25,7 +23,6 @@ public class NotificationsApiController implements NotificationsApi {
 
   @Post
   @Override
-  @Transactional
   public NotificationRead tryNotificationConfig(@Body final Notification notification) {
     return ApiHelper.execute(() -> workspacesHandler.tryNotification(notification));
   }

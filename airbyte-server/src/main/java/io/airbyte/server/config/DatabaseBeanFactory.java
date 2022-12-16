@@ -19,11 +19,9 @@ import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.flyway.FlywayConfigurationProperties;
-import io.micronaut.transaction.jdbc.DelegatingDataSource;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import java.util.Optional;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.flywaydb.core.Flyway;
@@ -44,8 +42,8 @@ public class DatabaseBeanFactory {
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("configDatabase")
-  public Database configDatabase(@Named("config") final DataSource dataSource) throws IOException {
-    return new Database(null, Optional.of(DelegatingDataSource.unwrapDataSource(dataSource)));
+  public Database configDatabase(@Named("config") final DSLContext dslContext) throws IOException {
+    return new Database(dslContext);
   }
 
   @Singleton

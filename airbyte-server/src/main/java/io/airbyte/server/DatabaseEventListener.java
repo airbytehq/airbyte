@@ -12,7 +12,6 @@ import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.lang.invoke.MethodHandles;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +33,6 @@ public class DatabaseEventListener {
 
   @EventListener
   @Order(1)
-  @Transactional
   public void onStartup(final StartupEvent event) {
     log.info("Checking configs database flyway migration version...");
     try {
