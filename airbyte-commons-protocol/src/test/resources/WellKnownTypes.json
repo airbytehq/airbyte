@@ -41,11 +41,7 @@
           "pattern": "-?(0|[0-9]\\d*)(\\.\\d+)?"
         },
         {
-          "enum": [
-            "Infinity",
-            "-Infinity",
-            "NaN"
-          ]
+          "enum": ["Infinity", "-Infinity", "NaN"]
         }
       ],
       "description": "Note the mix of regex validation for normal numbers, and enum validation for special values."
@@ -57,11 +53,7 @@
           "pattern": "-?(0|[0-9]\\d*)"
         },
         {
-          "enum": [
-            "Infinity",
-            "-Infinity",
-            "NaN"
-          ]
+          "enum": ["Infinity", "-Infinity", "NaN"]
         }
       ]
     },

@@ -6,7 +6,6 @@ package io.airbyte.commons.protocol.migrations;
 
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
 
-import com.amazonaws.util.NumberUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -31,7 +30,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.StreamSupport;
-import org.apache.logging.log4j.util.Strings;
 
 public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.airbyte.protocol.models.v0.AirbyteMessage, AirbyteMessage> {
 
@@ -499,11 +497,11 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Quick and dirty tuple. Used internally by {@link #downgradeNode(JsonNode, JsonNode)};
-   * callers probably only actually need the node.
+   * Quick and dirty tuple. Used internally by {@link #downgradeNode(JsonNode, JsonNode)}; callers
+   * probably only actually need the node.
    *
-   * matchedSchema is useful for downgrading using a oneOf schema, where we need
-   * to recognize the correct subschema.
+   * matchedSchema is useful for downgrading using a oneOf schema, where we need to recognize the
+   * correct subschema.
    *
    * @param node Our attempt at downgrading the node, under the given schema
    * @param matchedSchema Whether the original node actually matched the schema
@@ -511,16 +509,16 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   private record DowngradedNode(JsonNode node, boolean matchedSchema) {}
 
   /**
-   * We need the schema to recognize which fields are integers, since it would
-   * be wrong to just assume any numerical string should be parsed out.
+   * We need the schema to recognize which fields are integers, since it would be wrong to just assume
+   * any numerical string should be parsed out.
    *
-   * Works on a best-effort basis. If the schema doesn't match the data, we'll
-   * do our best to downgrade anything that we can definitively say is a number.
-   * Should _not_ throw an exception if bad things happen (e.g. we try to parse
-   * a non-numerical string as a number).
+   * Works on a best-effort basis. If the schema doesn't match the data, we'll do our best to
+   * downgrade anything that we can definitively say is a number. Should _not_ throw an exception if
+   * bad things happen (e.g. we try to parse a non-numerical string as a number).
    */
   private DowngradedNode downgradeNode(JsonNode data, JsonNode schema) {
-    // If this is a oneOf node that looks like an upgraded v0 message, then we need to handle each oneOf case.
+    // If this is a oneOf node that looks like an upgraded v0 message, then we need to handle each oneOf
+    // case.
     if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull("type") && schema.hasNonNull("oneOf")) {
       return downgradeOneofNode(data, schema);
     }
@@ -541,9 +539,9 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Attempt to downgrade using each oneOf option in sequence. Returns the
-   * result from downgrading using the first subschema that matches the data, or
-   * if none match, then the result of using the first subschema.
+   * Attempt to downgrade using each oneOf option in sequence. Returns the result from downgrading
+   * using the first subschema that matches the data, or if none match, then the result of using the
+   * first subschema.
    */
   private DowngradedNode downgradeOneofNode(JsonNode data, JsonNode schema) {
     JsonNode schemaOptions = schema.get("oneOf");
@@ -571,12 +569,11 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   /**
-   * Downgrade a textual node. This could either be a string/date/timestamp/etc,
-   * in which case we need to do nothing. Or it could be a number/integer, in
-   * which case we should convert it to a JSON numerical node.
+   * Downgrade a textual node. This could either be a string/date/timestamp/etc, in which case we need
+   * to do nothing. Or it could be a number/integer, in which case we should convert it to a JSON
+   * numerical node.
    *
-   * If the data doesn't match the schema, then just return it without
-   * modification.
+   * If the data doesn't match the schema, then just return it without modification.
    */
   private DowngradedNode downgradeTextualNode(JsonNode data, JsonNode schema) {
     JsonNode refNode = schema.get(REF_KEY);

@@ -22,17 +22,16 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Resources;
 
 public class V0ToV1MigrationTest {
-
 
   JsonSchemaValidator validator;
   private AirbyteMessageMigrationV1 migration;
 
   @BeforeEach
   public void setup() throws URISyntaxException {
-    // TODO this should probably just get generated as part of the airbyte-protocol build, and airbyte-workers / airbyte-commons-protocol would reference it directly
+    // TODO this should probably just get generated as part of the airbyte-protocol build, and
+    // airbyte-workers / airbyte-commons-protocol would reference it directly
     URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
     validator = new JsonSchemaValidator(parentUri);
     migration = new AirbyteMessageMigrationV1(null, validator);
@@ -1175,8 +1174,8 @@ public class V0ToV1MigrationTest {
     public void testBasicDowngrade() {
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
-              {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-              """);
+          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+          """);
       JsonNode oldData = Jsons.deserialize(
           """
           "42"
@@ -1200,49 +1199,66 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedMessage, downgradedMessage);
     }
 
+    /**
+     * Utility method to use the given catalog to downgrade the oldData, and assert that the result
+     * is equal to expectedDataString
+     *
+     * @param schemaString The JSON schema of the record
+     * @param oldDataString The data of the record to be downgraded
+     * @param expectedDataString The expected data after downgrading
+     */
+    private void doTest(String schemaString, String oldDataString, String expectedDataString) {
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(schemaString);
+      JsonNode oldData = Jsons.deserialize(oldDataString);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
+          .downgrade(createRecordMessage(oldData));
+
+      JsonNode expectedDowngradedRecord = Jsons.deserialize(expectedDataString);
+      assertEquals(expectedDowngradedRecord, downgradedMessage.getRecord().getData());
+    }
+
     @Test
     public void testNestedDowngrade() {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      doTest(
           """
-              {
-                 "type": "object",
-                 "properties": {
+          {
+            "type": "object",
+            "properties": {
+              "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+              "num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
+              "binary": {"$ref": "WellKnownTypes.json#/definitions/BinaryData"},
+              "bool": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+              "object": {
+                "type": "object",
+                "properties": {
                   "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                  "num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                  "binary": {"$ref": "WellKnownTypes.json#/definitions/BinaryData"},
-                  "bool": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                  "object": {
-                    "type": "object",
-                    "properties": {
-                      "int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                      "arr": {
-                        "type": "array",
-                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                      }
-                    }
-                  },
-                  "array": {
+                  "arr": {
                     "type": "array",
                     "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                  },
-                  "array_multitype": {
-                    "type": "array",
-                    "items": [{"$ref": "WellKnownTypes.json#/definitions/Integer"}, {"$ref": "WellKnownTypes.json#/definitions/String"}]
-                  },
-                  "oneof": {
-                    "type": "array",
-                    "items": {
-                      "oneOf": [
-                        {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                        {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
-                      ]
-                    }
                   }
                 }
+              },
+              "array": {
+                "type": "array",
+                "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+              },
+              "array_multitype": {
+                "type": "array",
+                "items": [{"$ref": "WellKnownTypes.json#/definitions/Integer"}, {"$ref": "WellKnownTypes.json#/definitions/String"}]
+              },
+              "oneof": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                    {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
+                  ]
+                }
               }
-              """
-      );
-      JsonNode oldData = Jsons.deserialize(
+            }
+          }
+          """,
           """
           {
             "int": "42",
@@ -1257,92 +1273,76 @@ public class V0ToV1MigrationTest {
             "oneof": ["42", true],
             "additionalProperty": "42"
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
-
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """,
           """
           {
-            "type": "RECORD",
-            "record": {
-              "stream": "foo_stream",
-              "namespace": "foo_namespace",
-              "data": {
-                "int": 42,
-                "num": 43.2,
-                "string": "42",
-                "bool": true,
-                "object": {
-                  "int": 42
-                },
-                "array": [42],
-                "array_multitype": [42, "42"],
-                "oneof": [42, true],
-                "additionalProperty": "42"
-              }
-            }
+            "int": 42,
+            "num": 43.2,
+            "string": "42",
+            "bool": true,
+            "object": {
+              "int": 42
+            },
+            "array": [42],
+            "array_multitype": [42, "42"],
+            "oneof": [42, true],
+            "additionalProperty": "42"
           }
-          """,
-          io.airbyte.protocol.models.v0.AirbyteMessage.class);
-      assertEquals(expectedMessage, downgradedMessage);
+          """);
     }
 
     @Test
     public void testWeirdDowngrade() {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      doTest(
           """
-              {
-                 "type": "object",
-                 "properties": {
-                  "raw_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                  "raw_num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
-                  "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                  "typeless_object": {
-                    "properties": {
-                      "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                    }
-                  },
-                  "typeless_array": {
-                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                  },
-                  "arr_obj_union1": {
-                    "type": ["array", "object"],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                        "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                      }
-                    },
-                    "properties": {
-                      "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                      "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                    }
-                  },
-                  "arr_obj_union2": {
-                    "type": ["array", "object"],
-                    "items": {
-                      "type": "object",
-                      "properties": {
-                        "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                        "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                      }
-                    },
-                    "properties": {
-                      "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                      "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                    }
-                  },
-                  "empty_oneof": {
-                    "oneOf": []
-                  }
+          {
+            "type": "object",
+            "properties": {
+              "raw_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+              "raw_num": {"$ref": "WellKnownTypes.json#/definitions/Number"},
+              "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+              "typeless_object": {
+                "properties": {
+                  "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                 }
+              },
+              "typeless_array": {
+                "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+              },
+              "arr_obj_union1": {
+                "type": ["array", "object"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                    "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                  }
+                },
+                "properties": {
+                  "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                }
+              },
+              "arr_obj_union2": {
+                "type": ["array", "object"],
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                    "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                  }
+                },
+                "properties": {
+                  "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                }
+              },
+              "empty_oneof": {
+                "oneOf": []
               }
-              """
-      );
-      JsonNode oldData = Jsons.deserialize(
+            }
+          }
+          """,
           """
           {
             "raw_int": 42,
@@ -1356,61 +1356,44 @@ public class V0ToV1MigrationTest {
             "arr_obj_union2": {"id": "42", "name": "arst"},
             "empty_oneof": "42"
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
-
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """,
           """
           {
-            "type": "RECORD",
-            "record": {
-              "stream": "foo_stream",
-              "namespace": "foo_namespace",
-              "data": {
-                "raw_int": 42,
-                "raw_num": 43.2,
-                "bad_int": "foo",
-                "typeless_object": {
-                  "foo": 42
-                },
-                "typeless_array": [42],
-                "arr_obj_union1": [{"id": 42, "name": "arst"}, {"id": 43, "name": "qwfp"}],
-                "arr_obj_union2": {"id": 42, "name": "arst"},
-                "empty_oneof": "42"
-              }
-            }
+            "raw_int": 42,
+            "raw_num": 43.2,
+            "bad_int": "foo",
+            "typeless_object": {
+              "foo": 42
+            },
+            "typeless_array": [42],
+            "arr_obj_union1": [{"id": 42, "name": "arst"}, {"id": 43, "name": "qwfp"}],
+            "arr_obj_union2": {"id": 42, "name": "arst"},
+            "empty_oneof": "42"
           }
-          """,
-          io.airbyte.protocol.models.v0.AirbyteMessage.class);
-      assertEquals(expectedMessage, downgradedMessage);
+          """);
     }
 
     @Test
     public void testEmptySchema() {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      doTest(
           """
-              {
-                 "type": "object",
-                 "properties": {
-                   "empty_schema_primitive": {},
-                   "empty_schema_array": {},
-                   "empty_schema_object": {},
-                   "implicit_array": {
-                     "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                   },
-                   "implicit_object": {
-                     "properties": {
-                       "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                     }
-                   }
-                 }
+          {
+            "type": "object",
+            "properties": {
+              "empty_schema_primitive": {},
+              "empty_schema_array": {},
+              "empty_schema_object": {},
+              "implicit_array": {
+                "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+              },
+              "implicit_object": {
+                "properties": {
+                  "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                 }
               }
-              """
-      );
-      JsonNode oldData = Jsons.deserialize(
+            }
+          }
+          """,
           """
           {
             "empty_schema_primitive": "42",
@@ -1419,138 +1402,122 @@ public class V0ToV1MigrationTest {
             "implicit_array": ["42"],
             "implicit_object": {"foo": "42"}
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
-
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """,
           """
           {
-            "type": "RECORD",
-            "record": {
-              "stream": "foo_stream",
-              "namespace": "foo_namespace",
-              "data": {
-                "empty_schema_primitive": "42",
-                "empty_schema_array": ["42", false],
-                "empty_schema_object": {"foo": "42"},
-                "implicit_array": [42],
-                "implicit_object": {"foo": 42}
-              }
-            }
+            "empty_schema_primitive": "42",
+            "empty_schema_array": ["42", false],
+            "empty_schema_object": {"foo": "42"},
+            "implicit_array": [42],
+            "implicit_object": {"foo": 42}
           }
-          """,
-          io.airbyte.protocol.models.v0.AirbyteMessage.class);
-      assertEquals(expectedMessage, downgradedMessage);
+          """);
     }
 
     @Test
     public void testBacktracking() {
       // These test cases verify that we correctly choose the most-correct oneOf option.
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      doTest(
           """
-              {
-                "type": "object",
-                "properties": {
-                  "valid_option": {
-                    "oneOf": [
-                      {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                      {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                      {"$ref": "WellKnownTypes.json#/definitions/String"}
-                    ]
+          {
+            "type": "object",
+            "properties": {
+              "valid_option": {
+                "oneOf": [
+                  {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                  {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  {"$ref": "WellKnownTypes.json#/definitions/String"}
+                ]
+              },
+              "all_invalid": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                   },
-                  "all_invalid": {
-                    "oneOf": [
-                      {
-                        "type": "array",
-                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                      },
-                      {
-                        "type": "array",
-                        "items": {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
-                      }
-                    ]
+                  {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
+                  }
+                ]
+              },
+              "nested_oneof": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                   },
-                  "nested_oneof": {
-                    "oneOf": [
-                      {
-                        "type": "array",
-                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                      },
-                      {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "foo": {
-                              "oneOf": [
-                                {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                                {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                              ]
-                            }
-                          }
+                  {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "foo": {
+                          "oneOf": [
+                            {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                            {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                          ]
                         }
                       }
-                    ]
+                    }
+                  }
+                ]
+              },
+              "mismatched_primitive": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "foo": {"type": "object"},
+                      "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    }
                   },
-                  "mismatched_primitive": {
-                    "oneOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "foo": {"type": "object"},
-                          "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                        }
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "foo": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                          "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                        }
-                      }
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "foo": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                      "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    }
+                  }
+                ]
+              },
+              "mismatched_text": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "foo": {"type": "object"},
+                      "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    }
                   },
-                  "mismatched_text": {
-                    "oneOf": [
-                      {
-                        "type": "object",
-                        "properties": {
-                          "foo": {"type": "object"},
-                          "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
-                        }
-                      },
-                      {
-                        "type": "object",
-                        "properties": {
-                          "foo": {"$ref": "WellKnownTypes.json#/definitions/String"},
-                          "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                        }
-                      }
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "foo": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                      "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    }
+                  }
+                ]
+              },
+              "mismatch_array": {
+                "oneOf": [
+                  {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                   },
-                  "mismatch_array": {
-                    "oneOf": [
-                      {
-                        "type": "array",
-                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                      },
-                      {
-                        "type": "array",
-                        "items": [
-                          {"$ref": "WellKnownTypes.json#/definitions/String"},
-                          {"$ref": "WellKnownTypes.json#/definitions/String"},
-                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                        ]
-                      }
+                  {
+                    "type": "array",
+                    "items": [
+                      {"$ref": "WellKnownTypes.json#/definitions/String"},
+                      {"$ref": "WellKnownTypes.json#/definitions/String"},
+                      {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                     ]
                   }
-                }
+                ]
               }
-              """
-      );
-      JsonNode oldData = Jsons.deserialize(
+            }
+          }
+          """,
           """
           {
             "valid_option": "42",
@@ -1566,62 +1533,53 @@ public class V0ToV1MigrationTest {
             },
             "mismatch_array": ["arst", "41", "42"]
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
-
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """,
           """
           {
-            "type": "RECORD",
-            "record": {
-              "stream": "foo_stream",
-              "namespace": "foo_namespace",
-              "data": {
-                "valid_option": 42,
-                "all_invalid": [42, "arst"],
-                "nested_oneof": [{"foo": 42}],
-                "mismatched_primitive": {
-                  "foo": true,
-                  "bar": 42
-                },
-                "mismatched_text": {
-                  "foo": "bar",
-                  "bar": 42
-                },
-                "mismatch_array": ["arst", "41", 42]
-              }
-            }
+            "valid_option": 42,
+            "all_invalid": [42, "arst"],
+            "nested_oneof": [{"foo": 42}],
+            "mismatched_primitive": {
+              "foo": true,
+              "bar": 42
+            },
+            "mismatched_text": {
+              "foo": "bar",
+              "bar": 42
+            },
+            "mismatch_array": ["arst", "41", 42]
           }
-          """,
-          io.airbyte.protocol.models.v0.AirbyteMessage.class);
-      assertEquals(expectedMessage, downgradedMessage);
+          """);
     }
 
     @Test
     public void testIncorrectSchema() {
-      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+      doTest(
           """
-              {
+          {
+            "type": "object",
+            "properties": {
+              "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+              "bad_int_array": {
+                "type": "array",
+                "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+              },
+              "bad_int_obj": {
                 "type": "object",
                 "properties": {
-                  "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                  "bad_int_array": {
-                    "type": "array",
-                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                  },
-                  "bad_int_obj": {
-                    "type": "object",
-                    "properties": {
-                      "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                    }
-                  }
+                  "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
                 }
               }
-              """
-      );
-      JsonNode oldData = Jsons.deserialize(
+            }
+          }
+          """,
+          """
+          {
+            "bad_int": "arst",
+            "bad_int_array": ["arst"],
+            "bad_int_obj": {"foo": "arst"}
+          }
+          """,
           """
           {
             "bad_int": "arst",
@@ -1629,27 +1587,6 @@ public class V0ToV1MigrationTest {
             "bad_int_obj": {"foo": "arst"}
           }
           """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
-
-      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
-          """
-          {
-            "type": "RECORD",
-            "record": {
-              "stream": "foo_stream",
-              "namespace": "foo_namespace",
-              "data": {
-                "bad_int": "arst",
-                "bad_int_array": ["arst"],
-                "bad_int_obj": {"foo": "arst"}
-              }
-            }
-          }
-          """,
-          io.airbyte.protocol.models.v0.AirbyteMessage.class);
-      assertEquals(expectedMessage, downgradedMessage);
     }
 
     private ConfiguredAirbyteCatalog createConfiguredAirbyteCatalog(String schema) {
