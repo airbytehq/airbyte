@@ -20,10 +20,10 @@
 <a href="https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml" target="_blank">
     <img src="https://img.shields.io/github/actions/workflow/status/airbytehq/airbyte/gradle.yml?branch=master" alt="Build">
 </a>
-<a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md" target="_blank">
+<a href="https://github.com/airbytehq/airbyte/tree/master/docs/project-overview/licenses" target="_blank">
     <img src="https://img.shields.io/static/v1?label=license&message=MIT&color=white" alt="License">
 </a>
-<a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md" target="_blank">
+<a href="https://github.com/airbytehq/airbyte/tree/master/docs/project-overview/licenses" target="_blank">
     <img src="https://img.shields.io/static/v1?label=license&message=ELv2&color=white" alt="License">
 </a>
 </p>
@@ -81,7 +81,7 @@ Sign up for [Airbyte Cloud](https://cloud.airbyte.io/signup).
 
 Get started by checking Github issues and creating a Pull Request. An easy way to start contributing is to update an existing connector or create a new connector using the low-code and Python CDKs. You can find the code for existing connectors in the [connectors](https://github.com/airbytehq/airbyte/tree/master/airbyte-integrations/connectors) directory. The Airbyte platform is written in Java, and the frontend in React. You can also contribute to our docs and tutorials. Advanced Airbyte users can apply to the [Maintainer program](https://airbyte.com/maintainer-program) and [Writer Program](https://airbyte.com/write-for-the-community).
 
-Read the [Contributing guide](docs/contributing-to-airbyte/README.md).
+Read the [Contributing guide](https://docs.airbyte.com/contributing-to-airbyte/).
 
 ## Reporting vulnerabilities
 
