@@ -23,3 +23,5 @@ export const StartOverErrorView: React.FC<StartOverErrorViewProps> = ({ message,
     />
   );
 };
+
+export default StartOverErrorView;
