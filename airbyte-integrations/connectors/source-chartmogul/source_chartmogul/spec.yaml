@@ -11,7 +11,7 @@ connectionSpecification:
     api_key:
       type: string
       title: "API key"
-      description: "Your Chartmogul API key. See <a href=\"https://help.chartmogul.com/hc/en-us/articles/4407796325906-Creating-and-Managing-API-keys#creating-an-api-key\"> the docs </a> for info on how to obtain this."
+      description: 'Your Chartmogul API key. See <a href="https://help.chartmogul.com/hc/en-us/articles/4407796325906-Creating-and-Managing-API-keys#creating-an-api-key"> the docs </a> for info on how to obtain this.'
       airbyte_secret: true
       order: 0
     start_date:
@@ -24,7 +24,7 @@ connectionSpecification:
     interval:
       type: string
       title: "Interval"
-      description: "Some APIs such as <a href=\"https://dev.chartmogul.com/reference/endpoint-overview-metrics-api\">Metrics</a> require intervals to cluster data."
+      description: 'Some APIs such as <a href="https://dev.chartmogul.com/reference/endpoint-overview-metrics-api">Metrics</a> require intervals to cluster data.'
       enum: ["day", "week", "month", "quarter"]
       default: "month"
       order: 2

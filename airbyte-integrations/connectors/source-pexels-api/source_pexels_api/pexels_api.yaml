@@ -4,40 +4,40 @@ definitions:
   selector:
     extractor:
       field_pointer: []
-      
+
   requester_stream:
     request_parameters:
-        query: |
-          {{
-            config['query']
-            if options['name'] == 'photos_search' or options['name'] == 'videos_search'
-            else ''
-          }}
-        orientation: |
-          {{
-            config['orientation']
-            if options['name'] == 'photos_search' or options['name'] == 'videos_search'
-            else ''
-          }}
-        size: |
-          {{
-            config['size']
-            if options['name'] == 'photos_search' or options['name'] == 'videos_search'
-            else ''
-          }}
-        locale: |
-          {{
-            config['locale']
-            if options['name'] == 'photos_search' or options['name'] == 'videos_search'
-            else ''
-          }}
-        color: |
-          {{
-            config['color']
-            if options['name'] == 'photos_search'
-            else ''
-          }}
-          
+      query: |
+        {{
+          config['query']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      orientation: |
+        {{
+          config['orientation']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      size: |
+        {{
+          config['size']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      locale: |
+        {{
+          config['locale']
+          if options['name'] == 'photos_search' or options['name'] == 'videos_search'
+          else ''
+        }}
+      color: |
+        {{
+          config['color']
+          if options['name'] == 'photos_search'
+          else ''
+        }}
+
   requester:
     url_base: "https://api.pexels.com"
     http_method: "GET"
