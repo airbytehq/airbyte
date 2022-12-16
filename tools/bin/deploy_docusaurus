@@ -79,6 +79,12 @@ if ! yarn build; then
   exit 1
 fi
 
+# "check PR mode" -- we run "yarn build" and stop before "yarn deploy"
+if [ "${SKIP_DEPLOY}" = "yes" ]; then
+  echo -e "$blue_text""Check mode is ON: skipipping yarn deploy && git push CNAME to repo!\n\n""$default_text"
+  exit 0
+fi
+
 # Check tty for local/remote deploys (we expect cloud to be non-interactive)
 # results like /dev/ttys000 || not a tty
 if test "$(tty)" == "not a tty"; then
@@ -95,8 +101,6 @@ if test "$(tty)" == "not a tty"; then
 else
   yarn run deploy
 fi
-
-
 
 # Git makes more sense from /
 cd ..

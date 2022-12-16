@@ -48,9 +48,7 @@ To install and start Airbyte :
   docker-compose up -d
 ```
 
-2. Verify that Airbyte is running:
-
-    #todo -add the ssh tunnel command
+2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
 
 ## Troubleshooting
 
