@@ -638,7 +638,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             if (itemsNode.size() > i) {
               // If we have a schema for this element, then try downgrading the element
               DowngradedNode downgradedElement = downgradeNode(element, itemsNode.get(i));
-              if (downgradedElement.matchedSchema()) {
+              if (!downgradedElement.matchedSchema()) {
                 allSchemasMatched = false;
               }
               downgradedItems.add(downgradedElement.node());

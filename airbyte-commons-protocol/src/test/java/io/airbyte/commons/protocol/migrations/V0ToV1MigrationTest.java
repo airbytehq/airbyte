@@ -1384,7 +1384,6 @@ public class V0ToV1MigrationTest {
 
     @Test
     public void testEmptySchema() {
-      // TODO more complex stuff
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
               {
@@ -1392,7 +1391,15 @@ public class V0ToV1MigrationTest {
                  "properties": {
                    "empty_schema_primitive": {},
                    "empty_schema_array": {},
-                   "empty_schema_object": {}
+                   "empty_schema_object": {},
+                   "implicit_array": {
+                     "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                   },
+                   "implicit_object": {
+                     "properties": {
+                       "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                     }
+                   }
                  }
                 }
               }
@@ -1403,7 +1410,9 @@ public class V0ToV1MigrationTest {
           {
             "empty_schema_primitive": "42",
             "empty_schema_array": ["42", false],
-            "empty_schema_object": {"foo": "42"}
+            "empty_schema_object": {"foo": "42"},
+            "implicit_array": ["42"],
+            "implicit_object": {"foo": "42"}
           }
           """);
 
@@ -1420,7 +1429,9 @@ public class V0ToV1MigrationTest {
               "data": {
                 "empty_schema_primitive": "42",
                 "empty_schema_array": ["42", false],
-                "empty_schema_object": {"foo": "42"}
+                "empty_schema_object": {"foo": "42"},
+                "implicit_array": [42],
+                "implicit_object": {"foo": 42}
               }
             }
           }
@@ -1513,6 +1524,22 @@ public class V0ToV1MigrationTest {
                         }
                       }
                     ]
+                  },
+                  "mismatch_array": {
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                      },
+                      {
+                        "type": "array",
+                        "items": [
+                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                          {"$ref": "WellKnownTypes.json#/definitions/String"},
+                          {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                        ]
+                      }
+                    ]
                   }
                 }
               }
@@ -1531,7 +1558,8 @@ public class V0ToV1MigrationTest {
             "mismatched_text": {
               "foo": "bar",
               "bar": "42"
-            }
+            },
+            "mismatch_array": ["arst", "41", "42"]
           }
           """);
 
@@ -1556,7 +1584,61 @@ public class V0ToV1MigrationTest {
                 "mismatched_text": {
                   "foo": "bar",
                   "bar": 42
+                },
+                "mismatch_array": ["arst", "41", 42]
+              }
+            }
+          }
+          """,
+          io.airbyte.protocol.models.v0.AirbyteMessage.class);
+      assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    public void testIncorrectSchema() {
+      ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
+          """
+              {
+                "type": "object",
+                "properties": {
+                  "bad_int": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                  "bad_int_array": {
+                    "type": "array",
+                    "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                  },
+                  "bad_int_obj": {
+                    "type": "object",
+                    "properties": {
+                      "foo": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                    }
+                  }
                 }
+              }
+              """
+      );
+      JsonNode oldData = Jsons.deserialize(
+          """
+          {
+            "bad_int": "arst",
+            "bad_int_array": ["arst"],
+            "bad_int_obj": {"foo": "arst"}
+          }
+          """);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
+          .downgrade(createRecordMessage(oldData));
+
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
+          """
+          {
+            "type": "RECORD",
+            "record": {
+              "stream": "foo_stream",
+              "namespace": "foo_namespace",
+              "data": {
+                "bad_int": "arst",
+                "bad_int_array": ["arst"],
+                "bad_int_obj": {"foo": "arst"}
               }
             }
           }
