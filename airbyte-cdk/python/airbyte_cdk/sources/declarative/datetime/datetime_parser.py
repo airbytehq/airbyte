@@ -5,6 +5,8 @@
 import datetime
 from typing import Union
 
+from dateutil.relativedelta import relativedelta
+
 
 class DatetimeParser:
     """
@@ -15,6 +17,20 @@ class DatetimeParser:
     %s is part of the list of format codes required by  the 1989 C standard, but it is unreliable because it always return a datetime in the system's timezone.
     Instead of using the directive directly, we can use datetime.fromtimestamp and dt.timestamp()
     """
+
+    _DIRECTIVES_ORDERED_BY_TIMEDELTA = [
+        (("%f",), relativedelta(microseconds=1)),
+        (("%c", "%r", "%s", "%S", "%T", "%X", "%+"), relativedelta(seconds=1)),
+        (("%M", "%R"), relativedelta(minutes=1)),
+        (("%H", "%I", "%k", "%l"), relativedelta(hours=1)),
+        (("%p", "%P"), relativedelta(hours=1)),
+        (("%a", "%A", "%d", "%D", "%e", "%F", "%j", "%u", "%w", "%x"), relativedelta(days=1)),
+        (("%U", "%V", "%W"), relativedelta(days=7)),
+        (("%b", "%B", "%h", "%m"), relativedelta(months=1)),
+        (("%g", "%G", "%y", "%Y"), relativedelta(years=1)),
+        (("%C",), relativedelta(years=100)),
+    ]
+    _SUPPORTED_DIRECTIVES = [directive for directives, _ in _DIRECTIVES_ORDERED_BY_TIMEDELTA for directive in directives]
 
     def parse(self, date: Union[str, int], format: str, timezone):
         # "%s" is a valid (but unreliable) directive for formatting, but not for parsing
@@ -36,3 +52,17 @@ class DatetimeParser:
             return str(int(dt.timestamp()))
         else:
             return dt.strftime(format)
+
+    def find_most_granular_timedelta(self, datetime_format: str) -> relativedelta:
+        """
+        The granularity is based on the 1989 C standard directives. If the datetime_format matches `%Y-%m-%dT%H:00:00` for example, this
+        method will return `relativedelta(hours=1)` even though a human can probably deduce the granularity is `relativedelta(seconds=1)`
+        """
+        for directives, delta in self._DIRECTIVES_ORDERED_BY_TIMEDELTA:
+            for directive in directives:
+                if directive in datetime_format:
+                    return delta
+
+        raise ValueError(
+            f"Could not find most granular timedelta in {datetime_format}. Supported directives are {self._SUPPORTED_DIRECTIVES}"
+        )
