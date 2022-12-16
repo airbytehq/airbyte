@@ -35,9 +35,12 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class DefaultNormalizationRunner implements NormalizationRunner {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultNormalizationRunner.class);
@@ -59,6 +62,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
                                     final String normalizationIntegrationType) {
     this.processFactory = processFactory;
     this.normalizationImageName = normalizationImage;
+    log.error("get normalizationIntegrationType -> {}", normalizationIntegrationType);
     this.normalizationIntegrationType = normalizationIntegrationType;
   }
 
