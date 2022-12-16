@@ -31,7 +31,7 @@ interface BaseFieldProps {
   optional?: boolean;
 }
 
-type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
+type BuilderFieldProps = BaseFieldProps & ({ type: "text" | "array" } | { type: "enum"; options: string[] });
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (
