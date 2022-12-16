@@ -1,5 +1,6 @@
 import { Form, Formik, useField } from "formik";
 import { useState } from "react";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import { Button } from "components/ui/Button";
@@ -19,23 +20,29 @@ interface AddStreamValues {
 
 interface AddStreamButtonProps {
   onAddStream: (addedStreamNum: number) => void;
+  button?: React.ReactElement;
+  initialValues?: Partial<BuilderStream>;
 }
 
-export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream }) => {
+export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, button, initialValues }) => {
   const { formatMessage } = useIntl();
   const [isOpen, setIsOpen] = useState(false);
   const [streamsField, , helpers] = useField<BuilderStream[]>("streams");
   const numStreams = streamsField.value.length;
 
+  const buttonClickHandler = () => {
+    setIsOpen(true);
+  };
+
   return (
     <>
-      <Button
-        className={styles.addButton}
-        onClick={() => {
-          setIsOpen(true);
-        }}
-        icon={<PlusIcon />}
-      />
+      {button ? (
+        React.cloneElement(button, {
+          onClick: buttonClickHandler,
+        })
+      ) : (
+        <Button className={styles.addButton} onClick={buttonClickHandler} icon={<PlusIcon />} />
+      )}
       {isOpen && (
         <Formik
           initialValues={{ streamName: "", urlPath: "" }}
@@ -43,8 +50,6 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream })
             helpers.setValue([
               ...streamsField.value,
               {
-                name: values.streamName,
-                urlPath: values.urlPath,
                 fieldPointer: [],
                 httpMethod: "GET",
                 requestOptions: {
@@ -52,6 +57,9 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream })
                   requestHeaders: [],
                   requestBody: [],
                 },
+                ...initialValues,
+                name: values.streamName,
+                urlPath: values.urlPath,
               },
             ]);
             setIsOpen(false);

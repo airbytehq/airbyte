@@ -1,20 +1,20 @@
 @use "scss/variables";
 @use "scss/colors";
 
-$deleteButtonWidth: 24px;
+$controlButtonWidth: 24px;
 
 .controls {
   display: flex;
   justify-content: center;
 }
 
-.deleteButton {
+.controlButton {
   border: none;
   background-color: transparent;
   color: colors.$grey-400;
   border-radius: variables.$border-radius-xs;
-  width: $deleteButtonWidth;
-  height: $deleteButtonWidth;
+  width: $controlButtonWidth;
+  height: $controlButtonWidth;
   padding: variables.$spacing-xs;
   padding: 0;
   cursor: pointer;
@@ -22,6 +22,12 @@ $deleteButtonWidth: 24px;
 
   &:hover {
     color: colors.$white;
+    background-color: colors.$grey-800;
+  }
+}
+
+.deleteButton {
+  &:hover {
     background-color: colors.$red;
   }
 }
