@@ -32,9 +32,20 @@ public interface AirbyteMessageConsumer extends CheckedConsumer<AirbyteMessage, 
 
   void start() throws Exception;
 
+  /**
+   * Consumes all {@link AirbyteMessage}s
+   *
+   * @param message {@link AirbyteMessage} to be processed
+   * @throws Exception
+   */
   @Override
   void accept(AirbyteMessage message) throws Exception;
 
+  /**
+   * Executes at the end of consumption of all incoming streamed data regardless of success or failure
+   *
+   * @throws Exception
+   */
   @Override
   void close() throws Exception;
 
