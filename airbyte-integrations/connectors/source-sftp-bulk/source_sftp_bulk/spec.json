@@ -98,6 +98,13 @@
         "examples": ["2017-01-25T00:00:00Z"],
         "description": "The date from which you'd like to replicate data for all incremental streams, in the format YYYY-MM-DDT00:00:00Z. All data generated after this date will be replicated.",
         "order": 8
+      },
+      "separator": {
+        "title": "CSV Separator (Optional)",
+        "description": "The separator used in the cvs files",
+        "type": "string",
+        "examples": [","],
+        "order": 1
       }
     }
   }
