@@ -5,8 +5,8 @@
 package io.airbyte.integrations.base;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 
 public interface Integration {
 

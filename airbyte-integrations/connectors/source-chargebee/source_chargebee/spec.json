@@ -16,7 +16,7 @@
       "site_api_key": {
         "type": "string",
         "title": "API Key",
-        "description": "Chargebee API Key. See the <a href=\"https://docs.airbyte.io/integrations/sources/chargebee\">docs</a> for more information on how to obtain this key.",
+        "description": "Chargebee API Key. See the <a href=\"https://docs.airbyte.com/integrations/sources/chargebee\">docs</a> for more information on how to obtain this key.",
         "examples": ["test_3yzfanAXF66USdWC9wQcM555DQJkSYoppu"],
         "airbyte_secret": true
       },

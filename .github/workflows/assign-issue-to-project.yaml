@@ -32,9 +32,3 @@ jobs:
         with:
           project: "https://github.com/airbytehq/airbyte/projects/15"
           column_name: "To do"
-      - name: Assign Onboarding Improvements PR to Project
-        uses: srggrs/assign-one-project-github-action@1.2.0
-        if: contains(github.event.pull_request.labels.*.name, 'project/onboarding-improvements')
-        with:
-          project: "https://github.com/airbytehq/airbyte/projects/15"
-          column_name: "To do"

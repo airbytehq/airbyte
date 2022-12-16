@@ -1,12 +1,12 @@
 # Getting Started
 
-:warning: This framework is in alpha stage. Support is not in production and is available only to select users. :warning:
+:warning: This framework is in [alpha](https://docs.airbyte.com/project-overview/product-release-stages/#alpha). It is still in active development and may include backward-incompatible changes. Please share feedback and requests directly with us at feedback@airbyte.io :warning:
 
 ## Summary
 
-Throughout this tutorial, we'll walk you through the creation an Airbyte source to read and extract data from an HTTP API.
+Throughout this tutorial, we'll walk you through the creation of an Airbyte source to read and extract data from an HTTP API.
 
-We'll build a connector reading data from the Exchange Rates API, but the steps will apply to other HTTP APIs you might be interested in integrating with.
+We'll build a connector reading data from the Exchange Rates API, but the steps apply to other HTTP APIs you might be interested in integrating with.
 
 The API documentations can be found [here](https://apilayer.com/marketplace/exchangerates_data-api).
 In this tutorial, we will read data from the following endpoints:
@@ -30,7 +30,7 @@ The output schema of our stream will look like the following:
 
 ## Exchange Rates API Setup
 
-Before we can get started, you'll need to generate an API access key for the Exchange Rates API.
+Before we get started, you'll need to generate an API access key for the Exchange Rates API.
 This can be done by signing up for the Free tier plan on [Exchange Rates API](https://exchangeratesapi.io/):
 
 1. Visit https://exchangeratesapi.io and click "Get free API key" on the top right

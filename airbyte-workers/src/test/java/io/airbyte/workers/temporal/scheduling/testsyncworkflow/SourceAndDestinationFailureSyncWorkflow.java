@@ -5,6 +5,7 @@
 package io.airbyte.workers.temporal.scheduling.testsyncworkflow;
 
 import com.google.common.annotations.VisibleForTesting;
+import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.StandardSyncInput;
@@ -12,9 +13,8 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
-import io.airbyte.scheduler.models.IntegrationLauncherConfig;
-import io.airbyte.scheduler.models.JobRunConfig;
-import io.airbyte.workers.temporal.sync.SyncWorkflow;
+import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import java.util.Set;
 import java.util.UUID;
 import org.assertj.core.util.Sets;

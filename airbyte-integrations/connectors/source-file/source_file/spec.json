@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/file",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/file",
 
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
@@ -15,7 +15,16 @@
       },
       "format": {
         "type": "string",
-        "enum": ["csv", "json", "jsonl", "excel", "excel_binary", "feather", "parquet", "yaml"],
+        "enum": [
+          "csv",
+          "json",
+          "jsonl",
+          "excel",
+          "excel_binary",
+          "feather",
+          "parquet",
+          "yaml"
+        ],
         "default": "csv",
         "title": "File Format",
         "description": "The Format of the file which should be replicated (Warning: some formats may be experimental, please refer to the docs)."

@@ -4,21 +4,25 @@
 
 package io.airbyte.integrations.destination.mysql;
 
+import static io.airbyte.integrations.base.errors.messages.ErrorMessage.getErrorMessage;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.map.MoreMaps;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.integrations.destination.mysql.MySQLSqlOperations.VersionCompatibility;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -69,6 +73,12 @@ public class MySQLDestination extends AbstractJdbcDestination implements Destina
       }
 
       return new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
+    } catch (final ConnectionErrorException e) {
+      final String message = getErrorMessage(e.getStateCode(), e.getErrorCode(), e.getExceptionMessage(), e);
+      AirbyteTraceMessageUtility.emitConfigErrorTrace(e, message);
+      return new AirbyteConnectionStatus()
+          .withStatus(Status.FAILED)
+          .withMessage(message);
     } catch (final Exception e) {
       LOGGER.error("Exception while checking connection: ", e);
       return new AirbyteConnectionStatus()

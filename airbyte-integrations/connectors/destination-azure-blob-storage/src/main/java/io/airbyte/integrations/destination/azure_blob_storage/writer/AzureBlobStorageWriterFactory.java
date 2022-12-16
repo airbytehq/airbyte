@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.azure_blob_storage.writer;
 
 import com.azure.storage.blob.specialized.AppendBlobClient;
 import io.airbyte.integrations.destination.azure_blob_storage.AzureBlobStorageDestinationConfig;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 
 /**
  * Create different {@link AzureBlobStorageWriter} based on

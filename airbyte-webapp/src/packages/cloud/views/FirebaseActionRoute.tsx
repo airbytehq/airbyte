@@ -4,10 +4,11 @@ import { Navigate, useNavigate } from "react-router-dom";
 import { useAsync } from "react-use";
 
 import LoadingPage from "components/LoadingPage";
+import { ToastType } from "components/ui/Toast";
 
-import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
+import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification";
-import useRouter from "hooks/useRouter";
+import { useQuery } from "hooks/useQuery";
 import { useAuthService } from "packages/cloud/services/auth/AuthService";
 
 import { CloudRoutes } from "../cloudRoutes";
@@ -21,7 +22,7 @@ export enum FirebaseActionMode {
 }
 
 export const VerifyEmailAction: React.FC = () => {
-  const { query } = useRouter<{ oobCode: string; mode: string }>();
+  const query = useQuery<{ mode?: FirebaseActionMode; oobCode?: string }>();
   const { verifyEmail } = useAuthService();
   const navigate = useNavigate();
   const { formatMessage } = useIntl();
@@ -30,13 +31,16 @@ export const VerifyEmailAction: React.FC = () => {
   useTrackPage(PageTrackingCodes.VERIFY_EMAIL);
   useAsync(async () => {
     if (query.mode === FirebaseActionMode.VERIFY_EMAIL) {
+      if (!query.oobCode) {
+        return;
+      }
       // Send verification code to authentication service
       await verifyEmail(query.oobCode);
       // Show a notification that the mail got verified successfully
       registerNotification({
         id: "auth/email-verified",
-        title: formatMessage({ id: "verifyEmail.notification" }),
-        isError: false,
+        text: formatMessage({ id: "verifyEmail.notification" }),
+        type: ToastType.SUCCESS,
       });
       // Navigate the user to the homepage
       navigate("/");
@@ -49,7 +53,7 @@ export const VerifyEmailAction: React.FC = () => {
 };
 
 export const FirebaseActionRoute: React.FC = () => {
-  const { query: { mode } = {} } = useRouter<{ mode: string }>();
+  const { mode } = useQuery();
 
   switch (mode) {
     case FirebaseActionMode.VERIFY_EMAIL:

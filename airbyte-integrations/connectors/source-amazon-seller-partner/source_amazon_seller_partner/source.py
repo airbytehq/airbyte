@@ -18,26 +18,53 @@ from source_amazon_seller_partner.streams import (
     BrandAnalyticsMarketBasketReports,
     BrandAnalyticsRepeatPurchaseReports,
     BrandAnalyticsSearchTermsReports,
+    FbaAfnInventoryByCountryReports,
+    FbaAfnInventoryReports,
     FbaCustomerReturnsReports,
+    FbaEstimatedFbaFeesTxtReport,
+    FbaFulfillmentCurrentInventoryReport,
+    FbaFulfillmentCustomerShipmentPromotionReport,
+    FbaFulfillmentInventoryAdjustReport,
+    FbaFulfillmentInventoryReceiptsReport,
+    FbaFulfillmentInventorySummaryReport,
+    FbaFulfillmentMonthlyInventoryReport,
+    FbaInventoryPlaningReport,
     FbaInventoryReports,
+    FbaMyiUnsuppressedInventoryReport,
     FbaOrdersReports,
     FbaReplacementsReports,
     FbaShipmentsReports,
+    FbaSnsForecastReport,
+    FbaSnsPerformanceReport,
     FbaStorageFeesReports,
+    FlatFileArchivedOrdersDataByOrderDate,
     FlatFileOpenListingsReports,
     FlatFileOrdersReports,
     FlatFileOrdersReportsByLastUpdate,
+    FlatFileReturnsDataByReturnDate,
     FlatFileSettlementV2Reports,
     FulfilledShipmentsReports,
     GetXmlBrowseTreeData,
+    LedgerDetailedViewReports,
+    LedgerSummaryViewReport,
     ListFinancialEventGroups,
     ListFinancialEvents,
+    MerchantCancelledListingsReport,
+    MerchantListingsFypReport,
+    MerchantListingsInactiveData,
+    MerchantListingsReport,
+    MerchantListingsReportBackCompat,
     MerchantListingsReports,
     Orders,
     RestockInventoryReports,
+    SellerAnalyticsSalesAndTrafficReports,
     SellerFeedbackReports,
+    StrandedInventoryUiReport,
     VendorDirectFulfillmentShipping,
     VendorInventoryHealthReports,
+    VendorInventoryReports,
+    VendorSalesReports,
+    XmlAllOrdersDataByOrderDataGeneral,
 )
 
 
@@ -96,7 +123,11 @@ class SourceAmazonSellerPartner(AbstractSource):
 
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
-        Check connection to Amazon SP API by requesting the list of reports as this endpoint should be available for any config.
+        Check connection to Amazon SP API by requesting the Orders endpoint
+        This endpoint is not available for vendor-only Seller accounts,
+        the Orders endpoint will then return a 403 error
+        Therefore made an exception for 403 errors (when vendor-only accounts).
+        When no access, a 401 error is given.
         Validate if response has the expected error code and body.
         Show error message in case of request exception or unexpected response.
         """
@@ -105,12 +136,18 @@ class SourceAmazonSellerPartner(AbstractSource):
             stream_kwargs = self._get_stream_kwargs(config)
             orders_stream = Orders(**stream_kwargs)
             next(orders_stream.read_records(sync_mode=SyncMode.full_refresh))
+
             return True, None
         except Exception as e:
             if isinstance(e, StopIteration):
                 logger.error(
                     "Could not check connection without data for Orders stream. Please change value for replication start date field."
                 )
+
+            # Additional check, since Vendor-ony accounts within Amazon Seller API will not pass the test without this exception
+            if "403 Client Error" in str(e):
+                return True, None
+
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -123,6 +160,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         return [
             FbaCustomerReturnsReports(**stream_kwargs),
             FbaInventoryReports(**stream_kwargs),
+            FbaAfnInventoryReports(**stream_kwargs),
+            FbaAfnInventoryByCountryReports(**stream_kwargs),
             FbaOrdersReports(**stream_kwargs),
             FbaShipmentsReports(**stream_kwargs),
             FbaReplacementsReports(**stream_kwargs),
@@ -136,7 +175,10 @@ class SourceAmazonSellerPartner(AbstractSource):
             MerchantListingsReports(**stream_kwargs),
             VendorDirectFulfillmentShipping(**stream_kwargs),
             VendorInventoryHealthReports(**stream_kwargs),
+            VendorInventoryReports(**stream_kwargs),
+            VendorSalesReports(**stream_kwargs),
             Orders(**stream_kwargs),
+            SellerAnalyticsSalesAndTrafficReports(**stream_kwargs),
             SellerFeedbackReports(**stream_kwargs),
             BrandAnalyticsMarketBasketReports(**stream_kwargs),
             BrandAnalyticsSearchTermsReports(**stream_kwargs),
@@ -146,6 +188,28 @@ class SourceAmazonSellerPartner(AbstractSource):
             GetXmlBrowseTreeData(**stream_kwargs),
             ListFinancialEventGroups(**stream_kwargs),
             ListFinancialEvents(**stream_kwargs),
+            LedgerDetailedViewReports(**stream_kwargs),
+            FbaEstimatedFbaFeesTxtReport(**stream_kwargs),
+            FbaFulfillmentCurrentInventoryReport(**stream_kwargs),
+            FbaFulfillmentCustomerShipmentPromotionReport(**stream_kwargs),
+            FbaFulfillmentInventoryAdjustReport(**stream_kwargs),
+            FbaFulfillmentInventoryReceiptsReport(**stream_kwargs),
+            FbaFulfillmentInventorySummaryReport(**stream_kwargs),
+            FbaMyiUnsuppressedInventoryReport(**stream_kwargs),
+            MerchantCancelledListingsReport(**stream_kwargs),
+            MerchantListingsReport(**stream_kwargs),
+            MerchantListingsReportBackCompat(**stream_kwargs),
+            MerchantListingsInactiveData(**stream_kwargs),
+            StrandedInventoryUiReport(**stream_kwargs),
+            XmlAllOrdersDataByOrderDataGeneral(**stream_kwargs),
+            FbaFulfillmentMonthlyInventoryReport(**stream_kwargs),
+            MerchantListingsFypReport(**stream_kwargs),
+            FbaSnsForecastReport(**stream_kwargs),
+            FbaSnsPerformanceReport(**stream_kwargs),
+            FlatFileArchivedOrdersDataByOrderDate(**stream_kwargs),
+            FlatFileReturnsDataByReturnDate(**stream_kwargs),
+            FbaInventoryPlaningReport(**stream_kwargs),
+            LedgerSummaryViewReport(**stream_kwargs),
         ]
 
     def spec(self, *args, **kwargs) -> ConnectorSpecification:
@@ -159,8 +223,8 @@ class SourceAmazonSellerPartner(AbstractSource):
         schema["properties"]["region"] = schema["definitions"]["AWSRegion"]
 
         return ConnectorSpecification(
-            documentationUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
-            changelogUrl="https://docs.airbyte.io/integrations/sources/amazon-seller-partner",
+            documentationUrl="https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
+            changelogUrl="https://docs.airbyte.com/integrations/sources/amazon-seller-partner",
             connectionSpecification=schema,
             advanced_auth=advanced_auth,
         )

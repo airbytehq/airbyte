@@ -1,0 +1,8 @@
+{
+  "foo": {
+    "updates_cursor": {
+      "now": 1657672406227000,
+      "after": "[1657661332900000,{\"@ref\":{\"id\":\"337014929909350912\",\"collection\":{\"@ref\":{\"id\":\"foo\",\"collection\":{\"@ref\":{\"id\":\"collections\"}}}}}},{\"@ref\":{\"id\":\"337014929909350912\",\"collection\":{\"@ref\":{\"id\":\"foo\",\"collection\":{\"@ref\":{\"id\":\"collections\"}}}}}}]"
+    }
+  }
+}

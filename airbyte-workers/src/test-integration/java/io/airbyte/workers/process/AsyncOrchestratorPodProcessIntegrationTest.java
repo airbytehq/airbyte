@@ -7,15 +7,15 @@ package io.airbyte.workers.process;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.storage.CloudStorageConfigs;
 import io.airbyte.config.storage.MinioS3ClientFactory;
-import io.airbyte.workers.WorkerApp;
 import io.airbyte.workers.WorkerConfigs;
-import io.airbyte.workers.general.DocumentStoreClient;
+import io.airbyte.workers.storage.DocumentStoreClient;
 import io.airbyte.workers.storage.S3DocumentStoreClient;
-import io.airbyte.workers.temporal.sync.OrchestratorConstants;
 import io.fabric8.kubernetes.api.model.ContainerBuilder;
 import io.fabric8.kubernetes.api.model.ContainerPort;
 import io.fabric8.kubernetes.api.model.EnvVar;
@@ -23,6 +23,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.PodBuilder;
 import io.fabric8.kubernetes.client.DefaultKubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import java.nio.file.Path;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -99,7 +100,7 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   @ValueSource(strings = {"IfNotPresent", " Always"})
   @ParameterizedTest
   public void testAsyncOrchestratorPodProcess(final String pullPolicy) throws InterruptedException {
-
+    final var serverPort = 8080;
     final var podName = "test-async-" + RandomStringUtils.randomAlphabetic(10).toLowerCase();
     final var mainContainerInfo = new KubeContainerInfo("airbyte/container-orchestrator:dev", pullPolicy);
     // make kubepodinfo
@@ -113,10 +114,11 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         null,
         null,
         null,
-        true);
+        Map.of(EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE, "true", EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA, "false"),
+        serverPort);
 
     final Map<Integer, Integer> portMap = Map.of(
-        WorkerApp.KUBE_HEARTBEAT_PORT, WorkerApp.KUBE_HEARTBEAT_PORT,
+        serverPort, serverPort,
         OrchestratorConstants.PORT1, OrchestratorConstants.PORT1,
         OrchestratorConstants.PORT2, OrchestratorConstants.PORT2,
         OrchestratorConstants.PORT3, OrchestratorConstants.PORT3,
@@ -126,9 +128,11 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
         .filter(entry -> OrchestratorConstants.ENV_VARS_TO_TRANSFER.contains(entry.getKey()))
         .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
+    final WorkerConfigs workerConfigs = new WorkerConfigs(new EnvConfigs());
+
     asyncProcess.create(Map.of(), new WorkerConfigs(new EnvConfigs()).getResourceRequirements(), Map.of(
         OrchestratorConstants.INIT_FILE_APPLICATION, AsyncOrchestratorPodProcess.NO_OP,
-        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap);
+        OrchestratorConstants.INIT_FILE_ENV_MAP, Jsons.serialize(envMap)), portMap, workerConfigs.getworkerKubeNodeSelectors());
 
     // a final activity waits until there is output from the kube pod process
     asyncProcess.waitFor(10, TimeUnit.SECONDS);
@@ -143,18 +147,9 @@ public class AsyncOrchestratorPodProcessIntegrationTest {
   }
 
   @AfterAll
-  public static void teardown() {
-    try {
-      portForwardProcess.destroyForcibly();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
-
-    try {
-      kubernetesClient.pods().delete();
-    } catch (final Exception e) {
-      e.printStackTrace();
-    }
+  public static void teardown() throws KubernetesClientException {
+    portForwardProcess.destroyForcibly();
+    kubernetesClient.pods().delete();
   }
 
 }

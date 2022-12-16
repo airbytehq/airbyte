@@ -1,0 +1,70 @@
+@use "scss/variables";
+@use "scss/colors";
+
+.row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: variables.$spacing-md;
+  height: 35px;
+  font-size: 12px;
+}
+
+.content {
+  display: flex;
+  width: 100%;
+  height: 35px;
+  border-bottom: 1px solid colors.$white;
+  align-items: center;
+
+  &.add {
+    background-color: colors.$green-50;
+  }
+
+  &.remove {
+    background-color: colors.$red-50;
+  }
+}
+
+tr:first-child .content {
+  border-top-left-radius: 6px;
+  border-top-right-radius: 6px;
+}
+
+tr:last-child .content {
+  border-bottom-left-radius: 6px;
+  border-bottom-right-radius: 6px;
+}
+
+.icon {
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+
+  &.mod {
+    color: colors.$blue-100;
+    margin-left: -5px;
+  }
+}
+
+.iconContainer {
+  width: 10px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: 0 variables.$spacing-md;
+}
+
+.cell {
+  &.update {
+    span {
+      background-color: rgba(98, 94, 255, 10%);
+      padding: variables.$spacing-sm;
+      border-radius: variables.$border-radius-xs;
+    }
+  }
+}

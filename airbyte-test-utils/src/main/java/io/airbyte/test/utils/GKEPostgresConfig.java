@@ -52,7 +52,7 @@ public class GKEPostgresConfig {
 
   public static Database getDestinationDatabase() {
     return new Database(DSLContextFactory.create(USERNAME, PASSWORD, DatabaseDriver.POSTGRESQL.getDriverClassName(),
-        "jdbc:postgresql://localhost:3000/postgresdb", SQLDialect.POSTGRES));
+        "jdbc:postgresql://localhost:4000/postgresdb", SQLDialect.POSTGRES));
   }
 
 }

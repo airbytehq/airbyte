@@ -31,10 +31,29 @@ interface FeatureServiceProps {
  * features is: overwrite > user > workspace > globally, i.e. if a feature is disabled for a user
  * it will take precedence over the feature being enabled globally or for that workspace.
  */
-export const FeatureService: React.FC<FeatureServiceProps> = ({ features: defaultFeatures, children }) => {
+export const FeatureService: React.FC<React.PropsWithChildren<FeatureServiceProps>> = ({
+  features: defaultFeatures,
+  children,
+}) => {
   const [workspaceFeatures, setWorkspaceFeaturesState] = useState<FeatureSet>();
   const [userFeatures, setUserFeaturesState] = useState<FeatureSet>();
   const [overwrittenFeatures, setOverwrittenFeaturesState] = useState<FeatureSet>();
+
+  const envOverwrites = useMemo(() => {
+    // Allow env feature overwrites only during development
+    if (process.env.NODE_ENV !== "development") {
+      return {};
+    }
+    const featureSet: FeatureSet = {};
+    for (const item of Object.values(FeatureItem)) {
+      const envFeature = process.env[`REACT_APP_FEATURE_${item}`];
+      // If a REACT_APP_FEATURE_{id} env variable is set it can overwrite that feature state
+      if (envFeature) {
+        featureSet[item] = envFeature === "true";
+      }
+    }
+    return featureSet;
+  }, []);
 
   const combinedFeatures = useMemo(() => {
     const combined: FeatureSet = {
@@ -42,6 +61,7 @@ export const FeatureService: React.FC<FeatureServiceProps> = ({ features: defaul
       ...workspaceFeatures,
       ...userFeatures,
       ...overwrittenFeatures,
+      ...envOverwrites,
     };
 
     return Object.entries(combined)
@@ -92,7 +112,10 @@ export const useFeature = (feature: FeatureItem): boolean => {
   return features.includes(feature);
 };
 
-export const IfFeatureEnabled: React.FC<{ feature: FeatureItem }> = ({ feature, children }) => {
+export const IfFeatureEnabled: React.FC<React.PropsWithChildren<{ feature: FeatureItem }>> = ({
+  feature,
+  children,
+}) => {
   const hasFeature = useFeature(feature);
   return hasFeature ? <>{children}</> : null;
 };

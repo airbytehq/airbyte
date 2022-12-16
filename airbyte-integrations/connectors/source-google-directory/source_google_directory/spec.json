@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/google-directory",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/google-directory",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Google Directory Spec",

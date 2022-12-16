@@ -1,6 +1,6 @@
 # webapp
 
-![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.39.41-alpha](https://img.shields.io/badge/AppVersion-0.39.41--alpha-informational?style=flat-square)
+![Version: 0.39.36](https://img.shields.io/badge/Version-0.39.36-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.40.4](https://img.shields.io/badge/AppVersion-0.40.4-informational?style=flat-square)
 
 Helm chart to deploy airbyte-webapp
 
@@ -18,10 +18,13 @@ Helm chart to deploy airbyte-webapp
 | api.url | string | `"/api/v1/"` |  |
 | containerSecurityContext | object | `{}` |  |
 | enabled | bool | `true` |  |
+| env_vars | object | `{}` |  |
 | extraContainers | list | `[]` |  |
 | extraEnv | list | `[]` |  |
+| extraInitContainers | list | `[]` |  |
 | extraVolumeMounts | list | `[]` |  |
 | extraVolumes | list | `[]` |  |
+| fullstory.enabled | bool | `false` |  |
 | global.configMapName | string | `""` |  |
 | global.database.host | string | `"example.com"` |  |
 | global.database.port | string | `"5432"` |  |
@@ -55,6 +58,7 @@ Helm chart to deploy airbyte-webapp
 | replicaCount | int | `1` |  |
 | resources.limits | object | `{}` |  |
 | resources.requests | object | `{}` |  |
+| secrets | object | `{}` |  |
 | service.annotations | object | `{}` |  |
 | service.port | int | `80` |  |
 | service.type | string | `"ClusterIP"` |  |

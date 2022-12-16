@@ -939,6 +939,26 @@ VALID_SPEC_TRANSITIONS = [
         name="Nested level: Removing the enum field should not fail.",
         should_fail=False,
     ),
+    Transition(
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": "integer"},
+                },
+            }
+        ),
+        ConnectorSpecification(
+            connectionSpecification={
+                "type": "object",
+                "properties": {
+                    "my_string": {"type": ["integer", "string"]},
+                },
+            }
+        ),
+        name="Changing a 'type' field from a string to a list containing that same string should not fail.",
+        should_fail=False,
+    ),
 ]
 
 # Checking that all transitions in FAILING_SPEC_TRANSITIONS have should_fail == True to prevent typos
@@ -979,12 +999,14 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
             "other_test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "other_test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
         },
@@ -993,6 +1015,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1005,6 +1028,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1013,6 +1037,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "integer"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1025,6 +1050,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1033,6 +1059,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "new_test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1045,6 +1072,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["a"],
                 }
             ),
@@ -1054,6 +1082,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["b"],
                 }
             ),
@@ -1067,6 +1096,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["a"],
                 }
             ),
@@ -1076,6 +1106,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["a", "b"],
                 }
             ),
@@ -1089,6 +1120,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["a", "b"],
                 }
             ),
@@ -1098,6 +1130,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                     "default_cursor_field": ["a"],
                 }
             ),
@@ -1111,6 +1144,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["incremental"],
                     "default_cursor_field": ["a"],
                 }
             ),
@@ -1120,6 +1154,7 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["incremental"],
                     "default_cursor_field": ["b"],
                 }
             ),
@@ -1127,6 +1162,33 @@ FAILING_CATALOG_TRANSITIONS = [
                 {
                     "name": "other_test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["incremental"],
+                }
+            ),
+        },
+    ),
+    Transition(
+        name="Changing a 'type' field from a string to something else than a list containing just that string and null should fail.",
+        should_fail=True,
+        previous={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "integer"}}}}},
+                    "default_cursor_field": ["a"],
+                    "supported_sync_modes": ["incremental"],
+                }
+            ),
+        },
+        current={
+            "test_stream": AirbyteStream.parse_obj(
+                {
+                    "name": "test_stream",
+                    "json_schema": {
+                        "properties": {"user": {"type": "object", "properties": {"username": {"type": ["integer", "string"]}}}}
+                    },
+                    "default_cursor_field": ["b"],
+                    "supported_sync_modes": ["incremental"],
                 }
             ),
         },
@@ -1142,6 +1204,7 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1150,12 +1213,14 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
             "other_test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "other_test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
         },
@@ -1168,6 +1233,7 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1175,6 +1241,7 @@ VALID_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
+                    "supported_sync_modes": ["full_refresh"],
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["string", "null"]}}}}},
                 }
             )
@@ -1187,6 +1254,7 @@ VALID_CATALOG_TRANSITIONS = [
             "test_stream": AirbyteStream.parse_obj(
                 {
                     "name": "test_stream",
+                    "supported_sync_modes": ["full_refresh"],
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
                 }
             )
@@ -1196,6 +1264,7 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": ["string"]}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1212,6 +1281,7 @@ VALID_CATALOG_TRANSITIONS = [
                             "user": {"type": "object", "properties": {"username": {"type": "string"}, "email": {"type": "string"}}}
                         }
                     },
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1220,6 +1290,7 @@ VALID_CATALOG_TRANSITIONS = [
                 {
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
+                    "supported_sync_modes": ["full_refresh"],
                 }
             )
         },
@@ -1233,6 +1304,7 @@ VALID_CATALOG_TRANSITIONS = [
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
                     "default_cursor_field": ["a"],
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
         },
@@ -1242,6 +1314,7 @@ VALID_CATALOG_TRANSITIONS = [
                     "name": "test_stream",
                     "json_schema": {"properties": {"user": {"type": "object", "properties": {"username": {"type": "string"}}}}},
                     "default_cursor_field": ["a"],
+                    "supported_sync_modes": ["full_refresh"],
                 }
             ),
         },

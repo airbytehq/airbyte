@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
 public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperations<MysqlType> implements SourceOperations<ResultSet, MysqlType> {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(MySqlSourceOperations.class);
-  private static Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
+  private static final Set<MysqlType> ALLOWED_CURSOR_TYPES = Set.of(TINYINT, TINYINT_UNSIGNED, SMALLINT,
       SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED, INT, INT_UNSIGNED, BIGINT, BIGINT_UNSIGNED,
       FLOAT, FLOAT_UNSIGNED, DOUBLE, DOUBLE_UNSIGNED, DECIMAL, DECIMAL_UNSIGNED, DATE, DATETIME, TIMESTAMP,
       TIME, YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
@@ -89,7 +89,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
         }
       }
       case BOOLEAN -> putBoolean(json, columnName, resultSet, colIndex);
-      case TINYINT, TINYINT_UNSIGNED -> {
+      case TINYINT -> {
         if (field.getLength() == 1L) {
           // TINYINT(1) is boolean
           putBoolean(json, columnName, resultSet, colIndex);
@@ -97,6 +97,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
           putShortInt(json, columnName, resultSet, colIndex);
         }
       }
+      case TINYINT_UNSIGNED -> putShortInt(json, columnName, resultSet, colIndex);
       case SMALLINT, SMALLINT_UNSIGNED, MEDIUMINT, MEDIUMINT_UNSIGNED -> putInteger(json, columnName, resultSet, colIndex);
       case INT, INT_UNSIGNED -> {
         if (field.isUnsigned()) {
@@ -184,7 +185,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
 
       switch (literalType) {
         // BIT(1) and TINYINT(1) are interpreted as boolean
-        case BIT, TINYINT, TINYINT_UNSIGNED -> {
+        case BIT, TINYINT -> {
           if (columnSize == 1) {
             return MysqlType.BOOLEAN;
           }

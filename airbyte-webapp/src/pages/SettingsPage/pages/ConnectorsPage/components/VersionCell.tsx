@@ -3,7 +3,8 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
 
-import { Input, LoadingButton } from "components";
+import { Button } from "components/ui/Button";
+import { Input } from "components/ui/Input";
 
 import { DEV_IMAGE_TAG } from "core/domain/connector/constants";
 
@@ -81,7 +82,7 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
     return null;
   };
 
-  const isConnectorUpdateable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
+  const isConnectorUpdatable = currentVersion !== version || currentVersion === DEV_IMAGE_TAG;
 
   return (
     <FormContent>
@@ -106,13 +107,14 @@ const VersionCell: React.FC<IProps> = ({ id, version, onChange, feedback, curren
                 </InputField>
               )}
             </Field>
-            <LoadingButton
+            <Button
+              size="xs"
               isLoading={isSubmitting}
               type="submit"
-              disabled={(isSubmitting || !dirty) && !isConnectorUpdateable}
+              disabled={(isSubmitting || !dirty) && !isConnectorUpdatable}
             >
               <FormattedMessage id="form.change" />
-            </LoadingButton>
+            </Button>
           </Form>
         )}
       </Formik>

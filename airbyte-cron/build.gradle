@@ -3,10 +3,22 @@ plugins {
 }
 
 dependencies {
-    implementation project(':airbyte-config:config-models')
-    implementation project(':airbyte-workers')
+    implementation 'com.auth0:java-jwt:3.19.2'
+    implementation 'io.fabric8:kubernetes-client:5.12.2'
+    implementation 'io.sentry:sentry:6.3.1'
+    implementation libs.bundles.temporal
+    implementation libs.bundles.datadog
 
-    runtimeOnly 'io.micronaut:micronaut-http-server-netty:3.6.0'
+    implementation project(':airbyte-api')
+    implementation project(':airbyte-analytics')
+    implementation project(':airbyte-commons-temporal')
+    implementation project(':airbyte-config:config-models')
+    implementation project(':airbyte-config:config-persistence')
+    implementation project(':airbyte-config:init')
+    implementation project(':airbyte-json-validation')
+    implementation project(':airbyte-db:db-lib')
+    implementation project(':airbyte-metrics:metrics-lib')
+    implementation project(':airbyte-persistence:job-persistence')
 
     annotationProcessor platform(libs.micronaut.bom)
     annotationProcessor libs.bundles.micronaut.annotation.processor
@@ -22,16 +34,19 @@ application {
     applicationDefaultJvmArgs = ['-XX:+ExitOnOutOfMemoryError', '-XX:MaxRAMPercentage=75.0']
 }
 
-task copyGeneratedTar(type: Copy) {
-    dependsOn copyDocker
-    dependsOn distTar
+Properties env = new Properties()
+rootProject.file('.env.dev').withInputStream { env.load(it) }
 
-    from('build/distributions') {
-        include 'airbyte-cron-*.tar'
+run {
+    // default for running on local machine.
+    env.each { entry ->
+        environment entry.getKey(), entry.getValue()
     }
-    into 'build/docker/bin'
+
+    environment 'AIRBYTE_ROLE', System.getenv('AIRBYTE_ROLE')
+    environment 'AIRBYTE_VERSION', env.VERSION
 }
 
-Task dockerBuildTask = getDockerBuildTask("cron", "$project.projectDir", "$rootProject.ext.version", "$rootProject.ext.image_tag")
-dockerBuildTask.dependsOn(copyGeneratedTar)
-assemble.dependsOn(dockerBuildTask)
+tasks.named("buildDockerImage") {
+    dependsOn copyGeneratedTar
+}

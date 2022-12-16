@@ -6,6 +6,7 @@ package io.airbyte.config.init;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.io.Resources;
@@ -40,10 +41,11 @@ class LocalDefinitionsProviderTest {
     assertEquals(stripeSourceId, stripeSource.getSourceDefinitionId());
     assertEquals("Stripe", stripeSource.getName());
     assertEquals("airbyte/source-stripe", stripeSource.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/sources/stripe", stripeSource.getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/sources/stripe", stripeSource.getDocumentationUrl());
     assertEquals("stripe.svg", stripeSource.getIcon());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/sources/stripe"), stripeSource.getSpec().getDocumentationUrl());
     assertEquals(false, stripeSource.getTombstone());
+    assertEquals("0.2.0", stripeSource.getProtocolVersion());
   }
 
   @Test
@@ -55,9 +57,10 @@ class LocalDefinitionsProviderTest {
     assertEquals(s3DestinationId, s3Destination.getDestinationDefinitionId());
     assertEquals("S3", s3Destination.getName());
     assertEquals("airbyte/destination-s3", s3Destination.getDockerRepository());
-    assertEquals("https://docs.airbyte.io/integrations/destinations/s3", s3Destination.getDocumentationUrl());
-    assertEquals(URI.create("https://docs.airbyte.io/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
+    assertEquals("https://docs.airbyte.com/integrations/destinations/s3", s3Destination.getDocumentationUrl());
+    assertEquals(URI.create("https://docs.airbyte.com/integrations/destinations/s3"), s3Destination.getSpec().getDocumentationUrl());
     assertEquals(false, s3Destination.getTombstone());
+    assertEquals("0.2.0", s3Destination.getProtocolVersion());
   }
 
   @Test
@@ -81,6 +84,7 @@ class LocalDefinitionsProviderTest {
 
     final List<StandardSourceDefinition> sourceDefinitions = localDefinitionsProvider.getSourceDefinitions();
     assertEquals(expectedNumberOfSources, sourceDefinitions.size());
+    assertTrue(sourceDefinitions.stream().allMatch(sourceDef -> sourceDef.getProtocolVersion().length() > 0));
   }
 
   @Test
@@ -91,6 +95,7 @@ class LocalDefinitionsProviderTest {
     final int expectedNumberOfDestinations = MoreIterators.toList(configList.elements()).size();
     final List<StandardDestinationDefinition> destinationDefinitions = localDefinitionsProvider.getDestinationDefinitions();
     assertEquals(expectedNumberOfDestinations, destinationDefinitions.size());
+    assertTrue(destinationDefinitions.stream().allMatch(destDef -> destDef.getProtocolVersion().length() > 0));
   }
 
 }

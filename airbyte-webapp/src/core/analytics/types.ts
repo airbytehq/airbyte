@@ -22,12 +22,12 @@ export const enum Action {
   DELETE = "Delete",
   REQUEST = "Request",
   SKIP = "Skip",
-  FEEDBACK = "Feedback",
   PREFERENCES = "Preferences",
   NO_MATCHING_CONNECTOR = "NoMatchingConnector",
   SELECTION_OPENED = "SelectionOpened",
   CHECKOUT_START = "CheckoutStart",
   LOAD_MORE_JOBS = "LoadMoreJobs",
+  INVITE = "Invite",
 }
 
 export type EventParams = Record<string, unknown>;

@@ -32,7 +32,7 @@ Visit the [Google Support](https://support.google.com/accounts/answer/27441?hl=e
 2. In the left navigation bar, click **Destinations**. In the top-right corner, click **+ new destination**.
 3. On the source setup page, select **Google Sheets** from the Source type dropdown and enter a name for this connector.
 4. Select `Sign in with Google`.
-5. Log in and Authorize to the Instagram account and click `Set up source`.
+5. Log in and Authorize to the Google account and click `Set up source`.
 
 **For Airbyte Open Source:**
 
@@ -130,5 +130,6 @@ You cannot create more than 200 worksheets within single spreadsheet.
 
 | Version | Date       | Pull Request                                             | Subject                             |
 | ------- | ---------- | -------------------------------------------------------- | ----------------------------------- |
+| 0.1.2   | 2022-10-31 | [18729](https://github.com/airbytehq/airbyte/pull/18729) | Fix empty headers list              |
 | 0.1.1   | 2022-06-15 | [14751](https://github.com/airbytehq/airbyte/pull/14751) | Yield state only when records saved |
 | 0.1.0   | 2022-04-26 | [12135](https://github.com/airbytehq/airbyte/pull/12135) | Initial Release                     |

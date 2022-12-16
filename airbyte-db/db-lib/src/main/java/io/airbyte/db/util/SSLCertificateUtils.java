@@ -26,7 +26,11 @@ import java.security.cert.CertificateFactory;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import javax.net.ssl.SSLContext;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.SSLContexts;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +43,9 @@ public class SSLCertificateUtils {
   private static final Logger LOGGER = LoggerFactory.getLogger(SSLCertificateUtils.class);
   private static final String PKCS_12 = "PKCS12";
   private static final String X509 = "X.509";
-  public static final String KEYSTORE_ENTRY_PREFIX = "ab_";
+  private static final Random RANDOM = new SecureRandom();
+  // #17000: postgres driver is hardcoded to only load an entry alias "user"
+  public static final String KEYSTORE_ENTRY_PREFIX = "user";
   public static final String KEYSTORE_FILE_NAME = KEYSTORE_ENTRY_PREFIX + "keystore_";
   public static final String KEYSTORE_FILE_TYPE = ".p12";
 
@@ -47,7 +53,7 @@ public class SSLCertificateUtils {
       throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
     final FileSystem fs = Objects.requireNonNullElse(filesystem, FileSystems.getDefault());
     final Path pathToStore = fs.getPath(Objects.toString(directory, ""));
-    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + SecureRandom.getInstanceStrong().nextInt() + KEYSTORE_FILE_TYPE);
+    final Path pathToFile = pathToStore.resolve(KEYSTORE_FILE_NAME + RANDOM.nextInt() + KEYSTORE_FILE_TYPE);
     final OutputStream os = Files.newOutputStream(pathToFile);
     keyStore.store(os, keyStorePassword.toCharArray());
     assert (Files.exists(pathToFile) == true);
@@ -155,6 +161,22 @@ public class SSLCertificateUtils {
                                                   final String directory)
       throws CertificateException, IOException, NoSuchAlgorithmException, InvalidKeySpecException, KeyStoreException, InterruptedException {
     return keyStoreFromClientCertificate(certString, keyString, keyStorePassword, FileSystems.getDefault(), directory);
+  }
+
+  public static SSLContext createContextFromCaCert(String caCertificate) {
+    try {
+      CertificateFactory factory = CertificateFactory.getInstance(X509);
+      Certificate trustedCa = factory.generateCertificate(
+          new ByteArrayInputStream(caCertificate.getBytes(StandardCharsets.UTF_8)));
+      KeyStore trustStore = KeyStore.getInstance(PKCS_12);
+      trustStore.load(null, null);
+      trustStore.setCertificateEntry("ca", trustedCa);
+      SSLContextBuilder sslContextBuilder =
+          SSLContexts.custom().loadTrustMaterial(trustStore, null);
+      return sslContextBuilder.build();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
 }

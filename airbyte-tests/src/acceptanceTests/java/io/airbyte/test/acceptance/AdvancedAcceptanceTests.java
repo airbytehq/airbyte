@@ -24,6 +24,7 @@ import io.airbyte.api.client.model.generated.AirbyteCatalog;
 import io.airbyte.api.client.model.generated.AirbyteStream;
 import io.airbyte.api.client.model.generated.AttemptInfoRead;
 import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
+import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionState;
 import io.airbyte.api.client.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationDefinitionRead;
@@ -142,7 +143,8 @@ class AdvancedAcceptanceTests {
     final DestinationSyncMode destinationSyncMode = DestinationSyncMode.OVERWRITE;
     catalog.getStreams().forEach(s -> s.getConfig().syncMode(syncMode).destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, null).getConnectionId();
+        testHarness.createConnection(connectionName, sourceId, destinationId, List.of(operationId), catalog, ConnectionScheduleType.MANUAL, null)
+            .getConnectionId();
     final JobInfoRead connectionSyncRead = apiClient.getConnectionApi().syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
     waitForSuccessfulJob(apiClient.getJobsApi(), connectionSyncRead.getJob());
     testHarness.assertSourceAndDestinationDbInSync(false);
@@ -151,8 +153,8 @@ class AdvancedAcceptanceTests {
   @RetryingTest(3)
   @Order(2)
   void testCheckpointing() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -187,7 +189,7 @@ class AdvancedAcceptanceTests {
         .cursorField(List.of(COLUMN_ID))
         .destinationSyncMode(destinationSyncMode));
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, ConnectionScheduleType.MANUAL, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));
@@ -242,8 +244,8 @@ class AdvancedAcceptanceTests {
   @RetryingTest(3)
   @Order(4)
   void testBackpressure() throws Exception {
-    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition();
-    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition();
+    final SourceDefinitionRead sourceDefinition = testHarness.createE2eSourceDefinition(workspaceId);
+    final DestinationDefinitionRead destinationDefinition = testHarness.createE2eDestinationDefinition(workspaceId);
 
     final SourceRead source = testHarness.createSource(
         "E2E Test Source -" + UUID.randomUUID(),
@@ -269,7 +271,7 @@ class AdvancedAcceptanceTests {
     final AirbyteCatalog catalog = testHarness.discoverSourceSchema(sourceId);
 
     final UUID connectionId =
-        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, null)
+        testHarness.createConnection(connectionName, sourceId, destinationId, Collections.emptyList(), catalog, ConnectionScheduleType.MANUAL, null)
             .getConnectionId();
     final JobInfoRead connectionSyncRead1 = apiClient.getConnectionApi()
         .syncConnection(new ConnectionIdRequestBody().connectionId(connectionId));

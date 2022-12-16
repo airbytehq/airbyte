@@ -3,7 +3,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useUnmount } from "react-use";
 import { Subscription } from "rxjs";
 
-import { Spinner } from "components";
+import { Spinner } from "components/ui/Spinner";
 
 import { useExperiment } from "hooks/services/Experiment";
 import { OAuthProviders } from "packages/cloud/lib/auth/AuthProviders";
@@ -100,9 +100,6 @@ export const OAuthLogin: React.FC<OAuthLoginProps> = ({ isSignUpPage }) => {
 
   return (
     <div>
-      <div className={styles.separator}>
-        <FormattedMessage id="login.oauth.or" />
-      </div>
       {isLoading && (
         <div className={styles.spinner}>
           <Spinner />

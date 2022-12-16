@@ -40,15 +40,15 @@ def test_get_column_value():
 
 def test_get_updated_state_new_state():
     test_report = TestReport()
-    stream_state = {123: {"Time": pendulum.parse("2020-01-01").timestamp()}}
+    stream_state = {"123": {"Time": pendulum.parse("2020-01-01").timestamp()}}
     latest_record = {"AccountId": 123, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
-    assert new_state[123]["Time"] == pendulum.parse("2020-01-02").timestamp()
+    assert new_state["123"]["Time"] == pendulum.parse("2020-01-02").timestamp()
 
 
-def test_get_updated_state_state_uncahanged():
+def test_get_updated_state_state_unchanged():
     test_report = TestReport()
-    stream_state = {123: {"Time": pendulum.parse("2020-01-03").timestamp()}}
+    stream_state = {"123": {"Time": pendulum.parse("2020-01-03").timestamp()}}
     latest_record = {"AccountId": 123, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(copy.deepcopy(stream_state), latest_record)
     assert stream_state == new_state
@@ -56,11 +56,11 @@ def test_get_updated_state_state_uncahanged():
 
 def test_get_updated_state_state_new_account():
     test_report = TestReport()
-    stream_state = {123: {"Time": pendulum.parse("2020-01-03").timestamp()}}
+    stream_state = {"123": {"Time": pendulum.parse("2020-01-03").timestamp()}}
     latest_record = {"AccountId": 234, "Time": "2020-01-02"}
     new_state = test_report.get_updated_state(stream_state, latest_record)
-    assert 234 in new_state and 123 in new_state
-    assert new_state[234]["Time"] == pendulum.parse("2020-01-02").timestamp()
+    assert "234" in new_state and "123" in new_state
+    assert new_state["234"]["Time"] == pendulum.parse("2020-01-02").timestamp()
 
 
 def test_get_report_record_timestamp_daily():

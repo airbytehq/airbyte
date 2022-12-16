@@ -1,0 +1,137 @@
+{
+  "type": "object",
+  "properties": {
+    "email": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of active subscribers found by the query."
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of unconfirmed subscribers found by the query."
+        },
+        "quarantined": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of quarantined subscribers found by the query."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The total number of subscribers found by the query."
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "sms": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of active subscribers found by the query."
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of unconfirmed subscribers found by the query."
+        },
+        "quarantined": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of quarantined subscribers found by the query."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The total number of subscribers found by the query."
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "webhook": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of active subscribers found by the query."
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of unconfirmed subscribers found by the query."
+        },
+        "quarantined": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of quarantined subscribers found by the query."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The total number of subscribers found by the query."
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "integration_partner": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of active subscribers found by the query."
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of unconfirmed subscribers found by the query."
+        },
+        "quarantined": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of quarantined subscribers found by the query."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The total number of subscribers found by the query."
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    },
+    "slack": {
+      "type": "object",
+      "properties": {
+        "active": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of active subscribers found by the query."
+        },
+        "unconfirmed": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of unconfirmed subscribers found by the query."
+        },
+        "quarantined": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The number of quarantined subscribers found by the query."
+        },
+        "total": {
+          "type": "integer",
+          "format": "int32",
+          "description": "The total number of subscribers found by the query."
+        }
+      },
+      "$schema": "http://json-schema.org/schema#"
+    }
+  },
+  "description": "Get a histogram of subscribers by type and then state",
+  "$schema": "http://json-schema.org/schema#"
+}

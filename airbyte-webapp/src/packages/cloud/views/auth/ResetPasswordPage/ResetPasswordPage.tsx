@@ -3,8 +3,10 @@ import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import { LoadingButton, LabeledInput, Link } from "components";
-import HeadTitle from "components/HeadTitle";
+import { LabeledInput, Link } from "components";
+import { HeadTitle } from "components/common/HeadTitle";
+import { Button } from "components/ui/Button";
+import { ToastType } from "components/ui/Toast";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useNotificationService } from "hooks/services/Notification/NotificationService";
@@ -41,8 +43,8 @@ const ResetPasswordPage: React.FC = () => {
             await requirePasswordReset(email);
             registerNotification({
               id: "resetPassword.emailSent",
-              title: formatMessage({ id: "login.resetPassword.emailSent" }),
-              isError: false,
+              text: formatMessage({ id: "login.resetPassword.emailSent" }),
+              type: ToastType.SUCCESS,
             });
           } catch (err) {
             err.message.includes("user-not-found")
@@ -75,9 +77,9 @@ const ResetPasswordPage: React.FC = () => {
               <Link to={CloudRoutes.Login} $light>
                 <FormattedMessage id="login.backLogin" />
               </Link>
-              <LoadingButton type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
+              <Button type="submit" isLoading={isSubmitting} data-testid="login.resetPassword">
                 <FormattedMessage id="login.resetPassword" />
-              </LoadingButton>
+              </Button>
             </BottomBlock>
           </Form>
         )}

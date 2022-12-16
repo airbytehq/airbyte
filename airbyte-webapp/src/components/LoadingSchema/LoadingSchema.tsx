@@ -2,7 +2,7 @@ import React from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { ProgressBar } from "components";
+import { ProgressBar } from "components/ui/ProgressBar";
 
 const SpinnerBlock = styled.div`
   padding: 40px;

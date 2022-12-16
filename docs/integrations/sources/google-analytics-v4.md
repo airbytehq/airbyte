@@ -9,9 +9,16 @@ This connector supports GA4 properties through the [Analytics Data API v1](https
 * JSON credentials for the service account that has access to Google Analytics. For more details check [instructions](https://support.google.com/analytics/answer/1009702#zippy=%2Cin-this-article)
 * OAuth 2.0 credentials for the service account that has access to Google Analytics
 * Property ID
-* Custom reports in format `{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["metric-name", ...]}`
 * Date Range Start Date
 * Data request time increment in days (Optional)
+
+## Custom reports
+
+* Support for multiple custom reports
+* Custom reports in format `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...]}]`
+* Custom report format when using segments and / or filters `[{"name": "<report-name>", "dimensions": ["<dimension-name>", ...], "metrics": ["<metric-name>", ...], "segments":  ["<segment-id-or-dynamic-segment-v3-format]", filter: "<filter-definition-v3-format>"}]`
+* When using segments, make sure you add the `ga:segment` dimension.
+* Custom reports: [Dimensions and metrics explorer](https://ga-dev-tools.web.app/dimensions-metrics-explorer/)
 
 ## Step 1: Set up Source
 
@@ -26,7 +33,7 @@ First, you need to select existing or create a new project in the Google Develop
 
 ### Add service account to the Google Analytics account
 
-Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Read & Analyze permissions](https://support.google.com/analytics/answer/2884495).
+Use the service account email address to [add a user](https://support.google.com/analytics/answer/1009702) to the Google analytics view you want to access via the API. You will need to grant [Viewer permissions](https://support.google.com/analytics/answer/2884495).
 
 ### Enable the APIs
 

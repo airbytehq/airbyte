@@ -1,0 +1,3 @@
+Your source schema has changed for connection ID: %s
+
+Airbyte has disabled this connection because this source schema change will cause broken syncs. Visit your connection page, refresh your source schema, and reset your data in order to fix this connection.

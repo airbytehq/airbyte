@@ -1,0 +1,25 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  text-align: center;
+  padding: variables.$spacing-lg variables.$spacing-xl;
+}
+
+.connectionTitle {
+  color: colors.$blue-500;
+}
+
+.connectionDeleted {
+  max-width: variables.$width-modal-md;
+  margin: variables.$spacing-lg auto;
+}
+
+.statusContainer {
+  margin: 18px 0;
+  font-size: 15px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
