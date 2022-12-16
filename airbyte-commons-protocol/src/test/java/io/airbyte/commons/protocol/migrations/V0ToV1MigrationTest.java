@@ -713,7 +713,7 @@ public class V0ToV1MigrationTest {
     }
 
     @Test
-    public void testUpgradeAllPrimitives() {
+    public void testDowngradeAllPrimitives() {
       doTest(
           """
           {
