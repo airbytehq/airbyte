@@ -28,10 +28,8 @@
     @extend %cover;
 
     position: fixed;
-    bottom: -60px; // this is to prevent the image/text from being illegible on top of the 'transfer' fields and will need to be adjusted with the "new table" design
+    margin-top: 120px;
     display: flex;
-    justify-content: center;
-    text-align: center;
     z-index: z-indices.$schemaChangesBackdropContent;
     width: variables.$width-modal-sm;
     max-width: 40%;
