@@ -72,8 +72,20 @@ public class EnvConfigs implements Configs {
   public static final String JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY";
   public static final String JOB_KUBE_TOLERATIONS = "JOB_KUBE_TOLERATIONS";
   public static final String JOB_KUBE_NODE_SELECTORS = "JOB_KUBE_NODE_SELECTORS";
+  public static final String JOB_ISOLATED_KUBE_NODE_SELECTORS = "JOB_ISOLATED_KUBE_NODE_SELECTORS";
+  public static final String USE_CUSTOM_NODE_SELECTOR = "USE_CUSTOM_NODE_SELECTOR";
   public static final String JOB_KUBE_ANNOTATIONS = "JOB_KUBE_ANNOTATIONS";
+  private static final String DEFAULT_SIDECAR_MEMORY_REQUEST = "25Mi";
+  private static final String SIDECAR_MEMORY_REQUEST = "SIDECAR_MEMORY_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT = "50Mi";
+  private static final String SIDECAR_KUBE_MEMORY_LIMIT = "SIDECAR_KUBE_MEMORY_LIMIT";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_REQUEST = "0.1";
+  private static final String SIDECAR_KUBE_CPU_REQUEST = "SIDECAR_KUBE_CPU_REQUEST";
+  private static final String DEFAULT_SIDECAR_KUBE_CPU_LIMIT = "0.2";
+  private static final String SIDECAR_KUBE_CPU_LIMIT = "SIDECAR_KUBE_CPU_LIMIT";
   public static final String JOB_KUBE_SOCAT_IMAGE = "JOB_KUBE_SOCAT_IMAGE";
+  private static final String SOCAT_KUBE_CPU_LIMIT = "SOCAT_KUBE_CPU_LIMIT";
+  private static final String SOCAT_KUBE_CPU_REQUEST = "SOCAT_KUBE_CPU_REQUEST";
   public static final String JOB_KUBE_BUSYBOX_IMAGE = "JOB_KUBE_BUSYBOX_IMAGE";
   public static final String JOB_KUBE_CURL_IMAGE = "JOB_KUBE_CURL_IMAGE";
   public static final String SYNC_JOB_MAX_ATTEMPTS = "SYNC_JOB_MAX_ATTEMPTS";
@@ -192,6 +204,8 @@ public class EnvConfigs implements Configs {
   private static final String DEFAULT_JOB_KUBE_SIDECAR_CONTAINER_IMAGE_PULL_POLICY = "IfNotPresent";
   private static final String SECRET_STORE_GCP_PROJECT_ID = "SECRET_STORE_GCP_PROJECT_ID";
   private static final String SECRET_STORE_GCP_CREDENTIALS = "SECRET_STORE_GCP_CREDENTIALS";
+  private static final String AWS_ACCESS_KEY = "AWS_ACCESS_KEY";
+  private static final String AWS_SECRET_ACCESS_KEY = "AWS_SECRET_ACCESS_KEY";
   private static final String DEFAULT_JOB_KUBE_SOCAT_IMAGE = "alpine/socat:1.7.4.3-r0";
   private static final String DEFAULT_JOB_KUBE_BUSYBOX_IMAGE = "busybox:1.28";
   private static final String DEFAULT_JOB_KUBE_CURL_IMAGE = "curlimages/curl:7.83.1";
@@ -408,6 +422,16 @@ public class EnvConfigs implements Configs {
     return getEnv(VAULT_AUTH_TOKEN);
   }
 
+  @Override
+  public String getAwsAccessKey() {
+    return getEnv(AWS_ACCESS_KEY);
+  }
+
+  @Override
+  public String getAwsSecretAccessKey() {
+    return getEnv(AWS_SECRET_ACCESS_KEY);
+  }
+
   // Database
   @Override
   public String getDatabaseUser() {
@@ -607,6 +631,16 @@ public class EnvConfigs implements Configs {
     return splitKVPairsFromEnvString(getEnvOrDefault(JOB_KUBE_NODE_SELECTORS, ""));
   }
 
+  @Override
+  public Map<String, String> getIsolatedJobKubeNodeSelectors() {
+    return splitKVPairsFromEnvString(getEnvOrDefault(JOB_ISOLATED_KUBE_NODE_SELECTORS, ""));
+  }
+
+  @Override
+  public boolean getUseCustomKubeNodeSelector() {
+    return getEnvOrDefault(USE_CUSTOM_NODE_SELECTOR, false);
+  }
+
   /**
    * Returns a map of node selectors for Spec job pods specifically.
    *
@@ -717,17 +751,50 @@ public class EnvConfigs implements Configs {
 
   /**
    * Returns the name of the secret to be used when pulling down docker images for jobs. Automatically
-   * injected in the KubePodProcess class and used in the job pod templates. The empty string is a
-   * no-op value.
+   * injected in the KubePodProcess class and used in the job pod templates.
+   *
+   * Can provide multiple strings seperated by comma(,) to indicate pulling from different
+   * repositories. The empty string is a no-op value.
    */
   @Override
-  public String getJobKubeMainContainerImagePullSecret() {
-    return getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+  public List<String> getJobKubeMainContainerImagePullSecrets() {
+    String secrets = getEnvOrDefault(JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET, "");
+    return Arrays.stream(secrets.split(",")).collect(Collectors.toList());
+  }
+
+  @Override
+  public String getSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_REQUEST, DEFAULT_SIDECAR_KUBE_CPU_REQUEST);
+  }
+
+  @Override
+  public String getSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_CPU_LIMIT, DEFAULT_SIDECAR_KUBE_CPU_LIMIT);
+  }
+
+  @Override
+  public String getSidecarKubeMemoryLimit() {
+    return getEnvOrDefault(SIDECAR_KUBE_MEMORY_LIMIT, DEFAULT_SIDECAR_KUBE_MEMORY_LIMIT);
+  }
+
+  @Override
+  public String getSidecarMemoryRequest() {
+    return getEnvOrDefault(SIDECAR_MEMORY_REQUEST, DEFAULT_SIDECAR_MEMORY_REQUEST);
   }
 
   @Override
   public String getJobKubeSocatImage() {
     return getEnvOrDefault(JOB_KUBE_SOCAT_IMAGE, DEFAULT_JOB_KUBE_SOCAT_IMAGE);
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuRequest() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_REQUEST, getSidecarKubeCpuRequest());
+  }
+
+  @Override
+  public String getSocatSidecarKubeCpuLimit() {
+    return getEnvOrDefault(SOCAT_KUBE_CPU_LIMIT, getSidecarKubeCpuLimit());
   }
 
   @Override

@@ -15,10 +15,10 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.standardtest.source.TestDataHolder;
 import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.util.List;
 import org.jooq.DSLContext;
@@ -45,7 +45,7 @@ public class CdcBinlogsMySqlSourceDatatypeTest extends AbstractMySqlSourceDataty
   }
 
   @Override
-  protected void setupEnvironment(final TestDestinationEnv environment) throws Exception {
+  protected void postSetup() throws Exception {
     final Database database = setupDatabase();
     initTests();
     for (final TestDataHolder test : testDataHolders) {
