@@ -4,6 +4,9 @@
 
 package io.airbyte.commons.features;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +18,14 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String LOG_CONNECTOR_MESSAGES = "LOG_CONNECTOR_MESSAGES";
   public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
   public static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
+
+  private final Set<UUID> FIELD_SELECTION_WORKSPACES = getEnvOrDefault("FIELD_SELECTION_WORKSPACES", Set.of(), (workspaceIdsString) -> {
+    final Set<UUID> workspaceIds = new HashSet<>();
+    for (final String workspaceId : workspaceIdsString.split(",")) {
+      workspaceIds.add(UUID.fromString(workspaceId));
+    }
+    return workspaceIds;
+  });
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -49,7 +60,10 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean applyFieldSelection() {
+  public boolean applyFieldSelection(UUID workspaceId) {
+    if (workspaceId != null && FIELD_SELECTION_WORKSPACES.contains(workspaceId)) {
+      return true;
+    }
     return getEnvOrDefault(APPLY_FIELD_SELECTION, false, Boolean::parseBoolean);
   }
 

@@ -210,7 +210,7 @@ class DefaultJobCreatorTest {
         List.of(STANDARD_SYNC_OPERATION),
         PERSISTED_WEBHOOK_CONFIGS,
         STANDARD_SOURCE_DEFINITION,
-        STANDARD_DESTINATION_DEFINITION).orElseThrow();
+        STANDARD_DESTINATION_DEFINITION, UUID.randomUUID()).orElseThrow();
     assertEquals(JOB_ID, jobId);
   }
 
@@ -247,7 +247,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION).isEmpty());
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, UUID.randomUUID()).isEmpty());
   }
 
   @Test
@@ -262,7 +262,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION);
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, UUID.randomUUID());
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -310,7 +310,7 @@ class DefaultJobCreatorTest {
         DESTINATION_PROTOCOL_VERSION,
         List.of(STANDARD_SYNC_OPERATION),
         null,
-        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION);
+        STANDARD_SOURCE_DEFINITION, STANDARD_DESTINATION_DEFINITION, UUID.randomUUID());
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
@@ -364,7 +364,8 @@ class DefaultJobCreatorTest {
         null,
         new StandardSourceDefinition().withResourceRequirements(new ActorDefinitionResourceRequirements().withDefault(sourceResourceRequirements)),
         new StandardDestinationDefinition().withResourceRequirements(new ActorDefinitionResourceRequirements().withJobSpecific(List.of(
-            new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements)))));
+            new JobTypeResourceLimit().withJobType(JobType.SYNC).withResourceRequirements(destResourceRequirements)))),
+        UUID.randomUUID());
 
     final JobSyncConfig expectedJobSyncConfig = new JobSyncConfig()
         .withNamespaceDefinition(STANDARD_SYNC.getNamespaceDefinition())
