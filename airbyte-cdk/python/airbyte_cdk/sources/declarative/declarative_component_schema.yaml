@@ -1,5 +1,5 @@
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/low_code_component_schema.yaml
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
 title: DeclarativeSource
 type: object
 description: An API source that extracts data according to its declarative components
@@ -786,6 +786,19 @@ definitions:
       $options:
         type: object
         additionalProperties: true
+  PrimaryKey:
+    description: The stream field to be used to distinguish unique rows
+    anyOf:
+      - type: string
+      - type: array
+        items:
+          type: string
+      - type: array
+        items:
+          type: array
+          items:
+            type: string
+    default: ""
   RecordFilter:
     description: Filter applied on a list of Records
     type: object
@@ -881,17 +894,7 @@ definitions:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
       primary_key:
-        anyOf:
-          - type: string
-          - type: array
-            items:
-              type: string
-          - type: array
-            items:
-              type: array
-              items:
-                type: string
-        default: ""
+        "$ref": "#/definitions/PrimaryKey"
       stream_slicer:
         anyOf:
           - "$ref": "#/definitions/CartesianProductStreamSlicer"

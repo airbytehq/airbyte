@@ -123,20 +123,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
-        # Validates the connector manifest against the schema auto-generated from the low-code backend
-        full_config = {}
-        if "version" in self._source_config:
-            full_config["version"] = self._source_config["version"]
-        full_config["check"] = self._source_config["check"]
-        streams = [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
-        if len(streams) > 0:
-            full_config["streams"] = streams
-        declarative_source_schema = ConcreteDeclarativeSource.json_schema()
-
-        try:
-            validate(full_config, declarative_source_schema)
-        except ValidationError as e:
-            raise ValidationError("Validation against auto-generated schema failed") from e
 
         # Validates the connector manifest against the low-code component json schema
         manifest = self._source_config
@@ -146,7 +132,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
 
         try:
-            raw_component_schema = pkgutil.get_data(__name__, "low_code_component_schema.yaml")
+            raw_component_schema = pkgutil.get_data(__name__, "declarative_component_schema.yaml")
             declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
@@ -154,7 +140,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         try:
             validate(propagated_manifest, declarative_component_schema)
         except ValidationError as e:
-            raise ValidationError("Validation against json schema defined in low_code_component_schema.yaml schema failed") from e
+            raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
     def _stream_configs(self):
         stream_configs = self._source_config.get("streams", [])
