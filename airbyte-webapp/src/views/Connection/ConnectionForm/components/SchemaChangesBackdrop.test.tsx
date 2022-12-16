@@ -11,7 +11,7 @@ jest.doMock("hooks/services/ConnectionEdit/ConnectionEditService", () => ({
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 const buttonSpy = jest.fn();
