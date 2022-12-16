@@ -7,7 +7,7 @@ from http import HTTPStatus
 from unittest.mock import MagicMock
 
 import pytest
-from source_retently.source import Companies, Campaigns
+from source_retently.source import Campaigns, Companies
 
 
 @pytest.fixture

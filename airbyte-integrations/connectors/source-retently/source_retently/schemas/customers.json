@@ -20,7 +20,7 @@
           "label": { "type": "string" },
           "name": { "type": "string" },
           "type": { "type": "string" },
-          "value": { "type": ["string", "integer"] }
+          "value": { "type": "string" }
         }
       }
     }

@@ -19,9 +19,6 @@
     "companyId": {
       "type": "string"
     },
-    "personTags": {
-      "type": "string"
-    },
     "sentDate": {
       "type": "string"
     },
@@ -74,39 +71,7 @@
     },
     "additionalRecipients": {
       "type": "array",
-      "items": [
-        {
-          "type": "object",
-          "properties": {
-            "email": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "mandrillMessageId": {
-              "type": "string"
-            }
-          }
-        },
-        {
-          "type": "object",
-          "properties": {
-            "email": {
-              "type": "string"
-            },
-            "type": {
-              "type": "string"
-            },
-            "mandrillMessageId": {
-              "type": "string"
-            }
-          }
-        }
-      ]
-    },
-    "mandrillMessageId": {
-      "type": "string"
+      "items": { "type": "object"}
     }
   }
 }
