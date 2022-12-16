@@ -20,7 +20,7 @@ public enum DatabaseDriver {
   REDSHIFT("com.amazon.redshift.jdbc.Driver", "jdbc:redshift://%s:%d/%s"),
   SNOWFLAKE("net.snowflake.client.jdbc.SnowflakeDriver", "jdbc:snowflake://%s/"),
   YUGABYTEDB("com.yugabyte.Driver", "jdbc:yugabytedb://%s:%d/%s"),
-  EXASOL("com.exasol.jdbc.EXADriver", "jdbc:exa:%s");
+  EXASOL("com.exasol.jdbc.EXADriver", "jdbc:exa:%s:%d");
 
   private final String driverClassName;
   private final String urlFormatString;

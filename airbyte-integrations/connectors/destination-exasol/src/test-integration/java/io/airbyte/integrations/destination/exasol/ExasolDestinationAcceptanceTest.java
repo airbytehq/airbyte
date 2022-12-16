@@ -56,7 +56,9 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getConfig() {
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("connectionstring",EXASOL.getHost()+"/"+EXASOL.getTlsCertificateFingerprint().orElseThrow()+":"+EXASOL.getFirstMappedDatabasePort())
+            .put(JdbcUtils.HOST_KEY, EXASOL.getHost())
+            .put(JdbcUtils.PORT_KEY, EXASOL.getFirstMappedDatabasePort())
+            .put("certificateFingerprint", EXASOL.getTlsCertificateFingerprint().orElseThrow())
             .put(JdbcUtils.USERNAME_KEY, EXASOL.getUsername())
             .put(JdbcUtils.PASSWORD_KEY, EXASOL.getPassword())
             .put(JdbcUtils.SCHEMA_KEY, "TEST")
@@ -89,12 +91,13 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   private static JdbcDatabase getDatabase(final JsonNode config) {
+    String jdbcUrl = String.format(DatabaseDriver.EXASOL.getUrlFormatString(), config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
     return new DefaultJdbcDatabase(
             DataSourceFactory.create(
                     config.get(JdbcUtils.USERNAME_KEY).asText(),
                     config.has(JdbcUtils.PASSWORD_KEY) ? config.get(JdbcUtils.PASSWORD_KEY).asText() : null,
                     ExasolDestination.DRIVER_CLASS,
-                    String.format(DatabaseDriver.EXASOL.getUrlFormatString(), config.get("connectionstring").asText()))
+                    jdbcUrl)
     );
   }
 

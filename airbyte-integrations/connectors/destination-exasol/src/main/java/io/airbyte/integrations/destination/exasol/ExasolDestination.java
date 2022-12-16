@@ -16,7 +16,7 @@ import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
@@ -61,9 +61,8 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-    final StringBuilder jdbcUrl = new StringBuilder(
-        String.format("jdbc:exa:%s",
-            config.get("connectionstring").asText()));
+    final String jdbcUrl = String.format("jdbc:exa:%s:%d",
+            config.get(JdbcUtils.HOST_KEY).asText(), config.get(JdbcUtils.PORT_KEY).asInt());
 
     final ImmutableMap.Builder<Object, Object> configBuilder = ImmutableMap.builder()
         .put(JdbcUtils.USERNAME_KEY, config.get(JdbcUtils.USERNAME_KEY).asText())
@@ -71,6 +70,10 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
     if (config.has(JdbcUtils.PASSWORD_KEY)) {
       configBuilder.put(JdbcUtils.PASSWORD_KEY, config.get(JdbcUtils.PASSWORD_KEY).asText());
+    }
+
+    if (config.has(JdbcUtils.SCHEMA_KEY)) {
+      configBuilder.put("schema", config.get(JdbcUtils.SCHEMA_KEY).asText());
     }
 
     if (config.has(JdbcUtils.JDBC_URL_PARAMS_KEY)) {
@@ -82,6 +85,10 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
-    return Collections.emptyMap();
+    Map<String, String> properties = new HashMap<>();
+    if (config.has("certificateFingerprint")) {
+      properties.put("fingerprint", config.get("certificateFingerprint").asText());
+    }
+    return properties;
   }
 }
