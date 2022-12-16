@@ -149,7 +149,7 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it.only("Creates a connection, then edits the schedule type", () => {
+  it("Creates a connection, then edits the schedule type", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
     const destName = appendRandomString("Test connection destination cypress");
 
