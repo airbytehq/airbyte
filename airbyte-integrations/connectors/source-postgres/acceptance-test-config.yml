@@ -6,15 +6,21 @@ acceptance_tests:
   spec:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
-        config_path: "src/test-integration/resources/dummy_config.json"
-        timeout_seconds: 60
+        config_path: "secrets/config.json"
   connection:
-    bypass_reason: "some reason."
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
   discovery:
-    bypass_reason: "some reason."
+    tests:
+      - config_path: "secrets/config.json"
   basic_read:
-    bypass_reason: "some reason."
+    tests:
+      - config_path: "secrets/config.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
   full_refresh:
-    bypass_reason: "some reason."
+    tests:
+      - config_path: "secrets/config.json"
   incremental:
-    bypass_reason: "some reason."
+    bypass_reason: "The test database is not yet seeded with an incremental stream."
