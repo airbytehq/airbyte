@@ -154,7 +154,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
-        new UpdateConnectorConfigHelper(airbyteApiClient));
+        new UpdateConnectorConfigHelper(airbyteApiClient), 
+        featureFlags.applyFieldSelection());
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),

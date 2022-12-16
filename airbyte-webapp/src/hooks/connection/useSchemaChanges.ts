@@ -1,14 +1,13 @@
 import { useMemo } from "react";
 
 import { SchemaChange } from "core/request/AirbyteClient";
-
-import { useIsAutoDetectSchemaChangesEnabled } from "./useIsAutoDetectSchemaChangesEnabled";
+import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 export const useSchemaChanges = (schemaChange: SchemaChange) => {
-  const isSchemaChangesEnabled = useIsAutoDetectSchemaChangesEnabled();
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return useMemo(() => {
-    const hasSchemaChanges = isSchemaChangesEnabled && schemaChange !== SchemaChange.no_change;
+    const hasSchemaChanges = allowAutoDetectSchema && schemaChange !== SchemaChange.no_change;
     const hasBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.breaking;
     const hasNonBreakingSchemaChange = hasSchemaChanges && schemaChange === SchemaChange.non_breaking;
 
@@ -18,5 +17,5 @@ export const useSchemaChanges = (schemaChange: SchemaChange) => {
       hasBreakingSchemaChange,
       hasNonBreakingSchemaChange,
     };
-  }, [isSchemaChangesEnabled, schemaChange]);
+  }, [allowAutoDetectSchema, schemaChange]);
 };

@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.base;
 
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
  *
  * Two methods are intended for extension: - startTracked: Wraps set up of necessary
  * infrastructure/configuration before message consumption. - acceptTracked: Wraps actual processing
- * of each {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * of each {@link io.airbyte.protocol.models.v0.AirbyteMessage}.
  *
  * Though not necessary, we highly encourage using this class when implementing destinations. See
  * child classes for examples.
