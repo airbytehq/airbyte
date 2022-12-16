@@ -35,7 +35,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.transaction.Transactional;
 
 @Singleton
 public class SourceHandler {
@@ -87,7 +86,6 @@ public class SourceHandler {
     this.secretsProcessor = secretsProcessor;
   }
 
-  @Transactional
   public SourceRead createSource(final SourceCreate sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     // validate configuration
@@ -110,7 +108,6 @@ public class SourceHandler {
     return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
-  @Transactional
   public SourceRead updateSource(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
@@ -135,13 +132,11 @@ public class SourceHandler {
     return buildSourceRead(configRepository.getSourceConnection(sourceId), spec);
   }
 
-  @Transactional
   public SourceRead getSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
-  @Transactional
   public SourceRead cloneSource(final SourceCloneRequestBody sourceCloneRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // read source configuration from db
@@ -170,7 +165,6 @@ public class SourceHandler {
     return createSource(sourceCreate);
   }
 
-  @Transactional
   public SourceReadList listSourcesForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
@@ -184,7 +178,6 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  @Transactional
   public SourceReadList listSourcesForSourceDefinition(final SourceDefinitionIdRequestBody sourceDefinitionIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
@@ -196,7 +189,6 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  @Transactional
   public SourceReadList searchSources(final SourceSearch sourceSearch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<SourceRead> reads = Lists.newArrayList();
@@ -213,7 +205,6 @@ public class SourceHandler {
     return new SourceReadList().sources(reads);
   }
 
-  @Transactional
   public void deleteSource(final SourceIdRequestBody sourceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing source
@@ -221,7 +212,6 @@ public class SourceHandler {
     deleteSource(source);
   }
 
-  @Transactional
   public void deleteSource(final SourceRead source)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // "delete" all connections associated with source as well.

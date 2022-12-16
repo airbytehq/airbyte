@@ -11,7 +11,6 @@ import io.airbyte.persistence.job.JobPersistence;
 import io.micronaut.context.annotation.Requires;
 import jakarta.inject.Singleton;
 import java.io.IOException;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +26,6 @@ public class AttemptHandler {
     this.jobPersistence = jobPersistence;
   }
 
-  @Transactional
   public InternalOperationResult setWorkflowInAttempt(final SetWorkflowInAttemptRequestBody requestBody) {
     try {
       jobPersistence.setAttemptTemporalWorkflowInfo(requestBody.getJobId(),

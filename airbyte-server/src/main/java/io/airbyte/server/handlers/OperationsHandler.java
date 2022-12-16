@@ -33,7 +33,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
-import javax.transaction.Transactional;
 
 @Singleton
 public class OperationsHandler {
@@ -52,7 +51,6 @@ public class OperationsHandler {
     this.uuidGenerator = uuidGenerator;
   }
 
-  @Transactional
   public CheckOperationRead checkOperation(final OperatorConfiguration operationCheck) {
     try {
       validateOperation(operationCheck);
@@ -63,7 +61,6 @@ public class OperationsHandler {
     return new CheckOperationRead().status(StatusEnum.SUCCEEDED);
   }
 
-  @Transactional
   public OperationRead createOperation(final OperationCreate operationCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID operationId = uuidGenerator.get();
@@ -94,7 +91,6 @@ public class OperationsHandler {
     }
   }
 
-  @Transactional
   public OperationRead updateOperation(final OperationUpdate operationUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSyncOperation standardSyncOperation = configRepository.getStandardSyncOperation(operationUpdate.getOperationId());
@@ -114,7 +110,6 @@ public class OperationsHandler {
     return standardSyncOperation;
   }
 
-  @Transactional
   public OperationReadList listOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<OperationRead> operationReads = Lists.newArrayList();
@@ -129,27 +124,23 @@ public class OperationsHandler {
     return new OperationReadList().operations(operationReads);
   }
 
-  @Transactional
   public OperationRead getOperation(final OperationIdRequestBody operationIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildOperationRead(operationIdRequestBody.getOperationId());
   }
 
-  @Transactional
   public void deleteOperationsForConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionIdRequestBody.getConnectionId());
     deleteOperationsForConnection(standardSync, standardSync.getOperationIds());
   }
 
-  @Transactional
   public void deleteOperationsForConnection(final UUID connectionId, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync standardSync = configRepository.getStandardSync(connectionId);
     deleteOperationsForConnection(standardSync, deleteOperationIds);
   }
 
-  @Transactional
   public void deleteOperationsForConnection(final StandardSync standardSync, final List<UUID> deleteOperationIds)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<UUID> operationIds = new ArrayList<>(standardSync.getOperationIds());
@@ -171,7 +162,6 @@ public class OperationsHandler {
     configRepository.updateConnectionOperationIds(standardSync.getConnectionId(), new HashSet<>(operationIds));
   }
 
-  @Transactional
   public void deleteOperation(final OperationIdRequestBody operationIdRequestBody)
       throws IOException {
     final UUID operationId = operationIdRequestBody.getOperationId();

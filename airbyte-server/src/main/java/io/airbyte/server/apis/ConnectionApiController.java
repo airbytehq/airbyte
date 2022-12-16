@@ -24,7 +24,6 @@ import javax.transaction.Transactional;
 
 @Controller("/api/v1/connections")
 @Context()
-@Transactional
 public class ConnectionApiController implements ConnectionApi {
 
   private final ConnectionsHandler connectionsHandler;

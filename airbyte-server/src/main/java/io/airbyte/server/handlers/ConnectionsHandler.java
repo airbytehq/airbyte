@@ -70,7 +70,6 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,7 +116,6 @@ public class ConnectionsHandler {
 
   }
 
-  @Transactional
   public ConnectionRead createConnection(final ConnectionCreate connectionCreate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
 
@@ -277,7 +275,6 @@ public class ConnectionsHandler {
     return metadata;
   }
 
-  @Transactional
   public ConnectionRead updateConnection(final ConnectionUpdate connectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 
@@ -414,19 +411,16 @@ public class ConnectionsHandler {
     }
   }
 
-  @Transactional
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return listConnectionsForWorkspace(workspaceIdRequestBody, false);
   }
 
-  @Transactional
   public ConnectionReadList listAllConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return listConnectionsForWorkspace(workspaceIdRequestBody, true);
   }
 
-  @Transactional
   public ConnectionReadList listConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody, final boolean includeDeleted)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
@@ -438,7 +432,6 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
-  @Transactional
   public ConnectionReadList listConnectionsForSource(final UUID sourceId, final boolean includeDeleted) throws IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
     for (final StandardSync standardSync : configRepository.listConnectionsBySource(sourceId, includeDeleted)) {
@@ -447,7 +440,6 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
-  @Transactional
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
@@ -461,7 +453,6 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
-  @Transactional
   public ConnectionRead getConnection(final UUID connectionId)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     return buildConnectionRead(connectionId);
@@ -524,7 +515,6 @@ public class ConnectionsHandler {
         stream -> stream.getConfig()));
   }
 
-  @Transactional
   public Optional<AirbyteCatalog> getConnectionAirbyteCatalog(final UUID connectionId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final StandardSync connection = configRepository.getStandardSync(connectionId);
@@ -536,7 +526,6 @@ public class ConnectionsHandler {
         io.airbyte.protocol.models.AirbyteCatalog.class)));
   }
 
-  @Transactional
   public ConnectionReadList searchConnections(final ConnectionSearch connectionSearch)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final List<ConnectionRead> reads = Lists.newArrayList();
@@ -552,7 +541,6 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(reads);
   }
 
-  @Transactional
   public boolean matchSearch(final ConnectionSearch connectionSearch, final ConnectionRead connectionRead)
       throws JsonValidationException, ConfigNotFoundException, IOException {
 
@@ -591,7 +579,6 @@ public class ConnectionsHandler {
     return (destinationReadFromSearch == null || destinationReadFromSearch.equals(destinationRead));
   }
 
-  @Transactional
   public void deleteConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException {
     connectionHelper.deleteConnection(connectionId);
     eventRunner.forceDeleteConnection(connectionId);

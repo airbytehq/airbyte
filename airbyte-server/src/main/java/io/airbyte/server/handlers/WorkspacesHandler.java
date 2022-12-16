@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,7 +89,6 @@ public class WorkspacesHandler {
     this.slugify = new Slugify();
   }
 
-  @Transactional
   public WorkspaceRead createWorkspace(final WorkspaceCreate workspaceCreate)
       throws JsonValidationException, IOException, ValueConflictKnownException {
 
@@ -127,7 +125,6 @@ public class WorkspacesHandler {
     return persistStandardWorkspace(workspace);
   }
 
-  @Transactional
   public void deleteWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // get existing implementation
@@ -152,7 +149,6 @@ public class WorkspacesHandler {
     persistStandardWorkspace(persistedWorkspace);
   }
 
-  @Transactional
   public WorkspaceReadList listWorkspaces() throws JsonValidationException, IOException {
     final List<WorkspaceRead> reads = configRepository.listStandardWorkspaces(false).stream()
         .map(WorkspacesHandler::buildWorkspaceRead)
@@ -160,7 +156,6 @@ public class WorkspacesHandler {
     return new WorkspaceReadList().workspaces(reads);
   }
 
-  @Transactional
   public WorkspaceRead getWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final UUID workspaceId = workspaceIdRequestBody.getWorkspaceId();
@@ -169,7 +164,6 @@ public class WorkspacesHandler {
   }
 
   @SuppressWarnings("unused")
-  @Transactional
   public WorkspaceRead getWorkspaceBySlug(final SlugRequestBody slugRequestBody)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     // for now we assume there is one workspace and it has a default uuid.
@@ -177,13 +171,11 @@ public class WorkspacesHandler {
     return buildWorkspaceRead(workspace);
   }
 
-  @Transactional
   public WorkspaceRead getWorkspaceByConnectionId(final ConnectionIdRequestBody connectionIdRequestBody) {
     final StandardWorkspace workspace = configRepository.getStandardWorkspaceFromConnection(connectionIdRequestBody.getConnectionId(), false);
     return buildWorkspaceRead(workspace);
   }
 
-  @Transactional
   public WorkspaceRead updateWorkspace(final WorkspaceUpdate workspacePatch) throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID workspaceId = workspacePatch.getWorkspaceId();
 
@@ -216,7 +208,6 @@ public class WorkspacesHandler {
     return buildWorkspaceReadFromId(workspaceId);
   }
 
-  @Transactional
   public WorkspaceRead updateWorkspaceName(final WorkspaceUpdateName workspaceUpdateName)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final UUID workspaceId = workspaceUpdateName.getWorkspaceId();
@@ -251,7 +242,6 @@ public class WorkspacesHandler {
     return new NotificationRead().status(StatusEnum.FAILED);
   }
 
-  @Transactional
   public void setFeedbackDone(final WorkspaceGiveFeedback workspaceGiveFeedback)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     configRepository.setFeedback(workspaceGiveFeedback.getWorkspaceId());

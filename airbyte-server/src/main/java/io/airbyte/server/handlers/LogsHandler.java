@@ -14,7 +14,6 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.io.File;
 import java.nio.file.Path;
-import javax.transaction.Transactional;
 
 /**
  * This handler is only responsible for server and scheduler logs. Jobs logs paths are determined by
@@ -41,7 +40,6 @@ public class LogsHandler {
     this.logConfigs = logConfigs;
   }
 
-  @Transactional
   public File getLogs(final LogsRequestBody logsRequestBody) {
     switch (logsRequestBody.getLogType()) {
       case SERVER -> {

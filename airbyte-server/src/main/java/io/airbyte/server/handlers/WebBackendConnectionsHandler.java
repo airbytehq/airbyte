@@ -67,7 +67,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 
 @Singleton
 public class WebBackendConnectionsHandler {
@@ -103,7 +102,6 @@ public class WebBackendConnectionsHandler {
     this.configRepository = configRepository;
   }
 
-  @Transactional
   public WebBackendWorkspaceStateResult getWorkspaceState(final WebBackendWorkspaceState webBackendWorkspaceState) throws IOException {
     final var workspaceId = webBackendWorkspaceState.getWorkspaceId();
     final var connectionCount = configRepository.countConnectionsForWorkspace(workspaceId);
@@ -116,12 +114,10 @@ public class WebBackendConnectionsHandler {
         .hasSources(sourceCount > 0);
   }
 
-  @Transactional
   public ConnectionStateType getStateType(final ConnectionIdRequestBody connectionIdRequestBody) throws IOException {
     return Enums.convertTo(stateHandler.getState(connectionIdRequestBody).getStateType(), ConnectionStateType.class);
   }
 
-  @Transactional
   public WebBackendConnectionReadList webBackendListConnectionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
 
@@ -327,7 +323,6 @@ public class WebBackendConnectionsHandler {
 
   // todo (cgardens) - This logic is a headache to follow it stems from the internal data model not
   // tracking selected streams in any reasonable way. We should update that.
-  @Transactional
   public WebBackendConnectionRead webBackendGetConnection(final WebBackendConnectionRequestBody webBackendConnectionRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody()
@@ -510,7 +505,6 @@ public class WebBackendConnectionsHandler {
     return new AirbyteCatalog().streams(streams);
   }
 
-  @Transactional
   public WebBackendConnectionRead webBackendCreateConnection(final WebBackendConnectionCreate webBackendConnectionCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final List<UUID> operationIds = createOperations(webBackendConnectionCreate);
@@ -527,7 +521,6 @@ public class WebBackendConnectionsHandler {
    * As a convenience to the front-end, this endpoint also creates new operations present in the
    * request, and bundles those newly-created operationIds into the connection update.
    */
-  @Transactional
   public WebBackendConnectionRead webBackendUpdateConnection(final WebBackendConnectionUpdate webBackendConnectionPatch)
       throws ConfigNotFoundException, IOException, JsonValidationException {
 

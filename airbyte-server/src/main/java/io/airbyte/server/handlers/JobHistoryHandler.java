@@ -46,7 +46,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 
 @Singleton
 public class JobHistoryHandler {
@@ -100,7 +99,6 @@ public class JobHistoryHandler {
   }
 
   @SuppressWarnings("UnstableApiUsage")
-  @Transactional
   public JobReadList listJobsFor(final JobListRequestBody request) throws IOException {
     Preconditions.checkNotNull(request.getConfigTypes(), "configType cannot be null.");
     Preconditions.checkState(!request.getConfigTypes().isEmpty(), "Must include at least one configType.");
@@ -132,19 +130,16 @@ public class JobHistoryHandler {
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
-  @Transactional
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoRead(job);
   }
 
-  @Transactional
   public JobInfoLightRead getJobInfoLight(final JobIdRequestBody jobIdRequestBody) throws IOException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     return jobConverter.getJobInfoLightRead(job);
   }
 
-  @Transactional
   public JobDebugInfoRead getJobDebugInfo(final JobIdRequestBody jobIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
@@ -161,7 +156,6 @@ public class JobHistoryHandler {
     return jobDebugInfoRead;
   }
 
-  @Transactional
   public Optional<JobRead> getLatestRunningSyncJob(final UUID connectionId) throws IOException {
     final List<Job> nonTerminalSyncJobsForConnection = jobPersistence.listJobsForConnectionWithStatuses(
         connectionId,
@@ -174,26 +168,22 @@ public class JobHistoryHandler {
     return nonTerminalSyncJobsForConnection.stream().map(JobConverter::getJobRead).findFirst();
   }
 
-  @Transactional
   public Optional<JobRead> getLatestSyncJob(final UUID connectionId) throws IOException {
     return jobPersistence.getLastSyncJob(connectionId).map(JobConverter::getJobRead);
   }
 
-  @Transactional
   public List<JobRead> getLatestSyncJobsForConnections(final List<UUID> connectionIds) throws IOException {
     return jobPersistence.getLastSyncJobForConnections(connectionIds).stream()
         .map(JobConverter::getJobRead)
         .collect(Collectors.toList());
   }
 
-  @Transactional
   public AttemptNormalizationStatusReadList getAttemptNormalizationStatuses(final JobIdRequestBody jobIdRequestBody) throws IOException {
     return new AttemptNormalizationStatusReadList()
         .attemptNormalizationStatuses(jobPersistence.getAttemptNormalizationStatusesForJob(jobIdRequestBody.getId()).stream()
             .map(JobConverter::convertAttemptNormalizationStatus).collect(Collectors.toList()));
   }
 
-  @Transactional
   public List<JobRead> getRunningSyncJobForConnections(final List<UUID> connectionIds) throws IOException {
     return jobPersistence.getRunningSyncJobForConnections(connectionIds).stream()
         .map(JobConverter::getJobRead)
