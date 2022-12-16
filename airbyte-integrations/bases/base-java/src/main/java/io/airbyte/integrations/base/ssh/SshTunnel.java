@@ -366,16 +366,14 @@ public class SshTunnel implements AutoCloseable {
       LOGGER.info(String.format("Established tunneling session to %s:%d. Port forwarding started on %s ",
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
-    } catch (final SshException exception) {
-      if(exception.getMessage()
+    } catch (final IOException | GeneralSecurityException e) {
+      if(e instanceof SshException && e.getMessage()
               .toLowerCase(Locale.ROOT)
               .contains("failed to get operation result within specified timeout")){
-        throw new ConfigErrorException(exception.getMessage(), exception);
+        throw new ConfigErrorException(e.getMessage(), e);
       } else {
-        throw new RuntimeException(exception);
+        throw new RuntimeException(e);
       }
-    } catch (final IOException | GeneralSecurityException e) {
-      throw new RuntimeException(e);
     }
   }
 
