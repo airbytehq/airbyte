@@ -7,20 +7,12 @@
     "name": {
       "type": "string"
     },
-    "isActive": {
-      "type": "boolean"
-    },
-    "templateId": {
+    "channel": {
       "type": "string"
     },
     "metric": {
       "type": "string"
-    },
-    "type": {
-      "type": "string"
-    },
-    "channel": {
-      "type": "string"
     }
-  }
+  },
+  "required": ["id", "name", "channel", "metric"]
 }
