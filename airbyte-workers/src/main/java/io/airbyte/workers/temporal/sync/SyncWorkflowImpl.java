@@ -17,14 +17,10 @@ import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.OperatorDbtInput;
 import io.airbyte.config.OperatorWebhookInput;
-import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.StandardSyncInput;
 import io.airbyte.config.StandardSyncOperation;
 import io.airbyte.config.StandardSyncOperation.OperatorType;
 import io.airbyte.config.StandardSyncOutput;
-import io.airbyte.config.StandardSyncSummary;
-import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
-import io.airbyte.config.SyncStats;
 import io.airbyte.config.WebhookOperationSummary;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
@@ -87,23 +83,24 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
 
-    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-      final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
-
-      if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-        LOGGER.info("Refreshing source schema...");
-        refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-      }
-
-      final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-      if (!status.isEmpty() && Status.INACTIVE == status.get()) {
-        LOGGER.info("Connection is disabled. Cancelling run.");
-        final StandardSyncOutput output =
-            new StandardSyncOutput()
-                .withStandardSyncSummary(new StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-        return output;
-      }
-    }
+    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+    //
+    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+    // LOGGER.info("Refreshing source schema...");
+    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+    // }
+    //
+    // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
+    // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
+    // LOGGER.info("Connection is disabled. Cancelling run.");
+    // final StandardSyncOutput output =
+    // new StandardSyncOutput()
+    // .withStandardSyncSummary(new
+    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+    // return output;
+    // }
+    // }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
