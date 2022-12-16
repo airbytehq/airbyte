@@ -13,6 +13,8 @@ from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import Oauth2Authenticator, TokenAuthenticator
 
+BASE_URL = "https://app.retently.com/api/v2/"
+
 
 class SourceRetently(AbstractSource):
     @staticmethod
@@ -35,6 +37,8 @@ class SourceRetently(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             auth = self.get_authenticator(config)
+
+            # NOTE: not all retently instances have companies
             stream = Customers(auth)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
@@ -44,15 +48,23 @@ class SourceRetently(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_authenticator(config)
-        return [Customers(auth), Companies(auth), Reports(auth), Nps(auth), Campaigns(auth), Feedback(auth)]
+
+        return [
+            Campaigns(auth),
+            Companies(auth),
+            Customers(auth),
+            Feedback(auth),
+            Outbox(auth),
+            Reports(auth),
+            Nps(auth),
+            Templates(auth),
+        ]
 
 
 class RetentlyStream(HttpStream):
     primary_key = None
 
-    @property
-    def url_base(self) -> str:
-        return "https://app.retently.com/api/v2/"
+    url_base = BASE_URL
 
     @property
     @abstractmethod
@@ -62,10 +74,9 @@ class RetentlyStream(HttpStream):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
+        **kwargs,
     ) -> Iterable[Mapping]:
+
         data = response.json().get("data")
         stream_data = data.get(self.json_path) if self.json_path else data
         for d in stream_data:
@@ -88,32 +99,71 @@ class RetentlyStream(HttpStream):
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
-        return next_page_token
+        next_page = next_page_token or {}
+        return {
+            # The companies endpoint only supports limit 100
+            "limit": 1000 if self.json_path != "companies" else 100,
+            **next_page,
+        }
 
 
-class Customers(RetentlyStream):
-    json_path = "subscribers"
+class Campaigns(RetentlyStream):
+    json_path = "campaigns"
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "nps/customers"
+    def path(self, **kwargs) -> str:
+        return "campaigns"
+
+    # does not support pagination
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
 
 
 class Companies(RetentlyStream):
     json_path = "companies"
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        **kwargs,
     ) -> str:
         return "companies"
+
+
+class Customers(RetentlyStream):
+    json_path = "subscribers"
+
+    def path(
+        self,
+        **kwargs,
+    ) -> str:
+        return "nps/customers"
+
+
+class Feedback(RetentlyStream):
+    json_path = "responses"
+
+    def path(
+        self,
+        **kwargs,
+    ) -> str:
+        return "feedback"
+
+
+class Outbox(RetentlyStream):
+    json_path = "surveys"
+
+    def path(
+        self,
+        **kwargs,
+    ) -> str:
+        return "nps/outbox"
 
 
 class Reports(RetentlyStream):
     json_path = None
 
     def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+        self,
+        **kwargs,
     ) -> str:
         return "reports"
     # does not support pagination
@@ -131,6 +181,16 @@ class Nps(RetentlyStream):
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+
+class Templates(RetentlyStream):
+    json_path = "templates"
+
+    def path(
+        self,
+        **kwargs,
+    ) -> str:
+        return "templates"
 
     def parse_response(
         self,
@@ -169,3 +229,4 @@ class Feedback(RetentlyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "feedback"
+
