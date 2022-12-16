@@ -77,10 +77,18 @@ class RetentlyStream(HttpStream):
         **kwargs,
     ) -> Iterable[Mapping]:
 
-        data = response.json().get("data")
-        stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
+        resp = response.json()
+        data = resp
+
+        if "data" in resp:
+            data = resp.get("data")
+
+        stream_data = data
+
+        if self.json_path:
+            stream_data = data.get(self.json_path, [])
+
+        yield from stream_data
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
@@ -166,9 +174,11 @@ class Reports(RetentlyStream):
         **kwargs,
     ) -> str:
         return "reports"
+
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
 
 class Nps(RetentlyStream):
     json_path = None
@@ -201,32 +211,3 @@ class Templates(RetentlyStream):
     ) -> Iterable[Mapping]:
         data = response.json().get("data")
         yield data
-
-class Campaigns(RetentlyStream):
-    json_path = "campaigns"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "campaigns"
-
-    def parse_response(
-        self,
-        response: requests.Response,
-        stream_state: Mapping[str, Any],
-        stream_slice: Mapping[str, Any] = None,
-        next_page_token: Mapping[str, Any] = None,
-    ) -> Iterable[Mapping]:
-        data = response.json()
-        stream_data = data.get(self.json_path) if self.json_path else data
-        for d in stream_data:
-            yield d
-
-class Feedback(RetentlyStream):
-    json_path = "responses"
-
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return "feedback"
-
