@@ -72,7 +72,6 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
         stmt.execute(String.format("""
                 IMPORT INTO %s.%s
                 FROM LOCAL CSV FILE '%s'
-                --(1..2,3 FORMAT='YYYY-MM-DD HH24:MI:SS.FF1')
                 ROW SEPARATOR = 'CRLF'
                 COLUMN SEPARATOR = ','\s""", schemaName, tmpTableName, tmpFile.getAbsolutePath()));
 

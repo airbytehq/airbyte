@@ -11,17 +11,13 @@ import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
-import io.airbyte.integrations.base.AirbyteMessageConsumer;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.destination.jdbc.AbstractJdbcDestination;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.util.Collections;
 import java.util.Map;
-import java.util.function.Consumer;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +61,6 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
 
   @Override
   public JsonNode toJdbcConfig(final JsonNode config) {
-
     final StringBuilder jdbcUrl = new StringBuilder(
         String.format("jdbc:exa:%s",
             config.get("connectionstring").asText()));
@@ -85,10 +80,8 @@ public class ExasolDestination extends AbstractJdbcDestination implements Destin
     return Jsons.jsonNode(configBuilder.build());
   }
 
-
   @Override
   protected Map<String, String> getDefaultConnectionProperties(final JsonNode config) {
     return Collections.emptyMap();
   }
-
 }

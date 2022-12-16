@@ -15,7 +15,7 @@ import io.airbyte.db.jdbc.DefaultJdbcDatabase;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
-import io.airbyte.integrations.destination.ExtendedNameTransformer;
+import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -33,9 +33,9 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(ExasolDestinationAcceptanceTest.class);
 
-  private static final ExasolContainer<? extends ExasolContainer> EXASOL = new ExasolContainer<>().withReuse(true);
+  private static final ExasolContainer<? extends ExasolContainer<?>> EXASOL = new ExasolContainer<>().withReuse(true);
 
-  private final ExtendedNameTransformer namingResolver = new ExtendedNameTransformer();
+  private final NamingConventionTransformer namingResolver = new ExasolSQLNameTransformer();
 
   @BeforeAll
   static void startExasolContainer() throws IOException {
@@ -55,9 +55,8 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   @Override
   protected JsonNode getConfig() {
-
     return Jsons.jsonNode(ImmutableMap.builder()
-            .put("connectionstring",EXASOL.getHost()+"/"+EXASOL.getTlsCertificateFingerprint().get()+":"+EXASOL.getFirstMappedDatabasePort())
+            .put("connectionstring",EXASOL.getHost()+"/"+EXASOL.getTlsCertificateFingerprint().orElseThrow()+":"+EXASOL.getFirstMappedDatabasePort())
             .put(JdbcUtils.USERNAME_KEY, EXASOL.getUsername())
             .put(JdbcUtils.PASSWORD_KEY, EXASOL.getPassword())
             .put(JdbcUtils.SCHEMA_KEY, "TEST")
@@ -67,7 +66,7 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   @Override
   protected JsonNode getFailCheckConfig() {
     final JsonNode clone = Jsons.clone(getConfig());
-    ((ObjectNode) clone).put(JdbcUtils.PASWORD_KEY, "wrong password");
+    ((ObjectNode) clone).put(JdbcUtils.PASSWORD_KEY, "wrong password");
     return clone;
   }
 
@@ -75,18 +74,17 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   protected List<JsonNode> retrieveRecords(TestDestinationEnv testEnv,
                                            String streamName,
                                            String namespace,
-                                           JsonNode streamSchema)
-      throws Exception {
-    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), namespace)
+                                           JsonNode streamSchema) throws SQLException {
+    return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), "\"_"+namespace+"_\"")
             .stream()
-            .map(r -> Jsons.deserialize(r.get(JavaBaseConstants.COLUMN_NAME_DATA).asText()))
+            .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
+            .map(node -> Jsons.deserialize(node.asText()))
             .collect(Collectors.toList());
-
   }
 
   private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schemaName) throws SQLException {
     final JdbcDatabase jdbcDB = getDatabase(getConfig());
-    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, JavaBaseConstants.COLUMN_NAME_EMITTED_AT);
+    final String query = String.format("SELECT * FROM %s.%s ORDER BY %s ASC", schemaName, tableName, ExasolSqlOperations.COLUMN_NAME_EMITTED_AT);
     return jdbcDB.queryJsons(query);
   }
 
@@ -100,15 +98,17 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
     );
   }
 
+  protected boolean implementsNamespaces() {
+    return true;
+  }
 
   @Override
   protected void setup(TestDestinationEnv testEnv) {
-    EXASOL.purgeDatabase();
+    // Nothing to do
   }
 
   @Override
-  protected void tearDown(TestDestinationEnv testEnv) {
-    // TODO Implement this method to run any cleanup actions needed after every test case
+  protected void tearDown(TestDestinationEnv testEnv) throws Exception {
+    EXASOL.purgeDatabase();
   }
-
 }

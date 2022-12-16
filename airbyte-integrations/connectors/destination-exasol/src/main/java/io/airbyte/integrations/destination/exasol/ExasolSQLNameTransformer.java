@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.exasol;
 
+import io.airbyte.commons.text.Names;
 import io.airbyte.integrations.destination.ExtendedNameTransformer;
 import java.util.UUID;
 
@@ -16,7 +17,7 @@ public class ExasolSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String getRawTableName(final String streamName) {
-    return convertStreamName("airbyte_raw_" + streamName);
+    return convertStreamName("_airbyte_raw_" + streamName);
   }
 
   @Override
@@ -26,7 +27,6 @@ public class ExasolSQLNameTransformer extends ExtendedNameTransformer {
 
   @Override
   public String convertStreamName(final String input) {
-    return "\"" + super.convertStreamName(input) + "\"";
+    return Names.doubleQuote(super.convertStreamName(input));
   }
-
 }
