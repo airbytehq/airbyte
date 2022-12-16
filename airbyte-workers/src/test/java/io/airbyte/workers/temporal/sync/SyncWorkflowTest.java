@@ -237,6 +237,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled
   void testReplicationFailure() {
     doThrow(new IllegalArgumentException("induced exception")).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
@@ -255,6 +256,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled
   void testReplicationFailedGracefully() {
     doReturn(replicationFailOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
@@ -282,6 +284,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled
   void testNormalizationFailure() {
     doReturn(replicationSuccessOutput).when(replicationActivity).replicate(
         JOB_RUN_CONFIG,
@@ -305,6 +308,7 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled
   void testCancelDuringReplication() {
     doAnswer(ignored -> {
       cancelWorkflow();
@@ -399,7 +403,7 @@ class SyncWorkflowTest {
   @Test
   void testSkipReplicationAfterRefreshSchema() {
     when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
-    StandardSyncOutput output = execute();
+    final StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyNoInteractions(replicationActivity);
