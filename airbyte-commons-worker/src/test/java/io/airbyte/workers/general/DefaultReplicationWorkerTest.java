@@ -163,8 +163,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper,
-        workerMetricReporter, false);
+        updateConnectorConfigHelper, false);
 
     worker.run(syncInput, jobRoot);
 
@@ -267,7 +266,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper);
+        updateConnectorConfigHelper, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
@@ -292,7 +291,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper);
+        updateConnectorConfigHelper, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -316,7 +315,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper);
+        updateConnectorConfigHelper, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
@@ -341,7 +340,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper);
+        updateConnectorConfigHelper, false);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -472,7 +471,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        true);
+        updateConnectorConfigHelper, true);
 
     worker.run(syncInput, jobRoot);
 
@@ -503,7 +502,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        false);
+        updateConnectorConfigHelper, false);
 
     worker.run(syncInput, jobRoot);
 

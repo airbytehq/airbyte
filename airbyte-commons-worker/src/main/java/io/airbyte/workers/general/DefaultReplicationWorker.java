@@ -217,6 +217,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               cancelled,
               mapper,
               messageTracker,
+              updateConnectorConfigHelper,
               mdc,
               recordSchemaValidator,
               metricReporter,
