@@ -1334,6 +1334,9 @@ public class V0ToV1MigrationTest {
                       "id": {"$ref": "WellKnownTypes.json#/definitions/Integer"},
                       "name": {"$ref": "WellKnownTypes.json#/definitions/String"}
                     }
+                  },
+                  "empty_oneof": {
+                    "oneOf": []
                   }
                 }
               }
@@ -1350,7 +1353,8 @@ public class V0ToV1MigrationTest {
             },
             "typeless_array": ["42"],
             "arr_obj_union1": [{"id": "42", "name": "arst"}, {"id": "43", "name": "qwfp"}],
-            "arr_obj_union2": {"id": "42", "name": "arst"}
+            "arr_obj_union2": {"id": "42", "name": "arst"},
+            "empty_oneof": "42"
           }
           """);
 
@@ -1373,7 +1377,8 @@ public class V0ToV1MigrationTest {
                 },
                 "typeless_array": [42],
                 "arr_obj_union1": [{"id": 42, "name": "arst"}, {"id": 43, "name": "qwfp"}],
-                "arr_obj_union2": {"id": 42, "name": "arst"}
+                "arr_obj_union2": {"id": 42, "name": "arst"},
+                "empty_oneof": "42"
               }
             }
           }
