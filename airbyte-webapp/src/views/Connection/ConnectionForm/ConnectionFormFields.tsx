@@ -34,7 +34,7 @@ interface ConnectionFormFieldsProps {
 }
 
 export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ values, isSubmitting, dirty }) => {
-  const allowAutoDetectSchema = useFeature(FeatureItem.AutoDetectSchema);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   const { mode, formId } = useConnectionFormService();
   const { formatMessage } = useIntl();

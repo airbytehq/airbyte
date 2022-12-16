@@ -28,7 +28,7 @@ export const StatusCell: React.FC<StatusCellProps> = ({
   schemaChange,
   hasBreakingChange,
 }) => {
-  const allowAutoDetectSchema = useFeature(FeatureItem.AutoDetectSchema);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
 
   return (
     <div className={styles.container}>

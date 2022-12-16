@@ -46,7 +46,7 @@ const ValidateFormOnSchemaRefresh: React.FC = () => {
 };
 
 export const ConnectionReplicationTab: React.FC = () => {
-  const allowAutoDetectSchema = useFeature(FeatureItem.AutoDetectSchema);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
   const workspaceId = useCurrentWorkspaceId();
