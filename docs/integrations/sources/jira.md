@@ -25,14 +25,14 @@ This page contains the setup guide and reference information for the Jira source
 5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
 6. Enter the **Email** for your Jira account.
 
-## Features
+## Supported sync modes
 
-| Feature | Supported? |  |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | Yes | Only Issues, BoardIssues, Epics, IssueComments, IssueWorklogs, PullRequests, SprintIssues |
-| Replicate Incremental Deletes | Coming soon |  |
-| SSL connection | Yes |  |
+The Jira source connector supports the following [sync modes](https://docs.airbyte.com/cloud/core-concepts#connection-sync-modes):
+
+- [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+- [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+- [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+- [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Troubleshooting
 
