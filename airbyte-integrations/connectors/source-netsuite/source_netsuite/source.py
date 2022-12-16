@@ -76,8 +76,10 @@ class SourceNetsuite(AbstractSource):
         """
         try:
             if isinstance(object_names, list):
+                schemas = {}
                 for object_name in object_names:
-                    return self.fetch_schema(object_name, session, metadata_url)
+                    schemas.update(**self.fetch_schema(object_name, session, metadata_url))
+                return schemas
             elif isinstance(object_names, str):
                 return self.fetch_schema(object_names, session, metadata_url)
             else:
@@ -113,7 +115,7 @@ class SourceNetsuite(AbstractSource):
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
         }
-
+        
         schema = schemas[object_name]
         schema_props = schema.get("properties")
         if schema_props:
