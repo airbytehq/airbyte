@@ -646,6 +646,9 @@
   "connectorBuilder.addStreamModal.streamNameTooltip": "Name of the new stream",
   "connectorBuilder.addStreamModal.urlPathLabel": "URL path",
   "connectorBuilder.addStreamModal.urlPathTooltip": "URL path of the endpoint for this stream",
+  "connectorBuilder.deleteStreamModal.title": "Delete stream",
+  "connectorBuilder.deleteStreamModal.text": "Are you sure you want to delete this stream?",
+  "connectorBuilder.deleteStreamModal.submitButton": "Delete",
   "connectorBuilder.resetModal.text": "This will erase all streams and values that are currently set. Are you sure you want to continue?",
   "connectorBuilder.resetModal.title": "Reset Connector Builder",
   "connectorBuilder.resetModal.submitButton": "Reset",
@@ -658,10 +661,16 @@
   "connectorBuilder.configErrorsDownload": "Cannot download while there are form errors",
   "connectorBuilder.configErrorsTest": "Cannot test while there are form errors",
   "connectorBuilder.connectorImgAlt": "Connector Image",
+  "connectorBuilder.stream": "Stream",
   "connectorBuilder.uiYamlToggle.ui": "UI",
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
+  "connectorBuilder.key": "key",
+  "connectorBuilder.value": "value",
+  "connectorBuilder.addKeyValue": "Add",
+
+  "jobs.noAttemptsFailure": "Failed to start job.",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

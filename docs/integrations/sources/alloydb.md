@@ -5,10 +5,6 @@ This page contains the setup guide and reference information for the AlloyDB for
 ## Prerequisites
 
 - For Airbyte Open Source users, [upgrade](https://docs.airbyte.com/operator-guides/upgrading-airbyte/) your Airbyte platform to version `v0.40.0-alpha` or newer
-- Allowlist one of our IP addresses to enable access to Airbyte:
-  - 34.106.109.131
-  - 34.106.196.165
-  - 34.106.60.246
 - For Airbyte Cloud (and optionally for Airbyte Open Source), ensure SSL is enabled in your environment
 
 ## Setup guide

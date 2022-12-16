@@ -47,6 +47,11 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream })
                 urlPath: values.urlPath,
                 fieldPointer: [],
                 httpMethod: "GET",
+                requestOptions: {
+                  requestParameters: [],
+                  requestHeaders: [],
+                  requestBody: [],
+                },
               },
             ]);
             setIsOpen(false);

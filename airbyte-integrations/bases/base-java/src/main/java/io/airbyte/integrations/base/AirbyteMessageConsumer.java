@@ -6,11 +6,11 @@ package io.airbyte.integrations.base;
 
 import io.airbyte.commons.concurrency.VoidCallable;
 import io.airbyte.commons.functional.CheckedConsumer;
-import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
 
 /**
  * Interface for the destination's consumption of incoming records wrapped in an
- * {@link io.airbyte.protocol.models.AirbyteMessage}.
+ * {@link io.airbyte.protocol.models.v0.AirbyteMessage}.
  *
  * This is via the accept method, which commonly handles parsing, validation, batching and writing
  * of the transformed data to the final destination i.e. the technical system data is being written
