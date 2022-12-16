@@ -99,7 +99,7 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
   }
 
   protected boolean implementsNamespaces() {
-    return true;
+    return false;
   }
 
   @Override
