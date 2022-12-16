@@ -1,5 +1,30 @@
 # Jira
 
+This page contains the setup guide and reference information for the Jira source connector.
+
+## Prerequisites
+
+- API Token
+- Domain
+- Email
+
+## Setup guide
+
+### Step 1: Set up Jira
+
+1. To get access to the Jira API you need to create an API token, please follow the instructions in this [documentation](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/).
+
+### Step 2: Set up the Jira connector in Airbyte
+
+**For Airbyte Cloud:**
+
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
+2. In the left navigation bar, click **Sources**. In the top-right corner, click **+ new source**.
+3. On the source setup page, select **Jira** from the Source type dropdown and enter a name for this connector.
+4. Enter the **API Token** that you have created.
+5. Enter the **Domain** for your Jira account, e.g. `airbyteio.atlassian.net`.
+6. Enter the **Email** for your Jira account.
+
 ## Features
 
 | Feature | Supported? |  |
