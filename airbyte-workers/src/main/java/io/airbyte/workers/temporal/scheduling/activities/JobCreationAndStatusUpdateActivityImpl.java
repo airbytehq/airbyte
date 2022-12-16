@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.ATTEMPT_NUMBER_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_ORIGINS_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.FAILURE_TYPES_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.persistence.job.models.AttemptStatus.FAILED;
 
@@ -156,6 +157,7 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
 
         final Optional<Long> jobIdOptional =
             jobCreator.createResetConnectionJob(destination, standardSync, destinationImageName, new Version(destinationDef.getProtocolVersion()),
+                destinationDef.getCustom(),
                 standardSyncOperations, streamsToReset);
 
         final long jobId = jobIdOptional.isEmpty()
@@ -503,11 +505,24 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
   private void traceFailures(final AttemptFailureSummary failureSummary) {
     if (failureSummary != null) {
       if (CollectionUtils.isNotEmpty(failureSummary.getFailures())) {
-        ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, failureSummary.getFailures().stream().map(FailureReason::getFailureOrigin).map(
-            FailureOrigin::name).collect(Collectors.joining(","))));
+        ApmTraceUtils.addTagsToTrace(Map.of(
+            FAILURE_TYPES_KEY,
+            failureSummary.getFailures()
+                .stream()
+                .map(FailureReason::getFailureType)
+                .map(MetricTags::getFailureType)
+                .collect(Collectors.joining(",")),
+            FAILURE_ORIGINS_KEY,
+            failureSummary.getFailures()
+                .stream()
+                .map(FailureReason::getFailureOrigin)
+                .map(FailureOrigin::name)
+                .collect(Collectors.joining(","))));
       }
     } else {
-      ApmTraceUtils.addTagsToTrace(Map.of(FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
+      ApmTraceUtils.addTagsToTrace(Map.of(
+          FAILURE_TYPES_KEY, MetricTags.getFailureType(null),
+          FAILURE_ORIGINS_KEY, FailureOrigin.UNKNOWN.value()));
     }
   }
 
@@ -520,11 +535,13 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
     if (failureSummary != null) {
       for (final FailureReason reason : failureSummary.getFailures()) {
         MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())));
+            new MetricAttribute(MetricTags.FAILURE_ORIGIN, MetricTags.getFailureOrigin(reason.getFailureOrigin())),
+            new MetricAttribute(MetricTags.FAILURE_TYPE, MetricTags.getFailureType(reason.getFailureType())));
       }
     } else {
       MetricClientFactory.getMetricClient().count(OssMetricsRegistry.ATTEMPT_FAILED_BY_FAILURE_ORIGIN, 1,
-          new MetricAttribute(MetricTags.FAILURE_ORIGIN, FailureOrigin.UNKNOWN.value()));
+          new MetricAttribute(MetricTags.FAILURE_ORIGIN, FailureOrigin.UNKNOWN.value()),
+          new MetricAttribute(MetricTags.FAILURE_TYPE, MetricTags.getFailureType(null)));
     }
   }
 

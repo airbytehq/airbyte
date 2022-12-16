@@ -35,8 +35,7 @@ public class MdcScope implements AutoCloseable {
   public MdcScope(final Map<String, String> keyValuesToAdd) {
     originalContextMap = MDC.getCopyOfContextMap();
 
-    keyValuesToAdd.forEach(
-        (key, value) -> MDC.put(key, value));
+    keyValuesToAdd.forEach(MDC::put);
   }
 
   @Override
