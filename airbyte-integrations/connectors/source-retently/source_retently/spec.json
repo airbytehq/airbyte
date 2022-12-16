@@ -71,7 +71,7 @@
     "oauth_config_specification": {
       "complete_oauth_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "refresh_token": {
             "type": "string",
@@ -81,7 +81,7 @@
       },
       "complete_oauth_server_input_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string"
@@ -93,7 +93,7 @@
       },
       "complete_oauth_server_output_specification": {
         "type": "object",
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "client_id": {
             "type": "string",
