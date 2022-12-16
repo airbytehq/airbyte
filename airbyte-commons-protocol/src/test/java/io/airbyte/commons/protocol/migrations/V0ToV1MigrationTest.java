@@ -32,6 +32,7 @@ public class V0ToV1MigrationTest {
 
   @BeforeEach
   public void setup() throws URISyntaxException {
+    // TODO this should probably just get generated as part of the airbyte-protocol build, and airbyte-workers / airbyte-commons-protocol would reference it directly
     URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
     validator = new JsonSchemaValidator(parentUri);
     migration = new AirbyteMessageMigrationV1(null, validator);
@@ -1434,50 +1435,85 @@ public class V0ToV1MigrationTest {
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
               {
-                 "type": "object",
-                 "properties": {
-                   "valid_option": {
-                     "oneOf": [
-                       {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                       {"$ref": "WellKnownTypes.json#/definitions/Integer"},
-                       {"$ref": "WellKnownTypes.json#/definitions/String"}
-                     ]
-                   },
-                   "all_invalid": {
-                     "oneOf": [
-                       {
-                         "type": "array",
-                         "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                       },
-                       {
-                         "type": "array",
-                         "items": {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
-                       }
-                     ]
-                   },
-                   "nested_oneof": {
-                     "oneOf": [
-                       {
-                         "type": "array",
-                         "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                       },
-                       {
-                         "type": "array",
-                         "items": {
-                           "type": "object",
-                           "properties": {
-                             "foo": {
-                               "oneOf": [
-                                 {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
-                                 {"$ref": "WellKnownTypes.json#/definitions/Integer"}
-                               ]
-                             }
-                           }
-                         }
-                       }
-                     ]
-                   }
-                 }
+                "type": "object",
+                "properties": {
+                  "valid_option": {
+                    "oneOf": [
+                      {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                      {"$ref": "WellKnownTypes.json#/definitions/Integer"},
+                      {"$ref": "WellKnownTypes.json#/definitions/String"}
+                    ]
+                  },
+                  "all_invalid": {
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                      },
+                      {
+                        "type": "array",
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/Boolean"}
+                      }
+                    ]
+                  },
+                  "nested_oneof": {
+                    "oneOf": [
+                      {
+                        "type": "array",
+                        "items": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                      },
+                      {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "foo": {
+                              "oneOf": [
+                                {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                                {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "mismatched_primitive": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "foo": {"type": "object"},
+                          "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "foo": {"$ref": "WellKnownTypes.json#/definitions/Boolean"},
+                          "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                        }
+                      }
+                    ]
+                  },
+                  "mismatched_text": {
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "foo": {"type": "object"},
+                          "bar": {"$ref": "WellKnownTypes.json#/definitions/String"}
+                        }
+                      },
+                      {
+                        "type": "object",
+                        "properties": {
+                          "foo": {"$ref": "WellKnownTypes.json#/definitions/String"},
+                          "bar": {"$ref": "WellKnownTypes.json#/definitions/Integer"}
+                        }
+                      }
+                    ]
+                  }
                 }
               }
               """
@@ -1487,7 +1523,15 @@ public class V0ToV1MigrationTest {
           {
             "valid_option": "42",
             "all_invalid": ["42", "arst"],
-            "nested_oneof": [{"foo": "42"}]
+            "nested_oneof": [{"foo": "42"}],
+            "mismatched_primitive": {
+              "foo": true,
+              "bar": "42"
+            },
+            "mismatched_text": {
+              "foo": "bar",
+              "bar": "42"
+            }
           }
           """);
 
@@ -1504,7 +1548,15 @@ public class V0ToV1MigrationTest {
               "data": {
                 "valid_option": 42,
                 "all_invalid": [42, "arst"],
-                "nested_oneof": [{"foo": 42}]
+                "nested_oneof": [{"foo": 42}],
+                "mismatched_primitive": {
+                  "foo": true,
+                  "bar": 42
+                },
+                "mismatched_text": {
+                  "foo": "bar",
+                  "bar": 42
+                }
               }
             }
           }

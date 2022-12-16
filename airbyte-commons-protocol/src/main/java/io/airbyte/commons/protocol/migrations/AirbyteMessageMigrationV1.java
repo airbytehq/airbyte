@@ -543,11 +543,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
           return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
         }
       } else {
-        JsonNode typeNode = schema.get("type");
-        boolean matchesSchema = true;
-        if (typeNode != null) {
-          // TODO check whether textual node is of the correct type
-        }
         return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
       }
     } else if (data.isObject()) {
@@ -668,7 +663,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         }
       }
     } else {
-      // TODO check whether non-textual node (i.e. number/boolean?) is of the correct type
       return new DowngradedNode(data, validator.validate(schema, data).isEmpty());
     }
   }
