@@ -80,9 +80,13 @@ export const useSyncConnection = () => {
     analyticsService.track(Namespace.CONNECTION, Action.SYNC, {
       actionDescription: "Manual triggered sync",
       connector_source: connection.source?.sourceName,
-      connector_source_definition_id: connection.source?.sourceDefinitionId,
+      // FIXME: where to get sourceDefinitionId?
+      // connector_source_definition_id: connection.source?.sourceDefinitionId,
+      connector_source_definition_id: connection.source?.sourceId,
       connector_destination: connection.destination?.destinationName,
-      connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      // FIXME: where to get destinationDefinitionId?
+      // connector_destination_definition_id: connection.destination?.destinationDefinitionId,
+      connector_destination_definition_id: connection.destination?.destinationId,
       frequency: getFrequencyFromScheduleData(connection.scheduleData),
     });
 

@@ -1,23 +1,27 @@
 import {
   ConnectionStatus,
   DestinationDefinitionRead,
-  DestinationRead,
+  DestinationSnippetRead,
   JobStatus,
   SourceDefinitionRead,
-  SourceRead,
+  SourceSnippetRead,
   WebBackendConnectionListItem,
 } from "core/request/AirbyteClient";
 
 import { EntityTableDataItem, ITableDataItem, Status as ConnectionSyncStatus } from "./types";
 
-const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
+const getConnectorTypeName = (connectorSpec: DestinationSnippetRead | SourceSnippetRead) => {
   return "sourceName" in connectorSpec ? connectorSpec.sourceName : connectorSpec.destinationName;
+};
+
+const getConnectorTypeId = (connectorSpec: DestinationSnippetRead | SourceSnippetRead) => {
+  return "sourceId" in connectorSpec ? connectorSpec.sourceId : connectorSpec.destinationId;
 };
 
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? SourceRead : DestinationRead,
+  SoD extends S extends "source" ? SourceSnippetRead : DestinationSnippetRead,
   Def extends S extends "source" ? SourceDefinitionRead : DestinationDefinitionRead
 >(entities: SoD[], connections: WebBackendConnectionListItem[], definitions: Def[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
@@ -26,7 +30,7 @@ export function getEntityTableData<
     const entitySoDId = entityItem[`${type}Id` as keyof SoD] as unknown as string;
     const entitySoDName = entityItem[`${type}Name` as keyof SoD] as unknown as string;
     const entityConnections = connections.filter(
-      (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
+      (connectionItem) => getConnectorTypeId(connectionItem[type]) === entitySoDId
     );
 
     const definitionId = `${type}DefinitionId` as keyof Def;
