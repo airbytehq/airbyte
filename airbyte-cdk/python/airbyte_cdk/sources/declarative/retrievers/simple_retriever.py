@@ -368,7 +368,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         stream_slice = stream_slice or {}  # None-check
         self.paginator.reset()
         records_generator = self._read_pages(
-            self.parse_records_and_emit_request_and_responses,
+            self._parse_records_and_emit_request_and_responses,
             stream_slice,
             stream_state,
         )
@@ -406,17 +406,17 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         """State setter, accept state serialized by state getter."""
         self.stream_slicer.update_cursor(value)
 
-    def parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
+    def _parse_records_and_emit_request_and_responses(self, request, response, stream_slice, stream_state) -> Iterable[StreamData]:
         # Only emit requests and responses when running in debug mode
         if self.logger.isEnabledFor(logging.DEBUG):
-            yield prepared_request_to_airbyte_message(request)
-            yield response_to_airbyte_message(response)
+            yield _prepared_request_to_airbyte_message(request)
+            yield _response_to_airbyte_message(response)
         # Not great to need to call _read_pages which is a private method
         # A better approach would be to extract the HTTP client from the HttpStream and call it directly from the HttpRequester
         yield from self.parse_response(response, stream_slice=stream_slice, stream_state=stream_state)
 
 
-def prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:
+def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> AirbyteMessage:
     # FIXME: this should return some sort of trace message
     request_dict = {
         "url": request.url,
@@ -440,7 +440,7 @@ def _body_binary_string_to_dict(body_str) -> Optional[Mapping[str, str]]:
         return None
 
 
-def response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:
+def _response_to_airbyte_message(response: requests.Response) -> AirbyteMessage:
     # FIXME: this should return some sort of trace message
     response_dict = {"body": response.text, "headers": dict(response.headers), "status_code": response.status_code}
     log_message = filter_secrets(f"response:{json.dumps(response_dict)}")

@@ -15,8 +15,8 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
 from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
     SimpleRetriever,
-    prepared_request_to_airbyte_message,
-    response_to_airbyte_message,
+    _prepared_request_to_airbyte_message,
+    _response_to_airbyte_message,
 )
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.auth import NoAuth
@@ -563,7 +563,7 @@ def test_prepared_request_to_airbyte_message(test_name, http_method, url, header
         request.data = body_data
     prepared_request = request.prepare()
 
-    actual_airbyte_message = prepared_request_to_airbyte_message(prepared_request)
+    actual_airbyte_message = _prepared_request_to_airbyte_message(prepared_request)
 
     assert expected_airbyte_message == actual_airbyte_message
 
@@ -626,6 +626,6 @@ def test_response_to_airbyte_message(test_name, response_body, response_headers,
     response.headers = response_headers
     response._content = response_body
 
-    actual_airbyte_message = response_to_airbyte_message(response)
+    actual_airbyte_message = _response_to_airbyte_message(response)
 
     assert expected_airbyte_message == actual_airbyte_message
