@@ -163,7 +163,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper);
+        updateConnectorConfigHelper,
         workerMetricReporter, false);
 
     worker.run(syncInput, jobRoot);
@@ -193,7 +193,7 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        updateConnectorConfigHelper, 
+        updateConnectorConfigHelper,
         false);
 
     worker.run(syncInput, jobRoot);

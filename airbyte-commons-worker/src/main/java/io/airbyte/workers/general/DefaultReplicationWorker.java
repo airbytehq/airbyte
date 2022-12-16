@@ -111,7 +111,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
-                                  final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
+                                  final UpdateConnectorConfigHelper updateConnectorConfigHelper,
                                   final boolean fieldSelectionEnabled) {
     this.jobId = jobId;
     this.attempt = attempt;
@@ -221,7 +221,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               recordSchemaValidator,
               metricReporter,
               timeTracker,
-              Long.valueOf(jobId)
+              Long.valueOf(jobId),
               fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
