@@ -16,7 +16,9 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.auth import TokenAuthenticator
+from airbyte_cdk.sources.streams.http.requests_native_auth import SingleUseRefreshTokenOauth2Authenticator
 from pendulum.datetime import DateTime
+from requests.auth import AuthBase
 
 
 class TypeformStream(HttpStream, ABC):
@@ -236,14 +238,51 @@ class Themes(PaginatedStream):
         return "themes"
 
 
+class TypeformSingleUseRefreshTokenOauth2Authenticator(SingleUseRefreshTokenOauth2Authenticator):
+    def build_refresh_request_body(self) -> Mapping[str, Any]:
+        """Override to define additional parameters"""
+        payload: MutableMapping[str, Any] = {
+            "grant_type": self.get_grant_type(),
+            "client_id": self.get_client_id(),
+            "client_secret": self.get_client_secret(),
+            "refresh_token": self.get_refresh_token(),
+            "scope": " ".join(self.get_scopes()),
+        }
+        return payload
+
+
 class SourceTypeform(AbstractSource):
+    @staticmethod
+    def get_auth(config: Mapping[str, Any]) -> AuthBase:
+
+        credential = config.get("credentials", {})
+        auth_type = credential.get("auth_type")
+        if auth_type == "oauth2.0":
+            auth = TypeformSingleUseRefreshTokenOauth2Authenticator(
+                connector_config=config,
+                token_refresh_endpoint="https://api.typeform.com/oauth/token",
+                scopes=["forms:read", "responses:read", "offline"],
+            )
+        elif auth_type == "Token":
+            auth = TokenAuthenticator(token=credential.get("token"))
+        elif not auth_type and config.get("token"):
+            auth = TokenAuthenticator(token=config.get("token"))
+        else:
+            raise Exception(f"Invalid auth type: {auth_type}")
+
+        return auth
+
     def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         try:
+
             form_ids = config.get("form_ids", []).copy()
+
+            auth = self.get_auth(config)
+
             # verify if form inputted by user is valid
             try:
+                auth_headers = auth.get_auth_header()
                 url = urlparse.urljoin(TypeformStream.url_base, "me")
-                auth_headers = {"Authorization": f"Bearer {config['token']}"}
                 session = requests.get(url, headers=auth_headers)
                 session.raise_for_status()
             except Exception as e:
@@ -252,7 +291,6 @@ class SourceTypeform(AbstractSource):
                 for form in form_ids:
                     try:
                         url = urlparse.urljoin(TypeformStream.url_base, f"forms/{form}")
-                        auth_headers = {"Authorization": f"Bearer {config['token']}"}
                         response = requests.get(url, headers=auth_headers)
                         response.raise_for_status()
                     except Exception as e:
@@ -268,7 +306,7 @@ class SourceTypeform(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        auth = TokenAuthenticator(token=config["token"])
+        auth = self.get_auth(config)
         return [
             Forms(authenticator=auth, **config),
             Responses(authenticator=auth, **config),

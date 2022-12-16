@@ -5,6 +5,7 @@
 package io.airbyte.oauth.flows;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -18,54 +19,57 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import org.apache.http.client.utils.URIBuilder;
 
+
 public class TypeformOAuthFlow extends BaseOAuth2Flow {
 
   private static final String AUTHORIZE_URL = "https://api.typeform.com/oauth/authorize";
   private static final String ACCESS_TOKEN_URL = "https://api.typeform.com/oauth/token";
+  private static final String SCOPE = "forms:read responses:read offline";
 
-  public TypeformOAuthFlow(ConfigRepository configRepository, HttpClient httpClient) {
+  public TypeformOAuthFlow(final ConfigRepository configRepository, final HttpClient httpClient) {
     super(configRepository, httpClient);
   }
 
   @VisibleForTesting
-  public TypeformOAuthFlow(ConfigRepository configRepository, final HttpClient httpClient, Supplier<String> stateSupplier) {
+  TypeformOAuthFlow(final ConfigRepository configRepository,
+                         final HttpClient httpClient,
+                         final Supplier<String> stateSupplier) {
     super(configRepository, httpClient, stateSupplier);
   }
 
   @Override
-  protected String formatConsentUrl(UUID definitionId, String clientId, String redirectUrl) throws IOException {
+  protected String formatConsentUrl(final UUID definitionId, final String clientId, final String redirectUrl, final JsonNode inputOAuthConfiguration) throws IOException {
     try {
       return new URIBuilder(AUTHORIZE_URL)
           .addParameter("client_id", clientId)
           .addParameter("redirect_uri", redirectUrl)
           .addParameter("response_type", "code")
           .addParameter("state", getState())
-          .addParameter("scope", getScopes())
+          .addParameter("scope", SCOPE)
           .build().toString();
     } catch (URISyntaxException e) {
       throw new IOException("Failed to format Consent URL for OAuth flow", e);
     }
   }
 
-  private String getScopes() {
-    return String.join(" ", "forms:read",
-        "responses:read");
-  }
-
   @Override
-  protected String getAccessTokenUrl() {
+  protected String getAccessTokenUrl(final JsonNode inputOAuthConfiguration) {
     return ACCESS_TOKEN_URL;
   }
 
   @Override
-  protected Map<String, Object> extractOAuthOutput(final JsonNode data, final String accessTokenUrl) {
-    Preconditions.checkArgument(data.has("access_token"), "Missing 'access_token' in query params from %s", ACCESS_TOKEN_URL);
-    return Map.of("token", data.get("access_token").asText());
-  }
-
-  @Override
-  protected List<String> getDefaultOAuthOutputPath() {
-    return List.of();
+  protected Map<String, String> getAccessTokenQueryParameters(String clientId,
+                                                              String clientSecret,
+                                                              String authCode,
+                                                              String redirectUrl) {
+    return ImmutableMap.<String, String>builder()
+        // required
+        .put("grant_type", "authorization_code")
+        .put("code", authCode)
+        .put("client_id", clientId)
+        .put("client_secret", clientSecret)
+        .put("redirect_uri", redirectUrl)
+        .build();
   }
 
 }
