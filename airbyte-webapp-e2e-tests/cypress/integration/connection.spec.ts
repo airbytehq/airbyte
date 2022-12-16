@@ -149,20 +149,20 @@ describe("Connection - main actions", () => {
     deleteDestination(destName);
   });
 
-  it("Creates a connection, then edits the schedule type", () => {
+  it.only("Creates a connection, then edits the schedule type", () => {
     const sourceName = appendRandomString("Test connection source cypress PokeAPI");
     const destName = appendRandomString("Test connection destination cypress");
 
     createTestConnection(sourceName, destName);
 
-    cy.get("div").contains(sourceName).should("exist");
-    cy.get("div").contains(destName).should("exist");
-
+    goToSourcePage();
     openSourceDestinationFromGrid(sourceName);
+    openSourceDestinationFromGrid(destName);
+
+    // cy.get("div").contains(sourceName).should("exist");
+    // cy.get("div").contains(destName).should("exist");
 
     goToReplicationTab();
-
-    cy.log(Cypress.$("body").html());
 
     selectSchedule("Cron");
     submitButtonClick();
