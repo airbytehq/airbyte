@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.kinesis;
 
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 /**
  * KinesisStreamConfig class for storing configuration data for every stream.

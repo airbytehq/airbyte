@@ -1,3 +1,4 @@
+import { JSONSchema7Type } from "json-schema";
 import intersection from "lodash/intersection";
 import pick from "lodash/pick";
 
@@ -40,13 +41,13 @@ export const jsonSchemaToFormBlock = (
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
     let possibleConditionSelectionKeys = null as string[] | null;
-    const conditions = jsonSchema.oneOf.flatMap((condition) => {
+    const conditions = jsonSchema.oneOf.map((condition) => {
       if (typeof condition === "boolean") {
-        throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
+        throw new FormBuildError("connectorForm.error.oneOfWithNonObjects");
       }
       const formBlock = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
       if (formBlock._type !== "formGroup") {
-        throw new FormBuildError("Spec uses oneOf without using object types for all conditions");
+        throw new FormBuildError("connectorForm.error.oneOfWithNonObjects");
       }
 
       const constProperties = formBlock.properties
@@ -60,18 +61,19 @@ export const jsonSchemaToFormBlock = (
         // if there are candidates already, intersect with the const properties of the current condition
         possibleConditionSelectionKeys = intersection(possibleConditionSelectionKeys, constProperties);
       }
-      return [formBlock];
+      return formBlock;
     });
 
     if (!possibleConditionSelectionKeys?.length) {
       // no shared const property in oneOf. This should never happen per specification, fail hard
-      throw new FormBuildError("Spec uses oneOf without a shared const property");
+      throw new FormBuildError("connectorForm.error.oneOfWithoutConst");
     }
     const selectionKey = possibleConditionSelectionKeys[0];
     const selectionPath = `${path}.${selectionKey}`;
+    // can't contain undefined values as we would have thrown on this with connectorForm.error.oneOfWithoutConst
     const selectionConstValues = conditions.map(
       (condition) => condition.properties.find((property) => property.path === selectionPath)?.const
-    );
+    ) as JSONSchema7Type[];
 
     return {
       ...pickDefaultFields(jsonSchema),

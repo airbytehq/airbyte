@@ -35,14 +35,7 @@ interface BaseFieldProps {
 }
 
 type BuilderFieldProps = BaseFieldProps &
-  (
-    | { type: "string" }
-    | { type: "integer" }
-    | { type: "number" }
-    | { type: "boolean" }
-    | { type: "array" }
-    | { type: "enum"; options: string[] }
-  );
+  ({ type: "string" | "integer" | "number" | "boolean" | "array" } | { type: "enum"; options: string[] });
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (

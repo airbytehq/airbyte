@@ -80,7 +80,7 @@ export function useBuildForm(
   const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
   if (formFields._type !== "formGroup") {
-    throw new FormBuildError("Top level configuration has to be an object");
+    throw new FormBuildError("connectorForm.error.topLevelNonObject");
   }
 
   const startValues = useMemo<ConnectorFormValues>(() => {

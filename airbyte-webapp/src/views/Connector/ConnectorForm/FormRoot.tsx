@@ -11,7 +11,7 @@ import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
   formFields: FormBlock;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -35,7 +35,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   formFields,
   successMessage,
   errorMessage,
-  hasSuccess,
+  connectionTestSuccess,
   onStopTestingConnector,
   submitLabel,
   footerClassName,
@@ -74,7 +74,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
             submitLabel={submitLabel}
             onCancel={onCancel}
             onReset={onReset}
-            hasSuccess={hasSuccess}
+            connectionTestSuccess={connectionTestSuccess}
           />
         )}
       </div>

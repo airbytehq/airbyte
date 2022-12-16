@@ -187,7 +187,9 @@
   "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
-  "connectorForm.saveInputsForm": "Save",
+  "connectorForm.error.oneOfWithNonObjects": "Spec uses oneOf without using object types for all conditions",
+  "connectorForm.error.oneOfWithoutConst": "Spec uses oneOf without a shared const property",
+  "connectorForm.error.topLevelNonObject": "Top level configuration has to be an object",
 
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",
@@ -629,7 +631,7 @@
 
   "connectorBuilder.downloadYaml": "Download Config",
   "connectorBuilder.testButton": "Test",
-  "connectorBuilder.configMenuTitle": "Configure Test Input",
+  "connectorBuilder.configMenuTitle": "User Inputs",
   "connectorBuilder.configMenuConfirm": "Confirm",
   "connectorBuilder.recordsTab": "Records",
   "connectorBuilder.requestTab": "Request",
@@ -648,6 +650,9 @@
   "connectorBuilder.addStreamModal.streamNameTooltip": "Name of the new stream",
   "connectorBuilder.addStreamModal.urlPathLabel": "URL path",
   "connectorBuilder.addStreamModal.urlPathTooltip": "URL path of the endpoint for this stream",
+  "connectorBuilder.deleteStreamModal.title": "Delete stream",
+  "connectorBuilder.deleteStreamModal.text": "Are you sure you want to delete this stream?",
+  "connectorBuilder.deleteStreamModal.submitButton": "Delete",
   "connectorBuilder.resetModal.text": "This will erase all streams and values that are currently set. Are you sure you want to continue?",
   "connectorBuilder.resetModal.title": "Reset Connector Builder",
   "connectorBuilder.resetModal.submitButton": "Reset",
@@ -661,6 +666,7 @@
   "connectorBuilder.configErrorsDownload": "Cannot download while there are form errors",
   "connectorBuilder.configErrorsTest": "Cannot test while there are form errors",
   "connectorBuilder.connectorImgAlt": "Connector Image",
+  "connectorBuilder.stream": "Stream",
   "connectorBuilder.uiYamlToggle.ui": "UI",
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
@@ -690,6 +696,13 @@
   "connectorBuilder.inputModal.enum": "Allowed values",
   "connectorBuilder.inputModal.enumTooltip": "The user will only be able to choose from one of these values. If none are provided the user will be able to enter any value",
   "connectorBuilder.inputModal.unsupportedInput": "Detailed configuration for this property type is disabled, switch to YAML view to edit",
+  "connectorBuilder.key": "key",
+  "connectorBuilder.value": "value",
+  "connectorBuilder.addKeyValue": "Add",
+  "connectorBuilder.saveInputsForm": "Save",
+  "connectorBuilder.inputsFormWarning": "User inputs are not saved with the connector, they are required in order to test your streams, and will be asked to the end user in order to set this connector",
+
+  "jobs.noAttemptsFailure": "Failed to start job.",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }
