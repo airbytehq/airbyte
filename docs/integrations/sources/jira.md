@@ -109,15 +109,9 @@ or disallow these tables to be selected when configuring a connection.
 
 * Pull Requests (currently only GitHub PRs are supported)
 
-## Getting Started \(Airbyte Open-Source / Airbyte Cloud\)
+## Troubleshooting
 
-### Requirements
-
-* Jira API Token
-* Jira Email
-* Jira Domain
-
-Please follow the [Jira confluence for generating an API token](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+Check out common troubleshooting issues for the Jira connector on our Discourse [here](https://discuss.airbyte.io/tags/c/connector/11/source-jira).
 
 ## Rate Limiting & Performance
 
