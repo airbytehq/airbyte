@@ -8,6 +8,8 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
@@ -48,6 +50,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private final JobPersistence jobPersistence;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
+  private AirbyteApiClient apiClient;
 
   public ConfigFetchActivityImpl(final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
