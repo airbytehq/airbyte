@@ -22,7 +22,7 @@ import io.airbyte.integrations.destination.bigquery.uploader.config.UploaderConf
 import io.airbyte.integrations.destination.bigquery.writer.BigQueryTableWriter;
 import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import io.airbyte.integrations.destination.gcs.avro.GcsAvroWriter;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashSet;
