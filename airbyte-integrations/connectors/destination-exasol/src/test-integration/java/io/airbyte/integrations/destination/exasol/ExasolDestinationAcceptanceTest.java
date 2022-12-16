@@ -75,7 +75,7 @@ public class ExasolDestinationAcceptanceTest extends DestinationAcceptanceTest {
                                            String streamName,
                                            String namespace,
                                            JsonNode streamSchema) throws SQLException {
-    return retrieveRecordsFromTable(namingResolver.getIdentifier(streamName), "\"_"+namespace+"_\"")
+    return retrieveRecordsFromTable(namingResolver.getRawTableName(streamName), "\"_"+namespace+"_\"")
             .stream()
             .map(r -> r.get(JavaBaseConstants.COLUMN_NAME_DATA.toUpperCase()))
             .map(node -> Jsons.deserialize(node.asText()))

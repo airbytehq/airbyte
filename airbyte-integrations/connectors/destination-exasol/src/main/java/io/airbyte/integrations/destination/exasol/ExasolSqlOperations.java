@@ -9,12 +9,11 @@ import com.exasol.jdbc.EXAStatement;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.jdbc.JdbcSqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.sql.SQLException;
 import java.util.List;
 
 public class ExasolSqlOperations extends JdbcSqlOperations {
@@ -51,19 +50,15 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
   }
 
   @Override
-  public void insertRecordsInternal(final JdbcDatabase database,
-                                    final List<AirbyteRecordMessage> records,
-                                    final String schemaName,
-                                    final String tmpTableName)
-      throws SQLException {
-    if (records.isEmpty()) {
+  protected void insertRecordsInternal(JdbcDatabase database, List<AirbyteRecordMessage> records, String schemaName, String tableName) throws Exception {
+   if (records.isEmpty()) {
       return;
     }
 
     database.execute(connection -> {
       File tmpFile = null;
       try {
-        tmpFile = Files.createTempFile(tmpTableName + "-", ".tmp").toFile();
+        tmpFile = Files.createTempFile(tableName + "-", ".tmp").toFile();
         writeBatchToFile(tmpFile, records);
 
         final EXAConnection conn = connection.unwrap(EXAConnection.class);
@@ -73,7 +68,7 @@ public class ExasolSqlOperations extends JdbcSqlOperations {
                 IMPORT INTO %s.%s
                 FROM LOCAL CSV FILE '%s'
                 ROW SEPARATOR = 'CRLF'
-                COLUMN SEPARATOR = ','\s""", schemaName, tmpTableName, tmpFile.getAbsolutePath()));
+                COLUMN SEPARATOR = ','\s""", schemaName, tableName, tmpFile.getAbsolutePath()));
 
       } catch (final Exception e) {
         throw new RuntimeException(e);
