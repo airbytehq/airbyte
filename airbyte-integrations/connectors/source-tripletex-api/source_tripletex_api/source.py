@@ -26,6 +26,8 @@ class TripletexApiStream(HttpStream, ABC):
         self.session_token = None
         self.get_session_token()
 
+        self.date_to = None
+
     def get_session_token(self):
         querystring = {
             "consumerToken": self.consumer_token,
@@ -66,16 +68,14 @@ class PostingStream(TripletexApiStream, ABC):
         :return If there is another page in the result, a mapping (e.g: dict) containing information needed to query the next page in the response.
                 If there are no more pages in the result, return None.
         """
+        last_date = pendulum.parse(self.date_to or self.start_date)
 
-        vls = response.json().get('values')
-        if vls:
-            last_date = max([x.get('date') for x in vls])
-            last_date = pendulum.parse(last_date)
-            if last_date < self.today:
-                return {
-                    "dateFrom": last_date.add(days=1).format("YYYY-MM-DD"),
-                    "dateTo": last_date.add(days=8).format("YYYY-MM-DD")
-                }
+        if last_date < self.today:
+            self.date_to = last_date.add(days=8).format("YYYY-MM-DD")
+            return {
+                "dateFrom": last_date.add(days=1).format("YYYY-MM-DD"),
+                "dateTo": self.date_to
+            }
 
         return None
 
