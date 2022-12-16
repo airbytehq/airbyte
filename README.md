@@ -91,10 +91,6 @@ Airbyte takes security issues very seriously. If you have any concerns about Air
 
 Note that this security address should be used only for undisclosed vulnerabilities. Dealing with fixed issues or general questions on how to use the security features should be handled regularly via the user and the dev lists. Please report any security problems to us before disclosing it publicly.
 
-## Roadmap
-
-Check out our [roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) to get informed on what we are currently working on, and what we have in mind for the next weeks, months, and years.
-
 ## License
 
 See the [LICENSE](docs/project-overview/licenses/) file for licensing information, and our [FAQ](docs/project-overview/licenses/license-faq.md) for any questions you may have on that topic.
@@ -109,3 +105,4 @@ See the [LICENSE](docs/project-overview/licenses/) file for licensing informatio
 - [Newsletter](https://airbyte.com/newsletter) for product updates and data news
 - [Blog](https://airbyte.com/blog) for data insigts articles, tutorials and updates
 - [Docs](https://docs.airbyte.com/) for Airbyte features
+- [Roadmap](https://app.harvestr.io/roadmap/view/pQU6gdCyc/launch-week-roadmap) for planned features
