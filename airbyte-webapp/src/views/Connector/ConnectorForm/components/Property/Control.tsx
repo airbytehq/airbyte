@@ -120,3 +120,5 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
     />
   );
 };
+
+export default Control;

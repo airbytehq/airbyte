@@ -7,10 +7,11 @@ import { LabeledSwitch } from "components";
 import { FormBaseItem } from "core/form/types";
 
 import { useConnectorForm } from "../../connectorFormContext";
-import { Control } from "../Property/Control";
 import { PropertyError } from "../Property/PropertyError";
 import { PropertyLabel } from "../Property/PropertyLabel";
 import styles from "./PropertySection.module.scss";
+
+const Control = React.lazy(() => import("../Property/Control"));
 
 interface PropertySectionProps {
   property: FormBaseItem;
