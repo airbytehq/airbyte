@@ -35,7 +35,7 @@ class SourceRetently(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         try:
             auth = self.get_authenticator(config)
-            stream = Companies(auth)
+            stream = Customers(auth)
             records = stream.read_records(sync_mode=SyncMode.full_refresh)
             next(records)
             return True, None
@@ -44,7 +44,7 @@ class SourceRetently(AbstractSource):
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = self.get_authenticator(config)
-        return [Customers(auth), Companies(auth), Reports(auth)]
+        return [Customers(auth), Companies(auth), Reports(auth), Nps(auth), Campaigns(auth), Feedback(auth)]
 
 
 class RetentlyStream(HttpStream):
@@ -67,11 +67,9 @@ class RetentlyStream(HttpStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> Iterable[Mapping]:
         data = response.json().get("data")
-        if data:
-            stream_data = data.get(self.json_path) if self.json_path else data
-            if stream_data:
-                for d in stream_data:
-                    yield d
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for d in stream_data:
+            yield d
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         json = response.json().get("data", dict())
@@ -118,7 +116,56 @@ class Reports(RetentlyStream):
         self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
     ) -> str:
         return "reports"
+    # does not support pagination
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
+class Nps(RetentlyStream):
+    json_path = None
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "nps/score"
 
     # does not support pagination
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         return None
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json().get("data")
+        yield data
+
+class Campaigns(RetentlyStream):
+    json_path = "campaigns"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "campaigns"
+
+    def parse_response(
+        self,
+        response: requests.Response,
+        stream_state: Mapping[str, Any],
+        stream_slice: Mapping[str, Any] = None,
+        next_page_token: Mapping[str, Any] = None,
+    ) -> Iterable[Mapping]:
+        data = response.json()
+        stream_data = data.get(self.json_path) if self.json_path else data
+        for d in stream_data:
+            yield d
+
+class Feedback(RetentlyStream):
+    json_path = "responses"
+
+    def path(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
+    ) -> str:
+        return "feedback"
