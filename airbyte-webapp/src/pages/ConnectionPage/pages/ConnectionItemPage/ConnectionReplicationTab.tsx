@@ -22,6 +22,7 @@ import { useConnectionService, ValuesProps } from "hooks/services/useConnectionH
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal } from "utils/objects";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
+import { SchemaChangeBackdrop } from "views/Connection/ConnectionForm/components/SchemaChangeBackdrop";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import {
   createConnectionValidationSchema,
@@ -193,28 +194,30 @@ export const ConnectionReplicationTab: React.FC = () => {
           enableReinitialize
         >
           {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
-            <Form>
-              <ValidateFormOnSchemaRefresh />
-              <ConnectionFormFields
-                values={values}
-                isSubmitting={isSubmitting}
-                dirty={dirty || schemaHasBeenRefreshed}
-              />
-              {status.editControlsVisible && (
-                <EditControls
+            <SchemaChangeBackdrop>
+              <Form>
+                <ValidateFormOnSchemaRefresh />
+                <ConnectionFormFields
+                  values={values}
                   isSubmitting={isSubmitting}
-                  submitDisabled={!isValid}
-                  dirty={dirty}
-                  resetForm={async () => {
-                    resetForm();
-                    discardRefreshedSchema();
-                  }}
-                  successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                  errorMessage={getErrorMessage(isValid, dirty)}
-                  enableControls={schemaHasBeenRefreshed || dirty}
+                  dirty={dirty || schemaHasBeenRefreshed}
                 />
-              )}
-            </Form>
+                {status.editControlsVisible && (
+                  <EditControls
+                    isSubmitting={isSubmitting}
+                    submitDisabled={!isValid}
+                    dirty={dirty}
+                    resetForm={async () => {
+                      resetForm();
+                      discardRefreshedSchema();
+                    }}
+                    successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                    errorMessage={getErrorMessage(isValid, dirty)}
+                    enableControls={schemaHasBeenRefreshed || dirty}
+                  />
+                )}
+              </Form>
+            </SchemaChangeBackdrop>
           )}
         </Formik>
       ) : (
