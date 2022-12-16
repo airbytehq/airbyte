@@ -223,6 +223,8 @@
   "form.field.destinationName": "Destination name",
   "form.field.primaryKey": "Primary key",
   "form.field.cursorField": "Cursor field",
+  "form.field.sourceDefinedCursor": "Source-Defined Cursor",
+  "form.field.sourceDefinedPK": "Source-Defined Primary key",
 
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
