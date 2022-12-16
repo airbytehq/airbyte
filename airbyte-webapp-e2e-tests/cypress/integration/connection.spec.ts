@@ -155,13 +155,6 @@ describe("Connection - main actions", () => {
 
     createTestConnection(sourceName, destName);
 
-    goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
-
-    // cy.get("div").contains(sourceName).should("exist");
-    // cy.get("div").contains(destName).should("exist");
-
     goToReplicationTab();
 
     selectSchedule("Cron");
@@ -560,7 +553,6 @@ describe("Connection - detect changes in source", () => {
     cy.get("div").contains(destName).should("exist");
 
     makeChangesInDBSource();
-    openSourceDestinationFromGrid(sourceName);
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
