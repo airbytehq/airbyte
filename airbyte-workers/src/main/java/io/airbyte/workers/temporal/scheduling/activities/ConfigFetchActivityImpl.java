@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
@@ -65,6 +66,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private final WorkspaceHelper workspaceHelper;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
+  private AirbyteApiClient apiClient;
 
   public ConfigFetchActivityImpl(final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
@@ -163,11 +165,11 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     }
   }
 
-  private Duration addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, StandardSync standardSync) {
+  private Duration addSchedulingNoiseForAllowListedWorkspace(final Duration timeToWait, final StandardSync standardSync) {
     final UUID workspaceId;
     try {
       workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
-    } catch (JsonValidationException | ConfigNotFoundException e) {
+    } catch (final JsonValidationException | ConfigNotFoundException e) {
       // We tolerate exceptions and fail open by doing nothing.
       return timeToWait;
     }
