@@ -5,50 +5,10 @@
 import uuid
 import logging
 import json
-from typing import Any, Mapping, List
+from typing import Any, Mapping
 
 import weaviate
-
-
-def parse_vectors(vectors_config: str) -> Mapping[str, str]:
-    vectors = {}
-    if not vectors_config:
-        return vectors
-
-    vectors_list = vectors_config.replace(" ", "").split(",")
-    for vector in vectors_list:
-        stream_name, vector_column_name = vector.split(".")
-        vectors[stream_name] = vector_column_name
-    return vectors
-
-
-def parse_id_schema(id_schema_config: str) -> Mapping[str, str]:
-    id_schema = {}
-    if not id_schema_config:
-        return id_schema
-
-    id_schema_list = id_schema_config.replace(" ", "").split(",")
-    for schema_id in id_schema_list:
-        stream_name, id_field_name = schema_id.split(".")
-        id_schema[stream_name] = id_field_name
-    return id_schema
-
-
-def hex_to_int(hex_str: str) -> int:
-    try:
-        return int(hex_str, 16)
-    except ValueError:
-        return 0
-
-
-
-def generate_id(record_id: Any) -> uuid.UUID:
-    if isinstance(record_id, int):
-        return uuid.UUID(int=record_id)
-    if isinstance(record_id, str):
-        id_int = hex_to_int(record_id)
-        if hex_to_int(record_id) > 0:
-            return uuid.UUID(int=id_int)
+from .utils import generate_id, parse_id_schema, parse_vectors
 
 
 class Client:
