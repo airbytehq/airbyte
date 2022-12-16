@@ -98,17 +98,6 @@ fi
 YARN_DEPLOY_EXIT_STATUS=$?
 
 
-# At this moment we have a bunch of changed files in Git (local) working
-# directory.  What is left -- is pushing changes back to Git repo to
-# make changes available to everyone.  However, this same script is
-# used to validate "deployability" of Github PRs.  And while we are in
-# "check PR mode" -- we do not want to push changes back to Git repo:
-if [ "${SKIP_DEPLOY}" = "yes" ]; then
-  echo -e "$blue_text""Check mode is ON: skipipping Git push to git repo!\n\n""$default_text"
-  exit $YARN_DEPLOY_EXIT_STATUS
-fi
-
-
 # Git makes more sense from /
 cd ..
 pwd
