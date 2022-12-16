@@ -9,11 +9,9 @@ acceptance_tests:
         config_path: "src/test-integration/resources/dummy_config.json"
         timeout_seconds: 60
   connection:
-    tests:
-      bypass_reason: "some reason."
+    bypass_reason: "some reason."
   discovery:
-    tests:
-      bypass_reason: "some reason."
+    bypass_reason: "some reason."
   basic_read:
     bypass_reason: "some reason."
   full_refresh:
