@@ -7,7 +7,7 @@ from datetime import datetime
 from itertools import chain
 
 from airbyte_cdk import AirbyteLogger
-from airbyte_cdk.models import AirbyteConnectionStatus,Status
+from airbyte_cdk.models import AirbyteConnectionStatus, Status
 from destination_databend.client import DatabendClient
 
 
@@ -94,8 +94,7 @@ class DatabendWriter:
 class DatabendSQLWriter(DatabendWriter):
     """
     Data writer using the SQL writing strategy. Data is buffered in memory
-    and flushed using INSERT INTO SQL statement. This is less effective strategy
-    better suited for testing and small data sets.
+    and flushed using INSERT INTO SQL statement.
     """
 
     flush_interval = 1000
