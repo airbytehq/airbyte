@@ -3840,7 +3840,7 @@
         oauthFlowInitParameters: []
         oauthFlowOutputParameters:
         - - "access_token"
-- dockerImage: "airbyte/source-facebook-pages:0.1.6"
+- dockerImage: "airbyte/source-facebook-pages:0.2.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/facebook-pages"
     connectionSpecification:
@@ -3857,20 +3857,15 @@
           title: "Page Access Token"
           description: "Facebook Page Access Token"
           airbyte_secret: true
+          order: 0
         page_id:
           type: "string"
           title: "Page ID"
           description: "Page ID"
+          order: 1
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-    authSpecification:
-      auth_type: "oauth2.0"
-      oauth2Specification:
-        rootObject: []
-        oauthFlowInitParameters: []
-        oauthFlowOutputParameters:
-        - - "access_token"
 - dockerImage: "airbyte/source-faker:1.0.0"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/faker"
