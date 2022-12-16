@@ -22,9 +22,12 @@ import java.security.KeyPair;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
+import org.apache.sshd.common.SshException;
 import org.apache.sshd.common.util.net.SshdSocketAddress;
 import org.apache.sshd.common.util.security.SecurityUtils;
 import org.apache.sshd.core.CoreModuleProperties;
@@ -363,6 +366,14 @@ public class SshTunnel implements AutoCloseable {
       LOGGER.info(String.format("Established tunneling session to %s:%d. Port forwarding started on %s ",
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
+    } catch (final SshException exception) {
+      if(exception.getMessage()
+              .toLowerCase(Locale.ROOT)
+              .contains("failed to get operation result within specified timeout")){
+        throw new ConfigErrorException(exception.getMessage(), exception);
+      } else {
+        throw new RuntimeException(exception);
+      }
     } catch (final IOException | GeneralSecurityException e) {
       throw new RuntimeException(e);
     }
