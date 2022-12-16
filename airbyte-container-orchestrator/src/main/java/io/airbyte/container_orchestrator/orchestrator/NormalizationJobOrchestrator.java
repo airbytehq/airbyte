@@ -67,6 +67,8 @@ public class NormalizationJobOrchestrator implements JobOrchestrator<Normalizati
             destinationLauncherConfig.getDockerImage()));
 
     log.info("Setting up normalization worker...");
+    log.error("get NormalizationDockerImage -->> {}", destinationLauncherConfig.getNormalizationDockerImage());
+    log.error("get NormalizationIntegrationType -->> {}", destinationLauncherConfig.getNormalizationIntegrationType());
     final NormalizationWorker normalizationWorker = new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
