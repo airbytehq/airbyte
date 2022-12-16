@@ -33,7 +33,7 @@ import io.airbyte.workers.ContainerOrchestratorConfig;
 import io.airbyte.workers.Worker;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.general.DefaultNormalizationWorker;
-import io.airbyte.workers.normalization.DefaultNormalizationRunner;
+import io.airbyte.workers.normalization.NormalizationRunnerFactory;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.NormalizationLauncherWorker;
 import io.airbyte.workers.temporal.TemporalAttemptExecution;
@@ -150,10 +150,11 @@ public class NormalizationActivityImpl implements NormalizationActivity {
     return () -> new DefaultNormalizationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
-        new DefaultNormalizationRunner(
+        NormalizationRunnerFactory.create(
+            destinationLauncherConfig.getDockerImage(),
             processFactory,
-            destinationLauncherConfig.getNormalizationDockerImage(),
-            destinationLauncherConfig.getNormalizationIntegrationType()),
+            NormalizationRunnerFactory.NORMALIZATION_VERSION,
+            destinationLauncherConfig.getNormalizationDockerImage()),
         workerEnvironment);
   }
 

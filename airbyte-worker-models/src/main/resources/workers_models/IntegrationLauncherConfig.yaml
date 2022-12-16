@@ -21,8 +21,6 @@ properties:
   supportsDbt:
     type: boolean
     default: false
-  normalizationIntegrationType:
-    type: string
   protocolVersion:
     type: object
     existingJavaType: io.airbyte.commons.version.Version
