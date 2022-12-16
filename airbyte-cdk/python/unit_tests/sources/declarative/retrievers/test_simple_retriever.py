@@ -436,12 +436,13 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
 
 
 @pytest.mark.parametrize(
-    "test_name, http_method, url, headers, params, body, expected_airbyte_message",
+    "test_name, http_method, url, headers, params, body_json, body_data, expected_airbyte_message",
     [
         (
             "test_basic_get_request",
             HttpMethod.GET,
             "https://airbyte.io",
+            {},
             {},
             {},
             {},
@@ -459,6 +460,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             {"h1": "v1", "h2": "v2"},
             {},
             {},
+            {},
             AirbyteMessage(
                 type=Type.LOG,
                 log=AirbyteLogMessage(
@@ -474,6 +476,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             {},
             {"p1": "v1", "p2": "v2"},
             {},
+            {},
             AirbyteMessage(
                 type=Type.LOG,
                 log=AirbyteLogMessage(
@@ -483,10 +486,27 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             ),
         ),
         (
-            "test_get_request_with_request_body",
+            "test_get_request_with_request_body_json",
             HttpMethod.GET,
             "https://airbyte.io",
             {"Content-Type": "application/json"},
+            {},
+            {"b1": "v1", "b2": "v2"},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                ),
+            ),
+        ),
+        (
+            "test_get_request_with_request_body_data",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {"Content-Type": "application/json"},
+            {},
             {},
             {"b1": "v1", "b2": "v2"},
             AirbyteMessage(
@@ -504,6 +524,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             {},
             {},
             {},
+            {},
             AirbyteMessage(
                 type=Type.LOG,
                 log=AirbyteLogMessage(
@@ -514,10 +535,12 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
         ),
     ],
 )
-def test_prepared_request_to_airbyte_message(test_name, http_method, url, headers, params, body, expected_airbyte_message):
+def test_prepared_request_to_airbyte_message(test_name, http_method, url, headers, params, body_json, body_data, expected_airbyte_message):
     request = requests.Request(method=http_method.name, url=url, headers=headers, params=params)
-    if body:
-        request.json = body
+    if body_json:
+        request.json = body_json
+    if body_data:
+        request.data = body_data
     prepared_request = request.prepare()
 
     actual_airbyte_message = prepared_request_to_airbyte_message(prepared_request)
