@@ -41,9 +41,9 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |-
-          export SKIP_DEPLOY="no"
-          if [ "${{github.event_name}}" = "pull_request" ]; then
-              export SKIP_DEPLOY="yes"
+          export SKIP_DEPLOY="yes"
+          if [ "${{github.event_name}}" = 'push' -o "${{github.event_name}}" = 'workflow_dispatch' ]; then
+              export SKIP_DEPLOY="no"
           fi
 
           ./tools/bin/deploy_docusaurus
@@ -55,8 +55,8 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
-          # 'C02TYDSUM8F' => "#dev-deploys'
-          # 'C03BEADRPNY' => presumably '#docs'
+          # 'C02TYDSUM8F' => '#dev-deploys'
+          # 'C03BEADRPNY' => '#docs'
           args: >-
             {\"channel\":\"C02TYDSUM8F\",\"attachments\":[
             {\"color\":\"#ff0000\",\"blocks\":[
@@ -71,8 +71,8 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN_AIRBYTE_TEAM }}
         with:
-          # 'C02TYDSUM8F' => "#dev-deploys'
-          # 'C03BEADRPNY' => presumably '#docs'
+          # 'C02TYDSUM8F' => '#dev-deploys'
+          # 'C03BEADRPNY' => '#docs'
           args: >-
             {\"channel\":\"C02TYDSUM8F\",\"attachments\":[
             {\"color\":\"#00ff00\",\"blocks\":[
