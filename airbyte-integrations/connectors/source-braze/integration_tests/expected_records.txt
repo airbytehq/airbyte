@@ -321,7 +321,7 @@
 {"stream": "events", "data": {"event_name": "Test Event 1"}, "emitted_at": 1671100940538}
 {"stream": "cards", "data": {"id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd", "type": "NewsItem", "title": "Test", "tags": ["News feed"]}, "emitted_at": 1671100949719}
 {"stream": "cards_analytics", "data": {"time": "2022-12-08", "impressions": 0, "clicks": 0, "unique_impressions": 0, "unique_clicks": 0, "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"}, "emitted_at": 1671100951395}
-{"stream": "cards_analytics", "data": {"time": "2022-12-14", "impressions": 0, "clicks": 0, "unique_impressions": 0, "unique_clicks": 0, "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"}, "emitted_at": 1671100951971}
+{"stream": "cards_analytics", "data": {"time": "2022-12-15", "impressions": 0, "clicks": 0, "unique_impressions": 0, "unique_clicks": 0, "card_id": "609e4d4c-367b-4c87-a8ad-b1f903d058fd"}, "emitted_at": 1671100951971}
 {"stream": "segments", "data": {"id": "cd7a9141-3457-4c37-9336-52845dd5fe87", "name": "Lapsed Users - 7 days", "analytics_tracking_enabled": false, "tags": []}, "emitted_at": 1671100952425}
 {"stream": "segments", "data": {"id": "2eaf781b-c4fb-4739-8ff1-080144e1aa1a", "name": "Lapsed Users - 30 days", "analytics_tracking_enabled": false, "tags": []}, "emitted_at": 1671100952428}
 {"stream": "segments", "data": {"id": "ce4e667c-3180-45dd-a200-7f3a9489f306", "name": "User Onboarding - First Week", "analytics_tracking_enabled": false, "tags": []}, "emitted_at": 1671100952431}
