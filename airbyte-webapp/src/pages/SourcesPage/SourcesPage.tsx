@@ -2,6 +2,7 @@ import React from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 
 import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
 
@@ -9,8 +10,6 @@ const AllSourcesPage = React.lazy(() => import("./pages/AllSourcesPage"));
 const CreateSourcePage = React.lazy(() => import("./pages/CreateSourcePage/CreateSourcePage"));
 const SourceItemPage = React.lazy(() => import("./pages/SourceItemPage"));
 const CreationFormPage = React.lazy(() => import("pages/ConnectionPage/pages/CreationFormPage/CreationFormPage"));
-
-const StartOverErrorView = React.lazy(() => import("views/common/StartOverErrorView"));
 
 export const SourcesPage: React.FC = () => (
   <Routes>
