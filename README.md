@@ -18,7 +18,7 @@
     <img alt="YouTube Channel Views" src="https://img.shields.io/youtube/channel/views/UCQ_JWEFzs1_INqdhIO3kmrw?style=social">
 </a>
 <a href="https://github.com/airbytehq/airbyte/actions/workflows/gradle.yml" target="_blank">
-    <img src="https://img.shields.io/github/workflow/status/airbytehq/airbyte/Airbyte%20CI" alt="Build">
+    <img src="https://img.shields.io/github/actions/workflow/status/airbytehq/airbyte/gradle.yml?branch=master" alt="Build">
 </a>
 <a href="https://github.com/airbytehq/airbyte/tree/a9b1c6c0420550ad5069aca66c295223e0d05e27/LICENSE/README.md" target="_blank">
     <img src="https://img.shields.io/static/v1?label=license&message=MIT&color=white" alt="License">
