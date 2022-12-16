@@ -38,19 +38,19 @@ import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumen
 import io.airbyte.integrations.standardtest.destination.argproviders.DataTypeTestArgumentProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.BasicTestDataComparator;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
-import io.airbyte.protocol.models.AirbyteCatalog;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStateMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.CatalogHelpers;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConnectorSpecification;
-import io.airbyte.protocol.models.DestinationSyncMode;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
-import io.airbyte.protocol.models.SyncMode;
+import io.airbyte.protocol.models.v0.AirbyteCatalog;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteMessage.Type;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStateMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.CatalogHelpers;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.SyncMode;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.general.DbtTransformationRunner;
@@ -1197,9 +1197,11 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private ConnectorSpecification runSpec() throws WorkerException {
-    return new DefaultGetSpecWorker(
-        new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
+    return convertProtocolObject(
+        new DefaultGetSpecWorker(
+            new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, null, false))
+                .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec(),
+        ConnectorSpecification.class);
   }
 
   protected StandardCheckConnectionOutput runCheck(final JsonNode config) throws WorkerException {
@@ -1279,18 +1281,19 @@ public abstract class DestinationAcceptanceTest {
 
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(catalog)
+        .withCatalog(convertProtocolObject(catalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
 
     final AirbyteDestination destination = getDestination();
 
     destination.start(destinationConfig, jobRoot);
-    messages.forEach(message -> Exceptions.toRuntime(() -> destination.accept(message)));
+    messages.forEach(
+        message -> Exceptions.toRuntime(() -> destination.accept(convertProtocolObject(message, io.airbyte.protocol.models.AirbyteMessage.class))));
     destination.notifyEndOfInput();
 
     final List<AirbyteMessage> destinationOutput = new ArrayList<>();
     while (!destination.isFinished()) {
-      destination.attemptRead().ifPresent(destinationOutput::add);
+      destination.attemptRead().ifPresent(m -> destinationOutput.add(convertProtocolObject(m, AirbyteMessage.class)));
     }
 
     destination.close();
@@ -1481,7 +1484,7 @@ public abstract class DestinationAcceptanceTest {
     final JsonNode config = getConfig();
     final WorkerDestinationConfig destinationConfig = new WorkerDestinationConfig()
         .withConnectionId(UUID.randomUUID())
-        .withCatalog(configuredTestCatalog)
+        .withCatalog(convertProtocolObject(configuredTestCatalog, io.airbyte.protocol.models.ConfiguredAirbyteCatalog.class))
         .withDestinationConnectionConfiguration(config);
     final AirbyteDestination destination = getDestination();
 
@@ -1523,7 +1526,7 @@ public abstract class DestinationAcceptanceTest {
                             .build()))
                 .withEmittedAt(Instant.now().toEpochMilli()));
         try {
-          destination.accept(msg);
+          destination.accept(convertProtocolObject(msg, io.airbyte.protocol.models.AirbyteMessage.class));
         } catch (final Exception e) {
           LOGGER.error("Failed to write a RECORD message: " + e);
           throw new RuntimeException(e);
@@ -1539,7 +1542,7 @@ public abstract class DestinationAcceptanceTest {
               .withData(
                   Jsons.jsonNode(ImmutableMap.builder().put("start_date", "2020-09-02").build())));
       try {
-        destination.accept(msgState);
+        destination.accept(convertProtocolObject(msgState, io.airbyte.protocol.models.AirbyteMessage.class));
       } catch (final Exception e) {
         LOGGER.error("Failed to write a STATE message: " + e);
         throw new RuntimeException(e);
@@ -1791,6 +1794,10 @@ public abstract class DestinationAcceptanceTest {
               testCase.get("normalized").asText()));
     }
 
+  }
+
+  private static <V0, V1> V0 convertProtocolObject(final V1 v1, final Class<V0> klass) {
+    return Jsons.object(Jsons.jsonNode(v1), klass);
   }
 
 }
