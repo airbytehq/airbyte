@@ -71,7 +71,7 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <div className={isNewStreamsTableEnabled ? styles.newCatalogTreeTable : styles.catalogTreeTable}>
+        <div className={styles.catalogTreeTable}>
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}
