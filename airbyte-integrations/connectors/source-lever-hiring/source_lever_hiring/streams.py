@@ -156,7 +156,6 @@ class Offers(OpportynityChildStream):
     schema = Offer
 
 
-
 class Postings(LeverHiringStream):
     """
     Postings stream: https://hire.lever.co/developer/documentation#postings
@@ -196,5 +195,3 @@ class Users(LeverHiringStream):
 
     schema = User
     base_params = {"includeDeactivated": True}
-
-
