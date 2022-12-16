@@ -78,9 +78,24 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedMessage, upgradedMessage);
     }
 
+    /**
+     * Utility method to upgrade the oldSchema, and assert that the result is equal to expectedSchema
+     *
+     * @param oldSchemaString The schema to be upgraded
+     * @param expectedSchemaString The expected schema after upgrading
+     */
+    private void doTest(String oldSchemaString, String expectedSchemaString) {
+      JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
+
+      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
+      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
     @Test
     public void testUpgradeAllPrimitives() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -139,11 +154,7 @@ public class V0ToV1MigrationTest {
              }
             }
           }
-          """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -190,12 +201,11 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
     public void testUpgradeNestedFields() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -246,11 +256,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -302,7 +308,6 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
@@ -345,7 +350,7 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertUpgradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
@@ -388,7 +393,7 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertUpgradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
@@ -407,7 +412,7 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertUpgradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
@@ -417,7 +422,7 @@ public class V0ToV1MigrationTest {
       // i.e. it will disregard the option for a boolean.
       // Generating this sort of schema is just wrong; sources shouldn't do this to begin with. But let's
       // verify that we behave mostly correctly here.
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -434,11 +439,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -448,12 +449,11 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
     public void testUpgradeMultiTypeFields() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -488,11 +488,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -546,7 +542,6 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     private io.airbyte.protocol.models.v0.AirbyteMessage createCatalogMessage(JsonNode schema) {
@@ -554,15 +549,6 @@ public class V0ToV1MigrationTest {
           .withCatalog(
               new io.airbyte.protocol.models.v0.AirbyteCatalog().withStreams(List.of(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
                   schema))));
-    }
-
-    private void assertUpgradeIsNoop(String schemaString) {
-      JsonNode oldSchema = Jsons.deserialize(schemaString);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(schemaString);
-      assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
   }
@@ -596,9 +582,24 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedMessage, upgradedMessage);
     }
 
+    /**
+     * Utility method to upgrade the oldData, and assert that the result is equal to expectedData
+     *
+     * @param oldDataString The data of the record to be upgraded
+     * @param expectedDataString The expected data after upgrading
+     */
+    private void doTest(String oldDataString, String expectedDataString) {
+      JsonNode oldData = Jsons.deserialize(oldDataString);
+
+      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+
+      JsonNode expectedData = Jsons.deserialize(expectedDataString);
+      assertEquals(expectedData, upgradedMessage.getRecord().getData());
+    }
+
     @Test
     public void testNestedUpgrade() {
-      JsonNode oldData = Jsons.deserialize(
+      doTest(
           """
           {
             "int": 42,
@@ -611,11 +612,7 @@ public class V0ToV1MigrationTest {
             },
             "sub_array": [42, 42.0, 42.2]
           }
-          """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
-
-      JsonNode expectedData = Jsons.deserialize(
+          """,
           """
           {
             "int": "42",
@@ -629,12 +626,22 @@ public class V0ToV1MigrationTest {
             "sub_array": ["42", "42.0", "42.2"]
           }
           """);
-      assertEquals(expectedData, upgradedMessage.getRecord().getData());
     }
 
     @Test
     public void testNonUpgradableValues() {
-      JsonNode oldData = Jsons.deserialize(
+      doTest(
+          """
+          {
+            "boolean": true,
+            "string": "arst",
+            "sub_object": {
+              "boolean": true,
+              "string": "arst"
+            },
+            "sub_array": [true, "arst"]
+          }
+          """,
           """
           {
             "boolean": true,
@@ -646,22 +653,6 @@ public class V0ToV1MigrationTest {
             "sub_array": [true, "arst"]
           }
           """);
-
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
-
-      JsonNode expectedData = Jsons.deserialize(
-          """
-          {
-            "boolean": true,
-            "string": "arst",
-            "sub_object": {
-              "boolean": true,
-              "string": "arst"
-            },
-            "sub_array": [true, "arst"]
-          }
-          """);
-      assertEquals(expectedData, upgradedMessage.getRecord().getData());
     }
 
     private io.airbyte.protocol.models.v0.AirbyteMessage createRecordMessage(JsonNode data) {
@@ -706,9 +697,24 @@ public class V0ToV1MigrationTest {
       assertEquals(expectedMessage, downgradedMessage);
     }
 
+    /**
+     * Utility method to downgrade the oldSchema, and assert that the result is equal to expectedSchema
+     *
+     * @param oldSchemaString The schema to be downgraded
+     * @param expectedSchemaString The expected schema after downgrading
+     */
+    private void doTest(String oldSchemaString, String expectedSchemaString) {
+      JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
+
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+
+      JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
+      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
+    }
+
     @Test
     public void testUpgradeAllPrimitives() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -742,11 +748,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -790,12 +792,11 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
     public void testDowngradeNestedFields() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -846,11 +847,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -902,7 +899,6 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
@@ -945,7 +941,7 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertDowngradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
@@ -988,7 +984,7 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertDowngradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
@@ -1007,12 +1003,12 @@ public class V0ToV1MigrationTest {
                               }
                             }
                             """;
-      assertDowngradeIsNoop(schemaString);
+      doTest(schemaString, schemaString);
     }
 
     @Test
     public void testDowngradeMultiTypeFields() {
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
           """
           {
             "type": "object",
@@ -1066,11 +1062,7 @@ public class V0ToV1MigrationTest {
               }
             }
           }
-          """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
+          """,
           """
           {
             "type": "object",
@@ -1115,14 +1107,21 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     @Test
     public void testDowngradeWeirdSchemas() {
       // old_style_schema isn't actually valid (i.e. v1 schemas should always be using $ref)
       // but we should check that it behaves well anyway
-      JsonNode oldSchema = Jsons.deserialize(
+      doTest(
+          """
+          {
+            "type": "object",
+            "properties": {
+              "old_style_schema": {"type": "string"}
+            }
+          }
+          """,
           """
           {
             "type": "object",
@@ -1131,19 +1130,6 @@ public class V0ToV1MigrationTest {
             }
           }
           """);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(
-          """
-          {
-            "type": "object",
-            "properties": {
-              "old_style_schema": {"type": "string"}
-            }
-          }
-          """);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
     private AirbyteMessage createCatalogMessage(JsonNode schema) {
@@ -1151,15 +1137,6 @@ public class V0ToV1MigrationTest {
           .withCatalog(
               new AirbyteCatalog().withStreams(List.of(new AirbyteStream().withJsonSchema(
                   schema))));
-    }
-
-    private void assertDowngradeIsNoop(String schemaString) {
-      JsonNode oldSchema = Jsons.deserialize(schemaString);
-
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
-
-      JsonNode expectedSchema = Jsons.deserialize(schemaString);
-      assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
     }
 
   }
@@ -1200,8 +1177,8 @@ public class V0ToV1MigrationTest {
     }
 
     /**
-     * Utility method to use the given catalog to downgrade the oldData, and assert that the result
-     * is equal to expectedDataString
+     * Utility method to use the given catalog to downgrade the oldData, and assert that the result is
+     * equal to expectedDataString
      *
      * @param schemaString The JSON schema of the record
      * @param oldDataString The data of the record to be downgraded
