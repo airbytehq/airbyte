@@ -1,6 +1,5 @@
 import { useField } from "formik";
 import { FormattedMessage } from "react-intl";
-import * as yup from "yup";
 
 import { ControlLabels } from "components/LabeledControl";
 import { DropDown } from "components/ui/DropDown";
@@ -32,7 +31,7 @@ interface BaseFieldProps {
   optional?: boolean;
 }
 
-type BuilderFieldProps = BaseFieldProps & ({ type: "text" } | { type: "array" } | { type: "enum"; options: string[] });
+type BuilderFieldProps = BaseFieldProps & ({ type: "text" | "array" } | { type: "enum"; options: string[] });
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (
@@ -53,25 +52,7 @@ const ArrayField: React.FC<ArrayFieldProps> = ({ name, value, setValue, error })
 };
 
 export const BuilderField: React.FC<BuilderFieldProps> = ({ path, label, tooltip, optional = false, ...props }) => {
-  let yupSchema = props.type === "array" ? yup.array().of(yup.string()) : yup.string();
-  if (!optional) {
-    yupSchema = yupSchema.required("form.empty.error");
-  }
-  const fieldConfig = {
-    name: path,
-    validate: (value: string) => {
-      try {
-        yupSchema.validateSync(value);
-        return undefined;
-      } catch (err) {
-        if (err instanceof yup.ValidationError) {
-          return err.errors.join(", ");
-        }
-        throw err;
-      }
-    },
-  };
-  const [field, meta, helpers] = useField(fieldConfig);
+  const [field, meta, helpers] = useField(path);
   const hasError = !!meta.error && meta.touched;
 
   return (

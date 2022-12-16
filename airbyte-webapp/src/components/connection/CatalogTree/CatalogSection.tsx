@@ -1,16 +1,18 @@
 import { FormikErrors, getIn } from "formik";
+import isEqual from "lodash/isEqual";
 import React, { memo, useCallback, useMemo } from "react";
 import { useToggle } from "react-use";
 
 import { DropDownOptionDataItem } from "components/ui/DropDown";
 
 import { SyncSchemaField, SyncSchemaFieldObject, SyncSchemaStream } from "core/domain/catalog";
-import { traverseSchemaToField } from "core/domain/catalog/fieldUtil";
+import { traverseSchemaToField } from "core/domain/catalog/traverseSchemaToField";
 import {
   AirbyteStreamConfiguration,
   DestinationSyncMode,
   NamespaceDefinitionType,
   SyncMode,
+  SelectedFieldInfo,
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
@@ -95,6 +97,32 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
     (newPrimaryKey: string[][]) => updateStreamWithConfig({ primaryKey: newPrimaryKey }),
     [updateStreamWithConfig]
   );
+
+  const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
+
+  const onSelectedFieldsUpdate = (selectedFields: SelectedFieldInfo[]) => {
+    updateStreamWithConfig({
+      selectedFields,
+      fieldSelectionEnabled: true,
+    });
+  };
+
+  // All fields in a stream are implicitly selected. When deselecting the first one, we also need to explicitly select the rest.
+  const onFirstFieldDeselected = (fieldPath: string[]) => {
+    const allOtherFields = fields.filter((field: SyncSchemaField) => !isEqual(field.path, fieldPath)) ?? [];
+    const selectedFields: SelectedFieldInfo[] = allOtherFields.map((field) => ({ fieldPath: field.path }));
+    updateStreamWithConfig({
+      selectedFields,
+      fieldSelectionEnabled: true,
+    });
+  };
+
+  const onAllFieldsSelected = () => {
+    updateStreamWithConfig({
+      selectedFields: [],
+      fieldSelectionEnabled: false,
+    });
+  };
 
   const pkRequired = config?.destinationSyncMode === DestinationSyncMode.append_dedup;
   const cursorRequired = config?.syncMode === SyncMode.incremental;
@@ -184,8 +212,12 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             <StreamFieldTable
               config={config}
               syncSchemaFields={flattenedFields}
+              numberOfSelectableFields={numberOfFieldsInStream}
               onCursorSelect={onCursorSelect}
               onPkSelect={onPkSelect}
+              onSelectedFieldsUpdate={onSelectedFieldsUpdate}
+              onFirstFieldDeselected={onFirstFieldDeselected}
+              onAllFieldsSelected={onAllFieldsSelected}
               shouldDefinePk={shouldDefinePk}
               shouldDefineCursor={shouldDefineCursor}
             />
