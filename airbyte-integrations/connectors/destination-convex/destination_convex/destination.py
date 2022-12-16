@@ -3,7 +3,7 @@
 #
 
 
-from typing import Any, Iterable, Mapping, TypedDict
+from typing import Iterable
 
 import requests
 from airbyte_cdk import AirbyteLogger
@@ -11,7 +11,6 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 from destination_convex.client import ConvexClient
 from destination_convex.config import ConvexConfig
-
 from destination_convex.writer import ConvexWriter
 
 
@@ -58,7 +57,6 @@ class DestinationConvex(Destination):
                 "stream": s.stream.name,
                 "syncMode": str(s.sync_mode.name),  # TODO rename
                 "cursor": cursor,  # need some logic to combine here
-                "destinationSyncMode": str(s.destination_sync_mode.name),  # TODO rename
                 "primaryKey": primary_key,
                 "jsonSchema": str(s.stream.json_schema),  # FIXME
                 "namespace": s.stream.namespace,
@@ -81,7 +79,6 @@ class DestinationConvex(Destination):
 
         # Make sure to flush any records still in the queue
         writer.flush()
-
 
     def check(self, logger: AirbyteLogger, config: ConvexConfig) -> AirbyteConnectionStatus:
         """

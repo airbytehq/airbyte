@@ -1,5 +1,8 @@
-from typing import List, Optional, TypedDict
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
 
+from typing import List, Optional, TypedDict
 
 ConvexConfig = TypedDict(
     "ConvexConfig",
