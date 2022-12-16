@@ -15,6 +15,7 @@ import { Text } from "components/ui/Text";
 import { FormikPatch } from "core/form/FormikPatch";
 
 import { BuilderFormInput } from "../types";
+import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsView.module.scss";
 
@@ -75,6 +76,7 @@ function inputInEditingToFormInput({
 }
 
 export const InputsView: React.FC = () => {
+  const { formatMessage } = useIntl();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
   const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
@@ -94,34 +96,34 @@ export const InputsView: React.FC = () => {
     [inputInEditing?.isNew, inputInEditing?.key, usedKeys]
   );
   return (
-    <div className={styles.viewContainer}>
-      <h2>
-        <FormattedMessage id="connectorBuilder.inputsTitle" />
-      </h2>
-      <Text centered>
+    <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.inputsTitle" })}>
+      <Text centered className={styles.inputsDescription}>
         <FormattedMessage id="connectorBuilder.inputsDescription" />
       </Text>
-      <Card withPadding className={styles.inputsCard}>
-        <ol className={styles.list}>
-          {inputs.value.map((input) => (
-            <li className={styles.listItem} key={input.key}>
-              <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
-              <Button
-                className={styles.itemButton}
-                size="sm"
-                variant="secondary"
-                aria-label="Edit"
-                onClick={() => {
-                  setInputInEditing(formInputToInputInEditing(input));
-                }}
-              >
-                <FontAwesomeIcon className={styles.icon} icon={faGear} />
-              </Button>
-            </li>
-          ))}
-        </ol>
-      </Card>
+      {inputs.value.length > 0 && (
+        <Card withPadding className={styles.inputsCard}>
+          <ol className={styles.list}>
+            {inputs.value.map((input) => (
+              <li className={styles.listItem} key={input.key}>
+                <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                <Button
+                  className={styles.itemButton}
+                  size="sm"
+                  variant="secondary"
+                  aria-label="Edit"
+                  onClick={() => {
+                    setInputInEditing(formInputToInputInEditing(input));
+                  }}
+                >
+                  <FontAwesomeIcon className={styles.icon} icon={faGear} />
+                </Button>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
       <Button
+        className={styles.addInputButton}
         onClick={() => {
           setInputInEditing(newInputInEditing());
         }}
@@ -160,7 +162,7 @@ export const InputsView: React.FC = () => {
           </>
         </Formik>
       )}
-    </div>
+    </BuilderConfigView>
   );
 };
 const InputModal = ({

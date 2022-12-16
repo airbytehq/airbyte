@@ -33,11 +33,13 @@
   flex-direction: column;
 }
 
-.viewContainer {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: variables.$spacing-xl;
+.inputsDescription {
+  margin-top: variables.$spacing-xl;
+  margin-bottom: variables.$spacing-lg;
+}
+
+.addInputButton {
+  align-self: center;
 }
 
 .inputsCard {
