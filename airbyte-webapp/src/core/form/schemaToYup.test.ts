@@ -203,4 +203,24 @@ describe("yup schema validations", () => {
       api_key: "X",
     });
   });
+
+  it("does not strip out any properties if the condition key is not set to prevent data loss of legacy specs", () => {
+    const cleanedValues = yupSchema.cast(
+      {
+        start_date: "2022",
+        max_objects: 5,
+        credentials: {
+          api_key: "X",
+          redirect_uri: "test",
+        },
+      },
+      {
+        stripUnknown: true,
+      }
+    );
+    expect(cleanedValues.credentials).toEqual({
+      api_key: "X",
+      redirect_uri: "test",
+    });
+  });
 });

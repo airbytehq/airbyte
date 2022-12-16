@@ -105,7 +105,10 @@ export const buildYupFormForJsonSchema = (
             });
           });
           mergedSchema = mergedSchema.when(selectionKey, {
-            is: (val: JSONSchema7Type) => !allSelectionConstValuesWithThisKey.includes(val),
+            is: (val: JSONSchema7Type | undefined) =>
+              // if typeof val is actually undefined, we are dealing with an inconsistent configuration which doesn't have any value for the condition key.
+              // in this case, just keep the existing value to prevent data loss.
+              typeof val !== "undefined" && !allSelectionConstValuesWithThisKey.includes(val),
             then: (schema) => schema.strip(),
             otherwise: (schema) => schema,
           });
