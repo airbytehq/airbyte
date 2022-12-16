@@ -1,4 +1,4 @@
-import { JSONSchema7TypeName } from "json-schema";
+import { JSONSchema7Type, JSONSchema7TypeName } from "json-schema";
 
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 
@@ -52,7 +52,7 @@ export interface FormConditionItem extends FormItem {
   /**
    * The possible values of the selectionKey property ordered in the same way as the conditions
    */
-  selectionConstValues: unknown[];
+  selectionConstValues: JSONSchema7Type[];
 }
 
 export interface FormObjectArrayItem extends FormItem {

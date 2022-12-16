@@ -1,4 +1,4 @@
-import { JSONSchema7 } from "json-schema";
+import { JSONSchema7, JSONSchema7Type } from "json-schema";
 import * as yup from "yup";
 
 import { FormBlock, FormGroupItem, FormObjectArrayItem, FormConditionItem } from "core/form/types";
@@ -50,10 +50,10 @@ export const buildYupFormForJsonSchema = (
     //    prop1: [["A", number], ["B", string]]
     //    prop2: [["A", string], ["B", string], ["C", boolean]]
     //  }
-    const flattenedKeys: Map<string, Array<[unknown, yup.AnySchema]>> = new Map();
+    const flattenedKeys: Map<string, Array<[JSONSchema7Type, yup.AnySchema]>> = new Map();
     jsonSchema.oneOf.forEach((condition, index) => {
       if (typeof condition !== "object") {
-        throw new FormBuildError("Spec uses oneOf with a condition that's not an object type");
+        throw new FormBuildError("connectorForm.error.oneOfWithNonObjects");
       }
       const selectionConstValue = conditionFormField.selectionConstValues[index];
       const selectionFormField = conditionFormField.conditions[index];
@@ -105,7 +105,10 @@ export const buildYupFormForJsonSchema = (
             });
           });
           mergedSchema = mergedSchema.when(selectionKey, {
-            is: (val: unknown) => !allSelectionConstValuesWithThisKey.includes(val),
+            is: (val: JSONSchema7Type | undefined) =>
+              // if typeof val is actually undefined, we are dealing with an inconsistent configuration which doesn't have any value for the condition key.
+              // in this case, just keep the existing value to prevent data loss.
+              typeof val !== "undefined" && !allSelectionConstValuesWithThisKey.includes(val),
             then: (schema) => schema.strip(),
             otherwise: (schema) => schema,
           });
@@ -165,7 +168,7 @@ export const buildYupFormForJsonSchema = (
           (property) => property.fieldKey === propertyKey
         );
         if (!correspondingFormField) {
-          throw new FormBuildError("mismatch between form fields and schema");
+          throw new Error("mismatch between form fields and schema");
         }
         return [
           propertyKey,

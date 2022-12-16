@@ -114,7 +114,7 @@ const simpleConditionalSchema: AirbyteJSONSchema = {
   },
 };
 
-it("should build  mixed schema for conditional case", () => {
+it("should build correct mixed schema structure for conditional case", () => {
   const yupSchema = buildYupFormForJsonSchema(simpleConditionalSchema, jsonSchemaToFormBlock(simpleConditionalSchema));
 
   const expectedSchema = yup.object().shape({
@@ -124,6 +124,7 @@ it("should build  mixed schema for conditional case", () => {
       type: yup.mixed(),
       api_key: yup
         .mixed()
+        // Using dummy callbacks for then and otherwise as this test only checks whether the yup schema is structured as expected, it's not asserting that it validates form values as expected.
         .when("type", { is: "", then: (x) => x, otherwise: (x) => x })
         .when("type", { is: "", then: (x) => x, otherwise: (x) => x }),
       redirect_uri: yup
@@ -136,7 +137,8 @@ it("should build  mixed schema for conditional case", () => {
   expect(JSON.parse(JSON.stringify(yupSchema))).toEqual(JSON.parse(JSON.stringify(expectedSchema)));
 });
 
-describe("should schema build conditional case that validates correctly based on selection key", () => {
+// These tests check whether the built yup schema validates as expected, it is not checking the structure
+describe("yup schema validations", () => {
   const yupSchema = buildYupFormForJsonSchema(simpleConditionalSchema, jsonSchemaToFormBlock(simpleConditionalSchema));
   it("enforces required props for selected condition", () => {
     expect(() => {
@@ -201,69 +203,24 @@ describe("should schema build conditional case that validates correctly based on
       api_key: "X",
     });
   });
-});
 
-it("should build schema for conditional case with inner schema and form blocks", () => {
-  const schema: AirbyteJSONSchema = {
-    type: "object",
-    properties: {
-      credentials: {
-        type: "object",
-        oneOf: [
-          {
-            title: "api key",
-            required: ["type", "api_key"],
-            properties: {
-              api_key: {
-                type: "string",
-              },
-              type: {
-                type: "string",
-                const: "api",
-                default: "api",
-              },
-            },
-          },
-          {
-            title: "oauth",
-            required: ["redirect_uri"],
-            properties: {
-              redirect_uri: {
-                type: "string",
-                examples: ["https://api.hubspot.com/"],
-              },
-              type: {
-                type: "string",
-                const: "oauth",
-                default: "oauth",
-              },
-            },
-          },
-        ],
+  it("does not strip out any properties if the condition key is not set to prevent data loss of legacy specs", () => {
+    const cleanedValues = yupSchema.cast(
+      {
+        start_date: "2022",
+        max_objects: 5,
+        credentials: {
+          api_key: "X",
+          redirect_uri: "test",
+        },
       },
-    },
-  };
-  const yupSchema = buildYupFormForJsonSchema(
-    schema,
-    jsonSchemaToFormBlock(schema),
-    undefined,
-    "topKey",
-    "topKey.subKey"
-  );
-
-  const expectedSchema = yup.object().shape({
-    credentials: yup.object().shape({
-      type: yup.mixed(),
-      api_key: yup
-        .mixed()
-        .when("type", { is: "", then: (x) => x, otherwise: (x) => x })
-        .when("type", { is: "", then: (x) => x, otherwise: (x) => x }),
-      redirect_uri: yup
-        .mixed()
-        .when("type", { is: "", then: (x) => x, otherwise: (x) => x })
-        .when("type", { is: "", then: (x) => x, otherwise: (x) => x }),
-    }),
+      {
+        stripUnknown: true,
+      }
+    );
+    expect(cleanedValues.credentials).toEqual({
+      api_key: "X",
+      redirect_uri: "test",
+    });
   });
-
-  expect(JSON.parse(JSON.stringify(yupSchema))).toEqual(JSON.parse(JSON.stringify(expectedSchema)));
 });

@@ -29,12 +29,11 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
 
   // the value at selectionPath determines which condition is selected
   const currentSelectionValue = get(values, formField.selectionPath);
-  let currentlySelectedCondition = formField.selectionConstValues.indexOf(currentSelectionValue);
+  let currentlySelectedCondition: number | undefined = formField.selectionConstValues.indexOf(currentSelectionValue);
   if (currentlySelectedCondition === -1) {
     // there should always be a matching condition, but in some edge cases
     // (e.g. breaking changes in specs) it's possible to have no matching value.
-    // In this case, default to the first condition
-    currentlySelectedCondition = 0;
+    currentlySelectedCondition = undefined;
   }
 
   const onOptionChange = useCallback(
@@ -82,12 +81,15 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
           />
         }
       >
-        <FormSection
-          blocks={formField.conditions[currentlySelectedCondition]}
-          path={path}
-          disabled={disabled}
-          skipAppend
-        />
+        {/* currentlySelectedCondition is only falsy if a malformed config is loaded which doesn't have a valid value for the const selection key. In this case, render the selection group as empty. */}
+        {typeof currentlySelectedCondition !== "undefined" && (
+          <FormSection
+            blocks={formField.conditions[currentlySelectedCondition]}
+            path={path}
+            disabled={disabled}
+            skipAppend
+          />
+        )}
       </GroupControls>
     </SectionContainer>
   );
