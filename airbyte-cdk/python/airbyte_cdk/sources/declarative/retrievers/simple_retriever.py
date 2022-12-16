@@ -5,6 +5,7 @@
 import json
 import logging
 from dataclasses import InitVar, dataclass, field
+from json import JSONDecodeError
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Union
 
 import requests
@@ -429,7 +430,12 @@ def prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> Ai
 
 def _body_binary_string_to_dict(body_str) -> Optional[Mapping[str, str]]:
     if body_str:
-        return json.loads(body_str.decode())
+        if isinstance(body_str, (bytes, bytearray)):
+            body_str = body_str.decode()
+        try:
+            return json.loads(body_str)
+        except JSONDecodeError:
+            return {k: v for k, v in [s.split("=") for s in body_str.split("&")]}
     else:
         return None
 

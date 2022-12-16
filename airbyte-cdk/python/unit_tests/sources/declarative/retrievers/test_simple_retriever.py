@@ -502,6 +502,22 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
             ),
         ),
         (
+            "test_get_request_with_headers_params_and_body",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {"Content-Type": "application/json", "h1": "v1"},
+            {"p1": "v1", "p2": "v2"},
+            {"b1": "v1", "b2": "v2"},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {"Content-Type": "application/json", "h1": "v1", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                ),
+            ),
+        ),
+        (
             "test_get_request_with_request_body_data",
             HttpMethod.GET,
             "https://airbyte.io",
@@ -513,7 +529,7 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
                 type=Type.LOG,
                 log=AirbyteLogMessage(
                     level=Level.INFO,
-                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "11"}, "body": {"b1": "v1", "b2": "v2"}}',
                 ),
             ),
         ),
