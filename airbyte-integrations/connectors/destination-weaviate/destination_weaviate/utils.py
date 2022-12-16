@@ -56,3 +56,8 @@ def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Map
                 stream_schema[k] = "jsonify"
         schema[stream.stream.name] = stream_schema
     return schema
+
+
+def stream_to_class_name(stream_name: str) -> str:
+    stream_name = stream_name.replace(" ", "")
+    return stream_name[0].upper() + stream_name[1:]

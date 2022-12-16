@@ -7,7 +7,7 @@ import random
 
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
-from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, Type
+from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
 
 from .client import Client
 from .utils import get_schema_from_catalog
@@ -32,10 +32,9 @@ class DestinationWeaviate(Destination):
         :return: Iterable of AirbyteStateMessages wrapped in AirbyteMessage structs
         """
         client = Client(config, get_schema_from_catalog(configured_catalog))
-        # TODO add support for overwrite mode
-        # for configured_stream in configured_catalog.streams:
-        #    if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
-        #        client.delete_stream_entries(configured_stream.stream.name)
+        for configured_stream in configured_catalog.streams:
+            if configured_stream.destination_sync_mode == DestinationSyncMode.overwrite:
+                client.delete_stream_entries(configured_stream.stream.name)
 
         for message in input_messages:
             if message.type == Type.STATE:

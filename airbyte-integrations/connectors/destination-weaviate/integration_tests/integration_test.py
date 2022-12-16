@@ -26,6 +26,7 @@ from airbyte_cdk.models import (
 )
 from destination_weaviate import DestinationWeaviate
 from destination_weaviate.client import Client
+from destination_weaviate.utils import stream_to_class_name
 
 
 @pytest.fixture(name="config")
@@ -34,11 +35,12 @@ def config_fixture() -> Mapping[str, Any]:
         return json.loads(f.read())
 
 
-def create_catalog(stream_name: str, stream_schema: Mapping[str, Any]) -> ConfiguredAirbyteCatalog:
+def create_catalog(stream_name: str, stream_schema: Mapping[str, Any],
+                   sync_mode: DestinationSyncMode = DestinationSyncMode.append) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
         stream=AirbyteStream(name=stream_name, json_schema=stream_schema, supported_sync_modes=[SyncMode.incremental]),
         sync_mode=SyncMode.incremental,
-        destination_sync_mode=DestinationSyncMode.append,
+        destination_sync_mode=sync_mode,
     )
     return ConfiguredAirbyteCatalog(streams=[append_stream])
 
@@ -182,12 +184,6 @@ def count_objects(client: Client, class_name: str) -> int:
 
 
 def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
-    """
-    This test verifies that:
-        TODO: 1. writing a stream in "overwrite" mode overwrites any existing data for that stream
-        2. writing a stream in "append" mode appends new records without deleting the old ones
-        3. The correct state message is output by the connector at the end of the sync
-    """
     append_stream = article_catalog.streams[0].stream.name
     first_state_message = _state({"state": "1"})
     first_record_chunk = [_article_record(append_stream, str(i), i) for i in range(5)]
@@ -205,6 +201,8 @@ def test_write(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, clien
     expected_records = [_article_record(append_stream, str(i), i) for i in range(5)]
     records_in_destination = retrieve_all_articles(client)
     assert expected_records == records_in_destination, "Records in destination should match records expected"
+
+
 
 
 def test_write_large_batch(config: Mapping, article_catalog: ConfiguredAirbyteCatalog, client: Client):
@@ -337,7 +335,7 @@ def test_upload_vector(config: Mapping, client: Client):
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    class_name = "Article_With_Vector"
+    class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("vector") == data.get("vector"), "Vectors should match"
@@ -371,7 +369,7 @@ def test_weaviate_existing_class(config: Mapping, client: Client):
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    class_name = stream_name[0].upper() + stream_name[1:]
+    class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual["properties"].get("title") == data.get("title"), "Title should match"
@@ -400,7 +398,7 @@ def test_id_starting_with_underscore(config: Mapping, client: Client):
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    class_name = stream_name[0].upper() + stream_name[1:]
+    class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("id") == str(uuid.UUID(int=int(data.get("_id"), 16))), "UUID should be created for _id field"
@@ -429,7 +427,67 @@ def test_id_custom_field_name(config: Mapping, client: Client):
     )
     assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
 
-    class_name = stream_name[0].upper() + stream_name[1:]
+    class_name = stream_to_class_name(stream_name)
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("id") == str(uuid.UUID(int=int(data.get("my_id"), 16))), "UUID should be created for my_id field"
+
+
+def test_write_overwrite(config: Mapping, client: Client):
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "title": {"type": "string"},
+        "text": {"type": "string"}
+    }}
+    catalog = create_catalog(stream_name, stream_schema, sync_mode=DestinationSyncMode.overwrite)
+    first_state_message = _state({"state": "1"})
+    data = {"title": "test1", "content": "test 1 content"}
+    first_record_chunk = [_record(stream_name, data), _record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    class_name = stream_to_class_name(stream_name)
+    assert count_objects(client, class_name) == 2
+
+    # After writing a 2nd time the existing 2 objects should be gone and there should only be 1 new object
+    second_state_message = _state({"state": "2"})
+    second_record_chunk = [_record(stream_name, data)]
+    expected_states = [second_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*second_record_chunk, second_state_message]
+        )
+    )
+
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+    assert count_objects(client, class_name) == 1
+
+
+def test_client_delete_stream_entries(caplog, client: Client):
+    client.delete_stream_entries("doesnotexist")
+    assert "Class Doesnotexist did not exist." in caplog.text, "Should be a log entry that says class doesn't exist"
+
+    class_obj = {
+        "class": "Article",
+        "properties": [
+            {"dataType": ["string"], "name": "title", "moduleConfig": {
+                "text2vec-contextionary": {
+                    "vectorizePropertyName": True
+                }
+            }},
+            {"dataType": ["text"], "name": "content"}
+        ]
+    }
+    client.client.schema.create_class(class_obj)
+    client.client.data_object.create({"title": "test-deleted", "content": "test-deleted"}, "Article")
+    client.delete_stream_entries("article")
+    assert count_objects(client, "Article") == 0, "Ensure articles have been deleted however class was recreated"
+    actual_schema = client.client.schema.get("Article")
+    title_prop = next(filter(lambda x: x["name"] == "title", actual_schema["properties"]))
+    assert title_prop["moduleConfig"]["text2vec-contextionary"]["vectorizePropertyName"] == True, "Ensure moduleconfig is persisted"

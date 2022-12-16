@@ -8,7 +8,7 @@ import json
 from typing import Any, Mapping
 
 import weaviate
-from .utils import generate_id, parse_id_schema, parse_vectors
+from .utils import generate_id, parse_id_schema, parse_vectors, stream_to_class_name
 
 
 class Client:
@@ -55,7 +55,8 @@ class Client:
             vector_column_name = self.vectors.get(stream_name)
             vector = record.get(vector_column_name)
             del record[vector_column_name]
-        self.client.batch.add_data_object(record, stream_name.title(), record_id, vector=vector)
+        class_name = stream_to_class_name(stream_name)
+        self.client.batch.add_data_object(record, class_name, record_id, vector=vector)
         if self.client.batch.num_objects() >= self.batch_size:
             self.flush()
 
@@ -66,6 +67,20 @@ class Client:
             errors = result.get("result", {}).get("errors", [])
             if errors:
                 logging.error(f"Object {result.get('id')} had errors: {errors}")
+
+    def delete_stream_entries(self, stream_name: str):
+        class_name = stream_to_class_name(stream_name)
+        try:
+            original_schema = self.client.schema.get(class_name=class_name)
+            self.client.schema.delete_class(class_name=class_name)
+            logging.info(f"Deleted class {class_name}")
+            self.client.schema.create_class(original_schema)
+            logging.info(f"Recreated class {class_name}")
+        except weaviate.exceptions.UnexpectedStatusCodeException as e:
+            if e.message.startswith("Get schema! Unexpected status code: 404"):
+                logging.info(f"Class {class_name} did not exist.")
+            else:
+                raise e
 
     @staticmethod
     def get_weaviate_client(config: Mapping[str, Any]) -> weaviate.Client:
