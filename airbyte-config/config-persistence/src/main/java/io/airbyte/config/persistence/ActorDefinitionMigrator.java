@@ -272,9 +272,7 @@ public class ActorDefinitionMigrator {
       sourceDef.withProtocolVersion(getProtocolVersion(sourceDef.getSpec()));
       ConfigWriter.writeStandardSourceDefinition(Collections.singletonList(sourceDef), ctx);
     } else if (configType == ConfigSchema.STANDARD_DESTINATION_DEFINITION) {
-      final NormalizationDestinationDefinitionConfig normalizationConfig = Jsons.object(definition, NormalizationDestinationDefinitionConfig.class);
-      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class)
-          .withNormalizationConfig(normalizationConfig);
+      final StandardDestinationDefinition destDef = Jsons.object(definition, StandardDestinationDefinition.class);
       destDef.withProtocolVersion(getProtocolVersion(destDef.getSpec()));
       ConfigWriter.writeStandardDestinationDefinition(Collections.singletonList(destDef), ctx);
     } else {
