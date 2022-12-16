@@ -75,3 +75,5 @@ export const DestinationOverviewPage = () => {
     </>
   );
 };
+
+export default DestinationOverviewPage;

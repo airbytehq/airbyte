@@ -59,3 +59,5 @@ export const ConnectorBuilderPage: React.FC = () => (
     <ConnectorBuilderPageInner />
   </ConnectorBuilderStateProvider>
 );
+
+export default ConnectorBuilderPage;
