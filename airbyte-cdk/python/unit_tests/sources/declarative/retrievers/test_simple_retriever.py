@@ -13,7 +13,11 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, prepared_request_to_airbyte_message
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import (
+    SimpleRetriever,
+    prepared_request_to_airbyte_message,
+    response_to_airbyte_message,
+)
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -560,5 +564,68 @@ def test_prepared_request_to_airbyte_message(test_name, http_method, url, header
     prepared_request = request.prepare()
 
     actual_airbyte_message = prepared_request_to_airbyte_message(prepared_request)
+
+    assert expected_airbyte_message == actual_airbyte_message
+
+
+@pytest.mark.parametrize(
+    "test_name, response_body, response_headers, status_code, expected_airbyte_message",
+    [
+        (
+            "test_response_no_body_no_headers",
+            b"",
+            {},
+            200,
+            AirbyteMessage(
+                type=Type.LOG, log=AirbyteLogMessage(level=Level.INFO, message='response:{"body": "", "headers": {}, "status_code": 200}')
+            ),
+        ),
+        (
+            "test_response_no_body_with_headers",
+            b"",
+            {"h1": "v1", "h2": "v2"},
+            200,
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO, message='response:{"body": "", "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}'
+                ),
+            ),
+        ),
+        (
+            "test_response_with_body_no_headers",
+            b'{"b1": "v1", "b2": "v2"}',
+            {},
+            200,
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='response:{"body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}", "headers": {}, "status_code": 200}',
+                ),
+            ),
+        ),
+        (
+            "test_response_with_body_and_headers",
+            b'{"b1": "v1", "b2": "v2"}',
+            {"h1": "v1", "h2": "v2"},
+            200,
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='response:{"body": "{\\"b1\\": \\"v1\\", \\"b2\\": \\"v2\\"}", "headers": {"h1": "v1", "h2": "v2"}, "status_code": 200}',
+                ),
+            ),
+        ),
+    ],
+)
+def test_response_to_airbyte_message(test_name, response_body, response_headers, status_code, expected_airbyte_message):
+    response = requests.Response()
+    response.status_code = status_code
+    response.headers = response_headers
+    response._content = response_body
+
+    actual_airbyte_message = response_to_airbyte_message(response)
 
     assert expected_airbyte_message == actual_airbyte_message
