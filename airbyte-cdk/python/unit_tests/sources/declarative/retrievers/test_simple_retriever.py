@@ -7,13 +7,13 @@ from unittest.mock import MagicMock, patch
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import pytest
 import requests
-from airbyte_cdk.models import AirbyteLogMessage, Level, SyncMode
+from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Level, SyncMode, Type
 from airbyte_cdk.sources.declarative.exceptions import ReadException
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.requester import HttpMethod
-from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever
+from airbyte_cdk.sources.declarative.retrievers.simple_retriever import SimpleRetriever, prepared_request_to_airbyte_message
 from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer
 from airbyte_cdk.sources.streams.http.auth import NoAuth
 from airbyte_cdk.sources.streams.http.http import HttpStream
@@ -433,3 +433,93 @@ def test_path(test_name, requester_path, paginator_path, expected_path):
 
     actual_path = retriever.path(stream_state=None, stream_slice=None, next_page_token=None)
     assert expected_path == actual_path
+
+
+@pytest.mark.parametrize(
+    "test_name, http_method, url, headers, params, body, expected_airbyte_message",
+    [
+        (
+            "test_basic_get_request",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {},
+            {},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO, message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {}, "body": null}'
+                ),
+            ),
+        ),
+        (
+            "test_get_request_with_headers",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {"h1": "v1", "h2": "v2"},
+            {},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"h1": "v1", "h2": "v2"}, "body": null}',
+                ),
+            ),
+        ),
+        (
+            "test_get_request_with_request_params",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {},
+            {"p1": "v1", "p2": "v2"},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/?p1=v1&p2=v2", "http_method": "GET", "headers": {}, "body": null}',
+                ),
+            ),
+        ),
+        (
+            "test_get_request_with_request_body",
+            HttpMethod.GET,
+            "https://airbyte.io",
+            {"Content-Type": "application/json"},
+            {},
+            {"b1": "v1", "b2": "v2"},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/", "http_method": "GET", "headers": {"Content-Type": "application/json", "Content-Length": "24"}, "body": {"b1": "v1", "b2": "v2"}}',
+                ),
+            ),
+        ),
+        (
+            "test_basic_post_request",
+            HttpMethod.POST,
+            "https://airbyte.io",
+            {},
+            {},
+            {},
+            AirbyteMessage(
+                type=Type.LOG,
+                log=AirbyteLogMessage(
+                    level=Level.INFO,
+                    message='request:{"url": "https://airbyte.io/", "http_method": "POST", "headers": {"Content-Length": "0"}, "body": null}',
+                ),
+            ),
+        ),
+    ],
+)
+def test_prepared_request_to_airbyte_message(test_name, http_method, url, headers, params, body, expected_airbyte_message):
+    request = requests.Request(method=http_method.name, url=url, headers=headers, params=params)
+    if body:
+        request.json = body
+    prepared_request = request.prepare()
+
+    actual_airbyte_message = prepared_request_to_airbyte_message(prepared_request)
+
+    assert expected_airbyte_message == actual_airbyte_message
