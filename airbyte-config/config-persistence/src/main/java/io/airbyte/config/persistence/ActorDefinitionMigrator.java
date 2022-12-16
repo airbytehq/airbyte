@@ -18,7 +18,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.AirbyteConfig;
 import io.airbyte.config.ConfigSchema;
-import io.airbyte.config.NormalizationDestinationDefinitionConfig;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
