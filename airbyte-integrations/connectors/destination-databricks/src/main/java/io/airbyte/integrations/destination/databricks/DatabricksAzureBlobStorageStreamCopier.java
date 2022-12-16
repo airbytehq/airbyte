@@ -19,10 +19,10 @@ import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStora
 import io.airbyte.integrations.destination.azure_blob_storage.csv.AzureBlobStorageCsvWriter;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import java.io.IOException;
 import java.util.*;
 import org.slf4j.Logger;
