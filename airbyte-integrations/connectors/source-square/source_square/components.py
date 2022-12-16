@@ -1,6 +1,7 @@
 #
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
+
 import logging
 from dataclasses import dataclass
 from typing import Any, Iterable, Mapping, Optional
@@ -39,11 +40,11 @@ class SquareSubstreamSlicer(DatetimeStreamSlicer):
         return logging.getLogger(f"airbyte.streams.{self.parent_stream.name}")
 
     def get_request_body_json(
-            self,
-            *,
-            stream_state: Optional[StreamState] = {},
-            stream_slice: Optional[StreamSlice] = None,
-            next_page_token: Optional[Mapping[str, Any]] = None,
+        self,
+        *,
+        stream_state: Optional[StreamState] = {},
+        stream_slice: Optional[StreamSlice] = None,
+        next_page_token: Optional[Mapping[str, Any]] = None,
     ) -> Optional[Mapping]:
         json_payload = {"cursor": next_page_token["cursor"]} if next_page_token else {}
         if stream_slice:
@@ -71,7 +72,8 @@ class SquareSubstreamSlicer(DatetimeStreamSlicer):
                 "Check https://developer.squareup.com/explorer/square/locations-api/list-locations"
             )
             yield from []
-        separated_locations = [location_ids[i:i + self.parent_records_per_request] for i in
-                               range(0, len(location_ids), self.parent_records_per_request)]
+        separated_locations = [
+            location_ids[i : i + self.parent_records_per_request] for i in range(0, len(location_ids), self.parent_records_per_request)
+        ]
         for location in separated_locations:
             yield {"location_ids": location}
