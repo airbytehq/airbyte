@@ -161,7 +161,7 @@
 - name: BigCommerce
   sourceDefinitionId: 59c5501b-9f95-411e-9269-7143c939adbd
   dockerRepository: airbyte/source-bigcommerce
-  dockerImageTag: 0.1.8
+  dockerImageTag: 0.1.9
   documentationUrl: https://docs.airbyte.com/integrations/sources/bigcommerce
   icon: bigcommerce.svg
   sourceType: api
@@ -562,7 +562,7 @@
 - name: Gitlab
   sourceDefinitionId: 5e6175e5-68e1-4c17-bff9-56103bbb0d80
   dockerRepository: airbyte/source-gitlab
-  dockerImageTag: 0.1.11
+  dockerImageTag: 0.1.12
   documentationUrl: https://docs.airbyte.com/integrations/sources/gitlab
   icon: gitlab.svg
   sourceType: api
@@ -1135,7 +1135,7 @@
 - name: Pardot
   sourceDefinitionId: ad15c7ba-72a7-440b-af15-b9a963dc1a8a
   dockerRepository: airbyte/source-pardot
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/pardot
   sourceType: api
   releaseStage: alpha
