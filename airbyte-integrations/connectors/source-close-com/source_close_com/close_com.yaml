@@ -8,7 +8,7 @@ definitions:
     type: RecordSelector
     extractor:
       type: DpathExtractor
-      field_pointer: [ "data" ]
+      field_pointer: ["data"]
   requester:
     url_base: "https://api.close.com/api/v1/"
     http_method: "GET"
@@ -47,27 +47,27 @@ definitions:
       inject_into: request_parameter
       field_name: ""
   stream_query_slicer:
-#    type: DatetimeStreamSlicer
+    #    type: DatetimeStreamSlicer
     class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z" # ISO8601
     step: "365d"
     cursor_field: "date_updated"
     datetime_format: "%Y-%m-%d"
 
   stream_slicer__cursor_date_created:
-#    type: DatetimeStreamSlicer
+    #    type: DatetimeStreamSlicer
     class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z" # ISO8601
     start_time_option:
       field_name: "date_created__gt"
       inject_into: "request_parameter"
@@ -79,14 +79,14 @@ definitions:
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
 
   stream_slicer__cursor_date_updated:
-#    type: DatetimeStreamSlicer
+    #    type: DatetimeStreamSlicer
     class_name: "source_close_com.CustomDatetimeStreamSlicer"
     start_datetime:
       datetime: "{{ config['start_date'] }}"
       datetime_format: "%Y-%m-%d"
     end_datetime:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S.%f%z') }}"
-      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"  # ISO8601
+      datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z" # ISO8601
     start_time_option:
       field_name: "date_updated__gt"
       inject_into: "request_parameter"
@@ -426,7 +426,7 @@ definitions:
     $options:
       name: "smart_views"
       path: "saved_search"
-#      items_per_page: 600
+  #      items_per_page: 600
   email_bulk_actions_stream:
     $ref: "*ref(definitions.full_refresh_stream)"
     $options:
