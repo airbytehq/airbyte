@@ -187,7 +187,7 @@ class Referral(BaseSchemaModel):
 
 
 class Source(BaseSchemaModel):
-    text: str
+    id: str
     count: int
 
 
