@@ -1,7 +1,7 @@
 import { Field, useField } from "formik";
 import React from "react";
 
-import { DatePicker } from "components/ui/DatePicker";
+import DatePicker from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
@@ -120,5 +120,3 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
     />
   );
 };
-
-export default Control;
