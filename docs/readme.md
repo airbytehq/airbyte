@@ -2,7 +2,7 @@
 
 Whether you are an Airbyte user or contributor, we have docs for you! 
 
-xxx trigger PR check xxx
+xxx trigger failed PR check: [pointing-to-nowhere](lets/point/to/nonexistent/page/to/fail/the/check.md) xxx
 
 ### For Airbyte Cloud users
 
