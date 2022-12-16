@@ -378,6 +378,10 @@
   "connection.catalogTree.sourceSchema": "'<source schema>",
   "connection.catalogTree.destinationSchema": "'<destination schema>",
 
+  "connection.schemaUpdateNotifications.title": "Schema update notifications",
+  "connection.schemaUpdateNotifications.info": "Send webhook notifications when your source schema has changed",
+  "connection.schemaUpdateNotifications.error": "Unable to save the schema update notifications setting at this time.",
+
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
   "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink>Learn more</docLink>.",
