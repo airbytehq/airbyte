@@ -223,7 +223,7 @@ class Purchases(Stream, IncrementalMixin):
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
         total_purchase_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
-        total_user_records = self.state['user_id'] if 'user_id' in self.state else 0
+        total_user_records = self.state["user_id"] if "user_id" in self.state else 0
         user_records_in_sync = 0
         user_records_in_slice = 0
 
