@@ -46,7 +46,7 @@ password.
 
 #### Requirements
 
-To use the ClickHouse destination, you'll need:
+To use the Weaviate destination, you'll need:
 
 * A Weaviate cluster version 21.8.10.19 or above
 
@@ -59,7 +59,7 @@ Make sure your Weaviate database can be accessed by Airbyte. If your database is
 You need a Weaviate user or use a Weaviate instance that's accessible to all
 
 
-### Setup the ClickHouse Destination in Airbyte
+### Setup the Weaviate Destination in Airbyte
 
 You should now have all the requirements needed to configure Weaviate as a destination in the UI. You'll need the following information to configure the Weaviate destination:
 
@@ -68,12 +68,13 @@ You should now have all the requirements needed to configure Weaviate as a desti
 * **Password** (Optional)
 * **Batch Size** (Optional, defaults to 100)
 * **Vectors** a comma separated list of `<stream_name.vector_field_name>` to specify the field
-  names that contain vectors
+* **ID Schema** a comma separated list of `<stream_name.id_field_name>` to specify the field
+  name that contains the ID of a record
 
 
 ## Changelog
 
 | Version | Date       | Pull Request | Subject                                      |
 |:--------|:-----------| :--- |:---------------------------------------------|
-| 0.1.0   | 2021-11-04 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add ClickHouse destination                   |
+| 0.1.0   | 2022-12-06 | [\#20094](https://github.com/airbytehq/airbyte/pull/20094) | Add Weaviate destination                   |
 

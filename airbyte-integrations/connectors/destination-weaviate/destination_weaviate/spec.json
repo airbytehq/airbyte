@@ -46,6 +46,14 @@
           "my_table.my_vector_column, another_table.vector",
           "mytable.vector"
         ]
+      },
+      "id_schema" : {
+        "type" : "string",
+        "description" : "Comma separated list of strings of `stream_name.id_column_name` to specify which field holds the ID of the record.",
+        "examples" : [
+          "my_table.my_id_column, another_table.id",
+          "users.user_id"
+        ]
       }
     }
   }

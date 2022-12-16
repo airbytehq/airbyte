@@ -404,3 +404,32 @@ def test_id_starting_with_underscore(config: Mapping, client: Client):
     assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
     actual = get_objects(client, class_name)[0]
     assert actual.get("id") == str(uuid.UUID(int=int(data.get("_id"), 16))), "UUID should be created for _id field"
+
+
+def test_id_custom_field_name(config: Mapping, client: Client):
+    # This is common scenario from mongoDB
+    stream_name = "article"
+    stream_schema = {"type": "object", "properties": {
+        "my_id": {"type": "integer"},
+        "title": {"type": "string"}
+    }}
+    catalog = create_catalog(stream_name, stream_schema)
+    first_state_message = _state({"state": "1"})
+    data = {"my_id": "507f191e810c19729de860ea", "title": "test_id_schema"}
+    first_record_chunk = [_record(stream_name, data)]
+
+    destination = DestinationWeaviate()
+    config["id_schema"] = "article.my_id"
+
+    expected_states = [first_state_message]
+    output_states = list(
+        destination.write(
+            config, catalog, [*first_record_chunk, first_state_message]
+        )
+    )
+    assert expected_states == output_states, "Checkpoint state messages were expected from the destination"
+
+    class_name = stream_name[0].upper() + stream_name[1:]
+    assert count_objects(client, class_name) == 1, "There should be only 1 object of in Weaviate"
+    actual = get_objects(client, class_name)[0]
+    assert actual.get("id") == str(uuid.UUID(int=int(data.get("my_id"), 16))), "UUID should be created for my_id field"

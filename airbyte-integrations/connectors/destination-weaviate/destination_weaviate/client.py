@@ -22,6 +22,18 @@ def parse_vectors(vectors_config: str) -> Mapping[str, str]:
     return vectors
 
 
+def parse_id_schema(id_schema_config: str) -> Mapping[str, str]:
+    id_schema = {}
+    if not id_schema_config:
+        return id_schema
+
+    id_schema_list = id_schema_config.replace(" ", "").split(",")
+    for schema_id in id_schema_list:
+        stream_name, id_field_name = schema_id.split(".")
+        id_schema[stream_name] = id_field_name
+    return id_schema
+
+
 def hex_to_int(hex_str: str) -> int:
     try:
         return int(hex_str, 16)
@@ -46,20 +58,26 @@ class Client:
         self.batch_size = int(config.get("batch_size", 100))
         self.schema = schema
         self.vectors = parse_vectors(config.get("vectors"))
-
+        self.id_schema = parse_id_schema(config.get("id_schema"))
 
     def queue_write_operation(self, stream_name: str, record: Mapping):
         # TODO need to handle case where original DB ID is not a UUID
         record_id = ""
-        if "id" in record:
-            record_id = generate_id(record.get("id"))
-            del record["id"]
-        # Weaviate will throw an error if you try to store a field with name _id
-        elif "_id" in record:
-            record_id = generate_id(record.get("_id"))
-            del record["_id"]
+        if self.id_schema.get(stream_name, "") in record:
+            id_field_name = self.id_schema.get(stream_name, "")
+            record_id = generate_id(record.get(id_field_name))
+            del record[id_field_name]
+            print("handling user provided id schema")
         else:
-            record_id = uuid.uuid4()
+            if "id" in record:
+                record_id = generate_id(record.get("id"))
+                del record["id"]
+            # Weaviate will throw an error if you try to store a field with name _id
+            elif "_id" in record:
+                record_id = generate_id(record.get("_id"))
+                del record["_id"]
+            else:
+                record_id = uuid.uuid4()
 
         # TODO support nested objects instead of converting to json string when weaviate supports this
         for k, v in record.items():
