@@ -95,7 +95,7 @@ if test "$(tty)" == "not a tty"; then
 else
   yarn run deploy
 fi
-
+YARN_DEPLOY_EXIT_STATUS=$?
 
 
 # Git makes more sense from /
