@@ -10,20 +10,13 @@ acceptance_tests:
         timeout_seconds: 60
   connection:
     tests:
-      - config_path: "secrets/credentials.json"
-        status: "succeed"
-        timeout_seconds: 60
+      bypass_reason: "some reason."
   discovery:
     tests:
-      - config_path: "secrets/credentials.json"
-        timeout_seconds: 60
+      bypass_reason: "some reason."
   basic_read:
-    tests:
-      - config_path: "secrets/credentials.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 180
+    bypass_reason: "some reason."
   full_refresh:
-    tests:
-      - config_path: "secrets/credentials.json"
-        configured_catalog_path: "integration_tests/configured_catalog.json"
-        timeout_seconds: 180
+    bypass_reason: "some reason."
+  incremental:
+    bypass_reason: "some reason."
