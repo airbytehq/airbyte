@@ -8,7 +8,6 @@ from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDate
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOption
 from airbyte_cdk.sources.declarative.stream_slicers.datetime_stream_slicer import DatetimeStreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import ListStreamSlicer
-
 from source_posthog.components import EventsCartesianProductStreamSlicer
 
 stream_slicers = [
