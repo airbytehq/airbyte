@@ -187,7 +187,6 @@
   "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
-  "connectorForm.saveInputsForm": "Save",
   "connectorForm.error.oneOfWithNonObjects": "Spec uses oneOf without using object types for all conditions",
   "connectorForm.error.oneOfWithoutConst": "Spec uses oneOf without a shared const property",
   "connectorForm.error.topLevelNonObject": "Top level configuration has to be an object",
@@ -632,7 +631,7 @@
 
   "connectorBuilder.downloadYaml": "Download Config",
   "connectorBuilder.testButton": "Test",
-  "connectorBuilder.configMenuTitle": "Configure Test Input",
+  "connectorBuilder.configMenuTitle": "User Inputs",
   "connectorBuilder.configMenuConfirm": "Confirm",
   "connectorBuilder.recordsTab": "Records",
   "connectorBuilder.requestTab": "Request",
@@ -674,6 +673,8 @@
   "connectorBuilder.key": "key",
   "connectorBuilder.value": "value",
   "connectorBuilder.addKeyValue": "Add",
+  "connectorBuilder.saveInputsForm": "Save",
+  "connectorBuilder.inputsFormWarning": "User inputs are not saved with the connector, they are required in order to test your streams, and will be asked to the end user in order to set this connector",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

@@ -1,11 +1,13 @@
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useMemo, useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
+import { InfoBox } from "components/ui/InfoBox";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
@@ -21,6 +23,8 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { formatMessage } = useIntl();
   const { configString, setConfigString, jsonManifest } = useConnectorBuilderState();
+
+  const [showInputsWarning, setShowInputsWarning] = useLocalStorage<boolean>("connectorBuilderInputsWarning", true);
 
   const formValues = useMemo(() => {
     return { connectionConfiguration: JSON.parse(configString) };
@@ -49,20 +53,38 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
             })}
           >
             {jsonManifest.spec ? (
-              <ConnectorForm
-                formType="source"
-                footerClassName={styles.inputFormModalFooter}
-                selectedConnectorDefinitionSpecification={jsonManifest.spec}
-                formValues={formValues}
-                onSubmit={async (values) => {
-                  setConfigString(JSON.stringify(values.connectionConfiguration, null, 2) ?? "");
-                  setIsOpen(false);
-                }}
-                onCancel={() => {
-                  setIsOpen(false);
-                }}
-                submitLabel={formatMessage({ id: "connectorForm.saveInputsForm" })}
-              />
+              <>
+                {showInputsWarning && (
+                  <InfoBox className={styles.warningBox}>
+                    <div className={styles.warningBoxContainer}>
+                      <div>
+                        <FormattedMessage id="connectorBuilder.inputsFormWarning" />
+                      </div>
+                      <Button
+                        onClick={() => {
+                          setShowInputsWarning(false);
+                        }}
+                        variant="clear"
+                        icon={<FontAwesomeIcon icon={faClose} />}
+                      />
+                    </div>
+                  </InfoBox>
+                )}
+                <ConnectorForm
+                  formType="source"
+                  footerClassName={styles.inputFormModalFooter}
+                  selectedConnectorDefinitionSpecification={jsonManifest.spec}
+                  formValues={formValues}
+                  onSubmit={async (values) => {
+                    setConfigString(JSON.stringify(values.connectionConfiguration, null, 2) ?? "");
+                    setIsOpen(false);
+                  }}
+                  onCancel={() => {
+                    setIsOpen(false);
+                  }}
+                  submitLabel={formatMessage({ id: "connectorBuilder.saveInputsForm" })}
+                />
+              </>
             ) : (
               <CodeEditor
                 value={configString}

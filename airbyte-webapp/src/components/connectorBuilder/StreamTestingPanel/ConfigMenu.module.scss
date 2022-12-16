@@ -19,3 +19,14 @@
   // TODO refactor so this isn't necessary
   margin-top: variables.$spacing-lg !important;
 }
+
+.warningBox {
+  margin-bottom: variables.$spacing-lg;
+  background-color: colors.$blue-50;
+}
+
+.warningBoxContainer {
+  display: flex;
+  gap: variables.$spacing-md;
+  align-items: center;
+}
