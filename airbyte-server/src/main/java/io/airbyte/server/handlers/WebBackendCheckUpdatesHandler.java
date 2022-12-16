@@ -16,7 +16,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,7 +32,6 @@ public class WebBackendCheckUpdatesHandler {
     this.githubStore = githubStore;
   }
 
-  @Transactional
   public WebBackendCheckUpdatesRead checkUpdates() {
 
     final int destinationDiffCount = getDestinationDiffCount();

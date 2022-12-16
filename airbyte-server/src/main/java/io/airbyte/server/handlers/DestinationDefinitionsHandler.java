@@ -50,7 +50,6 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 
 @SuppressWarnings("PMD.AvoidCatchingNPE")
 @Singleton
@@ -112,7 +111,6 @@ public class DestinationDefinitionsHandler {
     return LocalDate.parse(standardDestinationDefinition.getReleaseDate());
   }
 
-  @Transactional
   public DestinationDefinitionReadList listDestinationDefinitions() throws IOException, JsonValidationException {
     return toDestinationDefinitionReadList(configRepository.listStandardDestinationDefinitions(false));
   }
@@ -124,7 +122,6 @@ public class DestinationDefinitionsHandler {
     return new DestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  @Transactional
   public DestinationDefinitionReadList listLatestDestinationDefinitions() {
     return toDestinationDefinitionReadList(getLatestDestinations());
   }
@@ -137,7 +134,6 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  @Transactional
   public DestinationDefinitionReadList listDestinationDefinitionsForWorkspace(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException {
     return toDestinationDefinitionReadList(MoreLists.concat(
@@ -145,7 +141,6 @@ public class DestinationDefinitionsHandler {
         configRepository.listGrantedDestinationDefinitions(workspaceIdRequestBody.getWorkspaceId(), false)));
   }
 
-  @Transactional
   public PrivateDestinationDefinitionReadList listPrivateDestinationDefinitions(final WorkspaceIdRequestBody workspaceIdRequestBody)
       throws IOException {
     final List<Entry<StandardDestinationDefinition, Boolean>> standardDestinationDefinitionBooleanMap =
@@ -163,14 +158,12 @@ public class DestinationDefinitionsHandler {
     return new PrivateDestinationDefinitionReadList().destinationDefinitions(reads);
   }
 
-  @Transactional
   public DestinationDefinitionRead getDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     return buildDestinationDefinitionRead(
         configRepository.getStandardDestinationDefinition(destinationDefinitionIdRequestBody.getDestinationDefinitionId()));
   }
 
-  @Transactional
   public DestinationDefinitionRead getDestinationDefinitionForWorkspace(
                                                                         final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -182,7 +175,6 @@ public class DestinationDefinitionsHandler {
     return getDestinationDefinition(new DestinationDefinitionIdRequestBody().destinationDefinitionId(definitionId));
   }
 
-  @Transactional
   public DestinationDefinitionRead createCustomDestinationDefinition(final CustomDestinationDefinitionCreate customDestinationDefinitionCreate)
       throws IOException {
     final StandardDestinationDefinition destinationDefinition = destinationDefinitionFromCreate(
@@ -223,7 +215,6 @@ public class DestinationDefinitionsHandler {
     return destinationDefinition;
   }
 
-  @Transactional
   public DestinationDefinitionRead updateDestinationDefinition(final DestinationDefinitionUpdate destinationDefinitionUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition currentDestination = configRepository
@@ -268,7 +259,6 @@ public class DestinationDefinitionsHandler {
     return buildDestinationDefinitionRead(newDestination);
   }
 
-  @Transactional
   public void deleteDestinationDefinition(final DestinationDefinitionIdRequestBody destinationDefinitionIdRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     // "delete" all destinations associated with the destination definition as well. This will cascade
@@ -302,7 +292,6 @@ public class DestinationDefinitionsHandler {
     }
   }
 
-  @Transactional
   public PrivateDestinationDefinitionRead grantDestinationDefinitionToWorkspace(
                                                                                 final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws JsonValidationException, ConfigNotFoundException, IOException {
@@ -316,7 +305,6 @@ public class DestinationDefinitionsHandler {
         .granted(true);
   }
 
-  @Transactional
   public void revokeDestinationDefinitionFromWorkspace(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws IOException {
     configRepository.deleteActorDefinitionWorkspaceGrant(

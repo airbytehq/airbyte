@@ -46,7 +46,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,7 +70,6 @@ public class OAuthHandler {
     this.secretsRepositoryReader = secretsRepositoryReader;
   }
 
-  @Transactional
   public OAuthConsentRead getSourceOAuthConsent(final SourceOauthConsentRequest sourceOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, sourceOauthConsentRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
@@ -118,7 +116,6 @@ public class OAuthHandler {
     return result;
   }
 
-  @Transactional
   public OAuthConsentRead getDestinationOAuthConsent(final DestinationOauthConsentRequest destinationOauthConsentRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, destinationOauthConsentRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
@@ -167,7 +164,6 @@ public class OAuthHandler {
     return result;
   }
 
-  @Transactional
   public Map<String, Object> completeSourceOAuth(final CompleteSourceOauthRequest completeSourceOauthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeSourceOauthRequest.getWorkspaceId(), SOURCE_DEFINITION_ID_KEY,
@@ -218,7 +214,6 @@ public class OAuthHandler {
     return result;
   }
 
-  @Transactional
   public Map<String, Object> completeDestinationOAuth(final CompleteDestinationOAuthRequest completeDestinationOAuthRequest)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final Map<String, Object> traceTags = Map.of(WORKSPACE_ID_KEY, completeDestinationOAuthRequest.getWorkspaceId(), DESTINATION_DEFINITION_ID_KEY,
@@ -270,7 +265,6 @@ public class OAuthHandler {
     return result;
   }
 
-  @Transactional
   public void setSourceInstancewideOauthParams(final SetInstancewideSourceOauthParamsRequestBody requestBody)
       throws JsonValidationException, IOException {
     final SourceOAuthParameter param = configRepository
@@ -283,7 +277,6 @@ public class OAuthHandler {
     configRepository.writeSourceOAuthParam(param);
   }
 
-  @Transactional
   public void setDestinationInstancewideOauthParams(final SetInstancewideDestinationOauthParamsRequestBody requestBody)
       throws JsonValidationException, IOException {
     final DestinationOAuthParameter param = configRepository

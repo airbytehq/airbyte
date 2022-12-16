@@ -81,7 +81,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.UUID;
-import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 
 @Singleton
@@ -150,7 +149,6 @@ public class SchedulerHandler {
     this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
 
-  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceId(final SourceIdRequestBody sourceIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(sourceIdRequestBody.getSourceId());
@@ -162,7 +160,6 @@ public class SchedulerHandler {
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
   }
 
-  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceCreate(final SourceCoreConfig sourceConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceConfig.getSourceDefinitionId());
@@ -184,7 +181,6 @@ public class SchedulerHandler {
     return reportConnectionStatus(synchronousSchedulerClient.createSourceCheckConnectionJob(source, imageName, protocolVersion, isCustomConnector));
   }
 
-  @Transactional
   public CheckConnectionRead checkSourceConnectionFromSourceIdForUpdate(final SourceUpdate sourceUpdate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection updatedSource =
@@ -200,7 +196,6 @@ public class SchedulerHandler {
     return checkSourceConnectionFromSourceCreate(sourceCoreConfig);
   }
 
-  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationId(final DestinationIdRequestBody destinationIdRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final DestinationConnection destination = configRepository.getDestinationConnection(destinationIdRequestBody.getDestinationId());
@@ -212,7 +207,6 @@ public class SchedulerHandler {
         synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
-  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationCreate(final DestinationCoreConfig destinationConfig)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardDestinationDefinition destDef = configRepository.getStandardDestinationDefinition(destinationConfig.getDestinationDefinitionId());
@@ -233,7 +227,6 @@ public class SchedulerHandler {
         synchronousSchedulerClient.createDestinationCheckConnectionJob(destination, imageName, protocolVersion, isCustomConnector));
   }
 
-  @Transactional
   public CheckConnectionRead checkDestinationConnectionFromDestinationIdForUpdate(final DestinationUpdate destinationUpdate)
       throws JsonValidationException, IOException, ConfigNotFoundException {
     final DestinationConnection updatedDestination = configurationUpdate
@@ -249,7 +242,6 @@ public class SchedulerHandler {
     return checkDestinationConnectionFromDestinationCreate(destinationCoreConfig);
   }
 
-  @Transactional
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceId(final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final SourceConnection source = configRepository.getSourceConnection(discoverSchemaRequestBody.getSourceId());
@@ -295,7 +287,6 @@ public class SchedulerHandler {
         .catalogId(currentCatalog.get().getId());
   }
 
-  @Transactional
   public SourceDiscoverSchemaRead discoverSchemaForSourceFromSourceCreate(final SourceCoreConfig sourceCreate)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final StandardSourceDefinition sourceDef = configRepository.getStandardSourceDefinition(sourceCreate.getSourceDefinitionId());
@@ -336,7 +327,6 @@ public class SchedulerHandler {
     return sourceDiscoverSchemaRead;
   }
 
-  @Transactional
   public SourceDefinitionSpecificationRead getSourceDefinitionSpecification(final SourceDefinitionIdWithWorkspaceId sourceDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final UUID sourceDefinitionId = sourceDefinitionIdWithWorkspaceId.getSourceDefinitionId();
@@ -357,7 +347,6 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  @Transactional
   public DestinationDefinitionSpecificationRead getDestinationSpecification(
                                                                             final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId)
       throws ConfigNotFoundException, IOException, JsonValidationException {
@@ -383,19 +372,16 @@ public class SchedulerHandler {
     return specRead;
   }
 
-  @Transactional
   public JobInfoRead syncConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitManualSyncToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  @Transactional
   public JobInfoRead resetConnection(final ConnectionIdRequestBody connectionIdRequestBody)
       throws IOException, JsonValidationException, ConfigNotFoundException {
     return submitResetConnectionToWorker(connectionIdRequestBody.getConnectionId());
   }
 
-  @Transactional
   public JobInfoRead cancelJob(final JobIdRequestBody jobIdRequestBody) throws IOException {
     return submitCancellationToWorker(jobIdRequestBody.getId());
   }
