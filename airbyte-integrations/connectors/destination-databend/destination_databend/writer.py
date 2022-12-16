@@ -7,6 +7,7 @@ from datetime import datetime
 from itertools import chain
 
 from airbyte_cdk import AirbyteLogger
+from airbyte_cdk.models import AirbyteConnectionStatus,Status
 from destination_databend.client import DatabendClient
 
 
@@ -22,10 +23,18 @@ class DatabendWriter:
         :param client: Databend SDK connection class with established connection
             to the databse.
         """
-        self.client = client
-        self.cursor = client.open()
-        self._buffer = defaultdict(list)
-        self._values = 0
+        try:
+            # open a cursor and do some work with it
+            self.client = client
+            self.cursor = client.open()
+            self._buffer = defaultdict(list)
+            self._values = 0
+        except Exception as e:
+            # handle the exception
+            raise AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
+        finally:
+            # close the cursor
+            self.cursor.close()
 
     def delete_table(self, name: str) -> None:
         """
