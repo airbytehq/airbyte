@@ -14,10 +14,8 @@ import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
 import java.util.Map;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/source_oauths")
-@Transactional
 public class SourceOauthApiController implements SourceOauthApi {
 
   private final OAuthHandler oAuthHandler;
@@ -28,21 +26,18 @@ public class SourceOauthApiController implements SourceOauthApi {
 
   @Post("/complete_oauth")
   @Override
-  @Transactional
   public Map<String, Object> completeSourceOAuth(@Body final CompleteSourceOauthRequest completeSourceOauthRequest) {
     return ApiHelper.execute(() -> oAuthHandler.completeSourceOAuth(completeSourceOauthRequest));
   }
 
   @Post("/get_consent_url")
   @Override
-  @Transactional
   public OAuthConsentRead getSourceOAuthConsent(@Body final SourceOauthConsentRequest sourceOauthConsentRequest) {
     return ApiHelper.execute(() -> oAuthHandler.getSourceOAuthConsent(sourceOauthConsentRequest));
   }
 
   @Post("/oauth_params/create")
   @Override
-  @Transactional
   public void setInstancewideSourceOauthParams(@Body final SetInstancewideSourceOauthParamsRequestBody setInstancewideSourceOauthParamsRequestBody) {
     ApiHelper.execute(() -> {
       oAuthHandler.setSourceInstancewideOauthParams(setInstancewideSourceOauthParamsRequestBody);

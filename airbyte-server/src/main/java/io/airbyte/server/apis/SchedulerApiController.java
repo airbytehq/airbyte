@@ -12,10 +12,8 @@ import io.airbyte.api.model.generated.SourceDiscoverSchemaRead;
 import io.airbyte.server.handlers.SchedulerHandler;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/scheduler")
-@Transactional
 public class SchedulerApiController implements SchedulerApi {
 
   private final SchedulerHandler schedulerHandler;
@@ -26,21 +24,18 @@ public class SchedulerApiController implements SchedulerApi {
 
   @Post("/destinations/check_connection")
   @Override
-  @Transactional
   public CheckConnectionRead executeDestinationCheckConnection(final DestinationCoreConfig destinationCoreConfig) {
     return ApiHelper.execute(() -> schedulerHandler.checkDestinationConnectionFromDestinationCreate(destinationCoreConfig));
   }
 
   @Post("/sources/check_connection")
   @Override
-  @Transactional
   public CheckConnectionRead executeSourceCheckConnection(final SourceCoreConfig sourceCoreConfig) {
     return ApiHelper.execute(() -> schedulerHandler.checkSourceConnectionFromSourceCreate(sourceCoreConfig));
   }
 
   @Post("/sources/discover_schema")
   @Override
-  @Transactional
   public SourceDiscoverSchemaRead executeSourceDiscoverSchema(final SourceCoreConfig sourceCoreConfig) {
     return ApiHelper.execute(() -> schedulerHandler.discoverSchemaForSourceFromSourceCreate(sourceCoreConfig));
   }

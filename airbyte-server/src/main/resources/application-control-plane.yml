@@ -22,3 +22,11 @@ flyway:
       locations:
         - 'classpath:io/airbyte/db/instance/jobs/migrations'
 
+jooq:
+  datasources:
+    config:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES
+    jobs:
+      jackson-converter-enabled: true
+      sql-dialect: POSTGRES

@@ -20,7 +20,6 @@ import io.micronaut.context.annotation.Context;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
-import javax.transaction.Transactional;
 
 @Controller("/api/v1/connections")
 @Context()
@@ -40,49 +39,42 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/create")
-  @Transactional
   public ConnectionRead createConnection(@Body final ConnectionCreate connectionCreate) {
     return ApiHelper.execute(() -> connectionsHandler.createConnection(connectionCreate));
   }
 
   @Override
   @Post(uri = "/update")
-  @Transactional
   public ConnectionRead updateConnection(@Body final ConnectionUpdate connectionUpdate) {
     return ApiHelper.execute(() -> connectionsHandler.updateConnection(connectionUpdate));
   }
 
   @Override
   @Post(uri = "/list")
-  @Transactional
   public ConnectionReadList listConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   @Post(uri = "/list_all")
-  @Transactional
   public ConnectionReadList listAllConnectionsForWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.listAllConnectionsForWorkspace(workspaceIdRequestBody));
   }
 
   @Override
   @Post(uri = "/search")
-  @Transactional
   public ConnectionReadList searchConnections(@Body final ConnectionSearch connectionSearch) {
     return ApiHelper.execute(() -> connectionsHandler.searchConnections(connectionSearch));
   }
 
   @Override
   @Post(uri = "/get")
-  @Transactional
   public ConnectionRead getConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> connectionsHandler.getConnection(connectionIdRequestBody.getConnectionId()));
   }
 
   @Override
   @Post(uri = "/delete")
-  @Transactional
   public void deleteConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     ApiHelper.execute(() -> {
       operationsHandler.deleteOperationsForConnection(connectionIdRequestBody);
@@ -93,14 +85,12 @@ public class ConnectionApiController implements ConnectionApi {
 
   @Override
   @Post(uri = "/sync")
-  @Transactional
   public JobInfoRead syncConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.syncConnection(connectionIdRequestBody));
   }
 
   @Override
   @Post(uri = "/reset")
-  @Transactional
   public JobInfoRead resetConnection(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> schedulerHandler.resetConnection(connectionIdRequestBody));
   }
