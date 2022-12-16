@@ -106,7 +106,7 @@ class ApiErrorBoundaryComponent extends React.Component<
     if (errorId === ErrorId.FormBuild) {
       return (
         <ErrorOccurredView
-          message={message}
+          message={<FormattedMessage id={message} />}
           docLink="https://docs.airbyte.com/connector-development/connector-specification-reference/#airbyte-modifications-to-jsonschema"
         />
       );

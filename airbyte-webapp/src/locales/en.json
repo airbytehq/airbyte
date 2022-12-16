@@ -187,6 +187,9 @@
   "connectorForm.authenticate.required": "Authentication required",
   "connectorForm.reauthenticate": "Re-authenticate",
   "connectorForm.expandForm": "Expand this form to continue setting up your connector",
+  "connectorForm.error.oneOfWithNonObjects": "Spec uses oneOf without using object types for all conditions",
+  "connectorForm.error.oneOfWithoutConst": "Spec uses oneOf without a shared const property",
+  "connectorForm.error.topLevelNonObject": "Top level configuration has to be an object",
 
   "form.rawData": "Raw data (JSON)",
   "form.basicNormalization": "Normalized tabular data",
