@@ -8,6 +8,7 @@ import responses
 from source_jira.source import SourceJira
 
 
+@responses.activate
 def test_streams(config):
     source = SourceJira()
     streams = source.streams(config)
@@ -16,11 +17,16 @@ def test_streams(config):
 
 
 @responses.activate
-def test_check_connection(config):
+def test_check_connection(config, projects_response, labels_response):
     responses.add(
         responses.GET,
-        f"https://{config['domain']}/rest/api/3/resolution/search?maxResults=50",
-        json={},
+        f"https://{config['domain']}/rest/api/3/project/search?maxResults=50&expand=description",
+        json=projects_response,
+    )
+    responses.add(
+        responses.GET,
+        f"https://{config['domain']}/rest/api/3/label?maxResults=50",
+        json=labels_response,
     )
     source = SourceJira()
     logger_mock = MagicMock()

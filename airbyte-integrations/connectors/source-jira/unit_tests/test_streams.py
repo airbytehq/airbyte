@@ -382,7 +382,6 @@ def test_projects_stream(config, projects_response):
     stream = Projects(**args)
     records = [r for r in stream.read_records(sync_mode=SyncMode.full_refresh)]
     assert len(records) == 2
-    assert len(responses.calls) == 1
 
 
 @responses.activate

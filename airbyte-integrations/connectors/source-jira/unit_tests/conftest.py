@@ -16,7 +16,7 @@ def config():
         "domain": "domain",
         "email": "email@email.com",
         "start_date": "2021-01-01T00:00:00Z",
-        "projects": ["Project1", "Project2"]
+        "projects": ["Project1"]
     }
 
 
