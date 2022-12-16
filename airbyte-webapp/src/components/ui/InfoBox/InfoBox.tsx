@@ -21,7 +21,7 @@ export const InfoBox: React.FC<React.PropsWithChildren<Props>> = ({ children, cl
   return (
     <Box className={className}>
       {icon && <FontAwesomeIcon size="lg" icon={icon} />}
-      <div>{children}</div>
+      {children}
     </Box>
   );
 };

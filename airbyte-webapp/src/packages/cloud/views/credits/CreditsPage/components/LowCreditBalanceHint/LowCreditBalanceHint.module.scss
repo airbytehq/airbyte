@@ -1,0 +1,28 @@
+@use "../../../../../../../scss/colors";
+
+.container {
+  width: 100%;
+
+  &.zeroBalance {
+    background-color: colors.$red-50;
+
+    & > svg {
+      color: colors.$red-300;
+    }
+  }
+
+  &.lowBalance {
+    background-color: colors.$yellow-50;
+
+    & > svg {
+      color: colors.$yellow-500;
+    }
+  }
+}
+
+.wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
