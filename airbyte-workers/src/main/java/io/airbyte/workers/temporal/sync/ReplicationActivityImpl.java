@@ -348,7 +348,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
     final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
     final Set<UUID> workspaceIds = new HashSet<>();
     LOGGER.debug("Field selection enabled for {}", workspaceIdsString);
-    if (!workspaceIdsString.equals("")) {
+    if (!"".equals(workspaceIdsString)) {
       for (final String id : workspaceIdsString.split(",")) {
         try {
           workspaceIds.add(UUID.fromString(id));
