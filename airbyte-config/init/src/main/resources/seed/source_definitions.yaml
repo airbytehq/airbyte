@@ -2002,7 +2002,7 @@
   releaseStage: alpha
 - name: Braze
   sourceDefinitionId: 68b9c98e-0747-4c84-b05b-d30b47686725
-  dockerRepository: airbyte/source-barze
+  dockerRepository: airbyte/source-braze
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/sources/braze
   sourceType: api
