@@ -63,7 +63,7 @@ class LexwareStream(HttpStream, ABC):
         """
         decoded_response = response.json()
         if decoded_response.get("last"):
-            last_page = decoded_response.get("number", 0) + 1
+            last_page = decoded_response.get("number") + 1
             return {"page": last_page}
         return None
 
