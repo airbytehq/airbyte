@@ -80,28 +80,30 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int version = Workflow.getVersion(VERSION_LABEL, Workflow.DEFAULT_VERSION, CURRENT_VERSION);
     final String taskQueue = Workflow.getInfo().getTaskQueue();
 
+    // Temporarily suppressed to address OC issue #1210
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
 
-    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-      // Temporarily disabled to address OC issue #1210
-      // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
-      //
-      // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-      // LOGGER.info("Refreshing source schema...");
-      // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-      // }
-      //
-      // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-      // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
-      // LOGGER.info("Connection is disabled. Cancelling run.");
-      // final StandardSyncOutput output =
-      // new StandardSyncOutput()
-      // .withStandardSyncSummary(new
-      // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-      // return output;
-      // }
-    }
+    // Temporarily disabled to address OC issue #1210
+    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+    //
+    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+    // LOGGER.info("Refreshing source schema...");
+    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+    // }
+    //
+    // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
+    // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
+    // LOGGER.info("Connection is disabled. Cancelling run.");
+    // final StandardSyncOutput output =
+    // new StandardSyncOutput()
+    // .withStandardSyncSummary(new
+    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+    // return output;
+    // }
+    // }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
