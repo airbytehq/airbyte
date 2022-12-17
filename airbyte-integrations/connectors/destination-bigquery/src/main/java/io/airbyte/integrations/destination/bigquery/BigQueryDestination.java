@@ -101,7 +101,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
         final AirbyteConnectionStatus status = checkGcsPermission(config);
-        if(!status.getStatus().equals(Status.SUCCEEDED)) {
+        if (!status.getStatus().equals(Status.SUCCEEDED)) {
           return status;
         }
       }
