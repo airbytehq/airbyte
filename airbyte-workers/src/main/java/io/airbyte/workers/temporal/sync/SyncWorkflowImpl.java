@@ -27,7 +27,6 @@ import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.temporal.annotations.TemporalActivityStub;
-import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity;
 import io.temporal.workflow.Workflow;
 import java.util.Map;
 import java.util.Optional;
@@ -58,10 +57,11 @@ public class SyncWorkflowImpl implements SyncWorkflow {
   private NormalizationSummaryCheckActivity normalizationSummaryCheckActivity;
   @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
   private WebhookOperationActivity webhookOperationActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private RefreshSchemaActivity refreshSchemaActivity;
-  @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
-  private ConfigFetchActivity configFetchActivity;
+  // Temporarily disabled to address OC issue #1210
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private RefreshSchemaActivity refreshSchemaActivity;
+  // @TemporalActivityStub(activityOptionsBeanName = "shortActivityOptions")
+  // private ConfigFetchActivity configFetchActivity;
 
   @Trace(operationName = WORKFLOW_TRACE_OPERATION_NAME)
   @Override
@@ -83,25 +83,25 @@ public class SyncWorkflowImpl implements SyncWorkflow {
     final int autoDetectSchemaVersion =
         Workflow.getVersion(AUTO_DETECT_SCHEMA_TAG, Workflow.DEFAULT_VERSION, AUTO_DETECT_SCHEMA_VERSION);
 
-    // Temporarily disabled to address OC issue #1210
-    // if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
-    // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
-    //
-    // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
-    // LOGGER.info("Refreshing source schema...");
-    // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
-    // }
-    //
-    // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
-    // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
-    // LOGGER.info("Connection is disabled. Cancelling run.");
-    // final StandardSyncOutput output =
-    // new StandardSyncOutput()
-    // .withStandardSyncSummary(new
-    // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
-    // return output;
-    // }
-    // }
+    if (autoDetectSchemaVersion >= AUTO_DETECT_SCHEMA_VERSION) {
+      // Temporarily disabled to address OC issue #1210
+      // final Optional<UUID> sourceId = configFetchActivity.getSourceId(connectionId);
+      //
+      // if (!sourceId.isEmpty() && refreshSchemaActivity.shouldRefreshSchema(sourceId.get())) {
+      // LOGGER.info("Refreshing source schema...");
+      // refreshSchemaActivity.refreshSchema(sourceId.get(), connectionId);
+      // }
+      //
+      // final Optional<Status> status = configFetchActivity.getStatus(connectionId);
+      // if (!status.isEmpty() && Status.INACTIVE == status.get()) {
+      // LOGGER.info("Connection is disabled. Cancelling run.");
+      // final StandardSyncOutput output =
+      // new StandardSyncOutput()
+      // .withStandardSyncSummary(new
+      // StandardSyncSummary().withStatus(ReplicationStatus.CANCELLED).withTotalStats(new SyncStats()));
+      // return output;
+      // }
+    }
 
     StandardSyncOutput syncOutput =
         replicationActivity.replicate(jobRunConfig, sourceLauncherConfig, destinationLauncherConfig, syncInput, taskQueue);
