@@ -89,7 +89,7 @@ public class JsonSchemaReferenceTypes {
           """),
       BINARY_DATA_REFERENCE, (ObjectNode) Jsons.deserialize(
           """
-          {"type": "string"}
+          {"type": "string", "contentEncoding": "base64"}
           """));
 
 }
