@@ -115,6 +115,10 @@ public class V0ToV1MigrationTest {
                                                  "example_date": {
                                                    "type": "string",
                                                    "format": "date"
+                                                 },
+                                                 "example_binary": {
+                                                   "type": "string",
+                                                   "contentEncoding": "base64"
                                                  }
                                                }
                                              }
@@ -161,6 +165,9 @@ public class V0ToV1MigrationTest {
                                                       },
                                                       "example_date": {
                                                         "$ref": "WellKnownTypes.json#/definitions/Date"
+                                                      },
+                                                      "example_binary": {
+                                                        "$ref": "WellKnownTypes.json#/definitions/BinaryData"
                                                       }
                                                     }
                                                   }
