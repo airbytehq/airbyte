@@ -7,7 +7,7 @@ import { Button } from "components/ui/Button";
 import { CodeEditor } from "components/ui/CodeEditor";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { useConnectorBuilderAPI } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConfigMenu.module.scss";
 
@@ -17,7 +17,7 @@ interface ConfigMenuProps {
 
 export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
-  const { configString, setConfigString } = useConnectorBuilderState();
+  const { configString, setConfigString } = useConnectorBuilderAPI();
 
   return (
     <>

@@ -1,6 +1,6 @@
 import classnames from "classnames";
 import { Formik } from "formik";
-import React, { useCallback } from "react";
+import React, { useCallback, useMemo, useRef } from "react";
 import { useIntl } from "react-intl";
 
 import { Builder } from "components/connectorBuilder/Builder/Builder";
@@ -17,18 +17,25 @@ import {
 
 import styles from "./ConnectorBuilderPage.module.scss";
 
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const noop = function () {};
+
 const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
 
-  return (
-    <Formik initialValues={builderFormValues} onSubmit={() => undefined} validationSchema={builderFormValidationSchema}>
-      {({ values }) => (
-        <Panels editorView={editorView} switchToUI={switchToUI} values={values} switchToYaml={switchToYaml} />
-      )}
-    </Formik>
+  const initialFormValues = useRef(builderFormValues);
+  return useMemo(
+    () => (
+      <Formik initialValues={initialFormValues.current} onSubmit={noop} validationSchema={builderFormValidationSchema}>
+        {({ values }) => (
+          <Panels editorView={editorView} switchToUI={switchToUI} values={values} switchToYaml={switchToYaml} />
+        )}
+      </Formik>
+    ),
+    [editorView, switchToUI, switchToYaml]
   );
 });
 

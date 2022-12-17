@@ -37,8 +37,6 @@ interface StateContext {
   yamlIsValid: boolean;
   testStreamIndex: number;
   selectedView: BuilderView;
-  configString: string;
-  configJson: StreamReadRequestBodyConfig;
   editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues) => void;
   setJsonManifest: (jsonValue: ConnectorManifest) => void;
@@ -46,13 +44,15 @@ interface StateContext {
   setYamlIsValid: (value: boolean) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   setSelectedView: (view: BuilderView) => void;
-  setConfigString: (configString: string) => void;
   setEditorView: (editorView: EditorView) => void;
 }
 
 interface APIContext {
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
+  configString: string;
+  configJson: StreamReadRequestBodyConfig;
+  setConfigString: (configString: string) => void;
 }
 
 export const ConnectorBuilderStateContext = React.createContext<StateContext | null>(null);
@@ -127,9 +127,22 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
 export const ConnectorBuilderAPIProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, testStreamIndex, setTestStreamIndex } = useConnectorBuilderState();
+  const { jsonManifest, testStreamIndex, setTestStreamIndex } = useConnectorBuilderState();
 
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+
+  // config
+  const [configString, setConfigString] = useState("{\n  \n}");
+
+  const configJson: StreamReadRequestBodyConfig = useMemo(() => {
+    try {
+      const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
+      return json;
+    } catch (err) {
+      console.error(`Config value is not valid JSON! Error: ${err}`);
+      return {};
+    }
+  }, [configString]);
 
   // streams
   const {
@@ -156,6 +169,9 @@ export const ConnectorBuilderAPIProvider: React.FC<React.PropsWithChildren<unkno
   const ctx = {
     streams,
     streamListErrorMessage,
+    configJson,
+    configString,
+    setConfigString,
   };
 
   return <ConnectorBuilderAPIContext.Provider value={ctx}>{children}</ConnectorBuilderAPIContext.Provider>;

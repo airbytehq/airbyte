@@ -9,6 +9,7 @@ import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
+  console.log(touched);
   const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
 
   const invalidViews = useCallback(

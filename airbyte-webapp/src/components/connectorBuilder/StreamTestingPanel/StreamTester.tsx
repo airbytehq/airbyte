@@ -18,8 +18,8 @@ import styles from "./StreamTester.module.scss";
 
 export const StreamTester: React.FC = () => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, testStreamIndex } = useConnectorBuilderState();
-  const { streams } = useConnectorBuilderAPI();
+  const { jsonManifest, testStreamIndex } = useConnectorBuilderState();
+  const { streams, configJson } = useConnectorBuilderAPI();
   const {
     data: streamReadData,
     refetch: readStream,
