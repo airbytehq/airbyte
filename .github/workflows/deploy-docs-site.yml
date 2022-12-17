@@ -58,7 +58,7 @@ jobs:
           # 'C02TYDSUM8F' => '#dev-deploys'
           # 'C03BEADRPNY' => '#docs'
           args: >-
-            {\"channel\":\"C02TYDSUM8F\",\"attachments\":[
+            {\"channel\":\"C03BEADRPNY\",\"attachments\":[
             {\"color\":\"#ff0000\",\"blocks\":[
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs deploy fails on the latest master :bangbang:\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}*\"}},
@@ -74,7 +74,7 @@ jobs:
           # 'C02TYDSUM8F' => '#dev-deploys'
           # 'C03BEADRPNY' => '#docs'
           args: >-
-            {\"channel\":\"C02TYDSUM8F\",\"attachments\":[
+            {\"channel\":\"C03BEADRPNY\",\"attachments\":[
             {\"color\":\"#00ff00\",\"blocks\":[
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"OSS Docs deploy was successful :tada:\"}},
             {\"type\":\"section\",\"text\":{\"type\":\"mrkdwn\",\"text\":\"_merged by_: *${{ github.actor }}*\"}},
