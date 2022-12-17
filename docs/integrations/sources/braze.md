@@ -51,6 +51,6 @@ Rate limits table: https://www.braze.com/docs/api/api_limits/#rate-limits-by-req
 
 | Version | Date       | Pull Request                                              | Subject                            |
 |:--------|:-----------|:----------------------------------------------------------|:-----------------------------------|
-| 0.1.0   | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born           |
+| 0.1.1   | 2022-12-15 | [20520](https://github.com/airbytehq/airbyte/pull/20520) | The Braze connector born           |
 
 
