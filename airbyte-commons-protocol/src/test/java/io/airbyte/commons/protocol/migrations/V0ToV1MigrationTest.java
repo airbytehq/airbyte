@@ -25,7 +25,7 @@ public class V0ToV1MigrationTest {
 
   @Test
   public void testVersionMetadata() {
-    assertEquals("0.0.0", migration.getPreviousVersion().serialize());
+    assertEquals("0.3.0", migration.getPreviousVersion().serialize());
     assertEquals("1.0.0", migration.getCurrentVersion().serialize());
   }
 
