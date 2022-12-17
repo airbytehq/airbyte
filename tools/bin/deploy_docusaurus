@@ -6,6 +6,7 @@
 # $0 is the currently running program (this file)
 this_file_directory=$(dirname $0)
 relative_path_to_defaults=$this_file_directory/../shell_defaults
+SKIP_DEPLOY=${SKIP_DEPLOY:-'no'}
 
 # if a file exists there, source it. otherwise complain
 if test -f $relative_path_to_defaults; then
