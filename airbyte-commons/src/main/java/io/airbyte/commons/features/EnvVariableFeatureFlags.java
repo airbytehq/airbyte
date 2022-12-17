@@ -4,9 +4,6 @@
 
 package io.airbyte.commons.features;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.UUID;
 import java.util.function.Function;
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,13 +16,7 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   public static final String NEED_STATE_VALIDATION = "NEED_STATE_VALIDATION";
   public static final String APPLY_FIELD_SELECTION = "APPLY_FIELD_SELECTION";
 
-  private final Set<UUID> FIELD_SELECTION_WORKSPACES = getEnvOrDefault("FIELD_SELECTION_WORKSPACES", Set.of(), (workspaceIdsString) -> {
-    final Set<UUID> workspaceIds = new HashSet<>();
-    for (final String workspaceId : workspaceIdsString.split(",")) {
-      workspaceIds.add(UUID.fromString(workspaceId));
-    }
-    return workspaceIds;
-  });
+  public static final String FIELD_SELECTION_WORKSPACES = "FIELD_SELECTION_WORKSPACES";
 
   @Override
   public boolean autoDisablesFailingConnections() {
@@ -60,11 +51,13 @@ public class EnvVariableFeatureFlags implements FeatureFlags {
   }
 
   @Override
-  public boolean applyFieldSelection(UUID workspaceId) {
-    if (workspaceId != null && FIELD_SELECTION_WORKSPACES.contains(workspaceId)) {
-      return true;
-    }
+  public boolean applyFieldSelection() {
     return getEnvOrDefault(APPLY_FIELD_SELECTION, false, Boolean::parseBoolean);
+  }
+
+  @Override
+  public String fieldSelectionWorkspaces() {
+    return getEnvOrDefault(FIELD_SELECTION_WORKSPACES, "", (arg) -> arg);
   }
 
   // TODO: refactor in order to use the same method than the ones in EnvConfigs.java

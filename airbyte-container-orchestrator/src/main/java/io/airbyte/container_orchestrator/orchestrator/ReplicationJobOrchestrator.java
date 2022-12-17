@@ -43,16 +43,18 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
-import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
 
-  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+  private static final Logger log = LoggerFactory.getLogger(ReplicationJobOrchestrator.class);
   private final ProcessFactory processFactory;
   private final Configs configs;
   private final FeatureFlags featureFlags;
@@ -138,7 +140,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");
-    log.debug("Field selection is {}", featureFlags.applyFieldSelection(syncInput.getWorkspaceId()) ? "enabled" : "disabled");
+    log.debug("Field selection is {}", featureFlags.applyFieldSelection() ? "enabled" : "disabled");
+    log.debug("Field selection workspaces are: {}", featureFlags.fieldSelectionWorkspaces());
     final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -149,7 +152,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-        metricReporter, featureFlags.applyFieldSelection(syncInput.getWorkspaceId()));
+        metricReporter, enableFieldSelection(featureFlags, syncInput.getWorkspaceId()));
 
     log.info("Running replication worker...");
     final var jobRoot = TemporalUtils.getJobRoot(configs.getWorkspaceRoot(),
@@ -164,6 +167,22 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     return protocolVersion != null
         ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope)
         : new DefaultAirbyteStreamFactory(mdcScope);
+  }
+
+  private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
+    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
+    final Set<UUID> workspaceIds = new HashSet<>();
+    for (final String id : workspaceIdsString.split(",")) {
+      workspaceIds.add(UUID.fromString(id));
+    }
+    for (final UUID workspace : workspaceIds) {
+      log.info("field selection workspace: {}", workspace);
+    }
+    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
+      return true;
+    }
+
+    return featureFlags.applyFieldSelection();
   }
 
 }

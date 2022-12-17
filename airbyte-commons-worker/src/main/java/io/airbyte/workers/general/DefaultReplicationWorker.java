@@ -140,6 +140,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   @Override
   public final ReplicationOutput run(final StandardSyncInput syncInput, final Path jobRoot) throws WorkerException {
     LOGGER.info("start sync worker. job id: {} attempt id: {}", jobId, attempt);
+    LOGGER.info("syncInput: {}", syncInput);
     LOGGER.info("fieldSelectionEnabled: {}", fieldSelectionEnabled);
     LineGobbler.startSection("REPLICATION");
 

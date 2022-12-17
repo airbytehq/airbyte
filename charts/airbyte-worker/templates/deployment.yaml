@@ -296,6 +296,16 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: AUTO_DETECT_SCHEMA
+        - name: APPLY_FIELD_SELECTION
+            valueFrom:
+              configMapKeyRef:
+                name: { { .Release.Name } }-airbyte-env
+                key: APPLY_FIELD_SELECTION
+        - name: FIELD_SELECTION_WORKSPACES
+            valueFrom:
+              configMapKeyRef:
+                name: { { .Release.Name } }-airbyte-env
+                key: FIELD_SELECTION_WORKSPACES
         - name: USE_STREAM_CAPABLE_STATE
           valueFrom:
             configMapKeyRef:

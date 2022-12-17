@@ -72,8 +72,10 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -293,6 +295,9 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
+      LOGGER.debug("Field selection is {}", featureFlags.applyFieldSelection() ? "enabled" : "disabled");
+      LOGGER.debug("Field selection workspaces are: {}", featureFlags.fieldSelectionWorkspaces());
+
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),
@@ -304,7 +309,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
-          metricReporter, false);
+          metricReporter, enableFieldSelection(featureFlags, syncInput.getWorkspaceId()));
     };
   }
 
@@ -340,6 +345,22 @@ public class ReplicationActivityImpl implements ReplicationActivity {
 
   private boolean isResetJob(final String dockerImage) {
     return WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equalsIgnoreCase(dockerImage);
+  }
+
+  private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
+    final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
+    final Set<UUID> workspaceIds = new HashSet<>();
+    for (final String id : workspaceIdsString.split(",")) {
+      workspaceIds.add(UUID.fromString(id));
+    }
+    for (final UUID workspace : workspaceIds) {
+      LOGGER.info("field selection workspace: {}", workspace);
+    }
+    if (workspaceId != null && workspaceIds.contains(workspaceId)) {
+      return true;
+    }
+
+    return featureFlags.applyFieldSelection();
   }
 
 }
