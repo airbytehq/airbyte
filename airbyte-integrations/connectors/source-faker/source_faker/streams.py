@@ -148,7 +148,7 @@ class Purchases(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count:int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
