@@ -319,7 +319,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # else -> delegate to record selector
         response_status = self.requester.interpret_response_status(response)
         if response_status.action == ResponseAction.FAIL:
-            error_message = response_status.error_message or f"Request {response.request} failed with response {response}"
+            error_message = (
+                response_status.error_message
+                or f"Request to {response.request.url} failed with status code {response.status_code} and error message {HttpStream.parse_response_error_message(response)}"
+            )
             raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")

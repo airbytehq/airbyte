@@ -2,6 +2,8 @@ export enum RoutePaths {
   AuthFlow = "/auth_flow",
   Root = "/",
 
+  SpeakeasyRedirect = "speakeasy-redirect",
+
   Workspaces = "workspaces",
   Preferences = "preferences",
   Connections = "connections",

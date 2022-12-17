@@ -15,5 +15,8 @@
   color: colors.$grey-300;
   display: inline-block;
   text-align: left;
-  cursor: pointer;
+
+  &:not(.disabled) {
+    cursor: pointer;
+  }
 }

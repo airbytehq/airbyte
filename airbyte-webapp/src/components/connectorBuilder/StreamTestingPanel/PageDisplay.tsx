@@ -28,6 +28,7 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
   const formattedRequest = useMemo(() => formatJson(page.request), [page.request]);
   const formattedResponse = useMemo(() => formatJson(page.response), [page.response]);
 
+  let defaultTabIndex = 0;
   const tabs: TabData[] = [
     {
       title: `${formatMessage({ id: "connectorBuilder.recordsTab" })} (${page.records.length})`,
@@ -48,11 +49,15 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className }) => 
       key: "response",
       content: formattedResponse,
     });
+
+    if (page.response.status >= 400) {
+      defaultTabIndex = tabs.length - 1;
+    }
   }
 
   return (
     <div className={classNames(className)}>
-      <Tab.Group>
+      <Tab.Group defaultIndex={defaultTabIndex}>
         <Tab.List className={styles.tabList}>
           {tabs.map((tab) => (
             <Tab className={styles.tab} key={tab.key}>
