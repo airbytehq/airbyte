@@ -29,14 +29,12 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
 type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | number;
 
-interface Context {
+interface StateContext {
   builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
-  streams: StreamsListReadStreamsItem[];
-  streamListErrorMessage: string | undefined;
   testStreamIndex: number;
   selectedView: BuilderView;
   configString: string;
@@ -52,11 +50,15 @@ interface Context {
   setEditorView: (editorView: EditorView) => void;
 }
 
-export const ConnectorBuilderStateContext = React.createContext<Context | null>(null);
+interface APIContext {
+  streams: StreamsListReadStreamsItem[];
+  streamListErrorMessage: string | undefined;
+}
+
+export const ConnectorBuilderStateContext = React.createContext<StateContext | null>(null);
+export const ConnectorBuilderAPIContext = React.createContext<APIContext | null>(null);
 
 export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
-  const { formatMessage } = useIntl();
-
   // manifest values
   const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
@@ -70,19 +72,17 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
-  useEffect(() => {
-    setJsonManifest(convertToManifest(formValues));
-  }, [formValues, setJsonManifest]);
+  const [editorView, setEditorView] = useState<EditorView>("ui");
+
+  const derivedJsonManifest = useMemo(
+    () => (editorView === "yaml" ? manifest : convertToManifest(formValues)),
+    [editorView, formValues, manifest]
+  );
 
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
 
-  const [yamlManifest, setYamlManifest] = useState("");
-  useEffect(() => {
-    setYamlManifest(dump(jsonManifest));
-  }, [jsonManifest]);
-
-  const [editorView, setEditorView] = useState<EditorView>("ui");
+  const yamlManifest = useMemo(() => dump(derivedJsonManifest), [derivedJsonManifest]);
 
   // config
   const [configString, setConfigString] = useState("{\n  \n}");
@@ -97,39 +97,16 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     }
   }, [configString]);
 
-  // streams
-  const {
-    data: streamListRead,
-    isError: isStreamListError,
-    error: streamListError,
-  } = useListStreams({ manifest, config: configJson });
-  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
-  const streamListErrorMessage = isStreamListError
-    ? streamListError instanceof Error
-      ? streamListError.message || unknownErrorMessage
-      : unknownErrorMessage
-    : undefined;
-  const streams = useMemo(() => {
-    return streamListRead?.streams ?? [];
-  }, [streamListRead]);
-
   const [testStreamIndex, setTestStreamIndex] = useState(0);
-  useEffect(() => {
-    setTestStreamIndex((prevIndex) =>
-      prevIndex >= streams.length && streams.length > 0 ? streams.length - 1 : prevIndex
-    );
-  }, [streams]);
 
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
     builderFormValues: formValues,
-    jsonManifest: manifest,
+    jsonManifest: derivedJsonManifest,
     yamlManifest,
     yamlEditorIsMounted,
     yamlIsValid,
-    streams,
-    streamListErrorMessage,
     testStreamIndex,
     selectedView,
     configString,
@@ -148,7 +125,52 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
 };
 
-export const useConnectorBuilderState = (): Context => {
+export const ConnectorBuilderAPIProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+  const { formatMessage } = useIntl();
+  const { jsonManifest, configJson, testStreamIndex, setTestStreamIndex } = useConnectorBuilderState();
+
+  const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
+
+  // streams
+  const {
+    data: streamListRead,
+    isError: isStreamListError,
+    error: streamListError,
+  } = useListStreams({ manifest, config: configJson });
+  const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
+  const streamListErrorMessage = isStreamListError
+    ? streamListError instanceof Error
+      ? streamListError.message || unknownErrorMessage
+      : unknownErrorMessage
+    : undefined;
+  const streams = useMemo(() => {
+    return streamListRead?.streams ?? [];
+  }, [streamListRead]);
+
+  useEffect(() => {
+    if (testStreamIndex >= streams.length && streams.length > 0) {
+      setTestStreamIndex(streams.length - 1);
+    }
+  }, [streams, testStreamIndex, setTestStreamIndex]);
+
+  const ctx = {
+    streams,
+    streamListErrorMessage,
+  };
+
+  return <ConnectorBuilderAPIContext.Provider value={ctx}>{children}</ConnectorBuilderAPIContext.Provider>;
+};
+
+export const useConnectorBuilderAPI = (): APIContext => {
+  const connectorBuilderState = useContext(ConnectorBuilderAPIContext);
+  if (!connectorBuilderState) {
+    throw new Error("useConnectorBuilderAPI must be used within a ConnectorBuilderAPIProvider.");
+  }
+
+  return connectorBuilderState;
+};
+
+export const useConnectorBuilderState = (): StateContext => {
   const connectorBuilderState = useContext(ConnectorBuilderStateContext);
   if (!connectorBuilderState) {
     throw new Error("useConnectorBuilderState must be used within a ConnectorBuilderStateProvider.");
@@ -158,7 +180,8 @@ export const useConnectorBuilderState = (): Context => {
 };
 
 export const useSelectedPageAndSlice = () => {
-  const { streams, testStreamIndex } = useConnectorBuilderState();
+  const { testStreamIndex } = useConnectorBuilderState();
+  const { streams } = useConnectorBuilderAPI();
 
   const selectedStreamName = streams[testStreamIndex].name;
 

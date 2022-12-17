@@ -2,6 +2,7 @@ import { faSliders } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
+import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 
 import Indicator from "components/Indicator";
@@ -56,7 +57,7 @@ interface BuilderSidebarProps {
   toggleYamlEditor: () => void;
 }
 
-export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggleYamlEditor }) => {
+export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ className, toggleYamlEditor }) => {
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
@@ -141,4 +142,4 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
       </Button>
     </div>
   );
-};
+});

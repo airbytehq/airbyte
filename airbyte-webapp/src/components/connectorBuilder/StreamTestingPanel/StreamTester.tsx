@@ -6,7 +6,10 @@ import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderAPI,
+  useConnectorBuilderState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
 import { ResultDisplay } from "./ResultDisplay";
@@ -15,7 +18,8 @@ import styles from "./StreamTester.module.scss";
 
 export const StreamTester: React.FC = () => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, configJson, streams, testStreamIndex } = useConnectorBuilderState();
+  const { jsonManifest, configJson, testStreamIndex } = useConnectorBuilderState();
+  const { streams } = useConnectorBuilderAPI();
   const {
     data: streamReadData,
     refetch: readStream,

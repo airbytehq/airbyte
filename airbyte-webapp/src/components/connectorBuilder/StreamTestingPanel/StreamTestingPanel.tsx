@@ -5,7 +5,10 @@ import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import {
+  useConnectorBuilderAPI,
+  useConnectorBuilderState,
+} from "services/connectorBuilder/ConnectorBuilderStateService";
 import { links } from "utils/links";
 
 import { ConfigMenu } from "./ConfigMenu";
@@ -14,7 +17,8 @@ import { StreamTester } from "./StreamTester";
 import styles from "./StreamTestingPanel.module.scss";
 
 export const StreamTestingPanel: React.FC<unknown> = () => {
-  const { jsonManifest, streamListErrorMessage, yamlEditorIsMounted } = useConnectorBuilderState();
+  const { jsonManifest, yamlEditorIsMounted } = useConnectorBuilderState();
+  const { streamListErrorMessage } = useConnectorBuilderAPI();
 
   if (!yamlEditorIsMounted) {
     return (
