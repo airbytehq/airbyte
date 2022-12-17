@@ -1,7 +1,10 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources.declarative.requesters import RequestOption
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
-
 from source_braze import DatetimeStreamSlicerComponent
 
 

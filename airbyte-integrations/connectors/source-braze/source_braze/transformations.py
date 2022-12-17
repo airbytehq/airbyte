@@ -1,9 +1,13 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from dataclasses import dataclass
 from typing import Optional
 
 import dpath
 from airbyte_cdk.sources.declarative.transformations import AddFields
-from airbyte_cdk.sources.declarative.types import Record, Config, StreamState, StreamSlice
+from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 
 
 @dataclass

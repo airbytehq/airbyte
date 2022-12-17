@@ -1,7 +1,11 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 import datetime
 import operator
 from dataclasses import dataclass
-from typing import Optional, Mapping, Any
+from typing import Any, Mapping, Optional
 
 from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.requesters import RequestOption
@@ -15,6 +19,7 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
     """
     Extending DatetimeStreamSlicer by adding step option to existing start_time/end_time options
     """
+
     step_option: Optional[RequestOption] = None
     stream_state_field_step: Optional[str] = None
 
@@ -39,7 +44,8 @@ class DatetimeStreamSlicerComponent(DatetimeStreamSlicer):
         get_start_time = operator.itemgetter(self.stream_slice_field_start.eval(self.config))
         get_end_time = operator.itemgetter(self.stream_slice_field_end.eval(self.config))
         date_range = [
-            dr for dr in super(DatetimeStreamSlicerComponent, self)._partition_daterange(start, end, step)
+            dr
+            for dr in super(DatetimeStreamSlicerComponent, self)._partition_daterange(start, end, step)
             if get_start_time(dr) < get_end_time(dr)
         ]
         for i, _slice in enumerate(date_range):
