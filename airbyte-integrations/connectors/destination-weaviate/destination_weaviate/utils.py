@@ -1,5 +1,6 @@
 from typing import Mapping, Any
 import uuid
+import re
 
 from airbyte_cdk.models import ConfiguredAirbyteCatalog
 
@@ -59,5 +60,7 @@ def get_schema_from_catalog(configured_catalog: ConfiguredAirbyteCatalog) -> Map
 
 
 def stream_to_class_name(stream_name: str) -> str:
+    pattern = "[^0-9A-Za-z_]+"
+    stream_name = re.sub(pattern, "", stream_name)
     stream_name = stream_name.replace(" ", "")
     return stream_name[0].upper() + stream_name[1:]
