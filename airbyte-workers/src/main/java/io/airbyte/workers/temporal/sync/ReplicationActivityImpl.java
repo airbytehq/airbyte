@@ -295,9 +295,6 @@ public class ReplicationActivityImpl implements ReplicationActivity {
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
 
-      LOGGER.debug("Field selection is {}", featureFlags.applyFieldSelection() ? "enabled" : "disabled");
-      LOGGER.debug("Field selection workspaces are: {}", featureFlags.fieldSelectionWorkspaces());
-
       return new DefaultReplicationWorker(
           jobRunConfig.getJobId(),
           Math.toIntExact(jobRunConfig.getAttemptId()),

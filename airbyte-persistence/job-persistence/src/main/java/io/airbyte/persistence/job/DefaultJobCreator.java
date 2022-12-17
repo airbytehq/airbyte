@@ -61,7 +61,7 @@ public class DefaultJobCreator implements JobCreator {
                                       @Nullable final JsonNode webhookOperationConfigs,
                                       final StandardSourceDefinition sourceDefinition,
                                       final StandardDestinationDefinition destinationDefinition,
-                                      UUID workspaceId)
+                                      final UUID workspaceId)
       throws IOException {
     // reusing this isn't going to quite work.
 

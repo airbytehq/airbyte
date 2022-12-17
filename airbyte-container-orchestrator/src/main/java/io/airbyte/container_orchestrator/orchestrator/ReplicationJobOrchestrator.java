@@ -43,6 +43,7 @@ import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.KubePodProcess;
 import io.airbyte.workers.process.ProcessFactory;
 import io.airbyte.workers.sync.ReplicationLauncherWorker;
+import java.lang.invoke.MethodHandles;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
@@ -54,7 +55,7 @@ import org.slf4j.LoggerFactory;
 
 public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncInput> {
 
-  private static final Logger log = LoggerFactory.getLogger(ReplicationJobOrchestrator.class);
+  private static final Logger log = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
   private final ProcessFactory processFactory;
   private final Configs configs;
   private final FeatureFlags featureFlags;
@@ -140,8 +141,6 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         sourceLauncherConfig.getDockerImage());
 
     log.info("Setting up replication worker...");
-    log.debug("Field selection is {}", featureFlags.applyFieldSelection() ? "enabled" : "disabled");
-    log.debug("Field selection workspaces are: {}", featureFlags.fieldSelectionWorkspaces());
     final var replicationWorker = new DefaultReplicationWorker(
         jobRunConfig.getJobId(),
         Math.toIntExact(jobRunConfig.getAttemptId()),
