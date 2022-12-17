@@ -112,7 +112,10 @@ public class ActivityBeanFactory {
                                      final PersistStateActivity persistStateActivity,
                                      final NormalizationSummaryCheckActivity normalizationSummaryCheckActivity,
                                      final WebhookOperationActivity webhookOperationActivity,
-                                     /* final ConfigFetchActivity configFetchActivity, */
+                                     /*
+                                      * Temporarily disabled to address OC issue #1210
+                                      * final ConfigFetchActivity configFetchActivity,
+                                      */
                                      final RefreshSchemaActivity refreshSchemaActivity) {
     return List.of(replicationActivity, normalizationActivity, dbtTransformationActivity, persistStateActivity, normalizationSummaryCheckActivity,
         webhookOperationActivity, /* configFetchActivity, */ refreshSchemaActivity);
