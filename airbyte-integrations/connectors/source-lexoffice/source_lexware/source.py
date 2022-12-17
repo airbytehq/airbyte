@@ -62,7 +62,7 @@ class LexwareStream(HttpStream, ABC):
                 If there are no more pages in the result, return None.
         """
         decoded_response = response.json()
-        if not bool(decoded_response.get("last", True)):
+        if decoded_response.get("last"):
             last_page = decoded_response.get("number", 0) + 1
             return {"page": last_page}
         return None
