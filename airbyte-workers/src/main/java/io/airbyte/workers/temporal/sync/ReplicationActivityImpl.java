@@ -347,11 +347,15 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private boolean enableFieldSelection(final FeatureFlags featureFlags, final UUID workspaceId) {
     final String workspaceIdsString = featureFlags.fieldSelectionWorkspaces();
     final Set<UUID> workspaceIds = new HashSet<>();
-    for (final String id : workspaceIdsString.split(",")) {
-      workspaceIds.add(UUID.fromString(id));
-    }
-    for (final UUID workspace : workspaceIds) {
-      LOGGER.info("field selection workspace: {}", workspace);
+    LOGGER.debug("Field selection enabled for {}", workspaceIdsString);
+    if (!workspaceIdsString.equals("")) {
+      for (final String id : workspaceIdsString.split(",")) {
+        try {
+          workspaceIds.add(UUID.fromString(id));
+        } catch (IllegalArgumentException e) {
+          LOGGER.warn("Malformed workspace id for field selection: {}", id);
+        }
+      }
     }
     if (workspaceId != null && workspaceIds.contains(workspaceId)) {
       return true;
