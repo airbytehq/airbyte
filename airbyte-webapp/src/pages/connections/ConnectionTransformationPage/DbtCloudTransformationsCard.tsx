@@ -2,7 +2,7 @@ import { faPlus, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { Form, Formik, FieldArray, FormikHelpers } from "formik";
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { Link } from "react-router-dom";
 
@@ -25,6 +25,50 @@ interface DbtJobListValues {
   jobs: DbtCloudJob[];
 }
 
+const DbtCloudErrorBoundary = class extends React.Component {
+  state = { error: null, displayMessage: null };
+
+  // TODO parse the error to determine if the source was the upstream network call to
+  // the dbt Cloud API. If it is, extract the `user_message` field from dbt's error
+  // response for display to user; if not, provide a more generic error message. If the
+  // error was *definitely* not related to the dbt Cloud API, consider reraising it.
+  static getDerivedStateFromError(error: Error) {
+    // TODO I'm pretty sure I did not correctly mock the exact error response format.
+    // eslint-disable-next-line
+    const displayMessage = (error?.message as any)?.status?.user_message;
+    return { error, displayMessage };
+  }
+
+  componentDidCatch(error: Error) {
+    console.log(error);
+  }
+
+  render() {
+    const { error, displayMessage } = this.state;
+    if (error) {
+      return (
+        <Card
+          title={
+            <span className={styles.jobListTitle}>
+              <FormattedMessage id="connection.dbtCloudJobs.cardTitle" />
+            </span>
+          }
+        >
+          <Text centered className={styles.jobListContainer}>
+            {displayMessage ? (
+              <FormattedMessage id="connection.dbtCloudJobs.dbtError" values={{ displayMessage }} />
+            ) : (
+              <FormattedMessage id="connection.dbtCloudJobs.genericError" />
+            )}
+          </Text>
+        </Card>
+      );
+    }
+
+    return this.props.children;
+  }
+};
+
 export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBackendConnectionRead }) => {
   // Possible render paths:
   // 1) IF the workspace has no dbt cloud account linked
@@ -39,7 +83,9 @@ export const DbtCloudTransformationsCard = ({ connection }: { connection: WebBac
   const { hasDbtIntegration, isSaving, saveJobs, dbtCloudJobs } = useDbtIntegration(connection);
 
   return hasDbtIntegration ? (
-    <DbtJobsForm saveJobs={saveJobs} isSaving={isSaving} dbtCloudJobs={dbtCloudJobs} />
+    <DbtCloudErrorBoundary>
+      <DbtJobsForm saveJobs={saveJobs} isSaving={isSaving} dbtCloudJobs={dbtCloudJobs} />
+    </DbtCloudErrorBoundary>
   ) : (
     <NoDbtIntegration />
   );
