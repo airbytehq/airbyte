@@ -42,7 +42,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
   const navigate = useNavigate();
   const canEditDataGeographies = useFeature(FeatureItem.AllowChangeDataGeographies);
   const { mutateAsync: createConnection } = useCreateConnection();
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const { clearFormChange } = useFormChangeTrackerService();
 
   const workspaceId = useCurrentWorkspaceId();
@@ -58,7 +58,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
         workspaceId,
         mode,
         allowSubOneHourCronExpressions,
-        allowAutoDetectSchemaChanges
+        allowAutoDetectSchema
       );
 
       try {
@@ -93,7 +93,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
       workspaceId,
       mode,
       allowSubOneHourCronExpressions,
-      allowAutoDetectSchemaChanges,
+      allowAutoDetectSchema,
       createConnection,
       connection.source,
       connection.destination,
@@ -118,7 +118,7 @@ const CreateConnectionFormInner: React.FC<CreateConnectionPropsInner> = ({ schem
           validationSchema={createConnectionValidationSchema({
             mode,
             allowSubOneHourCronExpressions,
-            allowAutoDetectSchemaChanges,
+            allowAutoDetectSchema,
           })}
           onSubmit={onFormSubmit}
         >
