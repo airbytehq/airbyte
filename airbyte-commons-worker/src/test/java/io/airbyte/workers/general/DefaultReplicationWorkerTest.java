@@ -11,7 +11,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -52,7 +54,9 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.NamespacingMapper;
+import io.airbyte.workers.internal.SourceHeartbeatMonitor;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -65,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -108,6 +113,7 @@ class DefaultReplicationWorkerTest {
   private RecordSchemaValidator recordSchemaValidator;
   private MetricClient metricClient;
   private WorkerMetricReporter workerMetricReporter;
+  private SourceHeartbeatMonitor srcHeartbeatMonitor;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -127,6 +133,11 @@ class DefaultReplicationWorkerTest {
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
     recordSchemaValidator = mock(RecordSchemaValidator.class);
+//    srcHeartbeatMonitor = mock(SourceHeartbeatMonitor.class);
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    // todo clean up
+    doReturn(true).when(heartbeatMonitor).isBeating();
+    srcHeartbeatMonitor = new SourceHeartbeatMonitor(heartbeatMonitor, 5, TimeUnit.MINUTES);
     metricClient = MetricClientFactory.getMetricClient();
     workerMetricReporter = new WorkerMetricReporter(metricClient, "docker_image:v1.0.0");
 
@@ -155,7 +166,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -172,6 +185,49 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
+  void test1() throws Exception {
+    // final SourceHeartbeatMonitor srcHeartbeatMonitor = mock(SourceHeartbeatMonitor.class);
+    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
+    doReturn(false).when(heartbeatMonitor).isBeating();
+
+    final SourceHeartbeatMonitor srcHeartbeatMonitor = new SourceHeartbeatMonitor(heartbeatMonitor, 10, TimeUnit.MILLISECONDS);
+    // doThrow(new SourceException("timed out")).when(srcHeartbeatMonitor).beat();
+
+    // use local source as opposed to one with standard mocks.
+    final AirbyteSource source = mock(AirbyteSource.class);
+    doReturn(Optional.of(RECORD_MESSAGE1)).when(source).attemptRead();
+    doReturn(false).when(source).isFinished();
+
+    final ReplicationWorker worker = new DefaultReplicationWorker(
+        JOB_ID,
+        JOB_ATTEMPT,
+        source,
+        mapper,
+        destination,
+        messageTracker,
+        recordSchemaValidator,
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
+
+    final ReplicationOutput output = worker.run(syncInput, jobRoot);
+
+    verify(source).start(sourceConfig, jobRoot);
+    verify(destination).start(destinationConfig, jobRoot);
+    // verify(destination).accept(RECORD_MESSAGE1);
+    // verify(destination).accept(RECORD_MESSAGE2);
+    verify(source, atLeastOnce()).close();
+    verify(destination).close();
+    // verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
+    // AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
+    // verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
+    // AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
+
+    assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
+    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
+  }
+
+  @Test
   void testInvalidSchema() throws Exception {
     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(RECORD_MESSAGE2), Optional.of(RECORD_MESSAGE3));
 
@@ -183,7 +239,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -213,7 +271,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -233,7 +293,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -245,7 +307,7 @@ class DefaultReplicationWorkerTest {
   void testReplicationRunnableDestinationFailure() throws Exception {
     final String DESTINATION_ERROR_MESSAGE = "the destination had a failure";
 
-    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).accept(Mockito.any());
+    doThrow(new RuntimeException(DESTINATION_ERROR_MESSAGE)).when(destination).accept(any());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -255,7 +317,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -276,7 +340,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()
@@ -288,7 +354,7 @@ class DefaultReplicationWorkerTest {
   void testReplicationRunnableWorkerFailure() throws Exception {
     final String WORKER_ERROR_MESSAGE = "the worker had a failure";
 
-    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromSource(Mockito.any());
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromSource(any());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -298,7 +364,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -324,7 +392,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -358,7 +428,8 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        true);
+        true,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -389,7 +460,8 @@ class DefaultReplicationWorkerTest {
         messageTracker,
         recordSchemaValidator,
         workerMetricReporter,
-        false);
+        false,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -410,7 +482,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -431,7 +505,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -443,7 +519,7 @@ class DefaultReplicationWorkerTest {
   void testDestinationRunnableWorkerFailure() throws Exception {
     final String WORKER_ERROR_MESSAGE = "the worker had a failure";
 
-    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromDestination(Mockito.any());
+    doThrow(new RuntimeException(WORKER_ERROR_MESSAGE)).when(messageTracker).acceptFromDestination(any());
 
     final ReplicationWorker worker = new DefaultReplicationWorker(
         JOB_ID,
@@ -453,7 +529,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -476,7 +554,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     worker.run(syncInput, jobRoot);
 
@@ -517,7 +597,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -565,7 +647,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -632,7 +716,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -651,7 +737,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -685,7 +773,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -731,7 +821,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -751,7 +843,9 @@ class DefaultReplicationWorkerTest {
         destination,
         messageTracker,
         recordSchemaValidator,
-        workerMetricReporter, false);
+        workerMetricReporter,
+        false,
+        srcHeartbeatMonitor);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

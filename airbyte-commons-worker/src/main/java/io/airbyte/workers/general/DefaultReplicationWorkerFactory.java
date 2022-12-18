@@ -22,6 +22,7 @@ import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.EmptyAirbyteSource;
+import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
@@ -75,6 +76,8 @@ public class DefaultReplicationWorkerFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     final var metricReporter = new WorkerMetricReporter(metricClient, srcDockerImage);
 
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION);
+
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
     final AirbyteSource airbyteSource;
@@ -83,7 +86,8 @@ public class DefaultReplicationWorkerFactory {
     } else {
       airbyteSource = new DefaultAirbyteSource(
           sourceLauncher,
-          getStreamFactory(srcProtocolVersion, DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory));
+          getStreamFactory(srcProtocolVersion, DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory),
+          heartbeatMonitor);
     }
 
     log.info("Setting up destination...");
@@ -102,7 +106,8 @@ public class DefaultReplicationWorkerFactory {
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
-        fieldSelectionEnabled);
+        fieldSelectionEnabled,
+        null);
   }
 
   private static AirbyteStreamFactory getStreamFactory(final Version protocolVersion,

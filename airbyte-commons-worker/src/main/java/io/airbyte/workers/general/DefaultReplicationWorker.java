@@ -41,6 +41,7 @@ import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
+import io.airbyte.workers.internal.SourceHeartbeatMonitor;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -92,6 +93,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AirbyteMapper mapper;
   private final AirbyteDestination destination;
   private final MessageTracker messageTracker;
+  private final SourceHeartbeatMonitor srcHeartbeatMonitor;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -108,20 +110,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
-                                  final boolean fieldSelectionEnabled) {
+                                  final boolean fieldSelectionEnabled,
+                                  final SourceHeartbeatMonitor sourceHeartbeatMonitor) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    this.executors = Executors.newFixedThreadPool(2);
+    srcHeartbeatMonitor = sourceHeartbeatMonitor;
+    executors = Executors.newFixedThreadPool(4);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
 
-    this.cancelled = new AtomicBoolean(false);
-    this.hasFailed = new AtomicBoolean(false);
+    cancelled = new AtomicBoolean(false);
+    hasFailed = new AtomicBoolean(false);
   }
 
   /**
@@ -204,7 +208,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           });
 
-      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(
+      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(srcHeartbeatMonitor.runWithHeartbeatThread(
           readFromSrcAndWriteToDstRunnable(
               source,
               destination,
@@ -216,9 +220,18 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               recordSchemaValidator,
               metricReporter,
               timeTracker,
-              fieldSelectionEnabled),
+              fieldSelectionEnabled,
+              srcHeartbeatMonitor), executors, cancelled),
           executors)
           .whenComplete((msg, ex) -> {
+            try {
+              destination.notifyEndOfInput();
+            } catch (final Exception e) {
+              throw new DestinationException("Destination process end of stream notification failed", e);
+            }
+          })
+          .whenComplete((msg, ex) -> {
+
             if (ex != null) {
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof SourceException) {
@@ -236,7 +249,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // exception. So in order to handle exceptions from a future immediately without needing to wait for
       // the other future to finish, we first call CompletableFuture#anyOf.
       CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
-      LOGGER.info("One of source or destination thread complete. Waiting on the other.");
+      LOGGER.info("At least one thread complete. Waiting on the other. Statuses -- replication thread: {}, destination thread: {}",
+          readSrcAndWriteDstThread.isDone(),
+          readFromDstThread.isDone()
+      );
       CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
       LOGGER.info("Source and destination threads complete.");
 
@@ -293,6 +309,70 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
+  // private static Runnable readFromSrcAndWriteToDstRunnableWithHeartbeat(final AirbyteSource source,
+  // final AirbyteDestination destination,
+  // final ConfiguredAirbyteCatalog catalog,
+  // final AtomicBoolean cancelled,
+  // final AirbyteMapper mapper,
+  // final MessageTracker messageTracker,
+  // final Map<String, String> mdc,
+  // final RecordSchemaValidator recordSchemaValidator,
+  // final WorkerMetricReporter metricReporter,
+  // final ThreadedTimeTracker timeTracker,
+  // final boolean fieldSelectionEnabled,
+  // final SourceHeartbeatMonitor srcHeartbeatMonitor) {
+  // return () -> {
+  // final CompletableFuture<Void> replicationFuture =
+  // CompletableFuture.runAsync(readFromSrcAndWriteToDstRunnable(
+  // source,
+  // destination,
+  // catalog,
+  // cancelled,
+  // mapper,
+  // messageTracker,
+  // mdc,
+  // recordSchemaValidator,
+  // metricReporter,
+  // timeTracker,
+  // fieldSelectionEnabled,
+  // srcHeartbeatMonitor));
+  //
+  // final CompletableFuture<Void> srcHeartbeatThread =
+  // CompletableFuture.runAsync(srcHeartbeatMonitor.getMonitorThread());
+  //
+  // // todo try catch
+  // try {
+  // CompletableFuture.anyOf(replicationFuture, srcHeartbeatThread).get();
+  // } catch (final InterruptedException e) {
+  // e.printStackTrace();
+  // } catch (final ExecutionException e) {
+  // e.printStackTrace();
+  // }
+  //
+  // LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}",
+  // srcHeartbeatThread.isDone(), replicationFuture.isDone());
+  //
+  // boolean heartbeatTimedOut = false;
+  // if (srcHeartbeatThread.isDone() && !replicationFuture.isDone()) {
+  // heartbeatTimedOut = true;
+  // replicationFuture.cancel(true);
+  // }
+  // if (replicationFuture.isDone()) {
+  // srcHeartbeatThread.cancel(true);
+  // }
+  //
+  // try {
+  // destination.notifyEndOfInput();
+  // } catch (final Exception e) {
+  // throw new DestinationException("Destination process end of stream notification failed", e);
+  // }
+  //
+  // if (heartbeatTimedOut) {
+  // throw new SourceException("source timed out");
+  // }
+  // };
+  // }
+
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
@@ -303,8 +383,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
-                                                           final ThreadedTimeTracker timeHolder,
-                                                           final boolean fieldSelectionEnabled) {
+                                                           final ThreadedTimeTracker timeTracker,
+                                                           final boolean fieldSelectionEnabled,
+                                                           final SourceHeartbeatMonitor srcHeartbeatMonitor) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
@@ -322,6 +403,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           } catch (final Exception e) {
             throw new SourceException("Source process read attempt failed", e);
           }
+
+          srcHeartbeatMonitor.beat();
 
           if (messageOptional.isPresent()) {
             final AirbyteMessage airbyteMessage = messageOptional.get();
@@ -355,8 +438,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           }
         }
-        timeHolder.trackSourceReadEndTime();
+        timeTracker.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+        // note: if replication thread is killed by heartbeat, we will lose the validation errors.
         if (!validationErrors.isEmpty()) {
           validationErrors.forEach((stream, errorPair) -> {
             LOGGER.warn("Schema validation errors found for stream {}. Error messages: {}", stream, errorPair.getLeft());
@@ -364,11 +448,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           });
         }
 
-        try {
-          destination.notifyEndOfInput();
-        } catch (final Exception e) {
-          throw new DestinationException("Destination process end of stream notification failed", e);
-        }
         if (!cancelled.get() && source.getExitValue() != 0) {
           throw new SourceException("Source process exited with non-zero exit code " + source.getExitValue());
         }
@@ -662,9 +741,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return tags;
   }
 
-  private static class SourceException extends RuntimeException {
+  public static class SourceException extends RuntimeException {
 
-    SourceException(final String message) {
+    public SourceException(final String message) {
       super(message);
     }
 
