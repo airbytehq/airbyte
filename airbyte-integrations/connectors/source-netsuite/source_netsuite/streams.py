@@ -190,8 +190,8 @@ class NetsuiteStream(HttpStream, ABC):
                             self.logger.error(f"DATE FORMAT exception. Cannot read using known formats {NETSUITE_INPUT_DATE_FORMATS}")
 
                     # handle other known errors
-                    self.logger.error(f"Stream `{self.name}`: unknown error occured, full error message: {detail_message}")
-                    return True
+                    self.logger.error(f"Stream `{self.name}`: {error_code} error occured, full error message: {detail_message}")
+                    return False
                 else:
                     return super().should_retry(response)
         return super().should_retry(response)
