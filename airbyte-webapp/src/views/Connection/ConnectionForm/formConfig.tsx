@@ -83,13 +83,13 @@ export function useDefaultTransformation(): OperationCreate {
 interface CreateConnectionValidationSchemaArgs {
   allowSubOneHourCronExpressions: boolean;
   mode: ConnectionFormMode;
-  isAutoDetectSchemaChangesEnabled: boolean;
+  allowAutoDetectSchema: boolean;
 }
 
 export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
-  isAutoDetectSchemaChangesEnabled,
+  allowAutoDetectSchema,
 }: CreateConnectionValidationSchemaArgs) =>
   yup
     .object({
@@ -131,7 +131,7 @@ export const createConnectionValidationSchema = ({
             .defined("form.empty.error"),
         });
       }),
-      nonBreakingChangesPreference: isAutoDetectSchemaChangesEnabled
+      nonBreakingChangesPreference: allowAutoDetectSchema
         ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
         : yup.mixed().notRequired(),
 

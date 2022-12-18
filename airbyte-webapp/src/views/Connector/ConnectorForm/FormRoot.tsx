@@ -11,7 +11,7 @@ import { ConnectorFormValues } from "./types";
 
 interface FormRootProps {
   formFields: FormBlock;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   isTestConnectionInProgress?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
@@ -25,7 +25,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   formFields,
   successMessage,
   errorMessage,
-  hasSuccess,
+  connectionTestSuccess,
   onStopTestingConnector,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
@@ -56,7 +56,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
           isSubmitting={isSubmitting || isTestConnectionInProgress}
           errorMessage={errorMessage}
           formType={formType}
-          hasSuccess={hasSuccess}
+          connectionTestSuccess={connectionTestSuccess}
         />
       )}
     </Form>

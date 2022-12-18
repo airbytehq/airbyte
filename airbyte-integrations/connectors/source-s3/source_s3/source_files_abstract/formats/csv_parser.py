@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import codecs
 import csv
 import json
 import tempfile
@@ -49,6 +50,23 @@ class CsvParser(AbstractFileParser):
         if self.format_model is None:
             self.format_model = CsvFormat.parse_obj(self._format)
         return self.format_model
+
+    def _validate_field_len(self, config: Mapping[str, Any], field_name: str):
+        if len(config.get("format", {}).get(field_name)) != 1:
+            raise ValueError(f"{field_name} should contain 1 character only")
+
+    def _validate_config(self, config: Mapping[str, Any]):
+        if config.get("format", {}).get("filetype") == "csv":
+            self._validate_field_len(config, "delimiter")
+            if config.get("format", {}).get("delimiter") in ("\r", "\n"):
+                raise ValueError("Delimiter cannot be \r or \n")
+
+            self._validate_field_len(config, "quote_char")
+
+            if config.get("format", {}).get("escape_char"):
+                self._validate_field_len(config, "escape_char")
+
+            codecs.lookup(config.get("format", {}).get("encoding"))
 
     def _read_options(self) -> Mapping[str, str]:
         """

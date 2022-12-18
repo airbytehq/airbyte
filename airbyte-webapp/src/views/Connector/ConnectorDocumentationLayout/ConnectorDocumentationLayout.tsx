@@ -34,6 +34,7 @@ export const ConnectorDocumentationLayout: React.FC<React.PropsWithChildren<unkn
       }}
       secondPanel={{
         children: documentationPanel,
+        className: styles.rightPanel,
         minWidth: 60,
         overlay: {
           displayThreshold: 350,

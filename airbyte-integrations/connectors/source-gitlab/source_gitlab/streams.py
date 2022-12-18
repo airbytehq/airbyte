@@ -53,6 +53,8 @@ class GitlabStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if response.status_code != 200:
+            return
         response_data = response.json()
         if isinstance(response_data, dict):
             return None
@@ -177,6 +179,21 @@ class Groups(GitlabStream):
             {"id": project["id"], "path_with_namespace": project["path_with_namespace"]} for project in record.pop("projects", [])
         ]
         return record
+
+
+class IncludeDescendantGroups(Groups):
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        return stream_slice["path"]
+
+    def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, any]]]:
+        for gid in self.group_ids:
+            yield {"path": f"groups/{gid}"}
+            yield {"path": f"groups/{gid}/descendant_groups"}
+
+
+class GroupsList(GitlabStream):
+    def path(self, **kwargs) -> str:
+        return "groups"
 
 
 class Projects(GitlabStream):
