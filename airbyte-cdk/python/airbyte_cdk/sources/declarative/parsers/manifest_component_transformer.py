@@ -11,17 +11,21 @@ OPTIONS_STR = "$options"
 
 # todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
+    # CompositeErrorHandler
+    "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
+    # CursorPagination
+    "CursorPagination.decoder": "JsonDecoder",
     # DatetimeStreamSlicer
     "DatetimeStreamSlicer.end_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.end_time_option": "RequestOption",
     "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.start_time_option": "RequestOption",
     # DeclarativeSource
     "DeclarativeSource.streams": "DeclarativeStream",
     "DeclarativeSource.check": "CheckStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
     "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
-    # CursorPagination
-    "CursorPagination.decoder": "JsonDecoder",
     # DefaultErrorHandler
     "DefaultErrorHandler.response_filters": "HttpResponseFilter",
     # DefaultPaginator
@@ -49,12 +53,16 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
+    # CustomStreamSlicer
+    "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CartesianProductStreamSlicer.stream_slicer": "CustomStreamSlicer",
+    "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
+    "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
+    "DeclarativeStream.retriever": "CustomRetriever",
     "DefaultErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DefaultPaginator.pagination_strategy": "CustomPaginationStrategy",
     "HttpRequester.authenticator": "CustomAuthenticator",
