@@ -1,10 +1,9 @@
 @use "scss/colors";
 @use "scss/variables";
 
-.modalContent {
-  height: 60vh;
-  overflow: visible;
-  background-color: colors.$grey-100;
+.formContent {
+  max-height: 60vh;
+  overflow: auto;
 }
 
 .inputFormModalFooter {

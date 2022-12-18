@@ -27,7 +27,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
-type EditorView = "ui" | "yaml";
+export type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | number;
 
 interface Context {

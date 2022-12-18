@@ -19,6 +19,7 @@ interface FormRootProps {
   onStopTestingConnector?: () => void;
   submitLabel?: string;
   footerClassName?: string;
+  bodyClassName?: string;
   /**
    * Called in case the user cancels the form - if not provided, no cancel button is rendered
    */
@@ -35,6 +36,7 @@ export const FormRoot: React.FC<FormRootProps> = ({
   onStopTestingConnector,
   submitLabel,
   footerClassName,
+  bodyClassName,
   onCancel,
 }) => {
   const { dirty, isSubmitting, isValid } = useFormikContext<ConnectorFormValues>();
@@ -42,7 +44,9 @@ export const FormRoot: React.FC<FormRootProps> = ({
 
   return (
     <Form>
-      <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
+      <div className={bodyClassName}>
+        <FormSection blocks={formFields} disabled={isSubmitting || isTestConnectionInProgress} />
+      </div>
       <div className={footerClassName}>
         {isEditMode ? (
           <EditControls

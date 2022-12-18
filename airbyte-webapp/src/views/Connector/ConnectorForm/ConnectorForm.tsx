@@ -33,6 +33,7 @@ export interface ConnectorFormProps {
   successMessage?: React.ReactNode;
   connectorId?: string;
   footerClassName?: string;
+  bodyClassName?: string;
   submitLabel?: string;
   /**
    * Called in case the user cancels the form - if not provided, no cancel button is rendered

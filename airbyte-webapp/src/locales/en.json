@@ -675,6 +675,13 @@
   "connectorBuilder.addKeyValue": "Add",
   "connectorBuilder.saveInputsForm": "Save",
   "connectorBuilder.inputsFormWarning": "User inputs are not saved with the connector, they are required in order to test your streams, and will be asked to the end user in order to set this connector",
+  "connectorBuilder.inputsError": "User inputs form could not be rendered: <b>{error}</b>. Make sure the spec in the YAML conforms to the specified standard.",
+  "connectorBuilder.inputsErrorDocumentation": "Check out the documentation",
+  "connectorBuilder.goToYaml": "Switch to YAML view",
+  "connectorBuilder.close": "Close",
+  "connectorBuilder.inputsTooltip": "Define test inputs to check whether the connector configuration works",
+  "connectorBuilder.inputsNoSpecUITooltip": "Add User Input fields to allow setting test inputs",
+  "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
