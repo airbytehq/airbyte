@@ -499,9 +499,18 @@
   "feature.cell.enterprise.message": "Priority support, audit log, SLA, and so much more.",
   "feature.cell.enterprise.btnText": "Get a Quote",
 
+  "plan.detail.rows": "No. of rows",
+  "plan.detail.billing": "Monthly billing",
+  "plan.detail.dueToday": "Total due today",
+  "plan.detail.reoccuringBilling": "Reoccuring billing",
+  "plan.update.btn": "Update",
+
   "plan.feature.heading": "Features",
   "plan.dataReplication.heading": "Data Replication",
   "plan.support.heading": "Support",
+
+  "subscription.cancel.successfull": "Your plan is now cancelled. You can still use Daspire until the end of the billing cycle.",
+  "subscription.plan.update": "Congrats! Your change was successful!",
 
   "connector.requestConnectorBlock": "+ Request a new connector",
   "connector.requestConnector": "Request a new connector",

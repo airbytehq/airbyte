@@ -7,7 +7,7 @@ export interface SideMenuItem {
   path: string;
   name: string | React.ReactNode;
   indicatorCount?: number;
-  component: React.ComponentType;
+  component: React.ReactNode;
   id?: string;
   show?: boolean;
 }

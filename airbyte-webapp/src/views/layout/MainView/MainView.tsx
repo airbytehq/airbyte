@@ -4,7 +4,8 @@ import styled from "styled-components";
 import { LoadingPage } from "components";
 
 import { useUser } from "core/AuthContext";
-import { getRoleAgainstRoleNumber, ROLES } from "core/Roles/roles";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
+import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
 import useRouter from "hooks/useRouter";
 import { UnauthorizedModal } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UnauthorizedModal";
 import { UpgradePlanBar } from "pages/ConnectionPage/pages/AllConnectionsPage/components/UpgradePlanBar";
@@ -37,11 +38,20 @@ const MainView: React.FC = (props) => {
 
   // TODO: not the propersolution but works for now
   const isSidebar = !pathname.split("/").includes(RoutePaths.Payment);
-  const isUpgradePlanBar = !pathname.split("/").includes(RoutePaths.Payment);
+
+  const isUpgradePlanBar = (): boolean => {
+    let showUpgradePlanBar = false;
+    if (getStatusAgainstStatusNumber(user.status) === STATUSES.Free_Trial) {
+      if (!pathname.split("/").includes(RoutePaths.Payment)) {
+        showUpgradePlanBar = true;
+      }
+    }
+    return showUpgradePlanBar;
+  };
 
   const onUpgradePlan = () => {
     if (
-      getRoleAgainstRoleNumber(user.role) === ROLES["Administrator(owner)"] ||
+      getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
       getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
     ) {
       push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
@@ -63,7 +73,7 @@ const MainView: React.FC = (props) => {
                 }}
               />
             )}
-            {isUpgradePlanBar && <UpgradePlanBar onUpgradePlan={onUpgradePlan} />}
+            {isUpgradePlanBar() && <UpgradePlanBar onUpgradePlan={onUpgradePlan} />}
             {props.children}
           </React.Suspense>
         </ResourceNotFoundErrorBoundary>

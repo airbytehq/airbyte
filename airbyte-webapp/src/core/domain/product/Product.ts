@@ -1,9 +1,9 @@
-export interface Product {
+export interface ProductItem {
   id: string;
   itemName: string;
   price: number;
 }
 
-export interface ProductList {
-  products: Product[];
+export interface ProductItemsList {
+  data: ProductItem[];
 }
