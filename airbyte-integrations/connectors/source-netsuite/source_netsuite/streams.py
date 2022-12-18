@@ -3,6 +3,7 @@
 #
 
 
+
 from abc import ABC
 from datetime import date, datetime, timedelta
 from json import JSONDecodeError
@@ -15,16 +16,20 @@ from source_netsuite.constraints import (
     CUSTOM_INCREMENTAL_CURSOR,
     INCREMENTAL_CURSOR,
     META_PATH,
-    NETSUITE_ERRORS_MAPPING,
     NETSUITE_INPUT_DATE_FORMATS,
     NETSUITE_OUTPUT_DATETIME_FORMAT,
     RECORD_PATH,
     REFERAL_SCHEMA,
     REFERAL_SCHEMA_URL,
     SCHEMA_HEADERS,
-    USLESS_SCHEMA_ELEMENTS,
+    USLESS_SCHEMA_ELEMENTS
+)
+from source_netsuite.errors import (
+    NETSUITE_ERRORS_MAPPING,
     DateFormatExeption,
 )
+
+
 
 
 class NetsuiteStream(HttpStream, ABC):
@@ -47,13 +52,13 @@ class NetsuiteStream(HttpStream, ABC):
 
     # instance input date format format selector
     index_datetime_format = 0
-
+    
     raise_on_http_errors = True
 
     @property
     def default_datetime_format(self) -> str:
         return NETSUITE_INPUT_DATE_FORMATS[self.index_datetime_format]
-
+        
     @property
     def name(self) -> str:
         return self.object_name
@@ -155,7 +160,6 @@ class NetsuiteStream(HttpStream, ABC):
     def parse_response(
         self,
         response: requests.Response,
-        stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         **kwargs,
