@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
 import { PillButton, PillButtonVariant, PillSelect } from "components/ui/PillSelect";
@@ -34,17 +34,17 @@ interface StreamPathSelectProps {
 type PathPopoutProps = StreamPathSelectBaseProps & (StreamPathSelectMultiProps | StreamPathSelectProps);
 
 export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
-  if (props.pathType === "sourceDefined") {
-    let node;
+  const SourceDefinedNode = useMemo(() => {
     if (props.path && props.path.length > 0) {
-      node = props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
-    } else {
-      node = <FormattedMessage id="connection.catalogTree.sourceDefined" />;
+      return props.isMulti ? props.path.map(pathDisplayName).join(", ") : pathDisplayName(props.path);
     }
+    return <FormattedMessage id="connection.catalogTree.sourceDefined" />;
+  }, [props.isMulti, props.path]);
 
+  if (props.pathType === "sourceDefined") {
     return (
       <PillButton variant={props.variant} disabled className={styles.streamPathSelect}>
-        {node}
+        {SourceDefinedNode}
       </PillButton>
     );
   }
