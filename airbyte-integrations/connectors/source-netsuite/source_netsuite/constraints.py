@@ -49,3 +49,10 @@ NETSUITE_ERRORS_MAPPING: dict = {
         "INSUFFICIENT_PERMISSION": "not enough permissions to access the object",
     },
 }
+
+NETSUITE_INPUT_DATE_FORMATS: list[str] = ["%m/%d/%Y", "%Y-%m-%d"]
+NETSUITE_OUTPUT_DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
+
+
+class DateFormatExeption(Exception):
+    """API CANNOT HANDLE REQUEST USING GIVEN DATETIME FORMAT"""

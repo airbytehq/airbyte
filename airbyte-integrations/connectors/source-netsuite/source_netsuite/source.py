@@ -115,7 +115,7 @@ class SourceNetsuite(AbstractSource):
             "start_datetime": start_datetime,
             "window_in_days": window_in_days,
         }
-        
+
         schema = schemas[object_name]
         schema_props = schema.get("properties")
         if schema_props:
