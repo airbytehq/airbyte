@@ -30,7 +30,6 @@ export const NonBreakingChangesPreferenceField: React.FC<FieldProps<string>> = (
     <div className={styles.flexRow}>
       <div className={styles.leftFieldCol}>
         <ControlLabels
-          className={styles.connectorLabel}
           nextLine
           label={formatMessage({
             id: "connectionForm.nonBreakingChangesPreference.label",
