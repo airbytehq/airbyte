@@ -622,7 +622,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     // Resources are closed in the opposite order they are declared.
     LOGGER.info("Cancelling replication worker...");
     try {
-      executors.awaitTermination(10, TimeUnit.SECONDS);
+      final boolean wasGracefulExit = executors.awaitTermination(100, TimeUnit.MILLISECONDS);
+      LOGGER.info("Executor exited {}", wasGracefulExit ? "gracefully" : "by timeout");
     } catch (final InterruptedException e) {
       ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unable to cancel due to interruption.", e);
