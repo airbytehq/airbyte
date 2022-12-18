@@ -218,7 +218,7 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         """Parse the records with respect to `stream_state` for `incremental` sync."""
         if stream_state:
             for record in records:
-                if record.get(self.cursor_field, "") >= stream_state.get(self.cursor_field):
+                if record.get(self.cursor_field, self.start_datetime) >= stream_state.get(self.cursor_field):
                     yield record
         else:
             yield from records
@@ -251,8 +251,8 @@ class IncrementalNetsuiteStream(NetsuiteStream):
         current_stream_state: MutableMapping[str, Any],
         latest_record: Mapping[str, Any],
     ) -> Mapping[str, Any]:
-        latest_cursor = latest_record.get(self.cursor_field, "")
-        current_cursor = current_stream_state.get(self.cursor_field, "")
+        latest_cursor = latest_record.get(self.cursor_field, self.start_datetime)
+        current_cursor = current_stream_state.get(self.cursor_field, self.start_datetime)
         return {self.cursor_field: max(latest_cursor, current_cursor)}
 
     def request_params(
