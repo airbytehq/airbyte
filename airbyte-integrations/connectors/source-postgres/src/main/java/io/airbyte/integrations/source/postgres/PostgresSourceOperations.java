@@ -158,17 +158,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      // attempt to parse the datetime with timezone. This can be caused by schema created with an older
-      // version of the connector
-      preparedStatement.setObject(parameterIndex, OffsetTime.parse(value));
-    }
-  }
-
-  @Override
   protected void setDate(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
     preparedStatement.setObject(parameterIndex, LocalDate.parse(value));
   }

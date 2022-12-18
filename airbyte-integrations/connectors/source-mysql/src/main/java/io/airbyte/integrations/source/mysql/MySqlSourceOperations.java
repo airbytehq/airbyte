@@ -272,16 +272,4 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
     }
   }
 
-  @Override
-  protected void setTime(final PreparedStatement preparedStatement, final int parameterIndex, final String value) throws SQLException {
-    try {
-      preparedStatement.setObject(parameterIndex, LocalTime.parse(value));
-    } catch (final DateTimeParseException e) {
-      LOGGER.warn("Exception occurred while trying to parse value for time column the new way, trying the old way", e);
-      // This is just for backward compatibility for connectors created on versions before PR
-      // https://github.com/airbytehq/airbyte/pull/15504
-      super.setTime(preparedStatement, parameterIndex, value);
-    }
-  }
-
 }
