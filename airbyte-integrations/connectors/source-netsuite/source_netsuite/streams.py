@@ -160,6 +160,7 @@ class NetsuiteStream(HttpStream, ABC):
     def parse_response(
         self,
         response: requests.Response,
+        stream_state: Mapping[str, Any],
         stream_slice: Mapping[str, Any] = None,
         next_page_token: Mapping[str, Any] = None,
         **kwargs,
