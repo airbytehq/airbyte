@@ -46,11 +46,11 @@ import io.airbyte.integrations.source.relationaldb.AbstractDbSource;
 import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.state.StateManager;
-import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.CommonField;
+import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
-import io.airbyte.protocol.models.JsonSchemaType;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.sql.Connection;
@@ -621,4 +621,5 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .map(Jsons::clone)
         .collect(Collectors.toList());
   }
+
 }
