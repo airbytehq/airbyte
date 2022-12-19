@@ -4,9 +4,12 @@
 
 package io.airbyte.integrations.destination.gcs;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.integrations.standardtest.destination.comparator.AdvancedTestDataComparator;
+import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.util.Base64;
 
 public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
 
@@ -31,6 +34,25 @@ public class GcsAvroTestDataComparator extends AdvancedTestDataComparator {
     var format = DateTimeFormatter.ofPattern(AIRBYTE_DATETIME_FORMAT);
     LocalDateTime dateTime = LocalDateTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
     return super.compareDateTimeValues(airbyteMessageValue, format.format(dateTime));
+  }
+
+  @Override
+  protected boolean compareTime(final String airbyteMessageValue, final String destinationValue) {
+    var destinationDate = LocalTime.ofInstant(getInstantFromEpoch(destinationValue), ZoneOffset.UTC);
+    var expectedDate = LocalTime.parse(airbyteMessageValue, DateTimeFormatter.ISO_TIME);
+    return expectedDate.equals(destinationDate);
+  }
+
+  @Override
+  protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
+    // to handle base64 encoded strings
+    return expectedValue.asText().equals(actualValue.asText())
+        || decodeBase64(expectedValue.asText()).equals(actualValue.asText());
+  }
+
+  private String decodeBase64(String string) {
+    byte[] decoded = Base64.getDecoder().decode(string);
+    return new String(decoded, StandardCharsets.UTF_8);
   }
 
 }
