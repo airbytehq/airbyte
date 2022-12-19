@@ -40,7 +40,6 @@ interface Context {
   streamListErrorMessage: string | undefined;
   testStreamIndex: number;
   selectedView: BuilderView;
-  configString: string;
   configJson: StreamReadRequestBodyConfig;
   editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues) => void;
@@ -49,7 +48,7 @@ interface Context {
   setYamlIsValid: (value: boolean) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   setSelectedView: (view: BuilderView) => void;
-  setConfigString: (configString: string) => void;
+  setConfigJson: (value: StreamReadRequestBodyConfig) => void;
   setEditorView: (editorView: EditorView) => void;
 }
 
@@ -86,17 +85,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const [editorView, setEditorView] = useState<EditorView>("ui");
 
   // config
-  const [configString, setConfigString] = useState("{\n  \n}");
   const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
-
-  useEffect(() => {
-    try {
-      const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
-      setConfigJson(json);
-    } catch (err) {
-      console.error(`Config value is not valid JSON! Error: ${err}`);
-    }
-  }, [configString]);
 
   // streams
   const {
@@ -133,7 +122,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     streamListErrorMessage,
     testStreamIndex,
     selectedView,
-    configString,
     configJson,
     editorView,
     setBuilderFormValues,
@@ -142,7 +130,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     setYamlEditorIsMounted,
     setTestStreamIndex,
     setSelectedView,
-    setConfigString,
+    setConfigJson,
     setEditorView,
   };
 

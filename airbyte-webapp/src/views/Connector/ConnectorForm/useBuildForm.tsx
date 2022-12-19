@@ -87,26 +87,33 @@ export function useBuildForm(
       throw new FormBuildError("connectorForm.error.topLevelNonObject");
     }
 
+    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
+
     const startValues = useMemo<ConnectorFormValues>(() => {
-      if (isEditMode) {
-        return {
-          name: "",
-          connectionConfiguration: {},
-          ...initialValues,
-        };
-      }
-      const baseValues = {
+      let baseValues = {
         name: "",
         connectionConfiguration: {},
         ...initialValues,
       };
 
+      if (isDraft) {
+        try {
+          baseValues = validationSchema.cast(baseValues, { stripUnknown: true });
+        } catch {
+          // cast did not work which can happen if there are unexpected values in the form. Reset form in this case
+          baseValues.connectionConfiguration = {};
+        }
+      }
+
+      if (isEditMode) {
+        return baseValues;
+      }
+
       setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: isDraft });
 
       return baseValues;
-    }, [formFields, initialValues, isDraft, isEditMode]);
+    }, [formFields, initialValues, isDraft, isEditMode, validationSchema]);
 
-    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
     return {
       initialValues: startValues,
       formFields,

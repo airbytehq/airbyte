@@ -85,7 +85,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     async (values: ConnectorFormValues) => {
       const valuesToSend = getValues(values);
       await onSubmit(valuesToSend);
-
       clearFormChange(formId);
     },
     [clearFormChange, formId, getValues, onSubmit]

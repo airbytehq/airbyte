@@ -1,6 +1,6 @@
 import { faClose, faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
@@ -22,13 +22,9 @@ interface ConfigMenuProps {
 export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { formatMessage } = useIntl();
-  const { configString, setConfigString, jsonManifest, editorView, setEditorView } = useConnectorBuilderState();
+  const { configJson, setConfigJson, jsonManifest, editorView, setEditorView } = useConnectorBuilderState();
 
   const [showInputsWarning, setShowInputsWarning] = useLocalStorage<boolean>("connectorBuilderInputsWarning", true);
-
-  const formValues = useMemo(() => {
-    return { connectionConfiguration: JSON.parse(configString) };
-  }, [configString]);
 
   const switchToYaml = () => {
     setEditorView("yaml");
@@ -88,16 +84,16 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
                   bodyClassName={styles.formContent}
                   footerClassName={styles.inputFormModalFooter}
                   selectedConnectorDefinitionSpecification={jsonManifest.spec}
-                  formValues={formValues}
+                  formValues={configJson}
                   onSubmit={async (values) => {
-                    setConfigString(JSON.stringify(values.connectionConfiguration, null, 2) ?? "");
+                    setConfigJson(values);
                     setIsOpen(false);
                   }}
                   onCancel={() => {
                     setIsOpen(false);
                   }}
                   onReset={() => {
-                    setConfigString("{}");
+                    setConfigJson({});
                   }}
                   submitLabel={formatMessage({ id: "connectorBuilder.saveInputsForm" })}
                 />
