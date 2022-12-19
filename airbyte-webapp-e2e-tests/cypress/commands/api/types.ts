@@ -29,6 +29,11 @@ export interface ConnectionCreateRequestBody {
   syncCatalog: SyncCatalog;
 }
 
+export interface ConectionGetBody {
+  connectionId: string;
+  withRefreshedCatalog?: boolean
+}
+
 export interface ConnectionsList {
   connections: Connection[];
 }
