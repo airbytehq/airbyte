@@ -1,0 +1,428 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JSON Schema for NVD Vulnerability Data API version 2.0",
+    "definitions": {
+        "def_cve_item": {
+            "properties": {
+                "cve": {
+                    "$ref": "#/definitions/cve_item"
+                }
+            },
+            "required": [
+                "cve"
+            ],
+            "additionalProperties": true
+        },
+        "cve_item": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "$ref": "#/definitions/cve_id"
+                },
+                "sourceIdentifier": {
+                    "type": "string"
+                },
+                "vulnStatus": {
+                    "type": "string"
+                },
+                "published": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "lastModified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "evaluatorComment": {
+                    "type": "string"
+                },
+                "evaluatorSolution": {
+                    "type": "string"
+                },
+                "evaluatorImpact": {
+                    "type": "string"
+                },
+                "cisaExploitAdd": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "cisaActionDue": {
+                    "type": "string",
+                    "format": "date"
+                },
+                "cisaRequiredAction": {
+                    "type": "string"
+                },
+                "cisaVulnerabilityName": {
+                    "type": "string"
+                },
+                "descriptions": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/lang_string"
+                    }
+                },
+                "references": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/reference"
+                    },
+                    "maxItems": 500,
+                    "minItems": 0
+                },
+                "metrics": {
+                    "description": "Metric scores for a vulnerability as found on NVD.",
+                    "type": "object",
+                    "properties": {
+                        "cvssMetricV31": {
+                            "description": "CVSS V3.1 score.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cvss-v31"
+                            }
+                        },
+                        "cvssMetricV30": {
+                            "description": "CVSS V3.0 score.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cvss-v30"
+                            }
+                        },
+                        "cvssMetricV2": {
+                            "description": "CVSS V2.0 score.",
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/cvss-v2"
+                            }
+                        }
+                    },
+                    "additionalProperties": true
+                },
+                "weaknesses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/weakness"
+                    }
+                },
+                "configurations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/config"
+                    }
+                },
+                "vendorComments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/vendorComment"
+                    }
+                }
+            },
+            "required": [
+                "references",
+                "descriptions"
+            ],
+            "additionalProperties": true
+        },
+        "cvss-v2": {
+            "properties": {
+                "source": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "Primary",
+                        "Secondary"
+                    ]
+                },
+                "cvssData": {
+                    "$ref": "cvss-v2.0.json"
+                },
+                "baseSeverity": {
+                    "type": "string"
+                },
+                "exploitabilityScore": {
+                    "$ref": "#/definitions/def_subscore"
+                },
+                "impactScore": {
+                    "$ref": "#/definitions/def_subscore"
+                },
+                "acInsufInfo": {
+                    "type": "boolean"
+                },
+                "obtainAllPrivilege": {
+                    "type": "boolean"
+                },
+                "obtainUserPrivilege": {
+                    "type": "boolean"
+                },
+                "obtainOtherPrivilege": {
+                    "type": "boolean"
+                },
+                "userInteractionRequired": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "source",
+                "type",
+                "cvssData"
+            ],
+            "additionalProperties": true
+        },
+        "cvss-v30": {
+            "properties": {
+                "source": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "Primary",
+                        "Secondary"
+                    ]
+                },
+                "cvssData": {
+                    "$ref": "cvss-v3.0.json"
+                },
+                "exploitabilityScore": {
+                    "$ref": "#/definitions/def_subscore"
+                },
+                "impactScore": {
+                    "$ref": "#/definitions/def_subscore"
+                }
+            },
+            "required": [
+                "source",
+                "type",
+                "cvssData"
+            ],
+            "additionalProperties": true
+        },
+        "cvss-v31": {
+            "properties": {
+                "source": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "Primary",
+                        "Secondary"
+                    ]
+                },
+                "cvssData": {
+                    "$ref": "cvss-v3.1.json"
+                },
+                "exploitabilityScore": {
+                    "$ref": "#/definitions/def_subscore"
+                },
+                "impactScore": {
+                    "$ref": "#/definitions/def_subscore"
+                }
+            },
+            "required": [
+                "source",
+                "type",
+                "cvssData"
+            ],
+            "additionalProperties": true
+        },
+        "cve_id": {
+            "type": "string",
+            "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+        },
+        "lang_string": {
+            "type": "object",
+            "properties": {
+                "lang": {
+                    "type": "string"
+                },
+                "value": {
+                    "type": "string",
+                    "maxLength": 4096
+                }
+            },
+            "required": [
+                "lang",
+                "value"
+            ],
+            "additionalProperties": true
+        },
+        "reference": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "maxLength": 500,
+                    "type": "string",
+                    "pattern": "^(ftp|http)s?://\\S+$"
+                },
+                "source": {
+                    "type": "string"
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            },
+            "required": [
+                "url"
+            ],
+            "additionalProperties": true
+        },
+        "vendorComment": {
+            "type": "object",
+            "properties": {
+                "organization": {
+                    "type": "string"
+                },
+                "comment": {
+                    "type": "string"
+                },
+                "lastModified": {
+                    "type": "string",
+                    "format": "date-time"
+                }
+            },
+            "required": [
+                "organization",
+                "comment",
+                "lastModified"
+            ],
+            "additionalProperties": true
+        },
+        "weakness": {
+            "properties": {
+                "source": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "array",
+                    "minItems": 0,
+                    "items": {
+                        "$ref": "#/definitions/lang_string"
+                    }
+                }
+            },
+            "required": [
+                "source",
+                "type",
+                "description"
+            ],
+            "additionalProperties": true
+        },
+        "config": {
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "AND",
+                        "OR"
+                    ]
+                },
+                "negate": {
+                    "type": "boolean"
+                },
+                "nodes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/node"
+                    }
+                }
+            },
+            "required": [
+                "nodes"
+            ],
+            "additionalProperties": true
+        },
+        "node": {
+            "description": "Defines a configuration node in an NVD applicability statement.",
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "enum": [
+                        "AND",
+                        "OR"
+                    ]
+                },
+                "negate": {
+                    "type": "boolean"
+                },
+                "cpeMatch": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cpe_match"
+                    }
+                }
+            },
+            "required": [
+                "operator",
+                "cpeMatch"
+            ],
+            "additionalProperties": true
+        },
+        "cpe_match": {
+            "description": "CPE match string or range",
+            "type": "object",
+            "properties": {
+                "vulnerable": {
+                    "type": "boolean"
+                },
+                "criteria": {
+                    "type": "string"
+                },
+                "matchCriteriaId": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "versionStartExcluding": {
+                    "type": "string"
+                },
+                "versionStartIncluding": {
+                    "type": "string"
+                },
+                "versionEndExcluding": {
+                    "type": "string"
+                },
+                "versionEndIncluding": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "vulnerable",
+                "criteria",
+                "matchCriteriaId"
+            ],
+            "additionalProperties": true
+        },
+        "def_subscore": {
+            "description": "CVSS subscore.",
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+        }
+    },
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "CVE ID",
+            "type": "string"
+        },
+        "last_modified": {
+            "description": "Last modified date of the CVE",
+            "type": "string"
+        },
+        "cve": {
+            "$ref": "#/definitions/cve_item"
+        }
+    },
+    "required": [
+        "id",
+        "last_modified",
+        "cve"
+    ],
+    "additionalProperties": true
+}

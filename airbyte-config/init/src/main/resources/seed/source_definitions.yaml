@@ -1063,6 +1063,14 @@
   icon: nytimes.svg
   sourceType: api
   releaseStage: alpha
+- name: NVD
+  sourceDefinitionId: 74d7d78e-0b75-45c9-bfb8-6f47bec92fd3
+  dockerRepository: airbyte/source-nvd
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/sources/nvd
+  icon: nvd.svg
+  sourceType: api
+  releaseStage: alpha
 - name: Okta
   sourceDefinitionId: 1d4fdb25-64fc-4569-92da-fcdca79a8372
   dockerRepository: airbyte/source-okta

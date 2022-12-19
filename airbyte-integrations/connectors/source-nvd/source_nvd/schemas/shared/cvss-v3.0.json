@@ -1,0 +1,282 @@
+{
+    "license": [
+        "Copyright (c) 2017, FIRST.ORG, INC.",
+        "All rights reserved.",
+        "",
+        "Redistribution and use in source and binary forms, with or without modification, are permitted provided that the ",
+        "following conditions are met:",
+        "1. Redistributions of source code must retain the above copyright notice, this list of conditions and the following ",
+        "   disclaimer.",
+        "2. Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the ",
+        "   following disclaimer in the documentation and/or other materials provided with the distribution.",
+        "3. Neither the name of the copyright holder nor the names of its contributors may be used to endorse or promote ",
+        "   products derived from this software without specific prior written permission.",
+        "",
+        "THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS 'AS IS' AND ANY EXPRESS OR IMPLIED WARRANTIES, ",
+        "INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE ",
+        "DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, ",
+        "SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR ",
+        "SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, ",
+        "WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE ",
+        "OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."
+    ],
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JSON Schema for Common Vulnerability Scoring System version 3.0",
+    "type": "object",
+    "definitions": {
+        "attackVectorType": {
+            "type": "string",
+            "enum": [
+                "NETWORK",
+                "ADJACENT_NETWORK",
+                "LOCAL",
+                "PHYSICAL"
+            ]
+        },
+        "modifiedAttackVectorType": {
+            "type": "string",
+            "enum": [
+                "NETWORK",
+                "ADJACENT_NETWORK",
+                "LOCAL",
+                "PHYSICAL",
+                "NOT_DEFINED"
+            ]
+        },
+        "attackComplexityType": {
+            "type": "string",
+            "enum": [
+                "HIGH",
+                "LOW"
+            ]
+        },
+        "modifiedAttackComplexityType": {
+            "type": "string",
+            "enum": [
+                "HIGH",
+                "LOW",
+                "NOT_DEFINED"
+            ]
+        },
+        "privilegesRequiredType": {
+            "type": "string",
+            "enum": [
+                "HIGH",
+                "LOW",
+                "NONE"
+            ]
+        },
+        "modifiedPrivilegesRequiredType": {
+            "type": "string",
+            "enum": [
+                "HIGH",
+                "LOW",
+                "NONE",
+                "NOT_DEFINED"
+            ]
+        },
+        "userInteractionType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "REQUIRED"
+            ]
+        },
+        "modifiedUserInteractionType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "REQUIRED",
+                "NOT_DEFINED"
+            ]
+        },
+        "scopeType": {
+            "type": "string",
+            "enum": [
+                "UNCHANGED",
+                "CHANGED"
+            ]
+        },
+        "modifiedScopeType": {
+            "type": "string",
+            "enum": [
+                "UNCHANGED",
+                "CHANGED",
+                "NOT_DEFINED"
+            ]
+        },
+        "ciaType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "LOW",
+                "HIGH"
+            ]
+        },
+        "modifiedCiaType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "LOW",
+                "HIGH",
+                "NOT_DEFINED"
+            ]
+        },
+        "exploitCodeMaturityType": {
+            "type": "string",
+            "enum": [
+                "UNPROVEN",
+                "PROOF_OF_CONCEPT",
+                "FUNCTIONAL",
+                "HIGH",
+                "NOT_DEFINED"
+            ]
+        },
+        "remediationLevelType": {
+            "type": "string",
+            "enum": [
+                "OFFICIAL_FIX",
+                "TEMPORARY_FIX",
+                "WORKAROUND",
+                "UNAVAILABLE",
+                "NOT_DEFINED"
+            ]
+        },
+        "confidenceType": {
+            "type": "string",
+            "enum": [
+                "UNKNOWN",
+                "REASONABLE",
+                "CONFIRMED",
+                "NOT_DEFINED"
+            ]
+        },
+        "ciaRequirementType": {
+            "type": "string",
+            "enum": [
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "NOT_DEFINED"
+            ]
+        },
+        "scoreType": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 10
+        },
+        "severityType": {
+            "type": "string",
+            "enum": [
+                "NONE",
+                "LOW",
+                "MEDIUM",
+                "HIGH",
+                "CRITICAL"
+            ]
+        }
+    },
+    "properties": {
+        "version": {
+            "description": "CVSS Version",
+            "type": "string",
+            "enum": [
+                "3.0"
+            ]
+        },
+        "vectorString": {
+            "type": "string",
+            "pattern": "^CVSS:3[.]0/((AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])/)*(AV:[NALP]|AC:[LH]|PR:[UNLH]|UI:[NR]|S:[UC]|[CIA]:[NLH]|E:[XUPFH]|RL:[XOTWU]|RC:[XURC]|[CIA]R:[XLMH]|MAV:[XNALP]|MAC:[XLH]|MPR:[XUNLH]|MUI:[XNR]|MS:[XUC]|M[CIA]:[XNLH])$"
+        },
+        "attackVector": {
+            "$ref": "#/definitions/attackVectorType"
+        },
+        "attackComplexity": {
+            "$ref": "#/definitions/attackComplexityType"
+        },
+        "privilegesRequired": {
+            "$ref": "#/definitions/privilegesRequiredType"
+        },
+        "userInteraction": {
+            "$ref": "#/definitions/userInteractionType"
+        },
+        "scope": {
+            "$ref": "#/definitions/scopeType"
+        },
+        "confidentialityImpact": {
+            "$ref": "#/definitions/ciaType"
+        },
+        "integrityImpact": {
+            "$ref": "#/definitions/ciaType"
+        },
+        "availabilityImpact": {
+            "$ref": "#/definitions/ciaType"
+        },
+        "baseScore": {
+            "$ref": "#/definitions/scoreType"
+        },
+        "baseSeverity": {
+            "$ref": "#/definitions/severityType"
+        },
+        "exploitCodeMaturity": {
+            "$ref": "#/definitions/exploitCodeMaturityType"
+        },
+        "remediationLevel": {
+            "$ref": "#/definitions/remediationLevelType"
+        },
+        "reportConfidence": {
+            "$ref": "#/definitions/confidenceType"
+        },
+        "temporalScore": {
+            "$ref": "#/definitions/scoreType"
+        },
+        "temporalSeverity": {
+            "$ref": "#/definitions/severityType"
+        },
+        "confidentialityRequirement": {
+            "$ref": "#/definitions/ciaRequirementType"
+        },
+        "integrityRequirement": {
+            "$ref": "#/definitions/ciaRequirementType"
+        },
+        "availabilityRequirement": {
+            "$ref": "#/definitions/ciaRequirementType"
+        },
+        "modifiedAttackVector": {
+            "$ref": "#/definitions/modifiedAttackVectorType"
+        },
+        "modifiedAttackComplexity": {
+            "$ref": "#/definitions/modifiedAttackComplexityType"
+        },
+        "modifiedPrivilegesRequired": {
+            "$ref": "#/definitions/modifiedPrivilegesRequiredType"
+        },
+        "modifiedUserInteraction": {
+            "$ref": "#/definitions/modifiedUserInteractionType"
+        },
+        "modifiedScope": {
+            "$ref": "#/definitions/modifiedScopeType"
+        },
+        "modifiedConfidentialityImpact": {
+            "$ref": "#/definitions/modifiedCiaType"
+        },
+        "modifiedIntegrityImpact": {
+            "$ref": "#/definitions/modifiedCiaType"
+        },
+        "modifiedAvailabilityImpact": {
+            "$ref": "#/definitions/modifiedCiaType"
+        },
+        "environmentalScore": {
+            "$ref": "#/definitions/scoreType"
+        },
+        "environmentalSeverity": {
+            "$ref": "#/definitions/severityType"
+        }
+    },
+    "required": [
+        "version",
+        "vectorString",
+        "baseScore",
+        "baseSeverity"
+    ]
+}

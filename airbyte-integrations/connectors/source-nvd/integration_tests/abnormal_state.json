@@ -1,0 +1,34 @@
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cves"
+      },
+      "stream_state": {
+        "last_modified": "2999-12-12T14:35:51.977"
+      }
+    },
+    "data": {
+      "cves": {
+        "last_modified": "2999-12-12T14:35:51.977"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_descriptor": {
+        "name": "cpes"
+      },
+      "stream_state": {
+        "last_modified": "2999-12-12T14:35:51.977"
+      }
+    },
+    "data": {
+      "cpes": {
+        "last_modified": "2999-12-12T14:35:51.977"
+      }
+    }
+  }
+]

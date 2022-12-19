@@ -1,0 +1,127 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "JSON Schema for NVD Common Product Enumeration (CPE) API version 2.0",
+    "$id": "https://csrc.nist.gov/schema/nvd/api/2.0/cpe_api_json_2.0.schema",
+    "definitions": {
+        "defTitle": {
+            "description": "Human readable title for CPE",
+            "type": "object",
+            "properties": {
+                "title": {
+                    "type": "string"
+                },
+                "lang": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "title",
+                "lang"
+            ],
+            "additionalProperties": true
+        },
+        "defReference": {
+            "description": "Internet resource for CPE",
+            "type": "object",
+            "properties": {
+                "ref": {
+                    "type": "string",
+                    "pattern": "^([A-Za-z][A-Za-z0-9+.-]+):(\\/\\/([^@]+@)?([A-Za-z0-9.\\-_~]+)(:\\d+)?)?((?:[A-Za-z0-9-._~]|%[A-Fa-f0-9]|[!$&'\\[\\]()*+,;=:@])+(?:\\/(?:[A-Za-z0-9-._~]|%[A-Fa-f0-9]|[!$&'\\[\\]()*+,;=:@])*)*|(?:\\/(?:[A-Za-z0-9-._~]|%[A-Fa-f0-9]|[!$&'()*+,;=:@])+)*)?(\\?(?:[A-Za-z0-9-._~]|%[A-Fa-f0-9]|[!$&'\\[\\]()*+,;=:@]|[/?])*)?(\\#(?:[A-Za-z0-9-._~]|%[A-Fa-f0-9]|[!$&'\\[\\]()*+,;=:@]|[/?])*)?$"
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Advisory",
+                        "Change Log",
+                        "Product",
+                        "Project",
+                        "Vendor",
+                        "Version"
+                    ]
+                }
+            },
+            "required": [
+                "ref"
+            ],
+            "additionalProperties": true
+        },
+        "defCpe": {
+            "type": "object",
+            "properties": {
+                "deprecated": {
+                    "type": "boolean"
+                },
+                "cpeName": {
+                    "type": "string"
+                },
+                "cpeNameId": {
+                    "type": "string",
+                    "format": "uuid"
+                },
+                "created": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "lastModified": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "titles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/defTitle"
+                    }
+                },
+                "refs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/defReference"
+                    }
+                },
+                "deprecatedBy": {
+                    "type": "array",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "cpeName": {
+                                "type": "string"
+                            },
+                            "cpeNameId": {
+                                "type": "string",
+                                "format": "uuid"
+                            }
+                        }
+                    }
+                }
+            },
+            "required": [
+                "cpeName",
+                "cpeNameId",
+                "deprecated",
+                "lastModified",
+                "created"
+            ],
+            "additionalProperties": true
+        }
+    },
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "CPE ID",
+            "type": "string"
+        },
+        "last_modified": {
+            "description": "Last modified date of the CPE",
+            "type": "string"
+        },
+        "cpe": {
+            "$ref": "#/definitions/defCpe"
+        }
+    },
+    "required": [
+        "id",
+        "last_modified",
+        "cpe"
+    ],
+    "additionalProperties": true
+}
