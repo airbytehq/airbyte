@@ -18,6 +18,7 @@ import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.WorkspaceHelper;
 import io.airbyte.persistence.job.models.Job;
 import io.airbyte.validation.json.JsonValidationException;
 import io.micronaut.context.annotation.Value;
@@ -30,6 +31,7 @@ import java.time.Duration;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TimeZone;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -43,6 +45,8 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
+  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of();
+  private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
@@ -127,11 +131,34 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         final Date nextRunStart = cronExpression.getNextValidTimeAfter(new Date(earliestNextRun));
         final Duration timeToWait = Duration.ofSeconds(
             Math.max(0, nextRunStart.getTime() / MS_PER_SECOND - currentSecondsSupplier.get()));
+
+        addSchedulingNoiseForAllowListedWorkspace(timeToWait, standardSync);
         return new ScheduleRetrieverOutput(timeToWait);
       } catch (final ParseException e) {
         throw (DateTimeException) new DateTimeException(e.getMessage()).initCause(e);
       }
     }
+  }
+
+  private void addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, StandardSync standardSync) {
+    final UUID workspaceId;
+    try {
+      workspaceId = new WorkspaceHelper(configRepository, jobPersistence).getWorkspaceForConnectionId(standardSync.getConnectionId());
+    } catch (JsonValidationException | ConfigNotFoundException e) {
+      // We tolerate exceptions and fail open by doing nothing.
+      return;
+    }
+    if (!SCHEDULING_NOISE_WORKSPACE_IDS.contains(workspaceId)) {
+      // Only apply to a specific set of workspaces.
+      return;
+    }
+    if (!standardSync.getScheduleType().equals(ScheduleType.CRON)) {
+      // Only apply noise to cron connections.
+      return;
+    }
+
+    // We really do want to add some scheduling noise for this connection.
+    timeToWait.plusMinutes((long) Math.random() * SCHEDULING_NOISE_CONSTANT);
   }
 
   /**
