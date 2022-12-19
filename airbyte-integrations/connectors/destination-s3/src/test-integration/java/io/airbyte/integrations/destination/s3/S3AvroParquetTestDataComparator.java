@@ -50,13 +50,13 @@ public class S3AvroParquetTestDataComparator extends AdvancedTestDataComparator 
   @Override
   protected boolean compareString(final JsonNode expectedValue, final JsonNode actualValue) {
     // to handle base64 encoded strings
-    return  expectedValue.asText().equals(actualValue.asText())
+    return expectedValue.asText().equals(actualValue.asText())
         || decodeBase64(expectedValue.asText()).equals(actualValue.asText());
   }
 
   private String decodeBase64(String string) {
-      byte[] decoded = Base64.getDecoder().decode(string);
-      return new String(decoded, StandardCharsets.UTF_8);
+    byte[] decoded = Base64.getDecoder().decode(string);
+    return new String(decoded, StandardCharsets.UTF_8);
   }
 
 }
