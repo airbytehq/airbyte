@@ -60,11 +60,13 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const { formatMessage } = useIntl();
 
   // manifest values
-  const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+  const [storedBuilderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
     DEFAULT_BUILDER_FORM_VALUES
   );
-  const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
+  const builderFormValues = useMemo(() => {
+    return { ...DEFAULT_BUILDER_FORM_VALUES, ...(storedBuilderFormValues ?? {}) };
+  }, [storedBuilderFormValues]);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
     "connectorBuilderJsonManifest",
@@ -73,8 +75,8 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
   useEffect(() => {
-    setJsonManifest(convertToManifest(formValues));
-  }, [formValues, setJsonManifest]);
+    setJsonManifest(convertToManifest(builderFormValues));
+  }, [builderFormValues, setJsonManifest]);
 
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
@@ -115,7 +117,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
-    builderFormValues: formValues,
+    builderFormValues,
     jsonManifest: manifest,
     yamlManifest,
     yamlEditorIsMounted,
