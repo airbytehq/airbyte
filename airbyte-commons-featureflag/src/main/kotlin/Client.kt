@@ -40,6 +40,7 @@ class ExampleController(private val ffClient: Client) {
 sealed class Flag(internal val key: String) {
     object FeatureOne : Flag("feature-one")
     object FeatureTwo : Flag("feature-two")
+    class Temp(key: String) : Flag(key)
 }
 
 /**
