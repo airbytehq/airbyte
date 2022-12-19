@@ -26,7 +26,6 @@ class ConvexClient:
         TODO: link to convex docs here
         """
         request_body = {"tableNames": keys}
-        print(request_body)
         return self._request("PUT", endpoint="clear_tables", json=request_body)
 
     def _get_auth_headers(self) -> Mapping[str, Any]:
@@ -40,5 +39,6 @@ class ConvexClient:
 
         response = requests.request(method=http_method, params=params, url=url, headers=headers, json=json)
 
-        response.raise_for_status()
+        if response.status_code != 200:
+            raise Exception(response.json())
         return response
