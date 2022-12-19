@@ -22,17 +22,17 @@ public class HeartbeatMonitor {
 
   public static final Duration DEFAULT_HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
 
-  private final Duration heartBeatFreshDuration;
+  private final Duration heartbeatFreshnessThreshold;
   private final Supplier<Instant> nowSupplier;
   private final AtomicReference<Instant> lastBeat;
 
-  public HeartbeatMonitor(final Duration heartBeatFreshDuration) {
-    this(heartBeatFreshDuration, Instant::now);
+  public HeartbeatMonitor(final Duration heartbeatFreshnessThreshold) {
+    this(heartbeatFreshnessThreshold, Instant::now);
   }
 
   @VisibleForTesting
-  public HeartbeatMonitor(final Duration heartBeatFreshDuration, final Supplier<Instant> nowSupplier) {
-    this.heartBeatFreshDuration = heartBeatFreshDuration;
+  public HeartbeatMonitor(final Duration heartbeatFreshnessThreshold, final Supplier<Instant> nowSupplier) {
+    this.heartbeatFreshnessThreshold = heartbeatFreshnessThreshold;
     this.nowSupplier = nowSupplier;
     lastBeat = new AtomicReference<>(null);
   }
@@ -47,16 +47,24 @@ public class HeartbeatMonitor {
   /**
    *
    * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is less than
-   *         heartBeatFreshDuration. otherwise, false.
+   *         heartBeatFreshDuration. empty if not beat has been registered yet. otherwise, false.
    */
-  public boolean isBeating() {
-    final Instant instantFetched = lastBeat.get();
-    final Instant now = nowSupplier.get();
-    return instantFetched != null && instantFetched.plus(heartBeatFreshDuration).isAfter(now);
+  public Optional<Boolean> isBeating() {
+    return getTimeSinceLastBeat().map(timeSinceLastBeat -> timeSinceLastBeat.compareTo(heartbeatFreshnessThreshold) < 0);
   }
 
-  public Optional<Instant> lastBeat() {
-    return Optional.ofNullable(lastBeat.get());
+  public Duration getHeartbeatFreshnessThreshold() {
+    return heartbeatFreshnessThreshold;
+  }
+
+  public Optional<Duration> getTimeSinceLastBeat() {
+    final Instant instantFetched = lastBeat.get();
+
+    if (instantFetched == null) {
+      return Optional.empty();
+    } else {
+      return Optional.ofNullable(Duration.between(lastBeat.get(), nowSupplier.get()));
+    }
   }
 
 }

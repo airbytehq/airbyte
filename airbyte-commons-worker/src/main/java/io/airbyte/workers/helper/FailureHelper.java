@@ -129,6 +129,13 @@ public class FailureHelper {
         .withFailureOrigin(FailureOrigin.DESTINATION);
   }
 
+  public static FailureReason sourceTimeoutFailure(final Throwable t, final Long jobId, final Integer attemptNumber) {
+    return connectorCommandFailure(t, jobId, attemptNumber, ConnectorCommand.READ)
+        .withFailureOrigin(FailureOrigin.SOURCE)
+        .withExternalMessage(
+            "Replication was cancelled because the source stopped emitting records. This can happen if the source API or database unexpected goes down or becomes unavailable in the middle of replication. If it persists, please contact Airbyte support.");
+  }
+
   public static FailureReason checkFailure(final Throwable t,
                                            final Long jobId,
                                            final Integer attemptNumber,

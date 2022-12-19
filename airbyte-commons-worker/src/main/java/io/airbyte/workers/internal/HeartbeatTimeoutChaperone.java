@@ -6,16 +6,25 @@ package io.airbyte.workers.internal;
 
 import static java.lang.Thread.sleep;
 
-import io.airbyte.workers.general.DefaultReplicationWorker.SourceException;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * The {@link HeartbeatTimeoutChaperone} takes in an arbitrary runnable and a heartbeat monitor. It
+ * runs each in separate threads. If the heartbeat monitor thread completes before the runnable,
+ * that means that the heartbeat has stopped. If this occurs the chaperone cancels the runnable
+ * thread and then throws an exception. If the runnable thread completes first, the chaperone
+ * cancels the heartbeat and then returns.
+ *
+ * This allows us to run an arbitrary runnable that we can kill if a heartbeat stops. This is useful
+ * in cases like the platform reading from the source. The thread that reads from the source is
+ * allowed to run as long as the heartbeat from the sources is fresh.
+ */
 public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
@@ -33,66 +42,68 @@ public class HeartbeatTimeoutChaperone {
     this.heartbeatMonitor = heartbeatMonitor;
   }
 
-  public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService, final AtomicBoolean cancelled) {
+  public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService) {
     return () -> {
-      final CompletableFuture<Void> runnableToCancelIfTimeOut = CompletableFuture.runAsync(runnable, executorService);
-      final CompletableFuture<Void> srcHeartbeatThread = CompletableFuture.runAsync(this::monitor, executorService);
+      final CompletableFuture<Void> runnableFuture = CompletableFuture.runAsync(runnable, executorService);
+      final CompletableFuture<Void> heartbeatFuture = CompletableFuture.runAsync(this::monitor, executorService);
 
       try {
-        CompletableFuture.anyOf(runnableToCancelIfTimeOut, srcHeartbeatThread).get();
+        CompletableFuture.anyOf(runnableFuture, heartbeatFuture).get();
       } catch (final InterruptedException e) {
-        throw new RuntimeException(e);
+        LOGGER.error("Heartbeat chaperone thread was interrupted.", e);
+        return;
       } catch (final ExecutionException e) {
-        if (!cancelled.get()) {
-          // this should check explicitly for source and destination exceptions
-          if (e.getCause() instanceof RuntimeException) {
-            throw (RuntimeException) e.getCause();
-          } else {
-            throw new RuntimeException(e);
-          }
+        // this should check explicitly for source and destination exceptions
+        if (e.getCause() instanceof RuntimeException) {
+          throw (RuntimeException) e.getCause();
+        } else {
+          throw new RuntimeException(e);
         }
       }
 
-      LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}", srcHeartbeatThread.isDone(), runnableToCancelIfTimeOut.isDone());
+      LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}", heartbeatFuture.isDone(), runnableFuture.isDone());
 
       boolean heartbeatTimedOut = false;
-      if (srcHeartbeatThread.isDone() && !runnableToCancelIfTimeOut.isDone()) {
+      if (heartbeatFuture.isDone() && !runnableFuture.isDone()) {
         heartbeatTimedOut = true;
-        runnableToCancelIfTimeOut.cancel(true);
+        runnableFuture.cancel(true);
       }
-      if (runnableToCancelIfTimeOut.isDone()) {
-        srcHeartbeatThread.cancel(true);
+
+      if (runnableFuture.isDone() && !heartbeatFuture.isDone()) {
+        heartbeatFuture.cancel(true);
       }
 
       if (heartbeatTimedOut) {
-        throw new SourceException("source timed out");
-      }
-
-      // todo
-      try {
-        runnableToCancelIfTimeOut.get();
-      } catch (final InterruptedException e) {
-        e.printStackTrace();
-      } catch (final ExecutionException e) {
-        e.printStackTrace();
+        throw new HeartbeatTimeoutException(String.format("Heartbeat has stopped. Heartbeat freshness threshold: %s Actual heartbeat age: %s",
+            heartbeatMonitor.getHeartbeatFreshnessThreshold(),
+            heartbeatMonitor.getTimeSinceLastBeat().orElse(null)));
       }
     };
   }
 
   @SuppressWarnings("BusyWait")
-  public void monitor() {
+  private void monitor() {
     while (true) {
-      // todo handle
       try {
         sleep(timeoutCheckDuration.toMillis());
       } catch (final InterruptedException e) {
-        LOGGER.info("Heartbeat thread has been interrupted (this is the expected way that it ends when the heartbeat never failed)");
+        LOGGER.info("Heartbeat thread has been interrupted (this is expected; the heartbeat was healthy the whole time).");
+        return;
       }
-      if (!heartbeatMonitor.isBeating()) {
-        LOGGER.info("source heartbeat has stopped");
+      // if not beating, return. otherwise, if it is beating or heartbeat hasn't started, continue.
+      if (!heartbeatMonitor.isBeating().orElse(true)) {
+        LOGGER.error("Source has stopped heart beating.");
         return;
       }
     }
+  }
+
+  public static class HeartbeatTimeoutException extends RuntimeException {
+
+    private HeartbeatTimeoutException(final String message) {
+      super(message);
+    }
+
   }
 
 }

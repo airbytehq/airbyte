@@ -43,6 +43,7 @@ import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone.HeartbeatTimeoutException;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -142,7 +143,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * @param syncInput all configuration for running replication
    * @param jobRoot file root that worker is allowed to use
    * @return output of the replication attempt (including state)
-   * @throws WorkerException
+   * @throws WorkerException - exception for why the worker failed
    */
   @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
@@ -226,7 +227,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               timeTracker,
               fieldSelectionEnabled,
               srcHeartbeatMonitor),
-          executors, cancelled),
+          executors),
           executors)
           .whenComplete((msg, ex) -> {
             try {
@@ -236,13 +237,14 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           })
           .whenComplete((msg, ex) -> {
-
             if (ex != null) {
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof SourceException) {
                 replicationRunnableFailureRef.set(FailureHelper.sourceFailure(ex, Long.valueOf(jobId), attempt));
               } else if (ex.getCause() instanceof DestinationException) {
                 replicationRunnableFailureRef.set(FailureHelper.destinationFailure(ex, Long.valueOf(jobId), attempt));
+              } else if (ex.getCause() instanceof HeartbeatTimeoutException) {
+                replicationRunnableFailureRef.set(FailureHelper.sourceTimeoutFailure(ex, Long.valueOf(jobId), attempt));
               } else {
                 replicationRunnableFailureRef.set(FailureHelper.replicationFailure(ex, Long.valueOf(jobId), attempt));
               }
@@ -329,7 +331,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      long recordsRead = 0L;
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
@@ -393,10 +395,11 @@ public class DefaultReplicationWorker implements ReplicationWorker {
         }
       } catch (final Exception e) {
         if (!cancelled.get()) {
-          // Although this thread is closed first, it races with the source's closure and can attempt one
-          // final read after the source is closed before it's terminated.
-          // This read will fail and throw an exception. Because of this, throw exceptions only if the worker
-          // was not cancelled.
+          /*
+           * Although this thread is closed first, it races with the source's closure and can attempt one
+           * final read after the source is closed before it's terminated. This read will fail and throw an
+           * exception. Because of this, throw exceptions only if the worker was not cancelled.
+           */
 
           if (e instanceof SourceException || e instanceof DestinationException) {
             // Surface Source and Destination exceptions directly so that they can be classified properly by the
@@ -512,8 +515,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * Extracts state out to the {@link ReplicationOutput} so it can be later saved in the
    * PersistStateActivity - State is NOT SAVED here.
    *
-   * @param syncInput
-   * @param output
+   * @param syncInput - sync input configuration
+   * @param output - output object into which state will be added
    */
   private void prepStateForLaterSaving(final StandardSyncInput syncInput, final ReplicationOutput output) {
     if (messageTracker.getSourceOutputState().isPresent()) {
@@ -599,8 +602,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
    * the configured catalog. Since the configured catalog only includes the selected fields, this lets
    * us filter records to only the fields explicitly requested.
    *
-   * @param catalog
-   * @param streamToSelectedFields
+   * @param catalog - catalog with all streams
+   * @param streamToSelectedFields - streams to be selected from the catalog
    */
   private static void populatedStreamToSelectedFields(final ConfiguredAirbyteCatalog catalog,
                                                       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields) {
@@ -608,7 +611,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       final List<String> selectedFields = new ArrayList<>();
       final JsonNode propertiesNode = s.getStream().getJsonSchema().findPath("properties");
       if (propertiesNode.isObject()) {
-        propertiesNode.fieldNames().forEachRemaining((fieldName) -> selectedFields.add(fieldName));
+        propertiesNode.fieldNames().forEachRemaining(selectedFields::add);
       } else {
         throw new RuntimeException("No properties node in stream schema");
       }
@@ -631,7 +634,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     if (data.isObject()) {
       ((ObjectNode) data).retain(selectedFields);
     } else {
-      throw new RuntimeException(String.format("Unexpected data in record: %s", data.toString()));
+      throw new RuntimeException(String.format("Unexpected data in record: %s", data));
     }
   }
 
@@ -641,6 +644,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     // Resources are closed in the opposite order they are declared.
     LOGGER.info("Cancelling replication worker...");
     try {
+      // noinspection ResultOfMethodCallIgnored
       executors.awaitTermination(10, TimeUnit.SECONDS);
     } catch (final InterruptedException e) {
       ApmTraceUtils.addExceptionToTrace(e);
@@ -681,9 +685,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return tags;
   }
 
-  public static class SourceException extends RuntimeException {
+  private static class SourceException extends RuntimeException {
 
-    public SourceException(final String message) {
+    private SourceException(final String message) {
       super(message);
     }
 

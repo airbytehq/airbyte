@@ -132,9 +132,9 @@ class DefaultReplicationWorkerTest {
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
     recordSchemaValidator = mock(RecordSchemaValidator.class);
-    srcHeartbeatMonitor = mock(HeartbeatMonitor.class);;
+    srcHeartbeatMonitor = mock(HeartbeatMonitor.class);
     srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION);
-    doReturn(true).when(srcHeartbeatMonitor).isBeating();
+    doReturn(Optional.of(true)).when(srcHeartbeatMonitor).isBeating();
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
     workerMetricReporter = new WorkerMetricReporter(metricClient, "docker_image:v1.0.0");
 
@@ -185,7 +185,7 @@ class DefaultReplicationWorkerTest {
   @Test
   void testFailsOnHeartbeatTimeout() throws Exception {
     final HeartbeatMonitor srcHeartbeatMonitor = mock(HeartbeatMonitor.class);
-    doReturn(false).when(srcHeartbeatMonitor).isBeating();
+    doReturn(Optional.of(false)).when(srcHeartbeatMonitor).isBeating();
 
     final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, Duration.ofMillis(10));
 
@@ -215,7 +215,8 @@ class DefaultReplicationWorkerTest {
     verify(destination).close();
 
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
-    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
+    assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE) &&
+        f.getExternalMessage().contains("source stopped emitting records")));
   }
 
   @SuppressWarnings("unchecked")

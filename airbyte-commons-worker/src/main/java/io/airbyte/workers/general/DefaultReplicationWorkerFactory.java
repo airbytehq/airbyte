@@ -77,8 +77,6 @@ public class DefaultReplicationWorkerFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     final var metricReporter = new WorkerMetricReporter(metricClient, srcDockerImage);
 
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESH_DURATION);
-
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
     final AirbyteSource airbyteSource;
