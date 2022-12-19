@@ -27,7 +27,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: PatchedConnectorManifest = {
   streams: [],
 };
 
-type EditorView = "ui" | "yaml";
+export type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | "inputs" | number;
 
 interface Context {

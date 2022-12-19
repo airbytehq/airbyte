@@ -5,10 +5,9 @@
   color: colors.$grey-500;
 }
 
-.modalContent {
-  height: 60vh;
-  overflow: visible;
-  background-color: colors.$grey-100;
+.formContent {
+  max-height: 60vh;
+  overflow: auto;
 }
 
 .inputFormModalFooter {
