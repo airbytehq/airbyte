@@ -42,6 +42,15 @@ class NvdStream(HttpStream, IncrementalMixin, ABC):
         # NVD sends a 403 when being rate limited, so retry 403s
         return response.status_code == 429 or response.status_code == 403 or 500 <= response.status_code < 600
 
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        # Define a custom backoff time because with the default exponential backoff, 403's are not retried
+        return 6
+
+    @property
+    def max_retries(self) -> int:
+        # Increase number of retries a bit since the NVD API is weird with rate limiting sometimes
+        return 10
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:

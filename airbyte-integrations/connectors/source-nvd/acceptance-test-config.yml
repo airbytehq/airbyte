@@ -1,31 +1,31 @@
-connector_image: airbyte/source-nvd-vulnerabilities:dev
+connector_image: airbyte/source-nvd:dev
 test_strictness_level: high
 acceptance_tests:
   spec:
     tests:
-      - spec_path: "source_nvd_vulnerabilities/spec.yaml"
+      - spec_path: "source_nvd/spec.yaml"
   connection:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         status: "succeed"
       - config_path: "integration_tests/invalid_config.json"
         status: "failed"
   discovery:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
   basic_read:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         empty_streams: []
         expect_records:
           bypass_reason: "Results from API change often so cannot be reliably compared"
   incremental: 
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
         future_state:
           future_state_path: "integration_tests/abnormal_state.json"
   full_refresh:
     tests:
-      - config_path: "integration_tests/sample_config.json"
+      - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/configured_catalog.json"
