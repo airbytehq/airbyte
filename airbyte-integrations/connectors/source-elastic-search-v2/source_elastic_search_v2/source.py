@@ -228,7 +228,7 @@ class SourceElasticSearchV2(AbstractSource):
 
         :param config: A Mapping of the user input configuration as defined in the connector spec.
         """
-        return [Campaigns(), Accounts(), Creatives()]
+        return [Creatives(), Campaigns(), Accounts()]
 
 
 class Creatives(IncrementalElasticSearchV2Stream):
