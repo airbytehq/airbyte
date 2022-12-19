@@ -33,3 +33,9 @@
   gap: variables.$spacing-md;
   align-items: center;
 }
+
+.inputsErrorBadge {
+  position: absolute;
+  top: -12px;
+  right: -16px;
+}
