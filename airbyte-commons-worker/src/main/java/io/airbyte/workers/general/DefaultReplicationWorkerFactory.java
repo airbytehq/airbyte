@@ -94,7 +94,7 @@ public class DefaultReplicationWorkerFactory {
         getStreamFactory(destProtocolVersion, DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory),
         new VersionedAirbyteMessageBufferedWriterFactory(serdeProvider, migratorFactory, destProtocolVersion));
 
-    final var srcHeartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESH_DURATION);
+    final var srcHeartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD);
     final var srcHeartbeatTimeoutChaperone =
         new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION);
 

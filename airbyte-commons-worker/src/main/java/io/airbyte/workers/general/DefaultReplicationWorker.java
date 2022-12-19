@@ -229,6 +229,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               srcHeartbeatMonitor),
           executors),
           executors)
+          // regardless of the outcome for the source, we should always notify the destination of end of input.
           .whenComplete((msg, ex) -> {
             try {
               destination.notifyEndOfInput();

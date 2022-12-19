@@ -20,7 +20,7 @@ import java.util.function.Supplier;
  */
 public class HeartbeatMonitor {
 
-  public static final Duration DEFAULT_HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+  public static final Duration DEFAULT_HEARTBEAT_FRESHNESS_THRESHOLD = Duration.of(5, ChronoUnit.MINUTES);
 
   private final Duration heartbeatFreshnessThreshold;
   private final Supplier<Instant> nowSupplier;
