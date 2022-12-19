@@ -1,14 +1,9 @@
 import React from "react";
 import styled from "styled-components";
 
-import { numberNamingFormatter } from "core/functions/numberFormatter";
+import { ProductItem } from "core/domain/product";
 
 import RangeMark from "./RangeMark";
-
-export interface IDataRow {
-  id: string;
-  numberOfRows: number;
-}
 
 interface IRange {
   min?: number;
@@ -16,9 +11,9 @@ interface IRange {
 }
 
 interface IProps extends IRange {
-  marks: IDataRow[];
-  selectedMark?: IDataRow;
-  onSelect: (item: IDataRow) => void;
+  marks: ProductItem[];
+  selectedMark?: ProductItem;
+  onSelect: (item: ProductItem) => void;
 }
 
 const SliderContainer = styled.div<IRange>`
@@ -37,11 +32,7 @@ const Slider: React.FC<IProps> = ({ min = 0, max = 100, marks, selectedMark, onS
   return (
     <SliderContainer min={min} max={max}>
       {marks.map((mark) => (
-        <RangeMark
-          label={numberNamingFormatter({ num: mark.numberOfRows })}
-          isActive={selectedMark?.id === mark.id}
-          onSelect={() => onSelect(mark)}
-        />
+        <RangeMark label={mark.itemName} isActive={selectedMark?.id === mark.id} onSelect={() => onSelect(mark)} />
       ))}
     </SliderContainer>
   );

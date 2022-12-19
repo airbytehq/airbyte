@@ -8,10 +8,11 @@ interface IProps {
 }
 
 const Container = styled.div`
-  width: 100%;
+  width: 50%;
   display: flex;
   flex-direction: row;
   align-items: center;
+  margin-bottom: 20px;
 `;
 
 const Text = styled.div`

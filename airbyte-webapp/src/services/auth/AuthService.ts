@@ -1,4 +1,5 @@
-import { AirbyteRequestService } from "../../core/request/AirbyteRequestService";
+import { AirbyteRequestService } from "core/request/AirbyteRequestService";
+import { userInfo } from "core/request/DaspireClient";
 
 export interface Signup {
   firstName: string;
@@ -37,5 +38,21 @@ export class AuthService extends AirbyteRequestService {
           reject(err);
         });
     });
+  }
+
+  public async get(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      userInfo(this.requestOptions)
+        .then((res: any) => {
+          resolve(res.data);
+        })
+        .catch((err: any) => {
+          reject(err);
+        });
+    });
+  }
+
+  public userInfo() {
+    return userInfo(this.requestOptions);
   }
 }

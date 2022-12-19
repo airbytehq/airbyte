@@ -9,6 +9,7 @@ import { IAuthUser, MyAuthUser } from "./authenticatedUser";
 interface IUserContext {
   user: IAuthUser;
   setUser?: (user: IAuthUser) => void;
+  updateUserStatus?: (status: number) => void;
   removeUser?: () => void;
 }
 
@@ -35,13 +36,28 @@ export const AuthContextProvider: React.FC = ({ children }) => {
     setAuthenticatedUser(user, () => navigate(`/${RoutePaths.Connections}`));
   };
 
+  const updateUserStatus = (status: number) => {
+    const updatedUser = { ...authenticatedUser, status };
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    setAuthenticatedUser(updatedUser);
+  };
+
   const removeUser = () => {
     localStorage.removeItem(AUTH_USER_KEY);
     setAuthenticatedUser(MyAuthUser.userJSON(), () => window.location.reload());
   };
 
   return (
-    <UserContext.Provider value={{ user: authenticatedUser, setUser, removeUser }}>{children}</UserContext.Provider>
+    <UserContext.Provider
+      value={{
+        user: authenticatedUser,
+        setUser,
+        updateUserStatus,
+        removeUser,
+      }}
+    >
+      {children}
+    </UserContext.Provider>
   );
 };
 
