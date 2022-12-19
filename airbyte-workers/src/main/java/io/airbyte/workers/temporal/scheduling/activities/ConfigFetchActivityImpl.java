@@ -7,6 +7,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
+import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
@@ -50,6 +51,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
   private final ConfigRepository configRepository;
   private final JobPersistence jobPersistence;
+  private final WorkspaceHelper workspaceHelper;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
 
@@ -57,8 +59,18 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                  final JobPersistence jobPersistence,
                                  @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                  @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier);
+  }
+
+  @VisibleForTesting
+  protected ConfigFetchActivityImpl(final ConfigRepository configRepository,
+                                    final JobPersistence jobPersistence,
+                                    final WorkspaceHelper workspaceHelper,
+                                    @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
+                                    @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
+    this.workspaceHelper = workspaceHelper;
     this.syncJobMaxAttempts = syncJobMaxAttempts;
     this.currentSecondsSupplier = currentSecondsSupplier;
   }
@@ -143,7 +155,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private void addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, StandardSync standardSync) {
     final UUID workspaceId;
     try {
-      workspaceId = new WorkspaceHelper(configRepository, jobPersistence).getWorkspaceForConnectionId(standardSync.getConnectionId());
+      workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
     } catch (JsonValidationException | ConfigNotFoundException e) {
       // We tolerate exceptions and fail open by doing nothing.
       return;
