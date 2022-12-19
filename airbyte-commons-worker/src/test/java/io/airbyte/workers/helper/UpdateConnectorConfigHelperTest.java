@@ -10,19 +10,12 @@ import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.api.client.AirbyteApiClient;
-import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.DestinationApi;
-import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
-import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationUpdate;
-import io.airbyte.api.client.model.generated.JobIdRequestBody;
-import io.airbyte.api.client.model.generated.JobInfoLightRead;
-import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.SourceUpdate;
@@ -35,16 +28,12 @@ import org.mockito.Mockito;
 
 class UpdateConnectorConfigHelperTest {
 
-  private static final Long JOB_ID = 123L;
-  private static final UUID CONNECTION_ID = UUID.randomUUID();
   private static final UUID SOURCE_ID = UUID.randomUUID();
   private static final String SOURCE_NAME = "source-stripe";
   private static final UUID DESTINATION_ID = UUID.randomUUID();
   private static final String DESTINATION_NAME = "destination-google-sheets";
 
   private final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
-  private final JobsApi mJobsApi = mock(JobsApi.class);
-  private final ConnectionApi mConnectionApi = mock(ConnectionApi.class);
   private final SourceApi mSourceApi = mock(SourceApi.class);
   private final DestinationApi mDestinationApi = mock(DestinationApi.class);
 
@@ -52,20 +41,8 @@ class UpdateConnectorConfigHelperTest {
 
   @BeforeEach
   void setUp() throws ApiException {
-    when(airbyteApiClient.getJobsApi()).thenReturn(mJobsApi);
     when(airbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
     when(airbyteApiClient.getDestinationApi()).thenReturn(mDestinationApi);
-    when(airbyteApiClient.getConnectionApi()).thenReturn(mConnectionApi);
-
-    when(mJobsApi.getJobInfoLight(new JobIdRequestBody()
-        .id(JOB_ID))).thenReturn(new JobInfoLightRead()
-            .job(new JobRead()
-                .configId(CONNECTION_ID.toString())));
-
-    when(mConnectionApi.getConnection(new ConnectionIdRequestBody()
-        .connectionId(CONNECTION_ID))).thenReturn(new ConnectionRead()
-            .sourceId(SOURCE_ID)
-            .destinationId(DESTINATION_ID));
 
     when(mSourceApi.getSource(new SourceIdRequestBody()
         .sourceId(SOURCE_ID))).thenReturn(new SourceRead()
@@ -92,7 +69,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mSourceApi.updateSource(Mockito.any())).thenReturn(new SourceRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateSource(JOB_ID, newConfiguration);
+    updateConnectorConfigHelper.updateSource(SOURCE_ID, newConfiguration);
     verify(mSourceApi).updateSource(expectedSourceUpdate);
   }
 
@@ -108,7 +85,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mDestinationApi.updateDestination(Mockito.any())).thenReturn(new DestinationRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateDestination(JOB_ID, newConfiguration);
+    updateConnectorConfigHelper.updateDestination(DESTINATION_ID, newConfiguration);
     verify(mDestinationApi).updateDestination(expectedDestinationUpdate);
   }
 

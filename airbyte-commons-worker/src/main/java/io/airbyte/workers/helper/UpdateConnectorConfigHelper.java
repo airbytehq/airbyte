@@ -7,15 +7,10 @@ package io.airbyte.workers.helper;
 import com.google.common.hash.Hashing;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.DestinationApi;
-import io.airbyte.api.client.generated.JobsApi;
 import io.airbyte.api.client.generated.SourceApi;
-import io.airbyte.api.client.model.generated.ConnectionIdRequestBody;
-import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.api.client.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.client.model.generated.DestinationRead;
 import io.airbyte.api.client.model.generated.DestinationUpdate;
-import io.airbyte.api.client.model.generated.JobIdRequestBody;
-import io.airbyte.api.client.model.generated.JobInfoLightRead;
 import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceRead;
 import io.airbyte.api.client.model.generated.SourceUpdate;
@@ -44,27 +39,11 @@ public class UpdateConnectorConfigHelper {
     this.apiClient = apiClient;
   }
 
-  private UUID getConnectionIdFromJobId(final Long jobId) {
-    final JobsApi jobsApi = apiClient.getJobsApi();
-    final JobIdRequestBody body = new JobIdRequestBody().id(jobId);
-    final JobInfoLightRead jobInfo = AirbyteApiClient.retryWithJitter(
-        () -> jobsApi.getJobInfoLight(body),
-        "get job info");
-    return UUID.fromString(jobInfo.getJob().getConfigId());
-  }
-
   /**
    * Updates the Source from a sync job ID with the provided Configuration. Secrets and OAuth
    * parameters will be masked when saving.
    */
-  public void updateSource(final Long jobId, final Config config) {
-    final UUID connectionId = getConnectionIdFromJobId(jobId);
-
-    final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
-        () -> apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)),
-        "get connection");
-    final UUID sourceId = connection.getSourceId();
-
+  public void updateSource(final UUID sourceId, final Config config) {
     final SourceApi sourceApi = apiClient.getSourceApi();
     final SourceRead source = AirbyteApiClient.retryWithJitter(
         () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId)),
@@ -87,14 +66,7 @@ public class UpdateConnectorConfigHelper {
    * Updates the Destination from a sync job ID with the provided Configuration. Secrets and OAuth
    * parameters will be masked when saving.
    */
-  public void updateDestination(final Long jobId, final Config config) {
-    final UUID connectionId = getConnectionIdFromJobId(jobId);
-
-    final ConnectionRead connection = AirbyteApiClient.retryWithJitter(
-        () -> apiClient.getConnectionApi().getConnection(new ConnectionIdRequestBody().connectionId(connectionId)),
-        "get connection");
-    final UUID destinationId = connection.getDestinationId();
-
+  public void updateDestination(final UUID destinationId, final Config config) {
     final DestinationApi destinationApi = apiClient.getDestinationApi();
     final DestinationRead destination = AirbyteApiClient.retryWithJitter(
         () -> destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId)),

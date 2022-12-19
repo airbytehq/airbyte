@@ -6,9 +6,13 @@ description: WorkerSourceConfig
 type: object
 additionalProperties: false
 required:
+  - actorId
   - sourceConnectionConfiguration
   - catalog
 properties:
+  actorId:
+    type: string
+    format: uuid
   sourceConnectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object

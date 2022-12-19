@@ -196,7 +196,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, updateConnectorConfigHelper, mdc, timeTracker, Long.valueOf(jobId)),
+          readFromDstRunnable(destination, cancelled, messageTracker, updateConnectorConfigHelper, mdc, timeTracker, destinationConfig),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -222,7 +222,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               recordSchemaValidator,
               metricReporter,
               timeTracker,
-              Long.valueOf(jobId),
+              sourceConfig,
               fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
@@ -263,7 +263,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper,
                                               final Map<String, String> mdc,
                                               final ThreadedTimeTracker timeHolder,
-                                              final Long jobId) {
+                                              final WorkerDestinationConfig destinationConfig) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -282,7 +282,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             messageTracker.acceptFromDestination(message);
 
             if (message.getType() == Type.CONTROL) {
-              acceptDstControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
+              acceptDstControlMessage(destinationConfig, message.getControl(), updateConnectorConfigHelper);
             }
           }
         }
@@ -320,7 +320,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
                                                            final ThreadedTimeTracker timeHolder,
-                                                           final Long jobId,
+                                                           final WorkerSourceConfig sourceConfig,
                                                            final boolean fieldSelectionEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -351,7 +351,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             messageTracker.acceptFromSource(message);
 
             if (message.getType() == Type.CONTROL) {
-              acceptSrcControlMessage(jobId, message.getControl(), updateConnectorConfigHelper);
+              acceptSrcControlMessage(sourceConfig, message.getControl(), updateConnectorConfigHelper);
             }
 
             try {
@@ -412,19 +412,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void acceptSrcControlMessage(final Long jobId,
+  private static void acceptSrcControlMessage(final WorkerSourceConfig sourceConfig,
                                               final AirbyteControlMessage controlMessage,
                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateSource(jobId, controlMessage.getConnectorConfig().getConfig());
+      updateConnectorConfigHelper.updateSource(sourceConfig.getActorId(), controlMessage.getConnectorConfig().getConfig());
     }
   }
 
-  private static void acceptDstControlMessage(final Long jobId,
+  private static void acceptDstControlMessage(final WorkerDestinationConfig destinationConfig,
                                               final AirbyteControlMessage controlMessage,
                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateDestination(jobId, controlMessage.getConnectorConfig().getConfig());
+      updateConnectorConfigHelper.updateDestination(destinationConfig.getActorId(), controlMessage.getConnectorConfig().getConfig());
     }
   }
 
