@@ -1,0 +1,138 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "transactionNumber": {
+      "type": ["null", "string"]
+    },
+    "postedDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "entityRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "type": {
+      "type": "string",
+      "enum" : [
+        "expense",
+        "invoice",
+        "payment",
+        "payroll",
+        "journalEntry",
+        "bill",
+        "vendorCreditNote",
+        "creditNote",
+        "billPayment",
+        "bankTransaction",
+        "transfer",
+        "deposit",
+        "refund",
+        "estimate",
+        "inventoryAdjustment",
+        "purchaseOrder",
+        "taxPayment",
+        "taxAdjustment",
+        "taxRefund",
+        "other",
+        "unknown"
+      ]
+    },
+    "isPosting": {
+      "type": "boolean"
+    },
+    "isReconciled": {
+      "type": ["null", "boolean"]
+    },
+    "accountRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "section": {
+          "type": ["null", "string"],
+           "enum" : [
+              "Assets",
+              "Expenses",
+              "Income",
+              "Liabilities",
+              "Equity"
+            ]
+        },
+        "subSection": {
+          "type": ["null", "string"],
+          "enum" : [
+            "Current Assets",
+            "Non-Current Assets",
+            "Current Liabilities",
+            "Non-Current Liabilities",
+            "Equity",
+            "Other Income",
+            "Operating Expenses",
+            "Other Expenses",
+            "Cost of Goods Sold"
+          ]
+        },
+        "group": {
+          "type": ["null", "string"]
+        },
+        "subGroup": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currencyRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "symbol": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currencyRate": {
+      "type": ["null", "number"]
+    },
+    "isSplitTransaction": {
+      "type": ["null", "boolean"]
+    },
+    "parentTransactionId": {
+      "type": ["null", "string"]
+    },
+    "subTotal": {
+      "type": ["null", "number"]
+    },
+    "taxAmount": {
+      "type": ["null", "number"]
+    },
+    "totalAmount": {
+      "type": "number"
+    }
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "reportId": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "section": {
+      "type": "string",
+      "enum" : [
+        "Income",
+        "Expenses",
+        "Assets",
+        "Liabilities",
+        "Equity"
+      ]
+    },
+    "subSection": {
+      "type": "string",
+      "enum" : [
+        "Income",
+        "Cost of Goods Sold",
+        "Operating Expenses",
+        "Other Income",
+        "Other Expenses",
+        "Uncategorized Expenses",
+        "Uncategorized Income",
+        "Expenses",
+        "Current Assets",
+        "Non-Current Assets",
+        "Current Liabilities",
+        "Non-Current Liabilities",
+        "Equity",
+        "Other Assets Other Liabilities"
+      ]
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "subGroup": {
+      "type": ["null", "string"]
+    },
+    "accountId": {
+      "type": ["null", "string"]
+    },
+    "subAccountId": {
+      "type": ["null", "string"]
+    },
+    "fullyQualifiedName": {
+      "type": "string"
+    },
+    "depth": {
+      "type": "integer"
+    },
+    "account": {
+      "type": "string"
+    },
+    "subAccount": {
+      "type": ["null", "string"]
+    },
+    "subsidiaryRefs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "credit": {
+      "type": ["null", "number"]
+    },
+    "debit": {
+      "type": ["null", "number"]
+    },
+    "ytdCredit": {
+      "type": ["null", "number"]
+    },
+    "ytdDebit": {
+      "type": ["null", "number"]
+    },
+    "currencyRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "symbol": {
+          "type": ["null", "string"]
+        }
+      }
+    }
+  }
+}

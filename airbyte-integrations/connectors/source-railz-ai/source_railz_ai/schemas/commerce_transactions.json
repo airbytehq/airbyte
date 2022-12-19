@@ -1,0 +1,115 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "orderId": {
+      "type": ["null", "string"]
+    },
+    "paymentMethodType": {
+      "type": ["null", "string"],
+      "enum" : [
+        "cash",
+        "card",
+        "cryptocurrency",
+        "bank",
+        "digital",
+        "storeCredit",
+        "paypal",
+        "prepaid",
+        "buyNowPayLater",
+        "other",
+        "unknown"
+      ]
+    },
+    "totalAmount": {
+      "type": ["null", "number"]
+    },
+    "currencyRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    },
+    "transactionSourceRefs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "type": "number",
+            "enum" : [
+              "failedPayout",
+              "payment",
+              "paymentFee",
+              "paymentFeeRefund",
+              "payout",
+              "refund",
+              "transfer",
+              "dispute",
+              "order",
+              "other",
+              "unknown"
+            ]
+          }
+        }
+      }
+    },
+    "transactionType": {
+      "type": "number",
+      "enum" : [
+        "failedPayout",
+        "payment",
+        "paymentFee",
+        "paymentFeeRefund",
+        "payout",
+        "refund",
+        "transfer",
+        "dispute",
+        "order",
+        "other",
+        "unknown"
+      ]
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "success",
+        "failed",
+        "pending",
+        "cancelled",
+        "approved",
+        "scheduled",
+        "other",
+        "unknown"
+      ]
+    }
+  }
+}

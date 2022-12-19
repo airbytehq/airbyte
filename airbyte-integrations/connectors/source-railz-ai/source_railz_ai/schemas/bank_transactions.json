@@ -1,0 +1,128 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "accountId": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "authorizedOnDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "isPending": {
+      "type": "boolean"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "currency": {
+      "type": "string"
+    },
+    "transactionType": {
+      "type": ["null", "string"],
+      "enum": [
+        "adjustment",
+        "atm",
+        "bankCharge",
+        "billPayment",
+        "cash",
+        "cashback",
+        "cheque",
+        "directDebit",
+        "interest",
+        "purchase",
+        "standingOrder",
+        "transfer"
+      ]
+    },
+    "paymentChannel": {
+      "type": "string",
+      "enum": [
+        "online",
+        "inStore",
+        "other"
+      ]
+    },
+    "categories": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "string"]
+      }
+    },
+    "merchantName": {
+      "type": ["null", "string"]
+    },
+    "merchantStoreNumber": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": "string"
+    },
+    "location": {
+      "type": ["null", "object"],
+      "properties": {
+        "line1": {
+          "type": ["null", "string"]
+        },
+        "line2": {
+          "type": ["null", "string"]
+        },
+        "city": {
+          "type": ["null", "string"]
+        },
+        "region": {
+          "type": ["null", "string"]
+        },
+        "country": {
+          "type": ["null", "string"]
+        },
+        "postalCode": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "section": {
+      "type": ["null", "string"],
+      "enum" : [
+        "Assets",
+        "Expenses",
+        "Income",
+        "Liabilities",
+        "Equity"
+      ]
+    },
+    "subSection": {
+      "type": ["null", "string"],
+      "enum" : [
+        "Current Assets",
+        "Non-Current Assets",
+        "Current Liabilities",
+        "Non-Current Liabilities",
+        "Equity",
+        "Other Income",
+        "Operating Expenses",
+        "Other Expenses",
+        "Cost of Goods Sold"
+      ]
+    },
+    "group": {
+      "type": "string"
+    },
+    "subGroup": {
+      "type": "string"
+    }
+  }
+}

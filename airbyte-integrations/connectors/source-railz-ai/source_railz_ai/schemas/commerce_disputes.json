@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "totalAmount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "evidenceRequired",
+        "inquiryProcessing",
+        "processing",
+        "inquiryClosed",
+        "chargeRefunded",
+        "inquiryAccepted",
+        "inquiryWon",
+        "inquiryLost",
+        "unknown",
+        "other"
+      ]
+    },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "bankNotProcessed",
+        "creditNotProcessed",
+        "debitNotAuthorized",
+        "duplicate",
+        "fraudulent",
+        "general",
+        "incorrectAccountDetails",
+        "insufficientFunds",
+        "productNotReceived",
+        "productUnacceptable",
+        "subscriptionCanceled",
+        "unrecognized",
+        "unknown",
+        "other"
+      ]
+    },
+    "dueDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "createdDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    },
+    "orderRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "orderNumber": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currencyRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": "string"
+        },
+        "symbol": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

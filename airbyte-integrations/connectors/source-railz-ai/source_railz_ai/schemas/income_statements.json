@@ -1,0 +1,70 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "reportId": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "section": {
+      "type": "string",
+      "enum" : [
+        "Income",
+        "Expenses"
+      ]
+    },
+    "subSection": {
+      "type": "string",
+      "enum" : [
+        "Income",
+        "Cost of Goods Sold",
+        "Operating Expenses",
+        "Other Income",
+        "Other Expenses",
+        "Uncategorized Expenses",
+        "Uncategorized Income",
+        "Expenses"
+      ]
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "subGroup": {
+      "type": ["null", "string"]
+    },
+    "accountId": {
+      "type": ["null", "string"]
+    },
+    "subAccountId": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": "string"
+    },
+    "subAccount": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": "number"
+    },
+    "fullyQualifiedName": {
+      "type": "string"
+    },
+    "depth": {
+      "type": "integer"
+    }
+  }
+}

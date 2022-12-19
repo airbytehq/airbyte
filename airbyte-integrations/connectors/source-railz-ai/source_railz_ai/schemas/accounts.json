@@ -1,0 +1,124 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "nominalCode": {
+      "type": ["null", "string"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "section": {
+      "type": ["null", "string"],
+      "enum" : [
+        "Assets",
+        "Expenses",
+        "Income",
+        "Liabilities",
+        "Equity"
+      ]
+    },
+    "subSection": {
+      "type": ["null", "string"],
+      "enum" : [
+        "Current Assets",
+        "Non-Current Assets",
+        "Current Liabilities",
+        "Non-Current Liabilities",
+        "Equity",
+        "Other Income",
+        "Operating Expenses",
+        "Other Expenses",
+        "Cost of Goods Sold"
+      ]
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "subGroup": {
+      "type": ["null", "string"]
+    },
+    "classification": {
+      "type": ["null", "string"]
+    },
+    "fullyQualifiedName": {
+      "type": ["null", "string"]
+    },
+    "depth": {
+      "type": ["null", "integer"]
+    },
+    "currencyRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        },
+        "symbol": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "currentBalance": {
+      "type": ["null", "number"]
+    },
+    "type": {
+      "type": "string"
+    },
+    "subType": {
+      "type": ["null", "string"]
+    },
+    "isBankAccount": {
+      "type": ["null", "boolean"]
+    },
+    "isSubAccount": {
+      "type": ["null", "boolean"]
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "subsidiaryRefs": {
+      "type": ["null", "array"],
+      "items": {
+        "type": ["null", "object"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": ["null", "string"]
+          }
+        }
+      }
+    },
+    "parentRef": {
+      "type": ["null", "object"],
+      "properties": {
+        "id": {
+          "type": ["null", "string"]
+        },
+        "name": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}

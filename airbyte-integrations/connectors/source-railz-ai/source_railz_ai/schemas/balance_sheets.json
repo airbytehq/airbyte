@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "reportId": {
+      "type": "string"
+    },
+    "startDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "endDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "section": {
+      "type": "string",
+      "enum" : [
+        "Assets",
+        "Liabilities",
+        "Equity"
+      ]
+    },
+    "subSection": {
+      "type": "string",
+      "enum" : [
+        "Current Assets",
+        "Non-Current Assets",
+        "Current Liabilities",
+        "Non-Current Liabilities",
+        "Equity",
+        "Other Assets",
+        "Other Liabilities",
+        "Expenses"
+      ]
+    },
+    "fullyQualifiedName": {
+      "type": "string"
+    },
+    "depth": {
+      "type": "integer"
+    },
+    "group": {
+      "type": ["null", "string"]
+    },
+    "subGroup": {
+      "type": ["null", "string"]
+    },
+    "accountId": {
+      "type": ["null", "string"]
+    },
+    "subAccountId": {
+      "type": ["null", "string"]
+    },
+    "account": {
+      "type": "string"
+    },
+    "subAccount": {
+      "type": ["null", "string"]
+    },
+    "value": {
+      "type": "number"
+    }
+  }
+}

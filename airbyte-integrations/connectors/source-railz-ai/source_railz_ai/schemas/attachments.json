@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "businessName": {
+      "type": "string"
+    },
+    "serviceName": {
+      "type": "string"
+    },
+    "url": {
+      "type": "string"
+    },
+    "fileName": {
+      "type": ["null", "string"]
+    },
+    "contentType": {
+      "type": ["null", "string"]
+    },
+    "uploadDate": {
+      "type": ["null", "number"]
+    },
+    "fileSize": {
+      "type": ["null", "number"]
+    },
+    "link": {
+      "type": ["null", "object"],
+      "properties": {
+        "type": {
+          "type": ["null", "string"],
+          "enum" : [
+            "bill",
+            "invoice"
+          ]
+        },
+        "id": {
+          "type": ["null", "string"]
+        }
+      }
+    },
+    "sourceModifiedDate": {
+      "type": ["null", "string"],
+      "format": "date-time"
+    }
+  }
+}
