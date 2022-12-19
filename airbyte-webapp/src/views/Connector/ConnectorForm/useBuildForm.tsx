@@ -3,8 +3,8 @@ import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBuildError } from "core/form/FormBuildError";
+import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
+import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
 import { FormBlock, FormGroupItem } from "core/form/types";
@@ -14,7 +14,7 @@ import { ConnectorFormValues } from "./types";
 export interface BuildFormHook {
   initialValues: ConnectorFormValues;
   formFields: FormBlock;
-  jsonSchema: JSONSchema7;
+  validationSchema: AnySchema;
 }
 
 function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
@@ -46,55 +46,60 @@ export function useBuildForm(
 ): BuildFormHook {
   const { formatMessage } = useIntl();
 
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-          title: formatMessage({ id: `form.${formType}Name` }),
-          description: formatMessage({ id: `form.${formType}Name.message` }),
+  try {
+    const jsonSchema: JSONSchema7 = useMemo(
+      () => ({
+        type: "object",
+        properties: {
+          name: {
+            type: "string",
+            title: formatMessage({ id: `form.${formType}Name` }),
+            description: formatMessage({ id: `form.${formType}Name.message` }),
+          },
+          connectionConfiguration:
+            selectedConnectorDefinitionSpecification.connectionSpecification as JSONSchema7Definition,
         },
-        connectionConfiguration:
-          selectedConnectorDefinitionSpecification.connectionSpecification as JSONSchema7Definition,
-      },
-      required: ["name"],
-    }),
-    [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
-  );
+        required: ["name"],
+      }),
+      [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
+    );
 
-  const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
+    const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
-  if (formFields._type !== "formGroup") {
-    throw new FormBuildError("connectorForm.error.topLevelNonObject");
-  }
+    if (formFields._type !== "formGroup") {
+      throw new FormBuildError("connectorForm.error.topLevelNonObject");
+    }
 
-  const startValues = useMemo<ConnectorFormValues>(() => {
-    if (isEditMode) {
-      return {
+    const startValues = useMemo<ConnectorFormValues>(() => {
+      if (isEditMode) {
+        return {
+          name: "",
+          connectionConfiguration: {},
+          ...initialValues,
+        };
+      }
+      const baseValues = {
         name: "",
         connectionConfiguration: {},
         ...initialValues,
       };
-    }
-    const baseValues = {
-      name: "",
-      connectionConfiguration: {},
-      ...initialValues,
+
+      setDefaultValues(formFields, baseValues as Record<string, unknown>);
+
+      return baseValues;
+    }, [formFields, initialValues, isEditMode]);
+
+    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
+    return {
+      initialValues: startValues,
+      formFields,
+      validationSchema,
     };
-
-    setDefaultValues(formFields, baseValues as Record<string, unknown>);
-
-    return baseValues;
-  }, [formFields, initialValues, isEditMode]);
-
-  return {
-    initialValues: startValues,
-    formFields,
-    jsonSchema,
-  };
+  } catch (e) {
+    // catch and re-throw form-build errors to enrich them with the connector id
+    if (isFormBuildError(e)) {
+      throw new FormBuildError(e.message, ConnectorSpecification.id(selectedConnectorDefinitionSpecification));
+    }
+    throw e;
+  }
 }
-
-// As validation schema depends on what path of oneOf is currently selected in jsonschema
-export const useConstructValidationSchema = (jsonSchema: JSONSchema7, formFields: FormBlock): AnySchema =>
-  useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);

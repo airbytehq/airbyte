@@ -11,7 +11,7 @@ import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/For
 import { ConnectorFormContextProvider } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import { useBuildForm, useConstructValidationSchema } from "./useBuildForm";
+import { useBuildForm } from "./useBuildForm";
 
 export interface ConnectorFormProps {
   formType: "source" | "destination";
@@ -48,14 +48,12 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     connectorId,
   } = props;
 
-  const { formFields, initialValues, jsonSchema } = useBuildForm(
+  const { formFields, initialValues, validationSchema } = useBuildForm(
     Boolean(isEditMode),
     formType,
     selectedConnectorDefinitionSpecification,
     formValues
   );
-
-  const validationSchema = useConstructValidationSchema(jsonSchema, formFields);
 
   const getValues = useCallback(
     (values: ConnectorFormValues) =>
