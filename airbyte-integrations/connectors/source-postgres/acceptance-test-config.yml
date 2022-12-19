@@ -7,27 +7,43 @@ acceptance_tests:
     tests:
       - spec_path: "src/test-integration/resources/expected_spec.json"
         config_path: "secrets/config.json"
+      - spec_path: "src/test-integration/resources/expected_spec.json"
+        config_path: "secrets/config_cdc.json"
   connection:
     tests:
       - config_path: "secrets/config.json"
         status: "succeed"
+      - config_path: "secrets/config_cdc.json"
+        status: "succeed"
   discovery:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_cdc.json"
   basic_read:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
           path: "integration_tests/expected_records.txt"
+      - config_path: "secrets/config_cdc.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
   full_refresh:
     tests:
       - config_path: "secrets/config.json"
+      - config_path: "secrets/config_cdc.json"
   incremental:
     tests:
       - config_path: "secrets/config.json"
         configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
         future_state:
-          future_state_path: "integrations_tests/abnormal_state.json"
+          future_state_path: "integration_tests/abnormal_state.json"
+          missing_streams:
+            - name: id_and_name
+              bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
+      - config_path: "secrets/config_cdc.json"
+        configured_catalog_path: "integration_tests/incremental_configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"
           missing_streams:
             - name: id_and_name
               bypass_reason: "A java.lang.NullPointerException is thrown when a state with an invalid cursor value is passed"
