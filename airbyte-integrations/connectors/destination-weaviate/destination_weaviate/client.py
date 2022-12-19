@@ -46,7 +46,6 @@ class Client:
             if isinstance(v, list) and len(v) == 0 and k not in self.schema[stream_name]:
                 record[k] = ""
 
-
         # Property names in Weaviate have to start with lowercase letter
         record = {k[0].lower() + k[1:]: v for k, v in record.items()}
         vector = None
