@@ -48,15 +48,13 @@ public interface StagingOperations extends SqlOperations {
 
   /**
    * Load the data stored in the stage area into a temporary table in the destination
-   * <p>
-   * FINSISHED: destination-snowflake (all sub-variants)
    *
-   * @param database    database interface
-   * @param stageName   name of staging area folder
+   * @param database database interface
+   * @param stageName name of staging area folder
    * @param stagingPath path to staging files
    * @param stagedFiles collection of staged files
-   * @param tableName   name of table to write staging files to
-   * @param schemaName  name of schema
+   * @param tableName name of table to write staging files to
+   * @param schemaName name of schema
    */
   void copyIntoTableFromStage(JdbcDatabase database,
                                  String stageName,

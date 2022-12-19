@@ -89,28 +89,4 @@ public class SnowflakeDestinationTest {
         arguments("copy_s3_config.json", DestinationType.COPY_S3),
         arguments("insert_config.json", DestinationType.INTERNAL_STAGING));
   }
-
-  private List<AirbyteMessage> generateTestMessages() {
-    return IntStream.range(0, 3)
-        .boxed()
-        .map(i -> new AirbyteMessage()
-            .withType(AirbyteMessage.Type.RECORD)
-            .withRecord(new AirbyteRecordMessage()
-                .withStream("test")
-                .withNamespace("test_staging")
-                .withEmittedAt(Instant.now().toEpochMilli())
-                .withData(Jsons.jsonNode(ImmutableMap.of("id", i, "name", "human " + i)))))
-        .collect(Collectors.toList());
-  }
-
-  ConfiguredAirbyteCatalog getCatalog() {
-    return new ConfiguredAirbyteCatalog().withStreams(List.of(
-        CatalogHelpers.createConfiguredAirbyteStream(
-            "test",
-            "test_staging",
-            Field.of("id", JsonSchemaType.NUMBER),
-            Field.of("name", JsonSchemaType.STRING))
-            .withDestinationSyncMode(DestinationSyncMode.OVERWRITE)));
-  }
-
 }

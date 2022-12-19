@@ -204,7 +204,6 @@ public class StagingConsumerFactory {
       );
       throw new ConfigErrorException(message);
     }
-
     return (pair, writer) -> {
       LOGGER.info("Flushing buffer for stream {} ({}) to staging", pair.getName(), FileUtils.byteCountToDisplaySize(writer.getByteCount()));
       if (!pairToWriteConfig.containsKey(pair)) {

@@ -132,6 +132,8 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         throwUnrecognizedStream(catalog, message);
       }
 
+      // if the record is not valid then add to map of stream to number of records omitted, then short
+      // circuit
       if (!isValidRecord.apply(message.getRecord().getData())) {
         streamToIgnoredRecordCount.put(stream, streamToIgnoredRecordCount.getOrDefault(stream, 0L) + 1L);
         return;
@@ -212,6 +214,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       // When flushing the buffer, this will call the respective #flushBufferFunction which bundles
       // the flush and commit operation, so if successful then mark state as committed
       bufferingStrategy.flushAll();
+      // marking state as flushed
       markStatesAsFlushedToDestination();
     }
     bufferingStrategy.close();

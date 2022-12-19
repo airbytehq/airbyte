@@ -61,8 +61,7 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    *
    * @param stream stream associated with record
    * @param message {@link AirbyteMessage} to buffer
-   * @return true if this {@link io.airbyte.protocol.models.AirbyteRecordMessage} causes buffer to
-   *         flush all messages, otherwise false
+   * @return Optional which contains a {@link BufferFlushType} if a flush occurred, otherwise empty
    * @throws Exception
    */
   @Override

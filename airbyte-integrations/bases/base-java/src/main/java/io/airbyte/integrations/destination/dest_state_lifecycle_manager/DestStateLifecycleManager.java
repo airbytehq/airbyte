@@ -18,7 +18,7 @@ import java.util.Queue;
  * </ol>
  *
  * Since the methods for flushing and committing are not atomic, adding in a method
- * `markPendingAsCommitted` while deprecating `markPendingAsFlushed`
+ * `markPendingAsCommitted` while deprecating `
  */
 public interface DestStateLifecycleManager {
 
