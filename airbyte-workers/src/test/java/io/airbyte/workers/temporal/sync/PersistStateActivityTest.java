@@ -208,4 +208,42 @@ class PersistStateActivityTest {
     Mockito.verify(stateApi1).createOrUpdateState(any(ConnectionStateCreateOrUpdate.class));
   }
 
+  @Test
+  void testPersistWithPerStreamStateDuringMigrationFromNullLegacyState() throws ApiException {
+    final ConfiguredAirbyteStream stream = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("a").withNamespace("a1"));
+    final ConfiguredAirbyteStream stream2 = new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("b"));
+    final ConfiguredAirbyteStream stream3 =
+        new ConfiguredAirbyteStream().withStream(new AirbyteStream().withName("c")).withSyncMode(SyncMode.FULL_REFRESH);
+
+    final AirbyteStateMessage stateMessage1 = new AirbyteStateMessage()
+        .withType(AirbyteStateType.STREAM)
+        .withStream(
+            new AirbyteStreamState().withStreamDescriptor(CatalogHelpers.extractDescriptor(stream))
+                .withStreamState(Jsons.emptyObject()));
+    final AirbyteStateMessage stateMessage2 = new AirbyteStateMessage()
+        .withType(AirbyteStateType.STREAM)
+        .withStream(
+            new AirbyteStreamState().withStreamDescriptor(CatalogHelpers.extractDescriptor(stream2)));
+    final JsonNode jsonState = Jsons.jsonNode(List.of(stateMessage1, stateMessage2));
+    final State state = new State().withState(jsonState);
+
+    final AirbyteApiClient airbyteApiClient1 = mock(AirbyteApiClient.class);
+    final StateApi stateApi1 = mock(StateApi.class);
+    final ConnectionState connectionState = mock(ConnectionState.class);
+    Mockito.lenient().when(connectionState.getStateType()).thenReturn(ConnectionStateType.LEGACY);
+    Mockito.lenient().when(connectionState.getState()).thenReturn(null);
+    when(stateApi1.getState(any(ConnectionIdRequestBody.class))).thenReturn(connectionState);
+    Mockito.lenient().when(airbyteApiClient1.getStateApi()).thenReturn(stateApi1);
+
+    final ConfiguredAirbyteCatalog migrationConfiguredCatalog = new ConfiguredAirbyteCatalog().withStreams(List.of(stream, stream2, stream3));
+    final StandardSyncOutput syncOutput = new StandardSyncOutput().withState(state);
+    when(featureFlags.useStreamCapableState()).thenReturn(true);
+
+    final PersistStateActivityImpl persistStateActivity1 = new PersistStateActivityImpl(airbyteApiClient1, featureFlags);
+
+    persistStateActivity1.persist(CONNECTION_ID, syncOutput, migrationConfiguredCatalog);
+
+    Mockito.verify(stateApi1).createOrUpdateState(any(ConnectionStateCreateOrUpdate.class));
+  }
+
 }
