@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.standardtest.source;
 
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
 import io.airbyte.protocol.models.JsonSchemaType;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;

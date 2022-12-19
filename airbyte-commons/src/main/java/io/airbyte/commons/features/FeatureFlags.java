@@ -16,8 +16,12 @@ public interface FeatureFlags {
 
   boolean useStreamCapableState();
 
+  boolean autoDetectSchema();
+
   boolean logConnectorMessages();
 
   boolean needStateValidation();
+
+  boolean applyFieldSelection();
 
 }

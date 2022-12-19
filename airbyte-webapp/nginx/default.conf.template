@@ -25,6 +25,7 @@ server {
                 window.TRACKING_STRATEGY = "$TRACKING_STRATEGY";
                 window.AIRBYTE_VERSION = "$AIRBYTE_VERSION";
                 window.API_URL = "$API_URL";
+                window.CONNECTOR_BUILDER_API_URL = "$CONNECTOR_BUILDER_API_URL";
                 </script>';
         sub_filter_once on;
     }

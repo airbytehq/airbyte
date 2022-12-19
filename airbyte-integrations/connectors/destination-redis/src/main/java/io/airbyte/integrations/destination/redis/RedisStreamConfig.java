@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.redis;
 
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 public class RedisStreamConfig {
 

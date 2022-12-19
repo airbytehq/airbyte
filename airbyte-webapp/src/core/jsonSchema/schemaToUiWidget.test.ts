@@ -1,3 +1,5 @@
+import { FormGroupItem } from "core/form/types";
+
 import { jsonSchemaToUiWidget } from "./schemaToUiWidget";
 import { AirbyteJSONSchemaDefinition } from "./types";
 
@@ -113,6 +115,55 @@ it("should reformat jsonSchema to internal widget representation", () => {
   };
 
   expect(builtSchema).toEqual(expected);
+});
+
+it("should turn single enum into const but keep multi value enum", () => {
+  const schema: AirbyteJSONSchemaDefinition = {
+    type: "object",
+    required: ["a", "b", "c"],
+    properties: {
+      a: { type: "string", enum: ["val1", "val2"] },
+      b: { type: "string", enum: ["val1"], default: "val1" },
+      c: { type: "string", const: "val3" },
+    },
+  };
+
+  const builtSchema = jsonSchemaToUiWidget(schema, "key");
+
+  const expectedProperties = [
+    {
+      _type: "formItem",
+      enum: ["val1", "val2"],
+      fieldKey: "a",
+      isRequired: true,
+      isSecret: false,
+      multiline: false,
+      path: "key.a",
+      type: "string",
+    },
+    {
+      _type: "formItem",
+      const: "val1",
+      default: "val1",
+      fieldKey: "b",
+      isRequired: true,
+      isSecret: false,
+      multiline: false,
+      path: "key.b",
+      type: "string",
+    },
+    {
+      _type: "formItem",
+      const: "val3",
+      fieldKey: "c",
+      isRequired: true,
+      isSecret: false,
+      multiline: false,
+      path: "key.c",
+      type: "string",
+    },
+  ];
+  expect((builtSchema as FormGroupItem).properties).toEqual(expectedProperties);
 });
 
 it("should reformat jsonSchema to internal widget representation with parent schema", () => {

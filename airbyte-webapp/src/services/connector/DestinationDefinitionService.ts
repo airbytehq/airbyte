@@ -79,7 +79,7 @@ const useCreateDestinationDefinition = () => {
   const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<DestinationDefinitionRead, Error, DestinationDefinitionCreate>(
-    (destinationDefinition) => service.create({ workspaceId, destinationDefinition }),
+    (destinationDefinition) => service.createCustom({ workspaceId, destinationDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(
@@ -96,7 +96,6 @@ const useCreateDestinationDefinition = () => {
 const useUpdateDestinationDefinition = () => {
   const service = useGetDestinationDefinitionService();
   const queryClient = useQueryClient();
-  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<
     DestinationDefinitionRead,
@@ -105,7 +104,7 @@ const useUpdateDestinationDefinition = () => {
       destinationDefinitionId: string;
       dockerImageTag: string;
     }
-  >((destinationDefinition) => service.update({ workspaceId, destinationDefinition }), {
+  >((destinationDefinition) => service.update(destinationDefinition), {
     onSuccess: (data) => {
       queryClient.setQueryData(destinationDefinitionKeys.detail(data.destinationDefinitionId), data);
 

@@ -71,7 +71,7 @@ module.exports = {
         },
         'cloud/core-concepts',
         'cloud/managing-airbyte-cloud',
-
+        'cloud/dbt-cloud-integration',
       ],
     },
     {
@@ -185,6 +185,8 @@ module.exports = {
           },
         'operator-guides/using-custom-connectors',
         'operator-guides/scaling-airbyte',
+        'operator-guides/configuring-sync-notifications',
+        'operator-guides/collecting-metrics',
       ],
     },
     {
@@ -210,6 +212,7 @@ module.exports = {
           type: 'category',
           label: 'Low-code connector development',
           items: [
+            'connector-development/config-based/connector-builder-ui',
             {
               label: 'Low-code CDK Intro',
               type: 'doc',
@@ -421,6 +424,7 @@ module.exports = {
         type: 'generated-index',
       },
       items: [
+        'release_notes/november_2022',
         'release_notes/october_2022',
         'release_notes/september_2022',
         'release_notes/august_2022',

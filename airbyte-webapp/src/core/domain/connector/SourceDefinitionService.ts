@@ -1,14 +1,14 @@
 import { AirbyteRequestService } from "core/request/AirbyteRequestService";
 
 import {
-  createCustomSourceDefinition,
-  CustomSourceDefinitionCreate,
   getSourceDefinitionForWorkspace,
   listLatestSourceDefinitions,
   listSourceDefinitionsForWorkspace,
-  CustomSourceDefinitionUpdate,
-  updateCustomSourceDefinition,
   SourceDefinitionIdWithWorkspaceId,
+  updateSourceDefinition,
+  SourceDefinitionUpdate,
+  CustomSourceDefinitionCreate,
+  createCustomSourceDefinition,
 } from "../../request/AirbyteClient";
 
 export class SourceDefinitionService extends AirbyteRequestService {
@@ -24,11 +24,11 @@ export class SourceDefinitionService extends AirbyteRequestService {
     return listLatestSourceDefinitions(this.requestOptions);
   }
 
-  public update(body: CustomSourceDefinitionUpdate) {
-    return updateCustomSourceDefinition(body, this.requestOptions);
+  public update(body: SourceDefinitionUpdate) {
+    return updateSourceDefinition(body, this.requestOptions);
   }
 
-  public create(body: CustomSourceDefinitionCreate) {
+  public createCustom(body: CustomSourceDefinitionCreate) {
     return createCustomSourceDefinition(body, this.requestOptions);
   }
 }

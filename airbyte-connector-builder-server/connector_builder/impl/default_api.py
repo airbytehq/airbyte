@@ -97,7 +97,7 @@ spec:
                     )
                 )
         except Exception as error:
-            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Could not list streams with with error: {error.args[0]}")
         return StreamsListRead(streams=stream_list_read)
 
     async def read_stream(self, stream_read_request_body: StreamReadRequestBody = Body(None, description="")) -> StreamRead:
@@ -121,7 +121,7 @@ spec:
                     single_slice.pages.append(message_group)
         except Exception as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
 
         return StreamRead(logs=log_messages, slices=[single_slice])
 
@@ -177,7 +177,13 @@ spec:
             url = urlparse(request.get("url", ""))
             full_path = f"{url.scheme}://{url.hostname}{url.path}" if url else ""
             parameters = parse_qs(url.query) or None
-            return HttpRequest(url=full_path, headers=request.get("headers"), parameters=parameters, body=request.get("body"))
+            return HttpRequest(
+                url=full_path,
+                http_method=request.get("http_method", ""),
+                headers=request.get("headers"),
+                parameters=parameters,
+                body=request.get("body"),
+            )
         except JSONDecodeError as error:
             self.logger.warning(f"Failed to parse log message into request object with error: {error}")
             return None
@@ -199,6 +205,6 @@ spec:
     def _create_low_code_adapter(manifest: Dict[str, Any]) -> LowCodeSourceAdapter:
         try:
             return LowCodeSourceAdapter(manifest=manifest)
-        except Exception as error:
+        except ValidationError as error:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
-            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {str(error)}")
+            raise HTTPException(status_code=400, detail=f"Invalid connector manifest with error: {error.message}")

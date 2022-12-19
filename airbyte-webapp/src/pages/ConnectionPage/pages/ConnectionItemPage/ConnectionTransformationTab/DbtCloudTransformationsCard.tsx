@@ -14,14 +14,7 @@ import { Text } from "components/ui/Text";
 
 import { WebBackendConnectionRead } from "core/request/AirbyteClient";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import {
-  DbtCloudJob,
-  DbtCloudJobInfo,
-  isSameJob,
-  toDbtCloudJob,
-  useDbtIntegration,
-  useAvailableDbtJobs,
-} from "packages/cloud/services/dbtCloud";
+import { DbtCloudJob, isSameJob, useDbtIntegration, useAvailableDbtJobs } from "packages/cloud/services/dbtCloud";
 import { RoutePaths } from "pages/routePaths";
 
 import dbtLogo from "./dbt-bit_tm.svg";
@@ -93,9 +86,9 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, isSaving, dbtCloudJ
   // with the list of available jobs as provided by dbt Cloud.
   const jobs = dbtCloudJobs.map((savedJob) => {
     const { jobName } = availableDbtJobs.find((remoteJob) => isSameJob(remoteJob, savedJob)) || {};
-    const { account, job } = savedJob;
+    const { accountId, jobId } = savedJob;
 
-    return { account, job, jobName };
+    return { accountId, jobId, jobName };
   });
 
   return (
@@ -119,7 +112,7 @@ const DbtJobsForm: React.FC<DbtJobsFormProps> = ({ saveJobs, isSaving, dbtCloudJ
                             .filter((remoteJob) => !values.jobs.some((savedJob) => isSameJob(remoteJob, savedJob)))
                             .map((job) => ({ displayName: job.jobName, value: job }))}
                           onChange={(selection) => {
-                            push(toDbtCloudJob(selection.value as DbtCloudJobInfo));
+                            push(selection.value);
                           }}
                         >
                           {() => (
@@ -150,39 +143,50 @@ interface DbtJobsListProps {
   isLoading: boolean;
 }
 
-const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => (
-  <div className={classNames(styles.jobListContainer)}>
-    {jobs.length ? (
-      <>
-        <Text className={styles.contextExplanation}>
-          <FormattedMessage id="connection.dbtCloudJobs.explanation" />
-        </Text>
-        {jobs.map((job, i) => (
-          <JobsListItem key={i} job={job} removeJob={() => remove(i)} />
-        ))}
-      </>
-    ) : (
-      <>
-        <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
-        <FormattedMessage id="connection.dbtCloudJobs.noJobs" />
-      </>
-    )}
-    <div className={styles.jobListButtonGroup}>
-      <Button className={styles.jobListButton} type="reset" variant="secondary">
-        Cancel
-      </Button>
-      <Button className={styles.jobListButton} type="submit" variant="primary" disabled={!dirty} isLoading={isLoading}>
-        Save changes
-      </Button>
+const DbtJobsList = ({ jobs, remove, dirty, isLoading }: DbtJobsListProps) => {
+  const { formatMessage } = useIntl();
+
+  return (
+    <div className={classNames(styles.jobListContainer)}>
+      {jobs.length ? (
+        <>
+          <Text className={styles.contextExplanation}>
+            <FormattedMessage id="connection.dbtCloudJobs.explanation" />
+          </Text>
+          {jobs.map((job, i) => (
+            <JobsListItem key={i} job={job} removeJob={() => remove(i)} isLoading={isLoading} />
+          ))}
+        </>
+      ) : (
+        <>
+          <img src={octaviaWorker} alt="" className={styles.emptyListImage} />
+          <FormattedMessage id="connection.dbtCloudJobs.noJobs" />
+        </>
+      )}
+      <div className={styles.jobListButtonGroup}>
+        <Button className={styles.jobListButton} type="reset" variant="secondary">
+          {formatMessage({ id: "form.cancel" })}
+        </Button>
+        <Button
+          className={styles.jobListButton}
+          type="submit"
+          variant="primary"
+          disabled={!dirty}
+          isLoading={isLoading}
+        >
+          {formatMessage({ id: "form.saveChanges" })}
+        </Button>
+      </div>
     </div>
-  </div>
-);
+  );
+};
 
 interface JobsListItemProps {
   job: DbtCloudJob;
   removeJob: () => void;
+  isLoading: boolean;
 }
-const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
+const JobsListItem = ({ job, removeJob, isLoading }: JobsListItemProps) => {
   const { formatMessage } = useIntl();
   // TODO if `job.jobName` is undefined, that means we failed to match any of the
   // dbt-Cloud-supplied jobs with the saved job. This means one of two things has
@@ -202,12 +206,12 @@ const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
       <div className={styles.jobListItemIdFieldGroup}>
         <div className={styles.jobListItemIdField}>
           <Text size="sm">
-            {formatMessage({ id: "connection.dbtCloudJobs.job.accountId" })}: {job.account}
+            {formatMessage({ id: "connection.dbtCloudJobs.job.accountId" })}: {job.accountId}
           </Text>
         </div>
         <div className={styles.jobListItemIdField}>
           <Text size="sm">
-            {formatMessage({ id: "connection.dbtCloudJobs.job.jobId" })}: {job.job}
+            {formatMessage({ id: "connection.dbtCloudJobs.job.jobId" })}: {job.jobId}
           </Text>
         </div>
         <Button
@@ -215,9 +219,10 @@ const JobsListItem = ({ job, removeJob }: JobsListItemProps) => {
           size="lg"
           className={styles.jobListItemDelete}
           onClick={removeJob}
+          disabled={isLoading}
           aria-label={formatMessage({ id: "connection.dbtCloudJobs.job.deleteButton" })}
         >
-          <FontAwesomeIcon icon={faXmark} />
+          <FontAwesomeIcon icon={faXmark} height="21" width="21" />
         </Button>
       </div>
     </Card>
