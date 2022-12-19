@@ -93,7 +93,6 @@ class DefaultAirbyteSourceTest {
   private IntegrationLauncher integrationLauncher;
   private Process process;
   private AirbyteStreamFactory streamFactory;
-  private HeartbeatMonitor heartbeatMonitor;
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
@@ -101,7 +100,6 @@ class DefaultAirbyteSourceTest {
 
     integrationLauncher = mock(IntegrationLauncher.class, RETURNS_DEEP_STUBS);
     process = mock(Process.class, RETURNS_DEEP_STUBS);
-    heartbeatMonitor = mock(HeartbeatMonitor.class);
     final InputStream inputStream = mock(InputStream.class);
     when(integrationLauncher.read(
         jobRoot,
@@ -135,9 +133,7 @@ class DefaultAirbyteSourceTest {
   void testSuccessfulLifecycle() throws Exception {
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream("qwer".getBytes(StandardCharsets.UTF_8)));
 
-    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
-
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     source.start(SOURCE_CONFIG, jobRoot);
 
     final List<AirbyteMessage> messages = Lists.newArrayList();
@@ -150,7 +146,6 @@ class DefaultAirbyteSourceTest {
 
     when(process.isAlive()).thenReturn(false);
     assertTrue(source.isFinished());
-    verify(heartbeatMonitor, times(2)).beat();
 
     source.close();
 
@@ -165,21 +160,16 @@ class DefaultAirbyteSourceTest {
     verify(process).exitValue();
   }
 
+  @SuppressWarnings("OptionalGetWithoutIsPresent")
   @Test
   void testTaggedLogs() throws Exception {
-
     when(process.getErrorStream()).thenReturn(new ByteArrayInputStream(("rewq").getBytes(StandardCharsets.UTF_8)));
 
-    when(heartbeatMonitor.isBeating()).thenReturn(true).thenReturn(false);
-
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory,
-        heartbeatMonitor);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     source.start(SOURCE_CONFIG, jobRoot);
 
-    final List<AirbyteMessage> messages = Lists.newArrayList();
-
-    messages.add(source.attemptRead().get());
-    messages.add(source.attemptRead().get());
+    source.attemptRead().get();
+    source.attemptRead().get();
 
     when(process.isAlive()).thenReturn(false);
 
@@ -190,15 +180,13 @@ class DefaultAirbyteSourceTest {
 
     logs
         .filter(line -> !line.contains("EnvConfigs(getEnvOrDefault)"))
-        .forEach(line -> {
-          org.assertj.core.api.Assertions.assertThat(line)
-              .startsWith(Color.BLUE_BACKGROUND.getCode() + "source" + RESET);
-        });
+        .forEach(line -> org.assertj.core.api.Assertions.assertThat(line)
+            .startsWith(Color.BLUE_BACKGROUND.getCode() + "source" + RESET));
   }
 
   @Test
   void testNonzeroExitCodeThrows() throws Exception {
-    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource tap = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     tap.start(SOURCE_CONFIG, jobRoot);
 
     when(process.exitValue()).thenReturn(1);
@@ -208,7 +196,7 @@ class DefaultAirbyteSourceTest {
 
   @Test
   void testGetExitValue() throws Exception {
-    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory, heartbeatMonitor);
+    final AirbyteSource source = new DefaultAirbyteSource(integrationLauncher, streamFactory);
     source.start(SOURCE_CONFIG, jobRoot);
 
     when(process.isAlive()).thenReturn(false);
