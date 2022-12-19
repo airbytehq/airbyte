@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.16.1
+Include declarative_component_schema.yaml in the publish to PyPi
+
 ## 0.16.0
 Start validating low-code manifests using the declarative_component_schema.yaml file
 
