@@ -4,6 +4,7 @@
 
 package io.airbyte.workers.temporal.scheduling.activities;
 
+import io.airbyte.api.client.model.generated.ConnectionRead;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.Status;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -46,6 +47,8 @@ public interface ConfigFetchActivity {
   }
 
   StandardSync getStandardSync(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException;
+
+  ConnectionRead getConnection(final UUID connectionId) throws JsonValidationException, ConfigNotFoundException, IOException;
 
   /**
    * Return how much time to wait before running the next sync. It will query the DB to get the last
