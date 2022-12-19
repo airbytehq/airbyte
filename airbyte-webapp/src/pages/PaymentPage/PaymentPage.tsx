@@ -1,19 +1,23 @@
-import React, { Suspense } from "react";
-import { FormattedMessage } from "react-intl";
-import { Navigate, Route, Routes } from "react-router-dom";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
-import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 
+import { useUser } from "core/AuthContext";
+import { GetUpgradeSubscriptionDetail } from "core/domain/payment";
+import { ProductItem } from "core/domain/product";
 import useRouter from "hooks/useRouter";
+import { RoutePaths } from "pages/routePaths";
+import { SettingsRoute } from "pages/SettingsPage/SettingsPage";
+import { useAuthenticationService } from "services/auth/AuthSpecificationService";
+import { useAsyncAction, useUserPlanDetail } from "services/payments/PaymentsService";
+import { usePackagesDetail, usePackagesMap } from "services/products/ProductsService";
 
 import PaymentNav from "./components/PaymentNav";
-import { NavMenuItem } from "./components/PaymentNav";
-import BillingAndPaymentPage from "./pages/BillingAndPaymentPage";
-import SelectPlanPage from "./pages/SelectPlanPage";
 import styles from "./PaymentPage.module.scss";
+import BillingPaymentStep from "./steps/BillingPaymentStep";
+import SelectPlanStep from "./steps/SelectPlanStep";
 
 const Content = styled.div`
   display: flex;
@@ -24,57 +28,105 @@ const MainView = styled.div`
   width: 100%;
 `;
 
-export interface PageConfig {
-  menuConfig: NavMenuItem[];
-}
-
-interface SettingsPageProps {
-  pageConfig?: PageConfig;
-}
-
-export const PaymentRoute = {
-  SelectPlan: "select-plan",
-  BillingPayment: "billing-payment",
+export const PaymentSteps = {
+  SelectPlan: "Select Plan",
+  BillingPayment: "Billing Payment",
 } as const;
 
-const PaymentPage: React.FC<SettingsPageProps> = () => {
-  const { push, pathname } = useRouter();
+const PaymentPage: React.FC = () => {
+  const { push } = useRouter();
 
-  const menuItems: NavMenuItem[] = [
-    {
-      routes: [
-        {
-          path: `${PaymentRoute.SelectPlan}`,
-          name: <FormattedMessage id="plan.select.plan" />,
-          component: SelectPlanPage,
-        },
-        {
-          path: `${PaymentRoute.BillingPayment}`,
-          name: <FormattedMessage id="plan.billing.payment" />,
-          component: BillingAndPaymentPage,
-        },
-      ],
-    },
-  ];
+  const [currentStep, setCurrentStep] = useState<string>(PaymentSteps.SelectPlan);
+  const [product, setProduct] = useState<ProductItem | undefined>();
+  const [paymentLoading, setPaymentLoading] = useState<boolean>(false);
+  const [planDetail, setPlanDetail] = useState<GetUpgradeSubscriptionDetail>();
+  const [updatePlanLoading, setUpdatePlanLoading] = useState<boolean>(false);
 
-  const onSelectMenuItem = (newPath: string) => push(newPath);
-  const firstRoute = menuItems[0].routes?.[0]?.path;
+  const authService = useAuthenticationService();
+  const { onCreateSubscriptionURL, onGetUpgradeSubscription, onUpgradeSubscription } = useAsyncAction();
+
+  const { updateUserStatus } = useUser();
+  const userPlanDetail = useUserPlanDetail();
+  const { selectedProduct } = userPlanDetail;
+  const packagesDetail = usePackagesDetail();
+  const packagesMap = usePackagesMap();
+
+  useEffect(() => {
+    if (selectedProduct) {
+      setProduct(selectedProduct);
+    }
+  }, [selectedProduct]);
+
+  const onSelectPlan = useCallback(async () => {
+    setPaymentLoading(true);
+    if (selectedProduct) {
+      onGetUpgradeSubscription({ productItemId: product?.id as string })
+        .then((response: any) => {
+          const detail: GetUpgradeSubscriptionDetail = response?.data;
+          setPlanDetail(detail);
+          setPaymentLoading(false);
+          setCurrentStep(PaymentSteps.BillingPayment);
+        })
+        .catch(() => {
+          setPaymentLoading(false);
+        });
+    } else {
+      onCreateSubscriptionURL(product?.id as string)
+        .then((response: any) => {
+          setPaymentLoading(false);
+          window.open(response.data, "_blank");
+        })
+        .catch(() => {
+          setPaymentLoading(false);
+        });
+    }
+  }, [product, selectedProduct]);
+
+  const onUpdadePlan = useCallback(async () => {
+    setUpdatePlanLoading(true);
+    onUpgradeSubscription()
+      .then(() => {
+        updateUserStatus?.(2);
+        authService
+          .get()
+          .then(() => {
+            setUpdatePlanLoading(false);
+            push(`/${RoutePaths.Settings}/${SettingsRoute.PlanAndBilling}`);
+          })
+          .catch(() => {
+            setUpdatePlanLoading(false);
+          });
+      })
+      .catch(() => {
+        setUpdatePlanLoading(false);
+      });
+  }, []);
 
   return (
     <MainPageWithScroll headTitle={<HeadTitle titles={[{ id: "payment.tabTitle" }]} />}>
-      <PaymentNav data={menuItems} onSelect={onSelectMenuItem} activeItem={pathname} />
+      <PaymentNav steps={Object.values(PaymentSteps)} currentStep={currentStep} />
       <Content className={styles.pageContainer}>
         <MainView>
-          <Suspense fallback={<LoadingPage />}>
-            <Routes>
-              {menuItems
-                .flatMap((menuItem) => menuItem.routes)
-                .map(({ path, component: Component }) => (
-                  <Route key={path} path={path} element={<Component />} />
-                ))}
-              <Route path="*" element={<Navigate to={firstRoute} replace />} />
-            </Routes>
-          </Suspense>
+          {currentStep === PaymentSteps.SelectPlan && (
+            <SelectPlanStep
+              product={product}
+              setProduct={setProduct}
+              selectedProduct={selectedProduct}
+              paymentLoading={paymentLoading}
+              productItems={packagesDetail.productItem}
+              packagesMap={packagesMap}
+              onSelectPlan={onSelectPlan}
+            />
+          )}
+          {currentStep === PaymentSteps.BillingPayment && (
+            <BillingPaymentStep
+              productPrice={product?.price as number}
+              selectedProductPrice={selectedProduct?.price as number}
+              planDetail={planDetail}
+              onUpdadePlan={onUpdadePlan}
+              updatePlanLoading={updatePlanLoading}
+            />
+          )}
         </MainView>
       </Content>
     </MainPageWithScroll>

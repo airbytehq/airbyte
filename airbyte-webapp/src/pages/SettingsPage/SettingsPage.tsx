@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { Navigate, Route, Routes } from "react-router-dom";
 import styled from "styled-components";
@@ -7,12 +7,13 @@ import HeadTitle from "components/HeadTitle";
 import LoadingPage from "components/LoadingPage";
 import MainPageWithScroll from "components/MainPageWithScroll";
 import PageTitle from "components/PageTitle";
-import { CategoryItem } from "components/SideMenu/SideMenu";
-import TabMenu from "components/TabMenu";
+import { TabMenu, CategoryItem } from "components/TabMenu";
 
-// import useConnector from "hooks/services/useConnector";
+import { useUser } from "core/AuthContext";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
+import { MessageBox } from "./components/MessageBox";
 import AccountSettingsPage from "./pages/AccountSettingsPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 import UserManagementPage from "./pages/UserManagementPage";
@@ -36,6 +37,11 @@ const ContentContainer = styled.div`
   min-height: 100vh;
   background-color: white;
   padding: 26px;
+`;
+
+const PageHeaderContainer = styled.div`
+  width: 100%;
+  position: relative;
 `;
 
 const TabContainer = styled.div`
@@ -73,32 +79,34 @@ export const SettingsRoute = {
 
 const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const { push, pathname } = useRouter();
-  // const { countNewSourceVersion, countNewDestinationVersion } = useConnector();
+  const { user } = useUser();
+
+  const [messageId, setMessageId] = useState<string>("");
 
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
-        // {
-        //   path: `${SettingsRoute.Destination}`,
-        //   name: <FormattedMessage id="tables.destinations" />,
-        //   indicatorCount: countNewDestinationVersion,
-        //   component: DestinationsPage,
-        // },
-        // {
         {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
-          component: UserManagementPage,
+          component: <UserManagementPage />,
+          show: true,
         },
         {
           path: `${SettingsRoute.AccountSettings}`,
           name: <FormattedMessage id="settings.account.settings" />,
-          component: AccountSettingsPage,
+          component: <AccountSettingsPage />,
+          show: true,
         },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
-          component: PlansBillingPage,
+          component: <PlansBillingPage setMessageId={setMessageId} />,
+          show:
+            getRoleAgainstRoleNumber(user.role) === ROLES.Administrator_Owner ||
+            getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
+              ? true
+              : false,
         },
       ],
     },
@@ -115,9 +123,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
           withPadding
           headTitle={<HeadTitle titles={[{ id: "sidebar.settings" }]} />}
           pageTitle={
-            <div style={{ padding: "0 0 0 20px" }}>
-              <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
-            </div>
+            <PageHeaderContainer>
+              <div style={{ padding: "0 0 0 20px" }}>
+                <PageTitle title={<FormattedMessage id="sidebar.settings" />} />
+              </div>
+              <MessageBox message={messageId} onClose={() => setMessageId("")} />
+            </PageHeaderContainer>
           }
         >
           <Content>
@@ -129,10 +140,10 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
                 <Routes>
                   {menuItems
                     .flatMap((menuItem) => menuItem.routes)
-                    .map(({ path, component: Component }) => (
-                      <Route key={path} path={path} element={<Component />} />
-                    ))}
-
+                    .map(
+                      ({ path, component: Component, show }) =>
+                        show && <Route key={path} path={path} element={Component} />
+                    )}
                   <Route path="*" element={<Navigate to={firstRoute} replace />} />
                 </Routes>
               </Suspense>
