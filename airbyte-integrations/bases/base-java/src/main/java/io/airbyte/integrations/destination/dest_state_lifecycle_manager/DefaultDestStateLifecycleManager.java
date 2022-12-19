@@ -111,6 +111,11 @@ public class DefaultDestStateLifecycleManager implements DestStateLifecycleManag
   }
 
   @Override
+  public void markPendingAsCommitted() {
+    internalStateManagerSupplier.get().markPendingAsCommitted();
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return internalStateManagerSupplier.get().listCommitted();
   }

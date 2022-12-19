@@ -16,6 +16,9 @@ import java.util.Queue;
  * been committed</li>
  * <li>committed - associated records have been committed</li>
  * </ol>
+ *
+ * Since the methods for flushing and committing are not atomic, adding in a method
+ * `markPendingAsCommitted` while deprecating `
  */
 public interface DestStateLifecycleManager {
 
@@ -28,6 +31,8 @@ public interface DestStateLifecycleManager {
 
   /**
    * Moves any tracked state messages that are currently pending to flushed.
+   *
+   * @Deprecated
    */
   void markPendingAsFlushed();
 
@@ -40,8 +45,23 @@ public interface DestStateLifecycleManager {
 
   /**
    * Moves any tracked state messages that are currently flushed to committed.
+   *
+   * @Deprecated
    */
   void markFlushedAsCommitted();
+
+  /**
+   * Moves any tracked state messages that are currently pending to committed.
+   *
+   * Note: that this is skipping "flushed" state since flushed meant that this was using a staging
+   * area to hold onto files, for the changes with checkpointing this step is skipped. It follows
+   * under the guiding principle that destination needs to commit
+   * {@link io.airbyte.protocol.models.AirbyteRecordMessage} more frequently to checkpoint. The new
+   * transaction logic will be:
+   *
+   * Buffer -(flush)-> Staging (Blob Storage) -(commit to airbyte_raw)-> Destination table
+   */
+  void markPendingAsCommitted();
 
   /**
    * List all tracked state messages that are committed.

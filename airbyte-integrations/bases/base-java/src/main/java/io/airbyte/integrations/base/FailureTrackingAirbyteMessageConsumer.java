@@ -49,7 +49,10 @@ public abstract class FailureTrackingAirbyteMessageConsumer implements AirbyteMe
   }
 
   /**
-   * Wraps actual processing of each {@link AirbyteMessage}
+   * Business logic for handling {@link io.airbyte.protocol.models.AirbyteRecordMessage} and
+   * {@link io.airbyte.protocol.models.AirbyteStateMessage}
+   *
+   * This logic includes functionality of how {@link AirbyteMessage} will be handled
    *
    * @param msg {@link AirbyteMessage} to be processed
    * @throws Exception
