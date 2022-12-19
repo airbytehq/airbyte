@@ -22,6 +22,7 @@ import { useConnectionService, ValuesProps } from "hooks/services/useConnectionH
 import { useCurrentWorkspaceId } from "services/workspaces/WorkspacesService";
 import { equal } from "utils/objects";
 import EditControls from "views/Connection/ConnectionForm/components/EditControls";
+import { SchemaChangeBackdrop } from "views/Connection/ConnectionForm/components/SchemaChangeBackdrop";
 import { ConnectionFormFields } from "views/Connection/ConnectionForm/ConnectionFormFields";
 import {
   createConnectionValidationSchema,
@@ -45,7 +46,7 @@ const ValidateFormOnSchemaRefresh: React.FC = () => {
 };
 
 export const ConnectionReplicationTab: React.FC = () => {
-  const allowAutoDetectSchemaChanges = useFeature(FeatureItem.AllowAutoDetectSchemaChanges);
+  const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
   const workspaceId = useCurrentWorkspaceId();
@@ -98,7 +99,7 @@ export const ConnectionReplicationTab: React.FC = () => {
         workspaceId,
         mode,
         allowSubOneHourCronExpressions,
-        allowAutoDetectSchemaChanges,
+        allowAutoDetectSchema,
         connection.operations
       );
 
@@ -157,7 +158,7 @@ export const ConnectionReplicationTab: React.FC = () => {
       workspaceId,
       mode,
       allowSubOneHourCronExpressions,
-      allowAutoDetectSchemaChanges,
+      allowAutoDetectSchema,
       connection.operations,
       connection.catalogDiff?.transforms,
       connection.syncCatalog.streams,
@@ -187,34 +188,36 @@ export const ConnectionReplicationTab: React.FC = () => {
           validationSchema={createConnectionValidationSchema({
             mode,
             allowSubOneHourCronExpressions,
-            allowAutoDetectSchemaChanges,
+            allowAutoDetectSchema,
           })}
           onSubmit={onFormSubmit}
           enableReinitialize
         >
           {({ values, isSubmitting, isValid, dirty, resetForm, status }) => (
-            <Form>
-              <ValidateFormOnSchemaRefresh />
-              <ConnectionFormFields
-                values={values}
-                isSubmitting={isSubmitting}
-                dirty={dirty || schemaHasBeenRefreshed}
-              />
-              {status.editControlsVisible && (
-                <EditControls
+            <SchemaChangeBackdrop>
+              <Form>
+                <ValidateFormOnSchemaRefresh />
+                <ConnectionFormFields
+                  values={values}
                   isSubmitting={isSubmitting}
-                  submitDisabled={!isValid}
-                  dirty={dirty}
-                  resetForm={async () => {
-                    resetForm();
-                    discardRefreshedSchema();
-                  }}
-                  successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                  errorMessage={getErrorMessage(isValid, dirty)}
-                  enableControls={schemaHasBeenRefreshed || dirty}
+                  dirty={dirty || schemaHasBeenRefreshed}
                 />
-              )}
-            </Form>
+                {status.editControlsVisible && (
+                  <EditControls
+                    isSubmitting={isSubmitting}
+                    submitDisabled={!isValid}
+                    dirty={dirty}
+                    resetForm={async () => {
+                      resetForm();
+                      discardRefreshedSchema();
+                    }}
+                    successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                    errorMessage={getErrorMessage(isValid, dirty)}
+                    enableControls={schemaHasBeenRefreshed || dirty}
+                  />
+                )}
+              </Form>
+            </SchemaChangeBackdrop>
           )}
         </Formik>
       ) : (
