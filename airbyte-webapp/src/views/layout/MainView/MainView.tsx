@@ -37,7 +37,8 @@ const MainView: React.FC = (props) => {
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false);
 
   // TODO: not the propersolution but works for now
-  const isSidebar = !pathname.split("/").includes(RoutePaths.Payment);
+  const isSidebar =
+    !pathname.split("/").includes(RoutePaths.Payment) && !pathname.split("/").includes(RoutePaths.PaymentError);
 
   const isUpgradePlanBar = (): boolean => {
     let showUpgradePlanBar = false;
