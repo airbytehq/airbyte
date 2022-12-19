@@ -12,6 +12,7 @@ export interface Experiments {
   "connector.orderOverwrite": Record<string, number>;
   "connector.frequentlyUsedDestinationIds": string[];
   "connector.startWithDestinationId": string;
+  "connector.form.useDatepicker": boolean;
   "authPage.rightSideUrl": string | undefined;
   "authPage.hideSelfHostedCTA": boolean;
   "authPage.signup.hideName": boolean;
@@ -26,4 +27,5 @@ export interface Experiments {
   "connection.onboarding.sources": string;
   "connection.onboarding.destinations": string;
   "connection.autoDetectSchemaChanges": boolean;
+  "connection.columnSelection": boolean;
 }

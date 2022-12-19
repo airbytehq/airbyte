@@ -34,11 +34,9 @@ import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
 import io.airbyte.config.StandardSyncSummary.ReplicationStatus;
 import io.airbyte.config.SyncStats;
-import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivityImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -55,7 +53,6 @@ import io.temporal.client.WorkflowOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.testing.TestWorkflowEnvironment;
 import io.temporal.worker.Worker;
-import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
@@ -232,8 +229,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
         replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
         actualOutput.getStandardSyncSummary());
@@ -249,8 +247,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -272,8 +271,9 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -299,8 +299,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -320,8 +321,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -346,8 +348,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -400,9 +403,10 @@ class SyncWorkflowTest {
   }
 
   @Test
-  void testSkipReplicationAfterRefreshSchema() throws JsonValidationException, ConfigNotFoundException, IOException {
+  @Disabled("Temporarily disabled to address OC issue #1210")
+  void testSkipReplicationAfterRefreshSchema() {
     when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
-    StandardSyncOutput output = execute();
+    final StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyNoInteractions(replicationActivity);

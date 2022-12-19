@@ -201,7 +201,9 @@ public class DestinationDefinitionsHandler {
   private StandardDestinationDefinition destinationDefinitionFromCreate(final DestinationDefinitionCreate destinationDefCreate) throws IOException {
     final ConnectorSpecification spec = getSpecForImage(
         destinationDefCreate.getDockerRepository(),
-        destinationDefCreate.getDockerImageTag());
+        destinationDefCreate.getDockerImageTag(),
+        // Only custom connectors can be created via handlers.
+        true);
 
     final Version airbyteProtocolVersion = AirbyteProtocolVersion.getWithDefault(spec.getProtocolVersion());
 
@@ -231,7 +233,7 @@ public class DestinationDefinitionsHandler {
     final boolean specNeedsUpdate = !currentDestination.getDockerImageTag().equals(destinationDefinitionUpdate.getDockerImageTag())
         || destinationDefinitionUpdate.getDockerImageTag().equals(DEV_IMAGE_TAG);
     final ConnectorSpecification spec = specNeedsUpdate
-        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag())
+        ? getSpecForImage(currentDestination.getDockerRepository(), destinationDefinitionUpdate.getDockerImageTag(), currentDestination.getCustom())
         : currentDestination.getSpec();
     final ActorDefinitionResourceRequirements updatedResourceReqs = destinationDefinitionUpdate.getResourceRequirements() != null
         ? ApiPojoConverters.actorDefResourceReqsToInternal(destinationDefinitionUpdate.getResourceRequirements())
@@ -249,8 +251,7 @@ public class DestinationDefinitionsHandler {
         .withName(currentDestination.getName())
         .withDocumentationUrl(currentDestination.getDocumentationUrl())
         .withIcon(currentDestination.getIcon())
-        .withNormalizationRepository(currentDestination.getNormalizationRepository())
-        .withNormalizationTag(currentDestination.getNormalizationTag())
+        .withNormalizationConfig(currentDestination.getNormalizationConfig())
         .withSupportsDbt(currentDestination.getSupportsDbt())
         .withSpec(spec)
         .withProtocolVersion(airbyteProtocolVersion.serialize())
@@ -284,9 +285,9 @@ public class DestinationDefinitionsHandler {
     configRepository.writeStandardDestinationDefinition(persistedDestinationDefinition);
   }
 
-  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag) throws IOException {
+  private ConnectorSpecification getSpecForImage(final String dockerRepository, final String imageTag, boolean isCustomConnector) throws IOException {
     final String imageName = DockerUtils.getTaggedImageName(dockerRepository, imageTag);
-    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName);
+    final SynchronousResponse<ConnectorSpecification> getSpecResponse = schedulerSynchronousClient.createGetSpecJob(imageName, isCustomConnector);
     return SpecFetcher.getSpecFromJob(getSpecResponse);
   }
 
