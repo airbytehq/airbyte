@@ -1,5 +1,6 @@
-import { faTrashCan } from "@fortawesome/free-regular-svg-icons";
+import { faTrashCan, faCopy } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import classNames from "classnames";
 import { useField } from "formik";
 import { useIntl } from "react-intl";
 
@@ -7,6 +8,7 @@ import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderStream } from "../types";
+import { AddStreamButton } from "./AddStreamButton";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
@@ -49,7 +51,19 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
       <div className={styles.controls}>
-        <button className={styles.deleteButton} type="button" onClick={handleDelete}>
+        <AddStreamButton
+          onAddStream={(addedStreamNum) => {
+            setSelectedView(addedStreamNum);
+            setTestStreamIndex(addedStreamNum);
+          }}
+          initialValues={field.value[streamNum]}
+          button={
+            <button className={styles.controlButton} type="button">
+              <FontAwesomeIcon icon={faCopy} />
+            </button>
+          }
+        />
+        <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
           <FontAwesomeIcon icon={faTrashCan} />
         </button>
       </div>
