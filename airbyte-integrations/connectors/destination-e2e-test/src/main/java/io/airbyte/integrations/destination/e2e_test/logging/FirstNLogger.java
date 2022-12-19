@@ -4,8 +4,8 @@
 
 package io.airbyte.integrations.destination.e2e_test.logging;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
-import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
