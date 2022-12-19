@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-
 import org.apache.sshd.client.SshClient;
 import org.apache.sshd.client.keyverifier.AcceptAllServerKeyVerifier;
 import org.apache.sshd.client.session.ClientSession;
@@ -367,9 +366,9 @@ public class SshTunnel implements AutoCloseable {
           remoteServiceHost, remoteServicePort, address.toInetSocketAddress()));
       return session;
     } catch (final IOException | GeneralSecurityException e) {
-      if(e instanceof SshException && e.getMessage()
-              .toLowerCase(Locale.ROOT)
-              .contains("failed to get operation result within specified timeout")){
+      if (e instanceof SshException && e.getMessage()
+          .toLowerCase(Locale.ROOT)
+          .contains("failed to get operation result within specified timeout")) {
         throw new ConfigErrorException(e.getMessage(), e);
       } else {
         throw new RuntimeException(e);
