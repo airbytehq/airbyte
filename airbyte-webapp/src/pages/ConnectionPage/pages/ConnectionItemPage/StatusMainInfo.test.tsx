@@ -4,7 +4,7 @@ import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition"
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
 import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
-import { defaultFeatures, FeatureItem } from "hooks/services/Feature";
+import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 
 // eslint-disable-next-line css-modules/no-unused-class
 import styles from "./StatusMainInfo.module.scss";
@@ -28,7 +28,7 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[...defaultFeatures, FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
