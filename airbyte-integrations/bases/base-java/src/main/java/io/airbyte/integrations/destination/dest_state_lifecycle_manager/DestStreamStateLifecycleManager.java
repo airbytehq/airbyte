@@ -68,6 +68,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
   }
 
   @Override
+  public void markPendingAsCommitted() {
+    moveToNextPhase(streamToLastPendingState, streamToLastCommittedState);
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return listStatesInOrder(streamToLastCommittedState);
   }

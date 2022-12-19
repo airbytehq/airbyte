@@ -59,6 +59,14 @@ public class DestSingleStateLifecycleManager implements DestStateLifecycleManage
   }
 
   @Override
+  public void markPendingAsCommitted() {
+    if (lastPendingState != null) {
+      lastCommittedState = lastPendingState;
+      lastPendingState = null;
+    }
+  }
+
+  @Override
   public Queue<AirbyteMessage> listCommitted() {
     return stateMessageToQueue(lastCommittedState);
   }

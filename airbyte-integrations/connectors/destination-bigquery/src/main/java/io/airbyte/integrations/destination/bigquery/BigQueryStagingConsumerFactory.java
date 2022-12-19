@@ -50,6 +50,7 @@ public class BigQueryStagingConsumerFactory {
 
     return new BufferedStreamConsumer(
         outputRecordCollector,
+        // TODO: (ryankfu) need to clarify onsStartFunction
         onStartFunction(bigQueryGcsOperations, writeConfigs),
         new SerializedBufferingStrategy(
             onCreateBuffer,
@@ -108,6 +109,9 @@ public class BigQueryStagingConsumerFactory {
     };
   }
 
+  /*
+   * Update bigQueryGcsOperation.uploadRecordsToStage
+   */
   private CheckedBiConsumer<AirbyteStreamNameNamespacePair, SerializableBuffer, Exception> flushBufferFunction(final BigQueryStagingOperations bigQueryGcsOperations,
                                                                                                                final Map<AirbyteStreamNameNamespacePair, BigQueryWriteConfig> writeConfigs,
                                                                                                                final ConfiguredAirbyteCatalog catalog) {
@@ -122,6 +126,7 @@ public class BigQueryStagingConsumerFactory {
       try (writer) {
         writer.flush();
         final String stagedFile = bigQueryGcsOperations.uploadRecordsToStage(writeConfig.datasetId(), writeConfig.streamName(), writer);
+        // TODO: (ryankfu) needs to remove this since we're no longer storing staged files to later upload
         writeConfig.addStagedFile(stagedFile);
       } catch (final Exception e) {
         LOGGER.error("Failed to flush and upload buffer to stage:", e);

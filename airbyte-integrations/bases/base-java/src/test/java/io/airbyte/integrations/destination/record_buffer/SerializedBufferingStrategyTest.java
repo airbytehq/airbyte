@@ -76,25 +76,26 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message5 = generateMessage(stream2);
 
     when(recordWriter1.getByteCount()).thenReturn(10L); // one record in recordWriter1
-    assertFalse(buffering.addRecord(stream1, message1));
+    // TODO: (ryankfu) fix tests to handle optional value
+    assertFalse(buffering.addRecord(stream1, message1).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(10L); // one record in recordWriter2
-    assertFalse(buffering.addRecord(stream2, message2));
+    assertFalse(buffering.addRecord(stream2, message2).isPresent());
 
     // Total and per stream Buffers still have room
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
 
     when(recordWriter2.getByteCount()).thenReturn(20L); // second record in recordWriter2
-    assertFalse(buffering.addRecord(stream2, message3));
+    assertFalse(buffering.addRecord(stream2, message3).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(30L); // third record in recordWriter2
-    assertFalse(buffering.addRecord(stream2, message4));
+    assertFalse(buffering.addRecord(stream2, message4).isPresent());
 
     // The buffer limit is now reached for stream2, flushing that single stream only
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
 
     when(recordWriter2.getByteCount()).thenReturn(10L); // back to one record in recordWriter2
-    assertFalse(buffering.addRecord(stream2, message5));
+    assertFalse(buffering.addRecord(stream2, message5).isPresent());
 
     // force flush to terminate test
     buffering.flushAll();
@@ -117,24 +118,24 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message5 = generateMessage(stream2);
     final AirbyteMessage message6 = generateMessage(stream3);
 
-    assertFalse(buffering.addRecord(stream1, message1));
-    assertFalse(buffering.addRecord(stream2, message2));
+    assertFalse(buffering.addRecord(stream1, message1).isPresent());
+    assertFalse(buffering.addRecord(stream2, message2).isPresent());
     // Total and per stream Buffers still have room
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(0)).accept(stream3, recordWriter3);
 
-    assertFalse(buffering.addRecord(stream3, message3));
+    assertFalse(buffering.addRecord(stream3, message3).isPresent());
     when(recordWriter1.getByteCount()).thenReturn(20L); // second record in recordWriter1
-    assertFalse(buffering.addRecord(stream1, message4));
+    assertFalse(buffering.addRecord(stream1, message4).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(20L); // second record in recordWriter2
-    assertTrue(buffering.addRecord(stream2, message5));
+    assertTrue(buffering.addRecord(stream2, message5).isPresent());
     // Buffer limit reached for total streams, flushing all streams
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);
 
-    assertFalse(buffering.addRecord(stream3, message6));
+    assertFalse(buffering.addRecord(stream3, message6).isPresent());
     // force flush to terminate test
     buffering.flushAll();
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
@@ -156,22 +157,22 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message4 = generateMessage(stream4);
     final AirbyteMessage message5 = generateMessage(stream1);
 
-    assertFalse(buffering.addRecord(stream1, message1));
-    assertFalse(buffering.addRecord(stream2, message2));
-    assertFalse(buffering.addRecord(stream3, message3));
+    assertFalse(buffering.addRecord(stream1, message1).isPresent());
+    assertFalse(buffering.addRecord(stream2, message2).isPresent());
+    assertFalse(buffering.addRecord(stream3, message3).isPresent());
     // Total and per stream Buffers still have room
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(0)).accept(stream3, recordWriter3);
 
-    assertTrue(buffering.addRecord(stream4, message4));
+    assertTrue(buffering.addRecord(stream4, message4).isPresent());
     // Buffer limit reached for concurrent streams, flushing all streams
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(1)).accept(stream3, recordWriter3);
     verify(perStreamFlushHook, times(1)).accept(stream4, recordWriter4);
 
-    assertFalse(buffering.addRecord(stream1, message5));
+    assertFalse(buffering.addRecord(stream1, message5).isPresent());
     // force flush to terminate test
     buffering.flushAll();
     verify(perStreamFlushHook, times(2)).accept(stream1, recordWriter1);
