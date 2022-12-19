@@ -17,8 +17,8 @@ This source can sync data from the [ActiveCampaign API](https://developers.activ
 
 | Feature | Supported?\(Yes/No\) | Notes |
 | :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Full Refresh Sync | Yes | NA |
+| Incremental Sync | No | NA |
 
 ### Performance considerations
 
