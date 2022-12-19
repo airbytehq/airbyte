@@ -33,7 +33,8 @@
       },
       "password" : {
         "type" : "string",
-        "description" : "Password used with OIDC authentication"
+        "description" : "Password used with OIDC authentication",
+        "airbyte_secret" : true
       },
       "batch_size" : {
         "type" : "integer",
