@@ -6,6 +6,7 @@ $controlButtonWidth: 24px;
 .controls {
   display: flex;
   justify-content: center;
+  gap: variables.$spacing-sm;
 }
 
 .controlButton {

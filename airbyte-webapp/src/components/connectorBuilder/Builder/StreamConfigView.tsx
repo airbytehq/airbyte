@@ -58,7 +58,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           }}
           initialValues={field.value[streamNum]}
           button={
-            <button className={styles.controlButton} type="button" onClick={handleDelete}>
+            <button className={styles.controlButton} type="button">
               <FontAwesomeIcon icon={faCopy} />
             </button>
           }
