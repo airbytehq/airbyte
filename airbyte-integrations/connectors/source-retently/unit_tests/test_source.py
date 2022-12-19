@@ -28,5 +28,5 @@ def test_streams(mocker):
     source = SourceRetently()
     config_mock = MagicMock()
     streams = source.streams(config_mock)
-    expected_streams_number = 6
+    expected_streams_number = 8
     assert len(streams) == expected_streams_number
