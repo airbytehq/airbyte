@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.15.0
+Reverts additions from versions 0.13.0 and 0.13.3.
+
 ## 0.14.0
 Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
 
