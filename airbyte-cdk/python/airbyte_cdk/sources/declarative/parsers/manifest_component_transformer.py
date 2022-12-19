@@ -21,8 +21,9 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
     "DatetimeStreamSlicer.start_time_option": "RequestOption",
     # DeclarativeSource
-    "DeclarativeSource.streams": "DeclarativeStream",
     "DeclarativeSource.check": "CheckStream",
+    "DeclarativeSource.spec": "Spec",
+    "DeclarativeSource.streams": "DeclarativeStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
     "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
@@ -44,6 +45,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "ParentStreamConfig.stream": "DeclarativeStream",
     # RecordSelector
     "RecordSelector.extractor": "DpathExtractor",
+    "RecordSelector.record_filter": "RecordFilter",
     # SimpleRetriever
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
@@ -63,6 +65,7 @@ CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
     "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
     "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DeclarativeStream.retriever": "CustomRetriever",
+    "DeclarativeStream.transformations": "CustomTransformation",
     "DefaultErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DefaultPaginator.pagination_strategy": "CustomPaginationStrategy",
     "HttpRequester.authenticator": "CustomAuthenticator",
