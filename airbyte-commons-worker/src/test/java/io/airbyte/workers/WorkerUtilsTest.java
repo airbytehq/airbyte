@@ -14,13 +14,9 @@ import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.util.Map;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
 class WorkerUtilsTest {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(WorkerUtilsTest.class);
 
   @Test
   void testMapStreamNamesToSchemasWithNullNamespace() {
