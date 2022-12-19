@@ -2743,12 +2743,15 @@ components:
       required:
         - sourceId
         - name
+        - sourceDefinitionId
         - sourceName
       properties:
         sourceId:
           $ref: "#/components/schemas/SourceId"
         name:
           type: string
+        sourceDefinitionId:
+          $ref: "#/components/schemas/SourceDefinitionId"
         sourceName:
           type: string
         icon:
@@ -3055,12 +3058,15 @@ components:
       required:
         - destinationId
         - name
+        - destinationDefinitionId
         - destinationName
       properties:
         destinationId:
           $ref: "#/components/schemas/DestinationId"
         name:
           type: string
+        destinationDefinitionId:
+          $ref: "#/components/schemas/DestinationDefinitionId"
         destinationName:
           type: string
         icon:

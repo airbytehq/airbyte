@@ -309,6 +309,7 @@ public class DestinationHandler {
     return new DestinationSnippetRead()
         .destinationId(destinationConnection.getDestinationId())
         .name(destinationConnection.getName())
+        .destinationDefinitionId(standardDestinationDefinition.getDestinationDefinitionId())
         .destinationName(standardDestinationDefinition.getName())
         .icon(DestinationDefinitionsHandler.loadIcon(standardDestinationDefinition.getIcon()));
   }

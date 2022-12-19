@@ -324,6 +324,7 @@ public class SourceHandler {
     return new SourceSnippetRead()
         .sourceId(source.getSourceId())
         .name(source.getName())
+        .sourceDefinitionId(sourceDefinition.getSourceDefinitionId())
         .sourceName(sourceDefinition.getName())
         .icon(SourceDefinitionsHandler.loadIcon(sourceDefinition.getIcon()));
   }
