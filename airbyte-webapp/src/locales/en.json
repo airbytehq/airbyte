@@ -593,6 +593,7 @@
   "errorView.notAuthorized": "You don’t have permission to access this page.",
   "errorView.title": "Oops! Something went wrong…",
   "errorView.docLink": "Check out the documentation",
+  "errorView.upgradeConnectors": "Make sure your connectors are up to date",
   "errorView.retry": "Retry",
   "errorView.unknown": "Unknown",
   "errorView.unknownError": "Unknown error occurred",
