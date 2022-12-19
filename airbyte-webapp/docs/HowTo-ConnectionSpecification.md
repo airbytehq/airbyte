@@ -1,8 +1,8 @@
-0. run `npm install` (make sure to install node 16 if you don't already have it)
-1. run `npm run storybook` in `airbyte-webapp` directory
-2. open `ServiceForm` component story http://localhost:9009/?path=/story/views-serviceform--source
-3. press `raw` on the specifications property, so you will be able to past json in string format.
-4. edit specifications property to the connectionConfigration you want
+0. Run `npm install` (make sure to install node 16 if you don't already have it)
+1. Run `npm run storybook` in `airbyte-webapp` directory
+2. Open `ServiceForm` component story http://localhost:9009/?path=/story/views-serviceform--source
+3. Press `raw` on the specifications property, so you will be able to paste a json structured string
+4. Edit specifications property to the connectionConfigration you want
 
 e.g.
 ```
