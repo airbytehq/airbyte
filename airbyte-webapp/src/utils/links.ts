@@ -23,6 +23,8 @@ export const links = {
   statusLink: "https://status.airbyte.io/",
   tutorialsLink: "https://airbyte.com/tutorials",
   syncModeLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections`,
+  sourceDefinedCursorLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections/incremental-deduped-history/#source-defined-cursor`,
+  sourceDefinedPKLink: `${BASE_DOCS_LINK}/understanding-airbyte/connections/incremental-deduped-history/#source-defined-primary-key`,
   demoLink: "https://demo.airbyte.io",
   contactSales: "https://airbyte.com/talk-to-sales",
   webpageLink: "https://airbyte.com",
