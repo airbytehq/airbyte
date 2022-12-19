@@ -86,7 +86,11 @@ export const InputsView: React.FC = () => {
   const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
-  const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
+  const inferredInputs = useMemo(() => getInferredInputs(values), [values]);
+  const usedKeys = useMemo(
+    () => [...inputs.value, ...inferredInputs].map((input) => input.key),
+    [inputs.value, inferredInputs]
+  );
   const inputInEditValidation = useMemo(
     () =>
       yup.object().shape({
@@ -102,7 +106,6 @@ export const InputsView: React.FC = () => {
       }),
     [inputInEditing?.isNew, inputInEditing?.key, usedKeys]
   );
-  const inferredInputs = getInferredInputs(values);
 
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.inputsTitle" })}>
