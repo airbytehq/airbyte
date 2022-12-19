@@ -27,7 +27,6 @@ class Client:
             id_field_name = self.id_schema.get(stream_name, "")
             record_id = generate_id(record.get(id_field_name))
             del record[id_field_name]
-            print("handling user provided id schema")
         else:
             if "id" in record:
                 record_id = generate_id(record.get("id"))
