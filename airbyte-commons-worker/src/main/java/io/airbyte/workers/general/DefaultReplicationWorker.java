@@ -41,8 +41,8 @@ import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -114,8 +114,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final WorkerMetricReporter metricReporter,
                                   final boolean fieldSelectionEnabled,
                                   final HeartbeatMonitor srcHeartbeatMonitor,
-                                  final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone
-      ) {
+                                  final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
@@ -226,7 +225,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               metricReporter,
               timeTracker,
               fieldSelectionEnabled,
-              srcHeartbeatMonitor), executors, cancelled),
+              srcHeartbeatMonitor),
+          executors, cancelled),
           executors)
           .whenComplete((msg, ex) -> {
             try {
@@ -256,8 +256,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
       LOGGER.info("At least one thread complete. Waiting on the other. Statuses -- replication thread: {}, destination thread: {}",
           readSrcAndWriteDstThread.isDone(),
-          readFromDstThread.isDone()
-      );
+          readFromDstThread.isDone());
       CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
       LOGGER.info("Source and destination threads complete.");
 

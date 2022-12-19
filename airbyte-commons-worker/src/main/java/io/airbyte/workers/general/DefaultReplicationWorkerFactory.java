@@ -77,7 +77,7 @@ public class DefaultReplicationWorkerFactory {
     final var metricClient = MetricClientFactory.getMetricClient();
     final var metricReporter = new WorkerMetricReporter(metricClient, srcDockerImage);
 
-    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION);
+    final HeartbeatMonitor heartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESH_DURATION);
 
     log.info("Setting up source...");
     // reset jobs use an empty source to induce resetting all data in destination.
@@ -87,8 +87,7 @@ public class DefaultReplicationWorkerFactory {
     } else {
       airbyteSource = new DefaultAirbyteSource(
           sourceLauncher,
-          getStreamFactory(srcProtocolVersion, DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory),
-          heartbeatMonitor);
+          getStreamFactory(srcProtocolVersion, DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory));
     }
 
     log.info("Setting up destination...");
@@ -97,8 +96,9 @@ public class DefaultReplicationWorkerFactory {
         getStreamFactory(destProtocolVersion, DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory),
         new VersionedAirbyteMessageBufferedWriterFactory(serdeProvider, migratorFactory, destProtocolVersion));
 
-    final var srcHeartbeatMonitor = new HeartbeatMonitor()
-    final var srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone()
+    final var srcHeartbeatMonitor = new HeartbeatMonitor(HeartbeatMonitor.DEFAULT_HEARTBEAT_FRESH_DURATION);
+    final var srcHeartbeatTimeoutChaperone =
+        new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION);
 
     log.info("Setting up replication worker...");
     return new DefaultReplicationWorker(
@@ -111,7 +111,8 @@ public class DefaultReplicationWorkerFactory {
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
         fieldSelectionEnabled,
-        null);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
   }
 
   private static AirbyteStreamFactory getStreamFactory(final Version protocolVersion,

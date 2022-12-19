@@ -55,8 +55,8 @@ import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
-import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
@@ -134,7 +133,7 @@ class DefaultReplicationWorkerTest {
     messageTracker = mock(AirbyteMessageTracker.class);
     recordSchemaValidator = mock(RecordSchemaValidator.class);
     srcHeartbeatMonitor = mock(HeartbeatMonitor.class);;
-    srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, 5, TimeUnit.MINUTES);
+    srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, HeartbeatTimeoutChaperone.DEFAULT_TIMEOUT_CHECK_DURATION);
     doReturn(true).when(srcHeartbeatMonitor).isBeating();
     final MetricClient metricClient = MetricClientFactory.getMetricClient();
     workerMetricReporter = new WorkerMetricReporter(metricClient, "docker_image:v1.0.0");
@@ -188,7 +187,7 @@ class DefaultReplicationWorkerTest {
     final HeartbeatMonitor srcHeartbeatMonitor = mock(HeartbeatMonitor.class);
     doReturn(false).when(srcHeartbeatMonitor).isBeating();
 
-    final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, 10, TimeUnit.MILLISECONDS);
+    final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, Duration.ofMillis(10));
 
     // use local source as opposed to one with standard mocks.
     final AirbyteSource source = mock(AirbyteSource.class);

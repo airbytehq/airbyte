@@ -7,10 +7,11 @@ package io.airbyte.workers.internal;
 import static java.lang.Thread.sleep;
 
 import io.airbyte.workers.general.DefaultReplicationWorker.SourceException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,18 +20,15 @@ public class HeartbeatTimeoutChaperone {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
+  public static final Duration DEFAULT_TIMEOUT_CHECK_DURATION = Duration.of(5, ChronoUnit.MINUTES);
+
   private final HeartbeatMonitor heartbeatMonitor;
-  private final int checkInterval;
-  private final TimeUnit checkTimeUnit;
+  private final Duration timeoutCheckDuration;
 
-  public HeartbeatTimeoutChaperone() {
-    this(new HeartbeatMonitor(DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION), 5, TimeUnit.MINUTES);
-  }
+  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final Duration timeoutCheckDuration) {
+    this.timeoutCheckDuration = timeoutCheckDuration;
 
-  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final int checkInterval, final TimeUnit checkTimeUnit) {
-    this.checkInterval = checkInterval;
-    this.checkTimeUnit = checkTimeUnit;
-    LOGGER.info("Starting source heartbeat check. Will check every {} {}.", checkInterval, checkTimeUnit);
+    LOGGER.info("Starting source heartbeat check. Will check every {} minutes.", timeoutCheckDuration.toMinutes());
 
     this.heartbeatMonitor = heartbeatMonitor;
   }
@@ -45,10 +43,10 @@ public class HeartbeatTimeoutChaperone {
       } catch (final InterruptedException e) {
         throw new RuntimeException(e);
       } catch (final ExecutionException e) {
-        if(!cancelled.get()) {
+        if (!cancelled.get()) {
           // this should check explicitly for source and destination exceptions
-          if(e.getCause() instanceof RuntimeException) {
-            throw (RuntimeException)e.getCause();
+          if (e.getCause() instanceof RuntimeException) {
+            throw (RuntimeException) e.getCause();
           } else {
             throw new RuntimeException(e);
           }
@@ -81,11 +79,12 @@ public class HeartbeatTimeoutChaperone {
     };
   }
 
+  @SuppressWarnings("BusyWait")
   public void monitor() {
     while (true) {
       // todo handle
       try {
-        sleep(checkTimeUnit.toMillis(checkInterval));
+        sleep(timeoutCheckDuration.toMillis());
       } catch (final InterruptedException e) {
         LOGGER.info("Heartbeat thread has been interrupted (this is the expected way that it ends when the heartbeat never failed)");
       }
@@ -95,4 +94,5 @@ public class HeartbeatTimeoutChaperone {
       }
     }
   }
+
 }

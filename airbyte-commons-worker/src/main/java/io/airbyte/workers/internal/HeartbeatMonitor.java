@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
@@ -18,6 +19,8 @@ import java.util.function.Supplier;
  * It is ThreadSafe.
  */
 public class HeartbeatMonitor {
+
+  public static final Duration DEFAULT_HEARTBEAT_FRESH_DURATION = Duration.of(5, ChronoUnit.MINUTES);
 
   private final Duration heartBeatFreshDuration;
   private final Supplier<Instant> nowSupplier;
@@ -46,7 +49,6 @@ public class HeartbeatMonitor {
    * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is less than
    *         heartBeatFreshDuration. otherwise, false.
    */
-  @Deprecated
   public boolean isBeating() {
     final Instant instantFetched = lastBeat.get();
     final Instant now = nowSupplier.get();
