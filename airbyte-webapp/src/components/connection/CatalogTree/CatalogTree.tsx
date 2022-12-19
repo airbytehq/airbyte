@@ -1,3 +1,4 @@
+import classNames from "classnames";
 import React, { useCallback, useMemo, useState } from "react";
 
 import { LoadingBackdrop } from "components/ui/LoadingBackdrop";
@@ -71,7 +72,9 @@ const CatalogTreeComponent: React.FC<React.PropsWithChildren<CatalogTreeProps>> 
     <BulkEditServiceProvider nodes={streams} update={onStreamsChanged}>
       <LoadingBackdrop loading={isLoading}>
         {mode !== "readonly" && <CatalogTreeSearch onSearch={setSearchString} />}
-        <div className={isNewStreamsTableEnabled ? styles.newCatalogTreeTable : styles.catalogTreeTable}>
+        <div
+          className={classNames(styles.catalogTreeTable, { [styles.newCatalogTreeTable]: isNewStreamsTableEnabled })}
+        >
           <CatalogTreeBody
             streams={filteredStreams}
             changedStreams={changedStreams}
