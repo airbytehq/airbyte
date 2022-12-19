@@ -14664,7 +14664,7 @@
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
-- dockerImage: "airbyte/source-tiktok-marketing:1.0.0"
+- dockerImage: "airbyte/source-tiktok-marketing:1.0.1"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
     changelogUrl: "https://docs.airbyte.com/integrations/sources/tiktok-marketing"
@@ -17247,6 +17247,36 @@
           type: "string"
           description: "JWT Token"
           airbyte_secret: true
+    supportsNormalization: false
+    supportsDBT: false
+    supported_destination_sync_modes: []
+- dockerImage: "airbyte/source-braze:0.1.3"
+  spec:
+    documentationUrl: "https://docs.airbyte.com/integrations/sources/braze"
+    connectionSpecification:
+      $schema: "http://json-schema.org/draft-07/schema#"
+      title: "Braze Spec"
+      type: "object"
+      additionalProperties: true
+      required:
+      - "url"
+      - "api_key"
+      - "start_date"
+      properties:
+        url:
+          type: "string"
+          title: "URL"
+          description: "Braze REST API endpoint"
+        api_key:
+          type: "string"
+          title: "Rest API Key"
+          airbyte_secret: true
+          description: "Braze REST API key"
+        start_date:
+          type: "string"
+          format: "date"
+          title: "Start date"
+          description: "Rows after this date will be synced"
     supportsNormalization: false
     supportsDBT: false
     supported_destination_sync_modes: []
