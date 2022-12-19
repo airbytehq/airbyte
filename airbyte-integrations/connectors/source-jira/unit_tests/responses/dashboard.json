@@ -1,0 +1,36 @@
+{
+  "dashboards": [
+    {
+      "id": "1",
+      "isFavourite": false,
+      "name": "test dashboard",
+      "popularity": 0,
+      "self": "test",
+      "sharePermissions": [
+        {
+          "id": 1,
+          "type": "global"
+        }
+      ],
+      "editPermissions": [],
+      "view": "/jira/dashboards/1",
+      "systemDashboard": true
+    },
+    {
+      "id": "2",
+      "isFavourite": false,
+      "name": "test dashboard",
+      "popularity": 0,
+      "self": "test",
+      "sharePermissions": [
+        {
+          "id": 2,
+          "type": "global"
+        }
+      ],
+      "editPermissions": [],
+      "view": "/jira/dashboards/2",
+      "systemDashboard": true
+    }
+  ]
+}

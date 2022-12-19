@@ -15,6 +15,11 @@ export interface BuilderStream {
   urlPath: string;
   fieldPointer: string[];
   httpMethod: "GET" | "POST";
+  requestOptions: {
+    requestParameters: Array<[string, string]>;
+    requestHeaders: Array<[string, string]>;
+    requestBody: Array<[string, string]>;
+  };
 }
 
 export const builderFormValidationSchema = yup.object().shape({
@@ -28,6 +33,11 @@ export const builderFormValidationSchema = yup.object().shape({
       urlPath: yup.string().required("form.empty.error"),
       fieldPointer: yup.array().of(yup.string()),
       httpMethod: yup.mixed().oneOf(["GET", "POST"]),
+      requestOptions: yup.object().shape({
+        requestParameters: yup.array().of(yup.array().of(yup.string())),
+        requestHeaders: yup.array().of(yup.array().of(yup.string())),
+        requestBody: yup.array().of(yup.array().of(yup.string())),
+      }),
     })
   ),
 });
@@ -42,6 +52,11 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
           name: stream.name,
           url_base: values.global?.urlBase,
           path: stream.urlPath,
+          request_options_provider: {
+            request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
+            request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
+            request_body_data: Object.fromEntries(stream.requestOptions.requestBody),
+          },
           // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
           config: {},
         },

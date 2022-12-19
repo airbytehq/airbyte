@@ -6,7 +6,7 @@ package io.airbyte.integrations.destination.redpanda;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 import org.junit.jupiter.api.Test;
 
 class RedpandaWriteConfigTest {
