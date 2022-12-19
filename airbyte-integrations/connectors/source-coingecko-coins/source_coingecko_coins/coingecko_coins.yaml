@@ -3,7 +3,7 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: [ ]
+      field_pointer: []
   requester:
     url_base: "https://{{ 'api' if not config['api_key'] else 'pro-api' }}.coingecko.com/api/v3/coins/{{ config['coin_id'] }}"
     http_method: "GET"
@@ -57,7 +57,7 @@ definitions:
     transformations:
       - type: AddFields
         fields:
-          - path: [ "date" ]
+          - path: ["date"]
             value: "{{ stream_slice['start_time'] }}"
 
 streams:
