@@ -631,7 +631,7 @@ jobs:
           aws_bucket: airbyte-buildcache
           source_dir: '/tmp/docker-out'
           destination_dir: 'cache-docker'
-        uses: Wandalen/wretry.action@master
+      - uses: Wandalen/wretry.action@master
         with:
           command: SUB_BUILD=PLATFORM ./gradlew build javadoc --scan
           attempt_limit: 3
