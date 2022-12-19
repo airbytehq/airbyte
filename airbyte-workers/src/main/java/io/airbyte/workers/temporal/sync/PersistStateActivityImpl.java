@@ -107,6 +107,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
 
   /**
    * Test whether the previously stored state is empty.
+   *
    * @param previousState The previously stored state.
    * @return {@code true} if the previous state is null or empty, {@code false} otherwise.
    */
