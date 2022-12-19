@@ -14,7 +14,7 @@ import { Text } from "components/ui/Text";
 
 import { FormikPatch } from "core/form/FormikPatch";
 
-import { BuilderFormInput } from "../types";
+import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsView.module.scss";
@@ -28,6 +28,7 @@ interface InputInEditing {
   isNew?: boolean;
   showDefaultValueField: boolean;
   type: typeof supportedTypes[number];
+  isInferredInputOverride: boolean;
 }
 
 function sluggify(str: string) {
@@ -42,10 +43,14 @@ function newInputInEditing(): InputInEditing {
     isNew: true,
     showDefaultValueField: false,
     type: "string",
+    isInferredInputOverride: false,
   };
 }
 
-function formInputToInputInEditing({ key, definition, required }: BuilderFormInput): InputInEditing {
+function formInputToInputInEditing(
+  { key, definition, required }: BuilderFormInput,
+  isInferredInputOverride: boolean
+): InputInEditing {
   const supportedType = supportedTypes.find((type) => type === definition.type) || "unknown";
   return {
     key,
@@ -54,6 +59,7 @@ function formInputToInputInEditing({ key, definition, required }: BuilderFormInp
     isNew: false,
     showDefaultValueField: Boolean(definition.default),
     type: supportedType !== "unknown" && definition.enum ? "enum" : supportedType,
+    isInferredInputOverride,
   };
 }
 
@@ -77,6 +83,7 @@ function inputInEditingToFormInput({
 
 export const InputsView: React.FC = () => {
   const { formatMessage } = useIntl();
+  const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
   const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
@@ -95,33 +102,52 @@ export const InputsView: React.FC = () => {
       }),
     [inputInEditing?.isNew, inputInEditing?.key, usedKeys]
   );
+  const inferredInputs = getInferredInputs(values);
+
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.inputsTitle" })}>
       <Text centered className={styles.inputsDescription}>
         <FormattedMessage id="connectorBuilder.inputsDescription" />
       </Text>
-      {inputs.value.length > 0 && (
-        <Card withPadding className={styles.inputsCard}>
-          <ol className={styles.list}>
-            {inputs.value.map((input) => (
-              <li className={styles.listItem} key={input.key}>
-                <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
-                <Button
-                  className={styles.itemButton}
-                  size="sm"
-                  variant="secondary"
-                  aria-label="Edit"
-                  onClick={() => {
-                    setInputInEditing(formInputToInputInEditing(input));
-                  }}
-                >
-                  <FontAwesomeIcon className={styles.icon} icon={faGear} />
-                </Button>
-              </li>
-            ))}
-          </ol>
-        </Card>
-      )}
+      {inputs.value.length > 0 ||
+        (inferredInputs.length > 0 && (
+          <Card withPadding className={styles.inputsCard}>
+            <ol className={styles.list}>
+              {inferredInputs.map((input) => (
+                <li className={styles.listItem} key={input.key}>
+                  <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                  <Button
+                    className={styles.itemButton}
+                    size="sm"
+                    variant="secondary"
+                    aria-label="Edit"
+                    onClick={() => {
+                      setInputInEditing(formInputToInputInEditing(input, true));
+                    }}
+                  >
+                    <FontAwesomeIcon className={styles.icon} icon={faGear} />
+                  </Button>
+                </li>
+              ))}
+              {inputs.value.map((input) => (
+                <li className={styles.listItem} key={input.key}>
+                  <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                  <Button
+                    className={styles.itemButton}
+                    size="sm"
+                    variant="secondary"
+                    aria-label="Edit"
+                    onClick={() => {
+                      setInputInEditing(formInputToInputInEditing(input, false));
+                    }}
+                  >
+                    <FontAwesomeIcon className={styles.icon} icon={faGear} />
+                  </Button>
+                </li>
+              ))}
+            </ol>
+          </Card>
+        ))}
       <Button
         className={styles.addInputButton}
         onClick={() => {
@@ -138,12 +164,16 @@ export const InputsView: React.FC = () => {
           initialValues={inputInEditing}
           validationSchema={inputInEditValidation}
           onSubmit={(values: InputInEditing) => {
-            const newInput = inputInEditingToFormInput(values);
-            helpers.setValue(
-              inputInEditing.isNew
-                ? [...inputs.value, newInput]
-                : inputs.value.map((input) => (input.key === inputInEditing.key ? newInput : input))
-            );
+            if (values.isInferredInputOverride) {
+              setFieldValue(`inferredInputOverrides.${values.key}`, values.definition);
+            } else {
+              const newInput = inputInEditingToFormInput(values);
+              helpers.setValue(
+                inputInEditing.isNew
+                  ? [...inputs.value, newInput]
+                  : inputs.value.map((input) => (input.key === inputInEditing.key ? newInput : input))
+              );
+            }
             setInputInEditing(undefined);
           }}
         >
@@ -174,14 +204,15 @@ const InputModal = ({
   onDelete: () => void;
   onClose: () => void;
 }) => {
+  const isInferredInputOverride = inputInEditing.isInferredInputOverride;
   const { isValid, values, setFieldValue } = useFormikContext<InputInEditing>();
   const { formatMessage } = useIntl();
   const [title, titleMeta] = useField<string | undefined>("definition.title");
   useEffect(() => {
-    if (titleMeta.touched) {
+    if (titleMeta.touched && !isInferredInputOverride) {
       setFieldValue("key", sluggify(title.value || ""));
     }
-  }, [setFieldValue, title.value, titleMeta.touched]);
+  }, [setFieldValue, title.value, titleMeta.touched, isInferredInputOverride]);
 
   return (
     <Modal
@@ -222,21 +253,25 @@ const InputModal = ({
           />
           {values.type !== "unknown" ? (
             <>
-              <BuilderField
-                path="type"
-                type="enum"
-                options={["string", "number", "integer", "array", "boolean", "enum"]}
-                label={formatMessage({ id: "connectorBuilder.inputModal.type" })}
-                tooltip={formatMessage({ id: "connectorBuilder.inputModal.typeTooltip" })}
-              />
-              {values.type === "enum" && (
-                <BuilderField
-                  path="definition.enum"
-                  type="array"
-                  optional
-                  label={formatMessage({ id: "connectorBuilder.inputModal.enum" })}
-                  tooltip={formatMessage({ id: "connectorBuilder.inputModal.enumTooltip" })}
-                />
+              {!isInferredInputOverride && (
+                <>
+                  <BuilderField
+                    path="type"
+                    type="enum"
+                    options={["string", "number", "integer", "array", "boolean", "enum"]}
+                    label={formatMessage({ id: "connectorBuilder.inputModal.type" })}
+                    tooltip={formatMessage({ id: "connectorBuilder.inputModal.typeTooltip" })}
+                  />
+                  {values.type === "enum" && (
+                    <BuilderField
+                      path="definition.enum"
+                      type="array"
+                      optional
+                      label={formatMessage({ id: "connectorBuilder.inputModal.enum" })}
+                      tooltip={formatMessage({ id: "connectorBuilder.inputModal.enumTooltip" })}
+                    />
+                  )}
+                </>
               )}
               <BuilderField
                 path="definition.airbyte_secret"
@@ -245,13 +280,15 @@ const InputModal = ({
                 label={formatMessage({ id: "connectorBuilder.inputModal.secret" })}
                 tooltip={formatMessage({ id: "connectorBuilder.inputModal.secretTooltip" })}
               />
-              <BuilderField
-                path="required"
-                type="boolean"
-                optional
-                label={formatMessage({ id: "connectorBuilder.inputModal.required" })}
-                tooltip={formatMessage({ id: "connectorBuilder.inputModal.requiredTooltip" })}
-              />
+              {!isInferredInputOverride && (
+                <BuilderField
+                  path="required"
+                  type="boolean"
+                  optional
+                  label={formatMessage({ id: "connectorBuilder.inputModal.required" })}
+                  tooltip={formatMessage({ id: "connectorBuilder.inputModal.requiredTooltip" })}
+                />
+              )}
               <BuilderField
                 path="showDefaultValueField"
                 type="boolean"
@@ -283,7 +320,7 @@ const InputModal = ({
           )}
         </ModalBody>
         <ModalFooter>
-          {!inputInEditing.isNew && (
+          {!inputInEditing.isNew && !inputInEditing.isInferredInputOverride && (
             <div className={styles.deleteButtonContainer}>
               <Button variant="danger" type="button" onClick={onDelete}>
                 <FormattedMessage id="form.delete" />

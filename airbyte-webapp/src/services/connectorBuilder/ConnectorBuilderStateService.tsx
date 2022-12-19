@@ -14,8 +14,10 @@ export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
   global: {
     connectorName: "",
     urlBase: "",
+    authenticator: { type: "NoAuth" },
   },
   inputs: [],
+  inferredInputOverrides: {},
   streams: [],
 };
 
