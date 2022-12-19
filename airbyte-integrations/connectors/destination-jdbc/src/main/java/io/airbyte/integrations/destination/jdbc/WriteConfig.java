@@ -11,14 +11,12 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 /**
- * Write configuration POJO for all destinations extending {@link AbstractJdbcDestination}.
+ * Write configuration POJO (plain old java object) for all destinations extending {@link AbstractJdbcDestination}.
  */
 public class WriteConfig {
 
   private final String streamName;
-
   private final String namespace;
-
   private final String outputSchemaName;
   private final String tmpTableName;
   private final String outputTableName;
