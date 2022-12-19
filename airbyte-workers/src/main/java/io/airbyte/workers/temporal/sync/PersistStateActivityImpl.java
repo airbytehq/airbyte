@@ -112,7 +112,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
    * @return {@code true} if the previous state is null or empty, {@code false} otherwise.
    */
   private boolean isPreviousStateEmpty(final ConnectionState previousState) {
-    return previousState != null && previousState.getState() != null && !previousState.getState().isEmpty();
+    return previousState == null || previousState.getState() == null || previousState.getState().isEmpty();
   }
 
   @VisibleForTesting
