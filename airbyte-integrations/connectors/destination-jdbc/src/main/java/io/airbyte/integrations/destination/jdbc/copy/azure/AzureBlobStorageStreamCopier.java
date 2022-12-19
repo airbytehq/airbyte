@@ -77,7 +77,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     this.filenameGenerator = new StagingFilenameGenerator(streamName, GlobalDataSizeConstants.DEFAULT_MAX_BATCH_SIZE_BYTES);
   }
 
-  public static void attemptAzureBlobWriteAndDelete(AzureBlobStorageConfig config) {
+  public static void attemptAzureBlobWriteAndDelete(final AzureBlobStorageConfig config) {
     AppendBlobClient appendBlobClient = null;
     try {
       appendBlobClient = new SpecializedBlobClientBuilder()
@@ -87,7 +87,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
           .blobName("testAzureBlob" + UUID.randomUUID())
           .buildAppendBlobClient();
 
-      BlobContainerClient containerClient = getBlobContainerClient(appendBlobClient);
+      final BlobContainerClient containerClient = getBlobContainerClient(appendBlobClient);
       writeTestDataIntoBlob(appendBlobClient);
       listCreatedBlob(containerClient);
     } finally {
@@ -99,11 +99,11 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
 
   }
 
-  private static void listCreatedBlob(BlobContainerClient containerClient) {
+  private static void listCreatedBlob(final BlobContainerClient containerClient) {
     containerClient.listBlobs().forEach(blobItem -> LOGGER.info("Blob name: " + blobItem.getName() + "Snapshot: " + blobItem.getSnapshot()));
   }
 
-  private static void writeTestDataIntoBlob(AppendBlobClient appendBlobClient) {
+  private static void writeTestDataIntoBlob(final AppendBlobClient appendBlobClient) {
     final String test = "test_data";
     LOGGER.info("Writing test data to Azure Blob storage: " + test);
     final InputStream dataStream = new ByteArrayInputStream(test.getBytes(StandardCharsets.UTF_8));
@@ -114,8 +114,8 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     LOGGER.info("blobCommittedBlockCount: " + blobCommittedBlockCount);
   }
 
-  private static BlobContainerClient getBlobContainerClient(AppendBlobClient appendBlobClient) {
-    BlobContainerClient containerClient = appendBlobClient.getContainerClient();
+  private static BlobContainerClient getBlobContainerClient(final AppendBlobClient appendBlobClient) {
+    final BlobContainerClient containerClient = appendBlobClient.getContainerClient();
     if (!containerClient.exists()) {
       containerClient.create();
     }
@@ -134,7 +134,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void write(UUID id, AirbyteRecordMessage recordMessage, String azureFileName) throws Exception {
+  public void write(final UUID id, final AirbyteRecordMessage recordMessage, final String azureFileName) throws Exception {
     if (csvPrinters.containsKey(azureFileName)) {
       csvPrinters.get(azureFileName).printRecord(id,
           Jsons.serialize(recordMessage.getData()),
@@ -156,7 +156,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
       blobClients.put(currentFile, appendBlobClient);
       appendBlobClient.create(true);
 
-      BufferedOutputStream bufferedOutputStream =
+      final BufferedOutputStream bufferedOutputStream =
           new BufferedOutputStream(appendBlobClient.getBlobOutputStream(), Math.toIntExact(GlobalDataSizeConstants.MAX_FILE_SIZE));
       final var writer = new PrintWriter(bufferedOutputStream, true, StandardCharsets.UTF_8);
       try {
@@ -173,7 +173,7 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   }
 
   @Override
-  public void closeStagingUploader(boolean hasFailed) throws Exception {
+  public void closeStagingUploader(final boolean hasFailed) throws Exception {
     LOGGER.info("Uploading remaining data for {} stream.", streamName);
     for (final var csvPrinter : csvPrinters.values()) {
       csvPrinter.close();
@@ -202,14 +202,14 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
     LOGGER.info("Copy to tmp table {} in destination for stream {} complete.", tmpTableName, streamName);
   }
 
-  private String getFullAzurePath(String azureStagingFile) {
+  private String getFullAzurePath(final String azureStagingFile) {
     return "azure://" + azureBlobConfig.getAccountName() + "." + azureBlobConfig.getEndpointDomainName()
         + "/" + azureBlobConfig.getContainerName() + "/" + azureStagingFile;
   }
 
   @Override
   public String createDestinationTable() throws Exception {
-    var destTableName = nameTransformer.getRawTableName(streamName);
+    final var destTableName = nameTransformer.getRawTableName(streamName);
     LOGGER.info("Preparing table {} in destination.", destTableName);
     sqlOperations.createTableIfNotExists(db, schemaName, destTableName);
     LOGGER.info("Table {} in destination prepared.", tmpTableName);
@@ -218,21 +218,21 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   }
 
   @Override
-  public String generateMergeStatement(String destTableName) throws Exception {
+  public String generateMergeStatement(final String destTableName) throws Exception {
     LOGGER.info("Preparing to merge tmp table {} to dest table: {}, schema: {}, in destination.", tmpTableName, destTableName, schemaName);
-    var queries = new StringBuilder();
+    final var queries = new StringBuilder();
     if (destSyncMode.equals(DestinationSyncMode.OVERWRITE)) {
       queries.append(sqlOperations.truncateTableQuery(db, schemaName, destTableName));
       LOGGER.info("Destination OVERWRITE mode detected. Dest table: {}, schema: {}, truncated.", destTableName, schemaName);
     }
-    queries.append(sqlOperations.copyTableQuery(db, schemaName, tmpTableName, destTableName));
+    queries.append(sqlOperations.insertTableQuery(db, schemaName, tmpTableName, destTableName));
     return queries.toString();
   }
 
   @Override
   public void removeFileAndDropTmpTable() throws Exception {
     LOGGER.info("Begin cleaning azure blob staging files.");
-    for (AppendBlobClient appendBlobClient : blobClients.values()) {
+    for (final AppendBlobClient appendBlobClient : blobClients.values()) {
       appendBlobClient.delete();
     }
     LOGGER.info("Azure Blob staging files cleaned.");
@@ -245,8 +245,8 @@ public abstract class AzureBlobStorageStreamCopier implements StreamCopier {
   @Override
   public void closeNonCurrentStagingFileWriters() throws Exception {
     LOGGER.info("Begin closing non current file writers");
-    Set<String> removedKeys = new HashSet<>();
-    for (String key : activeStagingWriterFileNames) {
+    final Set<String> removedKeys = new HashSet<>();
+    for (final String key : activeStagingWriterFileNames) {
       if (!key.equals(currentFile)) {
         csvPrinters.get(key).close();
         csvPrinters.remove(key);
