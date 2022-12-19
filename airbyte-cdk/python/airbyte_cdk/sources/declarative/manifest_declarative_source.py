@@ -146,7 +146,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
 
         try:
-            raw_component_schema = pkgutil.get_data(__name__, "declarative_component_schema.yaml")
+            raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
             declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
