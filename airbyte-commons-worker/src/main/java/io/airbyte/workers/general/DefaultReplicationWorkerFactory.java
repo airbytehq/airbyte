@@ -23,6 +23,7 @@ import io.airbyte.workers.internal.DefaultAirbyteSource;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.internal.EmptyAirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.NamespacingMapper;
 import io.airbyte.workers.internal.VersionedAirbyteMessageBufferedWriterFactory;
 import io.airbyte.workers.internal.VersionedAirbyteStreamFactory;
@@ -95,6 +96,9 @@ public class DefaultReplicationWorkerFactory {
         destinationLauncher,
         getStreamFactory(destProtocolVersion, DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER, serdeProvider, migratorFactory),
         new VersionedAirbyteMessageBufferedWriterFactory(serdeProvider, migratorFactory, destProtocolVersion));
+
+    final var srcHeartbeatMonitor = new HeartbeatMonitor()
+    final var srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone()
 
     log.info("Setting up replication worker...");
     return new DefaultReplicationWorker(

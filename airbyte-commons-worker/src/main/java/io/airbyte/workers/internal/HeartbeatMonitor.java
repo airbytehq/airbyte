@@ -7,6 +7,7 @@ package io.airbyte.workers.internal;
 import com.google.common.annotations.VisibleForTesting;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
@@ -30,7 +31,7 @@ public class HeartbeatMonitor {
   public HeartbeatMonitor(final Duration heartBeatFreshDuration, final Supplier<Instant> nowSupplier) {
     this.heartBeatFreshDuration = heartBeatFreshDuration;
     this.nowSupplier = nowSupplier;
-    this.lastBeat = new AtomicReference<>(null);
+    lastBeat = new AtomicReference<>(null);
   }
 
   /**
@@ -45,10 +46,15 @@ public class HeartbeatMonitor {
    * @return true if the last heartbeat is still "fresh". i.e. time since last heartbeat is less than
    *         heartBeatFreshDuration. otherwise, false.
    */
+  @Deprecated
   public boolean isBeating() {
     final Instant instantFetched = lastBeat.get();
     final Instant now = nowSupplier.get();
     return instantFetched != null && instantFetched.plus(heartBeatFreshDuration).isAfter(now);
+  }
+
+  public Optional<Instant> lastBeat() {
+    return Optional.ofNullable(lastBeat.get());
   }
 
 }

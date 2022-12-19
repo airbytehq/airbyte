@@ -41,7 +41,8 @@ import io.airbyte.workers.helper.ThreadedTimeTracker;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
-import io.airbyte.workers.internal.SourceHeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
+import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.book_keeping.MessageTracker;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -93,7 +94,8 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AirbyteMapper mapper;
   private final AirbyteDestination destination;
   private final MessageTracker messageTracker;
-  private final SourceHeartbeatMonitor srcHeartbeatMonitor;
+  private final HeartbeatMonitor srcHeartbeatMonitor;
+  private final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone;
 
   private final ExecutorService executors;
   private final AtomicBoolean cancelled;
@@ -111,14 +113,17 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
                                   final boolean fieldSelectionEnabled,
-                                  final SourceHeartbeatMonitor sourceHeartbeatMonitor) {
+                                  final HeartbeatMonitor srcHeartbeatMonitor,
+                                  final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone
+      ) {
     this.jobId = jobId;
     this.attempt = attempt;
     this.source = source;
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
-    srcHeartbeatMonitor = sourceHeartbeatMonitor;
+    this.srcHeartbeatMonitor = srcHeartbeatMonitor;
+    this.srcHeartbeatTimeoutChaperone = srcHeartbeatTimeoutChaperone;
     executors = Executors.newFixedThreadPool(4);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
@@ -208,7 +213,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
             }
           });
 
-      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(srcHeartbeatMonitor.runWithHeartbeatThread(
+      final CompletableFuture<?> readSrcAndWriteDstThread = CompletableFuture.runAsync(srcHeartbeatTimeoutChaperone.runWithHeartbeatThread(
           readFromSrcAndWriteToDstRunnable(
               source,
               destination,
@@ -309,70 +314,6 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  // private static Runnable readFromSrcAndWriteToDstRunnableWithHeartbeat(final AirbyteSource source,
-  // final AirbyteDestination destination,
-  // final ConfiguredAirbyteCatalog catalog,
-  // final AtomicBoolean cancelled,
-  // final AirbyteMapper mapper,
-  // final MessageTracker messageTracker,
-  // final Map<String, String> mdc,
-  // final RecordSchemaValidator recordSchemaValidator,
-  // final WorkerMetricReporter metricReporter,
-  // final ThreadedTimeTracker timeTracker,
-  // final boolean fieldSelectionEnabled,
-  // final SourceHeartbeatMonitor srcHeartbeatMonitor) {
-  // return () -> {
-  // final CompletableFuture<Void> replicationFuture =
-  // CompletableFuture.runAsync(readFromSrcAndWriteToDstRunnable(
-  // source,
-  // destination,
-  // catalog,
-  // cancelled,
-  // mapper,
-  // messageTracker,
-  // mdc,
-  // recordSchemaValidator,
-  // metricReporter,
-  // timeTracker,
-  // fieldSelectionEnabled,
-  // srcHeartbeatMonitor));
-  //
-  // final CompletableFuture<Void> srcHeartbeatThread =
-  // CompletableFuture.runAsync(srcHeartbeatMonitor.getMonitorThread());
-  //
-  // // todo try catch
-  // try {
-  // CompletableFuture.anyOf(replicationFuture, srcHeartbeatThread).get();
-  // } catch (final InterruptedException e) {
-  // e.printStackTrace();
-  // } catch (final ExecutionException e) {
-  // e.printStackTrace();
-  // }
-  //
-  // LOGGER.info("thread status... heartbeat thread: {} , replication thread: {}",
-  // srcHeartbeatThread.isDone(), replicationFuture.isDone());
-  //
-  // boolean heartbeatTimedOut = false;
-  // if (srcHeartbeatThread.isDone() && !replicationFuture.isDone()) {
-  // heartbeatTimedOut = true;
-  // replicationFuture.cancel(true);
-  // }
-  // if (replicationFuture.isDone()) {
-  // srcHeartbeatThread.cancel(true);
-  // }
-  //
-  // try {
-  // destination.notifyEndOfInput();
-  // } catch (final Exception e) {
-  // throw new DestinationException("Destination process end of stream notification failed", e);
-  // }
-  //
-  // if (heartbeatTimedOut) {
-  // throw new SourceException("source timed out");
-  // }
-  // };
-  // }
-
   @SuppressWarnings("PMD.AvoidInstanceofChecksInCatchClause")
   private static Runnable readFromSrcAndWriteToDstRunnable(final AirbyteSource source,
                                                            final AirbyteDestination destination,
@@ -385,7 +326,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final WorkerMetricReporter metricReporter,
                                                            final ThreadedTimeTracker timeTracker,
                                                            final boolean fieldSelectionEnabled,
-                                                           final SourceHeartbeatMonitor srcHeartbeatMonitor) {
+                                                           final HeartbeatMonitor srcHeartbeatMonitor) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");

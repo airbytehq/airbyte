@@ -56,7 +56,7 @@ import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteSource;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.internal.NamespacingMapper;
-import io.airbyte.workers.internal.SourceHeartbeatMonitor;
+import io.airbyte.workers.internal.HeartbeatTimeoutChaperone;
 import io.airbyte.workers.internal.book_keeping.AirbyteMessageTracker;
 import io.airbyte.workers.test_utils.AirbyteMessageUtils;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
@@ -96,7 +96,7 @@ class DefaultReplicationWorkerTest {
   private static final AirbyteMessage RECORD_MESSAGE3 = AirbyteMessageUtils.createRecordMessage(STREAM_NAME, FIELD_NAME, 3);
   private static final AirbyteMessage STATE_MESSAGE = AirbyteMessageUtils.createStateMessage("checkpoint", "1");
   private static final AirbyteTraceMessage ERROR_TRACE_MESSAGE =
-      AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", Double.valueOf(123));
+      AirbyteMessageUtils.createErrorTraceMessage("a connector error occurred", 123.0);
   private static final String STREAM1 = "stream1";
 
   private static final String NAMESPACE = "namespace";
@@ -111,9 +111,9 @@ class DefaultReplicationWorkerTest {
   private WorkerDestinationConfig destinationConfig;
   private AirbyteMessageTracker messageTracker;
   private RecordSchemaValidator recordSchemaValidator;
-  private MetricClient metricClient;
   private WorkerMetricReporter workerMetricReporter;
-  private SourceHeartbeatMonitor srcHeartbeatMonitor;
+  private HeartbeatMonitor srcHeartbeatMonitor;
+  private HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone;
 
   @SuppressWarnings("unchecked")
   @BeforeEach
@@ -133,12 +133,10 @@ class DefaultReplicationWorkerTest {
     destination = mock(AirbyteDestination.class);
     messageTracker = mock(AirbyteMessageTracker.class);
     recordSchemaValidator = mock(RecordSchemaValidator.class);
-//    srcHeartbeatMonitor = mock(SourceHeartbeatMonitor.class);
-    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
-    // todo clean up
-    doReturn(true).when(heartbeatMonitor).isBeating();
-    srcHeartbeatMonitor = new SourceHeartbeatMonitor(heartbeatMonitor, 5, TimeUnit.MINUTES);
-    metricClient = MetricClientFactory.getMetricClient();
+    srcHeartbeatMonitor = mock(HeartbeatMonitor.class);;
+    srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, 5, TimeUnit.MINUTES);
+    doReturn(true).when(srcHeartbeatMonitor).isBeating();
+    final MetricClient metricClient = MetricClientFactory.getMetricClient();
     workerMetricReporter = new WorkerMetricReporter(metricClient, "docker_image:v1.0.0");
 
     when(source.isFinished()).thenReturn(false, false, false, true);
@@ -168,7 +166,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -185,13 +184,11 @@ class DefaultReplicationWorkerTest {
   }
 
   @Test
-  void test1() throws Exception {
-    // final SourceHeartbeatMonitor srcHeartbeatMonitor = mock(SourceHeartbeatMonitor.class);
-    final HeartbeatMonitor heartbeatMonitor = mock(HeartbeatMonitor.class);
-    doReturn(false).when(heartbeatMonitor).isBeating();
+  void testFailsOnHeartbeatTimeout() throws Exception {
+    final HeartbeatMonitor srcHeartbeatMonitor = mock(HeartbeatMonitor.class);
+    doReturn(false).when(srcHeartbeatMonitor).isBeating();
 
-    final SourceHeartbeatMonitor srcHeartbeatMonitor = new SourceHeartbeatMonitor(heartbeatMonitor, 10, TimeUnit.MILLISECONDS);
-    // doThrow(new SourceException("timed out")).when(srcHeartbeatMonitor).beat();
+    final HeartbeatTimeoutChaperone srcHeartbeatTimeoutChaperone = new HeartbeatTimeoutChaperone(srcHeartbeatMonitor, 10, TimeUnit.MILLISECONDS);
 
     // use local source as opposed to one with standard mocks.
     final AirbyteSource source = mock(AirbyteSource.class);
@@ -208,25 +205,21 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
 
     verify(source).start(sourceConfig, jobRoot);
     verify(destination).start(destinationConfig, jobRoot);
-    // verify(destination).accept(RECORD_MESSAGE1);
-    // verify(destination).accept(RECORD_MESSAGE2);
     verify(source, atLeastOnce()).close();
     verify(destination).close();
-    // verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE1.getRecord(),
-    // AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE1.getRecord()));
-    // verify(recordSchemaValidator).validateSchema(RECORD_MESSAGE2.getRecord(),
-    // AirbyteStreamNameNamespacePair.fromRecordMessage(RECORD_MESSAGE2.getRecord()));
 
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testInvalidSchema() throws Exception {
     when(source.attemptRead()).thenReturn(Optional.of(RECORD_MESSAGE1), Optional.of(RECORD_MESSAGE2), Optional.of(RECORD_MESSAGE3));
@@ -241,7 +234,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -273,7 +267,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
     assertTrue(output.getFailures().stream().anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.SOURCE)));
@@ -295,7 +290,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -319,7 +315,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -342,7 +339,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertTrue(output.getFailures().stream()
@@ -366,7 +364,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -374,6 +373,7 @@ class DefaultReplicationWorkerTest {
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(WORKER_ERROR_MESSAGE)));
   }
 
+  @SuppressWarnings("unchecked")
   @Test
   void testOnlyStateAndRecordMessagesDeliveredToDestination() throws Exception {
     final AirbyteMessage LOG_MESSAGE = AirbyteMessageUtils.createLogMessage(Level.INFO, "a log message");
@@ -394,7 +394,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -429,7 +430,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         true,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -461,7 +463,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -484,7 +487,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -507,7 +511,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -531,7 +536,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.FAILED, output.getReplicationAttemptSummary().getStatus());
@@ -556,7 +562,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     worker.run(syncInput, jobRoot);
 
@@ -599,7 +606,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final Thread workerThread = new Thread(() -> {
       try {
@@ -649,7 +657,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final ReplicationOutput replicationOutput = new ReplicationOutput()
@@ -718,7 +727,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     assertNotNull(actual);
@@ -739,7 +749,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
 
@@ -775,7 +786,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInput, jobRoot);
     final SyncStats expectedTotalStats = new SyncStats()
@@ -823,7 +835,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
 
     final ReplicationOutput actual = worker.run(syncInputWithoutState, jobRoot);
 
@@ -845,7 +858,8 @@ class DefaultReplicationWorkerTest {
         recordSchemaValidator,
         workerMetricReporter,
         false,
-        srcHeartbeatMonitor);
+        srcHeartbeatMonitor,
+        srcHeartbeatTimeoutChaperone);
     assertThrows(WorkerException.class, () -> worker.run(syncInput, jobRoot));
   }
 

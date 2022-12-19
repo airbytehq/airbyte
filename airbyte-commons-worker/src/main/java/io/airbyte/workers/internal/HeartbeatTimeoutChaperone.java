@@ -15,28 +15,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SourceHeartbeatMonitor {
+public class HeartbeatTimeoutChaperone {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(SourceHeartbeatMonitor.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(HeartbeatTimeoutChaperone.class);
 
   private final HeartbeatMonitor heartbeatMonitor;
   private final int checkInterval;
   private final TimeUnit checkTimeUnit;
 
-  public SourceHeartbeatMonitor() {
+  public HeartbeatTimeoutChaperone() {
     this(new HeartbeatMonitor(DefaultAirbyteSource.HEARTBEAT_FRESH_DURATION), 5, TimeUnit.MINUTES);
   }
 
-  public SourceHeartbeatMonitor(final HeartbeatMonitor heartbeatMonitor, final int checkInterval, final TimeUnit checkTimeUnit) {
+  public HeartbeatTimeoutChaperone(final HeartbeatMonitor heartbeatMonitor, final int checkInterval, final TimeUnit checkTimeUnit) {
     this.checkInterval = checkInterval;
     this.checkTimeUnit = checkTimeUnit;
     LOGGER.info("Starting source heartbeat check. Will check every {} {}.", checkInterval, checkTimeUnit);
 
     this.heartbeatMonitor = heartbeatMonitor;
-  }
-
-  public Runnable getMonitorThread() {
-    return this::monitor;
   }
 
   public Runnable runWithHeartbeatThread(final Runnable runnable, final ExecutorService executorService, final AtomicBoolean cancelled) {
@@ -99,9 +95,4 @@ public class SourceHeartbeatMonitor {
       }
     }
   }
-
-  public void beat() {
-    heartbeatMonitor.beat();
-  }
-
 }
