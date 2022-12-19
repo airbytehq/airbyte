@@ -24,7 +24,7 @@ const streamSyncEnabledSwitch = (streamName: string) => `[data-testid='${streamN
 const streamNameInput = "input[data-testid='input']";
 
 export const goToReplicationTab = () => {
-  cy.get(replicationTab).should("exist").click();
+  cy.get(replicationTab).click();
 };
 
 export const enterConnectionName = (name: string) => {
