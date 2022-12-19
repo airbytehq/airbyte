@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,9 +58,13 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
    * @throws Exception
    */
   @Override
-  public boolean addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
-    boolean didFlush = false;
+  public Optional addRecord(final AirbyteStreamNameNamespacePair stream, final AirbyteMessage message) throws Exception {
+    Optional<BufferFlushType> flushed = Optional.empty();
 
+    /*
+     * Creates a new buffer for each stream if buffers do not already exist, else return already
+     * computed buffer
+     */
     final SerializableBuffer streamBuffer = allBuffers.computeIfAbsent(stream, k -> {
       LOGGER.info("Starting a new buffer for stream {} (current state: {} in {} buffers)",
           stream.getName(),
@@ -77,18 +82,20 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
     }
     final long actualMessageSizeInBytes = streamBuffer.accept(message.getRecord());
     totalBufferSizeInBytes += actualMessageSizeInBytes;
+    /*
+     * Flushes buffer when either the buffer was completely filled or only a single stream was filled
+     */
     if (totalBufferSizeInBytes >= streamBuffer.getMaxTotalBufferSizeInBytes()
         || allBuffers.size() >= streamBuffer.getMaxConcurrentStreamsInBuffer()) {
       flushAll();
-      didFlush = true;
-      totalBufferSizeInBytes = 0;
+      flushed = Optional.of(BufferFlushType.FLUSH_ALL);
     } else if (streamBuffer.getByteCount() >= streamBuffer.getMaxPerStreamBufferSizeInBytes()) {
       flushWriter(stream, streamBuffer);
       /*
-       * Note: We intentionally do not mark didFlush as true in the branch of this conditional. Because
-       * this branch flushes individual streams, there is no guarantee that it will flush records in the
-       * same order that state messages were received. The outcome here is that records get flushed but
-       * our updating of which state messages have been flushed falls behind.
+       * Note: This branch is needed to indicate to the {@link DefaultDestStateLifeCycleManager} that an
+       * individual stream was flushed, there is no guarantee that it will flush records in the same order
+       * that state messages were received. The outcome here is that records get flushed but our updating
+       * of which state messages have been flushed falls behind.
        *
        * This is not ideal from a checkpoint point of view, because it means in the case where there is a
        * failure, we will not be able to report that those records that were flushed and committed were
@@ -99,9 +106,9 @@ public class SerializedBufferingStrategy implements BufferingStrategy {
        * by some other means. That can be caused by the previous branch in this conditional. It is
        * guaranteed by the fact that we always flush all state messages at the end of a sync.
        */
+      flushed = Optional.of(BufferFlushType.FLUSH_SINGLE_STREAM);
     }
-
-    return didFlush;
+    return flushed;
   }
 
   @Override

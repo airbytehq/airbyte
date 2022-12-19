@@ -82,6 +82,16 @@ public class WriteConfig {
     return stagedFiles;
   }
 
+  /**
+   * Adds already uploaded files to staging for later retrieval when moving from staging area to temp then to final table (airbyte_raw)
+   * TODO: (ryankfu) remove this since we'll no longer be storing staged files but rather immediately
+   * upload staged files into the destination's raw table
+   *
+   * TODO: (ryankfu) have this become an abstract class since we have multiple copies of WriteConfig
+   *      (BigQueryWriteConfig, ElasticSearchWriteConfig) that reuse the same components
+   *
+   * @param file name of file uploaded to staging area
+   */
   public void addStagedFile(final String file) {
     stagedFiles.add(file);
   }

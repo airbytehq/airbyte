@@ -86,7 +86,7 @@ public class SnowflakeS3StagingSqlOperations extends SnowflakeSqlOperations impl
   }
 
   @Override
-  public void copyIntoTmpTableFromStage(final JdbcDatabase database,
+  public void copyIntoRawTableFromStage(final JdbcDatabase database,
                                         final String stageName,
                                         final String stagingPath,
                                         final List<String> stagedFiles,
