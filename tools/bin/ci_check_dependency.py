@@ -18,7 +18,7 @@ IGNORE_LIST = [
     # Common
     "acceptance-test-config.yml", "acceptance-test-docker.sh", ".md", ".dockerignore", ".gitignore", "requirements.txt"]
 IGNORED_SOURCES = [
-    re.compile("^e2e-test-cloud$"),
+    re.compile("^source-e2e-test-cloud$"),
     re.compile("^source-mongodb$"),
     re.compile("^source-python-http-tutorial$"),
     re.compile("^source-relational-db$"),
@@ -179,7 +179,7 @@ def as_markdown_table_rows(connectors: List[str], definitions) -> str:
         definition = next((x for x in definitions if x["dockerRepository"].endswith(connector)), None)
         if any(regex.match(connector) for regex in IGNORED_SOURCES):
             publish_status = "🔵<br/>(ignored)"
-        if any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
+        elif any(regex.match(connector) for regex in IGNORED_DESTINATIONS):
             publish_status = "🔵<br/>(ignored)"
         elif definition is None:
             publish_status = "⚠<br/>(not in seed)"
