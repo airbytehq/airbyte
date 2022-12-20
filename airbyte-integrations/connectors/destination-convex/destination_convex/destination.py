@@ -43,7 +43,7 @@ class DestinationConvex(Destination):
         if len(streams_to_delete) != 0:
             writer.delete_stream_entries(streams_to_delete)
 
-        streams = []
+        streams = {}
         for s in configured_catalog.streams:
             if s.cursor_field is None:
                 cursor = []
@@ -54,14 +54,14 @@ class DestinationConvex(Destination):
             else:
                 primary_key = s.primary_key
             stream = {
-                "stream": s.stream.name,
-                "syncMode": str(s.sync_mode.name),  # TODO rename
+                "syncMode": str(s.sync_mode.name),
+                "destinationSyncMode": str(s.destination_sync_mode.name),
                 "cursor": cursor,  # need some logic to combine here
                 "primaryKey": primary_key,
                 "jsonSchema": str(s.stream.json_schema),  # FIXME
                 "namespace": s.stream.namespace,
             }
-            streams.append(stream)
+            streams[s.stream.name] = stream
         writer.stream_metadata = streams
 
         for message in input_messages:
