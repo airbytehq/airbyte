@@ -99,7 +99,6 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
               destinationDefinition.getNormalizationConfig().getNormalizationTag())
           : null;
-      final boolean supportsDbt = destinationDefinition.getSupportsDbt();
       final String normalizationIntegrationType =
           destinationDefinition.getNormalizationConfig() != null ? destinationDefinition.getNormalizationConfig().getNormalizationIntegrationType()
               : null;
@@ -118,7 +117,7 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
           .withProtocolVersion(config.getDestinationProtocolVersion())
           .withIsCustomConnector(config.getIsDestinationCustomConnector())
           .withNormalizationDockerImage(destinationNormalizationDockerImage)
-          .withSupportsDbt(supportsDbt)
+          .withSupportsDbt(destinationDefinition.getSupportsDbt())
           .withNormalizationIntegrationType(normalizationIntegrationType);
 
       final StandardSyncInput syncInput = new StandardSyncInput()
