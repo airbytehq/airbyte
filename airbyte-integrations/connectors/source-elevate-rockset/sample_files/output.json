@@ -1,0 +1,114 @@
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "Starting syncing SourceElevateRockset"
+    }
+}
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "Syncing stream: workspace "
+    }
+}
+{
+    "type": "RECORD",
+    "record": {
+        "stream": "workspace",
+        "data": {
+            "tag_name": "latest",
+            "version": {
+                "workspace": "commons",
+                "created_by": "soni.mil2001@gmail.com",
+                "created_at": "2022-09-02T22:33:07Z",
+                "name": "games",
+                "version": "b98f7a0739085328",
+                "description": "",
+                "sql": {
+                    "query": "SELECT\n    m.id,\n    m.title,\n    m.publisher,\n \tm.price,\n    m.release_date,\n    m.metascore\nFROM\n    commons.steam_data  m\n    \nORDER BY\n    m.metascore ASC;",
+                    "default_parameters": []
+                },
+                "collections": [
+                    "commons.steam_data"
+                ],
+                "state": "ACTIVE",
+                "stats": {
+                    "last_executed": null,
+                    "last_executed_by": null,
+                    "last_execution_error": null,
+                    "last_execution_error_message": null
+                }
+            }
+        },
+        "emitted_at": 1662298951337
+    }
+}
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "Read 1 records from workspace stream"
+    }
+}
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "Finished syncing workspace"
+    }
+}
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "SourceElevateRockset runtimes:\nSyncing stream workspace 0:00:00.976229"
+    }
+}
+{
+    "type": "LOG",
+    "log": {
+        "level": "INFO",
+        "message": "Finished syncing SourceElevateRockset"
+    }
+}
+
+
+{
+    "streams": [
+        {
+            "stream": {
+                "name": "workspace",
+                "json_schema": {
+                    "$schema": "http://json-schema.org/draft-04/schema#",
+                    "type": "lololo",
+                    "properties": {
+                        "id": {
+                            "type": "string"
+                        },
+                        "title": {
+                            "type": "string"
+                        },
+                        "publisher": {
+                            "type": "string"
+                        },
+                        "price": {
+                            "type": "string"
+                        },
+                        "release_date": {
+                            "type": "string"
+                        },
+                        "metascore": {
+                            "type": "string"
+                        }
+                    }
+                },
+                "supported_sync_modes": [
+                    "full_refresh"
+                ]
+            },
+            "sync_mode": "full_refresh",
+            "destination_sync_mode": "overwrite"
+        }
+    ]
+}

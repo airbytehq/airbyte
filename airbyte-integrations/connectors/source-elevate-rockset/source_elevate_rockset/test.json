@@ -1,0 +1,123 @@
+{
+    "type": "RECORD",
+    "record": {
+        "stream": "workspace",
+        "data": {
+            "data": [
+                {
+                    "workspace": "commons",
+                    "last_updated_by": "soni.mil2001@gmail.com",
+                    "last_updated": "2022-09-01T19:46:06Z",
+                    "name": "movieapi",
+                    "version_count": 2,
+                    "collections": [
+                        "commons.movies"
+                    ],
+                    "latest_version": {
+                        "workspace": "commons",
+                        "created_by": "soni.mil2001@gmail.com",
+                        "created_at": "2022-09-01T19:46:06Z",
+                        "name": "movieapi",
+                        "version": "d0eda4dc53fc982c",
+                        "description": "movie ratings api ",
+                        "sql": {
+                            "query": "",
+                            "default_parameters": []
+                        },
+                        "collections": [],
+                        "state": "INVALID_SQL",
+                        "stats": null
+                    }
+                },
+                {
+                    "workspace": "commons",
+                    "last_updated_by": "soni.mil2001@gmail.com",
+                    "last_updated": "2022-09-01T22:17:14Z",
+                    "name": "bot",
+                    "version_count": 1,
+                    "collections": [
+                        "commons.botnet"
+                    ],
+                    "latest_version": {
+                        "workspace": "commons",
+                        "created_by": "soni.mil2001@gmail.com",
+                        "created_at": "2022-09-01T22:17:14Z",
+                        "name": "bot",
+                        "version": "79a02bf6aa097403",
+                        "description": "",
+                        "sql": {
+                            "query": "SELECT\n\tm._id,\n    \n\nFROM\n\tcommons.botnet as m ",
+                            "default_parameters": []
+                        },
+                        "collections": [
+                            "commons.botnet"
+                        ],
+                        "state": "ACTIVE",
+                        "stats": null
+                    }
+                },
+                {
+                    "workspace": "commons",
+                    "last_updated_by": "soni.mil2001@gmail.com",
+                    "last_updated": "2022-09-02T22:33:07Z",
+                    "name": "games",
+                    "version_count": 4,
+                    "collections": [
+                        "commons.steam_data"
+                    ],
+                    "latest_version": {
+                        "workspace": "commons",
+                        "created_by": "soni.mil2001@gmail.com",
+                        "created_at": "2022-09-02T22:33:07Z",
+                        "name": "games",
+                        "version": "b98f7a0739085328",
+                        "description": "",
+                        "sql": {
+                            "query": "SELECT\n    m.id,\n    m.title,\n    m.publisher,\n \tm.price,\n    m.release_date,\n    m.metascore\nFROM\n    commons.steam_data  m\n    \nORDER BY\n    m.metascore ASC;",
+                            "default_parameters": []
+                        },
+                        "collections": [
+                            "commons.steam_data"
+                        ],
+                        "state": "ACTIVE",
+                        "stats": null
+                    }
+                },
+                {
+                    "workspace": "commons",
+                    "last_updated_by": "soni.mil2001@gmail.com",
+                    "last_updated": "2022-09-02T07:56:43Z",
+                    "name": "newmovie",
+                    "version_count": 2,
+                    "collections": [
+                        "commons.movies"
+                    ],
+                    "latest_version": {
+                        "workspace": "commons",
+                        "created_by": "soni.mil2001@gmail.com",
+                        "created_at": "2022-09-02T07:56:43Z",
+                        "name": "newmovie",
+                        "version": "55be463aa665c90a",
+                        "description": "",
+                        "sql": {
+                            "query": "SELECT\n\tm.user_id,\n\tm.movie_id,\n    m.rating\n\nFROM\n\tcommons.movies as m \n\nWHERE\n \tm.user_id = :user_id\n    \nORDER BY\n\tm.rating DESC",
+                            "default_parameters": [
+                                {
+                                    "name": "user_id",
+                                    "type": "int",
+                                    "value": "41"
+                                }
+                            ]
+                        },
+                        "collections": [
+                            "commons.movies"
+                        ],
+                        "state": "ACTIVE",
+                        "stats": null
+                    }
+                }
+            ]
+        },
+        "emitted_at": 1663666305014
+    }
+}

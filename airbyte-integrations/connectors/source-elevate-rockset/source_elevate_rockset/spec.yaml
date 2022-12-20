@@ -1,0 +1,35 @@
+documentationUrl: https://docs.airbyte.com/TBD
+connectionSpecification:
+  $schema: http://json-schema.org/draft-07/schema#
+  title: Elevate Rockset Spec
+  type: object
+  required:
+    - api_token
+    - workspace
+    - start_date
+    - region_url
+  additionalProperties: false
+  properties:
+    api_token:
+      type: string
+      airbyte_secret: true
+      title: API Token
+      description: Authorizes you to work with lamba workspaces associated with the token.
+      order: 0
+    workspace:
+      type: string
+      title: Workspace
+      description: The unique name of the workspace that your API token is associated with.
+      order: 1
+    start_date: 
+      title: Start Date
+      description: Start date for collectiong YYYY-MM-DD format
+      name: Start date
+      examples: ['2022-03-01' , '2022-04-01']
+      type: string
+    region_url:
+      type: string
+      title: Region URL
+      description: The Region where API server is associated with.
+    
+    

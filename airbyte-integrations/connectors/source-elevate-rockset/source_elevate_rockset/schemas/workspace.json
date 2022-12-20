@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "data": {
+      "type": "array",
+      "items": [
+        {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "type": "string"
+            },
+            "last_updated_by": {
+              "type": "string"
+            },
+            "last_updated": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "version_count": {
+              "type": "integer"
+            },
+            "collections": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "latest_version": {
+              "type": "object",
+              "properties": {
+                "workspace": {
+                  "type": "string"
+                },
+                "created_by": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "sql": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string"
+                    },
+                    "default_parameters": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": [
+                    "query",
+                    "default_parameters"
+                  ]
+                },
+                "collections": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                },
+                "stats": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "properties": {
+            "workspace": {
+              "type": "string"
+            },
+            "last_updated_by": {
+              "type": "string"
+            },
+            "last_updated": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "version_count": {
+              "type": "integer"
+            },
+            "collections": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                }
+              ]
+            },
+            "latest_version": {
+              "type": "object",
+              "properties": {
+                "workspace": {
+                  "type": "string"
+                },
+                "created_by": {
+                  "type": "string"
+                },
+                "created_at": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "version": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": "string"
+                },
+                "sql": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string"
+                    },
+                    "default_parameters": {
+                      "type": "array",
+                      "items": {}
+                    }
+                  },
+                  "required": [
+                    "query",
+                    "default_parameters"
+                  ]
+                },
+                "collections": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "state": {
+                  "type": "string"
+                },
+                "stats": {
+                  "type": "null"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
