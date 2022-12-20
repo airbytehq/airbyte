@@ -23,6 +23,7 @@
   dockerRepository: airbyte/destination-doris
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/doris
+  icon: apachedoris.svg
   releaseStage: alpha
 - name: Apache Iceberg
   destinationDefinitionId: df65a8f3-9908-451b-aa9b-445462803560
@@ -298,6 +299,7 @@
   dockerRepository: airbyte/destination-redpanda
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/destinations/redpanda
+  icon: redpanda.svg
   releaseStage: alpha
 - name: Rockset
   destinationDefinitionId: 2c9d93a7-9a17-4789-9de9-f46f0097eb70
@@ -323,6 +325,7 @@
   dockerRepository: airbyte/destination-s3-glue
   dockerImageTag: 0.1.1
   documentationUrl: https://docs.airbyte.com/integrations/destinations/s3-glue
+  icon: s3-glue.svg
   releaseStage: alpha
 - name: SFTP-JSON
   destinationDefinitionId: e9810f61-4bab-46d2-bb22-edfc902e0644
