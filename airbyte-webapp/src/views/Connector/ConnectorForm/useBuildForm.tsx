@@ -3,7 +3,12 @@ import { useMemo } from "react";
 import { useIntl } from "react-intl";
 import { AnySchema } from "yup";
 
-import { ConnectorDefinitionSpecification, ConnectorSpecification } from "core/domain/connector";
+import {
+  ConnectorDefinitionSpecification,
+  ConnectorSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
+import { isSourceDefinitionSpecificationDraft } from "core/domain/connector/source";
 import { FormBuildError, isFormBuildError } from "core/form/FormBuildError";
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
@@ -41,28 +46,34 @@ function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unkno
 export function useBuildForm(
   isEditMode: boolean,
   formType: "source" | "destination",
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification,
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft,
   initialValues?: Partial<ConnectorFormValues>
 ): BuildFormHook {
   const { formatMessage } = useIntl();
+  const isDraft = isSourceDefinitionSpecificationDraft(selectedConnectorDefinitionSpecification);
 
   try {
-    const jsonSchema: JSONSchema7 = useMemo(
-      () => ({
+    const jsonSchema: JSONSchema7 = useMemo(() => {
+      const schema: JSONSchema7 = {
         type: "object",
         properties: {
-          name: {
-            type: "string",
-            title: formatMessage({ id: `form.${formType}Name` }),
-            description: formatMessage({ id: `form.${formType}Name.message` }),
-          },
           connectionConfiguration:
             selectedConnectorDefinitionSpecification.connectionSpecification as JSONSchema7Definition,
         },
-        required: ["name"],
-      }),
-      [formType, formatMessage, selectedConnectorDefinitionSpecification.connectionSpecification]
-    );
+      };
+      if (isDraft) {
+        return schema;
+      }
+      // schema.properties gets defined right above
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      schema.properties!.name = {
+        type: "string",
+        title: formatMessage({ id: `form.${formType}Name` }),
+        description: formatMessage({ id: `form.${formType}Name.message` }),
+      };
+      schema.required = ["name"];
+      return schema;
+    }, [formType, formatMessage, isDraft, selectedConnectorDefinitionSpecification.connectionSpecification]);
 
     const formFields = useMemo<FormBlock>(() => jsonSchemaToFormBlock(jsonSchema), [jsonSchema]);
 
@@ -71,7 +82,7 @@ export function useBuildForm(
     }
 
     const startValues = useMemo<ConnectorFormValues>(() => {
-      if (isEditMode) {
+      if (isEditMode || isDraft) {
         return {
           name: "",
           connectionConfiguration: {},
@@ -87,7 +98,7 @@ export function useBuildForm(
       setDefaultValues(formFields, baseValues as Record<string, unknown>);
 
       return baseValues;
-    }, [formFields, initialValues, isEditMode]);
+    }, [formFields, initialValues, isDraft, isEditMode]);
 
     const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
     return {
@@ -98,7 +109,10 @@ export function useBuildForm(
   } catch (e) {
     // catch and re-throw form-build errors to enrich them with the connector id
     if (isFormBuildError(e)) {
-      throw new FormBuildError(e.message, ConnectorSpecification.id(selectedConnectorDefinitionSpecification));
+      throw new FormBuildError(
+        e.message,
+        isDraft ? undefined : ConnectorSpecification.id(selectedConnectorDefinitionSpecification)
+      );
     }
     throw e;
   }

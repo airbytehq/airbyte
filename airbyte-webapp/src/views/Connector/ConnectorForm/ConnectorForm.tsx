@@ -3,7 +3,11 @@ import React, { useCallback } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
-import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import {
+  ConnectorDefinition,
+  ConnectorDefinitionSpecification,
+  SourceDefinitionSpecificationDraft,
+} from "core/domain/connector";
 import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
@@ -16,8 +20,11 @@ import { useBuildForm } from "./useBuildForm";
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedConnectorDefinition: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  /**
+   * Definition of the connector might not be available if it's not released but only exists in frontend heap
+   */
+  selectedConnectorDefinition?: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification | SourceDefinitionSpecificationDraft;
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
@@ -25,6 +32,13 @@ export interface ConnectorFormProps {
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
+  footerClassName?: string;
+  bodyClassName?: string;
+  submitLabel?: string;
+  /**
+   * Called in case the user cancels the form - if not provided, no cancel button is rendered
+   */
+  onCancel?: () => void;
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
