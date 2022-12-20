@@ -124,6 +124,7 @@ public class AirbyteAcceptanceTestHarness {
   private static final String DOCKER_COMPOSE_FILE_NAME = "docker-compose.yaml";
   // assume env file is one directory level up from airbyte-tests.
   private final static File ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env").toFile();
+  private final static File DATA_PLANE_ENV_FILE = Path.of(System.getProperty("user.dir")).getParent().resolve(".env.data_plane").toFile();
 
   private static final DockerImageName DESTINATION_POSTGRES_IMAGE_NAME = DockerImageName.parse("postgres:13-alpine");
 
@@ -169,6 +170,8 @@ public class AirbyteAcceptanceTestHarness {
   private PostgreSQLContainer sourcePsql;
   private PostgreSQLContainer destinationPsql;
   private AirbyteTestContainer airbyteTestContainer;
+  private AirbyteTestContainer dataPlaneAirbyteTestContainer;
+
   private AirbyteApiClient apiClient;
   private final UUID defaultWorkspaceId;
   private final String postgresSqlInitFile;
@@ -236,6 +239,14 @@ public class AirbyteAcceptanceTestHarness {
           .setEnvVariable("LOCAL_DOCKER_MOUNT", "/tmp/airbyte_local_migration_test")
           .build();
       airbyteTestContainer.startBlocking();
+
+      // Setting up an airbyte worker container on a data plane.
+      dataPlaneAirbyteTestContainer = new AirbyteTestContainer.Builder(new File(Resources.getResource(DOCKER_COMPOSE_FILE_NAME).toURI()))
+          .setEnv(MoreProperties.envFileToProperties(DATA_PLANE_ENV_FILE))
+          // override env VERSION to use dev to test current build of airbyte.
+          .setEnvVariable("VERSION", "dev")
+          .build();
+      dataPlaneAirbyteTestContainer.startBlocking();
     } else {
       LOGGER.info("Using external deployment of airbyte.");
     }
