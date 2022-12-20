@@ -97,7 +97,8 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
 
         if (failureReason.isPresent()) {
-          return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output).withFailureReason(failureReason.get());
+          return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output)
+              .withFailureReason(failureReason.get());
         } else {
           return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
         }

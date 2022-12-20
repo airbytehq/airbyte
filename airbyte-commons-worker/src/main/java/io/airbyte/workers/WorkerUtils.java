@@ -137,9 +137,8 @@ public class WorkerUtils {
     throw new WorkerException(defaultErrorMessage);
   }
 
-
-
-  public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType, final Map<Type, List<AirbyteMessage>> messagesByType) {
+  public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
+                                                                        final Map<Type, List<AirbyteMessage>> messagesByType) {
     Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
     if (traceMessage.isPresent()) {
       final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
