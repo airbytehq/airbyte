@@ -716,6 +716,7 @@
   "connectorBuilder.inputsNoSpecUITooltip": "Add User Input fields to allow setting test inputs",
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
+  "connectorBuilder.optionalFieldsLabel": "Optional fields",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
