@@ -33,10 +33,10 @@ acceptance_tests:
     tests:
       - config_path: "secrets/config.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
       - config_path: "secrets/config_oauth.json"
         expect_records:
-          path: "integration_tests/expected_records.txt"
+          bypass_reason: "Risk to disclose internal data. Need to set up a sandbox account - https://github.com/airbytehq/airbyte/issues/20726"
   incremental:
     tests:
       - config_path: "secrets/config.json"
