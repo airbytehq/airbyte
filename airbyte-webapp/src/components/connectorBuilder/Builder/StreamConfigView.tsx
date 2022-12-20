@@ -117,6 +117,9 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Body to attach to API requests as url-encoded form values"
         />
       </BuilderCard>
+      {/* <BuilderCard>
+        <BuilderOneOf path={streamFieldPath("")} />
+      </BuilderCard> */}
     </BuilderConfigView>
   );
 };
