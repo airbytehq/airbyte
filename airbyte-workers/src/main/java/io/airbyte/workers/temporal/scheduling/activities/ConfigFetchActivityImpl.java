@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
