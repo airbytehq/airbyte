@@ -7,7 +7,7 @@ See your data on the [Convex dashboard](https://dashboard.convex.dev/).
 
 ## Overview
 
-The Convex connector supports Full Refresh, Incremental Append, and Incremental Dedupe with deletes.
+The Convex source connector supports Full Refresh, Incremental Append, and Incremental Dedupe with deletes.
 
 ### Output schema
 
@@ -31,14 +31,14 @@ Additionally, each document has system fields:
 
 ### Features
 
-| Feature | Supported? |
-| :--- | :--- |
-| Full Refresh Sync | Yes |
-| Incremental - Append Sync | Yes |
-| Incremental - Dedupe Sync | Yes |
-| Replicate Incremental Deletes | Yes |
-| Change Data Capture           | Yes |
-| Namespaces | No |
+| Feature                       | Supported? |
+| :---------------------------- | :--------- |
+| Full Refresh Sync             | Yes        |
+| Incremental - Append Sync     | Yes        |
+| Incremental - Dedupe Sync     | Yes        |
+| Replicate Incremental Deletes | Yes        |
+| Change Data Capture           | Yes        |
+| Namespaces                    | No         |
 
 ### Performance considerations
 
@@ -50,13 +50,13 @@ please reach out to [Convex support](mailto:support@convex.dev).
 
 ### Requirements
 
-* Convex Account
-* Convex Project
-* Deploy key
+- Convex Account
+- Convex Project
+- Deploy key
 
 ### Setup guide
 
-Contact Convex via [email](mailto:support@convex.dev) or [Discord](https://convex.dev/community) to request Airbyte support for your account.
+Airbyte integration is available to Convex teams on Professional [plans](https://www.convex.dev/plans).
 
 On the [Convex dashboard](https://dashboard.convex.dev/), navigate to the project that you want to sync.
 Note only "Production" deployments should be synced.
@@ -70,6 +70,6 @@ In the Data tab, you should see the tables and a sample of the data that will be
 
 ## Changelog
 
-| Version | Date | Pull Request | Subject |
-| :--- | :--- | :--- | :--- |
-| 0.1.0 | 2022-10-24 | [18403](https://github.com/airbytehq/airbyte/pull/18403) | 🎉 New Source: Convex |
+| Version | Date       | Pull Request                                             | Subject               |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------- |
+| 0.1.0   | 2022-10-24 | [18403](https://github.com/airbytehq/airbyte/pull/18403) | 🎉 New Source: Convex |
