@@ -3,6 +3,7 @@
 #
 
 import json
+import logging
 from typing import Any, Dict
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -66,10 +67,19 @@ def _record(stream: str, str_value: str, int_value: int) -> AirbyteMessage:
 def setup_responses(config):
     responses.add(responses.PUT, f"{config['deployment_url']}/api/clear_tables", status=200)
     responses.add(responses.POST, f"{config['deployment_url']}/api/airbyte_ingress", status=200)
+    responses.add(responses.GET, f"{config['deployment_url']}/version", status=200)
 
 
 @responses.activate
-def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog, client: ConvexClient):
+def test_check(config: ConvexConfig):
+    setup_responses(config)
+    destination = DestinationConvex()
+    logger = logging.getLogger("airbyte")
+    destination.check(logger, config)
+
+
+@responses.activate
+def test_write(config: ConvexConfig, configured_catalog: ConfiguredAirbyteCatalog):
     setup_responses(config)
     append_stream, overwrite_stream = configured_catalog.streams[0].stream.name, configured_catalog.streams[1].stream.name
 
