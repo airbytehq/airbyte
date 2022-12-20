@@ -2,9 +2,8 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.protocol;
+package io.airbyte.commons.protocol.migrations;
 
-import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.version.Version;
 import java.util.Collection;
 import java.util.List;
@@ -13,13 +12,13 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 
-public class MigrationContainer {
+public class MigrationContainer<T extends Migration> {
 
-  private final List<AirbyteMessageMigration<?, ?>> migrationsToRegister;
-  private final SortedMap<String, AirbyteMessageMigration<?, ?>> migrations = new TreeMap<>();
+  private final List<T> migrationsToRegister;
+  private final SortedMap<String, T> migrations = new TreeMap<>();
   private String mostRecentMajorVersion = "";
 
-  public MigrationContainer(final List<AirbyteMessageMigration<?, ?>> migrations) {
+  public MigrationContainer(final List<T> migrations) {
     this.migrationsToRegister = migrations;
   }
 
@@ -37,7 +36,7 @@ public class MigrationContainer {
    */
   public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message,
                                                                      final Version target,
-                                                                     final BiFunction<AirbyteMessageMigration<?, ?>, Object, Object> applyDowngrade) {
+                                                                     final BiFunction<T, Object, Object> applyDowngrade) {
     if (target.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (PreviousVersion) message;
     }
@@ -45,7 +44,7 @@ public class MigrationContainer {
     Object result = message;
     Object[] selectedMigrations = selectMigrations(target).toArray();
     for (int i = selectedMigrations.length; i > 0; --i) {
-      result = applyDowngrade.apply((AirbyteMessageMigration<?, ?>) selectedMigrations[i - 1], result);
+      result = applyDowngrade.apply((T) selectedMigrations[i - 1], result);
     }
     return (PreviousVersion) result;
   }
@@ -56,7 +55,7 @@ public class MigrationContainer {
    */
   public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message,
                                                                   final Version source,
-                                                                  final BiFunction<AirbyteMessageMigration<?, ?>, Object, Object> applyUpgrade) {
+                                                                  final BiFunction<T, Object, Object> applyUpgrade) {
     if (source.getMajorVersion().equals(mostRecentMajorVersion)) {
       return (CurrentVersion) message;
     }
@@ -68,8 +67,8 @@ public class MigrationContainer {
     return (CurrentVersion) result;
   }
 
-  public Collection<AirbyteMessageMigration<?, ?>> selectMigrations(final Version version) {
-    final Collection<AirbyteMessageMigration<?, ?>> results = migrations.tailMap(version.getMajorVersion()).values();
+  public Collection<T> selectMigrations(final Version version) {
+    final Collection<T> results = migrations.tailMap(version.getMajorVersion()).values();
     if (results.isEmpty()) {
       throw new RuntimeException("Unsupported migration version " + version.serialize());
     }
@@ -83,7 +82,7 @@ public class MigrationContainer {
    * version. We are only keying on the lower version because the right side (most recent version of
    * the migration range) is always current version.
    */
-  private void registerMigration(final AirbyteMessageMigration<?, ?> migration) {
+  private void registerMigration(final T migration) {
     final String key = migration.getPreviousVersion().getMajorVersion();
     if (!migrations.containsKey(key)) {
       migrations.put(key, migration);

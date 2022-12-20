@@ -4,15 +4,13 @@
 
 package io.airbyte.commons.protocol.migrations;
 
-import io.airbyte.commons.version.Version;
-
 /**
  * AirbyteProtocol message migration interface
  *
  * @param <PreviousVersion> The Old AirbyteMessage type
  * @param <CurrentVersion> The New AirbyteMessage type
  */
-public interface AirbyteMessageMigration<PreviousVersion, CurrentVersion> {
+public interface AirbyteMessageMigration<PreviousVersion, CurrentVersion> extends Migration {
 
   /**
    * Downgrades a message to from the new version to the old version
@@ -29,15 +27,5 @@ public interface AirbyteMessageMigration<PreviousVersion, CurrentVersion> {
    * @return the upgrade message
    */
   CurrentVersion upgrade(final PreviousVersion message);
-
-  /**
-   * The Old version, note that due to semver, the important piece of information is the Major.
-   */
-  Version getPreviousVersion();
-
-  /**
-   * The New version, note that due to semver, the important piece of information is the Major.
-   */
-  Version getCurrentVersion();
 
 }

@@ -5,7 +5,7 @@
 package io.airbyte.commons.protocol;
 
 import com.google.common.annotations.VisibleForTesting;
-import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
+import io.airbyte.commons.protocol.migrations.ConfiguredAirbyteCatalogMigration;
 import io.airbyte.commons.protocol.migrations.MigrationContainer;
 import io.airbyte.commons.version.Version;
 import jakarta.annotation.PostConstruct;
@@ -13,18 +13,12 @@ import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Set;
 
-/**
- * AirbyteProtocol Message Migrator
- *
- * This class is intended to apply the transformations required to go from one version of the
- * AirbyteProtocol to another.
- */
 @Singleton
-public class AirbyteMessageMigrator {
+public class ConfiguredAirbyteCatalogMigrator {
 
-  private final MigrationContainer<AirbyteMessageMigration<?, ?>> migrationContainer;
+  private final MigrationContainer<ConfiguredAirbyteCatalogMigration<?, ?>> migrationContainer;
 
-  public AirbyteMessageMigrator(final List<AirbyteMessageMigration<?, ?>> migrations) {
+  public ConfiguredAirbyteCatalogMigrator(final List<ConfiguredAirbyteCatalogMigration<?, ?>> migrations) {
     migrationContainer = new MigrationContainer<>(migrations);
   }
 
@@ -38,7 +32,7 @@ public class AirbyteMessageMigrator {
    * required migrations
    */
   public <PreviousVersion, CurrentVersion> PreviousVersion downgrade(final CurrentVersion message, final Version target) {
-    return migrationContainer.downgrade(message, target, AirbyteMessageMigrator::applyDowngrade);
+    return migrationContainer.downgrade(message, target, ConfiguredAirbyteCatalogMigrator::applyDowngrade);
   }
 
   /**
@@ -46,7 +40,7 @@ public class AirbyteMessageMigrator {
    * migrations
    */
   public <PreviousVersion, CurrentVersion> CurrentVersion upgrade(final PreviousVersion message, final Version source) {
-    return migrationContainer.upgrade(message, source, AirbyteMessageMigrator::applyUpgrade);
+    return migrationContainer.upgrade(message, source, ConfiguredAirbyteCatalogMigrator::applyUpgrade);
   }
 
   public Version getMostRecentVersion() {
@@ -54,13 +48,13 @@ public class AirbyteMessageMigrator {
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+  private static <PreviousVersion, CurrentVersion> PreviousVersion applyDowngrade(final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
                                                                                   final Object message) {
     return migration.downgrade((CurrentVersion) message);
   }
 
   // Helper function to work around type casting
-  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final AirbyteMessageMigration<PreviousVersion, CurrentVersion> migration,
+  private static <PreviousVersion, CurrentVersion> CurrentVersion applyUpgrade(final ConfiguredAirbyteCatalogMigration<PreviousVersion, CurrentVersion> migration,
                                                                                final Object message) {
     return migration.upgrade((PreviousVersion) message);
   }
