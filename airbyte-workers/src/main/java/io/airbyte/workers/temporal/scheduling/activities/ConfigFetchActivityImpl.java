@@ -49,7 +49,12 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFetchActivityImpl.class);
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
-  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of(UUID.fromString("20810d92-41a4-4cfd-85db-fb50e77cf36b"));
+  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of(
+      // Testing
+      UUID.fromString("0ace5e1f-4787-43df-8919-456f5f4d03d1"),
+      UUID.fromString("20810d92-41a4-4cfd-85db-fb50e77cf36b"),
+      // Prod
+      UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
   private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
   private final ConfigRepository configRepository;
@@ -144,10 +149,10 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                     + MIN_CRON_INTERVAL_SECONDS
                 : currentSecondsSupplier.get()) * MS_PER_SECOND);
         final Date nextRunStart = cronExpression.getNextValidTimeAfter(new Date(earliestNextRun));
-        final Duration timeToWait = Duration.ofSeconds(
+        Duration timeToWait = Duration.ofSeconds(
             Math.max(0, nextRunStart.getTime() / MS_PER_SECOND - currentSecondsSupplier.get()));
 
-        addSchedulingNoiseForAllowListedWorkspace(timeToWait, standardSync);
+        timeToWait = addSchedulingNoiseForAllowListedWorkspace(timeToWait, standardSync);
         return new ScheduleRetrieverOutput(timeToWait);
       } catch (final ParseException e) {
         throw (DateTimeException) new DateTimeException(e.getMessage()).initCause(e);
@@ -155,27 +160,28 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     }
   }
 
-  private void addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, StandardSync standardSync) {
+  private Duration addSchedulingNoiseForAllowListedWorkspace(Duration timeToWait, StandardSync standardSync) {
     final UUID workspaceId;
     try {
       workspaceId = workspaceHelper.getWorkspaceForConnectionId(standardSync.getConnectionId());
     } catch (JsonValidationException | ConfigNotFoundException e) {
       // We tolerate exceptions and fail open by doing nothing.
-      return;
+      return timeToWait;
     }
     if (!SCHEDULING_NOISE_WORKSPACE_IDS.contains(workspaceId)) {
       // Only apply to a specific set of workspaces.
-      return;
+      return timeToWait;
     }
     if (!standardSync.getScheduleType().equals(ScheduleType.CRON)) {
       // Only apply noise to cron connections.
-      return;
+      return timeToWait;
     }
 
     // We really do want to add some scheduling noise for this connection.
     final long minutesToWait = (long) (Math.random() * SCHEDULING_NOISE_CONSTANT);
-    LOGGER.debug("Adding {} minutes to wait", minutesToWait);
-    timeToWait.plusMinutes(minutesToWait);
+    LOGGER.debug("Adding {} minutes noise to wait", minutesToWait);
+    // Note: we add an extra second to make the unit tests pass in case `minutesToWait` was 0.
+    return timeToWait.plusMinutes(minutesToWait).plusSeconds(1);
   }
 
   /**

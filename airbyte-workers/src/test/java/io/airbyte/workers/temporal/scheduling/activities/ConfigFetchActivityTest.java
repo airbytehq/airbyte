@@ -23,6 +23,7 @@ import io.airbyte.validation.json.JsonValidationException;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverInput;
 import io.airbyte.workers.temporal.scheduling.activities.ConfigFetchActivity.ScheduleRetrieverOutput;
 import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Optional;
@@ -75,13 +76,14 @@ class ConfigFetchActivityTest {
               .withTimeUnit(BasicSchedule.TimeUnit.MINUTES)
               .withUnits(5L)));
 
+  public static final String UTC = "UTC";
   private final static StandardSync standardSyncWithCronScheduleType = new StandardSync()
       .withScheduleType(ScheduleType.CRON)
       .withStatus(Status.ACTIVE)
       .withScheduleData(new ScheduleData()
           .withCron(new Cron()
               .withCronExpression("0 0 12 * * ?")
-              .withCronTimeZone("UTC")));
+              .withCronTimeZone(UTC)));
 
   private final static StandardSync standardSyncWithScheduleDisable = new StandardSync()
       .withSchedule(new Schedule()
@@ -267,7 +269,7 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will wait to be scheduled if it is a CRON type")
   void testCronScheduleSubsequentRun() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
     mockRightNow.set(Calendar.HOUR_OF_DAY, 0);
     mockRightNow.set(Calendar.MINUTE, 0);
     mockRightNow.set(Calendar.SECOND, 0);
@@ -296,7 +298,7 @@ class ConfigFetchActivityTest {
   @Test
   @DisplayName("Test that the job will only be scheduled once per minimum cron interval")
   void testCronScheduleMinimumInterval() throws IOException, JsonValidationException, ConfigNotFoundException {
-    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
     mockRightNow.set(Calendar.HOUR_OF_DAY, 12);
     mockRightNow.set(Calendar.MINUTE, 0);
     mockRightNow.set(Calendar.SECOND, 0);
@@ -321,6 +323,36 @@ class ConfigFetchActivityTest {
 
     Assertions.assertThat(output.getTimeToWait())
         .hasHours(24);
+  }
+
+  @Test
+  @DisplayName("Test that for specific workspace ids, we add some noise in the cron scheduling")
+  void testCronSchedulingNoise() throws IOException, JsonValidationException, ConfigNotFoundException {
+    final Calendar mockRightNow = Calendar.getInstance(TimeZone.getTimeZone(UTC));
+    mockRightNow.set(Calendar.HOUR_OF_DAY, 0);
+    mockRightNow.set(Calendar.MINUTE, 0);
+    mockRightNow.set(Calendar.SECOND, 0);
+    mockRightNow.set(Calendar.MILLISECOND, 0);
+
+    when(mWorkspaceHelper.getWorkspaceForConnectionId(any())).thenReturn(UUID.fromString("226edbc1-4a9c-4401-95a9-90435d667d9d"));
+
+    configFetchActivity =
+        new ConfigFetchActivityImpl(mConfigRepository, mJobPersistence, mWorkspaceHelper, SYNC_JOB_MAX_ATTEMPTS,
+            () -> mockRightNow.getTimeInMillis() / 1000L);
+
+    when(mJob.getStartedAtInSecond()).thenReturn(Optional.of(mockRightNow.getTimeInMillis() / 1000L));
+    when(mJobPersistence.getLastReplicationJob(connectionId))
+        .thenReturn(Optional.of(mJob));
+
+    when(mConfigRepository.getStandardSync(connectionId))
+        .thenReturn(standardSyncWithCronScheduleType);
+
+    final ScheduleRetrieverInput input = new ScheduleRetrieverInput(connectionId);
+
+    final ScheduleRetrieverOutput output = configFetchActivity.getTimeToWait(input);
+
+    // Note: compareTo returns positive if the left side is greater than the right.
+    Assertions.assertThat(output.getTimeToWait().compareTo(Duration.ofHours(12)) > 0).isTrue();
   }
 
   @Nested
