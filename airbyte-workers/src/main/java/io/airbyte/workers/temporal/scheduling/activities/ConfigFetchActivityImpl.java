@@ -8,7 +8,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
