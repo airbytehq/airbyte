@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.16.2
+Fix the naming of OAuthAuthenticator
+
 ## 0.16.1
 Include declarative_component_schema.yaml in the publish to PyPi
 
