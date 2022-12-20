@@ -133,7 +133,7 @@ export const AuthenticationSection: React.FC = () => {
             default: {
               username: "{{ config['username'] }}",
               password: "{{ config['password'] }}",
-              session_token: "",
+              session_token: "{{ config['session_token'] }}",
             },
             children: (
               <>
