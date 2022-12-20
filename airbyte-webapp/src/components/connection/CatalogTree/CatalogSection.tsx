@@ -194,6 +194,7 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
         onExpand={onExpand}
         changedSelected={changedSelected}
         hasError={hasError}
+        configErrors={configErrors}
         disabled={disabled}
       />
       {isRowExpanded &&

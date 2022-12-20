@@ -35,9 +35,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
   fields,
   onExpand,
   disabled,
+  configErrors,
 }) => {
   const { primaryKey, cursorField, syncMode, destinationSyncMode } = stream.config ?? {};
-
   const { defaultCursorField } = stream.stream ?? {};
   const syncSchema = useMemo(
     () => ({
@@ -104,6 +104,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
             onPathChange={onCursorChange}
             variant={pillButtonVariant}
+            hasError={!!configErrors?.cursorField}
           />
         )}
       </Cell>
@@ -116,6 +117,7 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
             isMulti
             onPathChange={onPrimaryKeyChange}
             variant={pillButtonVariant}
+            hasError={!!configErrors?.primaryKey}
           />
         )}
       </Cell>
