@@ -181,7 +181,7 @@
 - name: Local CSV
   destinationDefinitionId: 8be1cf83-fde1-477f-a4ad-318d23c9f3c6
   dockerRepository: airbyte/destination-csv
-  dockerImageTag: 0.2.11
+  dockerImageTag: 0.2.10
   documentationUrl: https://docs.airbyte.com/integrations/destinations/local-csv
   icon: file.svg
   releaseStage: alpha
