@@ -19,7 +19,6 @@ import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -52,7 +51,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         downgradeSchema(schema);
       }
     } else if (oldMessage.getType() == Type.RECORD) {
-      AirbyteRecordMessage record = newMessage.getRecord();
+      io.airbyte.protocol.models.v0.AirbyteRecordMessage record = newMessage.getRecord();
       Optional<ConfiguredAirbyteStream> maybeStream = catalog.getStreams().stream()
           .filter(stream -> Objects.equals(stream.getStream().getName(), record.getStream())
               && Objects.equals(stream.getStream().getNamespace(), record.getNamespace()))
