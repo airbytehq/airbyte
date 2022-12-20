@@ -1,6 +1,10 @@
 import * as yup from "yup";
 
-import { ConnectorManifest, DeclarativeStream } from "core/request/ConnectorManifest";
+import {
+  ConnectorManifest,
+  DeclarativeStream,
+  InterpolatedRequestOptionsProvider,
+} from "core/request/ConnectorManifest";
 
 export interface BuilderFormValues {
   global: {
@@ -45,36 +49,40 @@ export const builderFormValidationSchema = yup.object().shape({
 export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
+      type: "DeclarativeStream",
       name: stream.name,
       retriever: {
+        type: "SimpleRetriever",
         name: stream.name,
         requester: {
+          type: "HttpRequester",
           name: stream.name,
           url_base: values.global?.urlBase,
           path: stream.urlPath,
           request_options_provider: {
+            // TODO can't declar type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
+            // type: "InterpolatedRequestOptionsProvider",
             request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
             request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
             request_body_data: Object.fromEntries(stream.requestOptions.requestBody),
-          },
-          // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
-          config: {},
+          } as InterpolatedRequestOptionsProvider,
         },
         record_selector: {
+          type: "RecordSelector",
           extractor: {
+            type: "DpathExtractor",
             field_pointer: stream.fieldPointer,
-            config: {},
           },
         },
-        config: {},
       },
-      config: {},
     };
   });
 
   return {
     version: "0.1.0",
+    type: "DeclarativeSource",
     check: {
+      type: "CheckStream",
       stream_names: [],
     },
     streams: manifestStreams,
