@@ -6,12 +6,12 @@ description: WorkerDestinationConfig
 type: object
 additionalProperties: false
 required:
-  - actorId
+  - destinationId
   - destinationConnectionConfiguration
   - catalog
   - connectionId
 properties:
-  actorId:
+  destinationId:
     type: string
     format: uuid
   destinationConnectionConfiguration:

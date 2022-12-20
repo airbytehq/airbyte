@@ -6,11 +6,11 @@ description: WorkerSourceConfig
 type: object
 additionalProperties: false
 required:
-  - actorId
+  - sourceId
   - sourceConnectionConfiguration
   - catalog
 properties:
-  actorId:
+  sourceId:
     type: string
     format: uuid
   sourceConnectionConfiguration:

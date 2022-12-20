@@ -271,7 +271,7 @@ class DefaultReplicationWorkerTest {
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
 
-    verify(updateConnectorConfigHelper).updateSource(syncInput.getSourceActorId(), CONNECTOR_CONFIG);
+    verify(updateConnectorConfigHelper).updateSource(syncInput.getSourceId(), CONNECTOR_CONFIG);
   }
 
   @Test
@@ -298,7 +298,7 @@ class DefaultReplicationWorkerTest {
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
 
-    verify(updateConnectorConfigHelper).updateSource(syncInput.getSourceActorId(), CONNECTOR_CONFIG);
+    verify(updateConnectorConfigHelper).updateSource(syncInput.getSourceId(), CONNECTOR_CONFIG);
   }
 
   @Test
@@ -320,7 +320,7 @@ class DefaultReplicationWorkerTest {
     final ReplicationOutput output = worker.run(syncInput, jobRoot);
     assertEquals(ReplicationStatus.COMPLETED, output.getReplicationAttemptSummary().getStatus());
 
-    verify(updateConnectorConfigHelper).updateDestination(syncInput.getDestinationActorId(), CONNECTOR_CONFIG);
+    verify(updateConnectorConfigHelper).updateDestination(syncInput.getDestinationId(), CONNECTOR_CONFIG);
   }
 
   @Test
@@ -347,7 +347,7 @@ class DefaultReplicationWorkerTest {
     assertTrue(output.getFailures().stream()
         .anyMatch(f -> f.getFailureOrigin().equals(FailureOrigin.REPLICATION) && f.getStacktrace().contains(PERSIST_ERROR_MESSAGE)));
 
-    verify(updateConnectorConfigHelper).updateDestination(syncInput.getDestinationActorId(), CONNECTOR_CONFIG);
+    verify(updateConnectorConfigHelper).updateDestination(syncInput.getDestinationId(), CONNECTOR_CONFIG);
   }
 
   @Test

@@ -6,9 +6,9 @@ description: job sync config
 type: object
 additionalProperties: false
 required:
-  - sourceActorId
+  - sourceId
   - sourceConfiguration
-  - destinationActorId
+  - destinationId
   - destinationConfiguration
   - catalog
 properties:
@@ -21,11 +21,11 @@ properties:
   prefix:
     description: Prefix that will be prepended to the name of each stream when it is written to the destination.
     type: string
-  sourceActorId:
+  sourceId:
     description: Actor ID for the source used in the sync - this is used to update the actor configuration when requested.
     type: string
     format: uuid
-  destinationActorId:
+  destinationId:
     description: Actor ID for the destination used in the sync - this is used to update the actor configuration when requested.
     type: string
     format: uuid
