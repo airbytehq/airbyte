@@ -416,7 +416,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                               final AirbyteControlMessage controlMessage,
                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateSource(sourceConfig.getActorId(), controlMessage.getConnectorConfig().getConfig());
+      updateConnectorConfigHelper.updateSource(sourceConfig.getSourceId(), controlMessage.getConnectorConfig().getConfig());
     }
   }
 
@@ -424,7 +424,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                               final AirbyteControlMessage controlMessage,
                                               final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateDestination(destinationConfig.getActorId(), controlMessage.getConnectorConfig().getConfig());
+      updateConnectorConfigHelper.updateDestination(destinationConfig.getDestinationId(), controlMessage.getConnectorConfig().getConfig());
     }
   }
 
