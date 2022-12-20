@@ -294,6 +294,7 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
     return {
       name: stream.name,
       stream_cursor_field: stream.cursorField,
+      primary_key: stream.primaryKey,
       retriever: {
         name: stream.name,
         primary_key: stream.primaryKey,
