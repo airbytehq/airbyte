@@ -13,6 +13,7 @@ import {
   requestWorkspaceId,
 } from "commands/api";
 import { Connection, Destination, Source } from "commands/api/types";
+import { appendRandomString } from "commands/common";
 import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
@@ -37,8 +38,8 @@ describe("Auto-detect schema changes", () => {
     initialSetupCompleted();
     await requestWorkspaceId();
 
-    const sourceRequestBody = getPostgresCreateSourceBody("Auto-detect schema Source");
-    const destinationRequestBody = getPostgresCreateDestinationBody("Auto-detect schema Destination");
+    const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Auto-detect schema Source"));
+    const destinationRequestBody = getPostgresCreateDestinationBody(appendRandomString("Auto-detect schema Destination"));
 
     source = await requestCreateSource(sourceRequestBody);
     destination = await requestCreateDestination(destinationRequestBody);
@@ -49,7 +50,7 @@ describe("Auto-detect schema changes", () => {
     const { catalog, catalogId } = await requestSourceDiscoverSchema(source.sourceId);
 
     const connectionRequestBody = await getConnectionCreateRequest({
-      name: "Auto-detect schema test connection",
+      name: appendRandomString("Auto-detect schema test connection"),
       sourceId: source.sourceId,
       destinationId: destination.destinationId,
       syncCatalog: catalog,
