@@ -53,7 +53,6 @@ export const requestCreateConnection = (body: ConnectionCreateRequestBody) =>
 export const requestUpdateConnection = (body: Record<string, unknown>) =>
   apiRequest<Connection>("POST", "/web_backend/connections/update", body);
 
-
 export const requestGetConnection = (body: ConectionGetBody) =>
   apiRequest<Connection>("POST", "/web_backend/connections/get", body);
 

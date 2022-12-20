@@ -31,7 +31,7 @@ export interface ConnectionCreateRequestBody {
 
 export interface ConectionGetBody {
   connectionId: string;
-  withRefreshedCatalog?: boolean
+  withRefreshedCatalog?: boolean;
 }
 
 export interface ConnectionsList {
