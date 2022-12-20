@@ -93,7 +93,8 @@ public class GenerateInputActivityImpl implements GenerateInputActivity {
       final UUID connectionId = UUID.fromString(job.getScope());
       final StandardSync standardSync = configRepository.getStandardSync(connectionId);
 
-      final StandardDestinationDefinition destinationDefinition = configRepository.getStandardDestinationDefinition(standardSync.getDestinationId());
+      final StandardDestinationDefinition destinationDefinition =
+          configRepository.getDestinationDefinitionFromDestination(standardSync.getDestinationId());
       final String destinationNormalizationDockerImage = destinationDefinition.getNormalizationConfig() != null
           ? DockerUtils.getTaggedImageName(destinationDefinition.getNormalizationConfig().getNormalizationRepository(),
               destinationDefinition.getNormalizationConfig().getNormalizationTag())
