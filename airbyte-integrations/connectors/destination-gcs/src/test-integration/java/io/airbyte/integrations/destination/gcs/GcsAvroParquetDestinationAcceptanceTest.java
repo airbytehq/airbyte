@@ -91,6 +91,7 @@ public abstract class GcsAvroParquetDestinationAcceptanceTest extends GcsDestina
   }
 
   private Set<Type> getExpectedSchemaType(final JsonNode fieldDefinition) {
+    // The $ref is a migration to V1 data type protocol see well_known_types.yaml
     final JsonNode typeProperty = fieldDefinition.get("type") == null ? fieldDefinition.get("$ref") : fieldDefinition.get("type");
     final JsonNode airbyteTypeProperty = fieldDefinition.get("airbyte_type");
     final String airbyteTypePropertyText = airbyteTypeProperty == null ? null : airbyteTypeProperty.asText();
