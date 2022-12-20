@@ -13,6 +13,11 @@ task generateProtocolClassFiles(type: Exec) {
     dependsOn ':tools:code-generator:airbyteDocker'
 }
 
+task validateSourceYamlManifest(type: Exec) {
+    environment 'ROOT_DIR', rootDir.absolutePath
+    commandLine 'bin/validate-yaml-schema.sh'
+}
+
 blackFormat.dependsOn generateProtocolClassFiles
 isortFormat.dependsOn generateProtocolClassFiles
 flakeCheck.dependsOn generateProtocolClassFiles
