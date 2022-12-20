@@ -89,11 +89,11 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
       {component}
       {isEditInProgress ? (
         <>
-          <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
-            <FormattedMessage id="form.done" />
-          </Button>
           <Button size="xs" onClick={onCancel} type="button" variant="secondary" disabled={disabled}>
             <FormattedMessage id="form.cancel" />
+          </Button>
+          <Button size="xs" onClick={onDone} type="button" disabled={disabled}>
+            <FormattedMessage id="form.done" />
           </Button>
         </>
       ) : (
