@@ -97,7 +97,7 @@ const SecretConfirmationControl: React.FC<SecretConfirmationControlProps> = ({
           </Button>
         </>
       ) : (
-        <Button size="xs" onClick={handleStartEdit} type="button" disabled={disabled}>
+        <Button size="xs" onClick={handleStartEdit} type="button" variant="secondary" disabled={disabled}>
           <FormattedMessage id="form.edit" />
         </Button>
       )}
