@@ -9,7 +9,10 @@ MAIN_REQUIREMENTS = [
     "airbyte-cdk",
 ]
 
-TEST_REQUIREMENTS = ["pytest~=6.2"]
+TEST_REQUIREMENTS = [
+    "pytest~=6.2",
+    "responses~=0.13.3",
+]
 
 setup(
     name="destination_convex",

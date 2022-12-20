@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from collections import Mapping
+from collections.abc import Mapping
 from typing import List
 
 from destination_convex.client import ConvexClient
