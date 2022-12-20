@@ -148,7 +148,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .airbyteType(JsonSchemaType.NUMBER)
             .addInsertValues("null", "1", "123.45", "power(10, -130)", "9.99999999999999999999 * power(10, 125)")
             .addExpectedValues(null, "1", "123.45", String.valueOf(Math.pow(10, -130)),
-                new BigDecimal("999999999999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000").toPlainString())
+                "999999999999999999999000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000")
             .build());
 
     addDataTypeTestData(
