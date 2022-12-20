@@ -39,14 +39,17 @@ import java.util.function.Supplier;
 import lombok.extern.slf4j.Slf4j;
 import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Slf4j
 @Singleton
 public class ConfigFetchActivityImpl implements ConfigFetchActivity {
 
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigFetchActivityImpl.class);
   private final static long MS_PER_SECOND = 1000L;
   private final static long MIN_CRON_INTERVAL_SECONDS = 60;
-  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of();
+  private static final Set<UUID> SCHEDULING_NOISE_WORKSPACE_IDS = Set.of(UUID.fromString("20810d92-41a4-4cfd-85db-fb50e77cf36b"));
   private static final long SCHEDULING_NOISE_CONSTANT = 15;
 
   private final ConfigRepository configRepository;
@@ -170,7 +173,9 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
     }
 
     // We really do want to add some scheduling noise for this connection.
-    timeToWait.plusMinutes((long) Math.random() * SCHEDULING_NOISE_CONSTANT);
+    final long minutesToWait = (long) (Math.random() * SCHEDULING_NOISE_CONSTANT);
+    LOGGER.debug("Adding {} minutes to wait", minutesToWait);
+    timeToWait.plusMinutes(minutesToWait);
   }
 
   /**
