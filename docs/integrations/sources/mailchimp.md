@@ -230,7 +230,7 @@ Now that you have set up the Mailchimp source connector, check out the following
 
 | Version | Date       | Pull Request                                             | Subject                                                                    |
 |---------|------------|----------------------------------------------------------|----------------------------------------------------------------------------|
-| 0.3.1   | 2022-12-20 | [00000](https://github.com/airbytehq/airbyte/pull/00000) | Use stream slices as a source for request params instead of a stream state |
+| 0.3.1   | 2022-12-20 | [20720](https://github.com/airbytehq/airbyte/pull/20720) | Use stream slices as a source for request params instead of a stream state |
 | 0.3.0   | 2022-11-07 | [19023](https://github.com/airbytehq/airbyte/pull/19023) | Set primary key for Email Activity stream.                                 |
 | 0.2.15  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                              |
 | 0.2.14  | 2022-04-12 | [11352](https://github.com/airbytehq/airbyte/pull/11352) | Update documentation                                                       |
