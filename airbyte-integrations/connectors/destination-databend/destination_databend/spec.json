@@ -41,9 +41,9 @@
         "type" : "integer",
         "minimum" : 0,
         "maximum" : 65536,
-        "default" : 8081,
+        "default" : 443,
         "examples" : [
-          "8081"
+          "443"
         ],
         "order" : 2
       },
