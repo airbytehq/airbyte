@@ -112,45 +112,44 @@ export const InputsView: React.FC = () => {
       <Text centered className={styles.inputsDescription}>
         <FormattedMessage id="connectorBuilder.inputsDescription" />
       </Text>
-      {inputs.value.length > 0 ||
-        (inferredInputs.length > 0 && (
-          <Card withPadding className={styles.inputsCard}>
-            <ol className={styles.list}>
-              {inferredInputs.map((input) => (
-                <li className={styles.listItem} key={input.key}>
-                  <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
-                  <Button
-                    className={styles.itemButton}
-                    size="sm"
-                    variant="secondary"
-                    aria-label="Edit"
-                    onClick={() => {
-                      setInputInEditing(formInputToInputInEditing(input, true));
-                    }}
-                  >
-                    <FontAwesomeIcon className={styles.icon} icon={faGear} />
-                  </Button>
-                </li>
-              ))}
-              {inputs.value.map((input) => (
-                <li className={styles.listItem} key={input.key}>
-                  <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
-                  <Button
-                    className={styles.itemButton}
-                    size="sm"
-                    variant="secondary"
-                    aria-label="Edit"
-                    onClick={() => {
-                      setInputInEditing(formInputToInputInEditing(input, false));
-                    }}
-                  >
-                    <FontAwesomeIcon className={styles.icon} icon={faGear} />
-                  </Button>
-                </li>
-              ))}
-            </ol>
-          </Card>
-        ))}
+      {(inputs.value.length > 0 || inferredInputs.length > 0) && (
+        <Card withPadding className={styles.inputsCard}>
+          <ol className={styles.list}>
+            {inferredInputs.map((input) => (
+              <li className={styles.listItem} key={input.key}>
+                <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                <Button
+                  className={styles.itemButton}
+                  size="sm"
+                  variant="secondary"
+                  aria-label="Edit"
+                  onClick={() => {
+                    setInputInEditing(formInputToInputInEditing(input, true));
+                  }}
+                >
+                  <FontAwesomeIcon className={styles.icon} icon={faGear} />
+                </Button>
+              </li>
+            ))}
+            {inputs.value.map((input) => (
+              <li className={styles.listItem} key={input.key}>
+                <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                <Button
+                  className={styles.itemButton}
+                  size="sm"
+                  variant="secondary"
+                  aria-label="Edit"
+                  onClick={() => {
+                    setInputInEditing(formInputToInputInEditing(input, false));
+                  }}
+                >
+                  <FontAwesomeIcon className={styles.icon} icon={faGear} />
+                </Button>
+              </li>
+            ))}
+          </ol>
+        </Card>
+      )}
       <Button
         className={styles.addInputButton}
         onClick={() => {
