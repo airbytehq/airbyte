@@ -66,7 +66,6 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   private final WorkspaceHelper workspaceHelper;
   private final Integer syncJobMaxAttempts;
   private final Supplier<Long> currentSecondsSupplier;
-  private AirbyteApiClient apiClient;
 
   public ConfigFetchActivityImpl(final ConfigRepository configRepository,
                                  final JobPersistence jobPersistence,
