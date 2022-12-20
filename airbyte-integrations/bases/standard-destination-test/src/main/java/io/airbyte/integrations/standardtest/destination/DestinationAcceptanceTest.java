@@ -1613,7 +1613,7 @@ public abstract class DestinationAcceptanceTest {
    *
    * @return
    */
-  public static ProtocolVersion getProtocolVersion() {
+  public ProtocolVersion getProtocolVersion() {
     return ProtocolVersion.V0;
   }
 
