@@ -130,7 +130,7 @@ public class CsvDestinationAcceptanceTest extends DestinationAcceptanceTest {
     // no op
   }
 
-  public static class CSVDataArgumentsProvider extends DataArgumentsProvider {
+  public class CSVDataArgumentsProvider extends DataArgumentsProvider {
 
     public CSVDataArgumentsProvider(){};
     @Override
