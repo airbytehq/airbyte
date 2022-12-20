@@ -418,3 +418,14 @@
   documentationUrl: https://docs.airbyte.com/integrations/destinations/yugabytedb
   icon: yugabytedb.svg
   releaseStage: alpha
+- name: Databend
+  destinationDefinitionId: 302e4d8e-08d3-4098-acd4-ac67ca365b88
+  dockerRepository: airbyte/destination-databend
+  dockerImageTag: 0.1.0
+  documentationUrl: https://docs.airbyte.com/integrations/destinations/databend
+  normalizationConfig:
+    normalizationRepository: airbyte/normalization-databend
+    normalizationTag: 0.2.25
+    normalizationIntegrationType: databend
+  supportsDbt: true
+  releaseStage: alpha
