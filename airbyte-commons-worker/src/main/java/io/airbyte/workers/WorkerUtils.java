@@ -107,28 +107,47 @@ public class WorkerUtils {
         .withState(sync.getState());
   }
 
+  private static ConnectorCommand getConnectorCommandFromOutputType(final OutputType outputType) {
+    return switch (outputType) {
+      case SPEC -> ConnectorCommand.SPEC;
+      case CHECK_CONNECTION -> ConnectorCommand.CHECK;
+      case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
+    };
+  }
+
+  private static Optional<AirbyteTraceMessage> getTraceMessageFromMessagesByType(final Map<Type, List<AirbyteMessage>> messagesByType) {
+    return messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
+        .map(AirbyteMessage::getTrace)
+        .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
+        .findFirst();
+  }
+
   public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
                                                               final Map<Type, List<AirbyteMessage>> messagesByType,
                                                               final String defaultErrorMessage)
       throws WorkerException {
-    final Optional<AirbyteTraceMessage> traceMessage =
-        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-            .map(AirbyteMessage::getTrace)
-            .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
-            .findFirst();
 
+    Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
     if (traceMessage.isPresent()) {
-      final ConnectorCommand connectorCommand = switch (outputType) {
-        case SPEC -> ConnectorCommand.SPEC;
-        case CHECK_CONNECTION -> ConnectorCommand.CHECK;
-        case DISCOVER_CATALOG_ID -> ConnectorCommand.DISCOVER;
-      };
-
+      final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
       final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);
       return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
     }
 
     throw new WorkerException(defaultErrorMessage);
+  }
+
+
+
+  public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType, final Map<Type, List<AirbyteMessage>> messagesByType) {
+    Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
+    if (traceMessage.isPresent()) {
+      final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
+      return Optional.of(FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand));
+    } else {
+      return Optional.empty();
+    }
+
   }
 
   public static Map<AirbyteStreamNameNamespacePair, JsonNode> mapStreamNamesToSchemas(final StandardSyncInput syncInput) {
