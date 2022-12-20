@@ -95,7 +95,7 @@ public class PersistStateActivityImpl implements PersistStateActivity {
      *
      * Otherwise, it is okay to update if the previous state is missing or empty.
      */
-    if (featureFlags.needStateValidation() && !isPreviousStateEmpty(previousState)) {
+    if (featureFlags.needStateValidation() && !isStateEmpty(previousState)) {
       final StateType newStateType = newState.get().getStateType();
       final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 
@@ -106,13 +106,13 @@ public class PersistStateActivityImpl implements PersistStateActivity {
   }
 
   /**
-   * Test whether the previously stored state is empty.
+   * Test whether the connection state is empty.
    *
-   * @param previousState The previously stored state.
-   * @return {@code true} if the previous state is null or empty, {@code false} otherwise.
+   * @param connectionState The connection state.
+   * @return {@code true} if the connection state is null or empty, {@code false} otherwise.
    */
-  private boolean isPreviousStateEmpty(final ConnectionState previousState) {
-    return previousState == null || previousState.getState() == null || previousState.getState().isEmpty();
+  private boolean isStateEmpty(final ConnectionState connectionState) {
+    return connectionState == null || connectionState.getState() == null || connectionState.getState().isEmpty();
   }
 
   @VisibleForTesting
