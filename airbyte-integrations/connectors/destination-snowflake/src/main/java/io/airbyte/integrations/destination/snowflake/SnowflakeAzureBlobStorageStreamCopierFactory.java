@@ -13,7 +13,7 @@ import io.airbyte.integrations.destination.jdbc.constants.GlobalDataSizeConstant
 import io.airbyte.integrations.destination.jdbc.copy.StreamCopier;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageConfig;
 import io.airbyte.integrations.destination.jdbc.copy.azure.AzureBlobStorageStreamCopierFactory;
-import io.airbyte.protocol.models.DestinationSyncMode;
+import io.airbyte.protocol.models.v0.DestinationSyncMode;
 
 public class SnowflakeAzureBlobStorageStreamCopierFactory extends AzureBlobStorageStreamCopierFactory {
 
