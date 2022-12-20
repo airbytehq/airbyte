@@ -185,7 +185,6 @@ class Case(IncrementalStream):
                 # fields in the schema
                 record["xform_ids"] = ",".join(record["xform_ids"])
                 frec = flatten(record)
-                # print(frec)
                 yield frec
         if self._cursor_value.microsecond == 0:
             # Airbyte converts the cursor_field value (datetime) to string when it saves the state and
