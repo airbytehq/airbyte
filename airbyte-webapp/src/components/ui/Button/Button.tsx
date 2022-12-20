@@ -44,6 +44,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>((props, r
       style={widthStyle}
       className={classNames(styles.button, className, buttonStyles)}
       {...buttonProps}
+      disabled={buttonProps.disabled || isLoading}
     >
       {isLoading && (
         <FontAwesomeIcon
