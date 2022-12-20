@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigration;
 import io.airbyte.commons.version.Version;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,9 +77,9 @@ class AirbyteMessageMigratorTest {
 
   @BeforeEach
   void beforeEach() {
-    migrator = new AirbyteMessageMigrator();
-    migrator.registerMigration(new Migrate0to1());
-    migrator.registerMigration(new Migrate1to2());
+    migrator = new AirbyteMessageMigrator(
+        List.of(new Migrate0to1(), new Migrate1to2()));
+    migrator.initialize();
   }
 
   @Test
@@ -127,7 +128,9 @@ class AirbyteMessageMigratorTest {
   @Test
   void testRegisterCollisionsShouldFail() {
     assertThrows(RuntimeException.class, () -> {
-      migrator.registerMigration(new Migrate0to1());
+      migrator = new AirbyteMessageMigrator(
+          List.of(new Migrate0to1(), new Migrate1to2(), new Migrate0to1()));
+      migrator.initialize();
     });
   }
 
