@@ -8,7 +8,6 @@ import com.uber.m3.util.ImmutableSet;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.helpers.LogClientSingleton;
-import io.micronaut.context.env.Environment;
 import java.util.Set;
 
 public class OrchestratorConstants {
@@ -69,11 +68,7 @@ public class OrchestratorConstants {
           EnvConfigs.STATE_STORAGE_S3_SECRET_ACCESS_KEY,
           EnvConfigs.STATE_STORAGE_S3_REGION,
           EnvVariableFeatureFlags.USE_STREAM_CAPABLE_STATE,
-          EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA,
-          Environment.ENVIRONMENTS_ENV,
-          EnvConfigs.INTERNAL_API_HOST,
-          EnvConfigs.AIRBYTE_API_AUTH_HEADER_NAME,
-          EnvConfigs.AIRBYTE_API_AUTH_HEADER_VALUE))
+          EnvVariableFeatureFlags.AUTO_DETECT_SCHEMA))
       .build();
 
   public static final String INIT_FILE_ENV_MAP = "envMap.json";
