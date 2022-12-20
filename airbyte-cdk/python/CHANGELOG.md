@@ -1,5 +1,23 @@
 # Changelog
 
+## 0.16.1
+Include declarative_component_schema.yaml in the publish to PyPi
+
+## 0.16.0
+Start validating low-code manifests using the declarative_component_schema.yaml file
+
+## 0.15.0
+Reverts additions from versions 0.13.0 and 0.13.3.
+
+## 0.14.0
+Low-code: Add token_expiry_date_format to OAuth Authenticator. Resolve ref schema
+
+## 0.13.3
+Fixed `StopIteration` exception for empty streams while `check_availability` runs.
+
+## 0.13.2
+Low-code: Enable low-code CDK users to specify schema inline in the manifest
+
 ## 0.13.1
 Low-code: Add `SessionTokenAuthenticator`
 
