@@ -61,12 +61,6 @@
           }
         ]
       },
-      "since": {
-        "type": "string",
-        "title": "Sync start datetime",
-        "format": "date-time",
-        "airbyte_hidden": true
-      },
       "campaign_id": {
         "type": "string",
         "title": "ID of a campaign to sync email activities",
