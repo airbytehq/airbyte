@@ -13,13 +13,20 @@ import {
   requestWorkspaceId,
 } from "commands/api";
 import { Connection, Destination, Source } from "commands/api/types";
-import { submitButtonClick } from "commands/common";
 import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
-import { visitConnectionPage } from "pages/connectionPage";
+import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
 import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
-import { checkSchemaChangesDetected, checkSchemaChangesDetectedCleared, checkSuccessResult, clickSaveReplication, clickSchemaChangesReviewButton } from "pages/replicationPage";
+import {
+  checkSchemaChangesDetected,
+  checkSchemaChangesDetectedCleared,
+  clickSaveReplication,
+  clickSchemaChangesReviewButton,
+  searchStream,
+  selectCursorField,
+  selectSyncMode,
+} from "pages/replicationPage";
 
 describe("Auto-detect schema changes", () => {
   let source: Source;
@@ -66,15 +73,16 @@ describe("Auto-detect schema changes", () => {
     runDbQuery(dropUsersTableQuery);
   });
 
-  it("has working non-breaking changes flow", () => {
-    runDbQuery(alterTable("public.users", { drop: ['updated_at'] }))
-    requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true })
+  it("shows non-breaking change that can be saved after refresh", () => {
+    runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
+    requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true });
 
     // Need to continue running but async breaks everything
-    visitConnectionPage(connection, 'replication');
+    visitConnectionPage(connection, "replication");
 
-    checkSchemaChangesDetected();
+    checkSchemaChangesDetected({ breaking: false });
     clickSchemaChangesReviewButton();
+    getSyncEnabledSwitch().should("be.enabled");
 
     checkCatalogDiffModal();
     clickCatalogDiffCloseButton();
@@ -82,5 +90,39 @@ describe("Auto-detect schema changes", () => {
     checkSchemaChangesDetectedCleared();
 
     clickSaveReplication();
+    getSyncEnabledSwitch().should("be.enabled");
+  });
+
+  it("shows breaking change that can be saved after refresh and fix", () => {
+    visitConnectionPage(connection, "replication");
+
+    // Change users sync mode
+    searchStream("users");
+    selectSyncMode("Incremental", "Deduped + history");
+    selectCursorField("updated_at");
+    clickSaveReplication();
+
+    // Remove cursor from db and refreshs schema to force breaking change detection
+    runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
+    requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true }).then(console.log);
+
+    // Reload the page to pick up the changes
+    cy.reload();
+
+    // Confirm that breaking changes are there
+    checkSchemaChangesDetected({ breaking: true });
+    clickSchemaChangesReviewButton();
+    getSyncEnabledSwitch().should("be.disabled");
+
+    checkCatalogDiffModal();
+    clickCatalogDiffCloseButton();
+    checkSchemaChangesDetectedCleared();
+
+    // Fix the conflict
+    searchStream("Users");
+    selectSyncMode("Full refresh", "Append");
+
+    clickSaveReplication();
+    getSyncEnabledSwitch().should("be.enabled");
   });
 });

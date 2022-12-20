@@ -176,12 +176,12 @@ export const searchStream = (value: string) => {
   cy.get(streamNameInput).type(value);
 };
 
-export const clickSaveReplication = () => {
+export const clickSaveReplication = ({ reset = false } = {}) => {
   cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
   submitButtonClick();
 
-  confirmStreamConfigurationChangedPopup();
+  confirmStreamConfigurationChangedPopup({ reset });
 
   cy.wait("@updateConnection").then((interception) => {
     assert.isNotNull(interception.response?.statusCode, "200");
@@ -194,8 +194,10 @@ export const checkSuccessResult = () => {
   cy.get(successResult).should("exist");
 };
 
-export const confirmStreamConfigurationChangedPopup = () => {
-  cy.get(resetModalResetCheckbox).click({ force: true });
+export const confirmStreamConfigurationChangedPopup = ({ reset = false } = {}) => {
+  if (!reset) {
+    cy.get(resetModalResetCheckbox).click({ force: true });
+  }
   cy.get(saveStreamChangesButton).click();
 };
 
@@ -203,8 +205,11 @@ export const toggleStreamEnabledState = (streamName: string) => {
   cy.get(streamSyncEnabledSwitch(streamName)).check({ force: true });
 };
 
-export const checkSchemaChangesDetected = () => {
+export const checkSchemaChangesDetected = ({ breaking }: { breaking: boolean }) => {
   cy.get(schemaChangesDetectedBanner).should("exist");
+  cy.get(schemaChangesDetectedBanner)
+    .invoke("attr", "class")
+    .should("match", breaking ? /\_breaking/ : /nonBreaking/);
   cy.get(schemaChangesBackdrop).should("exist");
 };
 
