@@ -369,8 +369,6 @@ public class AsyncOrchestratorPodProcess implements KubePod {
           .withName("airbyte-dataplane-creds")
           .withMountPath(dataPlaneCredsSecretMountPath)
           .build());
-
-      envVars.add(new EnvVar(LogClientSingleton.GOOGLE_APPLICATION_CREDENTIALS, googleApplicationCredentials, null));
     }
 
     // Copy all additionally provided environment variables
