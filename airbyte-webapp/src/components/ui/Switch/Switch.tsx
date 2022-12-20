@@ -36,6 +36,7 @@ export const Switch: React.FC<SwitchProps> = ({
     [styles.sizeXs]: size === "xs",
     [styles.variantDefault]: variant === "default",
     [styles.variantStrongBlue]: variant === "strong-blue",
+    [styles.indeterminate]: indeterminate,
     [styles.loading]: loading,
   });
 

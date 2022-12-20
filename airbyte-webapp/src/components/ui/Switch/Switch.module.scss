@@ -5,6 +5,16 @@
 @mixin knob-transform($position, $size) {
   @if $position == left {
     transform: translateX(0);
+  } @else if $position == middle {
+    @if $size == lg {
+      transform: translateX(8px);
+    }
+    @if $size == sm {
+      transform: translateX(4.5px);
+    }
+    @if $size == xs {
+      transform: translateX(3.5px);
+    }
   } @else {
     @if $size == lg {
       transform: translateX(16px);
@@ -102,7 +112,7 @@
     width: 0;
     height: 0;
 
-    &:checked + .slider {
+    &[aria-checked="true"] + .slider {
       &.variantDefault {
         background-color: colors.$blue;
       }
@@ -119,13 +129,26 @@
       }
     }
 
-    &:not(:checked) + .slider {
+    &[aria-checked="false"] + .slider {
       @include all-sizes-knob-transform(left);
 
       &.loading {
         background-image: url("./Progress.svg");
         @include all-sizes-knob-transform(right);
       }
+    }
+
+    &[aria-checked="mixed"] + .slider {
+      &.variantDefault {
+        background-color: colors.$blue-200;
+      }
+
+      &.loading {
+        background-color: colors.$blue-100;
+        background-image: url("./ProgressReverse.svg");
+      }
+
+      @include all-sizes-knob-transform(middle);
     }
 
     &:disabled + .slider {
