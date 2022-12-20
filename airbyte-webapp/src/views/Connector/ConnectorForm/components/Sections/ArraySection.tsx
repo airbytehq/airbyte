@@ -42,15 +42,26 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
 };
 
 export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
-  const [field, , fieldHelper] = useField(path);
-  const [editIndex, setEditIndex] = useState<number>();
+  const [field, , fieldHelper] = useField<Array<Record<string, string>>>(path);
+  const [editIndex, setEditIndex] = useState<number | undefined>();
+  const [itemInEdit, setItemInEdit] = useState<Record<string, string> | undefined>();
 
-  const items = useMemo(() => field.value ?? [], [field.value]);
+  const items: Array<Record<string, string>> = useMemo(() => field.value ?? [], [field.value]);
+
+  // keep the list of rendered items stable as long as editing is in progress
+  const itemsWithOverride = useMemo(() => {
+    if (typeof editIndex === "undefined") {
+      return items;
+    }
+    return items.map((item, index) => (index === editIndex ? itemInEdit : item)).filter(Boolean) as Array<
+      Record<string, string>
+    >;
+  }, [editIndex, itemInEdit, items]);
 
   const { renderItemName, renderItemDescription } = useMemo(() => {
     const { properties } = formField.properties as FormGroupItem;
 
-    const details = items.map((item: Record<string, string>) => {
+    const details = itemsWithOverride.map((item: Record<string, string>) => {
       const name = getItemName(item, properties);
       const description = getItemDescription(item, properties);
       return {
@@ -63,9 +74,22 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
       renderItemName: (_: unknown, index: number) => details[index].name,
       renderItemDescription: (_: unknown, index: number) => details[index].description,
     };
-  }, [items, formField.properties]);
+  }, [itemsWithOverride, formField.properties]);
 
   const clearEditIndex = () => setEditIndex(undefined);
+
+  // on cancelling editing, either remove the item if it has been a new one or put back the old value in the form
+  const onCancel = () => {
+    const newList = [...field.value];
+    if (!itemInEdit) {
+      newList.pop();
+    } else if (editIndex !== undefined && itemInEdit) {
+      newList.splice(editIndex, 1, itemInEdit);
+    }
+
+    fieldHelper.setValue(newList);
+    clearEditIndex();
+  };
 
   return (
     <SectionContainer>
@@ -79,10 +103,13 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
           render={(arrayHelpers) => (
             <ArrayOfObjectsEditor
               editableItemIndex={editIndex}
-              onStartEdit={setEditIndex}
+              onStartEdit={(n) => {
+                setEditIndex(n);
+                setItemInEdit(items[n]);
+              }}
               onRemove={arrayHelpers.remove}
-              onCancel={clearEditIndex}
-              items={items}
+              onCancel={onCancel}
+              items={itemsWithOverride}
               renderItemName={renderItemName}
               renderItemDescription={renderItemDescription}
               disabled={disabled}
@@ -93,16 +120,8 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
                   path={`${path}[${editIndex ?? 0}]`}
                   disabled={disabled}
                   item={item}
-                  onDone={(updatedItem) => {
-                    const updatedValue =
-                      editIndex !== undefined && editIndex < items.length
-                        ? items.map((item: unknown, index: number) => (index === editIndex ? updatedItem : item))
-                        : [...items, updatedItem];
-
-                    fieldHelper.setValue(updatedValue);
-                    clearEditIndex();
-                  }}
-                  onCancel={clearEditIndex}
+                  onDone={clearEditIndex}
+                  onCancel={onCancel}
                 />
               )}
             />
