@@ -1,14 +1,9 @@
 {
-  "type": "CATALOG",
-  "catalog": {
-    "streams": [
-      {
+  "streams": [
+    {
+      "stream": {
         "name": "Assess a referred patient",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
+        "json_schema": {},
         "supported_sync_modes": [
           "full_refresh",
           "incremental"
@@ -16,97 +11,13 @@
         "source_defined_cursor": true,
         "default_cursor_field": [
           "indexed_on"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
         ]
       },
-      {
-        "name": "Birth Outcome",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "indexed_on"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      {
-        "name": "Mid-Pregnancy Home Visit",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "indexed_on"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      {
-        "name": "STEP 1: Register a new patient",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "indexed_on"
-        ],
-        "source_defined_primary_key": [
-          [
-            "id"
-          ]
-        ]
-      },
-      {
-        "name": "zzz_case",
-        "json_schema": {
-          "$schema": "http://json-schema.org/draft-07/schema#",
-          "type": "object",
-          "properties": {}
-        },
-        "supported_sync_modes": [
-          "full_refresh",
-          "incremental"
-        ],
-        "source_defined_cursor": true,
-        "default_cursor_field": [
-          "indexed_on"
-        ],
-        "source_defined_primary_key": [
-          [
-            "case_id"
-          ]
-        ]
-      }
-    ]
-  }
+      "sync_mode": "incremental",
+      "cursor_field": [
+        "indexed_on"
+      ],
+      "destination_sync_mode": "append"
+    }
+  ]
 }
