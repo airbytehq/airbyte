@@ -407,6 +407,8 @@ class FbaInventoryPlanningReports(ReportsAmazonSPStream):
 class FBAInboundPerformanceReport(ReportsAmazonSPStream):
     name = "GET_FBA_FULFILLMENT_INBOUND_NONCOMPLIANCE_DATA"
 
+class FBAManageInventory(ReportsAmazonSPStream):
+    name = "GET_FBA_MYI_UNSUPPRESSED_INVENTORY_DATA"
 
 
 class LedgerDetailViewDataReports(ReportsAmazonSPStream):
