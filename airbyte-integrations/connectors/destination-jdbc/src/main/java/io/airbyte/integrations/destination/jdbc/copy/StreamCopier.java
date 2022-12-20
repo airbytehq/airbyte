@@ -4,7 +4,7 @@
 
 package io.airbyte.integrations.destination.jdbc.copy;
 
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 
 /**
