@@ -356,7 +356,7 @@ public class AsyncOrchestratorPodProcess implements KubePod {
 
     }
 
-    if (dataPlaneCredsSecretName != null && dataPlaneCredsSecretMountPath != null) {
+    if (StringUtils.isNotEmpty(dataPlaneCredsSecretName) && StringUtils.isNotEmpty(dataPlaneCredsSecretMountPath)) {
       volumes.add(new VolumeBuilder()
           .withName("airbyte-dataplane-creds")
           .withSecret(new SecretVolumeSourceBuilder()
