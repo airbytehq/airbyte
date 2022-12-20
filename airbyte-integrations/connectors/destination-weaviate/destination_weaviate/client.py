@@ -20,7 +20,7 @@ class Client:
         self.vectors = parse_vectors(config.get("vectors"))
         self.id_schema = parse_id_schema(config.get("id_schema"))
 
-    def queue_write_operation(self, stream_name: str, record: MutableMapping):
+    def buffered_write_operation(self, stream_name: str, record: MutableMapping):
         # TODO need to handle case where original DB ID is not a UUID
         if self.id_schema.get(stream_name, "") in record:
             id_field_name = self.id_schema.get(stream_name, "")

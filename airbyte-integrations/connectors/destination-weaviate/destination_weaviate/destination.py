@@ -44,7 +44,7 @@ class DestinationWeaviate(Destination):
                 yield message
             elif message.type == Type.RECORD:
                 record = message.record
-                client.queue_write_operation(record.stream, record.data)
+                client.buffered_write_operation(record.stream, record.data)
             else:
                 # ignore other message types for now
                 continue
