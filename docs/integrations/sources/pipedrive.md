@@ -8,8 +8,6 @@ This page contains the setup guide and reference information for the Pipedrive c
 * An `API token`;
 * A `client_id`, `client_secret`, and `refresh_token`. 
 
-To complete the oauth2 flow and get a `client_id`, `client_secret`, and `refresh_token`, you can follow [this documentation](https://pipedrive.readme.io/docs/marketplace-oauth-authorization).
-
 ## Setup guide
 
 The Pipedrive connector accepts two authentication flows:
@@ -18,14 +16,14 @@ The Pipedrive connector accepts two authentication flows:
 
 Step 1 - Enable API Token:
 
-If you don't see API next to the Your companies section (image below), it's due to the permission sets handled by the company's admin. The company's admin can give you access to your API token by enabling it for you from the Settings in Pipedrive web app.
+If you don't see API next to the `Your companies` section, it's due to the permission sets handled by the company's admin. The company's admin can give you access to your API token by enabling it for you from the Settings in Pipedrive web app.
 
-For more information, access [enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users)
+For more information, access [enabling API for company users](https://pipedrive.readme.io/docs/enabling-api-for-company-users).
 
 
 Step 2 - Find the API token:
 
-You can get the API token manually from the Pipedrive web app by going to account name (on the top right) > Company settings > Personal preferences > API or by clicking here (in case you have multiple companies open at the same time, this link will redirect you to the API token of the last opened company).
+You can get the API token manually from the Pipedrive web app by going to account name (on the top right) > Company settings > Personal preferences > API.
 
 See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the-api-token) for detailed information.
 
@@ -33,11 +31,11 @@ See [How to find the API token](https://pipedrive.readme.io/docs/how-to-find-the
 
 Step 1 - Register a Pipedrive app:
 
-Pipedrive allows integrations with its API through **registered apps**. So, to authenticate Airbyte, first, we create a Pipedrive private app in the marketplace. Follow these [instructions](https://pipedrive.readme.io/docs/marketplace-registering-the-app) to register your integration.
+Pipedrive allows integrations with its API through **registered apps**. So, to authenticate Airbyte, first you need to create a Pipedrive private app in the marketplace. Follow these [instructions](https://pipedrive.readme.io/docs/marketplace-registering-the-app) to register your integration.
 
 Step 2 - Follow the Oauth Authorization flow:
 
-With the registered app, now we can follow the authorization flow to obtain the `client_id`, `client_secret`, and `refresh_token` secrets. Pipedrive has some documentation about it: https://pipedrive.readme.io/docs/marketplace-oauth-authorization.
+With the registered app, you can follow the authorization flow to obtain the `client_id`, `client_secret`, and `refresh_token` secrets. Pipedrive has documentation about it: https://pipedrive.readme.io/docs/marketplace-oauth-authorization.
 
 Step 3 - Configure Airbyte:
 
