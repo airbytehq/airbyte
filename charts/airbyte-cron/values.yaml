@@ -26,6 +26,10 @@ image:
 ##
 podAnnotations: {}
 
+##  cron.podLabels [object] Add extra labels to the cron pod(s)
+##
+podLabels: {}
+
 ## cron.containerSecurityContext Security context for the container
 ## Examples:
 ## containerSecurityContext:
