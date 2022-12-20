@@ -10,7 +10,7 @@ import com.google.cloud.bigquery.Schema;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.StandardNameTransformer;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 

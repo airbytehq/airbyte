@@ -39,6 +39,10 @@ To set up Facebook Marketing as a source in Airbyte Cloud:
 11. (Optional) In the Custom Insights section, click **Add**.
     To retrieve specific fields from Facebook Ads Insights combined with other breakdowns, you can choose which fields and breakdowns to sync.
 
+    :::warning
+    Additional streams for Facebook Marketing are dynamically created based on the specified Custom Insights. For an existing Facebook Marketing source, when you are updating or removing Custom Insights, you should also ensure that any connections syncing to these streams are either disabled or have had their source schema refreshed.
+    :::
+
     We recommend following the Facebook Marketing [documentation](https://developers.facebook.com/docs/marketing-api/insights/breakdowns) to understand the breakdown limitations. Some fields can not be requested and many others only work when combined with specific fields. For example, the breakdown `app_id` is only supported with the `total_postbacks` field.
 
     To configure Custom Insights:
@@ -127,6 +131,7 @@ Please be informed that the connector uses the `lookback_window` parameter to pe
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                                                                                                                                                                                                           |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0.2.79  | 2022-12-07 | [20402](https://github.com/airbytehq/airbyte/pull/20402) | Exclude Not supported fields from request                                                                                                                                                                                                                                                         |
 | 0.2.78  | 2022-12-07 | [20165](https://github.com/airbytehq/airbyte/pull/20165) | fix fields permission error                                                                                                                                                                                                                                                                       |
 | 0.2.77  | 2022-12-06 | [20131](https://github.com/airbytehq/airbyte/pull/20131) | update next cursor value at read start                                                                                                                                                                                                                                                            |
 | 0.2.76  | 2022-12-03 | [20043](https://github.com/airbytehq/airbyte/pull/20043) | Allows `action_breakdowns` to be an empty list - bugfix for #20016                                                                                                                                                                                                                                |

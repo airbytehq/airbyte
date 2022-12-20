@@ -44,7 +44,7 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
 class ManifestDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a manifest of low-code components that define source connector behavior"""
 
-    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
     def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """
@@ -140,11 +140,13 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         # Validates the connector manifest against the low-code component json schema
         manifest = self._source_config
+        if "type" not in manifest:
+            manifest["type"] = "DeclarativeSource"
         manifest_transformer = ManifestComponentTransformer()
         propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
 
         try:
-            raw_component_schema = pkgutil.get_data(__name__, "low_code_component_schema.yaml")
+            raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
             declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
         except FileNotFoundError as e:
             raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
@@ -152,7 +154,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         try:
             validate(propagated_manifest, declarative_component_schema)
         except ValidationError as e:
-            raise ValidationError("Validation against json schema defined in low_code_component_schema.yaml schema failed") from e
+            raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
     def _stream_configs(self):
         stream_configs = self._source_config.get("streams", [])

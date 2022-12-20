@@ -11,18 +11,24 @@ OPTIONS_STR = "$options"
 
 # todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
+    # CompositeErrorHandler
+    "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",
+    # CursorPagination
+    "CursorPagination.decoder": "JsonDecoder",
     # DatetimeStreamSlicer
     "DatetimeStreamSlicer.end_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.end_time_option": "RequestOption",
     "DatetimeStreamSlicer.start_datetime": "MinMaxDatetime",
+    "DatetimeStreamSlicer.start_time_option": "RequestOption",
     # DeclarativeSource
+    "DeclarativeSource.check": "CheckStream",
+    "DeclarativeSource.spec": "Spec",
     "DeclarativeSource.streams": "DeclarativeStream",
     # DeclarativeStream
     "DeclarativeStream.retriever": "SimpleRetriever",
     "DeclarativeStream.schema_loader": "DefaultSchemaLoader",
-    # CursorPagination
-    "CursorPagination.decoder": "JsonDecoder",
     # DefaultErrorHandler
-    "response_filters": "HttpResponseFilter",
+    "DefaultErrorHandler.response_filters": "HttpResponseFilter",
     # DefaultPaginator
     "DefaultPaginator.decoder": "JsonDecoder",
     "DefaultPaginator.page_size_option": "RequestOption",
@@ -39,6 +45,7 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "ParentStreamConfig.stream": "DeclarativeStream",
     # RecordSelector
     "RecordSelector.extractor": "DpathExtractor",
+    "RecordSelector.record_filter": "RecordFilter",
     # SimpleRetriever
     "SimpleRetriever.paginator": "NoPagination",
     "SimpleRetriever.record_selector": "RecordSelector",
@@ -48,12 +55,17 @@ DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     "SubstreamSlicer.parent_stream_configs": "ParentStreamConfig",
     # AddFields
     "AddFields.fields": "AddedFieldDefinition",
+    # CustomStreamSlicer
+    "CustomStreamSlicer.parent_stream_configs": "ParentStreamConfig",
 }
 
 # We retain a separate registry for custom components to automatically insert the type if it is missing. This is intended to
 # be a short term fix because once we have migrated, then type and class_name should be requirements for all custom components.
 CUSTOM_COMPONENTS_MAPPING: Mapping[str, str] = {
-    "CartesianProductStreamSlicer.stream_slicer": "CustomStreamSlicer",
+    "CartesianProductStreamSlicer.stream_slicers": "CustomStreamSlicer",
+    "CompositeErrorHandler.backoff_strategies": "CustomBackoffStrategy",
+    "DeclarativeStream.retriever": "CustomRetriever",
+    "DeclarativeStream.transformations": "CustomTransformation",
     "DefaultErrorHandler.backoff_strategies": "CustomBackoffStrategy",
     "DefaultPaginator.pagination_strategy": "CustomPaginationStrategy",
     "HttpRequester.authenticator": "CustomAuthenticator",
@@ -73,7 +85,7 @@ class ManifestComponentTransformer:
         components, not an in-place transformation.
 
         :param declarative_component: The current component that is having type and options added
-        :param parent_field: The name of the field of the current component coming from the parent component
+        :param parent_field_identifier: The name of the field of the current component coming from the parent component
         :param parent_options: The options set on parent components defined before the current component
         :return: A deep copy of the transformed component with types and options persisted to it
         """
@@ -89,6 +101,10 @@ class ManifestComponentTransformer:
                 found_type = DEFAULT_MODEL_TYPES.get(parent_field_identifier)
             if found_type:
                 propagated_component["type"] = found_type
+
+        # When there is no resolved type, we're not processing a component (likely a regular object) and don't need to propagate options
+        if "type" not in propagated_component:
+            return propagated_component
 
         # Combines options defined at the current level with options from parent components. Options at the current level take precedence
         current_options = dict(copy.deepcopy(parent_options))

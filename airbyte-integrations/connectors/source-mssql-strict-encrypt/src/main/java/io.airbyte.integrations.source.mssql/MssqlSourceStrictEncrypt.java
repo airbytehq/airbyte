@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.spec_modification.SpecModifyingSource;
-import io.airbyte.protocol.models.ConnectorSpecification;
+import io.airbyte.protocol.models.v0.ConnectorSpecification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
