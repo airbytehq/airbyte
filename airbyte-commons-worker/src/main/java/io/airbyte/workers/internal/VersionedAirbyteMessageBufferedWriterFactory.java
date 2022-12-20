@@ -7,7 +7,9 @@ package io.airbyte.workers.internal;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
 import io.airbyte.commons.version.Version;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import java.io.BufferedWriter;
+import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +20,16 @@ public class VersionedAirbyteMessageBufferedWriterFactory implements AirbyteMess
   private final AirbyteMessageSerDeProvider serDeProvider;
   private final AirbyteMessageVersionedMigratorFactory migratorFactory;
   private final Version protocolVersion;
+  private final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog;
 
   public VersionedAirbyteMessageBufferedWriterFactory(final AirbyteMessageSerDeProvider serDeProvider,
                                                       final AirbyteMessageVersionedMigratorFactory migratorFactory,
-                                                      final Version protocolVersion) {
+                                                      final Version protocolVersion,
+                                                      final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     this.serDeProvider = serDeProvider;
     this.migratorFactory = migratorFactory;
     this.protocolVersion = protocolVersion;
+    this.configuredAirbyteCatalog = configuredAirbyteCatalog;
   }
 
   @Override
@@ -37,7 +42,8 @@ public class VersionedAirbyteMessageBufferedWriterFactory implements AirbyteMess
     return new VersionedAirbyteMessageBufferedWriter<>(
         bufferedWriter,
         serDeProvider.getSerializer(protocolVersion).orElseThrow(),
-        migratorFactory.getVersionedMigrator(protocolVersion));
+        migratorFactory.getVersionedMigrator(protocolVersion),
+        configuredAirbyteCatalog);
   }
 
 }

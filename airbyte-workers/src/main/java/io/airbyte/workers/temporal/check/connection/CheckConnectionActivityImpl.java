@@ -44,6 +44,7 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.Optional;
 
 @Singleton
 @Requires(env = WorkerMode.CONTROL_PLANE)
@@ -133,7 +134,7 @@ public class CheckConnectionActivityImpl implements CheckConnectionActivity {
           workerConfigs.getResourceRequirements(),
           launcherConfig.getIsCustomConnector());
       final AirbyteStreamFactory streamFactory = launcherConfig.getProtocolVersion() != null
-          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion())
+          ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, launcherConfig.getProtocolVersion(), Optional.empty())
           : new DefaultAirbyteStreamFactory();
 
       return new DefaultCheckConnectionWorker(integrationLauncher, streamFactory);

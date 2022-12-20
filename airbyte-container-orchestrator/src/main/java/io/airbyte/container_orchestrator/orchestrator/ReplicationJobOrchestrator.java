@@ -25,6 +25,7 @@ import io.airbyte.metrics.lib.MetricClientFactory;
 import io.airbyte.metrics.lib.MetricEmittingApps;
 import io.airbyte.persistence.job.models.IntegrationLauncherConfig;
 import io.airbyte.persistence.job.models.JobRunConfig;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
@@ -130,7 +131,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(sourceLauncher,
-                getStreamFactory(sourceLauncherConfig.getProtocolVersion(), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
+                getStreamFactory(sourceLauncherConfig.getProtocolVersion(), syncInput.getCatalog(), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final var metricClient = MetricClientFactory.getMetricClient();
@@ -143,9 +144,11 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         Math.toIntExact(jobRunConfig.getAttemptId()),
         airbyteSource,
         new NamespacingMapper(syncInput.getNamespaceDefinition(), syncInput.getNamespaceFormat(), syncInput.getPrefix()),
-        new DefaultAirbyteDestination(destinationLauncher, getStreamFactory(destinationLauncherConfig.getProtocolVersion(),
-            DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
-            new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion())),
+        new DefaultAirbyteDestination(destinationLauncher,
+            getStreamFactory(destinationLauncherConfig.getProtocolVersion(), syncInput.getCatalog(),
+                DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
+            new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
+                Optional.of(syncInput.getCatalog()))),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter, featureFlags.applyFieldSelection());
@@ -159,9 +162,11 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
     return Optional.of(Jsons.serialize(replicationOutput));
   }
 
-  private AirbyteStreamFactory getStreamFactory(final Version protocolVersion, final MdcScope.Builder mdcScope) {
+  private AirbyteStreamFactory getStreamFactory(final Version protocolVersion,
+                                                final ConfiguredAirbyteCatalog configuredAirbyteCatalog,
+                                                final MdcScope.Builder mdcScope) {
     return protocolVersion != null
-        ? new VersionedAirbyteStreamFactory(serDeProvider, migratorFactory, protocolVersion, mdcScope)
+        ? new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, protocolVersion, Optional.of(configuredAirbyteCatalog), mdcScope)
         : new DefaultAirbyteStreamFactory(mdcScope);
   }
 
