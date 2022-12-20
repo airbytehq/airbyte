@@ -55,6 +55,7 @@ Schema:
       - step
       - cursor_field
       - datetime_format
+      - datetime_format_granularity
     additional_properties: false
     properties:
       "$options":
@@ -68,6 +69,8 @@ Schema:
       cursor_field:
         type: string
       datetime_format:
+        type: string
+      datetime_format_granularity:
         type: string
       start_time_option:
         "$ref": "#/definitions/RequestOption"
@@ -103,10 +106,12 @@ Example:
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
-  step: "1d"
+  datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z",
+  datetime_format_granularity: "PT0.000001S"
+  step: "P1D"
 ```
 
-will create one slice per day for the interval `2021-02-01` - `2021-03-01`.
+will create one slice per day for the interval `2021-02-01` - `2021-03-01`. The first slice will start from the `start_datetime` and end at `start_datetime + step - granularity` like this: `{"start_time": "2021-02-01T00:00:00.000000+0000", "end_time": "2021-02-01T23:59:59.999999+0000"}`.
 
 The `DatetimeStreamSlicer` also supports an optional lookback window, specifying how many days before the start_datetime to read data for.
 
@@ -114,13 +119,15 @@ The `DatetimeStreamSlicer` also supports an optional lookback window, specifying
 stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
-  lookback_window: "31d"
-  step: "1d"
+  datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z",
+  datetime_format_granularity: "PT0.000001S"
+  lookback_window: "P31D"
+  step: "P1D"
 ```
 
 will read data from `2021-01-01` to `2021-03-01`.
 
-The stream slices will be of the form `{"start_date": "2021-02-01T00:00:00.000000+0000", "end_date": "2021-02-01T00:00:00.000000+0000"}`
+The stream slices will be of the form `{"start_date": "2021-02-01T00:00:00.000000+0000", "end_date": "2021-02-02T23:59:59.999999+0000"}`
 The stream slices' field names can be customized through the `stream_state_field_start` and `stream_state_field_end` parameters.
 
 The `datetime_format` can be used to specify the format of the start and end time. It is [RFC3339](https://datatracker.ietf.org/doc/html/rfc3339#section-5.6) by default.
