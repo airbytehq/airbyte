@@ -47,6 +47,8 @@ export interface BuilderStream {
   name: string;
   urlPath: string;
   fieldPointer: string[];
+  primaryKey: string[];
+  cursorField: string[];
   httpMethod: "GET" | "POST";
   requestOptions: {
     requestParameters: Array<[string, string]>;
@@ -54,6 +56,32 @@ export interface BuilderStream {
     requestBody: Array<[string, string]>;
   };
 }
+
+export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
+  global: {
+    connectorName: "",
+    urlBase: "",
+    authenticator: { type: "NoAuth" },
+  },
+  inputs: [],
+  inferredInputOverrides: {},
+  streams: [],
+};
+
+export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
+  name: "",
+  urlPath: "",
+  fieldPointer: [],
+  primaryKey: [],
+  cursorField: [],
+  httpMethod: "GET",
+  requestOptions: {
+    requestParameters: [],
+    requestHeaders: [],
+    requestBody: [],
+  },
+};
+
 function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
   if (values.global.authenticator.type === "ApiKeyAuthenticator") {
     return [
@@ -231,6 +259,8 @@ export const builderFormValidationSchema = yup.object().shape({
       name: yup.string().required("form.empty.error"),
       urlPath: yup.string().required("form.empty.error"),
       fieldPointer: yup.array().of(yup.string()),
+      cursorField: yup.array().of(yup.string()),
+      primaryKey: yup.array().of(yup.string()),
       httpMethod: yup.mixed().oneOf(["GET", "POST"]),
       requestOptions: yup.object().shape({
         requestParameters: yup.array().of(yup.array().of(yup.string())),
@@ -263,8 +293,10 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
       name: stream.name,
+      stream_cursor_field: stream.cursorField,
       retriever: {
         name: stream.name,
+        primary_key: stream.primaryKey,
         requester: {
           name: stream.name,
           url_base: values.global?.urlBase,

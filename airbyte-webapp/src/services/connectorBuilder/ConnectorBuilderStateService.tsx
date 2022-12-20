@@ -4,23 +4,12 @@ import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
-import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
+import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
 import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
-
-export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
-  global: {
-    connectorName: "",
-    urlBase: "",
-    authenticator: { type: "NoAuth" },
-  },
-  inputs: [],
-  inferredInputOverrides: {},
-  streams: [],
-};
 
 const DEFAULT_JSON_MANIFEST_VALUES: PatchedConnectorManifest = {
   version: "0.1.0",
