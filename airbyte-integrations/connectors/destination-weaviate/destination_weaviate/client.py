@@ -22,7 +22,6 @@ class Client:
 
     def queue_write_operation(self, stream_name: str, record: Mapping):
         # TODO need to handle case where original DB ID is not a UUID
-        record_id = ""
         if self.id_schema.get(stream_name, "") in record:
             id_field_name = self.id_schema.get(stream_name, "")
             record_id = generate_id(record.get(id_field_name))
