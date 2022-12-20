@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -41,9 +41,16 @@ const CrossButton = styled.button`
 `;
 
 export const MessageBox: React.FC<IProps> = ({ message, onClose }) => {
+  useEffect(() => {
+    const intervalID = setTimeout(() => onClose?.(), 3000);
+
+    return () => clearInterval(intervalID);
+  }, [message]);
+
   if (!message) {
     return null;
   }
+
   return (
     <Container>
       <Message>
