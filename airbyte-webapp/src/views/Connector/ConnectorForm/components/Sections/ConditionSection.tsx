@@ -9,6 +9,7 @@ import { isDefined } from "utils/common";
 
 import { useConnectorForm } from "../../connectorFormContext";
 import { ConnectorFormValues } from "../../types";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
@@ -67,7 +68,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       <GroupControls
         key={`form-field-group-${formField.fieldKey}`}
         label={<GroupLabel formField={formField} />}
-        dropdown={
+        control={
           <DropDown
             options={options}
             onChange={onOptionChange}
@@ -77,6 +78,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             error={typeof meta.error === "string" && !!meta.error}
           />
         }
+        controlClassName={styles.dropdown}
       >
         <FormSection
           blocks={formField.conditions[currentlySelectedCondition]}
