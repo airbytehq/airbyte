@@ -153,7 +153,7 @@
   "connectionForm.nonBreakingChangesPreference.label": "Non-breaking schema updates detected*",
   "connectionForm.nonBreakingChangesPreference.message": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
   "connectionForm.nonBreakingChangesPreference.ignore": "Ignore",
-  "connectionForm.nonBreakingChangesPreference.disable": "Pause sync",
+  "connectionForm.schemaChangesBackdrop.message": "Please review the schema updates before making changes to the connection",
 
   "connectionForm.modal.destinationNamespace.title": "Destination namespace",
   "connectionForm.modal.destinationNamespace.option.source": "Mirror source structure",
@@ -223,6 +223,8 @@
   "form.field.destinationName": "Destination name",
   "form.field.primaryKey": "Primary key",
   "form.field.cursorField": "Cursor field",
+  "form.field.sourceDefinedCursor": "Source-Defined Cursor",
+  "form.field.sourceDefinedPK": "Source-Defined Primary key",
 
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
@@ -375,6 +377,10 @@
   "connection.catalogTree.sourceDefined": "'<source defined>",
   "connection.catalogTree.sourceSchema": "'<source schema>",
   "connection.catalogTree.destinationSchema": "'<destination schema>",
+
+  "connection.schemaUpdateNotifications.title": "Schema update notifications",
+  "connection.schemaUpdateNotifications.info": "Send webhook notifications when your source schema has changed",
+  "connection.schemaUpdateNotifications.error": "Unable to save the schema update notifications setting at this time.",
 
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
