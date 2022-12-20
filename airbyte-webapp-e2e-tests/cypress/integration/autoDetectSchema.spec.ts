@@ -59,15 +59,15 @@ describe("Auto-detect schema changes", () => {
     connection = await requestCreateConnection(connectionRequestBody);
   });
 
-  afterEach(async () => {
+  afterEach(() => {
     if (connection) {
-      await requestDeleteConnection(connection.connectionId);
+      requestDeleteConnection(connection.connectionId);
     }
     if (source) {
-      await requestDeleteSource(source.sourceId);
+      requestDeleteSource(source.sourceId);
     }
     if (destination) {
-      await requestDeleteDestination(destination.destinationId);
+      requestDeleteDestination(destination.destinationId);
     }
 
     runDbQuery(dropUsersTableQuery);
