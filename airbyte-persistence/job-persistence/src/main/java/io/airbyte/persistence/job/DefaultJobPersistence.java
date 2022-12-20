@@ -7,6 +7,7 @@ package io.airbyte.persistence.job;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.NORMALIZATION_SUMMARIES;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.STREAM_STATS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -33,6 +34,7 @@ import io.airbyte.config.JobConfig;
 import io.airbyte.config.JobConfig.ConfigType;
 import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
@@ -337,8 +339,6 @@ public class DefaultJobPersistence implements JobPersistence {
   public void writeOutput(final long jobId, final int attemptNumber, final JobOutput output)
       throws IOException {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
-    final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
-    final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
 
     jobDatabase.transaction(ctx -> {
       ctx.update(ATTEMPTS)
@@ -348,10 +348,12 @@ public class DefaultJobPersistence implements JobPersistence {
           .execute();
       final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
 
+      final SyncStats syncStats = output.getSync().getStandardSyncSummary().getTotalStats();
       if (syncStats != null) {
-        writeSyncStats(now, syncStats, attemptId, ctx);
+        saveToSyncStatsTable(now, syncStats, attemptId, ctx);
       }
 
+      final NormalizationSummary normalizationSummary = output.getSync().getNormalizationSummary();
       if (normalizationSummary != null) {
         ctx.insertInto(NORMALIZATION_SUMMARIES)
             .set(NORMALIZATION_SUMMARIES.ID, UUID.randomUUID())
@@ -369,7 +371,72 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  private static void writeSyncStats(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+  @Override
+  public void writeStats(final long jobId,
+                         final int attemptNumber,
+                         final long estimatedRecords,
+                         final long estimatedBytes,
+                         final long recordsEmitted,
+                         final long bytesEmitted,
+                         final List<StreamSyncStats> streamStats)
+      throws IOException {
+    final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
+    jobDatabase.transaction(ctx -> {
+      final Optional<Record> record =
+          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+              attemptNumber).stream().findFirst();
+      final Long attemptId = record.get().get("id", Long.class);
+
+      final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+
+      saveToSyncStatsTable(null, null, null, null);
+
+      if (saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx, attemptId)) {
+        return null;
+      }
+
+      // write per stream stat info
+      return null;
+    });
+
+  }
+
+  private static boolean saveToStreamStatsTable(long estimatedRecords,
+                                                long estimatedBytes,
+                                                long recordsEmitted,
+                                                long bytesEmitted,
+                                                OffsetDateTime now,
+                                                DSLContext ctx,
+                                                Long attemptId) {
+    final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+    if (isExisting) {
+      // what else do we need to update?
+      ctx.update(STREAM_STATS)
+          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
+          .set(STREAM_STATS.UPDATED_AT, now)
+          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+          .execute();
+      return true;
+    }
+
+    // insert into stream stats table
+    ctx.insertInto(STREAM_STATS)
+        .set(STREAM_STATS.ID, UUID.randomUUID())
+        .set(STREAM_STATS.UPDATED_AT, now)
+        .set(STREAM_STATS.CREATED_AT, now)
+        .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+        .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+        .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+        .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+        .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
+        .execute();
+    return false;
+  }
+
+  private static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
         .set(SYNC_STATS.UPDATED_AT, now)
