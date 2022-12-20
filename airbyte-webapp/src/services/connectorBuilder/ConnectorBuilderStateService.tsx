@@ -1,4 +1,5 @@
 import { dump } from "js-yaml";
+import merge from "lodash/merge";
 import React, { useContext, useEffect, useMemo, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
@@ -65,7 +66,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     DEFAULT_BUILDER_FORM_VALUES
   );
   const builderFormValues = useMemo(() => {
-    return { ...DEFAULT_BUILDER_FORM_VALUES, ...(storedBuilderFormValues ?? {}) };
+    return merge(DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
   }, [storedBuilderFormValues]);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
