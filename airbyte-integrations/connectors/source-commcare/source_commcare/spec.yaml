@@ -15,13 +15,19 @@ connectionSpecification:
         Commcare API Key
       airbyte_secret: true
       order: 0
+    project_space: 
+      type: string
+      title: Project Space
+      description: >-
+        Project Space for commcare
+      order: 1
     app_id:
       type: string
       title: Application ID
       description: >-
         The Application ID we are interested in
       airbyte_secret: true
-      order: 1
+      order: 2
     start_date:
       type: string
       title: Start date for extracting records
@@ -29,4 +35,4 @@ connectionSpecification:
       default: "2022-10-01T00:00:00Z"
       description: >-
         UTC date and time in the format 2017-01-25T00:00:00Z. Only records after this date will be replicated.
-      order: 2
+      order: 3

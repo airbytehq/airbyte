@@ -19,7 +19,13 @@ from flatten_json import flatten
 
 # Basic full refresh stream
 class CommcareStream(HttpStream, ABC):
-    url_base = "https://www.commcarehq.org/a/sc-baseline/api/v0.5/"
+    def __init__(self, project_space, **kwargs):
+        super().__init__(**kwargs)
+        self.project_space = project_space
+
+    @property
+    def url_base(self) -> str:
+        return f"https://www.commcarehq.org/a/{self.project_space}/api/v0.5/"
 
     # These class variables save state
     # forms holds form ids and we filter cases which contain one of these form ids
@@ -67,6 +73,9 @@ class Application(CommcareStream):
     ) -> str:
         return f"application/{self.app_id}/"
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
     ) -> MutableMapping[str, Any]:
@@ -105,9 +114,11 @@ class IncrementalStream(CommcareStream, IncrementalMixin):
             # raise an error if server returns an error
             response.raise_for_status()
             meta = response.json()["meta"]
-            return parse_qs(meta["next"][1:])
-        except Exception as ex:
-            return ex
+            if meta["next"]:
+                return parse_qs(meta["next"][1:])
+            return None
+        except Exception:
+            return None
 
     def request_params(
         self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
@@ -249,9 +260,7 @@ class Form(IncrementalStream):
 class SourceCommcare(AbstractSource):
     def check_connection(self, logger, config) -> Tuple[bool, any]:
         if "api_key" not in config:
-            # print("Returning No")
             return False, None
-        # print("Returning Yes")
         return True, None
 
     def empty_schema(self):
@@ -266,14 +275,16 @@ class SourceCommcare(AbstractSource):
         args = {
             "authenticator": auth,
         }
-        appdata = Application(**{**args, "app_id": config["app_id"]}).read_records(sync_mode=SyncMode.full_refresh)
+        appdata = Application(**{**args, "app_id": config["app_id"], "project_space": config["project_space"]}).read_records(
+            sync_mode=SyncMode.full_refresh
+        )
 
         # Generate streams for forms, one per xmlns and one stream for cases.
         streams = self.generate_streams(args, config, appdata)
         return streams
 
     def generate_streams(self, args, config, appdata):
-        form_args = {**args, "app_id": config["app_id"], "start_date": config["start_date"]}
+        form_args = {"app_id": config["app_id"], "start_date": config["start_date"], "project_space": config["project_space"], **args}
         streams = []
         name2xmlns = {}
 
@@ -299,10 +310,16 @@ class SourceCommcare(AbstractSource):
         # Sorted by name
         for k in sorted(name2xmlns):
             key = name2xmlns[k]
-            stream = Form(**form_args, name=k, xmlns=key, schema=self.empty_schema())
+            stream = Form(name=k, xmlns=key, schema=self.empty_schema(), **form_args)
             streams.append(stream)
 
-        stream = Case(**args, app_id=config["app_id"], start_date=config["start_date"], schema=self.empty_schema())
+        stream = Case(
+            app_id=config["app_id"],
+            start_date=config["start_date"],
+            schema=self.empty_schema(),
+            project_space=config["project_space"],
+            **args,
+        )
         streams.append(stream)
 
         return streams

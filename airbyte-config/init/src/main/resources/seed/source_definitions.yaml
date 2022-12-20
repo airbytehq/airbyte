@@ -328,7 +328,7 @@
   sourceType: api
   releaseStage: alpha
 - name: Commcare
-  sourceDefinitionId: ee4532f4-15f0-4639-9w71-41719fb1fdff
+  sourceDefinitionId: f39208dc-7e1c-48b8-919b-5006360cc27f
   dockerRepository: airbyte/source-commcare
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.com/integrations/sources/commcare
