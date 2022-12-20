@@ -46,5 +46,6 @@
   "LocalSqLite": "b76be0a6-27dc-4560-95f6-2623da0bd7b6",
   "TiDb": "06ec60c7-7468-45c0-91ac-174f6e1a788b",
   "Typesense": "36be8dc6-9851-49af-b776-9d4c30e4ab6a",
-  "YugabyteDb": "2300fdcf-a532-419f-9f24-a014336e7966"
+  "YugabyteDb": "2300fdcf-a532-419f-9f24-a014336e7966",
+  "Databend": "302e4d8e-08d3-4098-acd4-ac67ca365b88"
 }
