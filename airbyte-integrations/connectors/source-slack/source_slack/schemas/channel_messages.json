@@ -38,7 +38,7 @@
           "type": ["null", "string"]
         },
         "updated": {
-          "type": ["null", "string"]
+          "type": ["null", "string", "integer"]
         }
       },
       "type": ["null", "object"]
