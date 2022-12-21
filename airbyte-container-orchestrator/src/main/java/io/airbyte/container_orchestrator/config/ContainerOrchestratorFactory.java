@@ -7,7 +7,7 @@ package io.airbyte.container_orchestrator.config;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.sync.OrchestratorConstants;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.container_orchestrator.orchestrator.DbtJobOrchestrator;
@@ -99,7 +99,7 @@ class ContainerOrchestratorFactory {
                                      final FeatureFlags featureFlags,
                                      final WorkerConfigs workerConfigs,
                                      final AirbyteMessageSerDeProvider serdeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                      final JobRunConfig jobRunConfig) {
     return switch (application) {
       case ReplicationLauncherWorker.REPLICATION -> new ReplicationJobOrchestrator(envConfigs, processFactory, featureFlags, serdeProvider,

@@ -14,7 +14,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.Configs.WorkerEnvironment;
@@ -62,7 +62,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
 
   private final ConfigRepository configRepository;
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
 
   public DiscoverCatalogActivityImpl(@Named("discoverWorkerConfigs") final WorkerConfigs workerConfigs,
                                      @Named("discoverProcessFactory") final ProcessFactory processFactory,
@@ -74,7 +74,7 @@ public class DiscoverCatalogActivityImpl implements DiscoverCatalogActivity {
                                      final AirbyteApiClient airbyteApiClient,
                                      @Value("${airbyte.version}") final String airbyteVersion,
                                      final AirbyteMessageSerDeProvider serDeProvider,
-                                     final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                                     final AirbyteProtocolVersionedMigratorFactory migratorFactory) {
     this.configRepository = configRepository;
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;

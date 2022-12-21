@@ -22,7 +22,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.AirbyteConfigValidator;
@@ -99,7 +99,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
   private final TemporalUtils temporalUtils;
   private final AirbyteApiClient airbyteApiClient;
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final WorkerConfigs workerConfigs;
 
   public ReplicationActivityImpl(@Named("containerOrchestratorConfig") final Optional<ContainerOrchestratorConfig> containerOrchestratorConfig,
@@ -115,7 +115,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                                  final TemporalUtils temporalUtils,
                                  final AirbyteApiClient airbyteApiClient,
                                  final AirbyteMessageSerDeProvider serDeProvider,
-                                 final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                 final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                  @Named("replicationWorkerConfigs") final WorkerConfigs workerConfigs) {
     this.containerOrchestratorConfig = containerOrchestratorConfig;
     this.processFactory = processFactory;
@@ -289,7 +289,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           : new DefaultAirbyteSource(sourceLauncher,
               new VersionedAirbyteStreamFactory<>(serDeProvider, migratorFactory, sourceLauncherConfig.getProtocolVersion(),
                   Optional.of(syncInput.getCatalog()),
-                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
+                  DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
+              migratorFactory.getProtocolSerializer(sourceLauncherConfig.getProtocolVersion()));
       MetricClientFactory.initialize(MetricEmittingApps.WORKER);
       final MetricClient metricClient = MetricClientFactory.getMetricClient();
       final WorkerMetricReporter metricReporter = new WorkerMetricReporter(metricClient, sourceLauncherConfig.getDockerImage());
@@ -304,7 +305,8 @@ public class ReplicationActivityImpl implements ReplicationActivity {
                   Optional.of(syncInput.getCatalog()),
                   DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
               new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
-                  Optional.of(syncInput.getCatalog()))),
+                  Optional.of(syncInput.getCatalog())),
+              migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter, false);

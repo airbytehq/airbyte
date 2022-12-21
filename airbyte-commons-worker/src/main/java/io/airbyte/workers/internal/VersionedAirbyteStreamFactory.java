@@ -13,7 +13,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
 import io.airbyte.commons.protocol.AirbyteMessageVersionedMigrator;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.protocol.serde.AirbyteMessageDeserializer;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -47,7 +47,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   private static final String TYPE_FIELD_NAME = "type";
 
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog;
   private AirbyteMessageDeserializer<T> deserializer;
   private AirbyteMessageVersionedMigrator<T> migrator;
@@ -56,14 +56,14 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
   private boolean shouldDetectVersion = false;
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
-                                       final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                       final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
                                        final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
     this(serDeProvider, migratorFactory, protocolVersion, configuredAirbyteCatalog, MdcScope.DEFAULT_BUILDER);
   }
 
   public VersionedAirbyteStreamFactory(final AirbyteMessageSerDeProvider serDeProvider,
-                                       final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                       final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                        final Version protocolVersion,
                                        final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog,
                                        final MdcScope.Builder containerLogMdcBuilder) {
@@ -162,7 +162,7 @@ public class VersionedAirbyteStreamFactory<T> extends DefaultAirbyteStreamFactor
 
   final protected void initializeForProtocolVersion(final Version protocolVersion) {
     this.deserializer = (AirbyteMessageDeserializer<T>) serDeProvider.getDeserializer(protocolVersion).orElseThrow();
-    this.migrator = migratorFactory.getVersionedMigrator(protocolVersion);
+    this.migrator = migratorFactory.getAirbyteMessageMigrator(protocolVersion);
     this.protocolVersion = protocolVersion;
   }
 

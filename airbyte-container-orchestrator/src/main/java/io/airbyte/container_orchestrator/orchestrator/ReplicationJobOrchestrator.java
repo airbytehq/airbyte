@@ -14,7 +14,7 @@ import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.logging.MdcScope;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.Configs;
@@ -58,14 +58,14 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
   private final Configs configs;
   private final FeatureFlags featureFlags;
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
   private final JobRunConfig jobRunConfig;
 
   public ReplicationJobOrchestrator(final Configs configs,
                                     final ProcessFactory processFactory,
                                     final FeatureFlags featureFlags,
                                     final AirbyteMessageSerDeProvider serDeProvider,
-                                    final AirbyteMessageVersionedMigratorFactory migratorFactory,
+                                    final AirbyteProtocolVersionedMigratorFactory migratorFactory,
                                     final JobRunConfig jobRunConfig) {
     this.configs = configs;
     this.processFactory = processFactory;
@@ -131,7 +131,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         WorkerConstants.RESET_JOB_SOURCE_DOCKER_IMAGE_STUB.equals(sourceLauncherConfig.getDockerImage()) ? new EmptyAirbyteSource(
             featureFlags.useStreamCapableState())
             : new DefaultAirbyteSource(sourceLauncher,
-                getStreamFactory(sourceLauncherConfig.getProtocolVersion(), syncInput.getCatalog(), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER));
+                getStreamFactory(sourceLauncherConfig.getProtocolVersion(), syncInput.getCatalog(), DefaultAirbyteSource.CONTAINER_LOG_MDC_BUILDER),
+                migratorFactory.getProtocolSerializer(sourceLauncherConfig.getProtocolVersion()));
 
     MetricClientFactory.initialize(MetricEmittingApps.WORKER);
     final var metricClient = MetricClientFactory.getMetricClient();
@@ -148,7 +149,8 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
             getStreamFactory(destinationLauncherConfig.getProtocolVersion(), syncInput.getCatalog(),
                 DefaultAirbyteDestination.CONTAINER_LOG_MDC_BUILDER),
             new VersionedAirbyteMessageBufferedWriterFactory(serDeProvider, migratorFactory, destinationLauncherConfig.getProtocolVersion(),
-                Optional.of(syncInput.getCatalog()))),
+                Optional.of(syncInput.getCatalog())),
+            migratorFactory.getProtocolSerializer(destinationLauncherConfig.getProtocolVersion())),
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter, featureFlags.applyFieldSelection());

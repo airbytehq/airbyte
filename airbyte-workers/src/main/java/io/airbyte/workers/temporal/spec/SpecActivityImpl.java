@@ -13,7 +13,7 @@ import datadog.trace.api.Trace;
 import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.commons.functional.CheckedSupplier;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
 import io.airbyte.commons.temporal.CancellationHandler;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.version.Version;
@@ -56,7 +56,7 @@ public class SpecActivityImpl implements SpecActivity {
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
   private final AirbyteMessageSerDeProvider serDeProvider;
-  private final AirbyteMessageVersionedMigratorFactory migratorFactory;
+  private final AirbyteProtocolVersionedMigratorFactory migratorFactory;
 
   public SpecActivityImpl(@Named("specWorkerConfigs") final WorkerConfigs workerConfigs,
                           @Named("specProcessFactory") final ProcessFactory processFactory,
@@ -66,7 +66,7 @@ public class SpecActivityImpl implements SpecActivity {
                           final AirbyteApiClient airbyteApiClient,
                           @Value("${airbyte.version}") final String airbyteVersion,
                           final AirbyteMessageSerDeProvider serDeProvider,
-                          final AirbyteMessageVersionedMigratorFactory migratorFactory) {
+                          final AirbyteProtocolVersionedMigratorFactory migratorFactory) {
     this.workerConfigs = workerConfigs;
     this.processFactory = processFactory;
     this.workspaceRoot = workspaceRoot;

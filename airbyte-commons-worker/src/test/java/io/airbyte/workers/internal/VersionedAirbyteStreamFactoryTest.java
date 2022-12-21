@@ -10,8 +10,10 @@ import static org.mockito.Mockito.verify;
 
 import io.airbyte.commons.protocol.AirbyteMessageMigrator;
 import io.airbyte.commons.protocol.AirbyteMessageSerDeProvider;
-import io.airbyte.commons.protocol.AirbyteMessageVersionedMigratorFactory;
+import io.airbyte.commons.protocol.AirbyteProtocolVersionedMigratorFactory;
+import io.airbyte.commons.protocol.ConfiguredAirbyteCatalogMigrator;
 import io.airbyte.commons.protocol.migrations.AirbyteMessageMigrationV1;
+import io.airbyte.commons.protocol.migrations.ConfiguredAirbyteCatalogMigrationV1;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Deserializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV0Serializer;
 import io.airbyte.commons.protocol.serde.AirbyteMessageV1Deserializer;
@@ -32,7 +34,7 @@ import org.junit.platform.commons.util.ClassLoaderUtils;
 class VersionedAirbyteStreamFactoryTest {
 
   AirbyteMessageSerDeProvider serDeProvider;
-  AirbyteMessageVersionedMigratorFactory migratorFactory;
+  AirbyteProtocolVersionedMigratorFactory migratorFactory;
 
   final static Version defaultVersion = new Version("0.2.0");
 
@@ -42,10 +44,13 @@ class VersionedAirbyteStreamFactoryTest {
         List.of(new AirbyteMessageV0Deserializer(), new AirbyteMessageV1Deserializer()),
         List.of(new AirbyteMessageV0Serializer(), new AirbyteMessageV1Serializer())));
     serDeProvider.initialize();
-    final AirbyteMessageMigrator migrator = new AirbyteMessageMigrator(
+    final AirbyteMessageMigrator airbyteMessageMigrator = new AirbyteMessageMigrator(
         List.of(new AirbyteMessageMigrationV1()));
-    migrator.initialize();
-    migratorFactory = spy(new AirbyteMessageVersionedMigratorFactory(migrator));
+    airbyteMessageMigrator.initialize();
+    final ConfiguredAirbyteCatalogMigrator configuredAirbyteCatalogMigrator = new ConfiguredAirbyteCatalogMigrator(
+        List.of(new ConfiguredAirbyteCatalogMigrationV1()));
+    configuredAirbyteCatalogMigrator.initialize();
+    migratorFactory = spy(new AirbyteProtocolVersionedMigratorFactory(airbyteMessageMigrator, configuredAirbyteCatalogMigrator));
   }
 
   @Test
@@ -58,7 +63,7 @@ class VersionedAirbyteStreamFactoryTest {
     streamFactory.create(bufferedReader);
 
     verify(serDeProvider).getDeserializer(initialVersion);
-    verify(migratorFactory).getVersionedMigrator(initialVersion);
+    verify(migratorFactory).getAirbyteMessageMigrator(initialVersion);
   }
 
   @Test
