@@ -13,9 +13,6 @@
         "type": "string"
       }
     },
-    "properties": {
-      "type": "object"
-    },
     "created_at": {
       "type": "string",
       "format": "date-time"
