@@ -165,6 +165,7 @@ export const InputsView: React.FC = () => {
     </BuilderConfigView>
   );
 };
+
 const InputModal = ({
   inputInEditing,
   onClose,
