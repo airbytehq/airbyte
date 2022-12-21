@@ -79,36 +79,29 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
         WorkerUtils.gentleClose(process, 1, TimeUnit.MINUTES);
       }
 
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
       final int exitCode = process.exitValue();
+      LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
+
       final Optional<AirbyteConnectionStatus> status = messagesByType
           .getOrDefault(Type.CONNECTION_STATUS, new ArrayList<>()).stream()
           .map(AirbyteMessage::getConnectionStatus)
           .findFirst();
 
-      if (status.isPresent() && exitCode == 0) {
+      final String defaultErrorMessage = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
+
+      if (status.isEmpty()) {
+        LOGGER.error(defaultErrorMessage);
+        return WorkerUtils.getJobOutput(OutputType.CHECK_CONNECTION, failureReason, defaultErrorMessage, true);
+      } else {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
             .withStatus(Enums.convertTo(status.get().getStatus(), Status.class))
             .withMessage(status.get().getMessage());
-
-        LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
         LOGGER.debug("Check connection job received output: {}", output);
         LineGobbler.endSection("CHECK");
-
-        final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
-
-        if (failureReason.isPresent()) {
-          return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output)
-              .withFailureReason(failureReason.get());
-        } else {
-          return new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION).withCheckConnection(output);
-        }
-      } else {
-        final String message = String.format("Error checking connection, status: %s, exit code: %d", status, exitCode);
-        LOGGER.error(message);
-
-        return WorkerUtils.getJobFailureOutputOrThrow(OutputType.CHECK_CONNECTION, messagesByType, message);
+        ConnectorJobOutput jobOutput = WorkerUtils.getJobOutput(OutputType.CHECK_CONNECTION, failureReason, defaultErrorMessage, false);
+        return jobOutput.withCheckConnection(output);
       }
-
     } catch (final Exception e) {
       ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unexpected error while checking connection: ", e);

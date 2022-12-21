@@ -15,6 +15,7 @@ import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardDiscoverCatalogInput;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -90,25 +91,27 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           .map(AirbyteMessage::getCatalog)
           .findFirst();
 
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
       final int exitCode = process.exitValue();
-      if (exitCode == 0) {
+      final String exitCodeMessage = String.format("Discover job subprocess finished with exit code %s", exitCode));
+      LOGGER.debug(exitCodeMessage);
+
+      if (exitCode != 0) {
+        return WorkerUtils.getJobOutput(OutputType.DISCOVER_CATALOG_ID, failureReason, exitCodeMessage, true);
+      } else {
         if (catalog.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");
+        } else {
+          final UUID catalogId =
+              configRepository.writeActorCatalogFetchEvent(catalog.get(),
+                  // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+                  // it, so we check again here.
+                  discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
+                  discoverSchemaInput.getConnectorVersion(),
+                  discoverSchemaInput.getConfigHash());
+          ConnectorJobOutput jobOutput = WorkerUtils.getJobOutput(OutputType.DISCOVER_CATALOG_ID, failureReason, exitCodeMessage, false);
+          return jobOutput.withDiscoverCatalogId(catalogId);
         }
-
-        final UUID catalogId =
-            configRepository.writeActorCatalogFetchEvent(catalog.get(),
-                // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
-                // it, so we check again here.
-                discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
-                discoverSchemaInput.getConnectorVersion(),
-                discoverSchemaInput.getConfigHash());
-        return new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID).withDiscoverCatalogId(catalogId);
-      } else {
-        return WorkerUtils.getJobFailureOutputOrThrow(
-            OutputType.DISCOVER_CATALOG_ID,
-            messagesByType,
-            String.format("Discover job subprocess finished with exit code %s", exitCode));
       }
     } catch (final WorkerException e) {
       ApmTraceUtils.addExceptionToTrace(e);

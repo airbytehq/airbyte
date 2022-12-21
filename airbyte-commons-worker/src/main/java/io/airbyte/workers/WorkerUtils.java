@@ -122,20 +122,23 @@ public class WorkerUtils {
         .findFirst();
   }
 
-  public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
-                                                              final Map<Type, List<AirbyteMessage>> messagesByType,
-                                                              final String defaultErrorMessage)
+  public static ConnectorJobOutput getJobOutput(final OutputType outputType,
+      final Optional<FailureReason> failureReason,
+      final String defaultErrorMessage,
+      final boolean throwOnNoFailureReason)
       throws WorkerException {
 
-    Optional<AirbyteTraceMessage> traceMessage = getTraceMessageFromMessagesByType(messagesByType);
-    if (traceMessage.isPresent()) {
-      final ConnectorCommand connectorCommand = getConnectorCommandFromOutputType(outputType);
-      final FailureReason failureReason = FailureHelper.connectorCommandFailure(traceMessage.get(), null, null, connectorCommand);
-      return new ConnectorJobOutput().withOutputType(outputType).withFailureReason(failureReason);
+    if (throwOnNoFailureReason && !failureReason.isPresent()) {
+      throw new WorkerException(defaultErrorMessage);
     }
-
-    throw new WorkerException(defaultErrorMessage);
+    ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(outputType);
+    if (failureReason.isPresent()) {
+      return jobOutput.withFailureReason(failureReason.get());
+    } else {
+      return jobOutput;
+    }
   }
+
 
   public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
                                                                         final Map<Type, List<AirbyteMessage>> messagesByType) {

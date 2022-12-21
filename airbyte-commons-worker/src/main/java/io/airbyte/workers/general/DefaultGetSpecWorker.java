@@ -13,6 +13,7 @@ import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -79,18 +80,19 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
           .map(AirbyteMessage::getSpec)
           .findFirst();
 
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
       final int exitCode = process.exitValue();
-      if (exitCode == 0) {
+      final String exitCodeMessage = String.format("Spec job subprocess finished with exit code %s", exitCode);
+      LOGGER.debug(exitCodeMessage);
+      if (exitCode != 0) {
+        return WorkerUtils.getJobOutput(OutputType.SPEC, failureReason, exitCodeMessage, true);
+      } else {
         if (spec.isEmpty()) {
           throw new WorkerException("integration failed to output a spec struct.");
         }
+        ConnectorJobOutput jobOutput = WorkerUtils.getJobOutput(OutputType.SPEC, failureReason, exitCodeMessage, false);
 
-        return new ConnectorJobOutput().withOutputType(OutputType.SPEC).withSpec(spec.get());
-      } else {
-        return WorkerUtils.getJobFailureOutputOrThrow(
-            OutputType.SPEC,
-            messagesByType,
-            String.format("Spec job subprocess finished with exit code %s", exitCode));
+        return jobOutput.withSpec(spec.get());
       }
     } catch (final Exception e) {
       throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
