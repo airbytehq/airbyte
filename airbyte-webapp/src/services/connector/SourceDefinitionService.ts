@@ -74,9 +74,10 @@ const useSourceDefinition = <T extends string | undefined>(
 const useCreateSourceDefinition = () => {
   const service = useGetSourceDefinitionService();
   const queryClient = useQueryClient();
+  const workspaceId = useCurrentWorkspaceId();
 
   return useMutation<SourceDefinitionRead, Error, SourceDefinitionCreate>(
-    (sourceDefinition) => service.create(sourceDefinition),
+    (sourceDefinition) => service.createCustom({ workspaceId, sourceDefinition }),
     {
       onSuccess: (data) => {
         queryClient.setQueryData(

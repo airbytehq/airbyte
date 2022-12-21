@@ -5,8 +5,6 @@
 import logging
 
 import pendulum
-from airbyte_cdk.models import SyncMode
-from airbyte_cdk.sources.streams import Stream
 from pendulum import DateTime
 
 logger = logging.getLogger("airbyte")
@@ -42,11 +40,3 @@ def validate_end_date(start_date: DateTime, end_date: DateTime) -> DateTime:
         logger.warning(message)
         return start_date
     return end_date
-
-
-def read_full_refresh(stream_instance: Stream):
-    slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh)
-    for _slice in slices:
-        records = stream_instance.read_records(stream_slice=_slice, sync_mode=SyncMode.full_refresh)
-        for record in records:
-            yield record

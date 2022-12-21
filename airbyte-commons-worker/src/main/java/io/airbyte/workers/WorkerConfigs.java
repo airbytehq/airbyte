@@ -9,6 +9,7 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.config.TolerationPOJO;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -18,9 +19,10 @@ public class WorkerConfigs {
   private final ResourceRequirements resourceRequirements;
   private final List<TolerationPOJO> workerKubeTolerations;
   private final Map<String, String> workerKubeNodeSelectors;
+  private final Optional<Map<String, String>> workerIsolatedKubeNodeSelectors;
   private final Map<String, String> workerKubeAnnotations;
   private final String jobImageRegistry;
-  private final String jobImagePullSecret;
+  private final List<String> jobImagePullSecrets;
   private final String jobImagePullPolicy;
   private final String sidecarImagePullPolicy;
   private final String jobSocatImage;
@@ -42,9 +44,14 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
+<<<<<<< HEAD
         null,
         configs.getJobKubeMainContainerImagePullSecret(),
+=======
+        configs.getJobKubeMainContainerImagePullSecrets(),
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -74,9 +81,14 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
+<<<<<<< HEAD
         null,
         configs.getJobKubeMainContainerImagePullSecret(),
+=======
+        configs.getJobKubeMainContainerImagePullSecrets(),
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -106,9 +118,14 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getCheckJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
+<<<<<<< HEAD
         null,
         configs.getJobKubeMainContainerImagePullSecret(),
+=======
+        configs.getJobKubeMainContainerImagePullSecrets(),
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -138,9 +155,14 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getJobMainContainerMemoryLimit()),
         configs.getJobKubeTolerations(),
         nodeSelectors,
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         annotations,
+<<<<<<< HEAD
         null,
         configs.getJobKubeMainContainerImagePullSecret(),
+=======
+        configs.getJobKubeMainContainerImagePullSecrets(),
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -159,9 +181,14 @@ public class WorkerConfigs {
             .withMemoryLimit(configs.getReplicationOrchestratorMemoryLimit()),
         configs.getJobKubeTolerations(),
         configs.getJobKubeNodeSelectors(),
+        configs.getUseCustomKubeNodeSelector() ? Optional.of(configs.getIsolatedJobKubeNodeSelectors()) : Optional.empty(),
         configs.getJobKubeAnnotations(),
+<<<<<<< HEAD
         null,
         configs.getJobKubeMainContainerImagePullSecret(),
+=======
+        configs.getJobKubeMainContainerImagePullSecrets(),
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
         configs.getJobKubeMainContainerImagePullPolicy(),
         configs.getJobKubeSidecarContainerImagePullPolicy(),
         configs.getJobKubeSocatImage(),
@@ -186,16 +213,25 @@ public class WorkerConfigs {
     return workerKubeNodeSelectors;
   }
 
+  public Optional<Map<String, String>> getWorkerIsolatedKubeNodeSelectors() {
+    return workerIsolatedKubeNodeSelectors;
+  }
+
   public Map<String, String> getWorkerKubeAnnotations() {
     return workerKubeAnnotations;
   }
 
+<<<<<<< HEAD
   public String getJobImageRegistry() {
     return jobImageRegistry;
   }
 
   public String getJobImagePullSecret() {
     return jobImagePullSecret;
+=======
+  public List<String> getJobImagePullSecrets() {
+    return jobImagePullSecrets;
+>>>>>>> 16e890aee1c9456f7dd22c61abd12214c02d131e
   }
 
   public String getJobImagePullPolicy() {
