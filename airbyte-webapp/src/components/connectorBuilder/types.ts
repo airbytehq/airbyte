@@ -50,7 +50,6 @@ export interface BuilderStream {
   urlPath: string;
   fieldPointer: string[];
   primaryKey: string[];
-  cursorField: string[];
   httpMethod: "GET" | "POST";
   requestOptions: {
     requestParameters: Array<[string, string]>;
@@ -80,7 +79,6 @@ export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
   urlPath: "",
   fieldPointer: [],
   primaryKey: [],
-  cursorField: [],
   httpMethod: "GET",
   requestOptions: {
     requestParameters: [],
@@ -261,7 +259,6 @@ export const builderFormValidationSchema = yup.object().shape({
       name: yup.string().required("form.empty.error"),
       urlPath: yup.string().required("form.empty.error"),
       fieldPointer: yup.array().of(yup.string()),
-      cursorField: yup.array().of(yup.string()),
       primaryKey: yup.array().of(yup.string()),
       httpMethod: yup.mixed().oneOf(["GET", "POST"]),
       requestOptions: yup.object().shape({
@@ -328,7 +325,6 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
       name: stream.name,
-      stream_cursor_field: stream.cursorField,
       primary_key: stream.primaryKey,
       retriever: {
         name: stream.name,
@@ -358,8 +354,8 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
               page_token_option: {
                 ...stream.paginator.pageTokenOption,
                 // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
-                field_name: stream.paginator.pageTokenOption.field_name
-                  ? stream.paginator.pageTokenOption.field_name
+                field_name: stream.paginator.pageTokenOption?.field_name
+                  ? stream.paginator.pageTokenOption?.field_name
                   : undefined,
               },
               page_size_option: stream.paginator.pageSizeOption,

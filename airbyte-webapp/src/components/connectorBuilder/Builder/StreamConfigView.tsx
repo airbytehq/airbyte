@@ -95,13 +95,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
           optional
         />
-        <BuilderField
-          type="array"
-          path={streamFieldPath("cursorField")}
-          label="Cursor field"
-          tooltip="Pointer into the response that should be used to determine if a record is new or updated since last sync"
-          optional
-        />
       </BuilderCard>
       <PaginationSection streamFieldPath={streamFieldPath} />
       <BuilderCard>

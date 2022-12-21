@@ -1,12 +1,12 @@
 import { useField } from "formik";
 
-import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 
 import { injectIntoValues } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderOneOf } from "./BuilderOneOf";
+import { ToggleGroupField } from "./ToggleGroupField";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -21,12 +21,6 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         strategy: {
           type: "OffsetIncrement",
         },
-        pageSizeOption: {
-          inject_into: "request_parameter",
-        },
-        pageTokenOption: {
-          inject_into: "request_parameter",
-        },
       });
     } else {
       helpers.setValue(undefined);
@@ -35,13 +29,14 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
   const toggledOn = field.value !== undefined;
 
   const pageTokenOption = (
-    <GroupControls
-      label={
-        <ControlLabels
-          label="Page token option"
-          infoTooltipContent="Configures how the page token will be sent in requests to the source API"
-        />
-      }
+    <ToggleGroupField
+      label="Page token option"
+      tooltip="Configures how the page token will be sent in requests to the source API"
+      fieldPath={streamFieldPath("paginator.pageTokenOption")}
+      initialValues={{
+        inject_into: "request_parameter",
+        field_name: "",
+      }}
     >
       <BuilderField
         type="enum"
@@ -57,34 +52,60 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         tooltip="Configures which key should be used in the location that the page token is being injected into"
         optional
       />
-    </GroupControls>
+    </ToggleGroupField>
   );
 
-  const pageSizeOption = (
-    <GroupControls
-      label={
-        <ControlLabels
-          label="Page size option"
-          infoTooltipContent="Configures how the page size will be sent in requests to the source API"
-        />
-      }
-    >
-      <BuilderField
-        type="enum"
-        path={streamFieldPath("paginator.pageSizeOption.inject_into")}
-        options={injectIntoValues}
-        label="Inject into"
-        tooltip="Configures where the page size should be set on the HTTP requests"
-      />
-      <BuilderField
-        type="string"
-        path={streamFieldPath("paginator.pageSizeOption.field_name")}
-        label="Field name"
-        tooltip="Configures which key should be used in the location that the page size is being injected into"
-        optional
-      />
-    </GroupControls>
-  );
+  // const pageTokenOption = (
+  //   <GroupControls
+  //     label={
+  //       <ControlLabels
+  //         label="Page token option"
+  //         infoTooltipContent="Configures how the page token will be sent in requests to the source API"
+  //       />
+  //     }
+  //   >
+  //     <BuilderField
+  //       type="enum"
+  //       path={streamFieldPath("paginator.pageTokenOption.inject_into")}
+  //       options={injectIntoValues}
+  //       label="Inject into"
+  //       tooltip="Configures where the page token should be set on the HTTP requests"
+  //     />
+  //     <BuilderField
+  //       type="string"
+  //       path={streamFieldPath("paginator.pageTokenOption.field_name")}
+  //       label="Field name"
+  //       tooltip="Configures which key should be used in the location that the page token is being injected into"
+  //       optional
+  //     />
+  //   </GroupControls>
+  // );
+
+  // const pageSizeOption = (
+  //   <GroupControls
+  //     label={
+  //       <ControlLabels
+  //         label="Page size option"
+  //         infoTooltipContent="Configures how the page size will be sent in requests to the source API"
+  //       />
+  //     }
+  //   >
+  //     <BuilderField
+  //       type="enum"
+  //       path={streamFieldPath("paginator.pageSizeOption.inject_into")}
+  //       options={injectIntoValues}
+  //       label="Inject into"
+  //       tooltip="Configures where the page size should be set on the HTTP requests"
+  //     />
+  //     <BuilderField
+  //       type="string"
+  //       path={streamFieldPath("paginator.pageSizeOption.field_name")}
+  //       label="Field name"
+  //       tooltip="Configures which key should be used in the location that the page size is being injected into"
+  //       optional
+  //     />
+  //   </GroupControls>
+  // );
 
   return (
     <BuilderCard
@@ -116,7 +137,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Size of pages to request from API"
                 />
                 {pageTokenOption}
-                {pageSizeOption}
+                {/* {pageSizeOption} */}
               </>
             ),
           },
@@ -139,7 +160,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   optional
                 />
                 {pageTokenOption}
-                {pageSizeOption}
+                {/* {pageSizeOption} */}
               </>
             ),
           },
@@ -169,7 +190,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   optional
                 />
                 {pageTokenOption}
-                {pageSizeOption}
+                {/* {pageSizeOption} */}
               </>
             ),
           },
