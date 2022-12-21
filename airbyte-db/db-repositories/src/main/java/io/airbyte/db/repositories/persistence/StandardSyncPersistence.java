@@ -4,10 +4,12 @@
 
 package io.airbyte.db.repositories.persistence;
 
+import io.airbyte.config.StandardSync;
 import io.airbyte.db.repositories.models.StandardSyncModel;
 import io.airbyte.db.repositories.repositories.StandardSyncRepository;
-import java.util.ArrayList;
+import io.micronaut.data.model.Pageable;
 import java.util.List;
+import java.util.UUID;
 
 public class StandardSyncPersistence {
 
@@ -25,19 +27,21 @@ public class StandardSyncPersistence {
 
   }
 
-  // public StandardSync getStandardSync(final UUID connectionId) throws IOException,
-  // ConfigNotFoundException {
-  // return toStandardSync(standardSyncRepository.findById(connectionId));
-  // }
+  public StandardSync getStandardSync(final UUID connectionId) {
+    StandardSyncModel standardSyncModel = standardSyncRepository.findById(connectionId).get();
+    return toStandardSync(standardSyncModel);
+    // return toStandardSync(standardSyncRepository.findById(connectionId));
+  }
 
   public List<StandardSync> getStandardSyncs() {
-    Iterable<StandardSyncModel> syncModels = standardSyncRepository.findAll();
-    List<StandardSync> list = new ArrayList<>();
-    for (StandardSyncModel model : syncModels) {
-      StandardSync standardSync = toStandardSync(model);
-      list.add(standardSync);
-    }
-    return list;
+    return (List<StandardSync>) standardSyncRepository.findAll(Pageable.from(1)).map(this::toStandardSync);
+    // Iterable<StandardSyncModel> syncModels = standardSyncRepository.findAll()
+    // List<StandardSync> list = new ArrayList<StandardSync>();
+    // for (StandardSyncModel model : syncModels) {
+    // StandardSync standardSync = toStandardSync(model);
+    // list.add(standardSync);
+    // }
+    // return list.stream().toList();
   }
 
   private StandardSync toStandardSync(StandardSyncModel model) {
@@ -114,6 +118,5 @@ public class StandardSyncPersistence {
   //
   // private void clearProtocolVersionFlag(final DSLContext ctx, final List<UUID> standardSyncIds) {
   // }
->>>>>>> 174dfef660234bf673083191ad6da5a57c3d6236
 
 }
