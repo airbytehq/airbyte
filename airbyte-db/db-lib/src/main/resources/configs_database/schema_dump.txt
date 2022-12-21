@@ -57,6 +57,7 @@ create table "public"."actor_definition"(
   "normalization_repository" varchar(255) null,
   "normalization_tag" varchar(255) null,
   "supports_dbt" bool null,
+  "normalization_integration_type" varchar(255) null,
   constraint "actor_definition_pkey"
     primary key ("id")
 );

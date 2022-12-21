@@ -4,9 +4,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 
 import { pathDisplayName } from "components/connection/CatalogTree/PathPopout";
 import { ArrowRightIcon } from "components/icons/ArrowRightIcon";
-import { CheckBox } from "components/ui/CheckBox";
 import { NextTable } from "components/ui/NextTable";
-import { RadioButton } from "components/ui/RadioButton";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
@@ -17,9 +15,11 @@ import { equal } from "utils/objects";
 import { getDataType } from "utils/useTranslateDataType";
 
 import { ConnectorHeaderGroupIcon } from "./ConnectorHeaderGroupIcon";
+import { CursorCell } from "./CursorCell";
+import { PKCell } from "./PKCell";
 import styles from "./StreamFieldsTable.module.scss";
 
-interface TableStream {
+export interface TableStream {
   path: string[];
   dataType: string;
   cursorDefined?: boolean;
@@ -32,6 +32,8 @@ export interface StreamFieldsTableProps {
   onPkSelect: (pkPath: string[]) => void;
   shouldDefinePk: boolean;
   shouldDefineCursor: boolean;
+  isCursorDefinitionSupported: boolean;
+  isPKDefinitionSupported: boolean;
   syncSchemaFields: SyncSchemaField[];
 }
 
@@ -41,6 +43,8 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
   onCursorSelect,
   shouldDefineCursor,
   shouldDefinePk,
+  isCursorDefinitionSupported,
+  isPKDefinitionSupported,
   syncSchemaFields,
 }) => {
   const { formatMessage } = useIntl();
@@ -97,33 +101,47 @@ export const StreamFieldsTable: React.FC<StreamFieldsTableProps> = ({
       columnHelper.accessor("cursorDefined", {
         id: "sourceCursorDefined",
         header: () => <FormattedMessage id="form.field.cursorField" />,
-        cell: ({ getValue, row }) =>
-          getValue() && (
-            <RadioButton checked={isCursor(row.original.path)} onChange={() => onCursorSelect(row.original.path)} />
-          ),
+        cell: (props) => (
+          <CursorCell
+            isCursor={isCursor}
+            isCursorDefinitionSupported={isCursorDefinitionSupported}
+            onCursorSelect={onCursorSelect}
+            {...props}
+          />
+        ),
         meta: {
           thClassName: styles.headerCell,
-          tdClassName: styles.checkboxCell,
+          tdClassName: styles.radioBtnCell,
         },
       }),
       columnHelper.accessor("primaryKeyDefined", {
         id: "sourcePrimaryKeyDefined",
         header: () => <FormattedMessage id="form.field.primaryKey" />,
-        cell: ({ getValue, row }) =>
-          getValue() && (
-            <CheckBox
-              checked={isPrimaryKey(row.original.path)}
-              onChange={() => onPkSelect(row.original.path)}
-              className={styles.checkbox}
-            />
-          ),
+        cell: (props) => (
+          <PKCell
+            isPKDefinitionSupported={isPKDefinitionSupported}
+            isPrimaryKey={isPrimaryKey}
+            onPkSelect={onPkSelect}
+            {...props}
+          />
+        ),
+
         meta: {
           thClassName: styles.headerCell,
           tdClassName: styles.textCell,
         },
       }),
     ],
-    [columnHelper, formatMessage, isCursor, isPrimaryKey, onCursorSelect, onPkSelect]
+    [
+      columnHelper,
+      formatMessage,
+      isCursor,
+      isPrimaryKey,
+      isCursorDefinitionSupported,
+      isPKDefinitionSupported,
+      onCursorSelect,
+      onPkSelect,
+    ]
   );
 
   const destinationColumns = useMemo(
