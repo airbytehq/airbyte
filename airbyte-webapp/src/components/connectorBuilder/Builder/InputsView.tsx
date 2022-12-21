@@ -7,6 +7,7 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 import * as yup from "yup";
 
+import Label from "components/Label";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { InfoBox } from "components/ui/InfoBox";
@@ -108,7 +109,7 @@ export const InputsView: React.FC = () => {
           <ol className={styles.list}>
             {inputs.value.map((input) => (
               <li className={styles.listItem} key={input.key}>
-                <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+                <Label className={styles.itemLabel}>{input.definition.title || input.key}</Label>
                 <Button
                   className={styles.itemButton}
                   size="sm"
