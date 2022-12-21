@@ -306,7 +306,7 @@ public class ReplicationActivityImpl implements ReplicationActivity {
           new AirbyteMessageTracker(),
           new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
           metricReporter,
-          new UpdateConnectorConfigHelper(airbyteApiClient), false);
+          new UpdateConnectorConfigHelper(airbyteApiClient.getSourceApi(), airbyteApiClient.getDestinationApi()), false);
     };
   }
 

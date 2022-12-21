@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
@@ -33,7 +32,6 @@ class UpdateConnectorConfigHelperTest {
   private static final UUID DESTINATION_ID = UUID.randomUUID();
   private static final String DESTINATION_NAME = "destination-google-sheets";
 
-  private final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
   private final SourceApi mSourceApi = mock(SourceApi.class);
   private final DestinationApi mDestinationApi = mock(DestinationApi.class);
 
@@ -41,9 +39,6 @@ class UpdateConnectorConfigHelperTest {
 
   @BeforeEach
   void setUp() throws ApiException {
-    when(airbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
-    when(airbyteApiClient.getDestinationApi()).thenReturn(mDestinationApi);
-
     when(mSourceApi.getSource(new SourceIdRequestBody()
         .sourceId(SOURCE_ID))).thenReturn(new SourceRead()
             .sourceId(SOURCE_ID)
@@ -54,7 +49,7 @@ class UpdateConnectorConfigHelperTest {
             .destinationId(DESTINATION_ID)
             .name(DESTINATION_NAME));
 
-    updateConnectorConfigHelper = new UpdateConnectorConfigHelper(airbyteApiClient);
+    updateConnectorConfigHelper = new UpdateConnectorConfigHelper(mSourceApi, mDestinationApi);
   }
 
   @Test
