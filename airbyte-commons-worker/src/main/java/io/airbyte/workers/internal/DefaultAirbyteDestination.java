@@ -40,7 +40,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
       .setPrefixColor(Color.YELLOW_BACKGROUND);
-  private static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
+  static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
       0, // Normal exit
       143 // SIGTERM
   );
