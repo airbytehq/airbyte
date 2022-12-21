@@ -1,0 +1,6 @@
+@use "scss/variables";
+
+.label {
+  display: flex;
+  gap: variables.$spacing-sm;
+}

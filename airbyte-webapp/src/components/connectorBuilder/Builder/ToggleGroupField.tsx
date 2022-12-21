@@ -4,6 +4,8 @@ import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 import { CheckBox } from "components/ui/CheckBox";
 
+import styles from "./ToggleGroupField.module.scss";
+
 interface ToggleGroupFieldProps {
   label: string;
   tooltip: string;
@@ -23,7 +25,7 @@ export const ToggleGroupField: React.FC<React.PropsWithChildren<ToggleGroupField
   return (
     <GroupControls
       label={
-        <div>
+        <div className={styles.label}>
           <CheckBox
             checked={field.value !== undefined}
             onChange={(event) => {
