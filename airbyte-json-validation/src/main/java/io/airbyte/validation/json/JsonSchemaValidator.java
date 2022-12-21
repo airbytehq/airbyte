@@ -58,7 +58,7 @@ public class JsonSchemaValidator {
    * @param baseUri The base URI for schema resolution
    */
   @VisibleForTesting
-  protected JsonSchemaValidator(URI baseUri) {
+  public JsonSchemaValidator(URI baseUri) {
     this.jsonSchemaFactory = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V7);
     this.baseUri = baseUri;
   }
