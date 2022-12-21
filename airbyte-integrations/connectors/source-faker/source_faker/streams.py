@@ -7,20 +7,13 @@ import os
 from multiprocessing import Pool, current_process
 from typing import Any, Dict, Iterable, Mapping, Optional
 
-from airbyte_cdk.models import (
-    AirbyteEstimateTraceMessage,
-    AirbyteMessage,
-    AirbyteRecordMessage,
-    AirbyteTraceMessage,
-    EstimateType,
-    TraceType,
-    Type,
-)
+from airbyte_cdk.models import AirbyteRecordMessage, Type
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from mimesis import Datetime, Numeric, Person
 from mimesis.locales import Locale
 
-from .utils import format_airbyte_time, read_json
+from .airbyte_message_with_cached_json import AirbyteMessageWithCachedJSON
+from .utils import format_airbyte_time, generate_estimate, now_millis, read_json
 
 
 class FakerMultithreaded:
@@ -297,25 +290,3 @@ class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
                 self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
 
         self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
-
-
-def now_millis():
-    return int(datetime.datetime.now().timestamp() * 1000)
-
-
-class AirbyteMessageWithCachedJSON(AirbyteMessage):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self._json = self.json(exclude_unset=True)
-        self.json = self.get_json
-
-    def get_json(self, **kwargs):
-        return self._json
-
-
-def generate_estimate(stream_name: str, total: int, bytes_per_row: int):
-    emitted_at = int(datetime.datetime.now().timestamp() * 1000)
-    estimate_message = AirbyteEstimateTraceMessage(
-        type=EstimateType.STREAM, name=stream_name, row_estimate=round(total), byte_estimate=round(total * bytes_per_row)
-    )
-    return AirbyteTraceMessage(type=TraceType.ESTIMATE, emitted_at=emitted_at, estimate=estimate_message)
