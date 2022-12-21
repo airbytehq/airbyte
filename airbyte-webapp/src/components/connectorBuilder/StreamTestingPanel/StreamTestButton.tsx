@@ -49,7 +49,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  if (editorView === "ui" && (hasErrors(true, ["global", testStreamIndex]) || hasConfigJsonErrors)) {
+  if ((editorView === "ui" && hasErrors(true, ["global", testStreamIndex])) || hasConfigJsonErrors) {
     showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }

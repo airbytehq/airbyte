@@ -1,4 +1,4 @@
-import { faClose, faGear } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
@@ -44,8 +44,10 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
               variant="secondary"
               onClick={() => setIsOpen(true)}
               disabled={!jsonManifest.spec}
-              icon={<FontAwesomeIcon className={styles.icon} icon={faGear} />}
-            />
+              icon={<FontAwesomeIcon className={styles.icon} icon={faUser} />}
+            >
+              <FormattedMessage id="connectorBuilder.inputsButton" />
+            </Button>
             {configJsonErrors > 0 && (
               <NumberBadge className={styles.inputsErrorBadge} value={configJsonErrors} color="red" />
             )}

@@ -36,6 +36,6 @@
 
 .inputsErrorBadge {
   position: absolute;
-  top: -12px;
-  right: -16px;
+  top: -1 * variables.$spacing-md;
+  right: -1 * variables.$spacing-md;
 }
