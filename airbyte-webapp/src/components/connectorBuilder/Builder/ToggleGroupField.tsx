@@ -21,22 +21,19 @@ export const ToggleGroupField: React.FC<React.PropsWithChildren<ToggleGroupField
   initialValues,
 }) => {
   const [field, , helpers] = useField(fieldPath);
+  const enabled = field.value !== undefined;
 
-  return (
-    <GroupControls
-      label={
-        <div className={styles.label}>
-          <CheckBox
-            checked={field.value !== undefined}
-            onChange={(event) => {
-              event.target.checked ? helpers.setValue(initialValues) : helpers.setValue(undefined);
-            }}
-          />
-          <ControlLabels label={label} infoTooltipContent={tooltip} />
-        </div>
-      }
-    >
-      {field.value !== undefined && children}
-    </GroupControls>
+  const labelComponent = (
+    <div className={styles.label}>
+      <CheckBox
+        checked={enabled}
+        onChange={(event) => {
+          event.target.checked ? helpers.setValue(initialValues) : helpers.setValue(undefined);
+        }}
+      />
+      <ControlLabels label={label} infoTooltipContent={tooltip} />
+    </div>
   );
+
+  return enabled ? <GroupControls label={labelComponent}>{children}</GroupControls> : labelComponent;
 };

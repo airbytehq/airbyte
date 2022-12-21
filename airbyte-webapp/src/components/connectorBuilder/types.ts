@@ -213,14 +213,6 @@ export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[]
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
-const requestOptionSchema = yup
-  .object()
-  .shape({
-    inject_into: yup.mixed().oneOf(injectIntoValues),
-    field_name: yup.string(),
-  })
-  .notRequired()
-  .default(undefined);
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -269,8 +261,22 @@ export const builderFormValidationSchema = yup.object().shape({
       paginator: yup
         .object()
         .shape({
-          pageSizeOption: requestOptionSchema,
-          pageTokenOption: requestOptionSchema,
+          pageSizeOption: yup
+            .object()
+            .shape({
+              inject_into: yup.mixed().oneOf(injectIntoValues.filter((val) => val !== "path")),
+              field_name: yup.string().required("form.empty.error"),
+            })
+            .notRequired()
+            .default(undefined),
+          pageTokenOption: yup.object().shape({
+            inject_into: yup.mixed().oneOf(injectIntoValues),
+            field_name: yup.mixed().when("inject_into", {
+              is: "path",
+              then: (schema) => schema.strip(),
+              otherwise: yup.string().required("form.empty.error"),
+            }),
+          }),
           strategy: yup
             .object({
               page_size: yup.mixed().when("type", {

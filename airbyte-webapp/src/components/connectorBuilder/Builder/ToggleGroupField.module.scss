@@ -2,5 +2,11 @@
 
 .label {
   display: flex;
-  gap: variables.$spacing-sm;
+  align-items: center;
+  gap: variables.$spacing-md;
+  height: 34px;
+
+  label {
+    padding-bottom: 0;
+  }
 }
