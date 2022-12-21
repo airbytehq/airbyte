@@ -194,6 +194,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
           readFromDstRunnable(destination, cancelled, messageTracker, mdc, timeTracker),
           executors)
           .whenComplete((msg, ex) -> {
+            LOGGER.info("Read from destination thread complete.");
             if (ex != null) {
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof DestinationException) {
@@ -219,6 +220,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
+            LOGGER.info("Copy from source to destination thread complete.");
             if (ex != null) {
               ApmTraceUtils.addExceptionToTrace(ex);
               if (ex.getCause() instanceof SourceException) {
@@ -233,10 +235,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
       LOGGER.info("Waiting for source and destination threads to complete.");
       // CompletableFuture#allOf waits until all futures finish before returning, even if one throws an
-      // exception. So in order to handle exceptions from a future immediately without needing to wait for
-      // the other future to finish, we first call CompletableFuture#anyOf.
-      CompletableFuture.anyOf(readSrcAndWriteDstThread, readFromDstThread).get();
-      LOGGER.info("One of source or destination thread complete. Waiting on the other.");
+      // exception.
       CompletableFuture.allOf(readSrcAndWriteDstThread, readFromDstThread).get();
       LOGGER.info("Source and destination threads complete.");
 
