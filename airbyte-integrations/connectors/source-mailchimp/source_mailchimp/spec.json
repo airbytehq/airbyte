@@ -60,6 +60,11 @@
             }
           }
         ]
+      },
+      "campaign_id": {
+        "type": "string",
+        "title": "ID of a campaign to sync email activities",
+        "airbyte_hidden": true
       }
     }
   },
