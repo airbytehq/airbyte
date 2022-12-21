@@ -76,13 +76,13 @@ WithContent.args = {
 export const EmptyWithControl = Template.bind({});
 EmptyWithControl.args = {
   label,
-  control: <Button variant="secondary">Test</Button>,
+  control: <Button variant="secondary">Control</Button>,
 };
 
 export const ControlAndContent = Template.bind({});
 ControlAndContent.args = {
   label,
-  control: <Button variant="secondary">Test</Button>,
+  control: <Button variant="secondary">Control</Button>,
   children: (
     <>
       <SectionContainer>Content part 1</SectionContainer>
