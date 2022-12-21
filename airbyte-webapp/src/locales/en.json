@@ -678,7 +678,7 @@
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
-  "connectorBuilder.inputsTitle": "User inputs",
+  "connectorBuilder.inputsTitle": "User Inputs",
   "connectorBuilder.inputsDescription": "User inputs will be asked to the end-user in order to set up the connector.",
   "connectorBuilder.addInputButton": "Add new user input",
   "connectorBuilder.inputModal.newTitle": "New user input",
