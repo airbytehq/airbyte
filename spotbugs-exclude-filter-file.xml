@@ -16,5 +16,8 @@
     <Class name="io.airbyte.integrations.debezium.internals.AirbyteFileOffsetBackingStore" />
     <Bug code="SECOBDES" />
   </Match>
+  <Match>
+    <Package name="io.airbyte.db.repositories.models" />
+  </Match>
 
 </FindBugsFilter>
