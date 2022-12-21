@@ -9,12 +9,12 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.workers.temporal.sync.RefreshSchemaActivityImpl;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -29,7 +29,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class RefreshSchemaActivityTest {
 
-  static private ConfigRepository mConfigRepository;
+  static private ConnectionApi mConnectionApi;
   static private SourceApi mSourceApi;
   static private EnvVariableFeatureFlags mEnvVariableFeatureFlags;
 
@@ -40,16 +40,16 @@ class RefreshSchemaActivityTest {
   @BeforeEach
   void setUp() {
     mSourceApi = mock(SourceApi.class);
-    mConfigRepository = mock(ConfigRepository.class);
+    mConnectionApi = mock(ConnectionApi.class);
     mEnvVariableFeatureFlags = mock(EnvVariableFeatureFlags.class);
     mSourceApi = mock(SourceApi.class);
     when(mEnvVariableFeatureFlags.autoDetectSchema()).thenReturn(true);
-    refreshSchemaActivity = new RefreshSchemaActivityImpl(Optional.of(mConfigRepository), mSourceApi, mEnvVariableFeatureFlags);
+    refreshSchemaActivity = new RefreshSchemaActivityImpl(mConnectionApi, mSourceApi, mEnvVariableFeatureFlags);
   }
 
   @Test
   void testShouldRefreshSchemaNoRecentRefresh() throws IOException {
-    when(mConfigRepository.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.empty());
+    when(mConnectionApi.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.empty());
     Assertions.assertThat(true).isEqualTo(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID));
   }
 
@@ -57,7 +57,7 @@ class RefreshSchemaActivityTest {
   void testShouldRefreshSchemaRecentRefreshOver24HoursAgo() throws IOException {
     Long twoDaysAgo = OffsetDateTime.now().minusHours(48l).toEpochSecond();
     ActorCatalogFetchEvent fetchEvent = new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()).withCreatedAt(twoDaysAgo);
-    when(mConfigRepository.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
+    when(mConnectionApi.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
     Assertions.assertThat(true).isEqualTo(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID));
   }
 
@@ -65,7 +65,7 @@ class RefreshSchemaActivityTest {
   void testShouldRefreshSchemaRecentRefreshLessThan24HoursAgo() throws IOException {
     Long twelveHoursAgo = OffsetDateTime.now().minusHours(12l).toEpochSecond();
     ActorCatalogFetchEvent fetchEvent = new ActorCatalogFetchEvent().withActorCatalogId(UUID.randomUUID()).withCreatedAt(twelveHoursAgo);
-    when(mConfigRepository.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
+    when(mConnectionApi.getMostRecentActorCatalogFetchEventForSource(SOURCE_ID)).thenReturn(Optional.ofNullable(fetchEvent));
     Assertions.assertThat(false).isEqualTo(refreshSchemaActivity.shouldRefreshSchema(SOURCE_ID));
   }
 

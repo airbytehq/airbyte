@@ -599,6 +599,29 @@ paths:
           $ref: "#/components/responses/NotFoundResponse"
         "422":
           $ref: "#/components/responses/InvalidInputResponse"
+  /v1/sources/most_recent_source_actor_catalog:
+    post:
+      tags:
+        - source
+      summary: Get most recent ActorCatalog for source
+      operationId: getMostRecentSourceActorCatalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SourceIdRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ActorCatalog"
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/sources/search:
     post:
       tags:
@@ -3656,6 +3679,16 @@ components:
       properties:
         logType:
           $ref: "#/components/schemas/LogType"
+    # ACTOR CATALOG
+    ActorCatalog:
+      description: describes a source ActorCatalog
+      type: object
+      properties:
+        updatedAt:
+          type: integer
+          format: int64
+        catalog:
+          type: object
     # SCHEMA CATALOG
     AirbyteCatalog:
       description: describes the available schema (catalog).
