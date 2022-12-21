@@ -15,6 +15,7 @@ import io.airbyte.commons.temporal.StreamResetRecordsHelper;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.commons.temporal.TemporalWorkflowUtils;
+import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.AirbyteVersion;
 import io.airbyte.config.Configs;
 import io.airbyte.config.helpers.LogClientSingleton;
@@ -71,6 +72,7 @@ import java.net.http.HttpClient;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -280,8 +282,17 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler,
         envVariableFeatureFlags);
 
-    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository, syncSchedulerClient,
-        destinationHandler);
+    final AirbyteProtocolVersionRange airbyteProtocolVersionRange = new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(),
+        configs.getAirbyteProtocolVersionMax());
+
+    final AirbyteGithubStore airbyteGithubStore = AirbyteGithubStore.production();
+
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = new DestinationDefinitionsHandler(configRepository,
+        () -> UUID.randomUUID(),
+        syncSchedulerClient,
+        airbyteGithubStore,
+        destinationHandler,
+        airbyteProtocolVersionRange);
 
     final HealthCheckHandler healthCheckHandler = new HealthCheckHandler(configRepository);
 
@@ -295,7 +306,8 @@ public class ServerApp implements ServerRunnable {
         connectionsHandler);
 
     final SourceDefinitionsHandler sourceDefinitionsHandler =
-        new SourceDefinitionsHandler(configRepository, syncSchedulerClient, sourceHandler, configs);
+        new SourceDefinitionsHandler(configRepository, () -> UUID.randomUUID(), syncSchedulerClient, airbyteGithubStore, sourceHandler,
+            airbyteProtocolVersionRange);
 
     final JobHistoryHandler jobHistoryHandler = new JobHistoryHandler(
         jobPersistence,

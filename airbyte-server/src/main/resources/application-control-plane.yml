@@ -3,9 +3,8 @@ datasources:
     connection-test-query: SELECT 1
     connection-timeout: 30000
     maximum-pool-size: 10
-    minimum-pool-size: 0
-    minimum-idle: 1
-    maximum-idle: 1000
+    minimum-idle: 0
+    idle-timeout: 600000
     url: ${DATABASE_URL}
     driverClassName: org.postgresql.Driver
     username: ${DATABASE_USER}

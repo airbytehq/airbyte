@@ -28,7 +28,6 @@ import io.airbyte.commons.version.AirbyteProtocolVersionRange;
 import io.airbyte.commons.version.Version;
 import io.airbyte.config.ActorDefinitionResourceRequirements;
 import io.airbyte.config.ActorType;
-import io.airbyte.config.Configs;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
@@ -64,16 +63,6 @@ public class SourceDefinitionsHandler {
   private final SynchronousSchedulerClient schedulerSynchronousClient;
   private final SourceHandler sourceHandler;
   private final AirbyteProtocolVersionRange protocolVersionRange;
-
-  // TODO: remove this contructor after the migration is done
-  @Deprecated(forRemoval = true)
-  public SourceDefinitionsHandler(final ConfigRepository configRepository,
-                                  final SynchronousSchedulerClient schedulerSynchronousClient,
-                                  final SourceHandler sourceHandler,
-                                  final Configs configs) {
-    this(configRepository, UUID::randomUUID, schedulerSynchronousClient, AirbyteGithubStore.production(), sourceHandler,
-        new AirbyteProtocolVersionRange(configs.getAirbyteProtocolVersionMin(), configs.getAirbyteProtocolVersionMax()));
-  }
 
   @Inject
   public SourceDefinitionsHandler(final ConfigRepository configRepository,
