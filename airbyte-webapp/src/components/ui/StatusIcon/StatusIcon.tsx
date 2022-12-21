@@ -1,4 +1,4 @@
-import { faBan, faCheck, faExclamationTriangle, faTimes } from "@fortawesome/free-solid-svg-icons";
+import { faBan, faCheck, faExclamationTriangle, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
@@ -25,8 +25,7 @@ const _iconByStatus = {
   sleep: faBan,
   success: faCheck,
   warning: faExclamationTriangle,
-  error: faTimes,
-  cancelled: faTimes,
+  cancelled: faMinus,
 } as const;
 
 const _themeByStatus = {
@@ -89,7 +88,7 @@ export const StatusIcon: React.FC<StatusIconProps> = ({ title, status = "error",
         <PauseIcon title={title} />
       ) : status === "sleep" ? (
         <MoonIcon title={title} />
-      ) : status === "error" || status === "cancelled" ? (
+      ) : status === "error" ? (
         <CrossIcon title={title} />
       ) : (
         <FontAwesomeIcon icon={_iconByStatus[status]} title={title} />

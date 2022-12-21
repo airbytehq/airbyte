@@ -21,7 +21,7 @@ describe("<StatusIcon />", () => {
     { status: "warning", icon: "triangle-exclamation" },
     { status: "loading", icon: "circle-loader" },
     { status: "error", icon: "cross" },
-    { status: "cancelled", icon: "cross" },
+    { status: "cancelled", icon: "minus" },
   ];
 
   it.each(statusCases)("renders $status status", ({ status, icon }) => {
