@@ -123,7 +123,7 @@ spec:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             raise HTTPException(
                 status_code=400,
-                detail=f"Could not perform read with with error: {error.args[0]}\n{''.join(traceback.TracebackException.from_exception(error).format())}",
+                detail=f"Could not perform read with with error: {error.args[0]}\n{self._get_stacktrace_as_string(error)}",
             )
 
         return StreamRead(logs=log_messages, slices=[single_slice])
@@ -212,5 +212,9 @@ spec:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid connector manifest with error: {error.message}\n{''.join(traceback.TracebackException.from_exception(error).format())}",
+                detail=f"Invalid connector manifest with error: {error.message}\n{DefaultApiImpl._get_stacktrace_as_string(error)}",
             )
+
+    @staticmethod
+    def _get_stacktrace_as_string(error) -> str:
+        return "\n".join(traceback.TracebackException.from_exception(error).format())
