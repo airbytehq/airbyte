@@ -37,6 +37,14 @@
         "minimum": 1,
         "default": 100,
         "order": 3
+      },
+      "threads": {
+        "title": "Worker Threads",
+        "description": "How many parallel worker threads should be used to generate records?",
+        "type": "integer",
+        "minimum": 1,
+        "default": 4,
+        "order": 4
       }
     }
   }

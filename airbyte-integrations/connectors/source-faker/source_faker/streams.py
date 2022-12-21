@@ -4,18 +4,24 @@
 
 import datetime
 import os
-
 from multiprocessing import Pool, current_process
-# from multiprocessing.pool import ThreadPool
+from typing import Any, Dict, Iterable, Mapping, Optional
 
-from typing import Any, Dict, Iterable, Mapping, Optional, List
-
-from airbyte_cdk.models import AirbyteMessage, AirbyteEstimateTraceMessage, Type,  AirbyteTraceMessage, AirbyteRecordMessage, EstimateType, TraceType
+from airbyte_cdk.models import (
+    AirbyteEstimateTraceMessage,
+    AirbyteMessage,
+    AirbyteRecordMessage,
+    AirbyteTraceMessage,
+    EstimateType,
+    TraceType,
+    Type,
+)
 from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from mimesis import Datetime, Numeric, Person
 from mimesis.locales import Locale
 
 from .utils import format_airbyte_time, read_json
+
 
 class FakerMultithreaded:
     def worker_init(self):
@@ -24,7 +30,7 @@ class FakerMultithreaded:
         global dt
         global numeric
         seed_with_offset = self.seed
-        if self.seed != None:
+        if self.seed is not None:
             seed_with_offset = self.seed + current_process()._identity[0]
         person = Person(locale=Locale.EN, seed=seed_with_offset)
         dt = Datetime(seed=seed_with_offset)
@@ -35,7 +41,7 @@ class Products(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads:int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.seed = seed
         self.records_per_sync = records_per_sync
@@ -81,7 +87,7 @@ class Users(Stream, IncrementalMixin, FakerMultithreaded):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads:int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -166,7 +172,7 @@ class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads:int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
@@ -285,8 +291,10 @@ class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
 
                 self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
 
+
 def now_millis():
     return int(datetime.datetime.now().timestamp() * 1000)
+
 
 class AirbyteMessageWithCachedJSON(AirbyteMessage):
     def __init__(self, **kwargs):
