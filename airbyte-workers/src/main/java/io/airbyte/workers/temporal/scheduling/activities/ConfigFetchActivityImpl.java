@@ -75,8 +75,9 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                  final JobPersistence jobPersistence,
                                  @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                  @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
-      final ConnectionApi connectionApi) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier, connectionApi);
+                                 final ConnectionApi connectionApi) {
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier,
+        connectionApi);
   }
 
   @VisibleForTesting
@@ -85,7 +86,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                     final WorkspaceHelper workspaceHelper,
                                     @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                     @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
-                                 final ConnectionApi connectionApi) {
+                                    final ConnectionApi connectionApi) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
