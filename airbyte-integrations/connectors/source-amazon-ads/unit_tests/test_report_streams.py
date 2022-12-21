@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import json
 import re
 from base64 import b64decode
 from datetime import timedelta
 from functools import partial
 from unittest import mock
-import json
 
 import pendulum
 import pytest
@@ -28,7 +28,12 @@ from source_amazon_ads.streams import (
     SponsoredProductCampaigns,
     SponsoredProductsReportStream,
 )
-from source_amazon_ads.streams.report_streams.report_streams import ReportGenerationFailure, ReportGenerationInProgress, TooManyRequests, RecordType
+from source_amazon_ads.streams.report_streams.report_streams import (
+    RecordType,
+    ReportGenerationFailure,
+    ReportGenerationInProgress,
+    TooManyRequests,
+)
 
 from .utils import read_incremental
 
@@ -184,7 +189,7 @@ def test_stream_report_body_metrics(config, profiles, stream_class, url_pattern,
             record_type = match.group(1)
             request_body = call.request.body
             request_metrics = json.loads(request_body.decode('utf-8'))['metrics']
-            if record_type == "productAds" or record_type == "asins":
+            if record_type == RecordType.PRODUCTADS or record_type == RecordType.ASINS:
                 assert ("sku" in request_metrics) == expected
             else:
                 assert "sku" not in request_metrics
