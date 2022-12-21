@@ -370,7 +370,13 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
         paginator: stream.paginator
           ? {
               type: "DefaultPaginator",
-              page_token_option: stream.paginator.pageTokenOption,
+              page_token_option: {
+                ...stream.paginator.pageTokenOption,
+                // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
+                field_name: stream.paginator.pageTokenOption.field_name
+                  ? stream.paginator.pageTokenOption.field_name
+                  : undefined,
+              },
               page_size_option: stream.paginator.pageSizeOption,
               pagination_strategy: stream.paginator.strategy,
               url_base: values.global?.urlBase,
