@@ -119,10 +119,10 @@ export const InputsView: React.FC = () => {
         <Card withPadding className={styles.inputsCard}>
           <ol className={styles.list}>
             {inferredInputs.map((input) => (
-              <InputItem input={input} setInputInEditing={setInputInEditing} isInferredInput />
+              <InputItem key={input.key} input={input} setInputInEditing={setInputInEditing} isInferredInput />
             ))}
             {inputs.value.map((input) => (
-              <InputItem input={input} setInputInEditing={setInputInEditing} isInferredInput={false} />
+              <InputItem key={input.key} input={input} setInputInEditing={setInputInEditing} isInferredInput={false} />
             ))}
           </ol>
         </Card>
@@ -334,7 +334,7 @@ const InputItem = ({
   isInferredInput: boolean;
 }): JSX.Element => {
   return (
-    <li className={styles.listItem} key={input.key}>
+    <li className={styles.listItem}>
       <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
       <Button
         className={styles.itemButton}
