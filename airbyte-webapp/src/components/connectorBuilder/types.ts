@@ -292,9 +292,9 @@ export const builderFormValidationSchema = yup.object().shape({
           strategy: yup
             .object({
               page_size: yup.mixed().when("type", {
-                is: (val: string) => ["CursorPagination", "OffsetIncrement", "PageIncrement"].includes(val),
+                is: (val: string) => ["OffsetIncrement", "PageIncrement"].includes(val),
                 then: yup.number().required("form.empty.error"),
-                otherwise: (schema) => schema.strip(),
+                otherwise: yup.number(),
               }),
               cursor_value: yup.mixed().when("type", {
                 is: "CursorPagination",
@@ -367,6 +367,16 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
             config: {},
           },
         },
+        paginator: stream.paginator
+          ? {
+              page_token_option: stream.paginator.pageTokenOption,
+              page_size_option: stream.paginator.pageSizeOption,
+              pagination_strategy: {
+                ...stream.paginator.strategy,
+                url_base: values.global?.urlBase,
+              },
+            }
+          : { type: "NoPagination" },
         config: {},
       },
       config: {},

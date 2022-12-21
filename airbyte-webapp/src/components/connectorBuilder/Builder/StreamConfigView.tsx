@@ -101,6 +101,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Pointer into the response that should be extracted as the final record"
         />
       </BuilderCard>
+      <PaginationSection streamFieldPath={streamFieldPath} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}
@@ -118,7 +119,6 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Body to attach to API requests as url-encoded form values"
         />
       </BuilderCard>
-      <PaginationSection streamFieldPath={streamFieldPath} />
     </BuilderConfigView>
   );
 };
