@@ -8,9 +8,11 @@ import io.airbyte.config.StandardSync;
 import io.airbyte.db.repositories.models.StandardSyncModel;
 import io.airbyte.db.repositories.repositories.StandardSyncRepository;
 import io.micronaut.data.model.Pageable;
+import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.UUID;
 
+@Singleton
 public class StandardSyncPersistence {
 
   // private record StandardSyncIdsWithProtocolVersions(

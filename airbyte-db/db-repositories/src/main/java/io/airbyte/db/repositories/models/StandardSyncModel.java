@@ -5,11 +5,14 @@
 package io.airbyte.db.repositories.models;
 
 import io.micronaut.core.annotation.NonNull;
-import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.MappedEntity;
+
+import javax.persistence.Entity;
+import javax.persistence.Id;
 import java.util.UUID;
 
 @MappedEntity
+@Entity
 public record StandardSyncModel(@NonNull @Id UUID connection_id) {
 
 }

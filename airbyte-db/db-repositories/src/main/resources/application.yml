@@ -1,13 +1,22 @@
 micronaut:
   application:
     name: dbRepositories
+endpoints:
+  routes:
+    enabled: true
+    sensitive: false
 datasources:
   default:
+    url: jdbc:postgresql://localhost:5432/airbyte
+    username: docker
+    password: docker
     driverClassName: org.postgresql.Driver
     db-type: postgres
     dialect: POSTGRES
 jpa:
   default:
+    entity-scan:
+      packages: "io.airbyte.db.repositories"
     properties:
       hibernate:
         hbm2ddl:
