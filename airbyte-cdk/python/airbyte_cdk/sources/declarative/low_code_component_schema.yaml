@@ -1,18 +1,14 @@
 "$schema": http://json-schema.org/draft-07/schema#
-"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/declarative_component_schema.yaml
-title: DeclarativeSource
+"$id": https://github.com/airbytehq/airbyte/blob/master/airbyte-cdk/python/airbyte_cdk/sources/declarative/handwritten_manifest.yaml
+title: LowCodeComponentManifest
 type: object
-description: An API source that extracts data according to its declarative components
+description: Low Code connector components
 version: 1.0.0
 required:
-  - type
   - check
   - streams
   - version
 properties:
-  type:
-    type: string
-    enum: [DeclarativeSource]
   check:
     "$ref": "#/definitions/CheckStream"
   streams:
@@ -21,8 +17,6 @@ properties:
       "$ref": "#/definitions/DeclarativeStream"
   version:
     type: string
-  schemas:
-    "$ref": "#/definitions/Schemas"
   spec:
     "$ref": "#/definitions/Spec"
 definitions:
@@ -35,7 +29,6 @@ definitions:
       - value
     properties:
       type:
-        type: string
         enum: [AddedFieldDefinition]
       path:
         type: array
@@ -51,7 +44,6 @@ definitions:
       - fields
     properties:
       type:
-        type: string
         enum: [AddFields]
       fields:
         type: array
@@ -68,7 +60,6 @@ definitions:
       - api_token
     properties:
       type:
-        type: string
         enum: [ApiKeyAuthenticator]
       api_token:
         type: string
@@ -82,7 +73,6 @@ definitions:
       - username
     properties:
       type:
-        type: string
         enum: [BasicHttpAuthenticator]
       username:
         type: string
@@ -96,7 +86,6 @@ definitions:
       - api_token
     properties:
       type:
-        type: string
         enum: [BearerAuthenticator]
       api_token:
         type: string
@@ -129,7 +118,6 @@ definitions:
       - stream_names
     properties:
       type:
-        type: string
         enum: [CheckStream]
       stream_names:
         type: array
@@ -139,11 +127,9 @@ definitions:
     description: Error handler that sequentially iterates over a list of error handlers
     type: object
     required:
-      - type
       - error_handlers
     properties:
       type:
-        type: string
         enum: [CompositeErrorHandler]
       error_handlers:
         type: array
@@ -162,7 +148,6 @@ definitions:
       - backoff_time_in_seconds
     properties:
       type:
-        type: string
         enum: [ConstantBackoffStrategy]
       backoff_time_in_seconds:
         anyOf:
@@ -179,7 +164,6 @@ definitions:
       - cursor_value
     properties:
       type:
-        type: string
         enum: [CursorPagination]
       cursor_value:
         type: string
@@ -201,7 +185,6 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomAuthenticator]
       class_name:
         type: string
@@ -218,7 +201,6 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomBackoffStrategy]
       class_name:
         type: string
@@ -234,7 +216,6 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomErrorHandler]
       class_name:
         type: string
@@ -250,7 +231,6 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomPaginationStrategy]
       class_name:
         type: string
@@ -266,27 +246,9 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomRecordExtractor]
       class_name:
         type: string
-      $options:
-        type: object
-        additionalProperties: true
-  CustomRetriever:
-    description: Retriever component whose behavior is derived from a custom code implementation of the connector
-    type: object
-    additionalProperties: true
-    required:
-      - type
-      - class_name
-    properties:
-      type:
-        type: string
-        enum: [CustomRetriever]
-      class_name:
-        type: string
-        additionalProperties: true
       $options:
         type: object
         additionalProperties: true
@@ -299,24 +261,7 @@ definitions:
       - class_name
     properties:
       type:
-        type: string
         enum: [CustomStreamSlicer]
-      class_name:
-        type: string
-      $options:
-        type: object
-        additionalProperties: true
-  CustomTransformation:
-    description: Transformation component whose behavior is derived from a custom code implementation of the connector
-    type: object
-    additionalProperties: true
-    required:
-      - type
-      - class_name
-    properties:
-      type:
-        type: string
-        enum: [CustomTransformation]
       class_name:
         type: string
       $options:
@@ -334,7 +279,6 @@ definitions:
       - step
     properties:
       type:
-        type: string
         enum: [DatetimeStreamSlicer]
       cursor_field:
         type: string
@@ -363,8 +307,8 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  OAuthAuthenticator:
-    description: Authenticator for requests using OAuth 2.0 authentication
+  DeclarativeOauth2Authenticator:
+    description: Authenticator for requests using Oauth authentication
     type: object
     required:
       - type
@@ -374,8 +318,7 @@ definitions:
       - token_refresh_endpoint
     properties:
       type:
-        type: string
-        enum: [OAuthAuthenticator]
+        enum: [DeclarativeOauth2Authenticator]
       client_id:
         type: string
       client_secret:
@@ -408,12 +351,9 @@ definitions:
       - retriever
     properties:
       type:
-        type: string
         enum: [DeclarativeStream]
       retriever:
-        anyOf:
-          - "$ref": "#/definitions/CustomRetriever"
-          - "$ref": "#/definitions/SimpleRetriever"
+        "$ref": "#/definitions/SimpleRetriever"
       checkpoint_interval:
         type: integer
       name:
@@ -434,7 +374,6 @@ definitions:
       schema_loader:
         anyOf:
           - "$ref": "#/definitions/DefaultSchemaLoader"
-          - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       stream_cursor_field:
         anyOf:
@@ -447,7 +386,6 @@ definitions:
         items:
           anyOf:
             - "$ref": "#/definitions/AddFields"
-            - "$ref": "#/definitions/CustomTransformation"
             - "$ref": "#/definitions/RemoveFields"
       $options:
         type: object
@@ -455,11 +393,8 @@ definitions:
   DefaultErrorHandler:
     description: The default error handler. Default behavior includes only retrying server errors (HTTP 5XX) and too many requests (HTTP 429) with an exponential backoff
     type: object
-    required:
-      - type
     properties:
       type:
-        type: string
         enum: [DefaultErrorHandler]
       backoff_strategies:
         type: array
@@ -468,8 +403,8 @@ definitions:
             - "$ref": "#/definitions/ConstantBackoffStrategy"
             - "$ref": "#/definitions/CustomBackoffStrategy"
             - "$ref": "#/definitions/ExponentialBackoffStrategy"
-            - "$ref": "#/definitions/WaitTimeFromHeader"
-            - "$ref": "#/definitions/WaitUntilTimeFromHeader"
+            - "$ref": "#/definitions/WaitTimeFromHeaderBackoffStrategy"
+            - "$ref": "#/definitions/WaitUntilTimeFromHeaderBackoffStrategy"
       max_retries:
         type: integer
         default: 5
@@ -489,7 +424,6 @@ definitions:
       - url_base
     properties:
       type:
-        type: string
         enum: [DefaultPaginator]
       pagination_strategy:
         anyOf:
@@ -515,7 +449,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [DefaultSchemaLoader]
       $options:
         type: object
@@ -528,7 +461,6 @@ definitions:
       - field_pointer
     properties:
       type:
-        type: string
         enum: [DpathExtractor]
       field_pointer:
         type: array
@@ -546,7 +478,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [ExponentialBackoffStrategy]
       factor:
         anyOf:
@@ -566,7 +497,6 @@ definitions:
       - url_base
     properties:
       type:
-        type: string
         enum: [HttpRequester]
       name:
         type: string
@@ -580,9 +510,8 @@ definitions:
           - "$ref": "#/definitions/BasicHttpAuthenticator"
           - "$ref": "#/definitions/BearerAuthenticator"
           - "$ref": "#/definitions/CustomAuthenticator"
-          - "$ref": "#/definitions/OAuthAuthenticator"
+          - "$ref": "#/definitions/DeclarativeOauth2Authenticator"
           - "$ref": "#/definitions/NoAuth"
-          - "$ref": "#/definitions/SessionTokenAuthenticator"
       error_handler:
         anyOf:
           - "$ref": "#/definitions/DefaultErrorHandler"
@@ -605,11 +534,9 @@ definitions:
     description: A filter that is used to select on properties of the HTTP response received
     type: object
     required:
-      - type
       - action
     properties:
       type:
-        type: string
         enum: [HttpResponseFilter]
       action:
         type: string
@@ -632,17 +559,6 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  InlineSchemaLoader:
-    description: Loads a schema that is defined directly in the manifest file
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [InlineSchemaLoader]
-      schema:
-        type: object
   InterpolatedRequestOptionsProvider:
     description: Defines the request options to set on an outgoing HTTP request by evaluating `InterpolatedMapping`s
     type: object
@@ -650,7 +566,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [InterpolatedRequestOptionsProvider]
       request_body_data:
         anyOf:
@@ -686,7 +601,7 @@ definitions:
       - type
     properties:
       type:
-        enum: [JsonFileSchemaLoader, JsonSchema] # TODO As part of Beta, remove JsonSchema and update connectors to use JsonFileSchemaLoader
+        enum: [JsonFileSchemaLoader]
       file_path:
         type: string
       $options:
@@ -698,7 +613,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [JsonDecoder]
   ListStreamSlicer:
     description: Stream slicer that iterates over the values of a list
@@ -709,7 +623,6 @@ definitions:
       - slice_values
     properties:
       type:
-        type: string
         enum: [ListStreamSlicer]
       cursor_field:
         type: string
@@ -732,7 +645,6 @@ definitions:
       - datetime
     properties:
       type:
-        type: string
         enum: [MinMaxDatetime]
       datetime:
         type: string
@@ -753,7 +665,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [NoAuth]
       $options:
         type: object
@@ -765,7 +676,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [NoPagination]
   OffsetIncrement:
     description: Pagination strategy that returns the number of records reads so far and returns it as the next page token
@@ -775,12 +685,9 @@ definitions:
       - page_size
     properties:
       type:
-        type: string
         enum: [OffsetIncrement]
       page_size:
-        anyOf:
-          - type: number
-          - type: string
+        type: integer
       $options:
         type: object
         additionalProperties: true
@@ -792,7 +699,6 @@ definitions:
       - page_size
     properties:
       type:
-        type: string
         enum: [PageIncrement]
       page_size:
         type: integer
@@ -812,7 +718,6 @@ definitions:
       - stream_slice_field
     properties:
       type:
-        type: string
         enum: [ParentStreamConfig]
       parent_key:
         type: string
@@ -825,19 +730,6 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  PrimaryKey:
-    description: The stream field to be used to distinguish unique rows
-    anyOf:
-      - type: string
-      - type: array
-        items:
-          type: string
-      - type: array
-        items:
-          type: array
-          items:
-            type: string
-    default: ""
   RecordFilter:
     description: Filter applied on a list of Records
     type: object
@@ -845,7 +737,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [RecordFilter]
       backoff_time_in_seconds:
         type: string
@@ -861,7 +752,6 @@ definitions:
       - extractor
     properties:
       type:
-        type: string
         enum: [RecordSelector]
       extractor:
         anyOf:
@@ -880,7 +770,6 @@ definitions:
       - field_pointers
     properties:
       type:
-        type: string
         enum: [RemoveFields]
       field_pointers:
         type: array
@@ -895,7 +784,6 @@ definitions:
       - inject_into
     properties:
       type:
-        type: string
         enum: [RequestOption]
       inject_into:
         enum:
@@ -906,46 +794,6 @@ definitions:
           - body_json
       field_name:
         type: string
-  Schemas:
-    description: The stream schemas representing the shape of the data emitted by the stream
-    type: object
-    additionalProperties: true
-  SessionTokenAuthenticator:
-    description: Authenticator for requests based on session tokens. A session token is a random value generated by a server to identify a specific user for the duration of one interaction session
-    type: object
-    required:
-      - type
-      - api_url
-      - header
-      - login_url
-      - session_token
-      - session_token_response_key
-      - username
-      - validate_session_url
-    properties:
-      type:
-        type: string
-        enum: [SessionTokenAuthenticator]
-      api_url:
-        type: string
-      header:
-        type: string
-      login_url:
-        type: string
-      session_token:
-        type: string
-      session_token_response_key:
-        type: string
-      username:
-        type: string
-      validate_session_url:
-        type: string
-      password:
-        type: string
-        default: ""
-      $options:
-        type: object
-        additionalProperties: true
   SimpleRetriever:
     description: Retrieves records by synchronously sending requests to fetch records. The retriever acts as an orchestrator between the requester, the record selector, the paginator, and the stream slicer.
     type: object
@@ -955,7 +803,6 @@ definitions:
       - requester
     properties:
       type:
-        type: string
         enum: [SimpleRetriever]
       record_selector:
         "$ref": "#/definitions/RecordSelector"
@@ -969,7 +816,17 @@ definitions:
           - "$ref": "#/definitions/DefaultPaginator"
           - "$ref": "#/definitions/NoPagination"
       primary_key:
-        "$ref": "#/definitions/PrimaryKey"
+        anyOf:
+          - type: string
+          - type: array
+            items:
+              type: string
+          - type: array
+            items:
+              type: array
+              items:
+                type: string
+        default: ""
       stream_slicer:
         anyOf:
           - "$ref": "#/definitions/CartesianProductStreamSlicer"
@@ -988,7 +845,6 @@ definitions:
       - type
     properties:
       type:
-        type: string
         enum: [SingleSlice]
       $options:
         type: object
@@ -1002,7 +858,6 @@ definitions:
       - documentation_url
     properties:
       type:
-        type: string
         enum: [Spec]
       connection_specification:
         type: object
@@ -1017,7 +872,6 @@ definitions:
       - parent_stream_configs
     properties:
       type:
-        type: string
         enum: [SubstreamSlicer]
       parent_stream_configs:
         type: array
@@ -1026,7 +880,7 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  WaitTimeFromHeader:
+  WaitTimeFromHeaderBackoffStrategy:
     description: Extract wait time from http header
     type: object
     required:
@@ -1034,8 +888,7 @@ definitions:
       - header
     properties:
       type:
-        type: string
-        enum: [WaitTimeFromHeader]
+        enum: [WaitTimeFromHeaderBackoffStrategy]
       header:
         type: string
       regex:
@@ -1043,7 +896,7 @@ definitions:
       $options:
         type: object
         additionalProperties: true
-  WaitUntilTimeFromHeader:
+  WaitUntilTimeFromHeaderBackoffStrategy:
     description: Extract time at which we can retry the request from response header and wait for the difference between now and that time
     type: object
     required:
@@ -1051,8 +904,7 @@ definitions:
       - header
     properties:
       type:
-        type: string
-        enum: [WaitUntilTimeFromHeader]
+        enum: [WaitUntilTimeFromHeaderBackoffStrategy]
       header:
         type: string
       min_wait:
