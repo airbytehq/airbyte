@@ -107,21 +107,6 @@ export const builderFormValidationSchema = yup.object().shape({
         then: yup.string().required("form.empty.error"),
         otherwise: (schema) => schema.strip(),
       }),
-      api_token: yup.mixed().when("type", {
-        is: "ApiKeyAuthenticator",
-        then: yup.string().required("form.empty.error"),
-        otherwise: (schema) => schema.strip(),
-      }),
-      username: yup.mixed().when("type", {
-        is: "BasicHttpAuthenticator",
-        then: yup.string().required("form.empty.error"),
-        otherwise: (schema) => schema.strip(),
-      }),
-      password: yup.mixed().when("type", {
-        is: "BasicHttpAuthenticator",
-        then: yup.string().required("form.empty.error"),
-        otherwise: (schema) => schema.strip(),
-      }),
     }),
   }),
   streams: yup.array().of(
