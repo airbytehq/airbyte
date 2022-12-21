@@ -5,10 +5,20 @@
 import uuid
 import logging
 import json
-from typing import Any, Mapping, MutableMapping
+from dataclasses import dataclass
+import time
+from typing import Any, Mapping, MutableMapping, List
 
 import weaviate
 from .utils import generate_id, parse_id_schema, parse_vectors, stream_to_class_name
+
+
+@dataclass
+class BufferedObject:
+    id: str
+    properties: Mapping[str, Any]
+    vector: List[Any]
+    class_name: str
 
 
 class Client:
@@ -19,6 +29,7 @@ class Client:
         self.schema = schema
         self.vectors = parse_vectors(config.get("vectors"))
         self.id_schema = parse_id_schema(config.get("id_schema"))
+        self.buffered_objects: MutableMapping[str, BufferedObject] = {}
 
     def buffered_write_operation(self, stream_name: str, record: MutableMapping):
         # TODO need to handle case where original DB ID is not a UUID
@@ -54,16 +65,34 @@ class Client:
             del record[vector_column_name]
         class_name = stream_to_class_name(stream_name)
         self.client.batch.add_data_object(record, class_name, record_id, vector=vector)
+        self.buffered_objects[record_id] = BufferedObject(record_id, record, vector, class_name)
         if self.client.batch.num_objects() >= self.batch_size:
             self.flush()
 
-    def flush(self):
-        # TODO add error handling instead of just logging
+    def flush(self, retries: int = 3):
         results = self.client.batch.create_objects()
+        objects_with_error = []
         for result in results:
             errors = result.get("result", {}).get("errors", [])
             if errors:
-                logging.error(f"Object {result.get('id')} had errors: {errors}")
+                objects_with_error.append({"id": result.get("id"), "errors": errors})
+                logging.info(f"Object {result.get('id')} had errors: {errors}. Going to retry.")
+
+        for object_with_error in objects_with_error:
+            buffered_object = self.buffered_objects[object_with_error["id"]]
+            self.client.batch.add_data_object(buffered_object.properties, buffered_object.class_name, buffered_object.id,
+                                              buffered_object.vector)
+
+        if objects_with_error and retries > 0:
+            logging.info("sleeping 2 seconds before retrying batch again")
+            time.sleep(2)
+            self.flush(retries - 1)
+
+        if objects_with_error and retries <= 0:
+            error_msg = f"Objects had errors and retries failed as well: {objects_with_error}"
+            raise Exception(error_msg)
+
+        self.buffered_objects.clear()
 
     def delete_stream_entries(self, stream_name: str):
         class_name = stream_to_class_name(stream_name)
