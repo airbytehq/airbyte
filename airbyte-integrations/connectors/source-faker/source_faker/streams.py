@@ -153,7 +153,8 @@ class Users(Stream, IncrementalMixin, FakerMultithreaded):
         with Pool(initializer=self.worker_init, processes=self.threads) as pool:
             while running and records_in_sync < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - total_records))
-                if records_remaining_this_loop == 0:
+                if records_remaining_this_loop <= 0:
+                    running = False
                     break
                 users = pool.map(self.generate_user, range(total_records, total_records + records_remaining_this_loop))
                 for user in users:
@@ -166,6 +167,8 @@ class Users(Stream, IncrementalMixin, FakerMultithreaded):
                         break
 
                 self.state = {self.cursor_field: total_records, "seed": self.seed}
+
+        self.state = {self.cursor_field: total_records, "seed": self.seed}
 
 
 class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
@@ -275,11 +278,13 @@ class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
         with Pool(initializer=self.worker_init, processes=self.threads) as pool:
             while running and total_user_records < self.count:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - user_records_in_sync))
-                if records_remaining_this_loop == 0:
+                if records_remaining_this_loop <= 0:
+                    running = False
                     break
                 carts = pool.map(self.generate_purchases, range(total_user_records, total_user_records + records_remaining_this_loop))
                 for purchases in carts:
                     for purchase in purchases:
+                        total_purchase_records += 1
                         yield purchase
 
                     total_user_records += 1
@@ -290,6 +295,8 @@ class Purchases(Stream, IncrementalMixin, FakerMultithreaded):
                         break
 
                 self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
+
+        self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}
 
 
 def now_millis():

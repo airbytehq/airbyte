@@ -123,7 +123,7 @@ def test_no_read_limit_hit():
 
     assert record_rows_count == 0
     assert state_rows_count == 1
-    assert latest_state.state.data == {"users": {"id": 10}}
+    assert latest_state.state.data == {"users": {"id": 10, "seed": None}}
 
 
 def test_read_big_random_data():
