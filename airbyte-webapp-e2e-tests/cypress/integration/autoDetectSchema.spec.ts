@@ -18,12 +18,7 @@ import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
 import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
-import {
-  getManualSyncButton,
-  getNonBreakingChangeIcon,
-  getSchemaChangeIcon,
-  visitConnectionsListPage,
-} from "pages/connnectionsListPage";
+import { getManualSyncButton, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
 import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
 import {
   checkSchemaChangesDetected,
@@ -32,10 +27,11 @@ import {
   clickSchemaChangesReviewButton,
   searchStream,
   selectCursorField,
+  selectNonBreakingChangesPreference,
   selectSyncMode,
 } from "pages/replicationPage";
 
-describe("Auto-detect schema changes", () => {
+describe("Connection - Auto-detect schema changes", () => {
   let source: Source;
   let destination: Destination;
   let connection: Connection;
@@ -152,6 +148,21 @@ describe("Auto-detect schema changes", () => {
 
       clickSaveReplication();
       getSyncEnabledSwitch().should("be.enabled");
+    });
+  });
+
+  describe("non-breaking schema update preference", () => {
+    it("saves non-breaking schema update preference change", () => {
+      visitConnectionPage(connection, "replication");
+      selectNonBreakingChangesPreference("disable");
+
+      cy.intercept("/api/v1/web_backend/connections/update").as("updatesNonBreakingPreference");
+
+      clickSaveReplication({ confirm: false });
+
+      cy.wait("@updatesNonBreakingPreference").then((interception) => {
+        assert.equal((interception.response?.body as Connection).nonBreakingChangesPreference, "disable");
+      });
     });
   });
 });
