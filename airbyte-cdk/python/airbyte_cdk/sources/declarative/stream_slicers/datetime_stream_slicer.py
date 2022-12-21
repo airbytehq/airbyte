@@ -38,7 +38,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
-        datetime_format_granularity (str): smallest increment the datetime_format has (ISO8601 duration)
+        datetime_format_granularity (str): smallest increment the datetime_format has (ISO8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
         end_time_option (Optional[RequestOption]): request option for end time
@@ -133,10 +133,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         stream_state = stream_state or {}
         kwargs = {"stream_state": stream_state}
         end_datetime = min(self.end_datetime.get_datetime(self.config, **kwargs), datetime.datetime.now(tz=self._timezone))
-        if self.lookback_window and (evaluated_lookback_window := self.lookback_window.eval(self.config, **kwargs)):
-            lookback_delta = self._parse_timedelta(evaluated_lookback_window)
-        else:
-            lookback_delta = self._parse_timedelta("P0D")
+        lookback_delta = self._parse_timedelta(self.lookback_window.eval(self.config, **kwargs) if self.lookback_window else "P0D")
 
         earliest_possible_start_datetime = min(self.start_datetime.get_datetime(self.config, **kwargs), end_datetime)
         cursor_datetime = self._calculate_cursor_datetime_from_state(stream_state)
@@ -174,6 +171,8 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         """
         :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
         """
+        if not time_str:
+            return datetime.timedelta(0)
         return parse_duration(time_str)
 
     def get_request_params(
