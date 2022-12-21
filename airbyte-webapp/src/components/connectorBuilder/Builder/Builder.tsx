@@ -29,9 +29,7 @@ function getView(selectedView: BuilderView) {
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
   const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
   useEffect(() => {
-    if (builderFormValidationSchema.isValidSync(values)) {
-      setBuilderFormValues(values);
-    }
+    setBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
   }, [values, setBuilderFormValues]);
 
   return (

@@ -1,5 +1,5 @@
 import { useField } from "formik";
-import React, { useEffect } from "react";
+import React from "react";
 
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
@@ -28,12 +28,8 @@ interface BuilderOneOfProps {
 export const BuilderOneOf: React.FC<BuilderOneOfProps> = ({ options, path, label, tooltip }) => {
   const [, , oneOfPathHelpers] = useField(path);
   const typePath = `${path}.type`;
-  const [typePathField, , typePathHelpers] = useField(typePath);
-  const value = typePathField.value ?? options[0].typeValue;
-
-  useEffect(() => {
-    typePathHelpers.setValue(value);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const [typePathField] = useField(typePath);
+  const value = typePathField.value;
 
   const selectedOption = options.find((option) => option.typeValue === value);
 
