@@ -79,7 +79,7 @@ export const AuthenticationSection: React.FC = () => {
                   label="Token refresh endpoint"
                   tooltip="The URL to call to obtain a new access token"
                 />
-                <UserInputField label="Client ID" tooltip="The OAuth client id" />
+                <UserInputField label="Client ID" tooltip="The OAuth client ID" />
                 <UserInputField label="Client secret" tooltip="The OAuth client secret" />
                 <UserInputField label="Refresh token" tooltip="The OAuth refresh token" />
                 <BuilderOptional>
@@ -88,7 +88,7 @@ export const AuthenticationSection: React.FC = () => {
                     path="global.authenticator.scopes"
                     optional
                     label="Scopes"
-                    tooltip="Scopes to rquest"
+                    tooltip="Scopes to request"
                   />
                   <BuilderField
                     type="array"
@@ -141,7 +141,7 @@ export const AuthenticationSection: React.FC = () => {
                   type="string"
                   path="global.authenticator.header"
                   label="Header"
-                  tooltip="Specific header of source for providing session token"
+                  tooltip="Specific HTTP header of source API for providing session token"
                 />
                 <BuilderField
                   type="string"
@@ -153,7 +153,7 @@ export const AuthenticationSection: React.FC = () => {
                   type="string"
                   path="global.authenticator.login_url"
                   label="Login url"
-                  tooltip="Url fot getting a specific session token"
+                  tooltip="Url for getting a specific session token"
                 />
                 <BuilderField
                   type="string"
