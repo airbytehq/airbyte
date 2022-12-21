@@ -12,6 +12,9 @@ import java.util.function.Function;
 /**
  * Utility class for recursively modifying JsonSchemas. Useful for up/downgrading
  * AirbyteCatalog objects.
+ *
+ * See {@link io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1}
+ * for example usage.
  */
 public class SchemaMigrations {
 
