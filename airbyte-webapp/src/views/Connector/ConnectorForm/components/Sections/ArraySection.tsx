@@ -44,7 +44,8 @@ const getItemDescription = (item: Record<string, string>, properties: FormBlock[
 export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, disabled }) => {
   const [field, , fieldHelper] = useField<Array<Record<string, string>>>(path);
   const [editIndex, setEditIndex] = useState<number | undefined>();
-  const [itemInEdit, setItemInEdit] = useState<Record<string, string> | undefined>();
+  // keep the previous state of the currently edited item around so it can be restored on cancelling the form
+  const [originalItem, setOriginalItem] = useState<Record<string, string> | undefined>();
 
   const items: Array<Record<string, string>> = useMemo(() => field.value ?? [], [field.value]);
 
@@ -53,10 +54,10 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
     if (typeof editIndex === "undefined") {
       return items;
     }
-    return items.map((item, index) => (index === editIndex ? itemInEdit : item)).filter(Boolean) as Array<
+    return items.map((item, index) => (index === editIndex ? originalItem : item)).filter(Boolean) as Array<
       Record<string, string>
     >;
-  }, [editIndex, itemInEdit, items]);
+  }, [editIndex, originalItem, items]);
 
   const { renderItemName, renderItemDescription } = useMemo(() => {
     const { properties } = formField.properties as FormGroupItem;
@@ -81,10 +82,10 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
   // on cancelling editing, either remove the item if it has been a new one or put back the old value in the form
   const onCancel = () => {
     const newList = [...field.value];
-    if (!itemInEdit) {
+    if (!originalItem) {
       newList.pop();
-    } else if (editIndex !== undefined && itemInEdit) {
-      newList.splice(editIndex, 1, itemInEdit);
+    } else if (editIndex !== undefined && originalItem) {
+      newList.splice(editIndex, 1, originalItem);
     }
 
     fieldHelper.setValue(newList);
@@ -105,7 +106,7 @@ export const ArraySection: React.FC<ArraySectionProps> = ({ formField, path, dis
               editableItemIndex={editIndex}
               onStartEdit={(n) => {
                 setEditIndex(n);
-                setItemInEdit(items[n]);
+                setOriginalItem(items[n]);
               }}
               onRemove={arrayHelpers.remove}
               onCancel={onCancel}
