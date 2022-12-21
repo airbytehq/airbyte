@@ -1,6 +1,6 @@
 # API documentation
 
-### Open-Source API
+## Open-Source API
 
 :::caution
 
@@ -17,7 +17,7 @@ Don't hesitate to ask us on [Slack](https://slack.airbyte.io), if you have any q
 
 ---
 
-### Airbyte Cloud API
+## Airbyte Cloud API
 
 :::info
 
