@@ -220,8 +220,8 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1999-01-08'", "null", "'2022/11/12'", "'1987.12.01'")
-            .addExpectedValues("1999-01-08", null, "2022-11-12", "1987-12-01")
+            .addInsertValues("'1999-01-08'", "null", "'16-12-06'")
+            .addExpectedValues("1999-01-08", null, "2016-12-06")
             .build());
 
     addDataTypeTestData(
