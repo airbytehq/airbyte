@@ -132,7 +132,7 @@ airbyte:
           container:
             image-registry: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_REGISTRY:}
             image-pull-policy: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_POLICY:IfNotPresent}
-            image-pull-secret: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRET:}
+            image-pull-secrets: ${JOB_KUBE_MAIN_CONTAINER_IMAGE_PULL_SECRETS:}
         namespace: ${JOB_KUBE_NAMESPACE:default}
         node-selectors: ${JOB_KUBE_NODE_SELECTORS:}
         sidecar:
