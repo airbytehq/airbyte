@@ -15,7 +15,7 @@ from airbyte_cdk.sources.declarative.requesters.request_option import RequestOpt
 from airbyte_cdk.sources.declarative.stream_slicers.stream_slicer import StreamSlicer
 from airbyte_cdk.sources.declarative.types import Config, Record, StreamSlice, StreamState
 from dataclasses_jsonschema import JsonSchemaMixin
-from isodate import parse_duration
+from isodate import Duration, parse_duration
 
 
 @dataclass
@@ -152,7 +152,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     def _format_datetime(self, dt: datetime.datetime):
         return self._parser.format(dt, self.datetime_format)
 
-    def _partition_daterange(self, start, end, step: datetime.timedelta):
+    def _partition_daterange(self, start: datetime.datetime, end: datetime.datetime, step: Union[datetime.timedelta, Duration]):
         start_field = self.stream_slice_field_start.eval(self.config)
         end_field = self.stream_slice_field_end.eval(self.config)
         dates = []
@@ -170,7 +170,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         return self._parser.parse(date, self.datetime_format, self._timezone)
 
     @classmethod
-    def _parse_timedelta(cls, time_str):
+    def _parse_timedelta(cls, time_str) -> Union[datetime.timedelta, Duration]:
         """
         :return Parses an ISO 8601 durations into datetime.timedelta or Duration objects.
         """
