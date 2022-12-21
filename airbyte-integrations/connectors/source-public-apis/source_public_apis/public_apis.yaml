@@ -1,0 +1,105 @@
+version: 0.1.0
+check:
+  stream_names: [random]
+streams:
+  - name: entries
+    primary_key: []
+    retriever:
+      name: entries
+      primary_key: []
+      requester:
+        name: entries
+        url_base: https://api.publicapis.org/
+        path: /entries
+        request_options_provider:
+          request_parameters:
+            title: "{{config['title']}}"
+            description: "{{config['description']}}"
+            auth: "{{config['auth']}}"
+            category: "{{config['category']}}"
+          request_headers: {}
+          request_body_data: {}
+        authenticator:
+          type: NoAuth
+        config: {}
+      record_selector:
+        extractor:
+          field_pointer:
+            - entries
+          config: {}
+      paginator:
+        type: NoPagination
+      config: {}
+    config: {}
+  - name: categories
+    primary_key: []
+    retriever:
+      name: categories
+      primary_key: []
+      requester:
+        name: categories
+        url_base: https://api.publicapis.org/
+        path: /categories
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_data: {}
+        authenticator:
+          type: NoAuth
+        config: {}
+      record_selector:
+        extractor:
+          field_pointer: []
+          config: {}
+      paginator:
+        type: NoPagination
+      config: {}
+    config: {}
+  - name: random
+    primary_key: []
+    retriever:
+      name: random
+      primary_key: []
+      requester:
+        name: random
+        url_base: https://api.publicapis.org/
+        path: /random
+        request_options_provider:
+          request_parameters: {}
+          request_headers: {}
+          request_body_data: {}
+        authenticator:
+          type: NoAuth
+        config: {}
+      record_selector:
+        extractor:
+          field_pointer:
+            - entries
+          config: {}
+      paginator:
+        type: NoPagination
+      config: {}
+    config: {}
+spec:
+  connectionSpecification:
+    $schema: http://json-schema.org/draft-07/schema#
+    type: object
+    required: []
+    properties:
+      title:
+        title: Title
+        description: Filter responses based on their title (matches via substring)
+        type: string
+      description:
+        title: Description
+        description: Filter responses based on their description (matches via substring)
+        type: string
+      auth:
+        title: Auth
+        description: Filter responses based on their auth type
+        type: string
+      category:
+        title: Category
+        description: Filter responses based on their category
+        type: string
+    additionalProperties: true
