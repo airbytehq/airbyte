@@ -215,10 +215,14 @@ export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[]
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
-const requestOptionSchema = yup.object().shape({
-  inject_into: yup.mixed().oneOf(injectIntoValues),
-  field_name: yup.string(),
-});
+const requestOptionSchema = yup
+  .object()
+  .shape({
+    inject_into: yup.mixed().oneOf(injectIntoValues),
+    field_name: yup.string(),
+  })
+  .notRequired()
+  .default(undefined);
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -280,32 +284,39 @@ export const builderFormValidationSchema = yup.object().shape({
         requestHeaders: yup.array().of(yup.array().of(yup.string())),
         requestBody: yup.array().of(yup.array().of(yup.string())),
       }),
-      paginator: yup.object().shape({
-        strategy: yup.object().shape({
-          page_size: yup.mixed().when("type", {
-            is: (val: string) => ["CursorPagination", "OffsetIncrement", "PageIncrement"].includes(val),
-            then: yup.number().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          cursor_value: yup.mixed().when("type", {
-            is: "CursorPagination",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          stop_condition: yup.mixed().when("type", {
-            is: "CursorPagination",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          start_from_page: yup.mixed().when("type", {
-            is: "PageIncrement",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-        }),
-        pageSizeOption: requestOptionSchema,
-        pageTokenOption: requestOptionSchema,
-      }),
+      paginator: yup
+        .object()
+        .shape({
+          pageSizeOption: requestOptionSchema,
+          pageTokenOption: requestOptionSchema,
+          strategy: yup
+            .object({
+              page_size: yup.mixed().when("type", {
+                is: (val: string) => ["CursorPagination", "OffsetIncrement", "PageIncrement"].includes(val),
+                then: yup.number().required("form.empty.error"),
+                otherwise: (schema) => schema.strip(),
+              }),
+              cursor_value: yup.mixed().when("type", {
+                is: "CursorPagination",
+                then: yup.string().required("form.empty.error"),
+                otherwise: (schema) => schema.strip(),
+              }),
+              stop_condition: yup.mixed().when("type", {
+                is: "CursorPagination",
+                then: yup.string(),
+                otherwise: (schema) => schema.strip(),
+              }),
+              start_from_page: yup.mixed().when("type", {
+                is: "PageIncrement",
+                then: yup.string(),
+                otherwise: (schema) => schema.strip(),
+              }),
+            })
+            .notRequired()
+            .default(undefined),
+        })
+        .notRequired()
+        .default(undefined),
     })
   ),
 });

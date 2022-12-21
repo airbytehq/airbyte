@@ -14,6 +14,7 @@ import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
+import { PaginationSection } from "./PaginationSection";
 import styles from "./StreamConfigView.module.scss";
 
 interface StreamConfigViewProps {
@@ -84,19 +85,19 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         <BuilderField
           type="array"
           path={streamFieldPath("primaryKey")}
-          label="Primary Key"
+          label="Primary key"
           tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
         />
         <BuilderField
           type="array"
           path={streamFieldPath("cursorField")}
-          label="Cursor Field"
+          label="Cursor field"
           tooltip="Pointer into the response that should be used to determine if a record is new or updated since last sync"
         />
         <BuilderField
           type="array"
           path={streamFieldPath("fieldPointer")}
-          label="Record Field Pointer"
+          label="Record selector"
           tooltip="Pointer into the response that should be extracted as the final record"
         />
       </BuilderCard>
@@ -117,9 +118,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Body to attach to API requests as url-encoded form values"
         />
       </BuilderCard>
-      {/* <BuilderCard>
-        <BuilderOneOf path={streamFieldPath("")} />
-      </BuilderCard> */}
+      <PaginationSection streamFieldPath={streamFieldPath} />
     </BuilderConfigView>
   );
 };
