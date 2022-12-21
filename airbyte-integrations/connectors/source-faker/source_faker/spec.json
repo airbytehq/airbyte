@@ -35,7 +35,7 @@
         "description": "How many fake records will be in each page (stream slice), before a state message is emitted?",
         "type": "integer",
         "minimum": 1,
-        "default": 100,
+        "default": 1000,
         "order": 3
       },
       "threads": {
