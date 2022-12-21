@@ -36,6 +36,7 @@ from .streams import (
     SponsoredProductsReportStream,
     SponsoredProductTargetings,
 )
+from .streams.report_streams.report_streams import ReportStream
 
 # Oauth 2.0 authentication URL for amazon
 TOKEN_URL = "https://api.amazon.com/auth/o2/token"
@@ -43,10 +44,14 @@ CONFIG_DATE_FORMAT = "YYYY-MM-DD"
 
 
 class SourceAmazonAds(AbstractSource):
-    def _validate_and_transform(self, config: Mapping[str, Any]):
+    def _validate_and_transform(self, config: Mapping[str, Any], check=False):
         start_date = config.get("start_date")
         if start_date:
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
+            if check:
+                min_date = pendulum.today().date().subtract(days=ReportStream.REPORTING_PERIOD + 1)
+                if config["start_date"] < min_date:
+                    raise Exception(f"Start Date: minimum allowed value is {min_date}")
         else:
             config["start_date"] = None
         if not config.get("region"):
@@ -61,7 +66,7 @@ class SourceAmazonAds(AbstractSource):
         :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
-            config = self._validate_and_transform(config)
+            config = self._validate_and_transform(config, check=True)
         except Exception as e:
             return False, str(e)
         # Check connection by sending list of profiles request. Its most simple
