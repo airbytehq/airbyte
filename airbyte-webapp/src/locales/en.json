@@ -719,6 +719,8 @@
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.copyToPaginationTitle": "Copy pagination settings to...",
+  "connectorBuilder.copyFromPaginationTitle": "Import pagination settings from...",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

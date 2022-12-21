@@ -1,4 +1,5 @@
 import { useField } from "formik";
+import { useIntl } from "react-intl";
 
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
@@ -10,9 +11,11 @@ import { BuilderOneOf } from "./BuilderOneOf";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
+  currentStreamIndex: number;
 }
 
-export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath }) => {
+export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
+  const { formatMessage } = useIntl();
   const [field, , helpers] = useField(streamFieldPath("paginator"));
 
   const handleToggle = (newToggleValue: boolean) => {
@@ -97,6 +100,12 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         ),
         toggledOn,
         onToggle: handleToggle,
+      }}
+      copyConfig={{
+        path: "paginator",
+        currentStreamIndex,
+        copyFromLabel: formatMessage({ id: "connectorBuilder.copyFromPaginationTitle" }),
+        copyToLabel: formatMessage({ id: "connectorBuilder.copyToPaginationTitle" }),
       }}
     >
       <BuilderOneOf

@@ -101,7 +101,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           tooltip="Pointer into the response that should be extracted as the final record"
         />
       </BuilderCard>
-      <PaginationSection streamFieldPath={streamFieldPath} />
+      <PaginationSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}
