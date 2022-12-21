@@ -222,32 +222,31 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         rows = []
 
         for row in r.get("rows", []):
-            rows.append(
-                collections.ChainMap(
-                    *[
-                        self.add_primary_key(),
-                        self.add_property_id(self.config["property_id"]),
-                        self.add_dimensions(dimensions, row),
-                        self.add_metrics(metrics, metrics_type_map, row),
-                    ]
-                )
+            chain_row = collections.ChainMap(
+                *[
+                    self.add_primary_key(),
+                    self.add_property_id(self.config["property_id"]),
+                    self.add_dimensions(dimensions, row),
+                    self.add_metrics(metrics, metrics_type_map, row),
+                ]
             )
+            rows.append(dict(chain_row))
         r["records"] = rows
 
         yield r
 
 
 class IncrementalGoogleAnalyticsDataApiStream(GoogleAnalyticsDataApiBaseStream, IncrementalMixin, ABC):
-    _date_format = "%Y-%m-%d"
+    _date_format: str = "%Y-%m-%d"
 
     def __init__(self, *args, **kwargs):
         super(IncrementalGoogleAnalyticsDataApiStream, self).__init__(*args, **kwargs)
-        self._cursor_value = None
+        self._cursor_value: str = ""
 
 
 class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStream):
-    _default_window_in_days = 1
-    _record_date_format = "%Y%m%d"
+    _default_window_in_days: int = 1
+    _record_date_format:     str = "%Y%m%d"
 
     @property
     def cursor_field(self) -> Union[str, List[str]]:
@@ -255,11 +254,24 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value or utils.string_to_date(self.config["date_ranges_start_date"], self._date_format)}
+        if self._cursor_value:
+            return {self.cursor_field: self._cursor_value}
+        return {
+            self.cursor_field: utils.date_to_string(self._date_parse_probe(self.config["date_ranges_start_date"]), self._record_date_format)
+        }
 
     @state.setter
-    def state(self, value):
-        self._cursor_value = utils.string_to_date(value[self.cursor_field], self._date_format) + datetime.timedelta(days=1)
+    def state(self, value: dict):
+        self._cursor_value = utils.date_to_string(
+            self._date_parse_probe(value[self.cursor_field]) + datetime.timedelta(days=1),
+            self._record_date_format
+        )
+
+    def _date_parse_probe(self, date_string: str) -> datetime.date:
+        try:
+            return utils.string_to_date(date_string, self._record_date_format)
+        except ValueError:
+            return utils.string_to_date(date_string, self._date_format)
 
     def request_body_json(
         self,
@@ -285,8 +297,7 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
         records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         for record in records:
             for row in record["records"]:
-                next_cursor_value = utils.string_to_date(row[self.cursor_field], self._record_date_format)
-                self._cursor_value = max(self._cursor_value, next_cursor_value) if self._cursor_value else next_cursor_value
+                self._cursor_value: str = max(self._cursor_value, row[self.cursor_field]) if self._cursor_value else row[self.cursor_field]
                 yield row
 
     def stream_slices(
@@ -294,10 +305,10 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
     ) -> Iterable[Optional[Mapping[str, Any]]]:
         dates = []
 
-        today: datetime.date = datetime.date.today()
-        start_date: datetime.date = self.state[self.cursor_field]
+        today:      datetime.date = datetime.date.today()
+        start_date: datetime.date = utils.string_to_date(self.state[self.cursor_field], self._record_date_format)
 
-        timedelta: int = self.config["window_in_days"] or self._default_window_in_days
+        timedelta: int = self.config.get("window_in_days", self._default_window_in_days)
 
         while start_date <= today:
             end_date: datetime.date = start_date + datetime.timedelta(days=timedelta)

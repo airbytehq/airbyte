@@ -4,13 +4,17 @@
 
 import copy
 import datetime
+import json
 import random
 from http import HTTPStatus
 from typing import Any, Mapping
 from unittest.mock import MagicMock
 
 import pytest
-from source_google_analytics_data_api.source import GoogleAnalyticsDataApiGenericStream
+from airbyte_cdk.models import SyncMode
+from airbyte_cdk.sources.streams.http import HttpStream
+
+from source_google_analytics_data_api.source import GoogleAnalyticsDataApiGenericStream, GoogleAnalyticsDataApiTestConnectionStream
 
 json_credentials = """
 {
@@ -24,6 +28,159 @@ json_credentials = """
     "token_uri": "https://oauth2.googleapis.com/token",
     "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/google-analytics-access%40unittest-project-id.iam.gserviceaccount.com"
+}
+"""
+
+json_metadata_response = """
+{
+  "dimensions": [
+    {
+      "apiName": "browser",
+      "uiName": "Browser",
+      "description": "The browsers used to view your website.",
+      "category": "Platform / Device"
+    },
+    {
+      "apiName": "city",
+      "uiName": "City",
+      "description": "The city from which the user activity originated.",
+      "category": "Geography"
+    },
+    {
+      "apiName": "country",
+      "uiName": "Country",
+      "description": "The country from which the user activity originated.",
+      "category": "Geography"
+    },
+    {
+      "apiName": "date",
+      "uiName": "Date",
+      "description": "The date of the event, formatted as YYYYMMDD.",
+      "category": "Time"
+    },
+    {
+      "apiName": "deviceCategory",
+      "uiName": "Device category",
+      "description": "The type of device: Desktop, Tablet, or Mobile.",
+      "category": "Platform / Device"
+    },
+    {
+      "apiName": "hostName",
+      "uiName": "Hostname",
+      "description": "Includes the subdomain and domain names of a URL; for example, the Host Name of www.example.com/contact.html is www.example.com.",
+      "category": "Page / Screen"
+    },
+    {
+      "apiName": "operatingSystem",
+      "uiName": "Operating system",
+      "description": "The operating systems used by visitors to your app or website. Includes desktop and mobile operating systems such as Windows and Android.",
+      "category": "Platform / Device"
+    },
+    {
+      "apiName": "pagePathPlusQueryString",
+      "uiName": "Page path + query string",
+      "description": "The portion of the URL following the hostname for web pages visited; for example, the pagePathPlusQueryString portion of https://www.example.com/store/contact-us?query_string=true is /store/contact-us?query_string=true.",
+      "category": "Page / Screen"
+    },
+    {
+      "apiName": "region",
+      "uiName": "Region",
+      "description": "The geographic region from which the user activity originated, derived from their IP address.",
+      "category": "Geography"
+    },
+    {
+      "apiName": "sessionMedium",
+      "uiName": "Session medium",
+      "description": "The medium that initiated a session on your website or app.",
+      "category": "Traffic Source"
+    },
+    {
+      "apiName": "sessionSource",
+      "uiName": "Session source",
+      "description": "The source that initiated a session on your website or app.",
+      "category": "Traffic Source"
+    }
+  ],
+  "metrics": [
+    {
+      "apiName": "active1DayUsers",
+      "uiName": "1-day active users",
+      "description": "The number of distinct active users on your site or app within a 1 day period. The 1 day period includes the last day in the report's date range. Note: this is the same as Active Users.",
+      "type": "TYPE_INTEGER",
+      "category": "User"
+    },
+    {
+      "apiName": "active28DayUsers",
+      "uiName": "28-day active users",
+      "description": "The number of distinct active users on your site or app within a 28 day period. The 28 day period includes the last day in the report's date range.",
+      "type": "TYPE_INTEGER",
+      "category": "User"
+    },
+    {
+      "apiName": "active7DayUsers",
+      "uiName": "7-day active users",
+      "description": "The number of distinct active users on your site or app within a 7 day period. The 7 day period includes the last day in the report's date range.",
+      "type": "TYPE_INTEGER",
+      "category": "User"
+    },
+    {
+      "apiName": "averageSessionDuration",
+      "uiName": "Average session duration",
+      "description": "The average duration (in seconds) of users' sessions.",
+      "type": "TYPE_SECONDS",
+      "category": "Session"
+    },
+    {
+      "apiName": "bounceRate",
+      "uiName": "Bounce rate",
+      "description": "The percentage of sessions that were not engaged ((Sessions Minus Engaged sessions) divided by Sessions). This metric is returned as a fraction; for example, 0.2761 means 27.61% of sessions were bounces.",
+      "type": "TYPE_FLOAT",
+      "category": "Session"
+    },
+    {
+      "apiName": "newUsers",
+      "uiName": "New users",
+      "description": "The number of users who interacted with your site or launched your app for the first time (event triggered: first_open or first_visit).",
+      "type": "TYPE_INTEGER",
+      "category": "User"
+    },
+    {
+      "apiName": "screenPageViews",
+      "uiName": "Views",
+      "description": "The number of app screens or web pages your users viewed. Repeated views of a single page or screen are counted. (screen_view + page_view events).",
+      "type": "TYPE_INTEGER",
+      "category": "Page / Screen"
+    },
+    {
+      "apiName": "screenPageViewsPerSession",
+      "uiName": "Views per session",
+      "description": "The number of app screens or web pages your users viewed per session. Repeated views of a single page or screen are counted. (screen_view + page_view events) / sessions.",
+      "type": "TYPE_FLOAT",
+      "category": "Page / Screen"
+    },
+    {
+      "apiName": "sessions",
+      "uiName": "Sessions",
+      "description": "The number of sessions that began on your site or app (event triggered: session_start).",
+      "type": "TYPE_INTEGER",
+      "category": "Session"
+    },
+    {
+      "apiName": "sessionsPerUser",
+      "uiName": "Sessions per user",
+      "description": "The average number of sessions per user (Sessions divided by Active Users).",
+      "type": "TYPE_FLOAT",
+      "category": "Session"
+    },
+    {
+      "apiName": "totalUsers",
+      "uiName": "Total users",
+      "description": "The number of distinct users who have logged at least one event, regardless of whether the site or app was in use when that event was logged.",
+      "type": "TYPE_INTEGER",
+      "category": "User"
+    }
+  ],
+  "name": "properties/496180525/metadata"
 }
 """
 
@@ -50,7 +207,8 @@ def patch_base_class(mocker):
                 "screenPageViewsPerSession",
                 "bounceRate",
             ],
-            "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=1)), "%Y-%m-%d"),
+            "date_ranges_start_date": datetime.datetime.strftime((datetime.datetime.now() - datetime.timedelta(days=3)), "%Y-%m-%d"),
+            "window_in_days": 1
         }
     }
 
@@ -237,6 +395,100 @@ def test_parse_response(patch_base_class):
     for record in actual_records["records"]:
         del record["uuid"]
     assert actual_records == expected_data
+
+
+def test_metadata_retrieved_once(patch_base_class, mocker):
+    read_records_mock = mocker.MagicMock()
+    read_records_mock.return_value = [json.loads(json_metadata_response)]
+    mocker.patch.object(GoogleAnalyticsDataApiTestConnectionStream, "read_records", read_records_mock)
+
+    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    metadata_one = stream.metadata
+    metadata_two = stream.metadata
+
+    assert metadata_one is metadata_two
+    assert read_records_mock.call_count == 1
+
+
+def test_json_schema(patch_base_class, mocker):
+    read_records_mock = mocker.MagicMock()
+    read_records_mock.return_value = [json.loads(json_metadata_response)]
+    mocker.patch.object(GoogleAnalyticsDataApiTestConnectionStream, "read_records", read_records_mock)
+
+    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    json_schema_properties = stream.get_json_schema().get("properties")
+    metadata = json.loads(json_metadata_response)
+
+    metrics_metadata = {m["apiName"]: m for m in metadata["metrics"]}
+    for metric in stream.config["metrics"]:
+        assert metric in json_schema_properties
+        assert metrics_metadata[metric]["description"] == json_schema_properties[metric]["description"]
+
+    dimensions_metadata = {d["apiName"]: d for d in metadata["dimensions"]}
+    for dimension in stream.config["dimensions"]:
+        assert dimension in json_schema_properties
+        assert dimensions_metadata[dimension]["description"] == json_schema_properties[dimension]["description"]
+
+    additional_properties = ["property_id", "uuid"]
+    for additional_property in additional_properties:
+        assert additional_property in json_schema_properties
+
+    assert len(stream.config["dimensions"]) + len(stream.config["metrics"]) + len(additional_properties) == len(json_schema_properties)
+
+
+def test_stream_slices(patch_base_class):
+    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    stream_slices = stream.stream_slices(sync_mode=SyncMode.incremental)
+    assert len(stream_slices) == 2
+
+    latest_date = datetime.date.today()
+    formatted_date_diff = lambda date, days: (date - datetime.timedelta(days=days)).strftime("%Y-%m-%d")
+    assert stream_slices[0] == {"startDate": formatted_date_diff(latest_date, 3), "endDate": formatted_date_diff(latest_date, 2)}
+    assert stream_slices[1] == {"startDate": formatted_date_diff(latest_date, 1), "endDate": formatted_date_diff(latest_date, 0)}
+
+
+def test_read_records(patch_base_class, mocker):
+    stream = GoogleAnalyticsDataApiGenericStream(config=patch_base_class["config"])
+    initial_date = datetime.datetime.strptime(patch_base_class["config"]["date_ranges_start_date"], "%Y-%m-%d")
+    formatted_date_diff = lambda date, days: (date + datetime.timedelta(days=days)).strftime("%Y%m%d")
+
+    read_records = mocker.MagicMock()
+    expected_records = [
+        [
+            {
+                "records": [
+                    {"date": formatted_date_diff(initial_date, 0)},
+                    {"date": formatted_date_diff(initial_date, 1)},
+                ]
+            }
+        ],
+        [
+            {
+                "records": [
+                    {"date": formatted_date_diff(initial_date, 2)},
+                    {"date": formatted_date_diff(initial_date, 3)},
+                ]
+            }
+        ]
+    ]
+    read_records.side_effect = expected_records
+    mocker.patch.object(HttpStream, "read_records", read_records)
+
+    reader = stream.read_records(
+        sync_mode=SyncMode.incremental,
+        stream_slice={"startDate": formatted_date_diff(initial_date, 0), "endDate": formatted_date_diff(initial_date, 1)}
+    )
+    assert stream._cursor_value == ""
+    for i, _ in enumerate(reader):
+        assert stream._cursor_value == formatted_date_diff(initial_date, i)
+
+    reader = stream.read_records(
+        sync_mode=SyncMode.incremental,
+        stream_slice={"startDate": formatted_date_diff(initial_date, 2), "endDate": formatted_date_diff(initial_date, 3)}
+    )
+    assert stream._cursor_value == formatted_date_diff(initial_date, 1)
+    for j, _ in enumerate(reader):
+        assert stream._cursor_value == formatted_date_diff(initial_date, i + 1 + j)
 
 
 def test_request_headers(patch_base_class):
