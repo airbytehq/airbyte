@@ -84,21 +84,23 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         />
         <BuilderField
           type="array"
+          path={streamFieldPath("fieldPointer")}
+          label="Record selector"
+          tooltip="Pointer into the response that should be extracted as the final record"
+        />
+        <BuilderField
+          type="array"
           path={streamFieldPath("primaryKey")}
           label="Primary key"
           tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
+          optional
         />
         <BuilderField
           type="array"
           path={streamFieldPath("cursorField")}
           label="Cursor field"
           tooltip="Pointer into the response that should be used to determine if a record is new or updated since last sync"
-        />
-        <BuilderField
-          type="array"
-          path={streamFieldPath("fieldPointer")}
-          label="Record selector"
-          tooltip="Pointer into the response that should be extracted as the final record"
+          optional
         />
       </BuilderCard>
       <PaginationSection streamFieldPath={streamFieldPath} />
