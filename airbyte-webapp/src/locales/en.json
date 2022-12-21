@@ -678,7 +678,7 @@
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
-  "connectorBuilder.inputsTitle": "User inputs",
+  "connectorBuilder.inputsTitle": "User Inputs",
   "connectorBuilder.inputsDescription": "User inputs will be asked to the end-user in order to set up the connector.",
   "connectorBuilder.addInputButton": "Add new user input",
   "connectorBuilder.inputModal.newTitle": "New user input",
@@ -716,6 +716,7 @@
   "connectorBuilder.inputsNoSpecUITooltip": "Add User Input fields to allow setting test inputs",
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
+  "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
