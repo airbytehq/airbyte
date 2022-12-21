@@ -1,11 +1,46 @@
-{
-  "customers": {
-    "date_created": "2030-07-30T22:16:46"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "coupons"
+      }
+    }
   },
-  "orders": {
-    "date_modified": "2050-07-30T22:16:46"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "orders"
+      }
+    }
   },
-  "coupons": {
-    "date_modified": "2060-07-30T22:16:46"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_modified_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "date_created_gmt": "2100-01-01T00:00:00"
+      },
+      "stream_descriptor": {
+        "name": "product_reviews"
+      }
+    }
   }
-}
+]

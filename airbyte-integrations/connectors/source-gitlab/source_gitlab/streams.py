@@ -53,6 +53,8 @@ class GitlabStream(HttpStream, ABC):
         return super().should_retry(response)
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        if response.status_code != 200:
+            return
         response_data = response.json()
         if isinstance(response_data, dict):
             return None
