@@ -20,6 +20,7 @@ This will generate a virtualenv for this module in `.venv/`. Make sure this venv
 development environment of choice. To activate it from the terminal, run:
 ```
 source .venv/bin/activate
+python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 If you are in an IDE, follow your IDE's instructions to activate the virtualenv.
@@ -109,6 +110,13 @@ To run acceptance and custom integration tests:
 ```
 ./gradlew :airbyte-integrations:connectors:destination-duckdb:integrationTest
 ```
+
+To run normalization image:
+```
+./gradlew :airbyte-integrations:bases:base-normalization:airbyteDockerDuckDb 
+docker tag airbyte/normalization-duckdb:dev airbyte/normalization-duckdb:0.2.22 
+```
+
 
 ## Dependency Management
 All of your dependencies should go in `setup.py`, NOT `requirements.txt`. The requirements file is only used to connect internal Airbyte dependencies in the monorepo for local development.

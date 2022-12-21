@@ -335,4 +335,4 @@
   dockerImageTag: 0.1.0
   documentationUrl: https://docs.airbyte.io/integrations/destinations/duckdb
   icon: duckdb.svg
-  releaseStage: alpha
+  releaseStage: alpha #dev

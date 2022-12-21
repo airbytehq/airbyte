@@ -10,11 +10,10 @@ from collections import defaultdict
 from logging import getLogger
 from typing import Any, Iterable, Mapping
 
+import duckdb
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, DestinationSyncMode, Status, Type
-
-import duckdb
 
 logger = getLogger("airbyte")
 

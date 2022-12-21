@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import Dict
 from unittest.mock import MagicMock
 
+import duckdb
 import pytest
 from airbyte_cdk.models import (
     AirbyteMessage,
@@ -24,8 +25,6 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_duckdb import DestinationDuckdb
-
-import duckdb
 
 
 @pytest.fixture(autouse=True)
@@ -62,7 +61,9 @@ def table_schema() -> str:
 @pytest.fixture
 def configured_catalogue(test_table_name: str, table_schema: str) -> ConfiguredAirbyteCatalog:
     append_stream = ConfiguredAirbyteStream(
-        stream=AirbyteStream(name=test_table_name, json_schema=table_schema),
+        stream=AirbyteStream(
+            name=test_table_name, json_schema=table_schema, supported_sync_modes=[SyncMode.full_refresh, SyncMode.incremental]
+        ),
         sync_mode=SyncMode.incremental,
         destination_sync_mode=DestinationSyncMode.append,
     )
