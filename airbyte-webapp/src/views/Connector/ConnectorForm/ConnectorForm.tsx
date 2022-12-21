@@ -64,6 +64,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     selectedConnectorDefinitionSpecification,
     errorMessage,
     connectorId,
+    onReset,
   } = props;
 
   const { formFields, initialValues, validationSchema } = useBuildForm(
@@ -99,7 +100,7 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       onSubmit={onFormSubmit}
       enableReinitialize
     >
-      {({ dirty }) => (
+      {({ dirty, resetForm }) => (
         <ConnectorFormContextProvider
           formType={formType}
           getValues={getValues}
@@ -115,6 +116,13 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
             {...props}
             formFields={formFields}
             errorMessage={errorMessage}
+            onReset={
+              onReset &&
+              (() => {
+                onReset?.();
+                resetForm();
+              })
+            }
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
           />

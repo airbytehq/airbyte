@@ -1,6 +1,6 @@
 import { dump } from "js-yaml";
 import merge from "lodash/merge";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
@@ -34,7 +34,7 @@ interface Context {
   selectedView: BuilderView;
   configJson: StreamReadRequestBodyConfig;
   editorView: EditorView;
-  setBuilderFormValues: (values: BuilderFormValues) => void;
+  setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
   setJsonManifest: (jsonValue: PatchedConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
@@ -50,10 +50,23 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const { formatMessage } = useIntl();
 
   // manifest values
-  const [storedBuilderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+  const [storedBuilderFormValues, setStoredBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
     DEFAULT_BUILDER_FORM_VALUES
   );
+
+  const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+
+  const setBuilderFormValues = useCallback(
+    (values: BuilderFormValues, isValid: boolean) => {
+      setStoredBuilderFormValues(values);
+      if (isValid) {
+        lastValidBuilderFormValuesRef.current = values;
+      }
+    },
+    [setStoredBuilderFormValues]
+  );
+
   const builderFormValues = useMemo(() => {
     return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
   }, [storedBuilderFormValues]);
@@ -78,6 +91,21 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
   const [editorView, setEditorView] = useState<EditorView>("ui");
 
+  const lastValidBuilderFormValues = lastValidBuilderFormValuesRef.current;
+  /**
+   * The json manifest derived from the last valid state of the builder form values.
+   * In the yaml view, this is undefined. Can still be invalid in case an invalid state is loaded from localstorage
+   */
+  const lastValidJsonManifest = useMemo(
+    () =>
+      editorView !== "ui"
+        ? undefined
+        : builderFormValues === lastValidBuilderFormValues
+        ? jsonManifest
+        : convertToManifest(lastValidBuilderFormValues),
+    [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
+  );
+
   // config
   const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
 
@@ -86,7 +114,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
-  } = useListStreams({ manifest, config: configJson });
+  } = useListStreams({ manifest: lastValidJsonManifest || manifest, config: configJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
     ? streamListError instanceof Error
