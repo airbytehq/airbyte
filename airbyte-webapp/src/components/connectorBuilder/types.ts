@@ -58,8 +58,8 @@ export interface BuilderStream {
   };
   paginator?: {
     strategy: DefaultPaginatorAllOfPaginationStrategy;
-    pageSizeOption: RequestOption;
     pageTokenOption: RequestOption;
+    pageSizeOption?: RequestOption;
   };
 }
 

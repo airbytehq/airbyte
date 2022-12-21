@@ -15,6 +15,8 @@ interface PaginationSectionProps {
 
 export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath }) => {
   const [field, , helpers] = useField(streamFieldPath("paginator"));
+  const [pageSizeField] = useField(streamFieldPath("paginator.strategy.page_size"));
+  const [, , pageSizeOptionHelpers] = useField(streamFieldPath("paginator.pageSizeOption"));
 
   const handleToggle = (newToggleValue: boolean) => {
     if (newToggleValue) {
@@ -90,7 +92,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   type="number"
                   path={streamFieldPath("paginator.strategy.page_size")}
                   label="Page size"
-                  tooltip="Size of pages to request from API"
+                  tooltip="Set the size of each page"
                 />
                 {pageSizeOption}
                 {pageTokenOption}
@@ -106,7 +108,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   type="number"
                   path={streamFieldPath("paginator.strategy.page_size")}
                   label="Page size"
-                  tooltip="Size of pages to request from API"
+                  tooltip="Set the size of each page"
                 />
                 <BuilderField
                   type="number"
@@ -132,20 +134,25 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Value of the cursor to send in requests to the API"
                 />
                 <BuilderField
-                  type="number"
-                  path={streamFieldPath("paginator.strategy.page_size")}
-                  label="Page size"
-                  tooltip="Size of pages to request from API"
-                  optional
-                />
-                <BuilderField
-                  type="number"
+                  type="string"
                   path={streamFieldPath("paginator.strategy.stop_condition")}
                   label="Stop condition"
                   tooltip="Condition that determines when to stop requesting further pages"
                   optional
                 />
-                {pageSizeOption}
+                <BuilderField
+                  type="number"
+                  path={streamFieldPath("paginator.strategy.page_size")}
+                  onChange={(newValue) => {
+                    if (newValue === undefined || newValue === "") {
+                      pageSizeOptionHelpers.setValue(undefined);
+                    }
+                  }}
+                  label="Page size"
+                  tooltip="Set the size of each page"
+                  optional
+                />
+                {pageSizeField.value && pageSizeField.value !== "" && pageSizeOption}
                 {pageTokenOption}
               </>
             ),
