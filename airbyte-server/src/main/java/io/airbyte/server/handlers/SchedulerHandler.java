@@ -78,6 +78,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import javax.validation.constraints.NotNull;
@@ -358,8 +359,8 @@ public class SchedulerHandler {
         .supportedDestinationSyncModes(Enums.convertListTo(spec.getSupportedDestinationSyncModes(), DestinationSyncMode.class))
         .connectionSpecification(spec.getConnectionSpecification())
         .documentationUrl(spec.getDocumentationUrl().toString())
-        .supportsNormalization(spec.getSupportsNormalization())
-        .supportsDbt(spec.getSupportsDBT())
+        .supportsNormalization(Objects.nonNull(destination.getNormalizationConfig()))
+        .supportsDbt(destination.getSupportsDbt())
         .destinationDefinitionId(destinationDefinitionId);
 
     final Optional<AuthSpecification> authSpec = OauthModelConverter.getAuthSpec(spec);

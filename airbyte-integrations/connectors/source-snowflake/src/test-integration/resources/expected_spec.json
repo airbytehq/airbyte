@@ -124,8 +124,6 @@
       }
     }
   },
-  "supportsNormalization": false,
-  "supportsDBT": false,
   "supported_destination_sync_modes": [],
   "advanced_auth": {
     "auth_flow_type": "oauth2.0",
