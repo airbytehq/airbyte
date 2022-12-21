@@ -14,7 +14,7 @@ interface StreamSlicerSectionProps {
 }
 
 export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath }) => {
-  const [field, , helpers] = useField(streamFieldPath("paginator"));
+  const [field, , helpers] = useField(streamFieldPath("streamSlicer"));
 
   const handleToggle = (newToggleValue: boolean) => {
     if (newToggleValue) {
@@ -104,13 +104,6 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                   path={streamFieldPath("streamSlicer.step")}
                   label="Step"
                   tooltip="Time interval for which to break up stream into slices, e.g. 1d"
-                />
-                <BuilderField
-                  type="number"
-                  path={streamFieldPath("paginator.strategy.start_from_page")}
-                  label="Start from page"
-                  tooltip="Page number to start requesting pages from"
-                  optional
                 />
                 <BuilderField
                   type="string"

@@ -307,7 +307,68 @@ export const builderFormValidationSchema = yup.object().shape({
         })
         .notRequired()
         .default(undefined),
-      streamSlicer: yup.object().notRequired().default(undefined),
+      streamSlicer: yup
+        .object()
+        .shape({
+          cursor_field: yup.string().required("form.empty.error"),
+          slice_values: yup.mixed().when("type", {
+            is: "ListStreamSlicer",
+            then: yup.array().of(yup.string()),
+            otherwise: (schema) => schema.strip(),
+          }),
+          request_option: yup.mixed().when("type", {
+            is: "ListStreamSlicer",
+            then: requestOptionSchema,
+            otherwise: (schema) => schema.strip(),
+          }),
+          start_datetime: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          end_datetime: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          step: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          datetime_format: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          start_time_option: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: requestOptionSchema,
+            otherwise: (schema) => schema.strip(),
+          }),
+          end_time_option: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: requestOptionSchema,
+            otherwise: (schema) => schema.strip(),
+          }),
+          stream_state_field_start: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+          stream_state_field_end: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+          lookback_window: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+        })
+        .notRequired()
+        .default(undefined),
     })
   ),
 });
@@ -332,6 +393,7 @@ function builderFormAuthenticatorToAuthenticator(
 
 export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
+    console.log("stream.streamSlicer", stream.streamSlicer);
     return {
       name: stream.name,
       primary_key: stream.primaryKey,
@@ -372,6 +434,7 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
               url_base: values.global?.urlBase,
             }
           : { type: "NoPagination" },
+        stream_slicer: stream.streamSlicer,
         config: {},
       },
       config: {},
