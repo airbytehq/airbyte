@@ -33,4 +33,9 @@ public class StandardSyncController {
     return standardSyncPersistence.getStandardSyncs();
   }
 
+  @Get("/test")
+  public String test() {
+    return "Testing";
+  }
+
 }
