@@ -1,14 +1,17 @@
+#
+# Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+#
+
 from abc import ABC
+from datetime import datetime, timedelta
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
-from datetime import datetime, timedelta
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import Stream, IncrementalMixin
+from airbyte_cdk.sources.streams import IncrementalMixin, Stream
 from airbyte_cdk.sources.streams.http import HttpStream
 from airbyte_cdk.sources.streams.http.requests_native_auth import TokenAuthenticator
-
 
 TIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 TIME_FORMAT_LAST_MODIFIED_RECORD = TIME_FORMAT + ".%f"
@@ -161,7 +164,7 @@ class SourceNvd(AbstractSource):
             start = datetime.strptime(config["modStartDate"], TIME_FORMAT)
             if start > datetime.utcnow():
                 return False, "Start date cannot be in the future"
-        except:
+        except ValueError:
             return False, f"Invalid start date format, use the format {TIME_FORMAT}"
 
         # Check if API is online

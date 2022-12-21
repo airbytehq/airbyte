@@ -2,12 +2,12 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+from datetime import datetime
 from http import HTTPStatus
 from unittest.mock import MagicMock
-from datetime import datetime
 
 import pytest
-from source_nvd.source import NvdStream, Cves, Cpes
+from source_nvd.source import Cpes, Cves, NvdStream
 
 
 @pytest.fixture
