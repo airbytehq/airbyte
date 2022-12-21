@@ -8,6 +8,7 @@ import time
 import uuid
 from typing import Any, Dict, List, Mapping
 import os
+from unittest.mock import Mock
 
 import docker
 import pytest
@@ -25,7 +26,7 @@ from airbyte_cdk.models import (
     Type,
 )
 from destination_weaviate import DestinationWeaviate
-from destination_weaviate.client import Client
+from destination_weaviate.client import Client, WeaviatePartialBatchError
 from destination_weaviate.utils import stream_to_class_name
 
 
@@ -491,3 +492,13 @@ def test_client_delete_stream_entries(caplog, client: Client):
     actual_schema = client.client.schema.get("Article")
     title_prop = next(filter(lambda x: x["name"] == "title", actual_schema["properties"]))
     assert title_prop["moduleConfig"]["text2vec-contextionary"]["vectorizePropertyName"] == True, "Ensure moduleconfig is persisted"
+
+
+def test_client_flush_partial_error(caplog, client: Client):
+    partial_error_result = load_json_file("create_objects_partial_error.json")
+    client.client.batch.create_objects = Mock(return_value=partial_error_result)
+    time.sleep = Mock(return_value=None)
+    client.buffered_write_operation("Article", {"id": "b7b1cfbe-20da-496c-b932-008d35805f26"})
+    client.buffered_write_operation("Article", {"id": "154cbccd-89f4-4b29-9c1b-001a3339d89a"})
+    with pytest.raises(WeaviatePartialBatchError):
+        client.flush()

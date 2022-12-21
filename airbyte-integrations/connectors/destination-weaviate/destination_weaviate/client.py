@@ -21,6 +21,10 @@ class BufferedObject:
     class_name: str
 
 
+class WeaviatePartialBatchError(Exception):
+    pass
+
+
 class Client:
     def __init__(self, config: Mapping[str, Any], schema: Mapping[str, str]):
         self.client = self.get_weaviate_client(config)
@@ -32,7 +36,6 @@ class Client:
         self.buffered_objects: MutableMapping[str, BufferedObject] = {}
 
     def buffered_write_operation(self, stream_name: str, record: MutableMapping):
-        # TODO need to handle case where original DB ID is not a UUID
         if self.id_schema.get(stream_name, "") in record:
             id_field_name = self.id_schema.get(stream_name, "")
             record_id = generate_id(record.get(id_field_name))
@@ -47,6 +50,7 @@ class Client:
                 del record["_id"]
             else:
                 record_id = uuid.uuid4()
+        record_id = str(record_id)
 
         # TODO support nested objects instead of converting to json string when weaviate supports this
         for k, v in record.items():
@@ -79,6 +83,7 @@ class Client:
                 logging.info(f"Object {result.get('id')} had errors: {errors}. Going to retry.")
 
         for object_with_error in objects_with_error:
+            print(self.buffered_objects)
             buffered_object = self.buffered_objects[object_with_error["id"]]
             self.client.batch.add_data_object(buffered_object.properties, buffered_object.class_name, buffered_object.id,
                                               buffered_object.vector)
@@ -90,7 +95,7 @@ class Client:
 
         if objects_with_error and retries <= 0:
             error_msg = f"Objects had errors and retries failed as well: {objects_with_error}"
-            raise Exception(error_msg)
+            raise WeaviatePartialBatchError(error_msg)
 
         self.buffered_objects.clear()
 
