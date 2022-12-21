@@ -715,6 +715,7 @@
   "connectorBuilder.inputsTooltip": "Define test inputs to check whether the connector configuration works",
   "connectorBuilder.inputsNoSpecUITooltip": "Add User Input fields to allow setting test inputs",
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
+  "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

@@ -9,6 +9,7 @@ import { InfoBox } from "components/ui/InfoBox";
 import { Modal, ModalBody } from "components/ui/Modal";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { ConnectorForm } from "views/Connector/ConnectorForm";
 
@@ -84,9 +85,9 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
                   bodyClassName={styles.formContent}
                   footerClassName={styles.inputFormModalFooter}
                   selectedConnectorDefinitionSpecification={jsonManifest.spec}
-                  formValues={configJson}
+                  formValues={{ connectionConfiguration: configJson }}
                   onSubmit={async (values) => {
-                    setConfigJson(values);
+                    setConfigJson(values.connectionConfiguration as StreamReadRequestBodyConfig);
                     setIsOpen(false);
                   }}
                   onCancel={() => {
