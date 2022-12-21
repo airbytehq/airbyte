@@ -8,6 +8,13 @@ import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.enquoteIdentifier;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.DISABLE;
 import static io.airbyte.integrations.util.PostgresSslConnectionUtils.PARAM_SSL_MODE;
 import static java.util.stream.Collectors.toList;
@@ -18,6 +25,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.commons.features.FeatureFlags;
 import io.airbyte.commons.functional.CheckedConsumer;
@@ -29,6 +37,7 @@ import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
+import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.base.ssh.SshWrappedSource;
@@ -37,6 +46,7 @@ import io.airbyte.integrations.debezium.internals.PostgresDebeziumStateUtil;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils;
 import io.airbyte.integrations.source.jdbc.dto.JdbcPrivilegeDto;
+import io.airbyte.integrations.source.relationaldb.CursorInfo;
 import io.airbyte.integrations.source.relationaldb.TableInfo;
 import io.airbyte.integrations.source.relationaldb.models.CdcState;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
@@ -45,6 +55,7 @@ import io.airbyte.integrations.util.HostPortResolver;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.AirbyteEstimateTraceMessage.Type;
 import io.airbyte.protocol.models.AirbyteGlobalState;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteStateMessage;
@@ -92,20 +103,7 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   public static final String SSL_KEY = "sslkey";
   public static final String SSL_PASSWORD = "sslpassword";
   public static final String MODE = "mode";
-  public static final String NULL_CURSOR_VALUE_WITH_SCHEMA =
-      """
-        SELECT
-          (EXISTS (SELECT FROM information_schema.columns WHERE table_schema = '%s' AND table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
-        AND
-          (EXISTS (SELECT from %s.\"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
-      """;
-  public static final String NULL_CURSOR_VALUE_NO_SCHEMA =
-      """
-      SELECT
-        (EXISTS (SELECT FROM information_schema.columns WHERE table_name = '%s' AND is_nullable = 'YES' AND column_name = '%s'))
-      AND
-        (EXISTS (SELECT from \"%s\" where \"%s\" IS NULL LIMIT 1)) AS %s
-      """;
+
   private List<String> schemas;
   private final FeatureFlags featureFlags;
   private static final Set<String> INVALID_CDC_SSL_MODES = ImmutableSet.of("allow", "prefer");
@@ -517,7 +515,8 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   @Override
-  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName) throws SQLException {
+  protected boolean verifyCursorColumnValues(final JdbcDatabase database, final String schema, final String tableName, final String columnName)
+      throws SQLException {
     final String query;
     final String resultColName = "nullValue";
     // Query: Only if cursor column allows null values, query whether it contains one
@@ -536,4 +535,118 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     LOGGER.debug("null value exist: {}", nullValExist);
     return !nullValExist;
   }
+
+  @Override
+  protected void estimateFullRefreshSyncSize(final JdbcDatabase database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream) {
+    try {
+      final String schemaName = configuredAirbyteStream.getStream().getNamespace();
+      final String tableName = configuredAirbyteStream.getStream().getName();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(getQuoteString(), schemaName, tableName);
+
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+
+      final long syncRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
+      final long syncByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+      // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
+      // is to
+      // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
+      // However, this approach doesn't account for different row sizes.
+      AirbyteTraceMessageUtility.emitEstimateTrace(2 * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+      LOGGER.info("estimate for table: " + fullTableName + " : {total_bytes:" + syncByteCount + ", row_count : " + syncRowCount);
+    } catch (final SQLException e) {
+      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
+    }
+  }
+
+  @Override
+  protected void estimateIncrementalSyncSize(final JdbcDatabase database,
+                                             final ConfiguredAirbyteStream configuredAirbyteStream,
+                                             final CursorInfo cursorInfo,
+                                             final PostgresType cursorFieldType) {
+    try {
+      final String schemaName = configuredAirbyteStream.getStream().getNamespace();
+      final String tableName = configuredAirbyteStream.getStream().getName();
+      final String fullTableName =
+          getFullyQualifiedTableNameWithQuoting(getQuoteString(), schemaName, tableName);
+
+      final List<JsonNode> tableEstimateResult = getFullTableEstimate(database, fullTableName);
+
+      final long tableRowCount = tableEstimateResult.get(0).get(ROW_COUNT_RESULT_COL).asLong();
+      final long tableByteCount = tableEstimateResult.get(0).get(TOTAL_BYTES_RESULT_COL).asLong();
+
+      final long syncRowCount;
+      final long syncByteCount;
+
+      syncRowCount = getIncrementalTableRowCount(database, fullTableName, cursorInfo, cursorFieldType);
+      syncByteCount = (tableByteCount / tableRowCount) * syncRowCount;
+
+      // Here, we double the bytes estimate to account for serialization. Perhaps a better way to do this
+      // is to
+      // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
+      // However, this approach doesn't account for different row sizes
+      AirbyteTraceMessageUtility.emitEstimateTrace(2 * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+      LOGGER.info("estimate for table: " + fullTableName + " : {row_count:" + syncRowCount + ", total_bytes : " + syncByteCount);
+    } catch (final SQLException e) {
+      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
+    }
+  }
+
+  private List<JsonNode> getFullTableEstimate(final JdbcDatabase database, final String fullTableName) throws SQLException {
+    // Construct the table estimate query.
+    final String tableEstimateQuery =
+        String.format(TABLE_ESTIMATE_QUERY, fullTableName, ROW_COUNT_RESULT_COL, fullTableName, TOTAL_BYTES_RESULT_COL);
+    LOGGER.debug("table estimate query: {}", tableEstimateQuery);
+    final List<JsonNode> jsonNodes = database.bufferedResultSetQuery(conn -> conn.createStatement().executeQuery(tableEstimateQuery),
+        resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+    Preconditions.checkState(jsonNodes.size() == 1);
+    return jsonNodes;
+  }
+
+  private long getIncrementalTableRowCount(final JdbcDatabase database,
+                                             final String fullTableName,
+                                             final CursorInfo cursorInfo,
+                                             final PostgresType cursorFieldType) {
+    try {
+      final String quotedCursorField = enquoteIdentifier(getQuoteString(), cursorInfo.getCursorField());
+
+      // Calculate actual number of rows to sync here.
+      final List<JsonNode> result = database.queryJsons(
+          connection -> {
+            LOGGER.info("Preparing query for table: {}", fullTableName);
+            final String operator;
+            if (cursorInfo.getCursorRecordCount() <= 0L) {
+              operator = ">";
+            } else {
+              final long actualRecordCount = getActualCursorRecordCount(
+                  connection, fullTableName, quotedCursorField, cursorFieldType, cursorInfo.getCursor());
+              LOGGER.info("Table {} cursor count: expected {}, actual {}", fullTableName, cursorInfo.getCursorRecordCount(), actualRecordCount);
+              if (actualRecordCount == cursorInfo.getCursorRecordCount()) {
+                operator = ">";
+              } else {
+                operator = ">=";
+              }
+            }
+
+            final StringBuilder sql = new StringBuilder(String.format("SELECT COUNT(*) FROM %s WHERE %s %s ?",
+                fullTableName,
+                quotedCursorField,
+                operator));
+
+            final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
+            LOGGER.info("Executing query for table {}: {}", fullTableName, preparedStatement);
+            sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+            return preparedStatement;
+          },
+          resultSet -> JdbcUtils.getDefaultSourceOperations().rowToJson(resultSet));
+
+      Preconditions.checkState(result.size() == 1);
+      return result.get(0).get("count").asLong();
+    } catch (final SQLException e) {
+      throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
+    }
+  }
+
 }
