@@ -60,7 +60,7 @@ export const convertToManifest = (values: BuilderFormValues): ConnectorManifest 
           url_base: values.global?.urlBase,
           path: stream.urlPath,
           request_options_provider: {
-            // TODO can't declar type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
+            // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
             // type: "InterpolatedRequestOptionsProvider",
             request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
             request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
