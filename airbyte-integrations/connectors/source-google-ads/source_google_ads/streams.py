@@ -189,7 +189,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
         and update `start_date` key in the `stream_slice` with the latest read record's cursor value, then retry the sync.
         """
         while True:
-            self.logger.info(f"Starting a while loop iteration")
+            self.logger.info("Starting a while loop iteration")
             customer_id = stream_slice and stream_slice["customer_id"]
             try:
                 records = super().read_records(sync_mode, stream_slice=stream_slice)
@@ -231,7 +231,7 @@ class IncrementalGoogleAdsStream(GoogleAdsStream, IncrementalMixin, ABC):
                     raise exception
             else:
                 # return the control if no exception is raised
-                self.logger.info(f"Current slice has been read. Exiting read_records()")
+                self.logger.info("Current slice has been read. Exiting read_records()")
                 return
 
     def get_query(self, stream_slice: Mapping[str, Any] = None) -> str:
