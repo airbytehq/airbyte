@@ -135,6 +135,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
       }
 
       // if the buffer flushes, update the states appropriately.
+      // TODO: ryankfu (if true, this is where bundling up logic to also commit to airbyte_raw table)
       if (bufferingStrategy.addRecord(stream, message)) {
         markStatesAsFlushedToTmpDestination();
       }
@@ -191,6 +192,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         onClose.accept(false);
       }
 
+      // TODO: (ryankfu) at this section for when we close the stream and mark stream as committed
       // if onClose succeeds without exception then we can emit the state record because it means its
       // records were not only flushed, but committed.
       stateManager.markFlushedAsCommitted();
