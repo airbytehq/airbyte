@@ -29,14 +29,14 @@ import org.slf4j.LoggerFactory;
  * useful for migrating configuration to a new version or for enabling connectors that require
  * single-use or short-lived OAuth tokens.
  */
-public class UpdateConnectorConfigHelper {
+public class ConnectorConfigUpdater {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateConnectorConfigHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorConfigUpdater.class);
 
   private final SourceApi sourceApi;
   private final DestinationApi destinationApi;
 
-  public UpdateConnectorConfigHelper(final SourceApi sourceApi, final DestinationApi destinationApi) {
+  public ConnectorConfigUpdater(final SourceApi sourceApi, final DestinationApi destinationApi) {
     this.sourceApi = sourceApi;
     this.destinationApi = destinationApi;
   }

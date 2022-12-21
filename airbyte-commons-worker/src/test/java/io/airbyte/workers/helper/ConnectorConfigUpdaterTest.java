@@ -25,7 +25,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class UpdateConnectorConfigHelperTest {
+class ConnectorConfigUpdaterTest {
 
   private static final UUID SOURCE_ID = UUID.randomUUID();
   private static final String SOURCE_NAME = "source-stripe";
@@ -35,7 +35,7 @@ class UpdateConnectorConfigHelperTest {
   private final SourceApi mSourceApi = mock(SourceApi.class);
   private final DestinationApi mDestinationApi = mock(DestinationApi.class);
 
-  private UpdateConnectorConfigHelper updateConnectorConfigHelper;
+  private ConnectorConfigUpdater connectorConfigUpdater;
 
   @BeforeEach
   void setUp() throws ApiException {
@@ -49,7 +49,7 @@ class UpdateConnectorConfigHelperTest {
             .destinationId(DESTINATION_ID)
             .name(DESTINATION_NAME));
 
-    updateConnectorConfigHelper = new UpdateConnectorConfigHelper(mSourceApi, mDestinationApi);
+    connectorConfigUpdater = new ConnectorConfigUpdater(mSourceApi, mDestinationApi);
   }
 
   @Test
@@ -64,7 +64,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mSourceApi.updateSource(Mockito.any())).thenReturn(new SourceRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateSource(SOURCE_ID, newConfiguration);
+    connectorConfigUpdater.updateSource(SOURCE_ID, newConfiguration);
     verify(mSourceApi).updateSource(expectedSourceUpdate);
   }
 
@@ -80,7 +80,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mDestinationApi.updateDestination(Mockito.any())).thenReturn(new DestinationRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateDestination(DESTINATION_ID, newConfiguration);
+    connectorConfigUpdater.updateDestination(DESTINATION_ID, newConfiguration);
     verify(mDestinationApi).updateDestination(expectedDestinationUpdate);
   }
 

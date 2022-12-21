@@ -32,7 +32,7 @@ import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.general.DefaultReplicationWorker;
-import io.airbyte.workers.helper.UpdateConnectorConfigHelper;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteDestination;
 import io.airbyte.workers.internal.DefaultAirbyteSource;
@@ -158,7 +158,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
         new AirbyteMessageTracker(),
         new RecordSchemaValidator(WorkerUtils.mapStreamNamesToSchemas(syncInput)),
         metricReporter,
-        new UpdateConnectorConfigHelper(sourceApi, destinationApi),
+        new ConnectorConfigUpdater(sourceApi, destinationApi),
         featureFlags.applyFieldSelection());
 
     log.info("Running replication worker...");
