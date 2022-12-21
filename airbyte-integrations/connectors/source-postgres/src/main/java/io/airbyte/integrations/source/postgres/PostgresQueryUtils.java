@@ -7,7 +7,7 @@ package io.airbyte.integrations.source.postgres;
 import java.sql.SQLException;
 
 /**
- * Utility class to define constants related to querying postgres.
+ * Utility class to define constants related to querying postgres
  */
 public class PostgresQueryUtils {
 
