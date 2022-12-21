@@ -6,6 +6,7 @@ import { useDeepCompareEffect } from "react-use";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
+import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
@@ -13,12 +14,7 @@ import { isDefined } from "utils/common";
 import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import { useBuildForm, useBuildUiWidgetsContext, useConstructValidationSchema, usePatchFormik } from "./useBuildForm";
-
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
+import { useBuildForm, useBuildUiWidgetsContext, useConstructValidationSchema } from "./useBuildForm";
 
 /**
  * This function sets all initial const values in the form to current values
@@ -84,7 +80,7 @@ export interface ConnectorFormProps {
   onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
-  hasSuccess?: boolean;
+  connectionTestSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
   connectorId?: string;
@@ -103,7 +99,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formValues,
     onSubmit,
     isEditMode,
-    isTestConnectionInProgress,
     onStopTesting,
     testConnector,
     selectedConnectorDefinition,
@@ -170,7 +165,6 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
             {...props}
             formFields={formFields}
             errorMessage={errorMessage}
-            isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
           />
