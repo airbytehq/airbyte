@@ -9,3 +9,6 @@ export const visitConnectionsListPage = () => {
 
 export const getSchemaChangeIcon = (connection: Connection, type: "breaking" | "non_breaking") =>
   cy.get(`[data-testId='statusCell-${connection.connectionId}'] [data-testId='changesStatusIcon-${type}']`);
+
+export const getManualSyncButton = (connection: Connection) =>
+  cy.get(`[data-testId='statusCell-${connection.connectionId}'] button[data-testId='manual-sync-button']`);

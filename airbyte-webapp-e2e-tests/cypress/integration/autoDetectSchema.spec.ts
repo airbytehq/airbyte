@@ -18,7 +18,12 @@ import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
 import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
-import { getNonBreakingChangeIcon, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
+import {
+  getManualSyncButton,
+  getNonBreakingChangeIcon,
+  getSchemaChangeIcon,
+  visitConnectionsListPage,
+} from "pages/connnectionsListPage";
 import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
 import {
   checkSchemaChangesDetected,
@@ -86,6 +91,7 @@ describe("Auto-detect schema changes", () => {
     it("shows breaking change on list page", () => {
       visitConnectionsListPage();
       getSchemaChangeIcon(connection, "non_breaking").should("exist");
+      getManualSyncButton(connection).should("be.enabled");
     });
 
     it("shows non-breaking change that can be saved after refresh", () => {
@@ -125,6 +131,7 @@ describe("Auto-detect schema changes", () => {
     it("shows breaking change on list page", () => {
       visitConnectionsListPage();
       getSchemaChangeIcon(connection, "breaking").should("exist");
+      getManualSyncButton(connection).should("be.disabled");
     });
 
     it("shows breaking change that can be saved after refresh and fix", () => {
