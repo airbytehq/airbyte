@@ -19,6 +19,7 @@ export const AuthenticationSection: React.FC = () => {
             typeValue: "ApiKeyAuthenticator",
             default: {
               api_token: "{{ config['api_key'] }}",
+              header: "",
             },
             children: (
               <>
@@ -70,6 +71,7 @@ export const AuthenticationSection: React.FC = () => {
               client_secret: "{{ config['client_secret'] }}",
               refresh_token: "{{ config['client_refresh_token'] }}",
               refresh_request_body: [],
+              token_refresh_endpoint: "",
             },
             children: (
               <>
