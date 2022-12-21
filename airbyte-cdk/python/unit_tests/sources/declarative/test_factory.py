@@ -41,7 +41,6 @@ from airbyte_cdk.sources.declarative.stream_slicers.list_stream_slicer import Li
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.yaml_declarative_source import YamlDeclarativeSource
-from dateutil.relativedelta import relativedelta
 from jsonschema import ValidationError
 
 factory = DeclarativeComponentFactory()
