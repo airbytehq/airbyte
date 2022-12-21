@@ -7,11 +7,11 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
+import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
 import io.airbyte.config.ActorCatalogFetchEvent;
-import io.airbyte.config.persistence.ConfigRepository;
 import jakarta.inject.Singleton;
 import java.io.IOException;
 import java.time.OffsetDateTime;
@@ -23,15 +23,15 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
-  private final Optional<ConfigRepository> configRepository;
+  private final ConnectionApi connectionApi;
 
   private final SourceApi sourceApi;
   private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
-  public RefreshSchemaActivityImpl(Optional<ConfigRepository> configRepository,
+  public RefreshSchemaActivityImpl(ConnectionApi connectionApi,
                                    SourceApi sourceApi,
                                    EnvVariableFeatureFlags envVariableFeatureFlags) {
-    this.configRepository = configRepository;
+    this.connectionApi = connectionApi;
     this.sourceApi = sourceApi;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
@@ -39,8 +39,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
   @Override
   @Trace(operationName = ACTIVITY_TRACE_OPERATION_NAME)
   public boolean shouldRefreshSchema(UUID sourceCatalogId) {
-    // if job persistence is unavailable, default to skipping the schema refresh
-    if (configRepository.isEmpty() || !envVariableFeatureFlags.autoDetectSchema()) {
+    if (!envVariableFeatureFlags.autoDetectSchema()) {
       return false;
     }
 
@@ -66,7 +65,7 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) {
     try {
-      Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = configRepository.get().getMostRecentActorCatalogFetchEventForSource(sourceCatalogId);
+      Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = Optional.empty();
       if (mostRecentFetchEvent.isEmpty()) {
         return false;
       }
