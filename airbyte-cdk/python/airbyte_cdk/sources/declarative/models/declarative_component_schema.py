@@ -126,8 +126,8 @@ class CustomTransformation(BaseModel):
     _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
-class DeclarativeOauth2Authenticator(BaseModel):
-    type: Literal["DeclarativeOauth2Authenticator"]
+class OAuthAuthenticator(BaseModel):
+    type: Literal["OAuthAuthenticator"]
     client_id: str
     client_secret: str
     refresh_token: str
@@ -399,7 +399,7 @@ class HttpRequester(BaseModel):
             BasicHttpAuthenticator,
             BearerAuthenticator,
             CustomAuthenticator,
-            DeclarativeOauth2Authenticator,
+            OAuthAuthenticator,
             NoAuth,
             SessionTokenAuthenticator,
         ]
