@@ -51,6 +51,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
             helpers.setValue([
               ...streamsField.value,
               merge({}, DEFAULT_BUILDER_STREAM_VALUES, {
+                ...initialValues,
                 name: values.streamName,
                 urlPath: values.urlPath,
               }),

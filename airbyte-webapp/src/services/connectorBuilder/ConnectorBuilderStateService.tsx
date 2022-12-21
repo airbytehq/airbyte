@@ -55,7 +55,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     DEFAULT_BUILDER_FORM_VALUES
   );
   const builderFormValues = useMemo(() => {
-    return merge(DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
+    return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
   }, [storedBuilderFormValues]);
 
   const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
