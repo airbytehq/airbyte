@@ -18,8 +18,11 @@ import io.airbyte.server.handlers.WorkspacesHandler;
 import io.micronaut.http.annotation.Body;
 import io.micronaut.http.annotation.Controller;
 import io.micronaut.http.annotation.Post;
+import io.micronaut.security.annotation.Secured;
+import io.micronaut.security.rules.SecurityRule;
 
 @Controller("/api/v1/workspaces")
+@Secured(SecurityRule.IS_AUTHENTICATED)
 public class WorkspaceApiController implements WorkspaceApi {
 
   private final WorkspacesHandler workspacesHandler;
@@ -29,12 +32,14 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/create")
+  @Secured({"AUTHENTICATED_USER"})
   @Override
   public WorkspaceRead createWorkspace(@Body final WorkspaceCreate workspaceCreate) {
     return ApiHelper.execute(() -> workspacesHandler.createWorkspace(workspaceCreate));
   }
 
   @Post("/delete")
+  @Secured({"OWNER"})
   @Override
   public void deleteWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     ApiHelper.execute(() -> {
@@ -44,30 +49,35 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/get")
+  @Secured({"OWNER"})
   @Override
   public WorkspaceRead getWorkspace(@Body final WorkspaceIdRequestBody workspaceIdRequestBody) {
     return ApiHelper.execute(() -> workspacesHandler.getWorkspace(workspaceIdRequestBody));
   }
 
   @Post("/get_by_slug")
+  @Secured({"OWNER"})
   @Override
   public WorkspaceRead getWorkspaceBySlug(@Body final SlugRequestBody slugRequestBody) {
     return ApiHelper.execute(() -> workspacesHandler.getWorkspaceBySlug(slugRequestBody));
   }
 
   @Post("/list")
+  @Secured({"AUTHENTICATED_USER"})
   @Override
   public WorkspaceReadList listWorkspaces() {
     return ApiHelper.execute(workspacesHandler::listWorkspaces);
   }
 
   @Post("/update")
+  @Secured({"OWNER"})
   @Override
   public WorkspaceRead updateWorkspace(@Body final WorkspaceUpdate workspaceUpdate) {
     return ApiHelper.execute(() -> workspacesHandler.updateWorkspace(workspaceUpdate));
   }
 
   @Post("/tag_feedback_status_as_done")
+  @Secured({"OWNER"})
   @Override
   public void updateWorkspaceFeedback(@Body final WorkspaceGiveFeedback workspaceGiveFeedback) {
     ApiHelper.execute(() -> {
@@ -77,12 +87,14 @@ public class WorkspaceApiController implements WorkspaceApi {
   }
 
   @Post("/update_name")
+  @Secured({"OWNER"})
   @Override
   public WorkspaceRead updateWorkspaceName(@Body final WorkspaceUpdateName workspaceUpdateName) {
     return ApiHelper.execute(() -> workspacesHandler.updateWorkspaceName(workspaceUpdateName));
   }
 
   @Post("/get_by_connection_id")
+  @Secured({"AUTHENTICATED_USER"})
   @Override
   public WorkspaceRead getWorkspaceByConnectionId(@Body final ConnectionIdRequestBody connectionIdRequestBody) {
     return ApiHelper.execute(() -> workspacesHandler.getWorkspaceByConnectionId(connectionIdRequestBody));
