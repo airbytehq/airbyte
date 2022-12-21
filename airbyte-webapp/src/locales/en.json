@@ -678,7 +678,7 @@
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
-  "connectorBuilder.inputsTitle": "User inputs",
+  "connectorBuilder.inputsTitle": "User Inputs",
   "connectorBuilder.inputsDescription": "User inputs will be asked to the end-user in order to set up the connector.",
   "connectorBuilder.addInputButton": "Add new user input",
   "connectorBuilder.inputModal.newTitle": "New user input",
@@ -703,6 +703,7 @@
   "connectorBuilder.inputModal.enum": "Allowed values",
   "connectorBuilder.inputModal.enumTooltip": "The user will only be able to choose from one of these values. If none are provided the user will be able to enter any value",
   "connectorBuilder.inputModal.unsupportedInput": "Detailed configuration for this property type is disabled, switch to YAML view to edit",
+  "connectorBuilder.inputModal.inferredInputMessage": "Detailed configuration for this user input is disabled as it is tied to the selected authentication method",
   "connectorBuilder.key": "key",
   "connectorBuilder.value": "value",
   "connectorBuilder.addKeyValue": "Add",
@@ -717,6 +718,7 @@
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
+  "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

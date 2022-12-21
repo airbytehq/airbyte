@@ -11,7 +11,7 @@ export const AuthenticationSection: React.FC = () => {
       <BuilderOneOf
         path="global.authenticator"
         label="Authentication"
-        tooltip="Authentication method to use for requests send to the API"
+        tooltip="Authentication method to use for requests sent to the API"
         options={[
           { label: "No Auth", typeValue: "NoAuth" },
           {

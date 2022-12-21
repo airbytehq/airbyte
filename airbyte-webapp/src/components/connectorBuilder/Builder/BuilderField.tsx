@@ -35,7 +35,12 @@ interface BaseFieldProps {
 }
 
 type BuilderFieldProps = BaseFieldProps &
-  ({ type: "string" | "integer" | "number" | "boolean" | "array" } | { type: "enum"; options: string[] });
+  (
+    | { type: "string" | "number" | "integer"; onChange?: (newValue: string) => void }
+    | { type: "boolean"; onChange?: (newValue: boolean) => void }
+    | { type: "array"; onChange?: (newValue: string[]) => void }
+    | { type: "enum"; onChange?: (newValue: string) => void; options: string[] }
+  );
 
 const EnumField: React.FC<EnumFieldProps> = ({ options, value, setValue, error, ...props }) => {
   return (
@@ -80,21 +85,31 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
     );
   }
 
+  const setValue = (newValue: unknown) => {
+    props.onChange?.(newValue as string & string[]);
+    helpers.setValue(newValue);
+  };
+
   return (
     <ControlLabels className={styles.container} label={label} infoTooltipContent={tooltip} optional={optional}>
       {(props.type === "number" || props.type === "string" || props.type === "integer") && (
-        <Input {...field} type={props.type} value={field.value ?? ""} error={hasError} readOnly={readOnly} />
+        <Input
+          {...field}
+          onChange={(e) => {
+            field.onChange(e);
+            props.onChange?.(e.target.value);
+          }}
+          type={props.type}
+          value={field.value ?? ""}
+          error={hasError}
+          readOnly={readOnly}
+        />
       )}
       {props.type === "array" && (
-        <ArrayField name={path} value={field.value ?? []} setValue={helpers.setValue} error={hasError} />
+        <ArrayField name={path} value={field.value ?? []} setValue={setValue} error={hasError} />
       )}
       {props.type === "enum" && (
-        <EnumField
-          options={props.options}
-          value={field.value ?? props.options[0]}
-          setValue={helpers.setValue}
-          error={hasError}
-        />
+        <EnumField options={props.options} value={field.value} setValue={setValue} error={hasError} />
       )}
       {hasError && (
         <Text className={styles.error}>
