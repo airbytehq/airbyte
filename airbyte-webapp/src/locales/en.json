@@ -703,6 +703,7 @@
   "connectorBuilder.inputModal.enum": "Allowed values",
   "connectorBuilder.inputModal.enumTooltip": "The user will only be able to choose from one of these values. If none are provided the user will be able to enter any value",
   "connectorBuilder.inputModal.unsupportedInput": "Detailed configuration for this property type is disabled, switch to YAML view to edit",
+  "connectorBuilder.inputModal.inferredInputMessage": "Detailed configuration for this user input is disabled as it is tied to the selected authentication method",
   "connectorBuilder.key": "key",
   "connectorBuilder.value": "value",
   "connectorBuilder.addKeyValue": "Add",
