@@ -485,6 +485,7 @@ subprojects { subproj ->
 
 task('generate') {
     dependsOn subprojects.collect { it.getTasksByName('generateProtocolClassFiles', true) }
+    dependsOn subprojects.collect { it.getTasksByName('generateComponentManifestClassFiles', true) }
     dependsOn subprojects.collect { it.getTasksByName('generateJsonSchema2Pojo', true) }
 }
 
@@ -526,6 +527,11 @@ subprojects {
         def generateFilesTask = project.tasks.findByName('generateProtocolClassFiles')
         if (generateFilesTask != null) {
             licenseTask.dependsOn generateFilesTask
+        }
+
+        def generateManifestFilesTask = project.tasks.findByName('generateComponentManifestClassFiles')
+        if (generateManifestFilesTask != null) {
+            licenseTask.dependsOn generateManifestFilesTask
         }
     }
     task listAllDependencies(type: DependencyReportTask) {}

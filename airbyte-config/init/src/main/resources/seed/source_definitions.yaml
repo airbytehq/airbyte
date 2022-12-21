@@ -578,7 +578,7 @@
 - name: GNews
   sourceDefinitionId: ce38aec4-5a77-439a-be29-9ca44fd4e811
   dockerRepository: airbyte/source-gnews
-  dockerImageTag: 0.1.0
+  dockerImageTag: 0.1.2
   documentationUrl: https://docs.airbyte.com/integrations/sources/gnews
   sourceType: api
   releaseStage: alpha
@@ -1637,7 +1637,7 @@
 - name: TikTok Marketing
   sourceDefinitionId: 4bfac00d-ce15-44ff-95b9-9e3c3e8fbd35
   dockerRepository: airbyte/source-tiktok-marketing
-  dockerImageTag: 1.0.0
+  dockerImageTag: 1.0.1
   documentationUrl: https://docs.airbyte.com/integrations/sources/tiktok-marketing
   icon: tiktok.svg
   sourceType: api
