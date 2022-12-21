@@ -247,8 +247,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .sourceType("date")
               .fullSourceDataType(type)
               .airbyteType(JsonSchemaType.STRING_DATE)
-              .addInsertValues("'1999-01-08'", "'2021-01-01'")
-              .addExpectedValues("1999-01-08", "2021-01-01")
+              .addInsertValues("'1999-01-08'", "'2021-01-01'", "'2022/11/12'", "'1987.12.01'")
+              .addExpectedValues("1999-01-08", "2021-01-01","2022-11-12", "1987-12-01")
               .build());
     }
 
@@ -288,8 +288,8 @@ public abstract class AbstractMySqlSourceDatatypeTest extends AbstractSourceData
               .fullSourceDataType(fullSourceType)
               .airbyteType(JsonSchemaType.STRING_TIME_WITHOUT_TIMEZONE)
               // JDBC driver can process only "clock"(00:00:00-23:59:59) values.
-              .addInsertValues("'-22:59:59'", "'23:59:59'", "'00:00:00'")
-              .addExpectedValues("22:59:59.000000", "23:59:59.000000", "00:00:00.000000")
+              .addInsertValues("'-22:59:59'", "'23:59:59.12'", "'00:00:00'")
+              .addExpectedValues("22:59:59", "23:59:59.12", "00:00:00")
               .build());
 
     }

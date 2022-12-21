@@ -143,8 +143,8 @@ public abstract class AbstractMssqlSourceDatatypeTest extends AbstractSourceData
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null")
-            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null)
+            .addInsertValues("'0001-01-01'", "'9999-12-31'", "'1999-01-08'", "null", "'2022/11/12'", "'1987.12.01'")
+            .addExpectedValues("0001-01-01", "9999-12-31", "1999-01-08", null, "2022-11-12", "1987-12-01")
             .createTablePatternSql(CREATE_TABLE_SQL)
             .build());
 

@@ -298,13 +298,14 @@ public class Db2SourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
             .build());
 
     // Datetime values
+
     addDataTypeTestData(
         TestDataHolder.builder()
             .createTablePatternSql(CREATE_TABLE_SQL)
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01", "9999-12-31")
+            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'", "'2022/11/12'", "'1987.12.01'")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31", "2022-11-12", "1987-12-01")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()

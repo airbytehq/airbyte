@@ -17,6 +17,8 @@ import io.airbyte.integrations.standardtest.source.TestDestinationEnv;
 import io.airbyte.protocol.models.JsonSchemaType;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.Set;
+
 import org.jooq.DSLContext;
 import org.jooq.SQLDialect;
 import org.slf4j.Logger;
@@ -211,13 +213,15 @@ public class CockroachDbSourceDatatypeTest extends AbstractSourceDatabaseTypeTes
             .addExpectedValues("a           ", "abc         ", "Миші йдуть; ", "櫻花分店        ",
                 "            ", null)
             .build());
+    for (final String type : Set.of("date", "date not null default '0000-00-00'")) {
 
+    }
     addDataTypeTestData(
         TestDataHolder.builder()
             .sourceType("date")
             .airbyteType(JsonSchemaType.STRING)
-            .addInsertValues("'1999-01-08'", "null")
-            .addExpectedValues("1999-01-08", null)
+            .addInsertValues("'1999-01-08'", "null", "'2022/11/12'", "'1987.12.01'")
+            .addExpectedValues("1999-01-08", null, "2022-11-12", "1987-12-01")
             .build());
 
     addDataTypeTestData(

@@ -261,8 +261,8 @@ public class SnowflakeSourceDatatypeTest extends AbstractSourceDatabaseTypeTest 
         TestDataHolder.builder()
             .sourceType("DATE")
             .airbyteType(JsonSchemaType.STRING_DATE)
-            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'")
-            .addExpectedValues(null, "0001-01-01", "9999-12-31")
+            .addInsertValues("null", "'0001-01-01'", "'9999-12-31'", "'2022/11/12'", "'1987.12.01'")
+            .addExpectedValues(null, "0001-01-01", "9999-12-31", "2022-11-12", "1987-12-01")
             .build());
     addDataTypeTestData(
         TestDataHolder.builder()
