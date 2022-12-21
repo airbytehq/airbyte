@@ -29,6 +29,7 @@ from .utils import backoff_handler
 
 SSH_TIMEOUT = 60
 
+
 class ConfigurationError(Exception):
     """Client mis-configured"""
 
