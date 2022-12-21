@@ -97,6 +97,9 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
           {...field}
           onChange={(e) => {
             field.onChange(e);
+            if (e.target.value === "") {
+              helpers.setValue(undefined);
+            }
             props.onChange?.(e.target.value);
           }}
           type={props.type}
