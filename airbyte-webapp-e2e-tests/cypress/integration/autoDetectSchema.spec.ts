@@ -18,6 +18,7 @@ import { runDbQuery } from "commands/db/db";
 import { alterTable, createUsersTableQuery, dropUsersTableQuery } from "commands/db/queries";
 import { initialSetupCompleted } from "commands/workspaces";
 import { getSyncEnabledSwitch, visitConnectionPage } from "pages/connectionPage";
+import { getNonBreakingChangeIcon, getSchemaChangeIcon, visitConnectionsListPage } from "pages/connnectionsListPage";
 import { checkCatalogDiffModal, clickCatalogDiffCloseButton } from "pages/modals/catalogDiffModal";
 import {
   checkSchemaChangesDetected,
@@ -39,7 +40,9 @@ describe("Auto-detect schema changes", () => {
     await requestWorkspaceId();
 
     const sourceRequestBody = getPostgresCreateSourceBody(appendRandomString("Auto-detect schema Source"));
-    const destinationRequestBody = getPostgresCreateDestinationBody(appendRandomString("Auto-detect schema Destination"));
+    const destinationRequestBody = getPostgresCreateDestinationBody(
+      appendRandomString("Auto-detect schema Destination")
+    );
 
     source = await requestCreateSource(sourceRequestBody);
     destination = await requestCreateDestination(destinationRequestBody);
@@ -74,56 +77,74 @@ describe("Auto-detect schema changes", () => {
     runDbQuery(dropUsersTableQuery);
   });
 
-  it("shows non-breaking change that can be saved after refresh", () => {
-    runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
-    requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true });
+  describe("non-breaking changes", () => {
+    beforeEach(() => {
+      runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
+      requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true });
+    });
 
-    // Need to continue running but async breaks everything
-    visitConnectionPage(connection, "replication");
+    it("shows breaking change on list page", () => {
+      visitConnectionsListPage();
+      getSchemaChangeIcon(connection, "non_breaking").should("exist");
+    });
 
-    checkSchemaChangesDetected({ breaking: false });
-    clickSchemaChangesReviewButton();
-    getSyncEnabledSwitch().should("be.enabled");
+    it("shows non-breaking change that can be saved after refresh", () => {
+      // Need to continue running but async breaks everything
+      visitConnectionPage(connection, "replication");
 
-    checkCatalogDiffModal();
-    clickCatalogDiffCloseButton();
+      checkSchemaChangesDetected({ breaking: false });
+      clickSchemaChangesReviewButton();
+      getSyncEnabledSwitch().should("be.enabled");
 
-    checkSchemaChangesDetectedCleared();
+      checkCatalogDiffModal();
+      clickCatalogDiffCloseButton();
 
-    clickSaveReplication();
-    getSyncEnabledSwitch().should("be.enabled");
+      checkSchemaChangesDetectedCleared();
+
+      clickSaveReplication();
+      getSyncEnabledSwitch().should("be.enabled");
+    });
   });
 
-  it("shows breaking change that can be saved after refresh and fix", () => {
-    visitConnectionPage(connection, "replication");
+  describe("breaking changes", () => {
+    beforeEach(() => {
+      visitConnectionPage(connection, "replication");
 
-    // Change users sync mode
-    searchStream("users");
-    selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("updated_at");
-    clickSaveReplication();
+      // Change users sync mode
+      searchStream("users");
+      selectSyncMode("Incremental", "Deduped + history");
+      selectCursorField("updated_at");
+      clickSaveReplication();
 
-    // Remove cursor from db and refreshs schema to force breaking change detection
-    runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
-    requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true }).then(console.log);
+      // Remove cursor from db and refreshs schema to force breaking change detection
+      runDbQuery(alterTable("public.users", { drop: ["updated_at"] }));
+      requestGetConnection({ connectionId: connection.connectionId, withRefreshedCatalog: true });
+      cy.reload();
+    });
 
-    // Reload the page to pick up the changes
-    cy.reload();
+    it("shows breaking change on list page", () => {
+      visitConnectionsListPage();
+      getSchemaChangeIcon(connection, "breaking").should("exist");
+    });
 
-    // Confirm that breaking changes are there
-    checkSchemaChangesDetected({ breaking: true });
-    clickSchemaChangesReviewButton();
-    getSyncEnabledSwitch().should("be.disabled");
+    it("shows breaking change that can be saved after refresh and fix", () => {
+      visitConnectionPage(connection, "replication");
 
-    checkCatalogDiffModal();
-    clickCatalogDiffCloseButton();
-    checkSchemaChangesDetectedCleared();
+      // Confirm that breaking changes are there
+      checkSchemaChangesDetected({ breaking: true });
+      clickSchemaChangesReviewButton();
+      getSyncEnabledSwitch().should("be.disabled");
 
-    // Fix the conflict
-    searchStream("Users");
-    selectSyncMode("Full refresh", "Append");
+      checkCatalogDiffModal();
+      clickCatalogDiffCloseButton();
+      checkSchemaChangesDetectedCleared();
 
-    clickSaveReplication();
-    getSyncEnabledSwitch().should("be.enabled");
+      // Fix the conflict
+      searchStream("Users");
+      selectSyncMode("Full refresh", "Append");
+
+      clickSaveReplication();
+      getSyncEnabledSwitch().should("be.enabled");
+    });
   });
 });
