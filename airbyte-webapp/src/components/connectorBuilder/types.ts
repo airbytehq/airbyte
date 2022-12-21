@@ -369,12 +369,11 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
         },
         paginator: stream.paginator
           ? {
+              type: "DefaultPaginator",
               page_token_option: stream.paginator.pageTokenOption,
               page_size_option: stream.paginator.pageSizeOption,
-              pagination_strategy: {
-                ...stream.paginator.strategy,
-                url_base: values.global?.urlBase,
-              },
+              pagination_strategy: stream.paginator.strategy,
+              url_base: values.global?.urlBase,
             }
           : { type: "NoPagination" },
         config: {},
