@@ -9,7 +9,7 @@ All endpoints are possible to access using the API without it.
 
 :::
 
-Our Configuration API is still in an alpha state and might change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API.
+Our Open-Source API (configuration API) is still in an alpha state and might change. You won’t lose any functionality, but you may need to update your code to catch up to any backwards incompatible changes in the API.
 
 **Check out the** [**Open-Source API documentation**](https://airbyte-public-api-docs.s3.us-east-2.amazonaws.com/rapidoc-api-docs.html)**.**
 
