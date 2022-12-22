@@ -24,7 +24,7 @@ export const OperationsSection: React.FC<OperationsSectionProps> = ({
   const { formatMessage } = useIntl();
 
   const {
-    destDefinition: { supportsNormalization, supportsDbt },
+    destDef: { supportsNormalization, supportsDbt },
   } = useConnectionFormService();
 
   const supportsTransformations = useFeature(FeatureItem.AllowCustomDBT) && supportsDbt;

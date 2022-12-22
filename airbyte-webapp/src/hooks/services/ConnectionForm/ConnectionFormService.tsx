@@ -3,6 +3,7 @@ import { useIntl } from "react-intl";
 
 import {
   ConnectionScheduleType,
+  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   OperationRead,
   WebBackendConnectionRead,
@@ -64,6 +65,7 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
+  destDef: DestinationDefinitionRead;
   destDefSpec: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
   schemaError?: SchemaError;
@@ -104,6 +106,7 @@ const useConnectionForm = ({
   return {
     connection,
     mode,
+    destDef,
     destDefSpec,
     initialValues,
     schemaError,
