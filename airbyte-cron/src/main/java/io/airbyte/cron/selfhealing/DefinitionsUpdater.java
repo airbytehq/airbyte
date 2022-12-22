@@ -32,32 +32,23 @@ public class DefinitionsUpdater {
 
   private final ConfigRepository configRepository;
 
-  private final boolean shouldUpdateDefinitions;
-
   private final URI remoteCatalogUrl;
   private final DeploymentMode deploymentMode;
 
   public DefinitionsUpdater(final ConfigRepository configRepository,
                             final DeploymentMode deploymentMode,
-                            @Value("${airbyte.remote-connector-catalog-url}") final String remoteCatalogUrl,
-                            @Value("${airbyte.cron.update-definitions.enabled}") final boolean shouldUpdateDefinitions) {
+                            @Value("${airbyte.remote-connector-catalog-url}") final String remoteCatalogUrl) {
     log.info("Creating connector definitions updater");
 
     this.configRepository = configRepository;
     this.deploymentMode = deploymentMode;
     this.remoteCatalogUrl = remoteCatalogUrl != null ? URI.create(remoteCatalogUrl) : null;
-    this.shouldUpdateDefinitions = shouldUpdateDefinitions;
   }
 
   @Trace(operationName = SCHEDULED_TRACE_OPERATION_NAME)
   @Scheduled(fixedRate = "30s",
              initialDelay = "1m")
   void updateDefinitions() {
-    if (!shouldUpdateDefinitions) {
-      log.info("Connector definitions update disabled.");
-      return;
-    }
-
     if (remoteCatalogUrl == null) {
       log.warn("Tried to update definitions, but the remote catalog url is not set");
       return;
