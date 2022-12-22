@@ -1,7 +1,7 @@
 export class FormBuildError extends Error {
   __type = "form.build";
 
-  constructor(public message: string, public connectorId?: string) {
+  constructor(public message: string, public connectorDefinitionId?: string) {
     super(message);
   }
 }

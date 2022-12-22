@@ -12,6 +12,7 @@ from airbyte_cdk.sources.declarative.auth.token import (
     BearerAuthenticator,
     SessionTokenAuthenticator,
 )
+from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime.min_max_datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.extractors.dpath_extractor import DpathExtractor
@@ -57,6 +58,7 @@ CLASS_TYPES_REGISTRY: Mapping[str, Type] = {
     "BasicHttpAuthenticator": BasicHttpAuthenticator,
     "BearerAuthenticator": BearerAuthenticator,
     "CartesianProductStreamSlicer": CartesianProductStreamSlicer,
+    "CheckStream": CheckStream,
     "CompositeErrorHandler": CompositeErrorHandler,
     "ConstantBackoffStrategy": ConstantBackoffStrategy,
     "CursorPagination": CursorPaginationStrategy,
