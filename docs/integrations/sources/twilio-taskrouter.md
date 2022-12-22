@@ -12,13 +12,14 @@ You can find [Taskrouter](https://console.twilio.com/develop/explore) in the Exp
 See [docs](https://www.twilio.com/docs/taskrouter/api) for more details.
 
 ## Setup guide
+
 ## Step 1: Set up the Twilio Takrouter connector in Airbyte
 
 ### For Airbyte Cloud:
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. In the left navigation bar, click **Sources**. In the top-right corner, click **+new source**.
-3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the <Source/Destination> type dropdown. 
+3. On the Set up the source page, enter the name for the Twilio connector and select **Twilio Taskrouter** from the <Source/Destination> type dropdown.
 4. Enter your `account_sid`.
 5. Enter your `auth_token`.
 6. Click **Set up source**.
@@ -44,12 +45,17 @@ The Twilio source connector supports the following [sync modes](https://docs.air
 
 ## Supported Streams
 
-* [Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
-* [All Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
-* [Workers](https://www.twilio.com/docs/taskrouter/api/worker)
+- [Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
+- [All Workspaces](https://www.twilio.com/docs/taskrouter/api/workspace)
+- [Workers](https://www.twilio.com/docs/taskrouter/api/worker)
 
 ## Performance considerations
 
-The Twilio Taskrouter connector will gracefully handle rate limits. 
+The Twilio Taskrouter connector will gracefully handle rate limits.
 For more information, see [the Twilio docs for rate limitations](https://support.twilio.com/hc/en-us/articles/360044308153-Twilio-API-response-Error-429-Too-Many-Requests).
 
+## Changelog
+
+| Version | Date       | Pull Request                                             | Subject                                             |
+| :------ | :--------- | :------------------------------------------------------- | :-------------------------------------------------- |
+| 0.1.0   | 2022-11-18 | [18685](https://github.com/airbytehq/airbyte/pull/18685) | 🎉 New Source: Twilio Taskrouter API [low-code cdk] |
