@@ -15,6 +15,7 @@ import { SOURCE_NAMESPACE_TAG } from "core/domain/connector/source";
 import {
   ConnectionScheduleData,
   ConnectionScheduleType,
+  DestinationDefinitionRead,
   DestinationDefinitionSpecificationRead,
   DestinationSyncMode,
   Geography,
@@ -275,7 +276,8 @@ export const getInitialNormalization = (
 
 export const useInitialValues = (
   connection: ConnectionOrPartialConnection,
-  destDefinition: DestinationDefinitionSpecificationRead,
+  destDef: DestinationDefinitionRead,
+  destDefSpec: DestinationDefinitionSpecificationRead,
   isNotCreateMode?: boolean
 ): FormikConnectionFormValues => {
   const workspace = useCurrentWorkspace();
@@ -303,7 +305,7 @@ export const useInitialValues = (
     () =>
       calculateInitialCatalog(
         connection.syncCatalog,
-        destDefinition?.supportedDestinationSyncModes || [],
+        destDefSpec?.supportedDestinationSyncModes || [],
         streamTransformsWithBreakingChange,
         isNotCreateMode,
         newStreamDescriptors
@@ -311,7 +313,7 @@ export const useInitialValues = (
     [
       streamTransformsWithBreakingChange,
       connection.syncCatalog,
-      destDefinition?.supportedDestinationSyncModes,
+      destDefSpec?.supportedDestinationSyncModes,
       isNotCreateMode,
       newStreamDescriptors,
     ]
@@ -336,11 +338,11 @@ export const useInitialValues = (
 
     const operations = connection.operations ?? [];
 
-    if (destDefinition.supportsDbt) {
+    if (destDef.supportsDbt) {
       initialValues.transformations = getInitialTransformations(operations);
     }
 
-    if (destDefinition.supportsNormalization) {
+    if (destDef.supportsNormalization) {
       initialValues.normalization = getInitialNormalization(operations, isNotCreateMode);
     }
 
@@ -358,8 +360,8 @@ export const useInitialValues = (
     connection.scheduleData,
     connection.scheduleType,
     connection.source.name,
-    destDefinition.supportsDbt,
-    destDefinition.supportsNormalization,
+    destDef.supportsDbt,
+    destDef.supportsNormalization,
     initialSchema,
     isNotCreateMode,
     workspace,

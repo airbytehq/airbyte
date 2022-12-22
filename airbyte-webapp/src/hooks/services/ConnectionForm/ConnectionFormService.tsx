@@ -7,6 +7,7 @@ import {
   OperationRead,
   WebBackendConnectionRead,
 } from "core/request/AirbyteClient";
+import { useDestinationDefinition } from "services/connector/DestinationDefinitionService";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormError, generateMessageFromError } from "utils/errorStatusMessage";
 import {
@@ -63,7 +64,7 @@ export const tidyConnectionFormValues = (
 interface ConnectionFormHook {
   connection: ConnectionOrPartialConnection;
   mode: ConnectionFormMode;
-  destDefinition: DestinationDefinitionSpecificationRead;
+  destDefSpec: DestinationDefinitionSpecificationRead;
   initialValues: FormikConnectionFormValues;
   schemaError?: SchemaError;
   formId: string;
@@ -78,8 +79,14 @@ const useConnectionForm = ({
   schemaError,
   refreshSchema,
 }: ConnectionServiceProps): ConnectionFormHook => {
-  const destDefinition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);
-  const initialValues = useInitialValues(connection, destDefinition, mode !== "create");
+  const {
+    destination: { destinationDefinitionId },
+  } = connection;
+
+  const destDef = useDestinationDefinition(destinationDefinitionId);
+  const destDefSpec = useGetDestinationDefinitionSpecification(destinationDefinitionId);
+
+  const initialValues = useInitialValues(connection, destDef, destDefSpec, mode !== "create");
   const { formatMessage } = useIntl();
   const [submitError, setSubmitError] = useState<FormError | null>(null);
   const formId = useUniqueFormId();
@@ -97,7 +104,7 @@ const useConnectionForm = ({
   return {
     connection,
     mode,
-    destDefinition,
+    destDefSpec,
     initialValues,
     schemaError,
     formId,
