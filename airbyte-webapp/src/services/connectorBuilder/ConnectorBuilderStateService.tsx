@@ -6,14 +6,16 @@ import { useLocalStorage } from "react-use";
 
 import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
-import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
+import { ConnectorManifest } from "core/request/ConnectorManifest";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
-const DEFAULT_JSON_MANIFEST_VALUES: PatchedConnectorManifest = {
+const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   version: "0.1.0",
+  type: "DeclarativeSource",
   check: {
+    type: "CheckStream",
     stream_names: [],
   },
   streams: [],
@@ -24,7 +26,7 @@ export type BuilderView = "global" | "inputs" | number;
 
 interface Context {
   builderFormValues: BuilderFormValues;
-  jsonManifest: PatchedConnectorManifest;
+  jsonManifest: ConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
@@ -35,7 +37,7 @@ interface Context {
   configJson: StreamReadRequestBodyConfig;
   editorView: EditorView;
   setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
-  setJsonManifest: (jsonValue: PatchedConnectorManifest) => void;
+  setJsonManifest: (jsonValue: ConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setTestStreamIndex: (streamIndex: number) => void;
@@ -71,7 +73,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
   }, [storedBuilderFormValues]);
 
-  const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
+  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );

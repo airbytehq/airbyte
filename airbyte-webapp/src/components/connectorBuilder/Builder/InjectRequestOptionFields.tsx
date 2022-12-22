@@ -30,7 +30,7 @@ export const InjectRequestOptionFields: React.FC<InjectRequestOptionFieldsProps>
         }
         onChange={(newValue) => {
           if (newValue === "path") {
-            helpers.setValue({ inject_into: newValue, field_name: undefined });
+            helpers.setValue({ inject_into: newValue, field_name: undefined, type: "RequestOption" });
           }
         }}
         label="Inject into"

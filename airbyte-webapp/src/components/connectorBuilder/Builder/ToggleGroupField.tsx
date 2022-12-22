@@ -6,20 +6,21 @@ import { CheckBox } from "components/ui/CheckBox";
 
 import styles from "./ToggleGroupField.module.scss";
 
-interface ToggleGroupFieldProps {
+interface ToggleGroupFieldProps<T> {
   label: string;
   tooltip: string;
   fieldPath: string;
-  initialValues: unknown;
+  initialValues: T;
 }
 
-export const ToggleGroupField: React.FC<React.PropsWithChildren<ToggleGroupFieldProps>> = ({
+// eslint-disable-next-line react/function-component-definition
+export function ToggleGroupField<T>({
   children,
   label,
   tooltip,
   fieldPath,
   initialValues,
-}) => {
+}: React.PropsWithChildren<ToggleGroupFieldProps<T>>) {
   const [field, , helpers] = useField(fieldPath);
   const enabled = field.value !== undefined;
 
@@ -36,4 +37,4 @@ export const ToggleGroupField: React.FC<React.PropsWithChildren<ToggleGroupField
   );
 
   return enabled ? <GroupControls label={labelComponent}>{children}</GroupControls> : labelComponent;
-};
+}

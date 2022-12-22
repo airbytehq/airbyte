@@ -1,21 +1,22 @@
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
-import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
-import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
+  ConnectorManifest,
+  InterpolatedRequestOptionsProvider,
+  Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
   BearerAuthenticator,
-  DeclarativeOauth2AuthenticatorAllOf,
   DeclarativeStream,
-  HttpRequesterAllOfAuthenticator,
   NoAuth,
   SessionTokenAuthenticator,
-  DefaultPaginatorAllOfPaginationStrategy,
   RequestOption,
-  SimpleRetrieverAllOfStreamSlicer,
+  OAuthAuthenticator,
+  DefaultPaginatorPaginationStrategy,
+  SimpleRetrieverStreamSlicer,
+  HttpRequesterAuthenticator,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -26,7 +27,7 @@ export interface BuilderFormInput {
 
 type BuilderFormAuthenticator = (
   | NoAuth
-  | (Omit<DeclarativeOauth2AuthenticatorAllOf, "refresh_request_body"> & {
+  | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
     })
   | ApiKeyAuthenticator
@@ -46,6 +47,12 @@ export interface BuilderFormValues {
   streams: BuilderStream[];
 }
 
+export interface BuilderPaginator {
+  strategy: DefaultPaginatorPaginationStrategy;
+  pageTokenOption: RequestOption;
+  pageSizeOption?: RequestOption;
+}
+
 export interface BuilderStream {
   name: string;
   urlPath: string;
@@ -57,12 +64,8 @@ export interface BuilderStream {
     requestHeaders: Array<[string, string]>;
     requestBody: Array<[string, string]>;
   };
-  paginator?: {
-    strategy: DefaultPaginatorAllOfPaginationStrategy;
-    pageTokenOption: RequestOption;
-    pageSizeOption?: RequestOption;
-  };
-  streamSlicer?: SimpleRetrieverAllOfStreamSlicer;
+  paginator?: BuilderPaginator;
+  streamSlicer?: SimpleRetrieverStreamSlicer;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -375,7 +378,7 @@ export const builderFormValidationSchema = yup.object().shape({
 
 function builderFormAuthenticatorToAuthenticator(
   globalSettings: BuilderFormValues["global"]
-): HttpRequesterAllOfAuthenticator {
+): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -388,34 +391,40 @@ function builderFormAuthenticatorToAuthenticator(
       api_url: globalSettings.urlBase,
     };
   }
-  return globalSettings.authenticator as HttpRequesterAllOfAuthenticator;
+  return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
+export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
+      type: "DeclarativeStream",
       name: stream.name,
       primary_key: stream.primaryKey,
       retriever: {
+        type: "SimpleRetriever",
         name: stream.name,
         primary_key: stream.primaryKey,
         requester: {
+          type: "HttpRequester",
           name: stream.name,
           url_base: values.global?.urlBase,
           path: stream.urlPath,
           request_options_provider: {
+            // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
+            // type: "InterpolatedRequestOptionsProvider",
             request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
             request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
             request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
-          },
+          } as InterpolatedRequestOptionsProvider,
           authenticator: builderFormAuthenticatorToAuthenticator(values.global),
           // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
           config: {},
         },
         record_selector: {
+          type: "RecordSelector",
           extractor: {
+            type: "DpathExtractor",
             field_pointer: stream.fieldPointer,
-            config: {},
           },
         },
         paginator: stream.paginator
@@ -436,7 +445,6 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
         stream_slicer: stream.streamSlicer,
         config: {},
       },
-      config: {},
     };
   });
 
@@ -450,13 +458,17 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
     additionalProperties: true,
   };
 
-  const spec: SourceDefinitionSpecificationDraft = {
-    connectionSpecification: specSchema,
+  const spec: Spec = {
+    connection_specification: specSchema,
+    documentation_url: "",
+    type: "Spec",
   };
 
   return {
     version: "0.1.0",
+    type: "DeclarativeSource",
     check: {
+      type: "CheckStream",
       stream_names: [],
     },
     streams: manifestStreams,
