@@ -53,6 +53,7 @@ connectionSpecification:
         elements reaches its limit.
       examples:
         - "2019-01-01T00:00:00"
+      format: date-time
     limit:
       type: integer
       description: |

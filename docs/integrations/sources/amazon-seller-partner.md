@@ -124,36 +124,37 @@ Make sure to configure the [required parameters](https://developer-docs.amazon.c
 
 ## Changelog
 
-| Version  | Date       | Pull Request                                               | Subject                                                                |
-|:---------|:-----------|:-----------------------------------------------------------|:-----------------------------------------------------------------------|
-| `0.2.29` | 2022-11-18 | [\#19581](https://github.com/airbytehq/airbyte/pull/19581) | Use user provided end date for GET_SALES_AND_TRAFFIC_REPORT            |                           |
-| `0.2.28` | 2022-10-20 | [\#18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (22) report types                                       |
-| `0.2.26` | 2022-09-24 | [\#16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
-| `0.2.25` | 2022-07-27 | [\#15063](https://github.com/airbytehq/airbyte/pull/15063) | Add Restock Inventory Report                                           |
-| `0.2.24` | 2022-07-12 | [\#14625](https://github.com/airbytehq/airbyte/pull/14625) | Add FBA Storage Fees Report                                            |
-| `0.2.23` | 2022-06-08 | [\#13604](https://github.com/airbytehq/airbyte/pull/13604) | Add new streams: Fullfiments returns and Settlement reports            |
-| `0.2.22` | 2022-06-15 | [\#13633](https://github.com/airbytehq/airbyte/pull/13633) | Fix - handle start date for financial stream                           |
-| `0.2.21` | 2022-06-01 | [\#13364](https://github.com/airbytehq/airbyte/pull/13364) | Add financial streams                                                  |
-| `0.2.20` | 2022-05-30 | [\#13059](https://github.com/airbytehq/airbyte/pull/13059) | Add replication end date to config                                     |
-| `0.2.19` | 2022-05-24 | [\#13119](https://github.com/airbytehq/airbyte/pull/13119) | Add OAuth2.0 support                                                   |
-| `0.2.18` | 2022-05-06 | [\#12663](https://github.com/airbytehq/airbyte/pull/12663) | Add GET_XML_BROWSE_TREE_DATA report                                    |
-| `0.2.17` | 2022-05-19 | [\#12946](https://github.com/airbytehq/airbyte/pull/12946) | Add throttling exception managing in Orders streams                    |
-| `0.2.16` | 2022-05-04 | [\#12523](https://github.com/airbytehq/airbyte/pull/12523) | allow to use IAM user arn or IAM role arn                              |
-| `0.2.15` | 2022-01-25 | [\#9789](https://github.com/airbytehq/airbyte/pull/9789)   | Add stream FbaReplacementsReports                                      |
-| `0.2.14` | 2022-01-19 | [\#9621](https://github.com/airbytehq/airbyte/pull/9621)   | Add GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report        |
-| `0.2.13` | 2022-01-18 | [\#9581](https://github.com/airbytehq/airbyte/pull/9581)   | Change createdSince parameter to dataStartTime                         |
-| `0.2.12` | 2022-01-05 | [\#9312](https://github.com/airbytehq/airbyte/pull/9312)   | Add all remaining brand analytics report streams                       |
-| `0.2.11` | 2022-01-05 | [\#9115](https://github.com/airbytehq/airbyte/pull/9115)   | Fix reading only 100 orders                                            |
-| `0.2.10` | 2021-12-31 | [\#9236](https://github.com/airbytehq/airbyte/pull/9236)   | Fix NoAuth deprecation warning                                         |
-| `0.2.9`  | 2021-12-30 | [\#9212](https://github.com/airbytehq/airbyte/pull/9212)   | Normalize GET_SELLER_FEEDBACK_DATA header field names                  |
-| `0.2.8`  | 2021-12-22 | [\#8810](https://github.com/airbytehq/airbyte/pull/8810)   | Fix GET_SELLER_FEEDBACK_DATA Date cursor field format                  |
-| `0.2.7`  | 2021-12-21 | [\#9002](https://github.com/airbytehq/airbyte/pull/9002)   | Extract REPORTS_MAX_WAIT_SECONDS to configurable parameter             |
-| `0.2.6`  | 2021-12-10 | [\#8179](https://github.com/airbytehq/airbyte/pull/8179)   | Add GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT report                     |
-| `0.2.5`  | 2021-12-06 | [\#8425](https://github.com/airbytehq/airbyte/pull/8425)   | Update title, description fields in spec                               |
-| `0.2.4`  | 2021-11-08 | [\#8021](https://github.com/airbytehq/airbyte/pull/8021)   | Added GET_SELLER_FEEDBACK_DATA report with incremental sync capability |
-| `0.2.3`  | 2021-11-08 | [\#7828](https://github.com/airbytehq/airbyte/pull/7828)   | Remove datetime format from all streams                                |
-| `0.2.2`  | 2021-11-08 | [\#7752](https://github.com/airbytehq/airbyte/pull/7752)   | Change `check_connection` function to use stream Orders                |
-| `0.2.1`  | 2021-09-17 | [\#5248](https://github.com/airbytehq/airbyte/pull/5248)   | `Added extra stream support. Updated reports streams logics`           |
-| `0.2.0`  | 2021-08-06 | [\#4863](https://github.com/airbytehq/airbyte/pull/4863)   | `Rebuild source with airbyte-cdk`                                      |
-| `0.1.3`  | 2021-06-23 | [\#4288](https://github.com/airbytehq/airbyte/pull/4288)   | `Bugfix failing connection check`                                      |
-| `0.1.2`  | 2021-06-15 | [\#4108](https://github.com/airbytehq/airbyte/pull/4108)   | `Fixed: Sync fails with timeout when create report is CANCELLED`       |
+| Version  | Date       | Pull Request                                             | Subject                                                                |
+|:---------|:-----------|:---------------------------------------------------------|:-----------------------------------------------------------------------|
+|  0.3.0   | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification                             |
+|  0.2.29  | 2022-11-18 | [19581](https://github.com/airbytehq/airbyte/pull/19581) | Use user provided end date for GET_SALES_AND_TRAFFIC_REPORT            |
+|  0.2.28  | 2022-10-20 | [18283](https://github.com/airbytehq/airbyte/pull/18283) | Added multiple (22) report types                                       |
+|  0.2.26  | 2022-09-24 | [16629](https://github.com/airbytehq/airbyte/pull/16629) | Report API version to 2021-06-30, added multiple (5) report types      |
+|  0.2.25  | 2022-07-27 | [15063](https://github.com/airbytehq/airbyte/pull/15063) | Added Restock Inventory Report                                         |
+|  0.2.24  | 2022-07-12 | [14625](https://github.com/airbytehq/airbyte/pull/14625) | Added FBA Storage Fees Report                                          |
+|  0.2.23  | 2022-06-08 | [13604](https://github.com/airbytehq/airbyte/pull/13604) | Added new streams: Fullfiments returns and Settlement reports          |
+|  0.2.22  | 2022-06-15 | [13633](https://github.com/airbytehq/airbyte/pull/13633) | Fixed handle start date for financial stream                           |
+|  0.2.21  | 2022-06-01 | [13364](https://github.com/airbytehq/airbyte/pull/13364) | Added financial streams                                                |
+|  0.2.20  | 2022-05-30 | [13059](https://github.com/airbytehq/airbyte/pull/13059) | Added replication end date to config                                   |
+|  0.2.19  | 2022-05-24 | [13119](https://github.com/airbytehq/airbyte/pull/13119) | Added OAuth2.0 support                                                 |
+|  0.2.18  | 2022-05-06 | [12663](https://github.com/airbytehq/airbyte/pull/12663) | Added GET_XML_BROWSE_TREE_DATA report                                  |
+|  0.2.17  | 2022-05-19 | [12946](https://github.com/airbytehq/airbyte/pull/12946) | Added throttling exception managing in Orders streams                  |
+|  0.2.16  | 2022-05-04 | [12523](https://github.com/airbytehq/airbyte/pull/12523) | Allowed to use IAM user arn or IAM role arn                            |
+|  0.2.15  | 2022-01-25 | [9789](https://github.com/airbytehq/airbyte/pull/9789)   | Added stream FbaReplacementsReports                                    |
+|  0.2.14  | 2022-01-19 | [9621](https://github.com/airbytehq/airbyte/pull/9621)   | Added GET_FLAT_FILE_ALL_ORDERS_DATA_BY_LAST_UPDATE_GENERAL report      |
+|  0.2.13  | 2022-01-18 | [9581](https://github.com/airbytehq/airbyte/pull/9581)   | Changed createdSince parameter to dataStartTime                        |
+|  0.2.12  | 2022-01-05 | [9312](https://github.com/airbytehq/airbyte/pull/9312)   | Added all remaining brand analytics report streams                     |
+|  0.2.11  | 2022-01-05 | [9115](https://github.com/airbytehq/airbyte/pull/9115)   | Fixed reading only 100 orders                                          |
+|  0.2.10  | 2021-12-31 | [9236](https://github.com/airbytehq/airbyte/pull/9236)   | Fixed NoAuth deprecation warning                                       |
+|  0.2.9   | 2021-12-30 | [9212](https://github.com/airbytehq/airbyte/pull/9212)   | Normalized GET_SELLER_FEEDBACK_DATA header field names                 |
+|  0.2.8   | 2021-12-22 | [8810](https://github.com/airbytehq/airbyte/pull/8810)   | Fixed GET_SELLER_FEEDBACK_DATA Date cursor field format                |
+|  0.2.7   | 2021-12-21 | [9002](https://github.com/airbytehq/airbyte/pull/9002)   | Extracted REPORTS_MAX_WAIT_SECONDS to configurable parameter           |
+|  0.2.6   | 2021-12-10 | [8179](https://github.com/airbytehq/airbyte/pull/8179)   | Added GET_BRAND_ANALYTICS_SEARCH_TERMS_REPORT report                   |
+|  0.2.5   | 2021-12-06 | [8425](https://github.com/airbytehq/airbyte/pull/8425)   | Updated title, description fields in spec                              |
+|  0.2.4   | 2021-11-08 | [8021](https://github.com/airbytehq/airbyte/pull/8021)   | Added GET_SELLER_FEEDBACK_DATA report with incremental sync capability |
+|  0.2.3   | 2021-11-08 | [7828](https://github.com/airbytehq/airbyte/pull/7828)   | Removed datetime format from all streams                               |
+|  0.2.2   | 2021-11-08 | [7752](https://github.com/airbytehq/airbyte/pull/7752)   | Changed `check_connection` function to use stream Orders               |
+|  0.2.1   | 2021-09-17 | [5248](https://github.com/airbytehq/airbyte/pull/5248)   | Added extra stream support. Updated reports streams logics             |
+|  0.2.0   | 2021-08-06 | [4863](https://github.com/airbytehq/airbyte/pull/4863)   | Rebuild source with airbyte-cdk                                        |
+|  0.1.3   | 2021-06-23 | [4288](https://github.com/airbytehq/airbyte/pull/4288)   | Fixed failing connection check                                         |
+|  0.1.2   | 2021-06-15 | [4108](https://github.com/airbytehq/airbyte/pull/4108)   | Fixed sync fails with timeout when create report is CANCELLED          |

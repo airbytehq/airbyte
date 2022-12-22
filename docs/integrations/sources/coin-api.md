@@ -48,6 +48,7 @@ The following fields are required fields for the connector to work:
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject    |
-|:--------|:-----------|:---------------------------------------------------------|:-----------|
-| 0.1.0   | 2022-10-21 | [18302](https://github.com/airbytehq/airbyte/pull/18302) | New source |
+| Version | Date       | Pull Request                                             | Subject                                    |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------|
+|  0.2.0  | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification |
+|  0.1.0  | 2022-10-21 | [18302](https://github.com/airbytehq/airbyte/pull/18302) | New source Coin API                        |

@@ -50,6 +50,7 @@ Commercetools has some [rate limit restrictions](https://docs.commercetools.com/
 
 ## Changelog
 
-| Version | Date       | Pull Request | Subject |
-| :------ | :--------  | :-----       | :------ |
-| 0.1.0  | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957) | Initial Release. Source Commercetools |
+| Version | Date       | Pull Request                                             | Subject                                   |
+| :------ | :--------  | :------------------------------------------------------- | :---------------------------------------- |
+|  0.2.0  | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification|
+|  0.1.0  | 2021-08-19 | [5957](https://github.com/airbytehq/airbyte/pull/5957)   | Initial Release. Source Commercetools     |

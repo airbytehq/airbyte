@@ -34,6 +34,7 @@ By default Gong limits your company's access to the service to 3 API calls per s
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                   |
-| :------ | :--------- | :------------------------------------------------------- | :------------------------ |
-| 0.1.0   | 2022-10-27 | [18819](https://github.com/airbytehq/airbyte/pull/18819) | Add Gong Source Connector |
+| Version | Date       | Pull Request                                             | Subject                                    |
+| :------ | :--------- | :------------------------------------------------------- | :----------------------------------------- |
+| 0.2.0   | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification |
+| 0.1.0   | 2022-10-27 | [18819](https://github.com/airbytehq/airbyte/pull/18819) | Add Gong Source Connector                  |

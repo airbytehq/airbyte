@@ -54,4 +54,5 @@ connectionSpecification:
       examples:
         - "2022-10-01T00:00:00Z"
       type: string
+      format: date-time
       order: 6

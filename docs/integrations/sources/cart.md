@@ -50,9 +50,10 @@ Please follow these [steps](https://developers.cart.com/docs/rest-api/docs/READM
 
 | Version | Date       | Pull Request                                             | Subject                                                                                |
 | :------ | :--------- | :------------------------------------------------------- | :------------------------------------------------------------------------------------- |
-| 0.2.0   | 2022-09-21 | [16612](https://github.com/airbytehq/airbyte/pull/16612) | Source Cart.com: implement Central API Router access method and improve backoff policy |
-| 0.1.6   | 2022-07-15 | [14752](https://github.com/airbytehq/airbyte/pull/14752) | Add `order_statuses` stream                                                            |
-| 0.1.5   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                                      |
-| 0.1.3   | 2021-08-26 | [5465](https://github.com/airbytehq/airbyte/pull/5465)   | Add the end_date option for limitation of the amount of synced data                    |
-| 0.1.2   | 2021-08-23 | [1111](https://github.com/airbytehq/airbyte/pull/1111)   | Add `order_items` stream                                                               |
-| 0.1.0   | 2021-06-08 | [4574](https://github.com/airbytehq/airbyte/pull/4574)   | Initial Release                                                                        |
+|  0.3.0  | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification                                             |
+|  0.2.0  | 2022-09-21 | [16612](https://github.com/airbytehq/airbyte/pull/16612) | Source Cart.com: implement Central API Router access method and improve backoff policy |
+|  0.1.6  | 2022-07-15 | [14752](https://github.com/airbytehq/airbyte/pull/14752) | Added `order_statuses` stream                                                          |
+|  0.1.5  | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Updated fields in source-connectors specifications                                     |
+|  0.1.3  | 2021-08-26 | [5465](https://github.com/airbytehq/airbyte/pull/5465)   | Added the end_date option for limitation of the amount of synced data                  |
+|  0.1.2  | 2021-08-23 | [1111](https://github.com/airbytehq/airbyte/pull/1111)   | Added `order_items` stream                                                             |
+|  0.1.0  | 2021-06-08 | [4574](https://github.com/airbytehq/airbyte/pull/4574)   | Initial Release                                                                        |

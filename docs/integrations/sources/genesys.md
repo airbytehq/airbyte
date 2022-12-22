@@ -22,6 +22,7 @@ You can follow the documentation on [API credentials](https://developer.genesys.
 - [Users](https://developer.genesys.cloud/useragentman/users/)
 
 ## Changelog
-| Version | Date       | Pull Request                                             | Subject                     |
-| :------ | :--------- | :------------------------------------------------------- | :-------------------------- |
-| 0.1.0   | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created |
+| Version  | Date       | Pull Request                                             | Subject                                    |
+|:---------|:-----------|:---------------------------------------------------------|:-------------------------------------------|
+|  0.2.0   | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification |
+|  0.1.0   | 2022-10-06 | [17559](https://github.com/airbytehq/airbyte/pull/17559) | The Genesys Source is created              |

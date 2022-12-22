@@ -41,25 +41,26 @@ The Amplitude connector ideally should gracefully handle Amplitude API limitatio
 
 ## Changelog
 
-| Version | Date       | Pull Request                                             | Subject                                                                                         |
-|:--------|:-----------|:---------------------------------------------------------|:------------------------------------------------------------------------------------------------|
-| 0.1.19  | 2022-12-09 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Remove `data_region` as required   |
-| 0.1.18  | 2022-12-08 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Add parameter to select region   |
-| 0.1.17  | 2022-10-31 | [18684](https://github.com/airbytehq/airbyte/pull/18684) | Add empty `series` validation for `AverageSessionLength` stream                               |
-| 0.1.16  | 2022-10-11 | [17854](https://github.com/airbytehq/airbyte/pull/17854) | Add empty `series` validation for `ActtiveUsers` steam                                        |
-| 0.1.15  | 2022-10-03 | [17320](https://github.com/airbytehq/airbyte/pull/17320) | Add validation `start_date` filed if it's in the future                                         |
-| 0.1.14  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrate to per-stream states.                                                                   |
-| 0.1.13  | 2022-08-31 | [16185](https://github.com/airbytehq/airbyte/pull/16185) | Re-release on new `airbyte_cdk==0.1.81`                                                         |
-| 0.1.12  | 2022-08-11 | [15506](https://github.com/airbytehq/airbyte/pull/15506) | Changed slice day window to 1, instead of 3 for Events stream                                   |
-| 0.1.11  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Remove `additionalProperties` field from spec                                                   |
-| 0.1.10  | 2022-06-16 | [13846](https://github.com/airbytehq/airbyte/pull/13846) | Try-catch the BadZipFile error                                                                  |
-| 0.1.9   | 2022-06-10 | [13638](https://github.com/airbytehq/airbyte/pull/13638) | Fixed an infinite loop when fetching Amplitude data                                             |
-| 0.1.8   | 2022-06-01 | [13373](https://github.com/airbytehq/airbyte/pull/13373) | Fixed the issue when JSON Validator produces errors on `date-time` check                        |
-| 0.1.7   | 2022-05-21 | [13074](https://github.com/airbytehq/airbyte/pull/13074) | Removed time offset for `Events` stream, which caused a lot of duplicated records               |
-| 0.1.6   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improve input configuration copy                                                                |
-| 0.1.5   | 2022-04-28 | [12430](https://github.com/airbytehq/airbyte/pull/12430) | Added HTTP error descriptions and fixed `Events` stream fail caused by `404` HTTP Error         |
-| 0.1.4   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Update fields in source-connectors specifications                                               |
-| 0.1.3   | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375)   | Log Transient 404 Error in Events stream                                                        |
-| 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353)   | Correct output schemas on cohorts, events, active\_users, and average\_session\_lengths streams |
-| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Add AIRBYTE\_ENTRYPOINT for kubernetes support                                                  |
-| 0.1.0   | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664)   | New Source: Amplitude                                                                           |
+| Version | Date       | Pull Request                                             | Subject                                                                                          |
+|:--------|:-----------|:---------------------------------------------------------|:-------------------------------------------------------------------------------------------------|
+| 0.2.0   | 2022-12-22 | [20445](https://github.com/airbytehq/airbyte/pull/20445) | Specified date formatting in specification                                                       |
+| 0.1.19  | 2022-12-09 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Removed `data_region` as required                                                                |
+| 0.1.18  | 2022-12-08 | [19727](https://github.com/airbytehq/airbyte/pull/19727) | Added parameter to select region                                                                 |
+| 0.1.17  | 2022-10-31 | [18684](https://github.com/airbytehq/airbyte/pull/18684) | Added empty `series` validation for `AverageSessionLength` stream                                |
+| 0.1.16  | 2022-10-11 | [17854](https://github.com/airbytehq/airbyte/pull/17854) | Added empty `series` validation for `ActtiveUsers` steam                                         |
+| 0.1.15  | 2022-10-03 | [17320](https://github.com/airbytehq/airbyte/pull/17320) | Added validation `start_date` filed if it's in the future                                        |
+| 0.1.14  | 2022-09-28 | [17326](https://github.com/airbytehq/airbyte/pull/17326) | Migrated to per-stream states.                                                                   |
+| 0.1.13  | 2022-08-31 | [16185](https://github.com/airbytehq/airbyte/pull/16185) | Re-released on new `airbyte_cdk==0.1.81`                                                         |
+| 0.1.12  | 2022-08-11 | [15506](https://github.com/airbytehq/airbyte/pull/15506) | Changed slice day window to 1, instead of 3 for Events stream                                    |
+| 0.1.11  | 2022-07-21 | [14924](https://github.com/airbytehq/airbyte/pull/14924) | Removed `additionalProperties` field from spec                                                   |
+| 0.1.10  | 2022-06-16 | [13846](https://github.com/airbytehq/airbyte/pull/13846) | Try-catch the BadZipFile error                                                                   |
+| 0.1.9   | 2022-06-10 | [13638](https://github.com/airbytehq/airbyte/pull/13638) | Fixed an infinite loop when fetching Amplitude data                                              |
+| 0.1.8   | 2022-06-01 | [13373](https://github.com/airbytehq/airbyte/pull/13373) | Fixed the issue when JSON Validator produces errors on `date-time` check                         |
+| 0.1.7   | 2022-05-21 | [13074](https://github.com/airbytehq/airbyte/pull/13074) | Removed time offset for `Events` stream, which caused a lot of duplicated records                |
+| 0.1.6   | 2022-04-30 | [12500](https://github.com/airbytehq/airbyte/pull/12500) | Improved input configuration copy                                                                |
+| 0.1.5   | 2022-04-28 | [12430](https://github.com/airbytehq/airbyte/pull/12430) | Added HTTP error descriptions and fixed `Events` stream fail caused by `404` HTTP Error          |
+| 0.1.4   | 2021-12-23 | [8434](https://github.com/airbytehq/airbyte/pull/8434)   | Updated fields in source-connectors specifications                                               |
+| 0.1.3   | 2021-10-12 | [6375](https://github.com/airbytehq/airbyte/pull/6375)   | Log Transient 404 Error in Events stream                                                         |
+| 0.1.2   | 2021-09-21 | [6353](https://github.com/airbytehq/airbyte/pull/6353)   | Corrected output schemas on cohorts, events, active\_users, and average\_session\_lengths streams|
+| 0.1.1   | 2021-06-09 | [3973](https://github.com/airbytehq/airbyte/pull/3973)   | Added AIRBYTE\_ENTRYPOINT for kubernetes support                                                 |
+| 0.1.0   | 2021-06-08 | [3664](https://github.com/airbytehq/airbyte/pull/3664)   | New Source: Amplitude                                                                            |
