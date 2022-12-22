@@ -88,6 +88,11 @@ class Users(Stream, IncrementalMixin):
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        """
+
         total_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         records_in_sync = 0
 
@@ -142,6 +147,11 @@ class Purchases(Stream, IncrementalMixin):
         self._state = value
 
     def read_records(self, **kwargs) -> Iterable[Mapping[str, Any]]:
+        """
+        This is a multi-process implementation of read_records.
+        We make N workers (where N is the number of available CPUs) and spread out the CPU-bound work of generating records and serializing them to JSON
+        """
+
         total_purchase_records = self.state[self.cursor_field] if self.cursor_field in self.state else 0
         total_user_records = self.state["user_id"] if "user_id" in self.state else 0
         user_records_in_sync = 0
