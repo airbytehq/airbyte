@@ -111,7 +111,17 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
       />
     );
   } else if (property.multiline && !property.isSecret) {
-    return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
+    return (
+      <TextArea
+        {...field}
+        onChange={onChange}
+        autoComplete="off"
+        value={value ?? ""}
+        rows={3}
+        disabled={disabled}
+        error={error}
+      />
+    );
   } else if (property.isSecret) {
     const isFormInEditMode = isDefined(meta.initialValue);
     return (
