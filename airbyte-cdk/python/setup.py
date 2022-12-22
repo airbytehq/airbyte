@@ -50,6 +50,7 @@ setup(
         "dpath~=2.0.1",
         "jsonschema~=3.2.0",
         "jsonref~=0.2",
+        "genson==1.2.2",
         "pendulum",
         "pydantic~=1.9.2",
         "python-dateutil",

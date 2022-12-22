@@ -12,6 +12,8 @@ from airbyte_cdk.models import AirbyteLogMessage, AirbyteMessage, Type
 from fastapi import Body, HTTPException
 from jsonschema import ValidationError
 
+from airbyte_cdk.utils.schema_inferrer import SchemaInferrer
+
 from connector_builder.generated.apis.default_api_interface import DefaultApi
 from connector_builder.generated.models.http_request import HttpRequest
 from connector_builder.generated.models.http_response import HttpResponse
@@ -108,12 +110,14 @@ spec:
         :return: Airbyte record messages produced by the sync grouped by slice and page
         """
         adapter = self._create_low_code_adapter(manifest=stream_read_request_body.manifest)
+        schema_inferrer = SchemaInferrer()
 
         single_slice = StreamReadSlices(pages=[])
         log_messages = []
         try:
             for message_group in self._get_message_groups(
-                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config)
+                    adapter.read_stream(stream_read_request_body.stream, stream_read_request_body.config),
+                    schema_inferrer
             ):
                 if isinstance(message_group, AirbyteLogMessage):
                     log_messages.append({"message": message_group.message})
@@ -123,9 +127,9 @@ spec:
             # TODO: We're temporarily using FastAPI's default exception model. Ideally we should use exceptions defined in the OpenAPI spec
             raise HTTPException(status_code=400, detail=f"Could not perform read with with error: {error.args[0]}")
 
-        return StreamRead(logs=log_messages, slices=[single_slice])
+        return StreamRead(logs=log_messages, slices=[single_slice], inferred_schema=schema_inferrer.get_inferred_schemas()[stream_read_request_body.stream])
 
-    def _get_message_groups(self, messages: Iterable[AirbyteMessage]) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
+    def _get_message_groups(self, messages: Iterable[AirbyteMessage], schema_inferrer: SchemaInferrer) -> Iterable[Union[StreamReadPages, AirbyteLogMessage]]:
         """
         Message groups are partitioned according to when request log messages are received. Subsequent response log messages
         and record messages belong to the prior request log message and when we encounter another request, append the latest
@@ -162,6 +166,7 @@ spec:
                 yield message.log
             elif message.type == Type.RECORD:
                 current_records.append(message.record.data)
+                schema_inferrer.accumulate(message.record)
         else:
             if not current_page_request or not current_page_response:
                 raise ValueError("Every message grouping should have at least one request and response")
