@@ -1,4 +1,5 @@
 import { Form, Formik, useField } from "formik";
+import merge from "lodash/merge";
 import { useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
@@ -9,7 +10,7 @@ import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
 import { FormikPatch } from "core/form/FormikPatch";
 
 import { ReactComponent as PlusIcon } from "../../connection/ConnectionOnboarding/plusIcon.svg";
-import { BuilderStream } from "../types";
+import { BuilderStream, DEFAULT_BUILDER_STREAM_VALUES } from "../types";
 import styles from "./AddStreamButton.module.scss";
 import { BuilderField } from "./BuilderField";
 
@@ -49,18 +50,11 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
           onSubmit={(values: AddStreamValues) => {
             helpers.setValue([
               ...streamsField.value,
-              {
-                fieldPointer: [],
-                httpMethod: "GET",
-                requestOptions: {
-                  requestParameters: [],
-                  requestHeaders: [],
-                  requestBody: [],
-                },
+              merge({}, DEFAULT_BUILDER_STREAM_VALUES, {
                 ...initialValues,
                 name: values.streamName,
                 urlPath: values.urlPath,
-              },
+              }),
             ]);
             setIsOpen(false);
             onAddStream(numStreams);
@@ -79,13 +73,13 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
                 <ModalBody className={styles.body}>
                   <BuilderField
                     path="streamName"
-                    type="text"
+                    type="string"
                     label={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameLabel" })}
                     tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameTooltip" })}
                   />
                   <BuilderField
                     path="urlPath"
-                    type="text"
+                    type="string"
                     label={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathLabel" })}
                     tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathTooltip" })}
                   />

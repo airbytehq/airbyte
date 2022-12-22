@@ -22,23 +22,29 @@ export interface BuildFormHook {
   validationSchema: AnySchema;
 }
 
-function setDefaultValues(formGroup: FormGroupItem, values: Record<string, unknown>) {
+function setDefaultValues(
+  formGroup: FormGroupItem,
+  values: Record<string, unknown>,
+  options: { respectExistingValues: boolean } = { respectExistingValues: false }
+) {
   formGroup.properties.forEach((property) => {
-    if (property.const) {
+    if (property.const && (!options.respectExistingValues || !values[property.fieldKey])) {
       values[property.fieldKey] = property.const;
     }
-    if (property.default) {
+    if (property.default && (!options.respectExistingValues || !values[property.fieldKey])) {
       values[property.fieldKey] = property.default;
     }
     switch (property._type) {
       case "formGroup":
-        values[property.fieldKey] = {};
-        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>);
+        values[property.fieldKey] =
+          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
+        setDefaultValues(property, values[property.fieldKey] as Record<string, unknown>, options);
         break;
       case "formCondition":
         // implicitly select the first option (do not respect a potential default value)
-        values[property.fieldKey] = {};
-        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>);
+        values[property.fieldKey] =
+          options.respectExistingValues && values[property.fieldKey] ? values[property.fieldKey] : {};
+        setDefaultValues(property.conditions[0], values[property.fieldKey] as Record<string, unknown>, options);
     }
   });
 }
@@ -81,26 +87,33 @@ export function useBuildForm(
       throw new FormBuildError("connectorForm.error.topLevelNonObject");
     }
 
+    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
+
     const startValues = useMemo<ConnectorFormValues>(() => {
-      if (isEditMode || isDraft) {
-        return {
-          name: "",
-          connectionConfiguration: {},
-          ...initialValues,
-        };
-      }
-      const baseValues = {
+      let baseValues = {
         name: "",
         connectionConfiguration: {},
         ...initialValues,
       };
 
-      setDefaultValues(formFields, baseValues as Record<string, unknown>);
+      if (isDraft) {
+        try {
+          baseValues = validationSchema.cast(baseValues, { stripUnknown: true });
+        } catch {
+          // cast did not work which can happen if there are unexpected values in the form. Reset form in this case
+          baseValues.connectionConfiguration = {};
+        }
+      }
+
+      if (isEditMode) {
+        return baseValues;
+      }
+
+      setDefaultValues(formFields, baseValues as Record<string, unknown>, { respectExistingValues: isDraft });
 
       return baseValues;
-    }, [formFields, initialValues, isDraft, isEditMode]);
+    }, [formFields, initialValues, isDraft, isEditMode, validationSchema]);
 
-    const validationSchema = useMemo(() => buildYupFormForJsonSchema(jsonSchema, formFields), [formFields, jsonSchema]);
     return {
       initialValues: startValues,
       formFields,

@@ -13,3 +13,7 @@
   align-self: flex-end;
   gap: variables.$spacing-sm;
 }
+
+.deleteButtonContainer {
+  flex-grow: 1;
+}

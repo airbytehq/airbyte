@@ -1,6 +1,10 @@
 @use "scss/colors";
 @use "scss/variables";
 
+.icon {
+  color: colors.$grey-500;
+}
+
 .formContent {
   max-height: 60vh;
   overflow: auto;
@@ -28,4 +32,10 @@
   display: flex;
   gap: variables.$spacing-md;
   align-items: center;
+}
+
+.inputsErrorBadge {
+  position: absolute;
+  top: -1 * variables.$spacing-md;
+  right: -1 * variables.$spacing-md;
 }
