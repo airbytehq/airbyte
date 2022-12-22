@@ -84,8 +84,10 @@
       },
       "date_ranges_start_date": {
         "type": "string",
-        "title": "Date Range Start Date",
-        "description": "The start date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
+        "format": "date",
+        "default": "2022-12-01",
+        "title": "Reports replication start date",
+        "description": "The start date from which to begin replicating report data. Any data generated before this date will not be replicated in reports. This is a UTC date in YYYY-MM-DD format.",
         "order": 2
       },
       "custom_reports": {

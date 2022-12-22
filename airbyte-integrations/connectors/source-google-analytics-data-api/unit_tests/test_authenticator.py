@@ -4,7 +4,7 @@ from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
 
 
-private_key = """
+TEST_PRIVATE_KEY = """
 -----BEGIN RSA PRIVATE KEY-----
 MIIBPAIBAAJBAIy64eoS8VCwNnu6+kcyvRc7w/Cw20fnZWcpftLIl33ZWdXl/Q+W
 sEQkm2RRWO2R9CGC2bJRZYEbiAabuG4T1LkCAwEAAQJBAIbr5Qv1fUZOqu2VJb58
@@ -34,7 +34,7 @@ def test_authenticator(mocker):
 
     authenticator = GoogleServiceKeyAuthenticator(credentials={
         "client_email": "example-app@airbyte.com",
-        "private_key": private_key,
+        "private_key": TEST_PRIVATE_KEY,
         "client_id": "c-airbyte-001"
     })
 
