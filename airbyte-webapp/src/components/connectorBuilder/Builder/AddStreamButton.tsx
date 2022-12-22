@@ -79,13 +79,13 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
                 <ModalBody className={styles.body}>
                   <BuilderField
                     path="streamName"
-                    type="text"
+                    type="string"
                     label={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameLabel" })}
                     tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.streamNameTooltip" })}
                   />
                   <BuilderField
                     path="urlPath"
-                    type="text"
+                    type="string"
                     label={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathLabel" })}
                     tooltip={formatMessage({ id: "connectorBuilder.addStreamModal.urlPathTooltip" })}
                   />

@@ -69,7 +69,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
       </div>
       <BuilderCard>
         <BuilderField
-          type="text"
+          type="string"
           path={streamFieldPath("urlPath")}
           label="Path URL"
           tooltip="Path of the endpoint that this stream represents."
