@@ -2858,6 +2858,10 @@ components:
           description: The date when this connector was first released, in yyyy-mm-dd format.
           type: string
           format: date
+        supportsDbt:
+          type: boolean
+        supportsNormalization:
+          type: boolean
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
     DestinationDefinitionReadList:
