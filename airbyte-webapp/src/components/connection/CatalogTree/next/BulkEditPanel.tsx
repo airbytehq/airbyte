@@ -36,7 +36,6 @@ const SchemaHeader = styled(Header)<SchemaHeaderProps>`
   background: ${({ theme }) => theme.primaryColor};
   border-radius: 8px 8px 0 0;
   padding: 10px;
-  transition: 0.3s ease-in;
 `;
 
 export function calculateSharedFields(selectedBatchNodes: SyncSchemaStream[]) {
@@ -138,6 +137,7 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
+            pillIfChangeUnavailable
             disabled={!cursorType}
             variant="strong-blue"
             isMulti={false}
@@ -154,6 +154,7 @@ export const BulkEditPanel: React.FC = () => {
         </p>
         <div className={styles.syncCellContent}>
           <StreamPathSelect
+            pillIfChangeUnavailable
             disabled={!pkType}
             variant="strong-blue"
             isMulti
