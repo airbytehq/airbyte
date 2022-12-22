@@ -190,6 +190,7 @@ class Pages(IncrementalBigcommerceStream):
         slice = super().read_records(sync_mode=SyncMode.full_refresh, stream_slice=stream_slice, stream_state=stream_state)
         yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
+
 class Brands(IncrementalBigcommerceStream):
     data_field = "brands"
     cursor_field = "id"
@@ -357,5 +358,5 @@ class SourceBigcommerce(AbstractSource):
             Store(**args),
             OrderProducts(**args),
             Brands(**args),
-            Categories(**args)
+            Categories(**args),
         ]
