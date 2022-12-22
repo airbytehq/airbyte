@@ -1,5 +1,5 @@
 import { Field, useField } from "formik";
-import React from "react";
+import React, { useCallback } from "react";
 
 import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
@@ -24,6 +24,18 @@ interface ControlProps {
 export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
   const [field, meta, helpers] = useField(name);
   const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
+
+  const onChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      field.onChange(e);
+      if (!property.isRequired && e.target.value === "") {
+        // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
+        // an empty string which might fail connector validation
+        helpers.setValue(undefined);
+      }
+    },
+    [field, helpers, property.isRequired]
+  );
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -68,7 +80,13 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         withTime={property.format === "date-time"}
         onChange={(value) => {
           helpers.setTouched(true);
-          helpers.setValue(value);
+          if (!property.isRequired && value === "") {
+            // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
+            // an empty string which might fail connector validation
+            helpers.setValue(undefined);
+          } else {
+            helpers.setValue(value);
+          }
         }}
         value={field.value}
         disabled={disabled}
@@ -103,6 +121,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         showButtons={isFormInEditMode}
         disabled={disabled}
         error={error}
+        onChange={onChange}
       />
     );
   }
@@ -111,6 +130,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
   return (
     <Input
       {...field}
+      onChange={onChange}
       placeholder={inputType === "number" ? property.default?.toString() : undefined}
       autoComplete="off"
       type={inputType}
