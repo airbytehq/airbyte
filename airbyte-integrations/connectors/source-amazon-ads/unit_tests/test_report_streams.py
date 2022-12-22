@@ -188,7 +188,7 @@ def test_stream_report_body_metrics(config, profiles, stream_class, url_pattern,
         for match in create_report_pattern.finditer(call.request.url):
             record_type = match.group(1)
             request_body = call.request.body
-            request_metrics = json.loads(request_body.decode('utf-8'))['metrics']
+            request_metrics = json.loads(request_body.decode("utf-8"))["metrics"]
             if record_type == RecordType.PRODUCTADS or record_type == RecordType.ASINS:
                 assert ("sku" in request_metrics) == expected
             else:
