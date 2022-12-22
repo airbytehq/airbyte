@@ -718,6 +718,7 @@
   "connectorBuilder.inputsNoSpecYAMLTooltip": "Add a spec to your manifest to allow setting test inputs",
   "connectorBuilder.setInUserInput": "This setting is configured as part of the user inputs in the testing panel",
   "connectorBuilder.inputsButton": "Inputs",
+  "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
