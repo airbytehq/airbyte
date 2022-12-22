@@ -32,6 +32,7 @@ interface BaseFieldProps {
   tooltip?: string;
   readOnly?: boolean;
   optional?: boolean;
+  pattern?: RegExp;
 }
 
 type BuilderFieldProps = BaseFieldProps &
@@ -66,6 +67,7 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
   tooltip,
   optional = false,
   readOnly,
+  pattern,
   ...props
 }) => {
   const [field, meta, helpers] = useField(path);
@@ -97,6 +99,9 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
           {...field}
           onChange={(e) => {
             field.onChange(e);
+            if (e.target.value === "") {
+              helpers.setValue(undefined);
+            }
             props.onChange?.(e.target.value);
           }}
           type={props.type}
@@ -113,7 +118,10 @@ export const BuilderField: React.FC<BuilderFieldProps> = ({
       )}
       {hasError && (
         <Text className={styles.error}>
-          <FormattedMessage id={meta.error} />
+          <FormattedMessage
+            id={meta.error}
+            values={meta.error === "form.pattern.error" && pattern ? { pattern: String(pattern) } : undefined}
+          />
         </Text>
       )}
     </ControlLabels>

@@ -16,6 +16,7 @@ import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
 import styles from "./StreamConfigView.module.scss";
+import { StreamSlicerSection } from "./StreamSlicerSection";
 
 interface StreamConfigViewProps {
   streamNum: number;
@@ -100,8 +101,16 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
           label="Record selector"
           tooltip="Pointer into the response that should be extracted as the final record"
         />
+        <BuilderField
+          type="array"
+          path={streamFieldPath("primaryKey")}
+          label="Primary key"
+          tooltip="Pointer into the response that should be used as the primary key when deduplicating records in the destination"
+          optional
+        />
       </BuilderCard>
       <PaginationSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
+      <StreamSlicerSection streamFieldPath={streamFieldPath} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}

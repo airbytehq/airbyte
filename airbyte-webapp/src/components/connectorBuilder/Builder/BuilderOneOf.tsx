@@ -36,7 +36,7 @@ export const BuilderOneOf: React.FC<BuilderOneOfProps> = ({ options, path, label
   return (
     <GroupControls
       label={<ControlLabels label={label} infoTooltipContent={tooltip} />}
-      dropdown={
+      control={
         <DropDown
           {...typePathField}
           options={options.map((option) => {

@@ -1,20 +1,22 @@
 import { JSONSchema7 } from "json-schema";
 import * as yup from "yup";
 
-import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
-import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { AirbyteJSONSchema } from "core/jsonSchema/types";
 import {
+  ConnectorManifest,
+  InterpolatedRequestOptionsProvider,
+  Spec,
   ApiKeyAuthenticator,
   BasicHttpAuthenticator,
   BearerAuthenticator,
-  DeclarativeOauth2AuthenticatorAllOf,
   DeclarativeStream,
-  HttpRequesterAllOfAuthenticator,
   NoAuth,
   SessionTokenAuthenticator,
-  DefaultPaginatorAllOfPaginationStrategy,
   RequestOption,
+  OAuthAuthenticator,
+  DefaultPaginatorPaginationStrategy,
+  SimpleRetrieverStreamSlicer,
+  HttpRequesterAuthenticator,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -25,7 +27,7 @@ export interface BuilderFormInput {
 
 type BuilderFormAuthenticator = (
   | NoAuth
-  | (Omit<DeclarativeOauth2AuthenticatorAllOf, "refresh_request_body"> & {
+  | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
     })
   | ApiKeyAuthenticator
@@ -45,23 +47,25 @@ export interface BuilderFormValues {
   streams: BuilderStream[];
 }
 
+export interface BuilderPaginator {
+  strategy: DefaultPaginatorPaginationStrategy;
+  pageTokenOption: RequestOption;
+  pageSizeOption?: RequestOption;
+}
+
 export interface BuilderStream {
   name: string;
   urlPath: string;
   fieldPointer: string[];
   primaryKey: string[];
-  cursorField: string[];
   httpMethod: "GET" | "POST";
   requestOptions: {
     requestParameters: Array<[string, string]>;
     requestHeaders: Array<[string, string]>;
     requestBody: Array<[string, string]>;
   };
-  paginator?: {
-    strategy: DefaultPaginatorAllOfPaginationStrategy;
-    pageSizeOption: RequestOption;
-    pageTokenOption: RequestOption;
-  };
+  paginator?: BuilderPaginator;
+  streamSlicer?: SimpleRetrieverStreamSlicer;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -80,7 +84,6 @@ export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
   urlPath: "",
   fieldPointer: [],
   primaryKey: [],
-  cursorField: [],
   httpMethod: "GET",
   requestOptions: {
     requestParameters: [],
@@ -215,14 +218,17 @@ export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[]
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
-const requestOptionSchema = yup
+const nonPathRequestOptionSchema = yup
   .object()
   .shape({
-    inject_into: yup.mixed().oneOf(injectIntoValues),
-    field_name: yup.string(),
+    inject_into: yup.mixed().oneOf(injectIntoValues.filter((val) => val !== "path")),
+    field_name: yup.string().required("form.empty.error"),
   })
   .notRequired()
   .default(undefined);
+
+// eslint-disable-next-line no-useless-escape
+export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -261,7 +267,6 @@ export const builderFormValidationSchema = yup.object().shape({
       name: yup.string().required("form.empty.error"),
       urlPath: yup.string().required("form.empty.error"),
       fieldPointer: yup.array().of(yup.string()),
-      cursorField: yup.array().of(yup.string()),
       primaryKey: yup.array().of(yup.string()),
       httpMethod: yup.mixed().oneOf(["GET", "POST"]),
       requestOptions: yup.object().shape({
@@ -272,8 +277,15 @@ export const builderFormValidationSchema = yup.object().shape({
       paginator: yup
         .object()
         .shape({
-          pageSizeOption: requestOptionSchema,
-          pageTokenOption: requestOptionSchema,
+          pageSizeOption: nonPathRequestOptionSchema,
+          pageTokenOption: yup.object().shape({
+            inject_into: yup.mixed().oneOf(injectIntoValues),
+            field_name: yup.mixed().when("inject_into", {
+              is: "path",
+              then: (schema) => schema.strip(),
+              otherwise: yup.string().required("form.empty.error"),
+            }),
+          }),
           strategy: yup
             .object({
               page_size: yup.mixed().when("type", {
@@ -302,13 +314,71 @@ export const builderFormValidationSchema = yup.object().shape({
         })
         .notRequired()
         .default(undefined),
+      streamSlicer: yup
+        .object()
+        .shape({
+          cursor_field: yup.string().required("form.empty.error"),
+          slice_values: yup.mixed().when("type", {
+            is: "ListStreamSlicer",
+            then: yup.array().of(yup.string()),
+            otherwise: (schema) => schema.strip(),
+          }),
+          request_option: nonPathRequestOptionSchema,
+          start_datetime: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          end_datetime: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          step: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          datetime_format: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string().required("form.empty.error"),
+            otherwise: (schema) => schema.strip(),
+          }),
+          start_time_option: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: nonPathRequestOptionSchema,
+            otherwise: (schema) => schema.strip(),
+          }),
+          end_time_option: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: nonPathRequestOptionSchema,
+            otherwise: (schema) => schema.strip(),
+          }),
+          stream_state_field_start: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+          stream_state_field_end: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+          lookback_window: yup.mixed().when("type", {
+            is: "DatetimeStreamSlicer",
+            then: yup.string(),
+            otherwise: (schema) => schema.strip(),
+          }),
+        })
+        .notRequired()
+        .default(undefined),
     })
   ),
 });
 
 function builderFormAuthenticatorToAuthenticator(
   globalSettings: BuilderFormValues["global"]
-): HttpRequesterAllOfAuthenticator {
+): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -321,35 +391,40 @@ function builderFormAuthenticatorToAuthenticator(
       api_url: globalSettings.urlBase,
     };
   }
-  return globalSettings.authenticator as HttpRequesterAllOfAuthenticator;
+  return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
-export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
+export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
+      type: "DeclarativeStream",
       name: stream.name,
-      stream_cursor_field: stream.cursorField,
       primary_key: stream.primaryKey,
       retriever: {
+        type: "SimpleRetriever",
         name: stream.name,
         primary_key: stream.primaryKey,
         requester: {
+          type: "HttpRequester",
           name: stream.name,
           url_base: values.global?.urlBase,
           path: stream.urlPath,
           request_options_provider: {
+            // TODO can't declare type here because the server will error out, but the types dictate it is needed. Fix here once server is fixed.
+            // type: "InterpolatedRequestOptionsProvider",
             request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
             request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-            request_body_data: Object.fromEntries(stream.requestOptions.requestBody),
-          },
+            request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
+          } as InterpolatedRequestOptionsProvider,
           authenticator: builderFormAuthenticatorToAuthenticator(values.global),
           // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
           config: {},
         },
         record_selector: {
+          type: "RecordSelector",
           extractor: {
+            type: "DpathExtractor",
             field_pointer: stream.fieldPointer,
-            config: {},
           },
         },
         paginator: stream.paginator
@@ -358,8 +433,8 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
               page_token_option: {
                 ...stream.paginator.pageTokenOption,
                 // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
-                field_name: stream.paginator.pageTokenOption.field_name
-                  ? stream.paginator.pageTokenOption.field_name
+                field_name: stream.paginator.pageTokenOption?.field_name
+                  ? stream.paginator.pageTokenOption?.field_name
                   : undefined,
               },
               page_size_option: stream.paginator.pageSizeOption,
@@ -367,9 +442,9 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
               url_base: values.global?.urlBase,
             }
           : { type: "NoPagination" },
+        stream_slicer: stream.streamSlicer,
         config: {},
       },
-      config: {},
     };
   });
 
@@ -383,13 +458,17 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
     additionalProperties: true,
   };
 
-  const spec: SourceDefinitionSpecificationDraft = {
-    connectionSpecification: specSchema,
+  const spec: Spec = {
+    connection_specification: specSchema,
+    documentation_url: "",
+    type: "Spec",
   };
 
   return {
     version: "0.1.0",
+    type: "DeclarativeSource",
     check: {
+      type: "CheckStream",
       stream_names: [],
     },
     streams: manifestStreams,

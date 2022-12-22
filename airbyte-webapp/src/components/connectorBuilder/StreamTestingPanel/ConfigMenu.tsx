@@ -1,14 +1,16 @@
-import { faClose, faGear } from "@fortawesome/free-solid-svg-icons";
+import { faClose, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { useState } from "react";
+import { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
 import { Button } from "components/ui/Button";
 import { InfoBox } from "components/ui/InfoBox";
 import { Modal, ModalBody } from "components/ui/Modal";
+import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { ConnectorForm } from "views/Connector/ConnectorForm";
@@ -18,10 +20,12 @@ import { ConfigMenuErrorBoundaryComponent } from "./ConfigMenuErrorBoundary";
 
 interface ConfigMenuProps {
   className?: string;
+  configJsonErrors: number;
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
 }
 
-export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErrors, isOpen, setIsOpen }) => {
   const { formatMessage } = useIntl();
   const { configJson, setConfigJson, jsonManifest, editorView, setEditorView } = useConnectorBuilderState();
 
@@ -32,17 +36,35 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
     setIsOpen(false);
   };
 
+  const connectorDefinitionSpecification: SourceDefinitionSpecificationDraft | undefined = useMemo(
+    () =>
+      jsonManifest.spec
+        ? {
+            documentationUrl: jsonManifest.spec.documentation_url,
+            connectionSpecification: jsonManifest.spec.connection_specification,
+          }
+        : undefined,
+    [jsonManifest]
+  );
+
   return (
     <>
       <Tooltip
         control={
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setIsOpen(true)}
-            disabled={!jsonManifest.spec}
-            icon={<FontAwesomeIcon className={styles.icon} icon={faGear} />}
-          />
+          <>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setIsOpen(true)}
+              disabled={!jsonManifest.spec}
+              icon={<FontAwesomeIcon className={styles.icon} icon={faUser} />}
+            >
+              <FormattedMessage id="connectorBuilder.inputsButton" />
+            </Button>
+            {configJsonErrors > 0 && (
+              <NumberBadge className={styles.inputsErrorBadge} value={configJsonErrors} color="red" />
+            )}
+          </>
         }
         placement={editorView === "yaml" ? "left" : "top"}
         containerClassName={className}
@@ -55,7 +77,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
           <FormattedMessage id="connectorBuilder.inputsNoSpecYAMLTooltip" />
         )}
       </Tooltip>
-      {isOpen && jsonManifest.spec && (
+      {isOpen && connectorDefinitionSpecification && (
         <Modal
           size="lg"
           onClose={() => setIsOpen(false)}
@@ -84,7 +106,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className }) => {
                   formType="source"
                   bodyClassName={styles.formContent}
                   footerClassName={styles.inputFormModalFooter}
-                  selectedConnectorDefinitionSpecification={jsonManifest.spec}
+                  selectedConnectorDefinitionSpecification={connectorDefinitionSpecification}
                   formValues={{ connectionConfiguration: configJson }}
                   onSubmit={async (values) => {
                     setConfigJson(values.connectionConfiguration as StreamReadRequestBodyConfig);

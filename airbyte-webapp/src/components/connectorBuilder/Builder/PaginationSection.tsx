@@ -4,10 +4,14 @@ import { useIntl } from "react-intl";
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 
-import { injectIntoValues } from "../types";
+import { RequestOption } from "core/request/ConnectorManifest";
+
+import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderOneOf } from "./BuilderOneOf";
+import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
+import { ToggleGroupField } from "./ToggleGroupField";
 
 interface PaginationSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -16,18 +20,19 @@ interface PaginationSectionProps {
 
 export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
   const { formatMessage } = useIntl();
-  const [field, , helpers] = useField(streamFieldPath("paginator"));
+  const [field, , helpers] = useField<BuilderPaginator | undefined>(streamFieldPath("paginator"));
+  const [pageSizeField] = useField(streamFieldPath("paginator.strategy.page_size"));
+  const [, , pageSizeOptionHelpers] = useField(streamFieldPath("paginator.pageSizeOption"));
 
   const handleToggle = (newToggleValue: boolean) => {
     if (newToggleValue) {
       helpers.setValue({
         strategy: {
           type: "OffsetIncrement",
-        },
-        pageSizeOption: {
-          inject_into: "request_parameter",
+          page_size: "",
         },
         pageTokenOption: {
+          type: "RequestOption",
           inject_into: "request_parameter",
         },
       });
@@ -46,47 +51,27 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
         />
       }
     >
-      <BuilderField
-        type="enum"
-        path={streamFieldPath("paginator.pageTokenOption.inject_into")}
-        options={injectIntoValues}
-        label="Inject into"
-        tooltip="Configures where the page token should be set on the HTTP requests"
-      />
-      <BuilderField
-        type="string"
-        path={streamFieldPath("paginator.pageTokenOption.field_name")}
-        label="Field name"
-        tooltip="Configures which key should be used in the location that the page token is being injected into"
-        optional
-      />
+      <InjectRequestOptionFields path={streamFieldPath("paginator.pageTokenOption")} descriptor="page token" />
     </GroupControls>
   );
 
   const pageSizeOption = (
-    <GroupControls
-      label={
-        <ControlLabels
-          label="Page size option"
-          infoTooltipContent="Configures how the page size will be sent in requests to the source API"
-        />
-      }
+    <ToggleGroupField<RequestOption>
+      label="Page size option"
+      tooltip="Configures how the page size will be sent in requests to the source API"
+      fieldPath={streamFieldPath("paginator.pageSizeOption")}
+      initialValues={{
+        inject_into: "request_parameter",
+        type: "RequestOption",
+        field_name: "",
+      }}
     >
-      <BuilderField
-        type="enum"
-        path={streamFieldPath("paginator.pageSizeOption.inject_into")}
-        options={injectIntoValues}
-        label="Inject into"
-        tooltip="Configures where the page size should be set on the HTTP requests"
+      <InjectRequestOptionFields
+        path={streamFieldPath("paginator.pageSizeOption")}
+        descriptor="page size"
+        excludeInjectIntoValues={["path"]}
       />
-      <BuilderField
-        type="string"
-        path={streamFieldPath("paginator.pageSizeOption.field_name")}
-        label="Field name"
-        tooltip="Configures which key should be used in the location that the page size is being injected into"
-        optional
-      />
-    </GroupControls>
+    </ToggleGroupField>
   );
 
   return (
@@ -122,10 +107,10 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   type="number"
                   path={streamFieldPath("paginator.strategy.page_size")}
                   label="Page size"
-                  tooltip="Size of pages to request from API"
+                  tooltip="Set the size of each page"
                 />
-                {pageTokenOption}
                 {pageSizeOption}
+                {pageTokenOption}
               </>
             ),
           },
@@ -138,7 +123,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   type="number"
                   path={streamFieldPath("paginator.strategy.page_size")}
                   label="Page size"
-                  tooltip="Size of pages to request from API"
+                  tooltip="Set the size of each page"
                 />
                 <BuilderField
                   type="number"
@@ -147,8 +132,8 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Page number to start requesting pages from"
                   optional
                 />
-                {pageTokenOption}
                 {pageSizeOption}
+                {pageTokenOption}
               </>
             ),
           },
@@ -164,21 +149,26 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
                   tooltip="Value of the cursor to send in requests to the API"
                 />
                 <BuilderField
-                  type="number"
-                  path={streamFieldPath("paginator.strategy.page_size")}
-                  label="Page size"
-                  tooltip="Size of pages to request from API"
-                  optional
-                />
-                <BuilderField
-                  type="number"
+                  type="string"
                   path={streamFieldPath("paginator.strategy.stop_condition")}
                   label="Stop condition"
                   tooltip="Condition that determines when to stop requesting further pages"
                   optional
                 />
+                <BuilderField
+                  type="number"
+                  path={streamFieldPath("paginator.strategy.page_size")}
+                  onChange={(newValue) => {
+                    if (newValue === undefined || newValue === "") {
+                      pageSizeOptionHelpers.setValue(undefined);
+                    }
+                  }}
+                  label="Page size"
+                  tooltip="Set the size of each page"
+                  optional
+                />
+                {pageSizeField.value && pageSizeField.value !== "" && pageSizeOption}
                 {pageTokenOption}
-                {pageSizeOption}
               </>
             ),
           },
