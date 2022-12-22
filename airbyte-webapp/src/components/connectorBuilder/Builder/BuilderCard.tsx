@@ -135,8 +135,9 @@ const CopyToModal: React.FC<{
       >
         <ModalBody className={styles.modalStreamListContainer}>
           {streams.value.map((stream, index) => (
-            <div key={index} className={styles.toggleContainer}>
+            <label htmlFor={`copy-to-stream-${index}`} key={index} className={styles.toggleContainer}>
               <CheckBox
+                id={`copy-to-stream-${index}`}
                 checked={selectMap[index] || false}
                 disabled={index === currentStreamIndex}
                 onChange={() => {
@@ -144,7 +145,7 @@ const CopyToModal: React.FC<{
                 }}
               />
               {stream.name}
-            </div>
+            </label>
           ))}
         </ModalBody>
         <ModalFooter>
