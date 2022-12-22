@@ -50,7 +50,6 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
-import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -321,8 +320,6 @@ public class ServerApp implements ServerRunnable {
         configs.getAirbyteVersion(),
         temporalClient);
 
-    final LogsHandler logsHandler = new LogsHandler(configs);
-
     final WorkspacesHandler workspacesHandler = new WorkspacesHandler(
         configRepository,
         secretsRepositoryWriter,
@@ -375,7 +372,6 @@ public class ServerApp implements ServerRunnable {
         destinationHandler,
         healthCheckHandler,
         jobHistoryHandler,
-        logsHandler,
         oAuthHandler,
         operationsHandler,
         schedulerHandler,
