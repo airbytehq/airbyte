@@ -9,11 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.doThrow;
+import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.Mockito.spy;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.BigQueryOptions;
@@ -26,8 +25,8 @@ import com.google.cloud.bigquery.StandardTableDefinition;
 import com.google.cloud.bigquery.TableId;
 import com.google.cloud.bigquery.TableInfo;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
-import io.airbyte.commons.exceptions.ConfigErrorException;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.commons.string.Strings;
@@ -54,26 +53,33 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@TestInstance(PER_CLASS)
 class BigQueryDestinationTest {
-
   protected static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
+  protected static final Path CREDENTIALS_IMPERSONATE_PATH = Path.of("secrets/credentials-impersonate.json");
+  protected static final Path CREDENTIALS_IMPERSONATE_FAIL_PATH = Path.of("secrets/credentials-impersonate-fail.json");
   protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
       Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
   protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
@@ -87,44 +93,129 @@ class BigQueryDestinationTest {
   private static final Instant NOW = Instant.now();
   protected static final String USERS_STREAM_NAME = "users";
   protected static final String TASKS_STREAM_NAME = "tasks";
-  protected static final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected final AirbyteMessage MESSAGE_USERS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "john").put("id", "10").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected final AirbyteMessage MESSAGE_USERS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(USERS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("name", "susan").put("id", "30").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected final AirbyteMessage MESSAGE_TASKS1 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "announce the game.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
+  protected final AirbyteMessage MESSAGE_TASKS2 = new AirbyteMessage().withType(AirbyteMessage.Type.RECORD)
       .withRecord(new AirbyteRecordMessage().withStream(TASKS_STREAM_NAME)
           .withData(Jsons.jsonNode(ImmutableMap.builder().put("goal", "ship some code.").build()))
           .withEmittedAt(NOW.toEpochMilli()));
-  protected static final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
+  protected final AirbyteMessage MESSAGE_STATE = new AirbyteMessage().withType(AirbyteMessage.Type.STATE)
       .withState(new AirbyteStateMessage().withData(Jsons.jsonNode(ImmutableMap.builder().put("checkpoint", "now!").build())));
 
   private static final NamingConventionTransformer NAMING_RESOLVER = new BigQuerySQLNameTransformer();
 
+  protected String projectId;
+  protected JsonNode credentialsJson;
+  protected String datasetId;
   protected JsonNode config;
+  protected JsonNode configImpersonate;
+  protected JsonNode configImpersonateFail;
+  protected JsonNode configWithProjectId;
+  protected JsonNode configWithBadProjectId;
+  protected JsonNode insufficientRoleConfig;
+  protected JsonNode nonBillableConfig;
   protected BigQuery bigquery;
   protected Dataset dataset;
+  protected Map<String, JsonNode> configs;
   protected ConfiguredAirbyteCatalog catalog;
   protected boolean tornDown = true;
 
-  private static Stream<Arguments> datasetIdResetterProvider() {
-    // parameterized test with two dataset-id patterns: `dataset_id` and `project-id:dataset_id`
+  private Stream<Arguments> successTestConfigProvider() {
     return Stream.of(
-        Arguments.arguments(new DatasetIdResetter(config -> {})),
-        Arguments.arguments(new DatasetIdResetter(
-            config -> {
-              final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-              final String datasetId = config.get(BigQueryConsts.CONFIG_DATASET_ID).asText();
-              ((ObjectNode) config).put(BigQueryConsts.CONFIG_DATASET_ID,
-                  String.format("%s:%s", projectId, datasetId));
-            })));
+        Arguments.of("configImpersonate"),
+        Arguments.of("config"),
+        Arguments.of("configWithProjectId")
+    );
+  }
+
+  private Stream<Arguments> failCheckTestConfigProvider() {
+    return Stream.of(
+        Arguments.of("configImpersonateFail", "Error requesting access token"),
+        Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
+        Arguments.of("insufficientRoleConfig", "User does not have bigquery.datasets.create permission"),
+        Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier")
+    );
+  }
+
+  private Stream<Arguments> failWriteTestConfigProvider() {
+    return Stream.of(
+        Arguments.of("configImpersonateFail", "Error requesting access token"),
+        Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
+        Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied")
+    );
+  }
+
+  @BeforeAll
+  public static void beforeAll() throws IOException {
+    if (!Files.exists(CREDENTIALS_PATH)) {
+      throw new IllegalStateException(
+          "Must provide path to a big query credentials file. By default destination-bigquery/secrets/credentials.json");
+    }
+    if (!Files.exists(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH)) {
+      throw new IllegalStateException("""
+                                      Json config not found. Must provide path to a big query credentials file,
+                                       please add file with creds to
+                                      ../destination-bigquery/secrets/credentials-with-missed-dataset-creation-role.json.""");
+    }
+    if (!Files.exists(CREDENTIALS_IMPERSONATE_PATH)) {
+      throw new IllegalStateException(
+          "Must provide path to a bigquery credentials file for testing account impersonation. By default destination-bigquery/secrets/credentials-impersonate.json");
+    }
+    if (!Files.exists(CREDENTIALS_IMPERSONATE_FAIL_PATH)) {
+      throw new IllegalStateException(
+          "Must provide path to a bigquery credentials file for testing account impersonation failure. By default destination-bigquery/secrets/credentials-impersonate-fail.json");
+    }
+    if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
+      throw new IllegalStateException("""
+                                      Json config not found. Must provide path to a big query credentials file,
+                                       please add file with creds to
+                                      ../destination-bigquery/secrets/credentials-non-billable-project.json""");
+    }
+  }
+
+  protected JsonNode createConfig(Path configFile, String datasetId) throws IOException {
+    final String tmpConfigAsString = Files.readString(configFile);
+    final JsonNode tmpConfigJson = Jsons.deserialize(tmpConfigAsString);
+    final JsonNode tmpCredentialsJson = tmpConfigJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    Builder<Object, Object> mapBuilder = ImmutableMap.builder();
+    mapBuilder.put(BigQueryConsts.CONFIG_PROJECT_ID, tmpConfigJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText());
+    mapBuilder.put(BigQueryConsts.CONFIG_CREDS, tmpCredentialsJson.toString());
+    mapBuilder.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId);
+    mapBuilder.put(BigQueryConsts.CONFIG_DATASET_LOCATION, tmpConfigJson.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText());
+    if(tmpConfigJson.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)) {
+      mapBuilder.put(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT, tmpConfigJson.get(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT).asText());
+    }
+    mapBuilder.put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10);
+    return Jsons.jsonNode(mapBuilder.build());
+  }
+
+  protected void initBigQuery(JsonNode config, boolean createDataSet) throws IOException {
+    final ServiceAccountCredentials credentials = ServiceAccountCredentials
+        .fromStream(new ByteArrayInputStream(config.get(BigQueryConsts.CONFIG_CREDS).asText().getBytes(StandardCharsets.UTF_8)));
+    bigquery = BigQueryOptions.newBuilder()
+        .setProjectId(projectId)
+        .setCredentials(credentials)
+        .build()
+        .getService();
+    if(createDataSet) {
+      try {
+        final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId)
+            .setLocation(config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText()).build();
+        dataset = bigquery.create(datasetInfo);
+      } catch(Exception ex) {
+        //ignore
+      }
+    }
   }
 
   @BeforeEach
@@ -132,25 +223,28 @@ class BigQueryDestinationTest {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
+    datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
+    //Set up config objects for test scenarios
+    //config - basic config that should succeed checks and write
+    config = createConfig(CREDENTIALS_PATH, datasetId);
 
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/config/credentials.json. Override by setting setting path with the CREDENTIALS_PATH constant.");
-    }
-    final String fullConfigAsString = Files.readString(CREDENTIALS_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
+    //all successful configs use the same project ID
+    projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    //configWithProjectId - config that uses project:dataset notation for datasetId
+    final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
+    configWithProjectId = createConfig(CREDENTIALS_PATH, dataSetWithProjectId);
 
-    final ServiceAccountCredentials credentials = ServiceAccountCredentials
-        .fromStream(new ByteArrayInputStream(credentialsJson.toString().getBytes(StandardCharsets.UTF_8)));
-    bigquery = BigQueryOptions.newBuilder()
-        .setProjectId(projectId)
-        .setCredentials(credentials)
-        .build()
-        .getService();
+    //configWithBadProjectId - config that uses "fake" project ID and should fail
+    final String dataSetWithBadProjectId = String.format("%s:%s", "fake", datasetId);
+    configWithBadProjectId = createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId);
 
-    final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
+    //configImpersonate - config that uses account impersonation (https://github.com/airbytehq/airbyte/pull/15820)
+    configImpersonate = createConfig(CREDENTIALS_IMPERSONATE_PATH, datasetId);
+    configImpersonateFail = createConfig(CREDENTIALS_IMPERSONATE_FAIL_PATH, datasetId);
+    insufficientRoleConfig = createConfig(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH, datasetId);
+    nonBillableConfig = createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
+
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
     MESSAGE_USERS2.getRecord().setNamespace(datasetId);
     MESSAGE_TASKS1.getRecord().setNamespace(datasetId);
@@ -164,17 +258,15 @@ class BigQueryDestinationTest {
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
-    final DatasetInfo datasetInfo = DatasetInfo.newBuilder(datasetId).setLocation(DATASET_LOCATION).build();
-    dataset = bigquery.create(datasetInfo);
-
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
-        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
-        .build());
-
+    configs  = new HashMap<String, JsonNode>() {{
+      put("config", config);
+      put("configWithProjectId", configWithProjectId);
+      put("configImpersonate", configImpersonate);
+      put("configWithBadProjectId", configWithBadProjectId);
+      put("configImpersonateFail", configImpersonateFail);
+      put("insufficientRoleConfig", insufficientRoleConfig);
+      put("nonBillableConfig", nonBillableConfig);
+    }};
     tornDown = false;
     addShutdownHook();
   }
@@ -192,21 +284,20 @@ class BigQueryDestinationTest {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
-
     tearDownBigQuery();
   }
 
   protected void tearDownBigQuery() {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
-
-    final boolean success = bigquery.delete(dataset.getDatasetId(), option);
-    if (success) {
-      LOGGER.info("BQ Dataset " + dataset + " deleted...");
-    } else {
-      LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+    if(bigquery != null && dataset != null) {
+      final boolean success = bigquery.delete(dataset.getDatasetId(), option);
+      if (success) {
+        LOGGER.info("BQ Dataset " + dataset + " deleted...");
+      } else {
+        LOGGER.info("BQ Dataset cleanup for " + dataset + " failed!");
+      }
     }
-
     tornDown = true;
   }
 
@@ -220,104 +311,34 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testCheckSuccess(final DatasetIdResetter resetDatasetId) {
-    resetDatasetId.accept(config);
-    final AirbyteConnectionStatus actual = new BigQueryDestination().check(config);
+  @MethodSource("successTestConfigProvider")
+  void testCheckSuccess(String configName) throws IOException {
+    JsonNode testConfig = configs.get(configName);
+    initBigQuery(testConfig, false);
+    final AirbyteConnectionStatus actual = new BigQueryDestination().check(testConfig);
     final AirbyteConnectionStatus expected = new AirbyteConnectionStatus().withStatus(Status.SUCCEEDED);
     assertEquals(expected, actual);
   }
 
   @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testCheckFailure(final DatasetIdResetter resetDatasetId) {
-    ((ObjectNode) config).put(BigQueryConsts.CONFIG_PROJECT_ID, "fake");
-    resetDatasetId.accept(config);
-
+  @MethodSource("failCheckTestConfigProvider")
+  void testCheckFailures(String configName, String error) {
     // Assert that check throws exception. Later it will be handled by IntegrationRunner
-    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
-      new BigQueryDestination().check(config);
+    //TODO: this should always throw ConfigErrorException
+    JsonNode testConfig = configs.get(configName);
+    final Exception ex = assertThrows(Exception.class, () -> {
+      new BigQueryDestination().check(testConfig);
     });
-
-    assertThat(ex.getMessage()).contains("Access Denied");
+    assertThat(ex.getMessage()).contains(error);
   }
 
   @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testCheckFailureInsufficientPermissionForCreateDataset(final DatasetIdResetter resetDatasetId) throws IOException {
-
-    if (!Files.exists(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH)) {
-      throw new IllegalStateException("""
-                                      Json config not found. Must provide path to a big query credentials file,
-                                       please add file with creds to
-                                      ../destination-bigquery/secrets/credentialsWithMissedDatasetCreationRole.json.""");
-    }
-    final String fullConfigAsString = Files.readString(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH);
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-    final String datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
-
-    final JsonNode insufficientRoleConfig;
-
-    insufficientRoleConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, DATASET_LOCATION)
-        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
-        .build());
-
-    resetDatasetId.accept(insufficientRoleConfig);
-
-    // Assert that check throws exception. Later it will be handled by IntegrationRunner
-    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
-      new BigQueryDestination().check(insufficientRoleConfig);
-    });
-
-    assertThat(ex.getMessage()).contains("User does not have bigquery.datasets.create permission");
-  }
-
-  @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testCheckFailureNonBillableProject(final DatasetIdResetter resetDatasetId) throws IOException {
-
-    if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
-      throw new IllegalStateException("""
-                                      Json config not found. Must provide path to a big query credentials file,
-                                       please add file with creds to
-                                      ../destination-bigquery/secrets/credentials-non-billable-project.json""");
-    }
-    final String fullConfigAsString = Files.readString(CREDENTIALS_NON_BILLABLE_PROJECT_PATH);
-
-    final JsonNode credentialsJson = Jsons.deserialize(fullConfigAsString).get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final String projectId = credentialsJson.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
-
-    final JsonNode insufficientRoleConfig;
-
-    insufficientRoleConfig = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, credentialsJson.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, "testnobilling")
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, "US")
-        .put(BIG_QUERY_CLIENT_CHUNK_SIZE, 10)
-        .build());
-
-    resetDatasetId.accept(insufficientRoleConfig);
-
-    // Assert that check throws exception. Later it will be handled by IntegrationRunner
-    final ConfigErrorException ex = assertThrows(ConfigErrorException.class, () -> {
-      new BigQueryDestination().check(insufficientRoleConfig);
-    });
-
-    assertThat(ex.getMessage()).contains("Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier");
-  }
-
-  @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testWriteSuccess(final DatasetIdResetter resetDatasetId) throws Exception {
-    resetDatasetId.accept(config);
+  @MethodSource("successTestConfigProvider")
+  void testWriteSuccess(String configName) throws Exception {
+    JsonNode testConfig = configs.get(configName);
+    initBigQuery(config, true);
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -345,19 +366,15 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testWriteFailure(final DatasetIdResetter resetDatasetId) throws Exception {
-    resetDatasetId.accept(config);
-    // hack to force an exception to be thrown from within the consumer.
-    final AirbyteMessage spiedMessage = spy(MESSAGE_USERS1);
-    doThrow(new RuntimeException()).when(spiedMessage).getRecord();
-
-    final AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(config, catalog, Destination::defaultOutputRecordCollector));
-
-    consumer.start();
-    assertThrows(RuntimeException.class, () -> consumer.accept(spiedMessage));
-    consumer.accept(MESSAGE_USERS2);
-    consumer.close();
+  @MethodSource("failWriteTestConfigProvider")
+  void testWriteFailure(String configName, String error) throws Exception {
+    JsonNode testConfig = configs.get(configName);
+    initBigQuery(config, true);
+    final Exception ex = assertThrows(Exception.class, () -> {
+      AirbyteMessageConsumer consumer = spy(new BigQueryDestination().getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector));
+      consumer.start();
+    });
+    assertThat(ex.getMessage()).contains(error);
 
     final List<String> tableNames = catalog.getStreams()
         .stream()
@@ -374,11 +391,17 @@ class BigQueryDestinationTest {
   }
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
+    if(dataset == null || bigquery == null) {
+      return Collections.emptySet();
+    }
     final QueryJobConfiguration queryConfig = QueryJobConfiguration
         .newBuilder(String.format("SELECT * FROM `%s.INFORMATION_SCHEMA.TABLES`;", dataset.getDatasetId().getDataset()))
         .setUseLegacySql(false)
         .build();
 
+    if(!dataset.exists()) {
+      return Collections.emptySet();
+    }
     return StreamSupport
         .stream(BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults().iterateAll().spliterator(), false)
         .map(v -> v.get("TABLE_NAME").getStringValue()).collect(Collectors.toSet());
@@ -409,14 +432,15 @@ class BigQueryDestinationTest {
   }
 
   @ParameterizedTest
-  @MethodSource("datasetIdResetterProvider")
-  void testWritePartitionOverUnpartitioned(final DatasetIdResetter resetDatasetId) throws Exception {
-    resetDatasetId.accept(config);
+  @MethodSource("successTestConfigProvider")
+  void testWritePartitionOverUnpartitioned(String configName) throws Exception {
+    JsonNode testConfig = configs.get(configName);
+    initBigQuery(config, true);
     final String raw_table_name = String.format("_airbyte_raw_%s", USERS_STREAM_NAME);
     createUnpartitionedTable(bigquery, dataset, raw_table_name);
     assertFalse(isTablePartitioned(bigquery, dataset, raw_table_name));
     final BigQueryDestination destination = new BigQueryDestination();
-    final AirbyteMessageConsumer consumer = destination.getConsumer(config, catalog, Destination::defaultOutputRecordCollector);
+    final AirbyteMessageConsumer consumer = destination.getConsumer(testConfig, catalog, Destination::defaultOutputRecordCollector);
 
     consumer.start();
     consumer.accept(MESSAGE_USERS1);
@@ -474,19 +498,4 @@ class BigQueryDestinationTest {
     }
     return false;
   }
-
-  protected static class DatasetIdResetter {
-
-    private final Consumer<JsonNode> consumer;
-
-    DatasetIdResetter(final Consumer<JsonNode> consumer) {
-      this.consumer = consumer;
-    }
-
-    public void accept(final JsonNode config) {
-      consumer.accept(config);
-    }
-
-  }
-
 }
