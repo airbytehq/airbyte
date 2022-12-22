@@ -7,7 +7,6 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useEffectOnce } from "react-use";
 import * as yup from "yup";
 
-import Label from "components/Label";
 import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
 import { InfoBox } from "components/ui/InfoBox";
@@ -16,7 +15,7 @@ import { Text } from "components/ui/Text";
 
 import { FormikPatch } from "core/form/FormikPatch";
 
-import { BuilderFormInput } from "../types";
+import { BuilderFormInput, BuilderFormValues, getInferredInputs } from "../types";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
 import styles from "./InputsView.module.scss";
@@ -30,6 +29,7 @@ interface InputInEditing {
   isNew?: boolean;
   showDefaultValueField: boolean;
   type: typeof supportedTypes[number];
+  isInferredInputOverride: boolean;
 }
 
 function sluggify(str: string) {
@@ -44,10 +44,14 @@ function newInputInEditing(): InputInEditing {
     isNew: true,
     showDefaultValueField: false,
     type: "string",
+    isInferredInputOverride: false,
   };
 }
 
-function formInputToInputInEditing({ key, definition, required }: BuilderFormInput): InputInEditing {
+function formInputToInputInEditing(
+  { key, definition, required }: BuilderFormInput,
+  isInferredInputOverride: boolean
+): InputInEditing {
   const supportedType = supportedTypes.find((type) => type === definition.type) || "unknown";
   return {
     key,
@@ -56,6 +60,7 @@ function formInputToInputInEditing({ key, definition, required }: BuilderFormInp
     isNew: false,
     showDefaultValueField: Boolean(definition.default),
     type: supportedType !== "unknown" && definition.enum ? "enum" : supportedType,
+    isInferredInputOverride,
   };
 }
 
@@ -79,9 +84,14 @@ function inputInEditingToFormInput({
 
 export const InputsView: React.FC = () => {
   const { formatMessage } = useIntl();
+  const { values, setFieldValue } = useFormikContext<BuilderFormValues>();
   const [inputs, , helpers] = useField<BuilderFormInput[]>("inputs");
   const [inputInEditing, setInputInEditing] = useState<InputInEditing | undefined>(undefined);
-  const usedKeys = useMemo(() => inputs.value.map((input) => input.key), [inputs.value]);
+  const inferredInputs = useMemo(() => getInferredInputs(values), [values]);
+  const usedKeys = useMemo(
+    () => [...inputs.value, ...inferredInputs].map((input) => input.key),
+    [inputs.value, inferredInputs]
+  );
   const inputInEditValidation = useMemo(
     () =>
       yup.object().shape({
@@ -99,29 +109,20 @@ export const InputsView: React.FC = () => {
       }),
     [inputInEditing?.isNew, inputInEditing?.key, usedKeys]
   );
+
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.inputsTitle" })}>
       <Text centered className={styles.inputsDescription}>
         <FormattedMessage id="connectorBuilder.inputsDescription" />
       </Text>
-      {inputs.value.length > 0 && (
+      {(inputs.value.length > 0 || inferredInputs.length > 0) && (
         <Card withPadding className={styles.inputsCard}>
           <ol className={styles.list}>
+            {inferredInputs.map((input) => (
+              <InputItem key={input.key} input={input} setInputInEditing={setInputInEditing} isInferredInput />
+            ))}
             {inputs.value.map((input) => (
-              <li className={styles.listItem} key={input.key}>
-                <Label className={styles.itemLabel}>{input.definition.title || input.key}</Label>
-                <Button
-                  className={styles.itemButton}
-                  size="sm"
-                  variant="secondary"
-                  aria-label="Edit"
-                  onClick={() => {
-                    setInputInEditing(formInputToInputInEditing(input));
-                  }}
-                >
-                  <FontAwesomeIcon className={styles.icon} icon={faGear} />
-                </Button>
-              </li>
+              <InputItem key={input.key} input={input} setInputInEditing={setInputInEditing} isInferredInput={false} />
             ))}
           </ol>
         </Card>
@@ -142,12 +143,16 @@ export const InputsView: React.FC = () => {
           initialValues={inputInEditing}
           validationSchema={inputInEditValidation}
           onSubmit={(values: InputInEditing) => {
-            const newInput = inputInEditingToFormInput(values);
-            helpers.setValue(
-              inputInEditing.isNew
-                ? [...inputs.value, newInput]
-                : inputs.value.map((input) => (input.key === inputInEditing.key ? newInput : input))
-            );
+            if (values.isInferredInputOverride) {
+              setFieldValue(`inferredInputOverrides.${values.key}`, values.definition);
+            } else {
+              const newInput = inputInEditingToFormInput(values);
+              helpers.setValue(
+                inputInEditing.isNew
+                  ? [...inputs.value, newInput]
+                  : inputs.value.map((input) => (input.key === inputInEditing.key ? newInput : input))
+              );
+            }
             setInputInEditing(undefined);
           }}
         >
@@ -179,7 +184,9 @@ const InputModal = ({
   onDelete: () => void;
   onClose: () => void;
 }) => {
+  const isInferredInputOverride = inputInEditing.isInferredInputOverride;
   const { isValid, values, setFieldValue, setTouched } = useFormikContext<InputInEditing>();
+
   const { formatMessage } = useIntl();
   useEffectOnce(() => {
     // key input is always touched so errors are shown right away as it will be auto-set by the user changing the title
@@ -202,7 +209,9 @@ const InputModal = ({
             path="definition.title"
             type="string"
             onChange={(newValue) => {
-              setFieldValue("key", sluggify(newValue || ""), true);
+              if (!isInferredInputOverride) {
+                setFieldValue("key", sluggify(newValue || ""), true);
+              }
             }}
             label={formatMessage({ id: "connectorBuilder.inputModal.inputName" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.inputNameTooltip" })}
@@ -226,7 +235,7 @@ const InputModal = ({
             label={formatMessage({ id: "connectorBuilder.inputModal.description" })}
             tooltip={formatMessage({ id: "connectorBuilder.inputModal.descriptionTooltip" })}
           />
-          {values.type !== "unknown" ? (
+          {values.type !== "unknown" && !isInferredInputOverride ? (
             <>
               <BuilderField
                 path="type"
@@ -287,12 +296,16 @@ const InputModal = ({
             </>
           ) : (
             <InfoBox>
-              <FormattedMessage id="connectorBuilder.inputModal.unsupportedInput" />
+              {isInferredInputOverride ? (
+                <FormattedMessage id="connectorBuilder.inputModal.inferredInputMessage" />
+              ) : (
+                <FormattedMessage id="connectorBuilder.inputModal.unsupportedInput" />
+              )}
             </InfoBox>
           )}
         </ModalBody>
         <ModalFooter>
-          {!inputInEditing.isNew && (
+          {!inputInEditing.isNew && !inputInEditing.isInferredInputOverride && (
             <div className={styles.deleteButtonContainer}>
               <Button variant="danger" type="button" onClick={onDelete}>
                 <FormattedMessage id="form.delete" />
@@ -308,5 +321,32 @@ const InputModal = ({
         </ModalFooter>
       </Form>
     </Modal>
+  );
+};
+
+const InputItem = ({
+  input,
+  setInputInEditing,
+  isInferredInput,
+}: {
+  input: BuilderFormInput;
+  setInputInEditing: (inputInEditing: InputInEditing) => void;
+  isInferredInput: boolean;
+}): JSX.Element => {
+  return (
+    <li className={styles.listItem}>
+      <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
+      <Button
+        className={styles.itemButton}
+        size="sm"
+        variant="secondary"
+        aria-label="Edit"
+        onClick={() => {
+          setInputInEditing(formInputToInputInEditing(input, isInferredInput));
+        }}
+      >
+        <FontAwesomeIcon className={styles.icon} icon={faGear} />
+      </Button>
+    </li>
   );
 };

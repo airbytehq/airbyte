@@ -1,5 +1,6 @@
 import { useIntl } from "react-intl";
 
+import { AuthenticationSection } from "./AuthenticationSection";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderConfigView } from "./BuilderConfigView";
 import { BuilderField } from "./BuilderField";
@@ -16,6 +17,7 @@ export const GlobalConfigView: React.FC = () => {
       <BuilderCard className={styles.content}>
         <BuilderField type="string" path="global.urlBase" label="API URL" tooltip="Base URL of the source API" />
       </BuilderCard>
+      <AuthenticationSection />
     </BuilderConfigView>
   );
 };

@@ -17,7 +17,7 @@ import {
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { BuilderFormValues } from "../types";
+import { BuilderFormValues, getInferredInputs } from "../types";
 import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
@@ -115,7 +115,10 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = ({ className, toggl
         onClick={() => handleViewSelect("inputs")}
       >
         <FontAwesomeIcon icon={faUser} />
-        <FormattedMessage id="connectorBuilder.userInputs" values={{ number: values.inputs.length }} />
+        <FormattedMessage
+          id="connectorBuilder.userInputs"
+          values={{ number: values.inputs.length + getInferredInputs(values).length }}
+        />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>

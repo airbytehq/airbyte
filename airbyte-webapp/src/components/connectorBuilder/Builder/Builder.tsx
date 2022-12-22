@@ -3,7 +3,7 @@ import { useEffect } from "react";
 
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
-import { BuilderFormValues } from "../types";
+import { builderFormValidationSchema, BuilderFormValues } from "../types";
 import styles from "./Builder.module.scss";
 import { BuilderSidebar } from "./BuilderSidebar";
 import { GlobalConfigView } from "./GlobalConfigView";
@@ -29,7 +29,7 @@ function getView(selectedView: BuilderView) {
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
   const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
   useEffect(() => {
-    setBuilderFormValues(values);
+    setBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
   }, [values, setBuilderFormValues]);
 
   return (
