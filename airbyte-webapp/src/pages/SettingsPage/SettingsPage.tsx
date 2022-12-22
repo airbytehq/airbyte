@@ -14,9 +14,9 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import { MessageBox } from "./components/MessageBox";
-import AccountSettingsPage from "./pages/AccountSettingsPage";
+// import UserManagementPage from "./pages/UserManagementPage";
+// import AccountSettingsPage from "./pages/AccountSettingsPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
-import UserManagementPage from "./pages/UserManagementPage";
 
 const PageContainer = styled.div`
   width: 100%;
@@ -86,18 +86,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
-        {
-          path: `${SettingsRoute.UserManagement}`,
-          name: <FormattedMessage id="settings.user.management" />,
-          component: <UserManagementPage />,
-          show: true,
-        },
-        {
-          path: `${SettingsRoute.AccountSettings}`,
-          name: <FormattedMessage id="settings.account.settings" />,
-          component: <AccountSettingsPage />,
-          show: true,
-        },
+        // {
+        //   path: `${SettingsRoute.UserManagement}`,
+        //   name: <FormattedMessage id="settings.user.management" />,
+        //   component: <UserManagementPage />,
+        //   show: true,
+        // },
+        // {
+        //   path: `${SettingsRoute.AccountSettings}`,
+        //   name: <FormattedMessage id="settings.account.settings" />,
+        //   component: <AccountSettingsPage />,
+        //   show: true,
+        // },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,
