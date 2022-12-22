@@ -24,7 +24,7 @@ import { CustomTransformationsCard } from "./CustomTransformationsCard";
 import { DbtCloudTransformationsCard } from "./DbtCloudTransformationsCard";
 import { NormalizationCard } from "./NormalizationCard";
 
-export const ConnectionItemTransformationPage: React.FC = () => {
+export const ConnectionTransformationPage: React.FC = () => {
   const { connection, updateConnection } = useConnectionEditService();
   const { mode } = useConnectionFormService();
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);

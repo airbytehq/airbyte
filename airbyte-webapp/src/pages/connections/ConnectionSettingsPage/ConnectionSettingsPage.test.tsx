@@ -1,6 +1,6 @@
 import { mockConnection, render } from "test-utils/testutils";
 
-import { ConnectionItemSettingsPage } from "./ConnectionSettingsPage";
+import { ConnectionSettingsPageInner } from "./ConnectionSettingsPage";
 
 let mockIsAdvancedMode = false;
 const setMockIsAdvancedMode = (newSetting: boolean) => {
@@ -39,11 +39,11 @@ describe("<ConnectionSettingsPage />", () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);
-    ({ container } = await render(<ConnectionItemSettingsPage />));
+    ({ container } = await render(<ConnectionSettingsPageInner />));
     expect(container.textContent).not.toContain("Connection State");
 
     setMockIsAdvancedMode(true);
-    ({ container } = await render(<ConnectionItemSettingsPage />));
+    ({ container } = await render(<ConnectionSettingsPageInner />));
     expect(container.textContent).toContain("Connection State");
   });
 });

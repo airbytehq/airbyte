@@ -1,8 +1,10 @@
 import React from "react";
+import { Navigate } from "react-router-dom";
 
 import { DeleteBlock } from "components/common/DeleteBlock";
 import { UpdateConnectionDataResidency } from "components/connection/UpdateConnectionDataResidency";
 
+import { ConnectionStatus } from "core/request/AirbyteClient";
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
@@ -13,7 +15,7 @@ import styles from "./ConnectionSettingsPage.module.scss";
 import { SchemaUpdateNotifications } from "./SchemaUpdateNotifications";
 import { StateBlock } from "./StateBlock";
 
-export const ConnectionItemSettingsPage: React.FC = () => {
+export const ConnectionSettingsPageInner: React.FC = () => {
   const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
   const canUpdateDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);
@@ -31,4 +33,11 @@ export const ConnectionItemSettingsPage: React.FC = () => {
       <DeleteBlock type="connection" onDelete={onDelete} />
     </div>
   );
+};
+
+export const ConnectionSettingsPage: React.FC = () => {
+  const { connection } = useConnectionEditService();
+  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
+
+  return isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionSettingsPageInner />;
 };

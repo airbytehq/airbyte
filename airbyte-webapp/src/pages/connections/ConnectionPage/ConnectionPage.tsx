@@ -1,29 +1,23 @@
 import React, { Suspense } from "react";
-import { Navigate, Route, Routes, useParams } from "react-router-dom";
+import { Outlet, useParams } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
 import { HeadTitle } from "components/common/HeadTitle";
 
-import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import {
   ConnectionEditServiceProvider,
   useConnectionEditService,
 } from "hooks/services/ConnectionEdit/ConnectionEditService";
+import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundErrorBoundary";
+import { StartOverErrorView } from "views/common/StartOverErrorView";
 
-import { ConnectionReplicationPage } from "../ConnectionReplicationPage";
-import { ConnectionItemSettingsPage } from "../ConnectionSettingsPage";
-import { ConnectionStatusPage } from "../ConnectionStatusPage";
-import { ConnectionItemTransformationPage } from "../ConnectionTransformationPage";
 import { ConnectionPageTitle } from "./ConnectionPageTitle";
-import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 
 export const ConnectionPageInner: React.FC = () => {
   const { connection } = useConnectionEditService();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_ITEM);
-
-  const isConnectionDeleted = connection.status === ConnectionStatus.deprecated;
 
   return (
     <MainPageWithScroll
@@ -44,16 +38,7 @@ export const ConnectionPageInner: React.FC = () => {
       pageTitle={<ConnectionPageTitle />}
     >
       <Suspense fallback={<LoadingPage />}>
-        <Routes>
-          <Route path={ConnectionSettingsRoutes.STATUS} element={<ConnectionStatusPage />} />
-          <Route path={ConnectionSettingsRoutes.REPLICATION} element={<ConnectionReplicationPage />} />
-          <Route path={ConnectionSettingsRoutes.TRANSFORMATION} element={<ConnectionItemTransformationPage />} />
-          <Route
-            path={ConnectionSettingsRoutes.SETTINGS}
-            element={isConnectionDeleted ? <Navigate replace to=".." /> : <ConnectionItemSettingsPage />}
-          />
-          <Route index element={<Navigate to={ConnectionSettingsRoutes.STATUS} replace />} />
-        </Routes>
+        <Outlet />
       </Suspense>
     </MainPageWithScroll>
   );
@@ -64,9 +49,12 @@ export const ConnectionPage = () => {
     connectionId: string;
   }>();
   const connectionId = params.connectionId || "";
+
   return (
     <ConnectionEditServiceProvider connectionId={connectionId}>
-      <ConnectionPageInner />
+      <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
+        <ConnectionPageInner />
+      </ResourceNotFoundErrorBoundary>
     </ConnectionEditServiceProvider>
   );
 };

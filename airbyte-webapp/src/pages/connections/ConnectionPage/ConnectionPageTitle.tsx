@@ -10,37 +10,37 @@ import { Text } from "components/ui/Text";
 import { ConnectionStatus } from "core/request/AirbyteClient";
 import { useConnectionEditService } from "hooks/services/ConnectionEdit/ConnectionEditService";
 
+import { ConnectionPageRoutePaths } from "../types";
 import { ConnectionName } from "./ConnectionName";
 import styles from "./ConnectionPageTitle.module.scss";
-import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
 import { StatusMainInfo } from "./StatusMainInfo";
 
 export const ConnectionPageTitle: React.FC = () => {
-  const params = useParams<{ id: string; "*": ConnectionSettingsRoutes }>();
+  const params = useParams<{ id: string; "*": ConnectionPageRoutePaths }>();
   const navigate = useNavigate();
-  const currentStep = params["*"] || ConnectionSettingsRoutes.STATUS;
+  const currentStep = params["*"] || ConnectionPageRoutePaths.STATUS;
 
   const { connection } = useConnectionEditService();
 
   const steps = useMemo(() => {
     const steps = [
       {
-        id: ConnectionSettingsRoutes.STATUS,
+        id: ConnectionPageRoutePaths.STATUS,
         name: <FormattedMessage id="sources.status" />,
       },
       {
-        id: ConnectionSettingsRoutes.REPLICATION,
+        id: ConnectionPageRoutePaths.REPLICATION,
         name: <FormattedMessage id="connection.replication" />,
       },
       {
-        id: ConnectionSettingsRoutes.TRANSFORMATION,
+        id: ConnectionPageRoutePaths.TRANSFORMATION,
         name: <FormattedMessage id="connectionForm.transformation.title" />,
       },
     ];
 
     connection.status !== ConnectionStatus.deprecated &&
       steps.push({
-        id: ConnectionSettingsRoutes.SETTINGS,
+        id: ConnectionPageRoutePaths.SETTINGS,
         name: <FormattedMessage id="sources.settings" />,
       });
 
@@ -49,7 +49,7 @@ export const ConnectionPageTitle: React.FC = () => {
 
   const onSelectStep = useCallback(
     (id: string) => {
-      if (id === ConnectionSettingsRoutes.STATUS) {
+      if (id === ConnectionPageRoutePaths.STATUS) {
         navigate("");
       } else {
         navigate(id);

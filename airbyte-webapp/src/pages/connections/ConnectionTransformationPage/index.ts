@@ -1,1 +1,1 @@
-export { ConnectionItemTransformationPage } from "./ConnectionTransformationPage";
+export * from "./ConnectionTransformationPage";

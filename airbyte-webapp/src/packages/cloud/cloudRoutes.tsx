@@ -14,7 +14,7 @@ import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
-import { ConnectionRoutes } from "pages/connections/ConnectionRoutes";
+import { ConnectionsRoutes } from "pages/connections/ConnectionsRoutes";
 import { CreateConnectionPage } from "pages/connections/CreateConnectionPage";
 import { AllDestinationsPage } from "pages/destination/AllDestinationsPage";
 import CreateDestinationPage from "pages/destination/CreateDestinationPage";
@@ -95,7 +95,7 @@ const MainRoutes: React.FC = () => {
           </Route>
         </Route>
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionRoutes />} />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
         <Route path="*" element={<Navigate to={RoutePaths.Connections} replace />} />

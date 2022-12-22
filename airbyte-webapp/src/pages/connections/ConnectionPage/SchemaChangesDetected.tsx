@@ -10,7 +10,7 @@ import { useConnectionEditService } from "hooks/services/ConnectionEdit/Connecti
 import { useFormChangeTrackerService } from "hooks/services/FormChangeTracker";
 import { useRefreshSourceSchemaWithConfirmationOnDirty } from "views/Connection/ConnectionForm/components/refreshSourceSchemaWithConfirmationOnDirty";
 
-import { ConnectionSettingsRoutes } from "./ConnectionSettingsRoutes";
+import { ConnectionPageRoutePaths } from "../types";
 import styles from "./SchemaChangesDetected.module.scss";
 
 export const SchemaChangesDetected: React.FC = () => {
@@ -31,8 +31,8 @@ export const SchemaChangesDetected: React.FC = () => {
   }
 
   const onReviewActionButtonClick: React.MouseEventHandler<HTMLButtonElement> = () => {
-    if (!location.pathname.includes(`/${ConnectionSettingsRoutes.REPLICATION}`)) {
-      navigate(ConnectionSettingsRoutes.REPLICATION);
+    if (!location.pathname.includes(`/${ConnectionPageRoutePaths.REPLICATION}`)) {
+      navigate(ConnectionPageRoutePaths.REPLICATION);
     }
 
     refreshSchema();

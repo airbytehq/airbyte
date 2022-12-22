@@ -13,7 +13,7 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import { ConnectionRoutes } from "./connections/ConnectionRoutes";
+import { ConnectionsRoutes } from "./connections/ConnectionsRoutes";
 import { CreateConnectionPage } from "./connections/CreateConnectionPage";
 import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
 import { AllDestinationsPage } from "./destination/AllDestinationsPage";
@@ -53,7 +53,7 @@ const MainViewRoutes: React.FC = () => {
             </Route>
           </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionRoutes />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionsRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
 
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />

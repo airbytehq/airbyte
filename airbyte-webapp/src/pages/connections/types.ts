@@ -1,4 +1,5 @@
-export enum ConnectionSettingsRoutes {
+export const enum ConnectionPageRoutePaths {
+  ROOT = ":connectionId/*",
   STATUS = "status",
   TRANSFORMATION = "transformation",
   REPLICATION = "replication",
