@@ -127,8 +127,6 @@ class PostgresSourceTest {
 
   private String dbName;
 
-  private Database database;
-
   @BeforeAll
   static void init() {
     PSQL_DB = new PostgreSQLContainer<>("postgres:13-alpine");
@@ -146,7 +144,7 @@ class PostgresSourceTest {
     final JsonNode config = getConfig(PSQL_DB, dbName);
 
     try (final DSLContext dslContext = getDslContext(config)) {
-      this.database = getDatabase(dslContext);
+      final Database database = getDatabase(dslContext);
       database.query(ctx -> {
         ctx.fetch(
             "CREATE TABLE id_and_name(id NUMERIC(20, 10) NOT NULL, name VARCHAR(200) NOT NULL, power double precision NOT NULL, PRIMARY KEY (id));");
