@@ -6,7 +6,7 @@ import styled from "styled-components";
 import { Link } from "components";
 
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
-import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
+import { ConnectionSettingsRoutes } from "pages/connections/ConnectionPage/ConnectionSettingsRoutes";
 
 import { RoutePaths } from "../../../pages/routePaths";
 

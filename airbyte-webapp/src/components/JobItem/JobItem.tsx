@@ -3,9 +3,9 @@ import styled from "styled-components";
 
 import { Spinner } from "components/ui/Spinner";
 
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
+import { AttemptRead, JobStatus, SynchronousJobRead } from "core/request/AirbyteClient";
+import { JobsWithJobs } from "pages/connections/ConnectionStatusPage/JobsList";
 
-import { AttemptRead, JobStatus, SynchronousJobRead } from "../../core/request/AirbyteClient";
 import { useAttemptLink } from "./attemptLinkUtils";
 import ContentWrapper from "./components/ContentWrapper";
 import ErrorDetails from "./components/ErrorDetails";

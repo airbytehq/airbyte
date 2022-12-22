@@ -1,6 +1,6 @@
 import { mockConnection, render } from "test-utils/testutils";
 
-import { ConnectionSettingsTab } from "./ConnectionSettingsTab";
+import { ConnectionItemSettingsPage } from "./ConnectionSettingsPage";
 
 let mockIsAdvancedMode = false;
 const setMockIsAdvancedMode = (newSetting: boolean) => {
@@ -34,16 +34,16 @@ jest.mock("components/common/DeleteBlock", () => ({
   },
 }));
 
-describe("<SettingsView />", () => {
+describe("<ConnectionSettingsPage />", () => {
   it("only renders connection state when advanced mode is enabled", async () => {
     let container: HTMLElement;
 
     setMockIsAdvancedMode(false);
-    ({ container } = await render(<ConnectionSettingsTab />));
+    ({ container } = await render(<ConnectionItemSettingsPage />));
     expect(container.textContent).not.toContain("Connection State");
 
     setMockIsAdvancedMode(true);
-    ({ container } = await render(<ConnectionSettingsTab />));
+    ({ container } = await render(<ConnectionItemSettingsPage />));
     expect(container.textContent).toContain("Connection State");
   });
 });

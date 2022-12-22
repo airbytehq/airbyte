@@ -16,7 +16,7 @@ import { ConnectionEditServiceProvider } from "hooks/services/ConnectionEdit/Con
 import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 import * as connectionHook from "hooks/services/useConnectionHook";
 
-import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
+import { ConnectionReplicationPage } from "./ConnectionReplicationPage";
 
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
   useGetDestinationDefinitionSpecification: () => mockDestination,
@@ -28,7 +28,7 @@ jest.mock("services/workspaces/WorkspacesService", () => ({
   useCurrentWorkspaceId: () => mockWorkspaceId,
 }));
 
-describe("ConnectionReplicationTab", () => {
+describe("ConnectionReplicationPage", () => {
   const Wrapper: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => (
     <Suspense fallback={<div>I should not show up in a snapshot</div>}>
       <TestWrapper>
@@ -43,7 +43,7 @@ describe("ConnectionReplicationTab", () => {
     await act(async () => {
       renderResult = tlr(
         <Wrapper>
-          <ConnectionReplicationTab />
+          <ConnectionReplicationPage />
         </Wrapper>
       );
     });
@@ -139,7 +139,7 @@ describe("ConnectionReplicationTab", () => {
       const container = tlr(
         <TestWrapper features={featuresToInject}>
           <ConnectionEditServiceProvider connectionId={mockConnection.connectionId}>
-            <ConnectionReplicationTab />
+            <ConnectionReplicationPage />
           </ConnectionEditServiceProvider>
         </TestWrapper>
       );

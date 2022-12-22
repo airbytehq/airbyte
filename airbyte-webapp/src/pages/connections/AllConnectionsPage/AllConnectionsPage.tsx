@@ -13,10 +13,10 @@ import { PageHeader } from "components/ui/PageHeader";
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
 
-import { RoutePaths } from "../../../routePaths";
-import ConnectionsTable from "./components/ConnectionsTable";
+import { RoutePaths } from "../../routePaths";
+import ConnectionsTable from "./ConnectionsTable";
 
-const AllConnectionsPage: React.FC = () => {
+export const AllConnectionsPage: React.FC = () => {
   const navigate = useNavigate();
 
   useTrackPage(PageTrackingCodes.CONNECTIONS_LIST);
@@ -54,5 +54,3 @@ const AllConnectionsPage: React.FC = () => {
     </Suspense>
   );
 };
-
-export default AllConnectionsPage;

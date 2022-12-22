@@ -72,7 +72,7 @@ function usePreloadData(): {
   return { source, sourceDefinition, destination, destinationDefinition };
 }
 
-export const CreationFormPage: React.FC = () => {
+export const CreateConnectionPage: React.FC = () => {
   useTrackPage(PageTrackingCodes.CONNECTIONS_NEW);
   const location = useLocation();
   const { formatMessage } = useIntl();

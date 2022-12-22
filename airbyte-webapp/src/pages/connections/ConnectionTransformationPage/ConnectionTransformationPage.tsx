@@ -1,7 +1,5 @@
-import { Field, FieldArray } from "formik";
-import React, { useMemo } from "react";
+import React from "react";
 import { FormattedMessage } from "react-intl";
-import { useToggle } from "react-use";
 
 import { Card } from "components/ui/Card";
 import { Text } from "components/ui/Text";
@@ -15,84 +13,18 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { useGetDestinationDefinitionSpecification } from "services/connector/DestinationDefinitionSpecificationService";
 import { FormikOnSubmit } from "types/formik";
-import { NormalizationField } from "views/Connection/ConnectionForm/components/NormalizationField";
-import { TransformationField } from "views/Connection/ConnectionForm/components/TransformationField";
 import {
   getInitialNormalization,
   getInitialTransformations,
   mapFormPropsToOperation,
 } from "views/Connection/ConnectionForm/formConfig";
-import { FormCard } from "views/Connection/FormCard";
 
-import styles from "./ConnectionTransformationTab.module.scss";
-import { DbtCloudTransformationsCard } from "./ConnectionTransformationTab/DbtCloudTransformationsCard";
+import styles from "./ConnectionTransformationPage.module.scss";
+import { CustomTransformationsCard } from "./CustomTransformationsCard";
+import { DbtCloudTransformationsCard } from "./DbtCloudTransformationsCard";
+import { NormalizationCard } from "./NormalizationCard";
 
-const CustomTransformationsCard: React.FC<{
-  operations?: OperationCreate[];
-  onSubmit: FormikOnSubmit<{ transformations?: OperationRead[] }>;
-}> = ({ operations, onSubmit }) => {
-  const [editingTransformation, toggleEditingTransformation] = useToggle(false);
-  const { mode } = useConnectionFormService();
-  const initialValues = useMemo(
-    () => ({
-      transformations: getInitialTransformations(operations || []),
-    }),
-    [operations]
-  );
-
-  return (
-    <FormCard<{ transformations?: OperationRead[] }>
-      title={<FormattedMessage id="connection.customTransformations" />}
-      collapsible
-      bottomSeparator
-      form={{
-        initialValues,
-        enableReinitialize: true,
-        onSubmit,
-      }}
-      submitDisabled={editingTransformation}
-    >
-      <FieldArray name="transformations">
-        {(formProps) => (
-          <TransformationField
-            {...formProps}
-            mode={mode}
-            onStartEdit={toggleEditingTransformation}
-            onEndEdit={toggleEditingTransformation}
-          />
-        )}
-      </FieldArray>
-    </FormCard>
-  );
-};
-
-const NormalizationCard: React.FC<{
-  operations?: OperationRead[];
-  onSubmit: FormikOnSubmit<{ normalization?: NormalizationType }>;
-}> = ({ operations, onSubmit }) => {
-  const { mode } = useConnectionFormService();
-  const initialValues = useMemo(
-    () => ({
-      normalization: getInitialNormalization(operations, true),
-    }),
-    [operations]
-  );
-
-  return (
-    <FormCard<{ normalization?: NormalizationType }>
-      form={{
-        initialValues,
-        onSubmit,
-      }}
-      title={<FormattedMessage id="connection.normalization" />}
-      collapsible
-    >
-      <Field name="normalization" component={NormalizationField} mode={mode} />
-    </FormCard>
-  );
-};
-
-export const ConnectionTransformationTab: React.FC = () => {
+export const ConnectionItemTransformationPage: React.FC = () => {
   const { connection, updateConnection } = useConnectionEditService();
   const { mode } = useConnectionFormService();
   const definition = useGetDestinationDefinitionSpecification(connection.destination.destinationDefinitionId);

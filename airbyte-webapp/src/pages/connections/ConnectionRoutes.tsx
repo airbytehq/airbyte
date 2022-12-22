@@ -7,19 +7,19 @@ import { ResourceNotFoundErrorBoundary } from "views/common/ResorceNotFoundError
 import { StartOverErrorView } from "views/common/StartOverErrorView";
 
 import { RoutePaths } from "../routePaths";
-import AllConnectionsPage from "./pages/AllConnectionsPage";
-import { ConnectionItemPage } from "./pages/ConnectionItemPage/ConnectionItemPage";
-import { CreationFormPage } from "./pages/CreationFormPage/CreationFormPage";
+import { AllConnectionsPage } from "./AllConnectionsPage";
+import { ConnectionPage } from "./ConnectionPage/ConnectionPage";
+import { CreateConnectionPage } from "./CreateConnectionPage/CreateConnectionPage";
 
-export const ConnectionPage: React.FC = () => (
+export const ConnectionRoutes: React.FC = () => (
   <Suspense fallback={<LoadingPage />}>
     <Routes>
-      <Route path={RoutePaths.ConnectionNew} element={<CreationFormPage />} />
+      <Route path={RoutePaths.ConnectionNew} element={<CreateConnectionPage />} />
       <Route
         path=":connectionId/*"
         element={
           <ResourceNotFoundErrorBoundary errorComponent={<StartOverErrorView />}>
-            <ConnectionItemPage />
+            <ConnectionPage />
           </ResourceNotFoundErrorBoundary>
         }
       />

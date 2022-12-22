@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ConnectionReplicationTab should render 1`] = `
+exports[`ConnectionReplicationPage should render 1`] = `
 <body>
   <div>
     <div
@@ -796,7 +796,7 @@ exports[`ConnectionReplicationTab should render 1`] = `
 </body>
 `;
 
-exports[`ConnectionReplicationTab should show an error if there is a schemaError 1`] = `
+exports[`ConnectionReplicationPage should show an error if there is a schemaError 1`] = `
 <body>
   <div>
     <div

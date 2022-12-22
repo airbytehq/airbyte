@@ -13,8 +13,8 @@ import { CompleteOauthRequest } from "views/CompleteOauthRequest";
 import MainView from "views/layout/MainView";
 
 import { WorkspaceRead } from "../core/request/AirbyteClient";
-import ConnectionPage from "./ConnectionPage";
-import CreationFormPage from "./ConnectionPage/pages/CreationFormPage";
+import { ConnectionRoutes } from "./connections/ConnectionRoutes";
+import { CreateConnectionPage } from "./connections/CreateConnectionPage";
 import { ConnectorBuilderPage } from "./ConnectorBuilderPage/ConnectorBuilderPage";
 import { AllDestinationsPage } from "./destination/AllDestinationsPage";
 import CreateDestinationPage from "./destination/CreateDestinationPage";
@@ -46,14 +46,14 @@ const MainViewRoutes: React.FC = () => {
           <Route path={RoutePaths.Destination}>
             <Route index element={<AllDestinationsPage />} />
             <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-            <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+            <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
             <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
               <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
               <Route index element={<DestinationOverviewPage />} />
             </Route>
           </Route>
           <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+          <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionRoutes />} />
           <Route path={`${RoutePaths.Settings}/*`} element={<SettingsPage />} />
 
           <Route path="*" element={<Navigate to={RoutePaths.Connections} />} />

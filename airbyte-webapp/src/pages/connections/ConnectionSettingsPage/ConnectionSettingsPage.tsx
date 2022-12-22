@@ -9,11 +9,11 @@ import { FeatureItem, useFeature } from "hooks/services/Feature";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { useDeleteConnection } from "hooks/services/useConnectionHook";
 
-import styles from "./ConnectionSettingsTab.module.scss";
+import styles from "./ConnectionSettingsPage.module.scss";
 import { SchemaUpdateNotifications } from "./SchemaUpdateNotifications";
 import { StateBlock } from "./StateBlock";
 
-export const ConnectionSettingsTab: React.FC = () => {
+export const ConnectionItemSettingsPage: React.FC = () => {
   const { connection } = useConnectionEditService();
   const { mutateAsync: deleteConnection } = useDeleteConnection();
   const canUpdateDataResidency = useFeature(FeatureItem.AllowChangeDataGeographies);

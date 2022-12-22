@@ -7,10 +7,10 @@ import { StatusIcon } from "components/ui/StatusIcon";
 import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 import { Text } from "components/ui/Text";
 
-import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
+import { AttemptRead, AttemptStatus, SynchronousJobRead } from "core/request/AirbyteClient";
+import { JobsWithJobs } from "pages/connections/ConnectionStatusPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";
 
-import { AttemptRead, AttemptStatus, SynchronousJobRead } from "../../../core/request/AirbyteClient";
 import { parseAttemptLink } from "../attemptLinkUtils";
 import styles from "./JobLogs.module.scss";
 import Logs from "./Logs";

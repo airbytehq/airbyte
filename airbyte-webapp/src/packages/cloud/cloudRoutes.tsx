@@ -14,8 +14,8 @@ import { Auth } from "packages/cloud/views/auth";
 import { CreditsPage } from "packages/cloud/views/credits";
 import MainView from "packages/cloud/views/layout/MainView";
 import { WorkspacesPage } from "packages/cloud/views/workspaces";
-import ConnectionPage from "pages/ConnectionPage";
-import CreationFormPage from "pages/ConnectionPage/pages/CreationFormPage";
+import { ConnectionRoutes } from "pages/connections/ConnectionRoutes";
+import { CreateConnectionPage } from "pages/connections/CreateConnectionPage";
 import { AllDestinationsPage } from "pages/destination/AllDestinationsPage";
 import CreateDestinationPage from "pages/destination/CreateDestinationPage";
 import { DestinationItemPage } from "pages/destination/DestinationItemPage";
@@ -88,14 +88,14 @@ const MainRoutes: React.FC = () => {
         <Route path={RoutePaths.Destination}>
           <Route index element={<AllDestinationsPage />} />
           <Route path={DestinationPaths.NewDestination} element={<CreateDestinationPage />} />
-          <Route path={DestinationPaths.NewConnection} element={<CreationFormPage />} />
+          <Route path={DestinationPaths.NewConnection} element={<CreateConnectionPage />} />
           <Route path={DestinationPaths.Root} element={<DestinationItemPage />}>
             <Route path={DestinationPaths.Settings} element={<DestinationSettingsPage />} />
             <Route index element={<DestinationOverviewPage />} />
           </Route>
         </Route>
         <Route path={`${RoutePaths.Source}/*`} element={<SourcesPage />} />
-        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionPage />} />
+        <Route path={`${RoutePaths.Connections}/*`} element={<ConnectionRoutes />} />
         <Route path={`${RoutePaths.Settings}/*`} element={<CloudSettingsPage />} />
         <Route path={CloudRoutes.Credits} element={<CreditsPage />} />
         <Route path="*" element={<Navigate to={RoutePaths.Connections} replace />} />

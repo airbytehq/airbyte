@@ -29,7 +29,7 @@ import {
   FormikConnectionFormValues,
 } from "views/Connection/ConnectionForm/formConfig";
 
-import styles from "./ConnectionReplicationTab.module.scss";
+import styles from "./ConnectionReplicationPage.module.scss";
 import { ResetWarningModal } from "./ResetWarningModal";
 
 const ValidateFormOnSchemaRefresh: React.FC = () => {
@@ -45,7 +45,7 @@ const ValidateFormOnSchemaRefresh: React.FC = () => {
   return null;
 };
 
-export const ConnectionReplicationTab: React.FC = () => {
+export const ConnectionReplicationPage: React.FC = () => {
   const allowAutoDetectSchema = useFeature(FeatureItem.AllowAutoDetectSchema);
   const analyticsService = useAnalyticsService();
   const connectionService = useConnectionService();
