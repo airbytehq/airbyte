@@ -49,7 +49,14 @@ const PaymentPage: React.FC = () => {
   const userPlanDetail = useUserPlanDetail();
   const { selectedProduct } = userPlanDetail;
   const packagesDetail = usePackagesDetail();
+  const { productItem } = packagesDetail;
   const packagesMap = usePackagesMap();
+
+  useEffect(() => {
+    if (!selectedProduct) {
+      setProduct(productItem[1]);
+    }
+  }, [selectedProduct, productItem]);
 
   useEffect(() => {
     if (selectedProduct) {
@@ -74,7 +81,7 @@ const PaymentPage: React.FC = () => {
       onCreateSubscriptionURL(product?.id as string)
         .then((response: any) => {
           setPaymentLoading(false);
-          window.open(response.data, "_blank");
+          window.open(response.data, "_self");
         })
         .catch(() => {
           setPaymentLoading(false);
