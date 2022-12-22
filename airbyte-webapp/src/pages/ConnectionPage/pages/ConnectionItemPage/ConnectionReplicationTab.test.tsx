@@ -6,7 +6,8 @@ import userEvent from "@testing-library/user-event";
 import React, { Suspense } from "react";
 import selectEvent from "react-select-event";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestination } from "test-utils/mock-data/mockDestination";
+import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationDefinition";
+import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { mockWorkspaceId } from "test-utils/mock-data/mockWorkspaceId";
 import { TestWrapper } from "test-utils/testutils";
@@ -18,8 +19,12 @@ import * as connectionHook from "hooks/services/useConnectionHook";
 
 import { ConnectionReplicationTab } from "./ConnectionReplicationTab";
 
+jest.mock("services/connector/DestinationDefinitionService", () => ({
+  useDestinationDefinition: () => mockDestinationDefinition,
+}));
+
 jest.mock("services/connector/DestinationDefinitionSpecificationService", () => ({
-  useGetDestinationDefinitionSpecification: () => mockDestination,
+  useGetDestinationDefinitionSpecification: () => mockDestinationDefinitionSpecification,
 }));
 jest.setTimeout(10000);
 

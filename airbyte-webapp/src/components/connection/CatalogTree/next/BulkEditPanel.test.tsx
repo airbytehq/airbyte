@@ -174,7 +174,7 @@ jest.mock("hooks/services/BulkEdit/BulkEditService", () => ({
 }));
 
 jest.mock("hooks/services/ConnectionForm/ConnectionFormService", () => ({
-  useConnectionFormService: () => ({ destDefinition: ["overwrite", "append", "append_dedup"] }),
+  useConnectionFormService: () => ({ destDefSpec: ["overwrite", "append", "append_dedup"] }),
 }));
 
 const renderBulkEditPanel = () =>

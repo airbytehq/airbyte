@@ -1,6 +1,7 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { mockConnection } from "test-utils/mock-data/mockConnection";
-import { mockDestination } from "test-utils/mock-data/mockDestination";
+import { mockDestinationDefinition } from "test-utils/mock-data/mockDestinationDefinition";
+import { mockDestinationDefinitionSpecification } from "test-utils/mock-data/mockDestinationDefinitionSpecification";
 import { mockWorkspace } from "test-utils/mock-data/mockWorkspace";
 import { TestWrapper as wrapper } from "test-utils/testutils";
 
@@ -171,19 +172,25 @@ describe("#mapFormPropsToOperation", () => {
 
 describe("#useInitialValues", () => {
   it("should generate initial values w/ no 'not create' mode", () => {
-    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination));
+    const { result } = renderHook(() =>
+      useInitialValues(mockConnection, mockDestinationDefinition, mockDestinationDefinitionSpecification)
+    );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: false", () => {
-    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination, false));
+    const { result } = renderHook(() =>
+      useInitialValues(mockConnection, mockDestinationDefinition, mockDestinationDefinitionSpecification, false)
+    );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeDefined();
   });
 
   it("should generate initial values w/ 'not create' mode: true", () => {
-    const { result } = renderHook(() => useInitialValues(mockConnection, mockDestination, true));
+    const { result } = renderHook(() =>
+      useInitialValues(mockConnection, mockDestinationDefinition, mockDestinationDefinitionSpecification, true)
+    );
     expect(result.current).toMatchSnapshot();
     expect(result.current.name).toBeUndefined();
   });
