@@ -406,7 +406,7 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
           request_options_provider: {
             request_parameters: Object.fromEntries(stream.requestOptions.requestParameters),
             request_headers: Object.fromEntries(stream.requestOptions.requestHeaders),
-            request_body_data: Object.fromEntries(stream.requestOptions.requestBody),
+            request_body_json: Object.fromEntries(stream.requestOptions.requestBody),
           },
           authenticator: builderFormAuthenticatorToAuthenticator(values.global),
           // TODO: remove these empty "config" values once they are no longer required in the connector manifest JSON schema
