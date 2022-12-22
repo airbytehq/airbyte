@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.protocol.migrations.util;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,11 +14,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
- * Utility class for recursively modifying JsonSchemas. Useful for up/downgrading
- * AirbyteCatalog objects.
+ * Utility class for recursively modifying JsonSchemas. Useful for up/downgrading AirbyteCatalog
+ * objects.
  *
- * See {@link io.airbyte.commons.protocol.migrations.v1.SchemaMigrationV1}
- * for example usage.
+ * See {@link io.airbyte.commons.protocol.migrations.v1.SchemaMigrationV1} for example usage.
  */
 public class SchemaMigrations {
 
@@ -93,29 +96,23 @@ public class SchemaMigrations {
    * <p>
    * For example:
    * <ul>
-   *   <li>
-   *     schema = {"items": [{"type": "string}]}
-   *     <p>
-   *     key = "items"
-   *     <p>
-   *     -> add {"type": "string"} to subschemas
-   *   </li>
-   *   <li>
-   *     schema = {"items": {"type": "string"}}
-   *     <p>
-   *     key = "items"
-   *     <p>
-   *     -> add {"type": "string"} to subschemas
-   *   </li>
-   *   <li>
-   *     schema = {"additionalProperties": true}
-   *     <p>
-   *     key = "additionalProperties"
-   *     <p>
-   *     -> add nothing to subschemas
-   *     <p>
-   *     (technically `true` is a valid JsonSchema, but we don't want to modify it)
-   *   </li>
+   * <li>schema = {"items": [{"type": "string}]}
+   * <p>
+   * key = "items"
+   * <p>
+   * -> add {"type": "string"} to subschemas</li>
+   * <li>schema = {"items": {"type": "string"}}
+   * <p>
+   * key = "items"
+   * <p>
+   * -> add {"type": "string"} to subschemas</li>
+   * <li>schema = {"additionalProperties": true}
+   * <p>
+   * key = "additionalProperties"
+   * <p>
+   * -> add nothing to subschemas
+   * <p>
+   * (technically `true` is a valid JsonSchema, but we don't want to modify it)</li>
    * </ul>
    */
   public static void findSubschemas(List<JsonNode> subschemas, JsonNode schema, String key) {
@@ -130,4 +127,5 @@ public class SchemaMigrations {
       }
     }
   }
+
 }

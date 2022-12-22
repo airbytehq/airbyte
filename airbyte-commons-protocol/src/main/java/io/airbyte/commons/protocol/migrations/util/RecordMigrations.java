@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.protocol.migrations.util;
 
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
@@ -13,13 +17,14 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class RecordMigrations {
-  
+
   /**
-   * Quick and dirty tuple. Used internally by {@link #mutateDataNode(JsonSchemaValidator, Function, Transformer, JsonNode, JsonNode)};
-   * callers probably only actually need the node.
+   * Quick and dirty tuple. Used internally by
+   * {@link #mutateDataNode(JsonSchemaValidator, Function, Transformer, JsonNode, JsonNode)}; callers
+   * probably only actually need the node.
    *
-   * matchedSchema is useful for mutating using a oneOf schema, where we need to recognize the
-   * correct subschema.
+   * matchedSchema is useful for mutating using a oneOf schema, where we need to recognize the correct
+   * subschema.
    *
    * @param node Our attempt at mutating the node, under the given schema
    * @param matchedSchema Whether the original node actually matched the schema
@@ -31,25 +36,28 @@ public class RecordMigrations {
    */
   @FunctionalInterface
   public interface Transformer extends BiFunction<JsonNode, JsonNode, MigratedNode> {
+
     @Override
     MigratedNode apply(JsonNode schema, JsonNode data);
+
   }
 
   /**
-   * Works on a best-effort basis. If the schema doesn't match the data, we'll do our best to
-   * mutate anything that we can definitively say matches the criteria. Should _not_ throw an
-   * exception if bad things happen (e.g. we try to parse a non-numerical string as a number).
+   * Works on a best-effort basis. If the schema doesn't match the data, we'll do our best to mutate
+   * anything that we can definitively say matches the criteria. Should _not_ throw an exception if
+   * bad things happen (e.g. we try to parse a non-numerical string as a number).
    *
-   * @param schemaMatcher Accepts a JsonNode schema and returns whether its corresponding entry in the data should be mutated.
-   *                      Doesn't need to handle oneOf cases, i.e. should only care about type/$ref.
+   * @param schemaMatcher Accepts a JsonNode schema and returns whether its corresponding entry in the
+   *        data should be mutated. Doesn't need to handle oneOf cases, i.e. should only care about
+   *        type/$ref.
    * @param transformer Performs the modification on the given data node. Should not throw exceptions.
    */
   public static MigratedNode mutateDataNode(
-      JsonSchemaValidator validator,
-      Function<JsonNode, Boolean> schemaMatcher,
-      Transformer transformer,
-      JsonNode data,
-      JsonNode schema) {
+                                            JsonSchemaValidator validator,
+                                            Function<JsonNode, Boolean> schemaMatcher,
+                                            Transformer transformer,
+                                            JsonNode data,
+                                            JsonNode schema) {
     // If this is a oneOf node, then we need to handle each oneOf case.
     if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull("type") && schema.hasNonNull("oneOf")) {
       return mutateOneOfNode(validator, schemaMatcher, transformer, data, schema);
@@ -73,16 +81,16 @@ public class RecordMigrations {
   }
 
   /**
-   * Attempt to mutate using each oneOf option in sequence. Returns the result from mutating
-   * using the first subschema that matches the data, or if none match, then the result of using the
-   * first subschema.
+   * Attempt to mutate using each oneOf option in sequence. Returns the result from mutating using the
+   * first subschema that matches the data, or if none match, then the result of using the first
+   * subschema.
    */
   private static MigratedNode mutateOneOfNode(
-      JsonSchemaValidator validator,
-      Function<JsonNode, Boolean> schemaMatcher,
-      Transformer transformer,
-      JsonNode data,
-      JsonNode schema) {
+                                              JsonSchemaValidator validator,
+                                              Function<JsonNode, Boolean> schemaMatcher,
+                                              Transformer transformer,
+                                              JsonNode data,
+                                              JsonNode schema) {
     JsonNode schemaOptions = schema.get("oneOf");
     if (schemaOptions.size() == 0) {
       // If the oneOf has no options, then don't do anything interesting.
@@ -110,11 +118,11 @@ public class RecordMigrations {
    * If data is an object, then we need to recursively mutate all of its fields.
    */
   private static MigratedNode mutateObjectNode(
-      JsonSchemaValidator validator,
-      Function<JsonNode, Boolean> schemaMatcher,
-      Transformer transformer,
-      JsonNode data,
-      JsonNode schema) {
+                                               JsonSchemaValidator validator,
+                                               Function<JsonNode, Boolean> schemaMatcher,
+                                               Transformer transformer,
+                                               JsonNode data,
+                                               JsonNode schema) {
     boolean isObjectSchema;
     // First, check whether the schema is supposed to be an object at all.
     if (schema.hasNonNull(REF_KEY)) {
@@ -178,11 +186,11 @@ public class RecordMigrations {
    * Much like objects, arrays must be recursively mutated.
    */
   private static MigratedNode mutateArrayNode(
-      JsonSchemaValidator validator,
-      Function<JsonNode, Boolean> schemaMatcher,
-      Transformer transformer,
-      JsonNode data,
-      JsonNode schema) {
+                                              JsonSchemaValidator validator,
+                                              Function<JsonNode, Boolean> schemaMatcher,
+                                              Transformer transformer,
+                                              JsonNode data,
+                                              JsonNode schema) {
     // Similar to objects, we first check whether this is even supposed to be an array.
     boolean isArraySchema;
     if (schema.hasNonNull(REF_KEY)) {
@@ -253,4 +261,5 @@ public class RecordMigrations {
       }
     }
   }
+
 }

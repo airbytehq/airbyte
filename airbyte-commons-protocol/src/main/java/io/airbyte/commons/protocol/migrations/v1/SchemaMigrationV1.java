@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.commons.protocol.migrations.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -35,7 +39,6 @@ public class SchemaMigrationV1 {
         SchemaMigrationV1::downgradeTypeDeclaration,
         schema);
   }
-
 
   /**
    * Detects any schema that looks like a primitive type declaration, e.g.: { "type": "string" } or {
@@ -161,7 +164,8 @@ public class SchemaMigrationV1 {
    * "WellKnownTypes..."}, ...]}
    * <p>
    * In the latter case, the schema may contain subschemas. This method mutually recurses with
-   * {@link SchemaMigrations#mutateSchemas(Function, Consumer, JsonNode)} to downgrade those subschemas.
+   * {@link SchemaMigrations#mutateSchemas(Function, Consumer, JsonNode)} to downgrade those
+   * subschemas.
    *
    * @param schema An ObjectNode representing a primitive type declaration
    */
@@ -245,7 +249,6 @@ public class SchemaMigrationV1 {
       }
     }
   }
-
 
   private static void copyKey(ObjectNode source, ObjectNode target, String key) {
     if (source.hasNonNull(key)) {

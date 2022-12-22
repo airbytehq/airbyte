@@ -25,6 +25,9 @@ import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.JsonSchemaReferenceTypes;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import java.util.Iterator;
 import java.util.Map.Entry;
@@ -42,12 +45,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
   }
 
   @Override
-<<<<<<< HEAD
   public AirbyteMessage downgrade(final io.airbyte.protocol.models.AirbyteMessage message,
                                   final Optional<ConfiguredAirbyteCatalog> configuredAirbyteCatalog) {
-    return Jsons.object(Jsons.jsonNode(message), AirbyteMessage.class);
-=======
-  public io.airbyte.protocol.models.v0.AirbyteMessage downgrade(AirbyteMessage oldMessage) {
     io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         io.airbyte.protocol.models.v0.AirbyteMessage.class);
@@ -72,7 +71,6 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
       }
     }
     return newMessage;
->>>>>>> 18c3e46222 (Data types update: Implement protocol message downgrade path (#19909))
   }
 
   @Override
@@ -160,10 +158,8 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
             return new MigratedNode(d, false);
           }
         },
-        data, schema
-    );
+        data, schema);
   }
-
 
   @Override
   public Version getPreviousVersion() {
