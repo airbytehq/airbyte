@@ -24,8 +24,12 @@ yarn-error.log*
 /.idea
 
 .npmrc
+
+# Environment overwrites
 .env.development
 .env.production
+.experiments.dev
+.features.dev
 
 storybook-static/
 
