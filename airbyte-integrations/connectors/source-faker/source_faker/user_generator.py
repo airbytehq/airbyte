@@ -26,7 +26,7 @@ class UserGenerator:
         """
 
         seed_with_offset = self.seed
-        if len(current_process()._identity) > 0:
+        if self.seed is not None and len(current_process()._identity) > 0:
             seed_with_offset = self.seed + current_process()._identity[0]
 
         global person

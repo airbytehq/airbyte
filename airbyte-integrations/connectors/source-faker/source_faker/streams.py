@@ -17,7 +17,7 @@ class Products(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.seed = seed
         self.records_per_sync = records_per_sync
@@ -63,13 +63,13 @@ class Users(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
-        self.threads = threads
+        self.parallelism = parallelism
         self.generator = UserGenerator(self.name, self.seed)
 
     @property
@@ -99,8 +99,8 @@ class Users(Stream, IncrementalMixin):
         median_record_byte_size = 450
         yield generate_estimate(self.name, self.count - total_records, median_record_byte_size)
 
-        with Pool(initializer=self.generator.prepare, processes=self.threads) as pool:
-            while records_in_sync < self.count:
+        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+            while records_in_sync < self.count and records_in_sync < self.records_per_sync:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - total_records))
                 if records_remaining_this_loop <= 0:
                     break
@@ -110,7 +110,7 @@ class Users(Stream, IncrementalMixin):
                     records_in_sync += 1
                     yield user
 
-                    if records_in_sync == self.records_per_sync:
+                    if records_in_sync >= self.records_per_sync:
                         break
 
                 self.state = {self.cursor_field: total_records, "seed": self.seed}
@@ -122,13 +122,13 @@ class Purchases(Stream, IncrementalMixin):
     primary_key = None
     cursor_field = "id"
 
-    def __init__(self, count: int, seed: int, threads: int, records_per_sync: int, records_per_slice: int, **kwargs):
+    def __init__(self, count: int, seed: int, parallelism: int, records_per_sync: int, records_per_slice: int, **kwargs):
         super().__init__(**kwargs)
         self.count = count
         self.seed = seed
         self.records_per_sync = records_per_sync
         self.records_per_slice = records_per_slice
-        self.threads = threads
+        self.parallelism = parallelism
         self.generator = PurchaseGenerator(self.name, self.seed)
 
     @property
@@ -160,8 +160,8 @@ class Purchases(Stream, IncrementalMixin):
         median_record_byte_size = 230
         yield generate_estimate(self.name, (self.count - total_user_records) * 1.3, median_record_byte_size)
 
-        with Pool(initializer=self.generator.prepare, processes=self.threads) as pool:
-            while total_user_records < self.count:
+        with Pool(initializer=self.generator.prepare, processes=self.parallelism) as pool:
+            while total_user_records < self.count and user_records_in_sync < self.records_per_sync:
                 records_remaining_this_loop = min(self.records_per_slice, (self.count - user_records_in_sync))
                 if records_remaining_this_loop <= 0:
                     break
@@ -174,7 +174,7 @@ class Purchases(Stream, IncrementalMixin):
                     total_user_records += 1
                     user_records_in_sync += 1
 
-                    if user_records_in_sync == self.records_per_sync:
+                    if user_records_in_sync >= self.records_per_sync:
                         break
 
                 self.state = {self.cursor_field: total_purchase_records, "user_id": total_user_records, "seed": self.seed}

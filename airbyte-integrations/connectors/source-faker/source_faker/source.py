@@ -23,10 +23,10 @@ class SourceFaker(AbstractSource):
         seed: int = config["seed"] if "seed" in config else None
         records_per_sync: int = config["records_per_sync"] if "records_per_sync" in config else 500
         records_per_slice: int = config["records_per_slice"] if "records_per_slice" in config else 100
-        threads: int = config["threads"] if "threads" in config else 4
+        parallelism: int = config["parallelism"] if "parallelism" in config else 4
 
         return [
-            Products(count, seed, threads, records_per_sync, records_per_slice),
-            Users(count, seed, threads, records_per_sync, records_per_slice),
-            Purchases(count, seed, threads, records_per_sync, records_per_slice),
+            Products(count, seed, parallelism, records_per_sync, records_per_slice),
+            Users(count, seed, parallelism, records_per_sync, records_per_slice),
+            Purchases(count, seed, parallelism, records_per_sync, records_per_slice),
         ]
