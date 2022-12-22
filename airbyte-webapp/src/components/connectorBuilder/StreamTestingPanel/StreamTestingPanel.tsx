@@ -6,10 +6,10 @@ import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
 import { Text } from "components/ui/Text";
 
-import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { jsonSchemaToFormBlock } from "core/form/schemaToFormBlock";
 import { buildYupFormForJsonSchema } from "core/form/schemaToYup";
 import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
+import { Spec } from "core/request/ConnectorManifest";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { links } from "utils/links";
 
@@ -20,13 +20,10 @@ import styles from "./StreamTestingPanel.module.scss";
 
 const EMPTY_SCHEMA = {};
 
-function useConfigJsonErrors(
-  configJson: StreamReadRequestBodyConfig,
-  spec?: SourceDefinitionSpecificationDraft
-): number {
+function useConfigJsonErrors(configJson: StreamReadRequestBodyConfig, spec?: Spec): number {
   return useMemo(() => {
     try {
-      const jsonSchema = spec && spec.connectionSpecification ? spec.connectionSpecification : EMPTY_SCHEMA;
+      const jsonSchema = spec && spec.connection_specification ? spec.connection_specification : EMPTY_SCHEMA;
       const formFields = jsonSchemaToFormBlock(jsonSchema);
       const validationSchema = buildYupFormForJsonSchema(jsonSchema, formFields);
       validationSchema.validateSync(configJson, { abortEarly: false });

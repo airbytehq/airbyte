@@ -13,9 +13,10 @@ import {
   NoAuth,
   SessionTokenAuthenticator,
   RequestOption,
-  DeclarativeOauth2Authenticator,
+  OAuthAuthenticator,
   DefaultPaginatorPaginationStrategy,
   SimpleRetrieverStreamSlicer,
+  HttpRequesterAuthenticator,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -26,7 +27,7 @@ export interface BuilderFormInput {
 
 type BuilderFormAuthenticator = (
   | NoAuth
-  | (Omit<DeclarativeOauth2Authenticator, "refresh_request_body"> & {
+  | (Omit<OAuthAuthenticator, "refresh_request_body"> & {
       refresh_request_body: Array<[string, string]>;
     })
   | ApiKeyAuthenticator
@@ -46,6 +47,12 @@ export interface BuilderFormValues {
   streams: BuilderStream[];
 }
 
+export interface BuilderPaginator {
+  strategy: DefaultPaginatorPaginationStrategy;
+  pageTokenOption: RequestOption;
+  pageSizeOption?: RequestOption;
+}
+
 export interface BuilderStream {
   name: string;
   urlPath: string;
@@ -57,11 +64,7 @@ export interface BuilderStream {
     requestHeaders: Array<[string, string]>;
     requestBody: Array<[string, string]>;
   };
-  paginator?: {
-    strategy: DefaultPaginatorPaginationStrategy;
-    pageTokenOption: RequestOption;
-    pageSizeOption?: RequestOption;
-  };
+  paginator?: BuilderPaginator;
   streamSlicer?: SimpleRetrieverStreamSlicer;
 }
 
@@ -375,7 +378,7 @@ export const builderFormValidationSchema = yup.object().shape({
 
 function builderFormAuthenticatorToAuthenticator(
   globalSettings: BuilderFormValues["global"]
-): HttpRequesterAllOfAuthenticator {
+): HttpRequesterAuthenticator {
   if (globalSettings.authenticator.type === "OAuthAuthenticator") {
     return {
       ...globalSettings.authenticator,
@@ -388,7 +391,7 @@ function builderFormAuthenticatorToAuthenticator(
       api_url: globalSettings.urlBase,
     };
   }
-  return globalSettings.authenticator as HttpRequesterAllOfAuthenticator;
+  return globalSettings.authenticator as HttpRequesterAuthenticator;
 }
 
 export const convertToManifest = (values: BuilderFormValues): ConnectorManifest => {
