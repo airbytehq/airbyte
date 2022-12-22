@@ -1,13 +1,14 @@
 import { useField } from "formik";
 
-import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 
-import { injectIntoValues } from "../types";
+import { timeDeltaRegex } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
+import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
+import { ToggleGroupField } from "./ToggleGroupField";
 
 interface StreamSlicerSectionProps {
   streamFieldPath: (fieldPath: string) => string;
@@ -64,21 +65,21 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                   label="Cursor field"
                   tooltip="Field on record to use as the cursor"
                 />
-                <BuilderField
-                  type="enum"
-                  path={streamFieldPath("streamSlicer.request_option.inject_into")}
-                  options={injectIntoValues}
-                  label="Inject into"
-                  tooltip="Optionally inject a request option into a part of the HTTP request"
-                  optional
-                />
-                <BuilderField
-                  type="string"
-                  path={streamFieldPath("streamSlicer.request_option.field_name")}
-                  label="Field name"
-                  tooltip="Field name to use for request option set on the HTTP request"
-                  optional
-                />
+                <ToggleGroupField
+                  label="Slice request option"
+                  tooltip="Optionally configures how the slice values will be sent in requests to the source API"
+                  fieldPath={streamFieldPath("streamSlicer.request_option")}
+                  initialValues={{
+                    inject_into: "request_parameter",
+                    field_name: "",
+                  }}
+                >
+                  <InjectRequestOptionFields
+                    path={streamFieldPath("streamSlicer.request_option")}
+                    descriptor="slice value"
+                    excludeInjectIntoValues={["path"]}
+                  />
+                </ToggleGroupField>
               </>
             ),
           },
@@ -87,6 +88,12 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
             typeValue: "DatetimeStreamSlicer",
             children: (
               <>
+                <BuilderField
+                  type="string"
+                  path={streamFieldPath("streamSlicer.datetime_format")}
+                  label="Datetime format"
+                  tooltip="Specify the format of the start and end time, e.g. %Y-%m-%d"
+                />
                 <BuilderField
                   type="string"
                   path={streamFieldPath("streamSlicer.start_datetime")}
@@ -104,6 +111,7 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                   path={streamFieldPath("streamSlicer.step")}
                   label="Step"
                   tooltip="Time interval for which to break up stream into slices, e.g. 1d"
+                  pattern={timeDeltaRegex}
                 />
                 <BuilderField
                   type="string"
@@ -111,67 +119,58 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                   label="Cursor field"
                   tooltip="Field on record to use as the cursor"
                 />
-                <BuilderField
-                  type="string"
-                  path={streamFieldPath("streamSlicer.datetime_format")}
-                  label="Datetime format"
-                  tooltip="Specify the format of the start and end time, e.g. %Y-%m-%d"
-                />
                 <BuilderOptional>
                   <BuilderField
                     type="string"
                     path={streamFieldPath("streamSlicer.lookback_window")}
                     label="Lookback window"
                     tooltip="How many days before the start_datetime to read data for, e.g. 31d"
+                    optional
                   />
-                  <GroupControls
-                    label={
-                      <ControlLabels
-                        label="Start time option"
-                        infoTooltipContent="Optionally inject start time into the request for APIs that support time-based filtering"
-                      />
-                    }
+                  <ToggleGroupField
+                    label="Start time request option"
+                    tooltip="Optionally configures how the start datetime will be sent in requests to the source API"
+                    fieldPath={streamFieldPath("streamSlicer.start_time_option")}
+                    initialValues={{
+                      inject_into: "request_parameter",
+                      field_name: "",
+                    }}
                   >
-                    <BuilderField
-                      type="enum"
-                      path={streamFieldPath("streamSlicer.start_time_option.inject_into")}
-                      options={injectIntoValues}
-                      label="Inject into"
-                      tooltip="Configures where the start time should be set on the HTTP requests"
-                      optional
+                    <InjectRequestOptionFields
+                      path={streamFieldPath("streamSlicer.start_time_option")}
+                      descriptor="start datetime"
+                      excludeInjectIntoValues={["path"]}
                     />
-                    <BuilderField
-                      type="string"
-                      path={streamFieldPath("streamSlicer.start_time_option.field_name")}
-                      label="Field name"
-                      tooltip="Configures which key should be used in the location that the start time is being injected into"
-                      optional
-                    />
-                  </GroupControls>
-                  <GroupControls
-                    label={
-                      <ControlLabels
-                        label="End time option"
-                        infoTooltipContent="Optionally inject end time into the request for APIs that support time-based filtering"
-                      />
-                    }
+                  </ToggleGroupField>
+                  <ToggleGroupField
+                    label="End time request option"
+                    tooltip="Optionally configures how the end datetime will be sent in requests to the source API"
+                    fieldPath={streamFieldPath("streamSlicer.end_time_option")}
+                    initialValues={{
+                      inject_into: "request_parameter",
+                      field_name: "",
+                    }}
                   >
-                    <BuilderField
-                      type="enum"
-                      path={streamFieldPath("streamSlicer.end_time_option.inject_into")}
-                      options={injectIntoValues}
-                      label="Inject into"
-                      tooltip="Configures where the end time should be set on the HTTP requests"
-                      optional
+                    <InjectRequestOptionFields
+                      path={streamFieldPath("streamSlicer.end_time_option")}
+                      descriptor="end datetime"
+                      excludeInjectIntoValues={["path"]}
                     />
-                    <BuilderField
-                      type="string"
-                      path={streamFieldPath("streamSlicer.end_time_option.field_name")}
-                      label="Field name"
-                      tooltip="Configures which key should be used in the location that the end time is being injected into"
-                      optional
-                    />
-                  </GroupControls>
+                  </ToggleGroupField>
+                  <BuilderField
+                    type="string"
+                    path={streamFieldPath("streamSlicer.stream_state_field_start")}
+                    label="Stream state field start"
+                    tooltip="Set which field on the stream state to use to determine the starting point"
+                    optional
+                  />
+                  <BuilderField
+                    type="string"
+                    path={streamFieldPath("streamSlicer.stream_state_field_end")}
+                    label="Stream state field end"
+                    tooltip="Set which field on the stream state to use to determine the ending point"
+                    optional
+                  />
                 </BuilderOptional>
               </>
             ),

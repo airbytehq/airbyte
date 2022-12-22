@@ -50,7 +50,7 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
   const pageSizeOption = (
     <ToggleGroupField
       label="Page size option"
-      tooltip="Configures how the page size will be sent in requests to the source API"
+      tooltip="Optionally configures how the page size will be sent in requests to the source API"
       fieldPath={streamFieldPath("paginator.pageSizeOption")}
       initialValues={{
         inject_into: "request_parameter",

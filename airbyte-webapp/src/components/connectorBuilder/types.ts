@@ -215,6 +215,17 @@ export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[]
 }
 
 export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
+const nonPathRequestOptionSchema = yup
+  .object()
+  .shape({
+    inject_into: yup.mixed().oneOf(injectIntoValues.filter((val) => val !== "path")),
+    field_name: yup.string().required("form.empty.error"),
+  })
+  .notRequired()
+  .default(undefined);
+
+// eslint-disable-next-line no-useless-escape
+export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
 
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
@@ -263,14 +274,7 @@ export const builderFormValidationSchema = yup.object().shape({
       paginator: yup
         .object()
         .shape({
-          pageSizeOption: yup
-            .object()
-            .shape({
-              inject_into: yup.mixed().oneOf(injectIntoValues.filter((val) => val !== "path")),
-              field_name: yup.string().required("form.empty.error"),
-            })
-            .notRequired()
-            .default(undefined),
+          pageSizeOption: nonPathRequestOptionSchema,
           pageTokenOption: yup.object().shape({
             inject_into: yup.mixed().oneOf(injectIntoValues),
             field_name: yup.mixed().when("inject_into", {
@@ -316,11 +320,7 @@ export const builderFormValidationSchema = yup.object().shape({
             then: yup.array().of(yup.string()),
             otherwise: (schema) => schema.strip(),
           }),
-          request_option: yup.mixed().when("type", {
-            is: "ListStreamSlicer",
-            then: requestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
+          request_option: nonPathRequestOptionSchema,
           start_datetime: yup.mixed().when("type", {
             is: "DatetimeStreamSlicer",
             then: yup.string().required("form.empty.error"),
@@ -333,7 +333,7 @@ export const builderFormValidationSchema = yup.object().shape({
           }),
           step: yup.mixed().when("type", {
             is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
+            then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
             otherwise: (schema) => schema.strip(),
           }),
           datetime_format: yup.mixed().when("type", {
@@ -343,12 +343,12 @@ export const builderFormValidationSchema = yup.object().shape({
           }),
           start_time_option: yup.mixed().when("type", {
             is: "DatetimeStreamSlicer",
-            then: requestOptionSchema,
+            then: nonPathRequestOptionSchema,
             otherwise: (schema) => schema.strip(),
           }),
           end_time_option: yup.mixed().when("type", {
             is: "DatetimeStreamSlicer",
-            then: requestOptionSchema,
+            then: nonPathRequestOptionSchema,
             otherwise: (schema) => schema.strip(),
           }),
           stream_state_field_start: yup.mixed().when("type", {
@@ -393,7 +393,6 @@ function builderFormAuthenticatorToAuthenticator(
 
 export const convertToManifest = (values: BuilderFormValues): PatchedConnectorManifest => {
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
-    console.log("stream.streamSlicer", stream.streamSlicer);
     return {
       name: stream.name,
       primary_key: stream.primaryKey,
