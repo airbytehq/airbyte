@@ -987,7 +987,8 @@ public abstract class DestinationAcceptanceTest {
         Jsons.deserialize(
             MoreResources.readResource(DataArgumentsProvider.EXCHANGE_RATE_CONFIG.getCatalogFileVersion(getProtocolVersion())),
             AirbyteCatalog.class);
-    // A randomized namespace is required otherwise you can generate a "false success" with data from a previous run.
+    // A randomized namespace is required otherwise you can generate a "false success" with data from a
+    // previous run.
     final String namespace = Strings.addRandomSuffix("airbyte_source_namespace", "_", 8);
 
     catalog.getStreams().forEach(stream -> stream.setNamespace(namespace));
