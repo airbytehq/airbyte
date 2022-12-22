@@ -107,6 +107,10 @@ class Users(Stream, IncrementalMixin, FakerMultithreaded):
         time_a = dt.datetime()
         time_b = dt.datetime()
 
+        # faker doesn't always produce unique email addresses, so to enforce uniqueness, we will append the user_id to the prefix
+        email_parts = person.email().split("@")
+        email = f"{email_parts[0]}+{user_id + 1}@{email_parts[1]}"
+
         profile = {
             "id": user_id + 1,
             "created_at": format_airbyte_time(time_a if time_a <= time_b else time_b),
@@ -114,7 +118,7 @@ class Users(Stream, IncrementalMixin, FakerMultithreaded):
             "name": person.name(),
             "title": person.title(),
             "age": person.age(),
-            "email": person.email(),
+            "email": email,
             "telephone": person.telephone(),
             "gender": person.gender(),
             "language": person.language(),
