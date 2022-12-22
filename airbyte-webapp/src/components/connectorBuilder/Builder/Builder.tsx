@@ -1,5 +1,6 @@
 import { Form } from "formik";
-import { useEffect } from "react";
+import debounce from "lodash/debounce";
+import { useEffect, useMemo } from "react";
 
 import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
@@ -28,9 +29,10 @@ function getView(selectedView: BuilderView) {
 
 export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
   const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
+  const debouncedSetBuilderFormValues = useMemo(() => debounce(setBuilderFormValues, 200), [setBuilderFormValues]);
   useEffect(() => {
-    setBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
-  }, [values, setBuilderFormValues]);
+    debouncedSetBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
+  }, [values, debouncedSetBuilderFormValues]);
 
   return (
     <div className={styles.container}>
