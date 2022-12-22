@@ -56,6 +56,7 @@ import io.airbyte.protocol.models.CommonField;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteEstimateTraceMessage.Type;
 import io.airbyte.protocol.models.v0.AirbyteGlobalState;
 import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteStateMessage;
@@ -605,9 +606,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
   }
 
   private long getIncrementalTableRowCount(final JdbcDatabase database,
-                                             final String fullTableName,
-                                             final CursorInfo cursorInfo,
-                                             final PostgresType cursorFieldType) {
+                                           final String fullTableName,
+                                           final CursorInfo cursorInfo,
+                                           final PostgresType cursorFieldType) {
     try {
       final String quotedCursorField = enquoteIdentifier(getQuoteString(), cursorInfo.getCursorField());
 
@@ -647,4 +648,5 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
     }
   }
+
 }

@@ -36,7 +36,6 @@ public class PostgresQueryUtils {
 
   public static final String TOTAL_BYTES_RESULT_COL = "totalbytes";
 
-
   public static String getFullyQualifiedTableNameWithQuoting(final String identifierQuoteString,
                                                              final String schemaName,
                                                              final String tableName)
