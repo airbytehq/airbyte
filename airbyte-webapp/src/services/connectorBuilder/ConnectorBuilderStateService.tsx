@@ -1,24 +1,17 @@
 import { dump } from "js-yaml";
-import React, { useContext, useEffect, useMemo, useState } from "react";
+import merge from "lodash/merge";
+import React, { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
-import { BuilderFormValues, convertToManifest } from "components/connectorBuilder/types";
+import { BuilderFormValues, convertToManifest, DEFAULT_BUILDER_FORM_VALUES } from "components/connectorBuilder/types";
 
+import { PatchedConnectorManifest } from "core/domain/connectorBuilder/PatchedConnectorManifest";
 import { StreamReadRequestBodyConfig, StreamsListReadStreamsItem } from "core/request/ConnectorBuilderClient";
-import { ConnectorManifest } from "core/request/ConnectorManifest";
 
 import { useListStreams } from "./ConnectorBuilderApiService";
 
-export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
-  global: {
-    connectorName: "",
-    urlBase: "",
-  },
-  streams: [],
-};
-
-const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
+const DEFAULT_JSON_MANIFEST_VALUES: PatchedConnectorManifest = {
   version: "0.1.0",
   check: {
     stream_names: [],
@@ -26,12 +19,12 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
   streams: [],
 };
 
-type EditorView = "ui" | "yaml";
-export type BuilderView = "global" | number;
+export type EditorView = "ui" | "yaml";
+export type BuilderView = "global" | "inputs" | number;
 
 interface Context {
   builderFormValues: BuilderFormValues;
-  jsonManifest: ConnectorManifest;
+  jsonManifest: PatchedConnectorManifest;
   yamlManifest: string;
   yamlEditorIsMounted: boolean;
   yamlIsValid: boolean;
@@ -39,16 +32,15 @@ interface Context {
   streamListErrorMessage: string | undefined;
   testStreamIndex: number;
   selectedView: BuilderView;
-  configString: string;
   configJson: StreamReadRequestBodyConfig;
   editorView: EditorView;
-  setBuilderFormValues: (values: BuilderFormValues) => void;
-  setJsonManifest: (jsonValue: ConnectorManifest) => void;
+  setBuilderFormValues: (values: BuilderFormValues, isInvalid: boolean) => void;
+  setJsonManifest: (jsonValue: PatchedConnectorManifest) => void;
   setYamlEditorIsMounted: (value: boolean) => void;
   setYamlIsValid: (value: boolean) => void;
   setTestStreamIndex: (streamIndex: number) => void;
   setSelectedView: (view: BuilderView) => void;
-  setConfigString: (configString: string) => void;
+  setConfigJson: (value: StreamReadRequestBodyConfig) => void;
   setEditorView: (editorView: EditorView) => void;
 }
 
@@ -58,21 +50,36 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const { formatMessage } = useIntl();
 
   // manifest values
-  const [builderFormValues, setBuilderFormValues] = useLocalStorage<BuilderFormValues>(
+  const [storedBuilderFormValues, setStoredBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
     DEFAULT_BUILDER_FORM_VALUES
   );
-  const formValues = builderFormValues ?? DEFAULT_BUILDER_FORM_VALUES;
 
-  const [jsonManifest, setJsonManifest] = useLocalStorage<ConnectorManifest>(
+  const lastValidBuilderFormValuesRef = useRef<BuilderFormValues>(storedBuilderFormValues as BuilderFormValues);
+
+  const setBuilderFormValues = useCallback(
+    (values: BuilderFormValues, isValid: boolean) => {
+      setStoredBuilderFormValues(values);
+      if (isValid) {
+        lastValidBuilderFormValuesRef.current = values;
+      }
+    },
+    [setStoredBuilderFormValues]
+  );
+
+  const builderFormValues = useMemo(() => {
+    return merge({}, DEFAULT_BUILDER_FORM_VALUES, storedBuilderFormValues);
+  }, [storedBuilderFormValues]);
+
+  const [jsonManifest, setJsonManifest] = useLocalStorage<PatchedConnectorManifest>(
     "connectorBuilderJsonManifest",
     DEFAULT_JSON_MANIFEST_VALUES
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
   useEffect(() => {
-    setJsonManifest(convertToManifest(formValues));
-  }, [formValues, setJsonManifest]);
+    setJsonManifest(convertToManifest(builderFormValues));
+  }, [builderFormValues, setJsonManifest]);
 
   const [yamlIsValid, setYamlIsValid] = useState(true);
   const [yamlEditorIsMounted, setYamlEditorIsMounted] = useState(true);
@@ -84,25 +91,30 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
 
   const [editorView, setEditorView] = useState<EditorView>("ui");
 
-  // config
-  const [configString, setConfigString] = useState("{\n  \n}");
-  const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
+  const lastValidBuilderFormValues = lastValidBuilderFormValuesRef.current;
+  /**
+   * The json manifest derived from the last valid state of the builder form values.
+   * In the yaml view, this is undefined. Can still be invalid in case an invalid state is loaded from localstorage
+   */
+  const lastValidJsonManifest = useMemo(
+    () =>
+      editorView !== "ui"
+        ? undefined
+        : builderFormValues === lastValidBuilderFormValues
+        ? jsonManifest
+        : convertToManifest(lastValidBuilderFormValues),
+    [builderFormValues, editorView, jsonManifest, lastValidBuilderFormValues]
+  );
 
-  useEffect(() => {
-    try {
-      const json = JSON.parse(configString) as StreamReadRequestBodyConfig;
-      setConfigJson(json);
-    } catch (err) {
-      console.error(`Config value is not valid JSON! Error: ${err}`);
-    }
-  }, [configString]);
+  // config
+  const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
 
   // streams
   const {
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
-  } = useListStreams({ manifest, config: configJson });
+  } = useListStreams({ manifest: lastValidJsonManifest || manifest, config: configJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
     ? streamListError instanceof Error
@@ -123,7 +135,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
   const [selectedView, setSelectedView] = useState<BuilderView>("global");
 
   const ctx = {
-    builderFormValues: formValues,
+    builderFormValues,
     jsonManifest: manifest,
     yamlManifest,
     yamlEditorIsMounted,
@@ -132,7 +144,6 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     streamListErrorMessage,
     testStreamIndex,
     selectedView,
-    configString,
     configJson,
     editorView,
     setBuilderFormValues,
@@ -141,7 +152,7 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     setYamlEditorIsMounted,
     setTestStreamIndex,
     setSelectedView,
-    setConfigString,
+    setConfigJson,
     setEditorView,
   };
 

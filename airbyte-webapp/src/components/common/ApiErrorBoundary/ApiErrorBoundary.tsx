@@ -84,7 +84,7 @@ class ApiErrorBoundaryComponent extends React.Component<
     if (isFormBuildError(error)) {
       this.props.trackError(error, {
         id: "formBuildError",
-        connector: error.connectorId,
+        connectorDefinitionId: error.connectorDefinitionId,
       });
     }
   }

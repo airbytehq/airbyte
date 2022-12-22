@@ -9,6 +9,7 @@ import { FormBlock, FormConditionItem } from "core/form/types";
 import { isDefined } from "utils/common";
 
 import { ConnectorFormValues } from "../../types";
+import styles from "./ConditionSection.module.scss";
 import { FormSection } from "./FormSection";
 import { GroupLabel } from "./GroupLabel";
 import { SectionContainer } from "./SectionContainer";
@@ -70,7 +71,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
       <GroupControls
         key={`form-field-group-${formField.fieldKey}`}
         label={<GroupLabel formField={formField} />}
-        dropdown={
+        control={
           <DropDown
             options={options}
             onChange={onOptionChange}
@@ -80,6 +81,7 @@ export const ConditionSection: React.FC<ConditionSectionProps> = ({ formField, p
             error={typeof meta.error === "string" && !!meta.error}
           />
         }
+        controlClassName={styles.dropdown}
       >
         {/* currentlySelectedCondition is only falsy if a malformed config is loaded which doesn't have a valid value for the const selection key. In this case, render the selection group as empty. */}
         {typeof currentlySelectedCondition !== "undefined" && (
