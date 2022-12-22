@@ -1,7 +1,8 @@
 import React, { useMemo } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { PillButton, PillButtonVariant, PillSelect } from "components/ui/PillSelect";
+import { InfoText, INFO_TEXT_VARIANT_BY_PILL_VARIANT } from "components/ui/InfoText";
+import { PillButtonVariant, PillSelect } from "components/ui/PillSelect";
 
 import { Path } from "core/domain/catalog";
 
@@ -42,10 +43,11 @@ export const StreamPathSelect: React.FC<PathPopoutProps> = (props) => {
   }, [props.isMulti, props.path]);
 
   if (props.pathType === "sourceDefined") {
+    const variant = props.variant || "grey";
     return (
-      <PillButton variant={props.variant} disabled className={styles.streamPathSelect}>
+      <InfoText variant={INFO_TEXT_VARIANT_BY_PILL_VARIANT[variant]} className={styles.streamPathSelect}>
         {SourceDefinedNode}
-      </PillButton>
+      </InfoText>
     );
   }
 
