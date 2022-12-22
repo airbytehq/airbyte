@@ -49,10 +49,10 @@ class SourceAmazonAds(AbstractSource):
         if start_date:
             config["start_date"] = pendulum.from_format(start_date, CONFIG_DATE_FORMAT).date()
             if check:
-                # This validation used only for improving connector UX experience.
-                # Connector can work without this low boundary checking.
-                # We use REPORTING_PERIOD plus ONE additional day because account can
-                # have multiple profiles in different timezones.
+                # This validation is used only for improving the user UX experience.
+                # The connector can work without this low boundary checking.
+                # We use REPORTING_PERIOD plus ONE additional day because
+                # amazon account can have multiple profiles in different time zones.
                 min_date = pendulum.today().date().subtract(days=ReportStream.REPORTING_PERIOD + 1)
                 if config["start_date"] < min_date:
                     raise Exception(f"Start Date: minimum allowed value is {min_date}")
