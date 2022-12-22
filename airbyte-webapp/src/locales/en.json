@@ -721,6 +721,8 @@
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
   "connectorBuilder.copyToPaginationTitle": "Copy pagination settings to...",
   "connectorBuilder.copyFromPaginationTitle": "Import pagination settings from...",
+  "connectorBuilder.copyToSlicerTitle": "Copy slicing settings to...",
+  "connectorBuilder.copyFromSlicerTitle": "Import slicing settings from...",
   "connectorBuilder.inputsButton": "Inputs",
 
   "jobs.noAttemptsFailure": "Failed to start job.",

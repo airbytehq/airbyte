@@ -2,6 +2,7 @@ import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classNames from "classnames";
 import { useField, useFormikContext } from "formik";
+import get from "lodash/get";
 import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 
@@ -37,6 +38,7 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
   const { setFieldValue, getFieldMeta } = useFormikContext();
   const [isCopyToOpen, setCopyToOpen] = useState(false);
   const [isCopyFromOpen, setCopyFromOpen] = useState(false);
+  const streams = getFieldMeta<BuilderStream[]>("streams").value;
   return (
     <Card className={classNames(className, styles.card)}>
       {toggleConfig && (
@@ -50,16 +52,18 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
           {toggleConfig.label}
         </div>
       )}
-      {copyConfig && (
+      {copyConfig && streams.length > 1 && (
         <div className={styles.copyButtonContainer}>
-          <Button
-            variant="secondary"
-            type="button"
-            onClick={() => {
-              setCopyToOpen(true);
-            }}
-            icon={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
-          />
+          {get(streams[copyConfig.currentStreamIndex], copyConfig.path) && (
+            <Button
+              variant="secondary"
+              type="button"
+              onClick={() => {
+                setCopyToOpen(true);
+              }}
+              icon={<FontAwesomeIcon icon={faArrowUpRightFromSquare} />}
+            />
+          )}
           {isCopyToOpen && (
             <CopyToModal
               onCancel={() => {
@@ -70,7 +74,7 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
                   `streams[${copyConfig.currentStreamIndex}].${copyConfig.path}`
                 ).value;
                 selectedStreamIndices.forEach((index) => {
-                  setFieldValue(`streams[${index}].${copyConfig.path}`, sectionToCopy);
+                  setFieldValue(`streams[${index}].${copyConfig.path}`, sectionToCopy, true);
                 });
                 setCopyToOpen(false);
               }}
@@ -94,7 +98,8 @@ export const BuilderCard: React.FC<React.PropsWithChildren<BuilderCardProps>> = 
               onSelect={(selectedStreamIndex) => {
                 setFieldValue(
                   `streams[${copyConfig.currentStreamIndex}].${copyConfig.path}`,
-                  getFieldMeta(`streams[${selectedStreamIndex}].${copyConfig.path}`).value
+                  getFieldMeta(`streams[${selectedStreamIndex}].${copyConfig.path}`).value,
+                  true
                 );
                 setCopyFromOpen(false);
               }}
@@ -130,9 +135,9 @@ const CopyToModal: React.FC<{
       >
         <ModalBody className={styles.modalStreamListContainer}>
           {streams.value.map((stream, index) => (
-            <div className={styles.toggleContainer}>
+            <div key={index} className={styles.toggleContainer}>
               <CheckBox
-                checked={selectMap[index]}
+                checked={selectMap[index] || false}
                 disabled={index === currentStreamIndex}
                 onChange={() => {
                   setSelectMap({ ...selectMap, [index]: !selectMap[index] });
@@ -168,6 +173,7 @@ const CopyFromModal: React.FC<{
         {streams.value.map((stream, index) =>
           currentStreamIndex === index ? null : (
             <button
+              key={index}
               onClick={() => {
                 onSelect(index);
               }}
