@@ -303,6 +303,7 @@ class AdGroupAdLabels(GoogleAdsStream):
 
 
 class AccountPerformanceReport(IncrementalGoogleAdsStream):
+    primary_key = ["customer.id", "segments.ad_network_type", "segments.date", "segments.device"]
     """
     AccountPerformanceReport stream: https://developers.google.com/google-ads/api/fields/v11/customer
     Google Ads API field mapping: https://developers.google.com/google-ads/api/docs/migration/mapping#account_performance
