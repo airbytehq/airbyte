@@ -23,7 +23,7 @@ class PurchaseGenerator:
         Note: the instances of the mimesis generators need to be global.
         Yes, they *should* be able to be instance variables on this class, which should only instantiated once-per-worker, but that's not quite the case:
         * relying only on prepare as a pool initializer fails because we are calling the parent process's method, not the fork
-        * Calling prepare() as part of generate() (perhaps checking if self.person is set) and then `print(self, current_process()._identity, current_process().pid)` reveals multiple object IDs in the same thread, resetting the internal random counters
+        * Calling prepare() as part of generate() (perhaps checking if self.person is set) and then `print(self, current_process()._identity, current_process().pid)` reveals multiple object IDs in the same process, resetting the internal random counters
         """
 
         seed_with_offset = self.seed
