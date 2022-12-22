@@ -86,7 +86,7 @@ class IncrementalOktaStream(OktaStream, ABC):
         pass
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        min_cursor_value = self.min_id if self.min_id else str(pendulum.datetime.min)
+        min_cursor_value = self.min_id if self.min_id else str(pendulum.datetime(1, 1, 1))
         return {
             self.cursor_field: max(
                 latest_record.get(self.cursor_field, min_cursor_value),
@@ -119,11 +119,13 @@ class GroupMembers(IncrementalOktaStream):
     cursor_field = "id"
     primary_key = "id"
     use_cache = True
+    reset_token = False
     min_id = "00u00000000000000000"
 
     def stream_slices(self, **kwargs):
         group_stream = Groups(authenticator=self.authenticator, url_base=self.url_base, start_date=self.start_date)
         for group in group_stream.read_records(sync_mode=SyncMode.full_refresh):
+            self.reset_token = True
             yield {"group_id": group["id"]}
 
     def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
@@ -137,7 +139,16 @@ class GroupMembers(IncrementalOktaStream):
         next_page_token: Mapping[str, Any] = None,
     ) -> MutableMapping[str, Any]:
         params = super(IncrementalOktaStream, self).request_params(stream_state, stream_slice, next_page_token)
-        latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
+
+        if next_page_token:
+            latest_entry = next_page_token.get("after")
+        else:        
+            latest_entry = stream_state.get(self.cursor_field) if stream_state else self.min_id
+        
+        if self.reset_token:
+            latest_entry = self.min_id
+            self.reset_token = False
+
         params["after"] = latest_entry
         return params
 
