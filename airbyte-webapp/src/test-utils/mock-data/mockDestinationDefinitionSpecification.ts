@@ -1,7 +1,7 @@
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorIds } from "utils/connectors";
 
-export const mockDestination: DestinationDefinitionSpecificationRead = {
+export const mockDestinationDefinitionSpecification: DestinationDefinitionSpecificationRead = {
   destinationDefinitionId: ConnectorIds.Destinations.Postgres,
   documentationUrl: "https://docs.airbyte.io/integrations/destinations/postgres",
   connectionSpecification: {
@@ -334,6 +334,4 @@ export const mockDestination: DestinationDefinitionSpecificationRead = {
     },
   },
   supportedDestinationSyncModes: ["overwrite", "append", "append_dedup"],
-  supportsDbt: true,
-  supportsNormalization: true,
 };
