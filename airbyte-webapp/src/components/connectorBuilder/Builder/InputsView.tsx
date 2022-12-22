@@ -334,7 +334,7 @@ const InputItem = ({
   isInferredInput: boolean;
 }): JSX.Element => {
   return (
-    <li className={styles.listItem}>
+    <li className={styles.listItem} key={input.key}>
       <div className={styles.itemLabel}>{input.definition.title || input.key}</div>
       <Button
         className={styles.itemButton}

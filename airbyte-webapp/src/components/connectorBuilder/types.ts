@@ -13,6 +13,8 @@ import {
   HttpRequesterAllOfAuthenticator,
   NoAuth,
   SessionTokenAuthenticator,
+  DefaultPaginatorAllOfPaginationStrategy,
+  RequestOption,
 } from "core/request/ConnectorManifest";
 
 export interface BuilderFormInput {
@@ -47,13 +49,44 @@ export interface BuilderStream {
   name: string;
   urlPath: string;
   fieldPointer: string[];
+  primaryKey: string[];
   httpMethod: "GET" | "POST";
   requestOptions: {
     requestParameters: Array<[string, string]>;
     requestHeaders: Array<[string, string]>;
     requestBody: Array<[string, string]>;
   };
+  paginator?: {
+    strategy: DefaultPaginatorAllOfPaginationStrategy;
+    pageTokenOption: RequestOption;
+    pageSizeOption?: RequestOption;
+  };
 }
+
+export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
+  global: {
+    connectorName: "",
+    urlBase: "",
+    authenticator: { type: "NoAuth" },
+  },
+  inputs: [],
+  inferredInputOverrides: {},
+  streams: [],
+};
+
+export const DEFAULT_BUILDER_STREAM_VALUES: BuilderStream = {
+  name: "",
+  urlPath: "",
+  fieldPointer: [],
+  primaryKey: [],
+  httpMethod: "GET",
+  requestOptions: {
+    requestParameters: [],
+    requestHeaders: [],
+    requestBody: [],
+  },
+};
+
 function getInferredInputList(values: BuilderFormValues): BuilderFormInput[] {
   if (values.global.authenticator.type === "ApiKeyAuthenticator") {
     return [
@@ -179,6 +212,8 @@ export function getInferredInputs(values: BuilderFormValues): BuilderFormInput[]
   );
 }
 
+export const injectIntoValues = ["request_parameter", "header", "path", "body_data", "body_json"];
+
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
     connectorName: yup.string().required("form.empty.error"),
@@ -216,12 +251,60 @@ export const builderFormValidationSchema = yup.object().shape({
       name: yup.string().required("form.empty.error"),
       urlPath: yup.string().required("form.empty.error"),
       fieldPointer: yup.array().of(yup.string()),
+      primaryKey: yup.array().of(yup.string()),
       httpMethod: yup.mixed().oneOf(["GET", "POST"]),
       requestOptions: yup.object().shape({
         requestParameters: yup.array().of(yup.array().of(yup.string())),
         requestHeaders: yup.array().of(yup.array().of(yup.string())),
         requestBody: yup.array().of(yup.array().of(yup.string())),
       }),
+      paginator: yup
+        .object()
+        .shape({
+          pageSizeOption: yup
+            .object()
+            .shape({
+              inject_into: yup.mixed().oneOf(injectIntoValues.filter((val) => val !== "path")),
+              field_name: yup.string().required("form.empty.error"),
+            })
+            .notRequired()
+            .default(undefined),
+          pageTokenOption: yup.object().shape({
+            inject_into: yup.mixed().oneOf(injectIntoValues),
+            field_name: yup.mixed().when("inject_into", {
+              is: "path",
+              then: (schema) => schema.strip(),
+              otherwise: yup.string().required("form.empty.error"),
+            }),
+          }),
+          strategy: yup
+            .object({
+              page_size: yup.mixed().when("type", {
+                is: (val: string) => ["OffsetIncrement", "PageIncrement"].includes(val),
+                then: yup.number().required("form.empty.error"),
+                otherwise: yup.number(),
+              }),
+              cursor_value: yup.mixed().when("type", {
+                is: "CursorPagination",
+                then: yup.string().required("form.empty.error"),
+                otherwise: (schema) => schema.strip(),
+              }),
+              stop_condition: yup.mixed().when("type", {
+                is: "CursorPagination",
+                then: yup.string(),
+                otherwise: (schema) => schema.strip(),
+              }),
+              start_from_page: yup.mixed().when("type", {
+                is: "PageIncrement",
+                then: yup.string(),
+                otherwise: (schema) => schema.strip(),
+              }),
+            })
+            .notRequired()
+            .default(undefined),
+        })
+        .notRequired()
+        .default(undefined),
     })
   ),
 });
@@ -248,8 +331,10 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
   const manifestStreams: DeclarativeStream[] = values.streams.map((stream) => {
     return {
       name: stream.name,
+      primary_key: stream.primaryKey,
       retriever: {
         name: stream.name,
+        primary_key: stream.primaryKey,
         requester: {
           name: stream.name,
           url_base: values.global?.urlBase,
@@ -269,6 +354,21 @@ export const convertToManifest = (values: BuilderFormValues): PatchedConnectorMa
             config: {},
           },
         },
+        paginator: stream.paginator
+          ? {
+              type: "DefaultPaginator",
+              page_token_option: {
+                ...stream.paginator.pageTokenOption,
+                // ensures that empty field_name is not set, as connector builder server cannot accept a field_name if inject_into is set to 'path'
+                field_name: stream.paginator.pageTokenOption?.field_name
+                  ? stream.paginator.pageTokenOption?.field_name
+                  : undefined,
+              },
+              page_size_option: stream.paginator.pageSizeOption,
+              pagination_strategy: stream.paginator.strategy,
+              url_base: values.global?.urlBase,
+            }
+          : { type: "NoPagination" },
         config: {},
       },
       config: {},
