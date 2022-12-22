@@ -4,7 +4,6 @@
 
 package io.airbyte.server.auth;
 
-import io.airbyte.commons.auth.AuthRole;
 import io.micrometer.core.instrument.util.StringUtils;
 import io.micronaut.context.annotation.Replaces;
 import io.micronaut.http.HttpRequest;
@@ -68,7 +67,7 @@ public class CloudAirbyteAuthenticationProvider implements AuthenticationProvide
   private Collection<String> getWorkspaceRoles(final HttpRequest<?> httpRequest) throws AuthenticationException {
     final Collection<String> roles = new HashSet<>();
 
-    if(StringUtils.isNotBlank(httpRequest.getParameters().get(WORKSPACE_ID_PARAMETER))) {
+    if (StringUtils.isNotBlank(httpRequest.getParameters().get(WORKSPACE_ID_PARAMETER))) {
       final String workspaceId = httpRequest.getParameters().get(WORKSPACE_ID_PARAMETER);
       log.info("Found workspace ID value {} for request {}.", workspaceId, httpRequest.getUri());
       roles.addAll(permissionService.getWorkspacePermissions(UUID.fromString(workspaceId)));
