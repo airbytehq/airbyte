@@ -16,6 +16,7 @@ import { BuilderTitle } from "./BuilderTitle";
 import { KeyValueListField } from "./KeyValueListField";
 import { PaginationSection } from "./PaginationSection";
 import styles from "./StreamConfigView.module.scss";
+import { StreamSlicerSection } from "./StreamSlicerSection";
 
 interface StreamConfigViewProps {
   streamNum: number;
@@ -97,6 +98,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         />
       </BuilderCard>
       <PaginationSection streamFieldPath={streamFieldPath} />
+      <StreamSlicerSection streamFieldPath={streamFieldPath} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}
