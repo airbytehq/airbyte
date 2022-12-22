@@ -3,6 +3,9 @@ import { useField } from "formik";
 import GroupControls from "components/GroupControls";
 import { ControlLabels } from "components/LabeledControl";
 
+import { RequestOption } from "core/request/ConnectorManifest";
+
+import { BuilderPaginator } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
 import { BuilderOneOf } from "./BuilderOneOf";
@@ -14,7 +17,7 @@ interface PaginationSectionProps {
 }
 
 export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFieldPath }) => {
-  const [field, , helpers] = useField(streamFieldPath("paginator"));
+  const [field, , helpers] = useField<BuilderPaginator | undefined>(streamFieldPath("paginator"));
   const [pageSizeField] = useField(streamFieldPath("paginator.strategy.page_size"));
   const [, , pageSizeOptionHelpers] = useField(streamFieldPath("paginator.pageSizeOption"));
 
@@ -23,8 +26,10 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
       helpers.setValue({
         strategy: {
           type: "OffsetIncrement",
+          page_size: "",
         },
         pageTokenOption: {
+          type: "RequestOption",
           inject_into: "request_parameter",
         },
       });
@@ -48,12 +53,13 @@ export const PaginationSection: React.FC<PaginationSectionProps> = ({ streamFiel
   );
 
   const pageSizeOption = (
-    <ToggleGroupField
+    <ToggleGroupField<RequestOption>
       label="Page size option"
       tooltip="Configures how the page size will be sent in requests to the source API"
       fieldPath={streamFieldPath("paginator.pageSizeOption")}
       initialValues={{
         inject_into: "request_parameter",
+        type: "RequestOption",
         field_name: "",
       }}
     >

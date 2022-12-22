@@ -1,5 +1,6 @@
 import { faClose, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useMemo } from "react";
 import { FormattedMessage, useIntl } from "react-intl";
 import { useLocalStorage } from "react-use";
 
@@ -9,6 +10,7 @@ import { Modal, ModalBody } from "components/ui/Modal";
 import { NumberBadge } from "components/ui/NumberBadge";
 import { Tooltip } from "components/ui/Tooltip";
 
+import { SourceDefinitionSpecificationDraft } from "core/domain/connector";
 import { StreamReadRequestBodyConfig } from "core/request/ConnectorBuilderClient";
 import { useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 import { ConnectorForm } from "views/Connector/ConnectorForm";
@@ -33,6 +35,17 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
     setEditorView("yaml");
     setIsOpen(false);
   };
+
+  const connectorDefinitionSpecification: SourceDefinitionSpecificationDraft | undefined = useMemo(
+    () =>
+      jsonManifest.spec
+        ? {
+            documentationUrl: jsonManifest.spec.documentation_url,
+            connectionSpecification: jsonManifest.spec.connection_specification,
+          }
+        : undefined,
+    [jsonManifest]
+  );
 
   return (
     <>
@@ -64,7 +77,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
           <FormattedMessage id="connectorBuilder.inputsNoSpecYAMLTooltip" />
         )}
       </Tooltip>
-      {isOpen && jsonManifest.spec && (
+      {isOpen && connectorDefinitionSpecification && (
         <Modal
           size="lg"
           onClose={() => setIsOpen(false)}
@@ -93,7 +106,7 @@ export const ConfigMenu: React.FC<ConfigMenuProps> = ({ className, configJsonErr
                   formType="source"
                   bodyClassName={styles.formContent}
                   footerClassName={styles.inputFormModalFooter}
-                  selectedConnectorDefinitionSpecification={jsonManifest.spec}
+                  selectedConnectorDefinitionSpecification={connectorDefinitionSpecification}
                   formValues={{ connectionConfiguration: configJson }}
                   onSubmit={async (values) => {
                     setConfigJson(values.connectionConfiguration as StreamReadRequestBodyConfig);

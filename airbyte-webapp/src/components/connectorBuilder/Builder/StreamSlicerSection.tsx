@@ -2,6 +2,8 @@ import { useField } from "formik";
 
 import { ControlLabels } from "components/LabeledControl";
 
+import { RequestOption, SimpleRetrieverStreamSlicer } from "core/request/ConnectorManifest";
+
 import { timeDeltaRegex } from "../types";
 import { BuilderCard } from "./BuilderCard";
 import { BuilderField } from "./BuilderField";
@@ -15,7 +17,7 @@ interface StreamSlicerSectionProps {
 }
 
 export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath }) => {
-  const [field, , helpers] = useField(streamFieldPath("streamSlicer"));
+  const [field, , helpers] = useField<SimpleRetrieverStreamSlicer | undefined>(streamFieldPath("streamSlicer"));
 
   const handleToggle = (newToggleValue: boolean) => {
     if (newToggleValue) {
@@ -65,12 +67,13 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                   label="Cursor field"
                   tooltip="Field on record to use as the cursor"
                 />
-                <ToggleGroupField
+                <ToggleGroupField<RequestOption>
                   label="Slice request option"
                   tooltip="Optionally configures how the slice values will be sent in requests to the source API"
                   fieldPath={streamFieldPath("streamSlicer.request_option")}
                   initialValues={{
                     inject_into: "request_parameter",
+                    type: "RequestOption",
                     field_name: "",
                   }}
                 >
@@ -127,12 +130,13 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                     tooltip="How many days before the start_datetime to read data for, e.g. 31d"
                     optional
                   />
-                  <ToggleGroupField
+                  <ToggleGroupField<RequestOption>
                     label="Start time request option"
                     tooltip="Optionally configures how the start datetime will be sent in requests to the source API"
                     fieldPath={streamFieldPath("streamSlicer.start_time_option")}
                     initialValues={{
                       inject_into: "request_parameter",
+                      type: "RequestOption",
                       field_name: "",
                     }}
                   >
@@ -142,12 +146,13 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                       excludeInjectIntoValues={["path"]}
                     />
                   </ToggleGroupField>
-                  <ToggleGroupField
+                  <ToggleGroupField<RequestOption>
                     label="End time request option"
                     tooltip="Optionally configures how the end datetime will be sent in requests to the source API"
                     fieldPath={streamFieldPath("streamSlicer.end_time_option")}
                     initialValues={{
                       inject_into: "request_parameter",
+                      type: "RequestOption",
                       field_name: "",
                     }}
                   >
