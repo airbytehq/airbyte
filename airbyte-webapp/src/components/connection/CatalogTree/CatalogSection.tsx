@@ -16,12 +16,13 @@ import {
 } from "core/request/AirbyteClient";
 import { useDestinationNamespace } from "hooks/connection/useDestinationNamespace";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
-import { equal, naturalComparatorBy } from "utils/objects";
+import { naturalComparatorBy } from "utils/objects";
 import { ConnectionFormValues, SUPPORTED_MODES } from "views/Connection/ConnectionForm/formConfig";
 
 import styles from "./CatalogSection.module.scss";
 import { CatalogTreeTableRow } from "./next/CatalogTreeTableRow";
 import { StreamDetailsPanel } from "./next/StreamDetailsPanel/StreamDetailsPanel";
+import { updatePrimaryKey, addFieldToPrimaryKey, updateCursorField } from "./streamConfigHelpers/streamConfigHelpers";
 import { StreamFieldTable } from "./StreamFieldTable";
 import { StreamHeader } from "./StreamHeader";
 import { flatten, getPathType } from "./utils";
@@ -46,6 +47,8 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
   changedSelected,
 }) => {
   const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
+  const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
 
   const {
     destDefinition: { supportedDestinationSyncModes },
@@ -75,30 +78,42 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
 
   const onPkSelect = useCallback(
     (pkPath: string[]) => {
-      let newPrimaryKey: string[][];
-
-      if (config?.primaryKey?.find((pk) => equal(pk, pkPath))) {
-        newPrimaryKey = config.primaryKey.filter((key) => !equal(key, pkPath));
-      } else {
-        newPrimaryKey = [...(config?.primaryKey ?? []), pkPath];
+      if (!config) {
+        return;
       }
 
-      updateStreamWithConfig({ primaryKey: newPrimaryKey });
+      const updatedConfig = addFieldToPrimaryKey(config, pkPath, numberOfFieldsInStream);
+
+      updateStreamWithConfig(updatedConfig);
     },
-    [config?.primaryKey, updateStreamWithConfig]
+    [config, updateStreamWithConfig, numberOfFieldsInStream]
   );
 
   const onCursorSelect = useCallback(
-    (cursorField: string[]) => updateStreamWithConfig({ cursorField }),
-    [updateStreamWithConfig]
+    (cursorField: string[]) => {
+      if (!config) {
+        return;
+      }
+
+      const updatedConfig = updateCursorField(config, cursorField, numberOfFieldsInStream);
+
+      updateStreamWithConfig(updatedConfig);
+    },
+    [config, numberOfFieldsInStream, updateStreamWithConfig]
   );
 
   const onPkUpdate = useCallback(
-    (newPrimaryKey: string[][]) => updateStreamWithConfig({ primaryKey: newPrimaryKey }),
-    [updateStreamWithConfig]
-  );
+    (newPrimaryKey: string[][]) => {
+      if (!config) {
+        return;
+      }
 
-  const numberOfFieldsInStream = Object.keys(streamNode?.stream?.jsonSchema?.properties).length ?? 0;
+      const updatedConfig = updatePrimaryKey(config, newPrimaryKey, numberOfFieldsInStream);
+
+      updateStreamWithConfig(updatedConfig);
+    },
+    [config, updateStreamWithConfig, numberOfFieldsInStream]
+  );
 
   const onSelectedFieldsUpdate = (fieldPath: string[], isSelected: boolean) => {
     const previouslySelectedFields = config?.selectedFields || [];

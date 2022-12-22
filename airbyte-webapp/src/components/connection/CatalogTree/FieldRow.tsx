@@ -1,4 +1,4 @@
-import React, { memo } from "react";
+import React, { memo, useCallback } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -54,18 +54,31 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
+  const isDisabled = isCursor || isPrimaryKey || isNestedField;
+  const renderDisabledReasonMessage = useCallback(() => {
+    if (isNestedField) {
+      return <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />;
+    }
+    if (isPrimaryKey) {
+      return <FormattedMessage id="form.field.sync.primaryKeyTooltip" />;
+    }
+    if (isCursor) {
+      return <FormattedMessage id="form.field.sync.cursorFieldTooltip" />;
+    }
+    return null;
+  }, [isCursor, isPrimaryKey, isNestedField, field.path]);
 
   return (
     <>
       {isColumnSelectionEnabled && (
         <Cell flex={0}>
           <SyncCheckboxContainer>
-            {!isNestedField && (
+            {!isDisabled && (
               <Switch small checked={isSelected} onChange={() => onToggleFieldSelected(field.path, !isSelected)} />
             )}
-            {isNestedField && (
+            {isDisabled && (
               <Tooltip control={<Switch small disabled checked={isSelected} />}>
-                <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />
+                {renderDisabledReasonMessage()}
               </Tooltip>
             )}
           </SyncCheckboxContainer>
