@@ -4,6 +4,7 @@
 
 
 from abc import ABC
+import logging
 from typing import Any, Iterable, List, Mapping, MutableMapping, Optional, Tuple
 
 import requests
@@ -18,84 +19,214 @@ from airbyte_cdk.sources.utils.transform import TransformConfig, TypeTransformer
 from .helpers import Helpers
 
 
-# Basic full refresh stream
-class AirtableStream(HttpStream, ABC):
-    url_base = "https://api.airtable.com/v0/"
-    primary_key = "id"
-    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+URL_BASE: str = "https://api.airtable.com/v0/"
 
-    def __init__(self, base_id: str, table_name: str, schema, **kwargs):
+
+class AirtableBases(HttpStream):
+    
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        
+    url_base = URL_BASE
+    primary_key = None
+    name = "bases"
+    raise_on_http_errors = True
+        
+    def path(self, **kwargs) -> str:
+        """
+        Documentation: https://airtable.com/developers/web/api/list-bases
+        """
+        return "meta/bases"
+    
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403 or response.status_code == 422:
+            self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        Based on official docs: https://airtable.com/developers/web/api/rate-limits
+        when 429 is received, we should wait at least 30 sec.
+        """
+        if response.status_code == 429:
+            self.logger.error(f"Stream {self.name}: rate limit exceeded")
+            return 30.0
+    
+    def next_page_token(self, response: requests.Response, **kwargs) -> str:
+        """
+        The bases list could be more than 100 records, therefore the pagination is required to fetch all of them.
+        """
+        next_page = response.json().get("offset")
+        if next_page:
+            return {"offset": next_page}
+        return None
+    
+    def request_params(self, next_page_token: str = None, **kwargs) -> Mapping[str, Any]:
+        params = {}
+        if next_page_token:
+            params["offset"] = next_page_token
+        return params
+    
+    def parse_response(self, response: requests.Response, **kwargs) -> Mapping[str, Any]:
+        """
+        Example output: 
+            {
+                'bases': [
+                    {'id': '_some_id_', 'name': 'users', 'permissionLevel': 'create'}, 
+                    {'id': '_some_id_', 'name': 'Test Base', 'permissionLevel': 'create'},
+                ]
+            }
+        """
+        records = response.json().get(self.name)
+        yield from records
+
+
+class AirtableTables(AirtableBases):
+    
+    def __init__(self, base_id: list, **kwargs):
         super().__init__(**kwargs)
         self.base_id = base_id
-        self.table_name = table_name
-        self.schema = schema
+        
+    name = "tables"
+    
+    def path(self, **kwargs) -> str:
+        """
+        Documentation: https://airtable.com/developers/web/api/list-bases
+        """
+        return f"{super().path()}/{self.base_id}/tables"
 
+
+class AirtableStream(HttpStream, ABC):
+    
+    def __init__(self, stream_path: str, stream_name: str, stream_schema, **kwargs):
+        super().__init__(**kwargs)
+        self.stream_path = stream_path
+        self.stream_name = stream_name
+        self.stream_schema = stream_schema
+        
+    url_base = URL_BASE
+    primary_key = "id"
+    transformer: TypeTransformer = TypeTransformer(TransformConfig.DefaultSchemaNormalization)
+    raise_on_http_errors = True    
+    
     @property
     def name(self):
-        return self.table_name
+        return self.stream_name
+    
+    def should_retry(self, response: requests.Response) -> bool:
+        if response.status_code == 403 or response.status_code == 422:
+            self.logger.error(f"Stream {self.name}: permission denied or entity is unprocessable. Skipping.")
+            setattr(self, "raise_on_http_errors", False)
+            return False
+        return super().should_retry(response)
+
+    def backoff_time(self, response: requests.Response) -> Optional[float]:
+        """
+        Based on official docs: https://airtable.com/developers/web/api/rate-limits
+        when 429 is received, we should wait at least 30 sec.
+        """
+        if response.status_code == 429:
+            self.logger.error(f"Stream {self.name}: rate limit exceeded")
+            return 30.0
 
     def get_json_schema(self) -> Mapping[str, Any]:
-        return self.schema
+        return self.stream_schema
 
-    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
-        json_response = response.json()
-        offset = json_response.get("offset", None)
-        if offset:
-            return {"offset": offset}
+    def next_page_token(self, response: requests.Response, **kwargs) -> Optional[Mapping[str, Any]]:
+        next_page = response.json().get("offset")
+        if next_page:
+            return {"offset": next_page}
         return None
 
-    def request_params(
-        self, stream_state: Mapping[str, Any], stream_slice: Mapping[str, any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> MutableMapping[str, Any]:
+    def request_params(self, next_page_token: Mapping[str, Any] = None, **kwargs) -> MutableMapping[str, Any]:
+        """
+        All available params: https://airtable.com/developers/web/api/list-records#query
+        """
         if next_page_token:
             return next_page_token
         return {}
 
-    def process_records(self, records):
+    def process_records(self, records) -> Iterable[Mapping[str, Any]]:
         for record in records:
-            data = record.get("fields", {})
-            processed_record = {"_airtable_id": record.get("id"), "_airtable_created_time": record.get("createdTime"), **data}
-            yield processed_record
+            data = record.get("fields")
+            if len(data) > 0:
+                yield {
+                    "_airtable_id": record.get("id"), 
+                    "_airtable_created_time": record.get("createdTime"), 
+                    **data,
+                }
 
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json()
-        records = json_response.get("records", [])
-        records = self.process_records(records)
-        yield from records
+        records = response.json().get("records", [])
+        yield from self.process_records(records)
 
-    def path(
-        self, stream_state: Mapping[str, Any] = None, stream_slice: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None
-    ) -> str:
-        return f"{self.base_id}/{self.table_name}"
+    def path(self, **kwargs) -> str:
+        return self.stream_path
 
 
-# Source
 class SourceAirtable(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    
+    logger: logging.Logger = logging.getLogger("airbyte")
+    
+    prepared_catalog: List[AirbyteCatalog] = []
+    
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
         auth = TokenAuthenticator(token=config["api_key"])
-        for table in config["tables"]:
-            try:
-                Helpers.get_most_complete_row(auth, config["base_id"], table)
-            except Exception as e:
-                return False, str(e)
-        return True, None
+        try:        
+            # try reading first table from each base, to check the connectivity
+            for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
+                base_id = base.get("id")
+                base_name = base.get("name")
+                self.logger.info(f"Reading first table info for base: {base_name}")
+                next(AirtableTables(base_id=base_id, authenticator=auth).read_records(sync_mode=None))
+            return True, None
+        except Exception as e:
+            return False, str(e) 
 
     def discover(self, logger: AirbyteLogger, config) -> AirbyteCatalog:
-        streams = []
+        """
+        Override to provide the dynamic schema generation capabilities,
+        using resource available for authenticated user.
+        
+        Retrieve: Bases, Tables from each Base, generate JSON Schema for each table.
+        """
         auth = TokenAuthenticator(token=config["api_key"])
-        for table in config["tables"]:
-            record = Helpers.get_most_complete_row(auth, config["base_id"], table)
-            json_schema = Helpers.get_json_schema(record)
-            airbyte_stream = Helpers.get_airbyte_stream(table, json_schema)
-            streams.append(airbyte_stream)
-        return AirbyteCatalog(streams=streams)
-
+        # tables placeholder
+        tables: Mapping[str, List] = {}
+        # list all bases available for authenticated account
+        for base in AirtableBases(authenticator=auth).read_records(sync_mode=None):
+            base_id = base.get("id")
+            base_name = Helpers.clean_name(base.get("name"))
+            # list and process each table under each base to generate the JSON Schema
+            tables[base_id] = list(AirtableTables(base_id=base_id, authenticator=auth).read_records(sync_mode=None))
+            for table in tables[base_id]:
+                table_id = table.get("id")
+                table_name = Helpers.clean_name(table.get("name"))
+                stream_name = f"{base_name}/{table_name}"
+                self.prepared_catalog.append(
+                    {
+                        "stream_path": f"{base_id}/{table_id}",
+                        "catalog": Helpers.get_airbyte_stream(stream_name, Helpers.get_json_schema(table)),
+                    }
+                )
+        # generate catalog
+        return AirbyteCatalog(streams=[catalog["catalog"] for catalog in self.prepared_catalog])
+    
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         auth = TokenAuthenticator(token=config["api_key"])
-        streams = []
-        for table in config["tables"]:
-            record = Helpers.get_most_complete_row(auth, config["base_id"], table)
-            json_schema = Helpers.get_json_schema(record)
-            stream = AirtableStream(base_id=config["base_id"], table_name=table, authenticator=auth, schema=json_schema)
-            streams.append(stream)
-        return streams
+        # streams placeholder
+        streams_list: List[Stream] = []
+        # get prepared catalog for ruther stream generation
+        self.discover(logger=None, config=config)
+        for stream in self.prepared_catalog:
+            streams_list.append(
+                AirtableStream(
+                    stream_path=stream["stream_path"],
+                    stream_name=stream["catalog"].name,
+                    stream_schema=stream["catalog"].json_schema,
+                    authenticator=auth,
+                )
+            )
+        return streams_list
