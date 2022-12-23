@@ -2070,6 +2070,30 @@ paths:
                 $ref: "#/components/schemas/HealthCheckRead"
       # This route is unsecured for external monitoring.
       security: []
+  /v1/logs/get:
+    post:
+      tags:
+        - logs
+      summary: Get logs
+      operationId: getLogs
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LogsRequestBody"
+        required: true
+      responses:
+        "200":
+          description: Returns the log file
+          content:
+            text/plain:
+              schema:
+                type: string
+                format: binary
+        "404":
+          $ref: "#/components/responses/NotFoundResponse"
+        "422":
+          $ref: "#/components/responses/InvalidInputResponse"
   /v1/openapi:
     get:
       tags:

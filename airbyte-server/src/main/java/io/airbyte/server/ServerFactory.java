@@ -19,6 +19,7 @@ import io.airbyte.server.handlers.DestinationDefinitionsHandler;
 import io.airbyte.server.handlers.DestinationHandler;
 import io.airbyte.server.handlers.HealthCheckHandler;
 import io.airbyte.server.handlers.JobHistoryHandler;
+import io.airbyte.server.handlers.LogsHandler;
 import io.airbyte.server.handlers.OAuthHandler;
 import io.airbyte.server.handlers.OperationsHandler;
 import io.airbyte.server.handlers.SchedulerHandler;
@@ -59,6 +60,7 @@ public interface ServerFactory {
                         final DestinationHandler destinationApiHandler,
                         final HealthCheckHandler healthCheckHandler,
                         final JobHistoryHandler jobHistoryHandler,
+                        final LogsHandler logsHandler,
                         final OAuthHandler oAuthHandler,
                         final OperationsHandler operationsHandler,
                         final SchedulerHandler schedulerHandler,
@@ -94,6 +96,7 @@ public interface ServerFactory {
                                  final DestinationHandler destinationApiHandler,
                                  final HealthCheckHandler healthCheckHandler,
                                  final JobHistoryHandler jobHistoryHandler,
+                                 final LogsHandler logsHandler,
                                  final OAuthHandler oAuthHandler,
                                  final OperationsHandler operationsHandler,
                                  final SchedulerHandler schedulerHandler,
