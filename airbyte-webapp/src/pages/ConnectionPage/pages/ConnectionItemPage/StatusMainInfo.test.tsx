@@ -4,6 +4,7 @@ import { mockSourceDefinition } from "test-utils/mock-data/mockSourceDefinition"
 import { mockConnection, TestWrapper } from "test-utils/testutils";
 
 import { ConnectionStatus, SchemaChange } from "core/request/AirbyteClient";
+import { defaultOssFeatures, FeatureItem } from "hooks/services/Feature";
 
 // eslint-disable-next-line css-modules/no-unused-class
 import styles from "./StatusMainInfo.module.scss";
@@ -26,18 +27,14 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
   useRefreshSourceSchemaWithConfirmationOnDirty: jest.fn(),
 }));
 
+const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
+  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
+);
+
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const { StatusMainInfo } = require("./StatusMainInfo");
 
 describe("<StatusMainInfo />", () => {
-  beforeAll(() => {
-    process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES = "true";
-  });
-
-  afterAll(() => {
-    delete process.env.REACT_APP_AUTO_DETECT_SCHEMA_CHANGES;
-  });
-
   beforeEach(() => {
     mockUseConnectionEditService.mockReturnValue({
       connection: mockConnection,
@@ -46,7 +43,7 @@ describe("<StatusMainInfo />", () => {
   });
 
   it("renders", () => {
-    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
+    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
 
     expect(getByTestId("statusMainInfo")).toBeDefined();
 
@@ -65,7 +62,7 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
+    const { getByTestId, queryByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
 
     expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.breaking);
     expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
@@ -80,7 +77,7 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
+    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
 
     expect(getByTestId("statusMainInfo-sourceLink")).toHaveClass(styles.breaking);
     expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.nonBreaking);
@@ -95,7 +92,7 @@ describe("<StatusMainInfo />", () => {
       schemaHasBeenRefreshed: false,
     });
 
-    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapper });
+    const { getByTestId } = render(<StatusMainInfo />, { wrapper: TestWrapperWithAutoDetectSchema });
 
     expect(getByTestId("statusMainInfo-sourceLink")).not.toHaveClass(styles.breaking);
     expect(getByTestId("statusMainInfo-sourceLink")).toHaveClass(styles.nonBreaking);

@@ -19,6 +19,7 @@ acceptance_tests_logs/
 
 # Secrets
 secrets
+updated_configurations
 !airbyte-integrations/connector-templates/**/secrets
 
 # Test logs

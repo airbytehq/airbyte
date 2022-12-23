@@ -1,5 +1,7 @@
+@use "scss/variables";
+
 .container {
   max-width: 647px;
   margin: 0 auto;
-  padding-bottom: 10px;
+  padding-bottom: variables.$spacing-md;
 }

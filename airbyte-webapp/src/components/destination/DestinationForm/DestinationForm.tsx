@@ -8,7 +8,7 @@ import { LogsRequestError } from "core/request/LogsRequestError";
 import { useExperiment } from "hooks/services/Experiment";
 import { useGetDestinationDefinitionSpecificationAsync } from "services/connector/DestinationDefinitionSpecificationService";
 import { ConnectorIds } from "utils/connectors";
-import { generateMessageFromError, FormError } from "utils/errorStatusMessage";
+import { FormError } from "utils/errorStatusMessage";
 import { ConnectorCard } from "views/Connector/ConnectorCard";
 import { ConnectorCardValues, FrequentlyUsedConnectors, StartWithDestination } from "views/Connector/ConnectorForm";
 
@@ -20,9 +20,8 @@ interface DestinationFormProps {
     serviceType: string;
     destinationDefinitionId?: string;
     connectionConfiguration?: ConnectionConfiguration;
-  }) => void;
+  }) => Promise<void>;
   destinationDefinitions: DestinationDefinitionRead[];
-  hasSuccess?: boolean;
   error?: FormError | null;
 }
 
@@ -34,12 +33,7 @@ const hasDestinationDefinitionId = (state: unknown): state is { destinationDefin
   );
 };
 
-export const DestinationForm: React.FC<DestinationFormProps> = ({
-  onSubmit,
-  destinationDefinitions,
-  error,
-  hasSuccess,
-}) => {
+export const DestinationForm: React.FC<DestinationFormProps> = ({ onSubmit, destinationDefinitions, error }) => {
   const location = useLocation();
 
   const [destinationDefinitionId, setDestinationDefinitionId] = useState(
@@ -62,8 +56,6 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
       destinationDefinitionId: destinationDefinitionSpecification?.destinationDefinitionId,
     });
   };
-
-  const errorMessage = error ? generateMessageFromError(error) : null;
 
   const frequentlyUsedDestinationIds = useExperiment("connector.frequentlyUsedDestinationIds", [
     ConnectorIds.Destinations.BigQuery,
@@ -90,12 +82,11 @@ export const DestinationForm: React.FC<DestinationFormProps> = ({
         title={<FormattedMessage id="onboarding.destinationSetUp" />}
         description={<FormattedMessage id="destinations.description" />}
         isLoading={isLoading}
-        hasSuccess={hasSuccess}
-        errorMessage={errorMessage}
         fetchingConnectorError={destinationDefinitionError instanceof Error ? destinationDefinitionError : null}
         availableConnectorDefinitions={destinationDefinitions}
         onConnectorDefinitionSelect={onDropDownSelect}
         selectedConnectorDefinitionSpecification={destinationDefinitionSpecification}
+        selectedConnectorDefinitionId={destinationDefinitionId}
         onSubmit={onSubmitForm}
         jobInfo={LogsRequestError.extractJobInfo(error)}
         additionalSelectorComponent={frequentlyUsedDestinationsComponent}
