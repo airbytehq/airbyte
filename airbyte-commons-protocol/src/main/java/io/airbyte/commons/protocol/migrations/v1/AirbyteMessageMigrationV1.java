@@ -50,12 +50,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     io.airbyte.protocol.models.v0.AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         io.airbyte.protocol.models.v0.AirbyteMessage.class);
-    if (oldMessage.getType() == Type.CATALOG) {
+    if (oldMessage.getType() == Type.CATALOG && oldMessage.getCatalog() != null) {
       for (io.airbyte.protocol.models.v0.AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.downgradeSchema(schema);
       }
-    } else if (oldMessage.getType() == Type.RECORD) {
+    } else if (oldMessage.getType() == Type.RECORD && oldMessage.getRecord() != null) {
       if (configuredAirbyteCatalog.isPresent()) {
         ConfiguredAirbyteCatalog catalog = configuredAirbyteCatalog.get();
         io.airbyte.protocol.models.v0.AirbyteRecordMessage record = newMessage.getRecord();
@@ -84,12 +84,12 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
     AirbyteMessage newMessage = Jsons.object(
         Jsons.jsonNode(oldMessage),
         AirbyteMessage.class);
-    if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG) {
+    if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG && oldMessage.getCatalog() != null) {
       for (AirbyteStream stream : newMessage.getCatalog().getStreams()) {
         JsonNode schema = stream.getJsonSchema();
         SchemaMigrationV1.upgradeSchema(schema);
       }
-    } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD) {
+    } else if (oldMessage.getType() == io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD && oldMessage.getRecord() != null) {
       JsonNode oldData = newMessage.getRecord().getData();
       JsonNode newData = upgradeRecord(oldData);
       newMessage.getRecord().setData(newData);

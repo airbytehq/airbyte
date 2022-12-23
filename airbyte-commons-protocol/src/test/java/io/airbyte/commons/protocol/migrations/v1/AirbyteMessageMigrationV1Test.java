@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
+import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteRecordMessage;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -78,6 +79,15 @@ class AirbyteMessageMigrationV1Test {
           }
           """,
           AirbyteMessage.class);
+      assertEquals(expectedMessage, upgradedMessage);
+    }
+
+    @Test
+    void testNullUpgrade() {
+      io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
+      AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
+      AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.CATALOG);
       assertEquals(expectedMessage, upgradedMessage);
     }
 
@@ -585,6 +595,15 @@ class AirbyteMessageMigrationV1Test {
       assertEquals(expectedMessage, upgradedMessage);
     }
 
+    @Test
+    void testNullUpgrade() {
+      io.airbyte.protocol.models.v0.AirbyteMessage oldMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
+      AirbyteMessage upgradedMessage = migration.upgrade(oldMessage, Optional.empty());
+      AirbyteMessage expectedMessage = new AirbyteMessage().withType(Type.RECORD);
+      assertEquals(expectedMessage, upgradedMessage);
+    }
+
     /**
      * Utility method to upgrade the oldData, and assert that the result is equal to expectedData
      *
@@ -698,6 +717,15 @@ class AirbyteMessageMigrationV1Test {
           """,
           io.airbyte.protocol.models.v0.AirbyteMessage.class);
       assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    void testNullDowngrade() {
+      AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.CATALOG);
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.CATALOG);
+      assertEquals(expectedMessage, upgradedMessage);
     }
 
     /**
@@ -1184,6 +1212,15 @@ class AirbyteMessageMigrationV1Test {
           """,
           io.airbyte.protocol.models.v0.AirbyteMessage.class);
       assertEquals(expectedMessage, downgradedMessage);
+    }
+
+    @Test
+    void testNullDowngrade() {
+      AirbyteMessage oldMessage = new AirbyteMessage().withType(Type.RECORD);
+      io.airbyte.protocol.models.v0.AirbyteMessage upgradedMessage = migration.downgrade(oldMessage, Optional.empty());
+      io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = new io.airbyte.protocol.models.v0.AirbyteMessage()
+          .withType(io.airbyte.protocol.models.v0.AirbyteMessage.Type.RECORD);
+      assertEquals(expectedMessage, upgradedMessage);
     }
 
     /**
