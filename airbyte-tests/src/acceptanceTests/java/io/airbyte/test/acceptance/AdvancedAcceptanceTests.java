@@ -5,12 +5,10 @@
 package io.airbyte.test.acceptance;
 
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.COLUMN_ID;
-import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.SOURCE_PASSWORD;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForConnectionState;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitForSuccessfulJob;
 import static io.airbyte.test.utils.AirbyteAcceptanceTestHarness.waitWhileJobHasStatus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,8 +32,6 @@ import io.airbyte.api.client.model.generated.JobIdRequestBody;
 import io.airbyte.api.client.model.generated.JobInfoRead;
 import io.airbyte.api.client.model.generated.JobRead;
 import io.airbyte.api.client.model.generated.JobStatus;
-import io.airbyte.api.client.model.generated.LogType;
-import io.airbyte.api.client.model.generated.LogsRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionIdRequestBody;
 import io.airbyte.api.client.model.generated.SourceDefinitionRead;
 import io.airbyte.api.client.model.generated.SourceRead;
@@ -45,7 +41,6 @@ import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.test.utils.AirbyteAcceptanceTestHarness;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
