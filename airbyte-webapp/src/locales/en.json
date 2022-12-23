@@ -720,6 +720,7 @@
   "connectorBuilder.inputsButton": "Inputs",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.addNewSlicer": "Add new slicer",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 

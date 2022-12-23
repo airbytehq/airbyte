@@ -64,6 +64,13 @@ export interface BuilderSubstreamSlicer {
   request_option?: RequestOption;
 }
 
+export interface BuilderCartesianProductSlicer {
+  type: "CartesianProductStreamSlicer";
+  stream_slicers: Array<
+    Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer> | BuilderSubstreamSlicer
+  >;
+}
+
 export interface BuilderStream {
   id: string;
   name: string;
@@ -79,7 +86,8 @@ export interface BuilderStream {
   paginator?: BuilderPaginator;
   streamSlicer?:
     | Exclude<SimpleRetrieverStreamSlicer, SubstreamSlicer | CartesianProductStreamSlicer>
-    | BuilderSubstreamSlicer;
+    | BuilderSubstreamSlicer
+    | BuilderCartesianProductSlicer;
 }
 
 export const DEFAULT_BUILDER_FORM_VALUES: BuilderFormValues = {
@@ -244,6 +252,80 @@ const nonPathRequestOptionSchema = yup
 // eslint-disable-next-line no-useless-escape
 export const timeDeltaRegex = /^(([\.\d]+?)y)?(([\.\d]+?)m)?(([\.\d]+?)w)?(([\.\d]+?)d)?$/;
 
+const regularSlicerShape = {
+  cursor_field: yup.mixed().when("type", {
+    is: (val: string) => val !== "SubstreamSlicer" && val !== "CartesianProductStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  slice_values: yup.mixed().when("type", {
+    is: "ListStreamSlicer",
+    then: yup.array().of(yup.string()),
+    otherwise: (schema) => schema.strip(),
+  }),
+  request_option: nonPathRequestOptionSchema,
+  start_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_datetime: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  step: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  datetime_format: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  start_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  end_time_option: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: nonPathRequestOptionSchema,
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_start: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_state_field_end: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  lookback_window: yup.mixed().when("type", {
+    is: "DatetimeStreamSlicer",
+    then: yup.string(),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parent_key: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  parentStreamReference: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+  stream_slice_field: yup.mixed().when("type", {
+    is: "SubstreamSlicer",
+    then: yup.string().required("form.empty.error"),
+    otherwise: (schema) => schema.strip(),
+  }),
+};
+
 export const builderFormValidationSchema = yup.object().shape({
   global: yup.object().shape({
     connectorName: yup.string().required("form.empty.error"),
@@ -331,75 +413,10 @@ export const builderFormValidationSchema = yup.object().shape({
       streamSlicer: yup
         .object()
         .shape({
-          cursor_field: yup.mixed().when("type", {
-            is: (val: string) => val !== "SubstreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          slice_values: yup.mixed().when("type", {
-            is: "ListStreamSlicer",
-            then: yup.array().of(yup.string()),
-            otherwise: (schema) => schema.strip(),
-          }),
-          request_option: nonPathRequestOptionSchema,
-          start_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_datetime: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          step: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().matches(timeDeltaRegex, "form.pattern.error").required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          datetime_format: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          start_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          end_time_option: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: nonPathRequestOptionSchema,
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_start: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_state_field_end: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          lookback_window: yup.mixed().when("type", {
-            is: "DatetimeStreamSlicer",
-            then: yup.string(),
-            otherwise: (schema) => schema.strip(),
-          }),
-          parent_key: yup.mixed().when("type", {
-            is: "SubstreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          parentStreamReference: yup.mixed().when("type", {
-            is: "SubstreamSlicer",
-            then: yup.string().required("form.empty.error"),
-            otherwise: (schema) => schema.strip(),
-          }),
-          stream_slice_field: yup.mixed().when("type", {
-            is: "SubstreamSlicer",
-            then: yup.string().required("form.empty.error"),
+          ...regularSlicerShape,
+          stream_slicers: yup.mixed().when("type", {
+            is: "CartesianProductStreamSlicer",
+            then: yup.array().of(yup.object().shape(regularSlicerShape)),
             otherwise: (schema) => schema.strip(),
           }),
         })
@@ -435,8 +452,16 @@ function builderFormStreamSlicerToStreamSlicer(
   if (!slicer) {
     return undefined;
   }
-  if (slicer.type !== "SubstreamSlicer") {
+  if (slicer.type !== "SubstreamSlicer" && slicer.type !== "CartesianProductStreamSlicer") {
     return slicer;
+  }
+  if (slicer.type === "CartesianProductStreamSlicer") {
+    return {
+      type: "CartesianProductStreamSlicer",
+      stream_slicers: slicer.stream_slicers.map((subSlicer) => {
+        return builderFormStreamSlicerToStreamSlicer(values, subSlicer, visitedStreams);
+      }),
+    } as unknown as CartesianProductStreamSlicer;
   }
   const parentStream = values.streams.find(({ id }) => id === slicer.parentStreamReference);
   if (!parentStream) {
