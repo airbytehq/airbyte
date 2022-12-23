@@ -217,29 +217,6 @@ class AdvancedAcceptanceTests {
     assertEquals(0, connectionState.getState().get(COLUMN1).asInt() % 5);
   }
 
-  @RetryingTest(3)
-  @Order(3)
-  void testRedactionOfSensitiveRequestBodies() throws Exception {
-    // check that the source password is not present in the logs
-    final List<String> serverLogLines = java.nio.file.Files.readAllLines(
-        apiClient.getLogsApi().getLogs(new LogsRequestBody().logType(LogType.SERVER)).toPath(),
-        Charset.defaultCharset());
-
-    assertFalse(serverLogLines.isEmpty());
-
-    boolean hasRedacted = false;
-
-    for (final String line : serverLogLines) {
-      assertFalse(line.contains(SOURCE_PASSWORD));
-
-      if (line.contains("REDACTED")) {
-        hasRedacted = true;
-      }
-    }
-
-    assertTrue(hasRedacted);
-  }
-
   // verify that when the worker uses backpressure from pipes that no records are lost.
   @RetryingTest(3)
   @Order(4)
