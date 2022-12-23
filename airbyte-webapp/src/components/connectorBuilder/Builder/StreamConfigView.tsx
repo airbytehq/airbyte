@@ -159,7 +159,7 @@ const StreamTab = ({
   onSelect: () => void;
   showErrorIndicator?: boolean;
 }) => (
-  <button className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
+  <button type="button" className={classNames(styles.tab, { [styles.selectedTab]: selected })} onClick={onSelect}>
     {label}
     {showErrorIndicator && <Indicator />}
   </button>
