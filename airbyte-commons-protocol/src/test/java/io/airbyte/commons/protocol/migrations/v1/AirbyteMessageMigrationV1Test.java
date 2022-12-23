@@ -2,13 +2,12 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.protocol.migrations;
+package io.airbyte.commons.protocol.migrations.v1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1;
 import io.airbyte.commons.resources.MoreResources;
 import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -25,7 +24,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class V0ToV1MigrationTest {
+public class AirbyteMessageMigrationV1Test {
 
   JsonSchemaValidator validator;
   private AirbyteMessageMigrationV1 migration;

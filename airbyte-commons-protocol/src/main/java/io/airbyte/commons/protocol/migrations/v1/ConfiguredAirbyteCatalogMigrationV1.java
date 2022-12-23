@@ -2,11 +2,11 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.protocol.migrations;
+package io.airbyte.commons.protocol.migrations.v1;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.protocol.migrations.v1.SchemaMigrationV1;
+import io.airbyte.commons.protocol.migrations.ConfiguredAirbyteCatalogMigration;
 import io.airbyte.commons.version.AirbyteProtocolVersion;
 import io.airbyte.commons.version.Version;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;

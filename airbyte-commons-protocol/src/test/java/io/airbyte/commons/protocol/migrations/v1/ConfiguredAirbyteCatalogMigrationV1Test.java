@@ -1,0 +1,117 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
+package io.airbyte.commons.protocol.migrations.v1;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
+import io.airbyte.protocol.models.AirbyteStream;
+import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+/**
+ * These depend on the same {@link SchemaMigrationV1} class as
+ * {@link io.airbyte.commons.protocol.migrations.v1.AirbyteMessageMigrationV1}. So, uh, I didn't
+ * bother writing a ton of tests for it.
+ *
+ * Check out {@link AirbyteMessageMigrationV1} for more comprehensive tests. Theoretically
+ * SchemaMigrationV1 should have its own set of tests, but for various (development history-related)
+ * reasons, that would be a lot of work.
+ */
+public class ConfiguredAirbyteCatalogMigrationV1Test {
+
+  private ConfiguredAirbyteCatalogMigrationV1 migration;
+
+  @BeforeEach
+  public void setup() {
+    migration = new ConfiguredAirbyteCatalogMigrationV1();
+  }
+
+  @Test
+  public void testVersionMetadata() {
+    assertEquals("0.3.0", migration.getPreviousVersion().serialize());
+    assertEquals("1.0.0", migration.getCurrentVersion().serialize());
+  }
+
+  @Test
+  public void testBasicUpgrade() {
+    // This isn't actually a valid stream schema (since it's not an object)
+    // but this test case is mostly about preserving the message structure, so it's not super relevant
+    JsonNode oldSchema = Jsons.deserialize(
+        """
+        {
+          "type": "string"
+        }
+        """);
+
+    ConfiguredAirbyteCatalog upgradedMessage = migration.upgrade(createDowngradedCatalogMessage(oldSchema));
+
+    ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
+        """
+        {
+          "streams": [
+            {
+              "stream": {
+                "json_schema": {
+                  "$ref": "WellKnownTypes.json#/definitions/String"
+                }
+              }
+            }
+          ]
+        }
+        """,
+        ConfiguredAirbyteCatalog.class);
+    assertEquals(expectedMessage, upgradedMessage);
+  }
+
+  @Test
+  public void testBasicDowngrade() {
+    // This isn't actually a valid stream schema (since it's not an object)
+    // but this test case is mostly about preserving the message structure, so it's not super relevant
+    JsonNode newSchema = Jsons.deserialize(
+        """
+        {
+          "$ref": "WellKnownTypes.json#/definitions/String"
+        }
+        """);
+
+    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedMessage = migration.downgrade(createUpgradedCatalogMessage(newSchema));
+
+    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
+        """
+        {
+          "streams": [
+            {
+              "stream": {
+                "json_schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        }
+        """,
+        io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class);
+    assertEquals(expectedMessage, downgradedMessage);
+  }
+
+  private io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog createDowngradedCatalogMessage(JsonNode schema) {
+    return new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
+                schema))));
+  }
+
+  private ConfiguredAirbyteCatalog createUpgradedCatalogMessage(JsonNode schema) {
+    return new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(
+            schema))));
+  }
+
+}
