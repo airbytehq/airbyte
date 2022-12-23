@@ -343,7 +343,7 @@ public class WebBackendConnectionsHandler {
     final CatalogDiff diff;
     final AirbyteCatalog syncCatalog;
     final Optional<UUID> currentSourceCatalogId = Optional.ofNullable(connection.getSourceCatalogId());
-    if (refreshedCatalog.isPresent()) {
+    if (refreshedCatalog.isPresent() && catalogUsedToMakeConfiguredCatalog.isPresent()) {
       connection.sourceCatalogId(refreshedCatalog.get().getCatalogId());
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
