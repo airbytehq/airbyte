@@ -4,59 +4,51 @@
 
 package io.airbyte.integrations.destination.bigquery;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
-import io.airbyte.commons.json.Jsons;
+import com.amazonaws.services.s3.AmazonS3;
 import io.airbyte.commons.string.Strings;
-import java.nio.file.Files;
+import io.airbyte.integrations.destination.gcs.GcsDestinationConfig;
 import java.nio.file.Path;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcceptanceTest {
-
-  private static final Path CREDENTIALS_PATH = Path.of("secrets/credentials.json");
+  private AmazonS3 s3Client;
+  protected boolean gcsTornDown = false;
+  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
 
   @Override
   protected void setup(final TestDestinationEnv testEnv) throws Exception {
-    if (!Files.exists(CREDENTIALS_PATH)) {
-      throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default {module-root}/" + CREDENTIALS_PATH
-              + ". Override by setting setting path with the CREDENTIALS_PATH constant.");
-    }
-
-    final String fullConfigFromSecretFileAsString = Files.readString(CREDENTIALS_PATH);
-
-    final JsonNode fullConfigFromSecretFileJson = Jsons.deserialize(fullConfigFromSecretFileAsString);
-    final JsonNode bigqueryConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.BIGQUERY_BASIC_CONFIG);
-    final JsonNode gcsConfigFromSecretFile = fullConfigFromSecretFileJson.get(BigQueryConsts.GCS_CONFIG);
-
-    final String projectId = bigqueryConfigFromSecretFile.get(CONFIG_PROJECT_ID).asText();
-    final String datasetLocation = "US";
+    bigquery = null;
+    dataset = null;
+    bqTornDown = false;
+    gcsTornDown = false;
 
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
+    config = BigQueryDestinationTestUtils.createConfig(Path.of("secrets/credentials-gcs-staging.json"), datasetId);
+    setUpBigQuery(config, datasetId);
+    final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
+        .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(config));
+    this.s3Client = gcsDestinationConfig.getS3Client();
 
-    final JsonNode gcsCredentialFromSecretFile = gcsConfigFromSecretFile.get(BigQueryConsts.CREDENTIAL);
-    final JsonNode credential = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CREDENTIAL_TYPE, gcsCredentialFromSecretFile.get(BigQueryConsts.CREDENTIAL_TYPE))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_ID, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_ID))
-        .put(BigQueryConsts.HMAC_KEY_ACCESS_SECRET, gcsCredentialFromSecretFile.get(BigQueryConsts.HMAC_KEY_ACCESS_SECRET))
-        .build());
+    addShutdownHook();
+  }
 
-    final JsonNode loadingMethod = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.METHOD, BigQueryConsts.GCS_STAGING)
-        .put(BigQueryConsts.GCS_BUCKET_NAME, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_NAME))
-        .put(BigQueryConsts.GCS_BUCKET_PATH, gcsConfigFromSecretFile.get(BigQueryConsts.GCS_BUCKET_PATH).asText() + System.currentTimeMillis())
-        .put(BigQueryConsts.CREDENTIAL, credential)
-        .build());
+  @Override
+  protected void addShutdownHook() {
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+      if (!bqTornDown) {
+        bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
+      }
+      if(!gcsTornDown) {
+        gcsTornDown = BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
+      }
+    }));
+  }
 
-    config = Jsons.jsonNode(ImmutableMap.builder()
-        .put(BigQueryConsts.CONFIG_PROJECT_ID, projectId)
-        .put(BigQueryConsts.CONFIG_CREDS, bigqueryConfigFromSecretFile.toString())
-        .put(BigQueryConsts.CONFIG_DATASET_ID, datasetId)
-        .put(BigQueryConsts.CONFIG_DATASET_LOCATION, datasetLocation)
-        .put(BigQueryConsts.LOADING_METHOD, loadingMethod)
-        .build());
-
-    setupBigQuery(bigqueryConfigFromSecretFile);
+  @Override
+  protected void tearDown(final TestDestinationEnv testEnv) {
+    bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
+    gcsTornDown = BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
 
 }
