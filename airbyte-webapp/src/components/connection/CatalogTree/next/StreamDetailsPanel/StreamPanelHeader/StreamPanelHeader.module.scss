@@ -1,0 +1,42 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.container {
+  border-radius: variables.$spacing-md;
+  margin: variables.$spacing-md variables.$spacing-lg;
+  background-color: colors.$grey-50;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  & > :not(button) {
+    padding: variables.$spacing-md;
+  }
+}
+
+.properties {
+  display: flex;
+  flex-direction: row;
+  gap: variables.$spacing-xl;
+}
+
+.streamPropLabel {
+  display: inline;
+  color: colors.$grey-300;
+
+  &::after {
+    content: ":";
+  }
+}
+
+.streamPropValue {
+  display: inline;
+  margin-left: variables.$spacing-sm;
+}
+
+.crossIcon {
+  svg {
+    color: colors.$dark-blue;
+  }
+}

@@ -46,7 +46,7 @@
 
 .jobListItem {
   margin-top: variables.$spacing-md;
-  padding: 18px;
+  padding: variables.$spacing-md variables.$spacing-xl;
   width: 100%;
   display: flex;
   justify-content: space-between;
@@ -54,31 +54,50 @@
 }
 
 .dbtLogo {
-  height: 32px;
-  width: 32px;
+  height: 18px;
+  width: 18px;
+  margin-right: variables.$spacing-md;
 }
 
 .jobListItemIntegrationName {
   display: flex;
   align-items: center;
+  flex: 1 2 auto;
 }
 
-.jobListItemInputGroup {
+.jobListItemIdFieldGroup {
   display: flex;
   justify-content: space-between;
+  margin-left: auto;
   align-items: center;
+  flex: 0 1 auto;
 }
 
-.jobListItemInput {
+.jobListItemIdField {
   height: fit-content;
   margin-left: 1em;
-}
+  background-color: colors.$grey-50;
+  flex-grow: 1;
+  padding: variables.$spacing-xs variables.$spacing-md;
+  border-radius: variables.$border-radius-2xl;
 
-.jobListItemInputLabel {
-  font-size: 11px;
-  font-weight: 500;
+  p {
+    color: colors.$grey-600;
+  }
 }
 
 .jobListItemDelete {
-  margin-left: variables.$spacing-lg;
+  svg {
+    height: 21px;
+    width: 21px;
+    color: colors.$dark-blue-50;
+    transition: color variables.$transition;
+  }
+
+  &:hover,
+  &:focus-visible {
+    svg {
+      color: colors.$dark-blue-100;
+    }
+  }
 }

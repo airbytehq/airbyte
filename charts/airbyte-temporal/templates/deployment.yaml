@@ -14,6 +14,9 @@ spec:
     metadata:
       labels:
         {{- include "airbyte.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
@@ -76,19 +79,19 @@ spec:
         # Values from secret
         {{- if .Values.secrets }}
         {{- range $k, $v := .Values.secrets }}
-        - name: {{ $k }}
-          valueFrom:
-            secretKeyRef:
-              name: temporal-secrets
-              key: {{ $k }}
+          - name: {{ $k }}
+            valueFrom:
+              secretKeyRef:
+                name: temporal-secrets
+                key: {{ $k }}
         {{- end }}
         {{- end }}
 
         # Values from env
         {{- if .Values.env_vars }}
         {{- range $k, $v := mergeOverwrite .Values.env_vars .Values.global.env_vars }}
-        - name: {{ $k }}
-          value: {{ $v | quote }}
+          - name: {{ $k }}
+            value: {{ $v | quote }}
         {{- end }}
         {{- end }}
         ports:

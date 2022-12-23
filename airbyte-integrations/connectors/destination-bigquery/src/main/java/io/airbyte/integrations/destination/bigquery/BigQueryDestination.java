@@ -20,7 +20,6 @@ import io.airbyte.commons.functional.CheckedBiFunction;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.integrations.BaseConnector;
 import io.airbyte.integrations.base.AirbyteMessageConsumer;
-import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
 import io.airbyte.integrations.destination.StandardNameTransformer;
@@ -40,12 +39,13 @@ import io.airbyte.integrations.destination.gcs.util.GcsUtils;
 import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.record_buffer.SerializableBuffer;
 import io.airbyte.integrations.destination.s3.avro.S3AvroFormatConfig;
-import io.airbyte.protocol.models.AirbyteConnectionStatus;
-import io.airbyte.protocol.models.AirbyteConnectionStatus.Status;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteStream;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
-import io.airbyte.protocol.models.ConfiguredAirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus;
+import io.airbyte.protocol.models.v0.AirbyteConnectionStatus.Status;
+import io.airbyte.protocol.models.v0.AirbyteMessage;
+import io.airbyte.protocol.models.v0.AirbyteStream;
+import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -100,7 +100,10 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           .build();
 
       if (UploadingMethod.GCS.equals(uploadingMethod)) {
-        checkGcsPermission(config);
+        final AirbyteConnectionStatus status = checkGcsPermission(config);
+        if (!status.getStatus().equals(Status.SUCCEEDED)) {
+          return status;
+        }
       }
 
       final ImmutablePair<Job, String> result = BigQueryUtils.executeQuery(bigquery, queryConfig);
@@ -120,7 +123,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
    * and delete an actual file. The latter is important because even if the service account may have
    * the proper permissions, the HMAC keys can only be verified by running the actual GCS check.
    */
-  public AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
+  private AirbyteConnectionStatus checkGcsPermission(final JsonNode config) {
     final JsonNode loadingMethod = config.get(BigQueryConsts.LOADING_METHOD);
     final String bucketName = loadingMethod.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
     final List<String> missingPermissions = new ArrayList<>();
@@ -237,7 +240,7 @@ public class BigQueryDestination extends BaseConnector implements Destination {
                                           final Map<AirbyteStreamNameNamespacePair, AbstractBigQueryUploader<?>> uploaderMap)
       throws IOException {
     uploaderMap.put(
-        AirbyteStreamNameNamespacePair.fromAirbyteSteam(stream),
+        AirbyteStreamNameNamespacePair.fromAirbyteStream(stream),
         BigQueryUploaderFactory.getUploader(uploaderConfig));
   }
 

@@ -11,7 +11,6 @@ import { Version } from "components/common/Version";
 import { Text } from "components/ui/Text";
 
 import { useConfig } from "config";
-import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 import { links } from "utils/links";
 
 import { DocsIcon } from "../../../components/icons/DocsIcon";
@@ -20,7 +19,6 @@ import { RoutePaths } from "../../../pages/routePaths";
 import { ReactComponent as AirbyteLogo } from "./airbyteLogo.svg";
 import ConnectionsIcon from "./components/ConnectionsIcon";
 import DestinationIcon from "./components/DestinationIcon";
-import OnboardingIcon from "./components/OnboardingIcon";
 import RecipesIcon from "./components/RecipesIcon";
 import SettingsIcon from "./components/SettingsIcon";
 import SourceIcon from "./components/SourceIcon";
@@ -40,30 +38,16 @@ export const useCalculateSidebarStyles = () => {
 
 const SideBar: React.FC = () => {
   const config = useConfig();
-  const workspace = useCurrentWorkspace();
   const navLinkClassName = useCalculateSidebarStyles();
   const { formatMessage } = useIntl();
 
   return (
     <nav className={styles.nav}>
       <div>
-        <Link
-          to={workspace.displaySetupWizard ? RoutePaths.Onboarding : RoutePaths.Connections}
-          aria-label={formatMessage({ id: "sidebar.homepage" })}
-        >
+        <Link to={RoutePaths.Connections} aria-label={formatMessage({ id: "sidebar.homepage" })}>
           <AirbyteLogo height={33} width={33} />
         </Link>
         <ul className={styles.menu}>
-          {workspace.displaySetupWizard ? (
-            <li>
-              <NavLink className={navLinkClassName} to={RoutePaths.Onboarding}>
-                <OnboardingIcon />
-                <Text className={styles.text} size="sm">
-                  <FormattedMessage id="sidebar.onboarding" />
-                </Text>
-              </NavLink>
-            </li>
-          ) : null}
           <li>
             <NavLink className={navLinkClassName} to={RoutePaths.Connections}>
               <ConnectionsIcon />

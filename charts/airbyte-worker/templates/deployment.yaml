@@ -14,6 +14,9 @@ spec:
     metadata:
       labels:
         {{- include "airbyte.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
@@ -288,6 +291,11 @@ spec:
             configMapKeyRef:
               name: {{ .Release.Name }}-airbyte-env
               key: WORKFLOW_FAILURE_RESTART_DELAY_SECONDS
+        - name: AUTO_DETECT_SCHEMA
+          valueFrom:
+            configMapKeyRef:
+              name: {{ .Release.Name }}-airbyte-env
+              key: AUTO_DETECT_SCHEMA
         - name: USE_STREAM_CAPABLE_STATE
           valueFrom:
             configMapKeyRef:

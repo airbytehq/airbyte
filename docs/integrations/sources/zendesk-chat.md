@@ -5,31 +5,37 @@ This page contains the setup guide and reference information for the Zendesk Cha
 ## Prerequisites
 
 - A Zendesk Account with permission to access data from accounts you want to sync.
-- For Airbyte Open Source, you'll need an Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+<!-- env:oss -->
+- (Airbyte Open Source) An Access Token (https://developer.zendesk.com/rest_api/docs/chat/auth). We recommend creating a restricted, read-only key specifically for Airbyte access to allow you to control which resources Airbyte should be able to access.
+<!-- /env:oss -->
 
-## Set up the Zendesk Chat connector in Airbyte
+## Setup guide
 
-### For Airbyte Cloud
+<!-- env:cloud -->
+**For Airbyte Cloud:**
 
 1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account.
 2. Click **Sources** and then click **+ New source**.
 3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
 4. Enter the name for the Zendesk Chat connector.
 5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
 7. Click **Authenticate your Zendesk Chat account**. Log in and authorize your Zendesk Chat account.
 8. Click **Set up source**.
+<!-- /env:cloud -->
 
-### For Airbyte Open Source
+<!-- env:oss -->
+**For Airbyte Open Source:**
 
 1. Navigate to the Airbyte Open Source dashboard.
 2. Click **Sources** and then click **+ New source**.
-3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown. 
-4. Enter the name for the Zendesk Chat connector. 
+3. On the Set up the source page, select **Zendesk Chat** from the Source type dropdown.
+4. Enter the name for the Zendesk Chat connector.
 5. If you access Zendesk Chat from a [Zendesk subdomain](https://support.zendesk.com/hc/en-us/articles/4409381383578-Where-can-I-find-my-Zendesk-subdomain-), enter the **Subdomain**.
-6. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated. 
+6. For **Start Date**, enter the date in `YYYY-MM-DDTHH:mm:ssZ` format. The data added on and after this date will be replicated.
 7. For Authorization Method, select **Access Token** from the dropdown and enter your Zendesk [access token](https://developer.zendesk.com/rest_api/docs/chat/auth).
 8. Click **Set up source**.
+<!-- /env:oss -->
 
 ## Supported sync modes
 

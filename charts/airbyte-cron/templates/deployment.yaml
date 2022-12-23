@@ -13,6 +13,9 @@ spec:
     metadata:
       labels:
         {{- include "airbyte.selectorLabels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+          {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
       {{- if .Values.podAnnotations }}
       annotations:
         {{- include "common.tplvalues.render" (dict "value" .Values.podAnnotations "context" $) | nindent 8 }}
@@ -75,6 +78,11 @@ spec:
               configMapKeyRef:
                 name: {{ .Release.Name }}-airbyte-env
                 key: CRON_MICRONAUT_ENVIRONMENTS
+          - name: TEMPORAL_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: {{ .Release.Name }}-airbyte-env
+                key: TEMPORAL_HOST
           - name: TRACKING_STRATEGY
             valueFrom:
               configMapKeyRef:
@@ -116,6 +124,11 @@ spec:
           {{- end }}
           {{- end }}
 
+          # Values from extraEnv for more compability(if you want to use external secret source or other stuff)
+          {{- if .Values.extraEnv }}
+          {{- toYaml .Values.extraEnv | nindent 10 }}
+          {{- end }}
+
           {{- if .Values.containerSecurityContext }}
           securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
           {{- end }}
@@ -123,3 +136,4 @@ spec:
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
           {{- end }}
+

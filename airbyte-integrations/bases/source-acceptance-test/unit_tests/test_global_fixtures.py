@@ -179,3 +179,23 @@ def test_configured_catalog_fixture(mocker, configured_catalog_path):
     else:
         assert configured_catalog == conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.return_value
         conftest.build_configured_catalog_from_discovered_catalog_and_empty_streams.assert_called_once_with(mock_discovered_catalog, set())
+
+
+@pytest.mark.parametrize(
+    "updated_configurations", [[], ["config|created_last.json"], ["config|created_first.json", "config|created_last.json"]]
+)
+def test_connector_config_path_fixture(mocker, tmp_path, updated_configurations):
+    inputs = mocker.Mock(config_path="config.json")
+    base_path = tmp_path
+    if updated_configurations:
+        updated_configurations_dir = tmp_path / "updated_configurations"
+        updated_configurations_dir.mkdir()
+        for configuration_file_name in updated_configurations:
+            updated_configuration_path = updated_configurations_dir / configuration_file_name
+            updated_configuration_path.touch()
+
+    connector_config_path = conftest.connector_config_path_fixture.__wrapped__(inputs, base_path)
+    if not updated_configurations:
+        assert connector_config_path == base_path / "config.json"
+    else:
+        assert connector_config_path == base_path / "updated_configurations" / "config|created_last.json"

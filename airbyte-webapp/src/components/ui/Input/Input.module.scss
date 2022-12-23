@@ -1,11 +1,12 @@
-@use "../../../scss/colors";
+@use "scss/colors";
+@use "scss/variables";
 
 .container {
   width: 100%;
   position: relative;
   background-color: colors.$grey-50;
   border: 1px solid colors.$grey-50;
-  border-radius: 4px;
+  border-radius: variables.$border-radius-xs;
 
   &.light {
     background-color: colors.$white;

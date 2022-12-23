@@ -36,8 +36,8 @@ definitions:
         stop_condition: "{{ 'next' not in response['metadata'] }}"
         page_size: 50
       page_size_option:
-          field_name: "limit"
-          inject_into: "request_parameter"
+        field_name: "limit"
+        inject_into: "request_parameter"
       page_token_option:
         inject_into: "path"
       url_base: "*ref(definitions.requester.url_base)"

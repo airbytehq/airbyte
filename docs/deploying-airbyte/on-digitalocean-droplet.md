@@ -1,4 +1,4 @@
-# Deploy on DigitalOcean
+# Deploy Airbyte on DigitalOcean
 
 This page guides you through deploying Airbyte Open Source on a DigitalOcean droplet by setting up the deployment environment, and installing and starting Airbyte.  
 
@@ -48,9 +48,7 @@ To install and start Airbyte :
   docker-compose up -d
 ```
 
-2. Verify that Airbyte is running:
-
-    #todo -add the ssh tunnel command
+2. Verify the connection by visiting [http://localhost:8000](http://localhost:8000) in your browser.
 
 ## Troubleshooting
 

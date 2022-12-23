@@ -3,11 +3,11 @@ version: "0.1.0"
 definitions:
   selector:
     extractor:
-      field_pointer: 
+      field_pointer:
         - "{{ options['name'] }}"
   update_selector:
     extractor:
-      field_pointer: 
+      field_pointer:
         - "update"
   requester:
     url_base: "{{ config['endpoint'] }}/api/v1"

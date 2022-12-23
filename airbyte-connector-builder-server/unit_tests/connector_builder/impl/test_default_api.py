@@ -342,17 +342,13 @@ def test_invalid_manifest():
     }
 
     expected_status_code = 400
-    expected_detail = "Invalid connector manifest with error: 'streams' is a required property"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(
-            api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras"))
-        )
+        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=invalid_manifest, config={}, stream="hashiras")))
 
     assert actual_exception.value.status_code == expected_status_code
-    assert actual_exception.value.detail == expected_detail
 
 
 def test_read_stream_invalid_group_format():
@@ -370,52 +366,47 @@ def test_read_stream_invalid_group_format():
 
         loop = asyncio.get_event_loop()
         with pytest.raises(HTTPException) as actual_exception:
-            loop.run_until_complete(
-                api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras"))
-            )
+            loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config=CONFIG, stream="hashiras")))
 
         assert actual_exception.value.status_code == 400
-        assert actual_exception.value.detail == "Could not perform read with with error: Every message grouping should have at least one request and response"
 
 
 def test_read_stream_returns_error_if_stream_does_not_exist():
     expected_status_code = 400
-    expected_detail = "Could not perform read with with error: The requested stream not_in_manifest was not found in the source. Available streams: dict_keys(['hashiras', 'breathing-techniques'])"
 
     api = DefaultApiImpl()
     loop = asyncio.get_event_loop()
     with pytest.raises(HTTPException) as actual_exception:
-        loop.run_until_complete(
-            api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest"))
-        )
+        loop.run_until_complete(api.read_stream(StreamReadRequestBody(manifest=MANIFEST, config={}, stream="not_in_manifest")))
 
     assert actual_exception.value.status_code == expected_status_code
-    assert actual_exception.value.detail == expected_detail
 
 
 @pytest.mark.parametrize(
     "log_message, expected_request",
     [
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
             HttpRequest(
-                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"}
+                url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}, body={"key": "value"},
+                http_method="PUT",
             ),
             id="test_create_request_with_all_fields",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "headers": {"field": "name"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"}),
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "GET", "headers": {"field": "name"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, headers={"field": "name"},
+                        http_method="GET"),
             id="test_create_request_with_no_body",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "body":{"key": "value"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, body={"key": "value"}),
+            'request:{"url": "https://nichirin.com/v1/swords?color=orange", "http_method": "PUT", "body":{"key": "value"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", parameters={"color": ["orange"]}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_headers",
         ),
         pytest.param(
-            'request:{"url": "https://nichirin.com/v1/swords", "headers": {"field": "name"}, "body":{"key": "value"}}',
-            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}),
+            'request:{"url": "https://nichirin.com/v1/swords", "http_method": "PUT", "headers": {"field": "name"}, "body":{"key": "value"}}',
+            HttpRequest(url="https://nichirin.com/v1/swords", headers={"field": "name"}, body={"key": "value"}, http_method="PUT"),
             id="test_create_request_with_no_parameters",
         ),
         pytest.param("request:{invalid_json: }", None, id="test_invalid_json_still_does_not_crash"),

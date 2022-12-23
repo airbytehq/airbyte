@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
 public class DefaultAirbyteDestination implements AirbyteDestination {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(DefaultAirbyteDestination.class);
-  private static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
+  public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
       .setPrefixColor(Color.YELLOW_BACKGROUND);
 
