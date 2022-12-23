@@ -178,7 +178,7 @@ class ReportsAmazonSPStream(Stream, ABC):
         self._replication_end_date = replication_end_date
         self.marketplace_id = marketplace_id
         self.period_in_days = max(period_in_days, 30)  # ensure old configs work as well
-        self._report_options = report_options
+        self._report_options = report_options or "{}"
         self.max_wait_seconds = max_wait_seconds
 
     @property
@@ -479,6 +479,7 @@ class BrandAnalyticsStream(ReportsAmazonSPStream):
         stream_slice: Mapping[str, Any] = None,
         stream_state: Mapping[str, Any] = None,
     ) -> Mapping[str, Any]:
+        print("LOL")
         data = super()._report_data(sync_mode, cursor_field, stream_slice, stream_state)
         options = self.report_options()
         if options is not None:
