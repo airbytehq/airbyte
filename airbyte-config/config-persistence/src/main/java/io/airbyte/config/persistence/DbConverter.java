@@ -15,7 +15,13 @@ import static io.airbyte.db.instance.configs.jooq.generated.Tables.WORKSPACE_SER
 
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.config.*;
+import io.airbyte.config.ActorCatalog;
+import io.airbyte.config.ActorCatalogFetchEvent;
+import io.airbyte.config.ActorDefinitionResourceRequirements;
+import io.airbyte.config.DestinationConnection;
+import io.airbyte.config.DestinationOAuthParameter;
+import io.airbyte.config.FieldSelectionData;
+import io.airbyte.config.Geography;
 import io.airbyte.config.JobSyncConfig.NamespaceDefinitionType;
 import io.airbyte.config.NormalizationDestinationDefinitionConfig;
 import io.airbyte.config.Notification;
@@ -27,9 +33,12 @@ import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSourceDefinition.SourceType;
+import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSync.NonBreakingChangesPreference;
 import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
+import io.airbyte.config.StandardWorkspace;
+import io.airbyte.config.WorkspaceServiceAccount;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.protocol.models.ConnectorSpecification;
 import java.time.LocalDateTime;

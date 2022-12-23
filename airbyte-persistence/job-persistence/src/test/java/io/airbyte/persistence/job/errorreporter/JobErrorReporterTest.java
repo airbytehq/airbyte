@@ -6,8 +6,9 @@ package io.airbyte.persistence.job.errorreporter;
 
 import static org.mockito.Mockito.mock;
 
-import io.airbyte.config.*;
+import io.airbyte.config.AttemptFailureSummary;
 import io.airbyte.config.Configs.DeploymentMode;
+import io.airbyte.config.FailureReason;
 import io.airbyte.config.FailureReason.FailureOrigin;
 import io.airbyte.config.FailureReason.FailureType;
 import io.airbyte.config.Metadata;
