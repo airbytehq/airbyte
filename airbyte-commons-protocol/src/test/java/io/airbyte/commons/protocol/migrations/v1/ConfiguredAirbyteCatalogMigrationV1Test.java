@@ -23,23 +23,23 @@ import org.junit.jupiter.api.Test;
  * SchemaMigrationV1 should have its own set of tests, but for various (development history-related)
  * reasons, that would be a lot of work.
  */
-public class ConfiguredAirbyteCatalogMigrationV1Test {
+class ConfiguredAirbyteCatalogMigrationV1Test {
 
   private ConfiguredAirbyteCatalogMigrationV1 migration;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     migration = new ConfiguredAirbyteCatalogMigrationV1();
   }
 
   @Test
-  public void testVersionMetadata() {
+  void testVersionMetadata() {
     assertEquals("0.3.0", migration.getPreviousVersion().serialize());
     assertEquals("1.0.0", migration.getCurrentVersion().serialize());
   }
 
   @Test
-  public void testBasicUpgrade() {
+  void testBasicUpgrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
     io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedCatalog = new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
@@ -73,7 +73,7 @@ public class ConfiguredAirbyteCatalogMigrationV1Test {
   }
 
   @Test
-  public void testBasicDowngrade() {
+  void testBasicDowngrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
     ConfiguredAirbyteCatalog upgradedCatalog = new ConfiguredAirbyteCatalog()

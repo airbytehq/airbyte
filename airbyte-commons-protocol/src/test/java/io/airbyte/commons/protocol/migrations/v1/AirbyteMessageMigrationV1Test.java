@@ -24,13 +24,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-public class AirbyteMessageMigrationV1Test {
+// most of these tests rely on a doTest utility method for brevity, which hides the assertion.
+@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+class AirbyteMessageMigrationV1Test {
 
   JsonSchemaValidator validator;
   private AirbyteMessageMigrationV1 migration;
 
   @BeforeEach
-  public void setup() throws URISyntaxException {
+  void setup() throws URISyntaxException {
     // TODO this should probably just get generated as part of the airbyte-protocol build, and
     // airbyte-workers / airbyte-commons-protocol would reference it directly
     URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
@@ -39,16 +41,16 @@ public class AirbyteMessageMigrationV1Test {
   }
 
   @Test
-  public void testVersionMetadata() {
+  void testVersionMetadata() {
     assertEquals("0.3.0", migration.getPreviousVersion().serialize());
     assertEquals("1.0.0", migration.getCurrentVersion().serialize());
   }
 
   @Nested
-  public class CatalogUpgradeTest {
+  class CatalogUpgradeTest {
 
     @Test
-    public void testBasicUpgrade() {
+    void testBasicUpgrade() {
       // This isn't actually a valid stream schema (since it's not an object)
       // but this test case is mostly about preserving the message structure, so it's not super relevant
       JsonNode oldSchema = Jsons.deserialize(
@@ -95,7 +97,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeAllPrimitives() {
+    void testUpgradeAllPrimitives() {
       doTest(
           """
           {
@@ -205,7 +207,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeNestedFields() {
+    void testUpgradeNestedFields() {
       doTest(
           """
           {
@@ -312,7 +314,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeBooleanSchemas() {
+    void testUpgradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
       String schemaString = """
@@ -355,7 +357,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeEmptySchema() {
+    void testUpgradeEmptySchema() {
       // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
       // enforced by SATs
       String schemaString = """
@@ -398,7 +400,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeLiteralSchema() {
+    void testUpgradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
       String schemaString = """
                             {
@@ -417,7 +419,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeMalformedSchemas() {
+    void testUpgradeMalformedSchemas() {
       // These schemas are "wrong" in some way. For example, normalization will currently treat
       // bad_timestamptz as a string timestamp_with_timezone,
       // i.e. it will disregard the option for a boolean.
@@ -453,7 +455,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testUpgradeMultiTypeFields() {
+    void testUpgradeMultiTypeFields() {
       doTest(
           """
           {
@@ -555,10 +557,10 @@ public class AirbyteMessageMigrationV1Test {
   }
 
   @Nested
-  public class RecordUpgradeTest {
+  class RecordUpgradeTest {
 
     @Test
-    public void testBasicUpgrade() {
+    void testBasicUpgrade() {
       JsonNode oldData = Jsons.deserialize(
           """
           {
@@ -599,7 +601,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testNestedUpgrade() {
+    void testNestedUpgrade() {
       doTest(
           """
           {
@@ -630,7 +632,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testNonUpgradableValues() {
+    void testNonUpgradableValues() {
       doTest(
           """
           {
@@ -664,10 +666,10 @@ public class AirbyteMessageMigrationV1Test {
   }
 
   @Nested
-  public class CatalogDowngradeTest {
+  class CatalogDowngradeTest {
 
     @Test
-    public void testBasicDowngrade() {
+    void testBasicDowngrade() {
       // This isn't actually a valid stream schema (since it's not an object)
       // but this test case is mostly about preserving the message structure, so it's not super relevant
       JsonNode newSchema = Jsons.deserialize(
@@ -714,7 +716,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeAllPrimitives() {
+    void testDowngradeAllPrimitives() {
       doTest(
           """
           {
@@ -803,7 +805,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeNestedFields() {
+    void testDowngradeNestedFields() {
       doTest(
           """
           {
@@ -910,7 +912,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeBooleanSchemas() {
+    void testDowngradeBooleanSchemas() {
       // Most of these should never happen in reality, but let's handle them just in case
       // The only ones that we're _really_ expecting are additionalItems and additionalProperties
       String schemaString = """
@@ -953,7 +955,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeEmptySchema() {
+    void testDowngradeEmptySchema() {
       // Sources shouldn't do this, but we should have handling for it anyway, since it's not currently
       // enforced by SATs
       String schemaString = """
@@ -996,7 +998,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeLiteralSchema() {
+    void testDowngradeLiteralSchema() {
       // Verify that we do _not_ recurse into places we shouldn't
       String schemaString = """
                             {
@@ -1015,7 +1017,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeMultiTypeFields() {
+    void testDowngradeMultiTypeFields() {
       doTest(
           """
           {
@@ -1118,7 +1120,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testDowngradeWeirdSchemas() {
+    void testDowngradeWeirdSchemas() {
       // old_style_schema isn't actually valid (i.e. v1 schemas should always be using $ref)
       // but we should check that it behaves well anyway
       doTest(
@@ -1150,13 +1152,13 @@ public class AirbyteMessageMigrationV1Test {
   }
 
   @Nested
-  public class RecordDowngradeTest {
+  class RecordDowngradeTest {
 
     private static final String STREAM_NAME = "foo_stream";
     private static final String NAMESPACE_NAME = "foo_namespace";
 
     @Test
-    public void testBasicDowngrade() {
+    void testBasicDowngrade() {
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(
           """
           {"$ref": "WellKnownTypes.json#/definitions/Integer"}
@@ -1204,7 +1206,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testNestedDowngrade() {
+    void testNestedDowngrade() {
       doTest(
           """
           {
@@ -1277,7 +1279,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testWeirdDowngrade() {
+    void testWeirdDowngrade() {
       doTest(
           """
           {
@@ -1359,7 +1361,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testEmptySchema() {
+    void testEmptySchema() {
       doTest(
           """
           {
@@ -1400,7 +1402,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testBacktracking() {
+    void testBacktracking() {
       // These test cases verify that we correctly choose the most-correct oneOf option.
       doTest(
           """
@@ -1538,7 +1540,7 @@ public class AirbyteMessageMigrationV1Test {
     }
 
     @Test
-    public void testIncorrectSchema() {
+    void testIncorrectSchema() {
       doTest(
           """
           {
