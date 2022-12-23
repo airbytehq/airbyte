@@ -33,3 +33,44 @@ Primary.args = {
   optional: true,
   children: <Input type="text" />,
 };
+
+export const ConditionLabel = Template.bind({});
+ConditionLabel.args = {
+  // a "form field" from the useBuildForm() hook
+  property: {
+    isRequired: false,
+    _type: "formCondition",
+    fieldKey: "field_key",
+    path: "section.Fieldname",
+    conditions: {
+      one: {
+        isRequired: true,
+        type: "string",
+        _type: "formItem",
+        fieldKey: "field_key",
+        path: "section.Fieldname",
+        title: "Title of first option",
+        description: "Description of the item",
+      },
+      two: {
+        isRequired: true,
+        type: "string",
+        _type: "formItem",
+        fieldKey: "field_key",
+        path: "section.Fieldname",
+      },
+      three: {
+        isRequired: true,
+        type: "string",
+        _type: "formItem",
+        fieldKey: "field_key",
+        path: "section.Fieldname",
+        description:
+          "Sometimes the description can be a bit longer - in this case there is a lot of text in here and so on.",
+      },
+    },
+  },
+  label: "Property name",
+  description: "The description of the property, placed in the info tooltip",
+  children: <Input type="text" />,
+};

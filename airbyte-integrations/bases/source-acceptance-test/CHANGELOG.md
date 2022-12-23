@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.23
+Skip backward compatibility tests on specifications if actual and previous specifications and discovered catalogs are identical.[#20435](https://github.com/airbytehq/airbyte/pull/20435)
+
+## 0.2.22
+Capture control messages to store and use updated configurations. [#19979](https://github.com/airbytehq/airbyte/pull/19979).
+
+## 0.2.21
+Optionally disable discovered catalog caching. [#19806](https://github.com/airbytehq/airbyte/pull/19806).
+
+## 0.2.20
+Stricter integer field schema validation. [#19820](https://github.com/airbytehq/airbyte/pull/19820).
 
 ## 0.2.19
 Test for exposed secrets: const values can not hold secrets. [#19465](https://github.com/airbytehq/airbyte/pull/19465).

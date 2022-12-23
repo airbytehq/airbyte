@@ -1,38 +1,29 @@
 import { Field, useField } from "formik";
 import React from "react";
 
+import { DatePicker } from "components/ui/DatePicker";
 import { DropDown } from "components/ui/DropDown";
 import { Input } from "components/ui/Input";
 import { Multiselect } from "components/ui/Multiselect";
-import { SecretTextArea } from "components/ui/SecretTextArea";
 import { TagInput } from "components/ui/TagInput/TagInput";
 import { TextArea } from "components/ui/TextArea";
 
 import { FormBaseItem } from "core/form/types";
+import { useExperiment } from "hooks/services/Experiment";
 import { isDefined } from "utils/common";
 
-import ConfirmationControl from "./ConfirmationControl";
+import SecretConfirmationControl from "./SecretConfirmationControl";
 
 interface ControlProps {
   property: FormBaseItem;
   name: string;
-  unfinishedFlows: Record<string, { startValue: string }>;
-  addUnfinishedFlow: (key: string, info?: Record<string, unknown>) => void;
-  removeUnfinishedFlow: (key: string) => void;
   disabled?: boolean;
   error?: boolean;
 }
 
-export const Control: React.FC<ControlProps> = ({
-  property,
-  name,
-  addUnfinishedFlow,
-  removeUnfinishedFlow,
-  unfinishedFlows,
-  disabled,
-  error,
-}) => {
+export const Control: React.FC<ControlProps> = ({ property, name, disabled, error }) => {
   const [field, meta, helpers] = useField(name);
+  const useDatepickerExperiment = useExperiment("connector.form.useDatepicker", true);
 
   if (property.type === "array" && !property.enum) {
     return (
@@ -42,7 +33,7 @@ export const Control: React.FC<ControlProps> = ({
             name={name}
             fieldValue={field.value || []}
             onChange={(tagLabels) => helpers.setValue(tagLabels)}
-            // error={!!meta.error}
+            error={!!meta.error}
             disabled={disabled}
           />
         )}
@@ -66,6 +57,26 @@ export const Control: React.FC<ControlProps> = ({
     );
   }
 
+  if (
+    property.type === "string" &&
+    (property.format === "date-time" || property.format === "date") &&
+    useDatepickerExperiment
+  ) {
+    return (
+      <DatePicker
+        error={error}
+        withTime={property.format === "date-time"}
+        onChange={(value) => {
+          helpers.setTouched(true);
+          helpers.setValue(value);
+        }}
+        value={field.value}
+        disabled={disabled}
+        onBlur={() => helpers.setTouched(true)}
+      />
+    );
+  }
+
   const value = field.value ?? property.default;
   if (property.enum) {
     return (
@@ -84,46 +95,14 @@ export const Control: React.FC<ControlProps> = ({
   } else if (property.multiline && !property.isSecret) {
     return <TextArea {...field} autoComplete="off" value={value ?? ""} rows={3} disabled={disabled} error={error} />;
   } else if (property.isSecret) {
-    const unfinishedSecret = unfinishedFlows[name];
-    const isEditInProgress = !!unfinishedSecret;
     const isFormInEditMode = isDefined(meta.initialValue);
     return (
-      <ConfirmationControl
-        component={
-          property.multiline && (isEditInProgress || !isFormInEditMode) ? (
-            <SecretTextArea
-              {...field}
-              autoComplete="off"
-              value={value ?? ""}
-              rows={3}
-              disabled={disabled}
-              error={error}
-            />
-          ) : (
-            <Input
-              {...field}
-              autoComplete="off"
-              value={value ?? ""}
-              type="password"
-              disabled={disabled}
-              error={error}
-            />
-          )
-        }
+      <SecretConfirmationControl
+        name={name}
+        multiline={Boolean(property.multiline)}
         showButtons={isFormInEditMode}
-        isEditInProgress={isEditInProgress}
-        onDone={() => removeUnfinishedFlow(name)}
-        onStart={() => {
-          addUnfinishedFlow(name, { startValue: field.value });
-          helpers.setValue("");
-        }}
-        onCancel={() => {
-          removeUnfinishedFlow(name);
-          if (unfinishedSecret && unfinishedSecret.hasOwnProperty("startValue")) {
-            helpers.setValue(unfinishedSecret.startValue);
-          }
-        }}
         disabled={disabled}
+        error={error}
       />
     );
   }

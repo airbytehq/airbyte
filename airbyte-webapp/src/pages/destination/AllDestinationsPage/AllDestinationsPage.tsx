@@ -1,10 +1,9 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
-import { FormattedMessage, useIntl } from "react-intl";
-import { useNavigate } from "react-router-dom";
+import { FormattedMessage } from "react-intl";
+import { Navigate, useNavigate } from "react-router-dom";
 
-import { EmptyResourceListView } from "components/common/EmptyResourceListView";
 import { HeadTitle } from "components/common/HeadTitle";
 import { MainPageWithScroll } from "components/common/MainPageWithScroll";
 import { DestinationsTable } from "components/destination/DestinationsTable";
@@ -18,7 +17,6 @@ import { RoutePaths } from "../../routePaths";
 
 export const AllDestinationsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { formatMessage } = useIntl();
   const { destinations } = useDestinationList();
   useTrackPage(PageTrackingCodes.DESTINATION_LIST);
 
@@ -46,10 +44,6 @@ export const AllDestinationsPage: React.FC = () => {
       <DestinationsTable destinations={destinations} />
     </MainPageWithScroll>
   ) : (
-    <EmptyResourceListView
-      resourceType="destinations"
-      onCreateClick={onCreateDestination}
-      buttonLabel={formatMessage({ id: "destinations.createFirst" })}
-    />
+    <Navigate to={RoutePaths.DestinationNew} />
   );
 };
