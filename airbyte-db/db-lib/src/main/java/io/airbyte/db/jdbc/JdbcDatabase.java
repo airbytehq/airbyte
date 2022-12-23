@@ -49,8 +49,8 @@ public abstract class JdbcDatabase extends SqlDatabase {
   public void executeWithinTransaction(final List<String> queries) throws SQLException {
     execute(connection -> {
       connection.setAutoCommit(false);
-      for (final String s : queries) {
-        try (final Statement statement = connection.createStatement()) {
+      try (final Statement statement = connection.createStatement()) {
+        for (final String s : queries) {
           statement.execute(s);
         }
       }
