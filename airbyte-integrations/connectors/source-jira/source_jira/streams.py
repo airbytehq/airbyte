@@ -553,6 +553,9 @@ class IssueRemoteLinks(StartDateJiraStream):
         for issue in read_full_refresh(self.issues_stream):
             yield from super().read_records(stream_slice={"key": issue["key"]}, **kwargs)
 
+    def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
+        return None
+
 
 class IssueResolutions(JiraStream):
     """
