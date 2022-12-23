@@ -7,7 +7,6 @@ package io.airbyte.workers.config;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistence;
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
-import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
@@ -47,14 +46,6 @@ public class SecretPersistenceBeanFactory {
   @Named("secretPersistence")
   public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
-  }
-
-  @Singleton
-  @Requires(property = "airbyte.secret.persistence",
-            pattern = "(?i)^in_memory")
-  @Named("secretPersistence")
-  public SecretPersistence inMemorySecretPersistence() {
-    return new MemorySecretPersistence();
   }
 
   @Singleton
