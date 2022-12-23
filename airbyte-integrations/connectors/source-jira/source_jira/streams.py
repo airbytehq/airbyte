@@ -48,7 +48,9 @@ class JiraStream(HttpStream, ABC):
             startAt = response_json.get("startAt")
             if startAt is not None:
                 startAt += response_json["maxResults"]
-                if startAt < response_json["total"]:
+                if "total" in response_json and startAt < response_json["total"]:
+                    return {"startAt": startAt}
+                if "values" in response_json and len(response_json["values"]) == self.page_size:
                     return {"startAt": startAt}
         elif isinstance(response_json, list):
             if len(response_json) == self.page_size:
