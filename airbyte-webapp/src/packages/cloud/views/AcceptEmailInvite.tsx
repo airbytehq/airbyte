@@ -2,7 +2,9 @@ import { Formik } from "formik";
 import { FormattedMessage, useIntl } from "react-intl";
 import * as yup from "yup";
 
-import HeadTitle from "components/HeadTitle";
+import { HeadTitle } from "components/common/HeadTitle";
+
+import { isGdprCountry } from "utils/dataPrivacy";
 
 import { FieldError } from "../lib/errors/FieldError";
 import { useAuthService } from "../services/auth/AuthService";
@@ -35,7 +37,7 @@ export const AcceptEmailInvite: React.FC = () => {
         name: "",
         email: "",
         password: "",
-        news: true,
+        news: !isGdprCountry(),
       }}
       validationSchema={ValidationSchema}
       onSubmit={async ({ name, email, password, news }, { setFieldError, setStatus }) => {

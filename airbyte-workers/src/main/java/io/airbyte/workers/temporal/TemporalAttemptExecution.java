@@ -9,15 +9,17 @@ import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.SetWorkflowInAttemptRequestBody;
 import io.airbyte.commons.functional.CheckedSupplier;
+import io.airbyte.commons.temporal.CancellationHandler;
+import io.airbyte.commons.temporal.TemporalUtils;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.scheduler.models.JobRunConfig;
+import io.airbyte.persistence.job.models.JobRunConfig;
 import io.airbyte.workers.Worker;
-import io.airbyte.workers.WorkerUtils;
 import io.temporal.activity.Activity;
 import io.temporal.activity.ActivityExecutionContext;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -49,6 +51,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private final Supplier<String> workflowIdProvider;
   private final AirbyteApiClient airbyteApiClient;
   private final String airbyteVersion;
+  private final Optional<String> replicationTaskQueue;
 
   public TemporalAttemptExecution(final Path workspaceRoot,
                                   final WorkerEnvironment workerEnvironment,
@@ -69,7 +72,32 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
         cancellationHandler,
         airbyteApiClient,
         () -> activityContext.get().getInfo().getWorkflowId(),
-        airbyteVersion);
+        airbyteVersion,
+        Optional.empty());
+  }
+
+  public TemporalAttemptExecution(final Path workspaceRoot,
+                                  final WorkerEnvironment workerEnvironment,
+                                  final LogConfigs logConfigs,
+                                  final JobRunConfig jobRunConfig,
+                                  final CheckedSupplier<Worker<INPUT, OUTPUT>, Exception> workerSupplier,
+                                  final Supplier<INPUT> inputSupplier,
+                                  final CancellationHandler cancellationHandler,
+                                  final AirbyteApiClient airbyteApiClient,
+                                  final String airbyteVersion,
+                                  final Supplier<ActivityExecutionContext> activityContext,
+                                  final Optional<String> replicationTaskQueue) {
+    this(
+        workspaceRoot, workerEnvironment, logConfigs,
+        jobRunConfig,
+        workerSupplier,
+        inputSupplier,
+        (path -> LogClientSingleton.getInstance().setJobMdc(workerEnvironment, logConfigs, path)),
+        cancellationHandler,
+        airbyteApiClient,
+        () -> activityContext.get().getInfo().getWorkflowId(),
+        airbyteVersion,
+        replicationTaskQueue);
   }
 
   @VisibleForTesting
@@ -83,10 +111,11 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
                            final CancellationHandler cancellationHandler,
                            final AirbyteApiClient airbyteApiClient,
                            final Supplier<String> workflowIdProvider,
-                           final String airbyteVersion) {
+                           final String airbyteVersion,
+                           final Optional<String> replicationTaskQueue) {
     this.jobRunConfig = jobRunConfig;
 
-    this.jobRoot = WorkerUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
+    this.jobRoot = TemporalUtils.getJobRoot(workspaceRoot, jobRunConfig.getJobId(), jobRunConfig.getAttemptId());
     this.workerSupplier = workerSupplier;
     this.inputSupplier = inputSupplier;
     this.mdcSetter = mdcSetter;
@@ -95,6 +124,7 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
 
     this.airbyteApiClient = airbyteApiClient;
     this.airbyteVersion = airbyteVersion;
+    this.replicationTaskQueue = replicationTaskQueue;
   }
 
   @Override
@@ -109,9 +139,10 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
       }
 
       LOGGER.info("Executing worker wrapper. Airbyte version: {}", airbyteVersion);
-      // TODO(Davin): This will eventually run into scaling problems, since it opens a DB connection per
-      // workflow. See https://github.com/airbytehq/airbyte/issues/5936.
-      saveWorkflowIdForCancellation(airbyteApiClient);
+      AirbyteApiClient.retryWithJitter(() -> {
+        saveWorkflowIdForCancellation(airbyteApiClient);
+        return null;
+      }, "save workflow id for cancellation");
 
       final Worker<INPUT, OUTPUT> worker = workerSupplier.get();
       final CompletableFuture<OUTPUT> outputFuture = new CompletableFuture<>();
@@ -140,13 +171,18 @@ public class TemporalAttemptExecution<INPUT, OUTPUT> implements Supplier<OUTPUT>
   private void saveWorkflowIdForCancellation(final AirbyteApiClient airbyteApiClient) throws ApiException {
     // If the jobId is not a number, it means the job is a synchronous job. No attempt is created for
     // it, and it cannot be cancelled, so do not save the workflowId. See
-    // SynchronousSchedulerClient.java
-    // for info.
-    if (NumberUtils.isCreatable(jobRunConfig.getJobId())) {
+    // SynchronousSchedulerClient.java for info.
+    //
+    // At this moment(Nov 2022), we decide to save workflowId for cancellation purpose only at
+    // replication activity level. We know now the only async workflow is SyncWorkflow,
+    // and under the same workflow, the workflowId would stay the same,
+    // so it's not needed to save it for multiple times.
+    if (NumberUtils.isCreatable(jobRunConfig.getJobId()) && replicationTaskQueue.isPresent()) {
       final String workflowId = workflowIdProvider.get();
       airbyteApiClient.getAttemptApi().setWorkflowInAttempt(new SetWorkflowInAttemptRequestBody()
           .jobId(Long.parseLong(jobRunConfig.getJobId()))
           .attemptNumber(jobRunConfig.getAttemptId().intValue())
+          .processingTaskQueue(replicationTaskQueue.get())
           .workflowId(workflowId));
     }
   }

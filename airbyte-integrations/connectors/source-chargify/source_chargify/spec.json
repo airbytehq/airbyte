@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/sources/chargify",
+  "documentationUrl": "https://docs.airbyte.com/integrations/sources/chargify",
   "connectionSpecification": {
     "$schema": "http://json-schema.org/draft-07/schema#",
     "title": "Chargify Spec",

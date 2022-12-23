@@ -27,7 +27,6 @@ NORMALIZATION_TEST_MSSQL_DB_PORT = "NORMALIZATION_TEST_MSSQL_DB_PORT"
 NORMALIZATION_TEST_MYSQL_DB_PORT = "NORMALIZATION_TEST_MYSQL_DB_PORT"
 NORMALIZATION_TEST_POSTGRES_DB_PORT = "NORMALIZATION_TEST_POSTGRES_DB_PORT"
 NORMALIZATION_TEST_CLICKHOUSE_DB_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_PORT"
-NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT = "NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT"
 NORMALIZATION_TEST_TIDB_DB_PORT = "NORMALIZATION_TEST_TIDB_DB_PORT"
 
 
@@ -224,28 +223,20 @@ class DbtIntegrationTest(object):
 
     def setup_clickhouse_db(self):
         """
-        ClickHouse official JDBC driver use HTTP port 8123, while Python ClickHouse
-        driver uses native port 9000, so we need to open both ports for destination
-        connector and dbt container respectively.
+        ClickHouse official JDBC driver uses HTTP port 8123.
 
         Ref: https://altinity.com/blog/2019/3/15/clickhouse-networking-part-1
         """
         start_db = True
         port = 8123
-        tcp_port = 9000
         if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT):
             port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_PORT))
             start_db = False
-        if os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT):
-            tcp_port = int(os.getenv(NORMALIZATION_TEST_CLICKHOUSE_DB_TCP_PORT))
-            start_db = False
         if start_db:
             port = self.find_free_port()
-            tcp_port = self.find_free_port()
         config = {
             "host": "localhost",
             "port": port,
-            "tcp-port": tcp_port,
             "database": self.target_schema,
             "username": "default",
             "password": "",
@@ -262,8 +253,6 @@ class DbtIntegrationTest(object):
                 f"{self.container_prefix}_clickhouse",
                 "--ulimit",
                 "nofile=262144:262144",
-                "-p",
-                f"{config['tcp-port']}:9000",  # Python clickhouse driver use native port
                 "-p",
                 f"{config['port']}:8123",  # clickhouse JDBC driver use HTTP port
                 "-d",
@@ -701,7 +690,7 @@ class DbtIntegrationTest(object):
             schemas_to_remove[destination.value] = []
 
             # based on test_type select path to source files
-            if test_type == "ephemeral":
+            if test_type == "ephemeral" or test_type == "test_reset_scd_overwrite":
                 if not tmp_folders:
                     raise TypeError("`tmp_folders` arg is not provided.")
                 for folder in tmp_folders:

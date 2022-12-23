@@ -1,0 +1,17 @@
+{
+  "name": "End-to-End Testing (Mock API)",
+  "sourceDefinitionId": "replace_source_definition_id",
+  "workspaceId": "replace_workspace_id",
+  "connectionConfiguration": {
+    "type": "CONTINUOUS_FEED",
+    "mock_catalog": {
+      "type": "SINGLE_STREAM",
+      "stream_name": "data_stream",
+      "stream_schema": "{ \"type\": \"object\", \"properties\": { \"column1\": { \"type\": \"string\" } } }",
+      "stream_duplication": 1
+    },
+    "seed": 0,
+    "max_messages": replace_source_read_secs,
+    "message_interval_ms": 1000
+  }
+}

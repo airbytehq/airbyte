@@ -5,7 +5,7 @@
 import datetime
 import urllib
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, Mapping, MutableMapping, Optional
+from typing import Any, Iterable, Mapping, MutableMapping, Optional, Union
 
 import pendulum
 import requests
@@ -17,6 +17,11 @@ class SendgridStream(HttpStream, ABC):
     primary_key = "id"
     limit = 50
     data_field = None
+    raise_on_http_errors = True
+    permission_error_codes = {
+        400: "authorization required",
+        401: "authorization required",
+    }
 
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         pass
@@ -48,6 +53,20 @@ class SendgridStream(HttpStream, ABC):
             # do NOT print request headers as it contains auth token
             self.logger.info(err_msg)
 
+    def should_retry(self, response: requests.Response) -> bool:
+        """Override to provide skip the stream possibility"""
+
+        status = response.status_code
+        if status in self.permission_error_codes.keys():
+            for message in response.json().get("errors", []):
+                if message.get("message") == self.permission_error_codes.get(status):
+                    self.logger.error(
+                        f"Stream `{self.name}` is not available, due to subscription plan limitations or perrmission issues. Skipping."
+                    )
+                    setattr(self, "raise_on_http_errors", False)
+                    return False
+        return 500 <= response.status_code < 600
+
 
 class SendgridStreamOffsetPagination(SendgridStream):
     offset = 0
@@ -72,9 +91,11 @@ class SendgridStreamOffsetPagination(SendgridStream):
 class SendgridStreamIncrementalMixin(HttpStream, ABC):
     cursor_field = "created"
 
-    def __init__(self, start_time: int, **kwargs):
+    def __init__(self, start_time: Optional[Union[int, str]], **kwargs):
         super().__init__(**kwargs)
-        self._start_time = start_time
+        self._start_time = start_time or 0
+        if isinstance(self._start_time, str):
+            self._start_time = int(pendulum.parse(self._start_time).timestamp())
 
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
         """

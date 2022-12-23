@@ -198,13 +198,14 @@ class TiktokStream(HttpStream, ABC):
         """
         Once the rate limit is met, the server returns "code": 40100
         Docs: https://business-api.tiktok.com/marketing_api/docs?id=1701890997610497
+        Retry 50002 as well - it's a server error.
         """
         try:
             data = response.json()
         except Exception:
             self.logger.error(f"Incorrect JSON response: {response.text}")
             raise
-        if data["code"] == 40100:
+        if data["code"] in (40100, 50002):
             return True
         return super().should_retry(response)
 

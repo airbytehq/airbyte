@@ -16,6 +16,7 @@ if [ -n "$CI" ]; then
   kind load docker-image airbyte/db:dev --name chart-testing &
   kind load docker-image airbyte/container-orchestrator:dev --name chart-testing &
   kind load docker-image airbyte/bootloader:dev --name chart-testing &
+  kind load docker-image airbyte/cron:dev --name chart-testing &
   wait
 fi
 
@@ -31,7 +32,7 @@ echo "Listing nodes scheduled for pods..."
 kubectl describe pods | grep "Name\|Node"
 
 # allocates a lot of time to start kube. takes a while for postgres+temporal to work things out
-sleep 120s
+sleep 120
 
 if [ -n "$CI" ]; then
   server_logs () { kubectl logs deployment.apps/airbyte-server > /tmp/kubernetes_logs/server.txt; }

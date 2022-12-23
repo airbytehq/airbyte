@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/mysql",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/mysql",
   "supportsIncremental": true,
   "supportsNormalization": true,
   "supportsDBT": true,

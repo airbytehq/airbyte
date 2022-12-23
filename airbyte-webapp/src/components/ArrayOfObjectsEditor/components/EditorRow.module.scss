@@ -14,8 +14,8 @@
   font-weight: 400;
   font-size: 12px;
   line-height: 17px;
-  padding: variables.$spacing-md 8px;
-  gap: variables.$spacing-md;
+  padding: variables.$spacing-xs variables.$spacing-xs variables.$spacing-xs variables.$spacing-md;
+  gap: variables.$spacing-xs;
 }
 
 .name {
@@ -27,5 +27,4 @@
 .actions {
   display: flex;
   flex-direction: row;
-  gap: variables.$spacing-md;
 }

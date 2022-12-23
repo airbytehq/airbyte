@@ -1,0 +1,14 @@
+@use "scss/variables";
+
+.container {
+  text-align: center;
+  margin-top: variables.$spacing-lg;
+
+  &.withLink {
+    padding: variables.$spacing-md;
+  }
+}
+
+.ctaButton {
+  margin-left: variables.$spacing-sm;
+}

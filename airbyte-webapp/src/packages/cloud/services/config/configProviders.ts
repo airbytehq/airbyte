@@ -39,6 +39,7 @@ const cloudWindowConfigProvider: ConfigProvider<CloudConfig> = async () => {
 const cloudEnvConfigProvider: ConfigProvider<CloudConfig> = async () => {
   return {
     cloudApiUrl: process.env.REACT_APP_CLOUD_API_URL,
+    cloudPublicApiUrl: process.env.REACT_APP_CLOUD_PUBLIC_API_URL,
     firebase: {
       apiKey: process.env.REACT_APP_FIREBASE_API_KEY,
       authDomain: process.env.REACT_APP_FIREBASE_AUTH_DOMAIN,

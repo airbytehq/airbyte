@@ -32,6 +32,10 @@ properties:
     type: array
     items:
       "$ref": StandardSyncOperation.yaml
+  webhookOperationConfigs:
+    description: The webhook operation configs belonging to this workspace. See webhookOperationConfigs in StandardWorkspace.yaml.
+    type: object
+    existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalog:
     description: the configured airbyte catalog
     type: object

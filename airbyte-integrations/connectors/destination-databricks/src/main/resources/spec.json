@@ -1,5 +1,5 @@
 {
-  "documentationUrl": "https://docs.airbyte.io/integrations/destinations/databricks",
+  "documentationUrl": "https://docs.airbyte.com/integrations/destinations/databricks",
   "supportsIncremental": true,
   "supportsNormalization": false,
   "supportsDBT": false,
@@ -151,7 +151,7 @@
               "file_name_pattern": {
                 "type": "string",
                 "description": "The pattern allows you to set the file-name format for the S3 staging file(s)",
-                "title": "S3 Filename pattern (Optional)",
+                "title": "S3 Filename pattern",
                 "examples": [
                   "{date}",
                   "{date:yyyy_MM}",
@@ -160,6 +160,55 @@
                   "{sync_id}"
                 ],
                 "order": 7
+              }
+            }
+          },
+          {
+            "title": "Azure Blob Storage",
+            "required": [
+              "data_source_type",
+              "azure_blob_storage_account_name",
+              "azure_blob_storage_container_name",
+              "azure_blob_storage_sas_token"
+            ],
+            "properties": {
+              "data_source_type": {
+                "type": "string",
+                "enum": ["Azure_Blob_Storage"],
+                "default": "Azure_Blob_Storage",
+                "order": 0
+              },
+              "azure_blob_storage_endpoint_domain_name": {
+                "title": "Endpoint Domain Name",
+                "type": "string",
+                "default": "blob.core.windows.net",
+                "description": "This is Azure Blob Storage endpoint domain name. Leave default value (or leave it empty if run container from command line) to use Microsoft native from example.",
+                "examples": ["blob.core.windows.net"],
+                "order": 1
+              },
+              "azure_blob_storage_account_name": {
+                "title": "Azure Blob Storage Account Name",
+                "type": "string",
+                "description": "The account's name of the Azure Blob Storage.",
+                "examples": ["airbyte5storage"],
+                "order": 2
+              },
+              "azure_blob_storage_container_name": {
+                "title": "Azure Blob Storage Container Name",
+                "type": "string",
+                "description": "The name of the Azure blob storage container.",
+                "examples": ["airbytetestcontainername"],
+                "order": 3
+              },
+              "azure_blob_storage_sas_token": {
+                "title": "SAS Token",
+                "type": "string",
+                "airbyte_secret": true,
+                "description": "Shared access signature (SAS) token to grant limited access to objects in your storage account.",
+                "examples": [
+                  "?sv=2016-05-31&ss=b&srt=sco&sp=rwdl&se=2018-06-27T10:05:50Z&st=2017-06-27T02:05:50Z&spr=https,http&sig=bgqQwoXwxzuD2GJfagRg7VOS8hzNr3QLT7rhS8OFRLQ%3D"
+                ],
+                "order": 4
               }
             }
           }

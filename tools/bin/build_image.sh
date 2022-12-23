@@ -19,8 +19,8 @@ assert_root
 cd "$PROJECT_DIR"
 
 function validate_dockerignore() {
-  excludes_all=$(grep -w '^\*$' .dockerignore)
-  excludes_except=$(grep -w '^!.*' .dockerignore)
+  excludes_all=$(grep -w '^\*$' .dockerignore || true)
+  excludes_except=$(grep -w '^!.*' .dockerignore || true)
   if [ -n "$excludes_all" ] || [ -n "$excludes_except" ]; then
     error "Cannot include exclusion exceptions when following symlinks. Please use an exclude pattern that doesn't use exclude-all (e.g: *) or exclude-except (e.g: !/some/pattern)"
   fi
@@ -42,7 +42,7 @@ if [ "$FOLLOW_SYMLINKS" == "true" ]; then
   # to use as the build context
   tar cL "${exclusions[@]}" . | docker build - "${args[@]}"
 else
-  JDK_VERSION="${JDK_VERSION:-17.0.1}"
+  JDK_VERSION="${JDK_VERSION:-17.0.4}"
   if [[ -z "${DOCKER_BUILD_PLATFORM}" ]]; then
     docker build --build-arg JDK_VERSION="$JDK_VERSION" --build-arg DOCKER_BUILD_ARCH="$DOCKER_BUILD_ARCH" . "${args[@]}"
   else

@@ -25,11 +25,10 @@ import java.util.TimeZone;
 import org.jooq.DSLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.containers.OracleContainer;
 
 public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
-  private OracleContainer container;
+  private AirbyteOracleTestContainer container;
   private JsonNode config;
   private DSLContext dslContext;
 
@@ -37,7 +36,10 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
 
   @Override
   protected Database setupDatabase() throws Exception {
-    container = new OracleContainer("epiclabs/docker-oracle-xe-11g")
+    container = new AirbyteOracleTestContainer()
+        .withUsername("TEST_ORA")
+        .withPassword("oracle")
+        .usingSid()
         .withEnv("RELAX_SECURITY", "1");
     container.start();
 
@@ -64,7 +66,7 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
     final Database database = new Database(dslContext);
     LOGGER.warn("config: " + config);
 
-    database.query(ctx -> ctx.fetch("CREATE USER test IDENTIFIED BY test DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
+    database.query(ctx -> ctx.fetch("CREATE USER TEST IDENTIFIED BY TEST DEFAULT TABLESPACE USERS QUOTA UNLIMITED ON USERS"));
 
     return database;
   }
@@ -286,11 +288,11 @@ public class OracleSourceDatatypeTest extends AbstractSourceDatabaseTypeTest {
                 "<config>1</config>\n" +
                 "<config>2</config>\n" +
                 "</list_configuration>')")
-            .addExpectedValues("<?xml version = '1.0' encoding = 'UTF-8'?>" +
-                "<list_configuration>\n" +
-                "   <config>1</config>\n" +
-                "   <config>2</config>\n" +
-                "</list_configuration>")
+            .addExpectedValues("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+                + "<list_configuration>\n"
+                + "  <config>1</config>\n"
+                + "  <config>2</config>\n"
+                + "</list_configuration>\n")
             .build());
   }
 

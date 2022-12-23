@@ -5,6 +5,7 @@
 package io.airbyte.db.jdbc;
 
 import com.google.errorprone.annotations.MustBeClosed;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
@@ -14,6 +15,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.sql.DataSource;
@@ -76,6 +78,14 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
     try (final Connection connection = dataSource.getConnection()) {
       final DatabaseMetaData metaData = connection.getMetaData();
       return metaData;
+    } catch (final SQLException e) {
+      // Some databases like Redshift will have null cause
+      if (Objects.isNull(e.getCause()) || !(e.getCause() instanceof SQLException)) {
+        throw new ConnectionErrorException(e.getSQLState(), e.getErrorCode(), e.getMessage(), e);
+      } else {
+        final SQLException cause = (SQLException) e.getCause();
+        throw new ConnectionErrorException(e.getSQLState(), cause.getErrorCode(), cause.getMessage(), e);
+      }
     }
   }
 

@@ -31,9 +31,44 @@ Create chart name and version as used by the chart label.
 {{- end }}
 
 {{/*
+Common labels
+*/}}
+{{- define "airbyte.labels" -}}
+helm.sh/chart: {{ include "airbyte.chart" . }}
+{{ include "airbyte.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "airbyte.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "airbyte.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+
+{{/*
 Define db secret
 */}}
 
 {{- define "database.secret.name" -}}
 {{- printf "%s-postgresql" .Release.Name }}
+{{- end }}
+
+{{/* 
+Define imageTag
+*/}}
+
+{{- define "webapp.imageTag" -}}
+{{- if .Values.image.tag }}
+    {{- printf "%s" .Values.image.tag }}
+{{- else if ((.Values.global.image).tag) }}
+    {{- printf "%s" .Values.global.image.tag }}
+{{- else }}
+    {{- printf "%s" .Chart.AppVersion }}
+{{- end }}
 {{- end }}

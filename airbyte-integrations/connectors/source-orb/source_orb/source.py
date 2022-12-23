@@ -301,14 +301,15 @@ class CreditsLedgerEntries(IncrementalOrbStream):
         """
         # Build up a list of the subset of ledger entries we are expected
         # to enrich with event metadata.
-        event_id_to_ledger_entry = {}
+        event_id_to_ledger_entries = {}
         for entry in ledger_entries:
             maybe_event_id: Optional[str] = entry.get("event_id")
             if maybe_event_id:
-                event_id_to_ledger_entry[maybe_event_id] = entry
+                # There can be multiple entries with the same event ID
+                event_id_to_ledger_entries[maybe_event_id] = event_id_to_ledger_entries.get(maybe_event_id, []) + [entry]
 
         # Nothing to enrich; short-circuit
-        if len(event_id_to_ledger_entry) == 0:
+        if len(event_id_to_ledger_entries) == 0:
             return ledger_entries
 
         def modify_ledger_entry_schema(ledger_entry):
@@ -321,8 +322,9 @@ class CreditsLedgerEntries(IncrementalOrbStream):
             ledger_entry["event"] = {}
             ledger_entry["event"]["id"] = event_id
 
-        for ledger_entry in event_id_to_ledger_entry.values():
-            modify_ledger_entry_schema(ledger_entry=ledger_entry)
+        for ledger_entries_in_map in event_id_to_ledger_entries.values():
+            for ledger_entry in ledger_entries_in_map:
+                modify_ledger_entry_schema(ledger_entry=ledger_entry)
 
         # Nothing to extract for each ledger entry
         merged_properties_keys = (self.string_event_properties_keys or []) + (self.numeric_event_properties_keys or [])
@@ -331,7 +333,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
         # The events endpoint is a `POST` endpoint which expects a list of
         # event_ids to filter on
-        request_filter_json = {"event_ids": list(event_id_to_ledger_entry)}
+        request_filter_json = {"event_ids": list(event_id_to_ledger_entries)}
 
         # Prepare request with self._session, which should
         # automatically deal with the authentication header.
@@ -354,16 +356,17 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
             # This would imply that the endpoint returned an event that wasn't part of the filter
             # parameters, so log an error but ignore it.
-            if event_id not in event_id_to_ledger_entry:
+            if event_id not in event_id_to_ledger_entries:
                 self.logger.error(f"Unrecognized event received with ID {event_id} when trying to enrich ledger entries")
                 continue
 
             # Replace ledger_entry.event_id with ledger_entry.event
-            event_id_to_ledger_entry[event_id]["event"]["properties"] = desired_properties_subset
-            num_events_enriched += 1
+            for ledger_entry in event_id_to_ledger_entries[event_id]:
+                ledger_entry["event"]["properties"] = desired_properties_subset
+                num_events_enriched += 1
 
         # Log an error if we did not enrich all the entries we asked for.
-        if num_events_enriched != len(event_id_to_ledger_entry):
+        if num_events_enriched != sum(len(le) for le in event_id_to_ledger_entries.values()):
             self.logger.error("Unable to enrich all eligible credit ledger entries with event metadata.")
 
         # Mutating entries within `event_id_to_ledger_entry` should have modified

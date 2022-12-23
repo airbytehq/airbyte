@@ -140,7 +140,7 @@ Some notes about fields in the output spec:
 * `supported_destination_sync_modes`: An array of strings declaring the sync modes supported by this connector. The available options are: 
   * `overwrite`: The connector can be configured to wipe any existing data in a stream before writing new data
   * `append`: The connector can be configured to append new data to existing data 
-  * `append_dedupe`: The connector can be configured to deduplicate \(i.e: UPSERT\) data in the destination based on the new data and primary keys
+  * `append_dedup`: The connector can be configured to deduplicate \(i.e: UPSERT\) data in the destination based on the new data and primary keys
 * `supportsIncremental`: Whether the connector supports any `append` sync mode. Must be set to true if `append` or `append_dedupe` are included in the `supported_destination_sync_modes`.  
 
 Some helpful resources:

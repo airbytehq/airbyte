@@ -1,8 +1,8 @@
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
-import { Tooltip } from "components/base/Tooltip";
 import { GAIcon } from "components/icons/GAIcon";
+import { Tooltip } from "components/ui/Tooltip";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
 

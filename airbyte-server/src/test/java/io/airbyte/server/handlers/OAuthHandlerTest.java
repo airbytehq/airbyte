@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.SetInstancewideDestinationOauthParamsRequestBody;
 import io.airbyte.api.model.generated.SetInstancewideSourceOauthParamsRequestBody;
@@ -15,6 +16,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.DestinationOAuthParameter;
 import io.airbyte.config.SourceOAuthParameter;
 import io.airbyte.config.persistence.ConfigRepository;
+import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
@@ -34,6 +36,7 @@ class OAuthHandlerTest {
   private OAuthHandler handler;
   private TrackingClient trackingClient;
   private HttpClient httpClient;
+  private SecretsRepositoryReader secretsRepositoryReader;
   private static final String CLIENT_ID = "123";
   private static final String CLIENT_ID_KEY = "client_id";
   private static final String CLIENT_SECRET_KEY = "client_secret";
@@ -44,7 +47,8 @@ class OAuthHandlerTest {
     configRepository = Mockito.mock(ConfigRepository.class);
     trackingClient = mock(TrackingClient.class);
     httpClient = Mockito.mock(HttpClient.class);
-    handler = new OAuthHandler(configRepository, httpClient, trackingClient);
+    secretsRepositoryReader = mock(SecretsRepositoryReader.class);
+    handler = new OAuthHandler(configRepository, httpClient, trackingClient, secretsRepositoryReader);
   }
 
   @Test
@@ -149,6 +153,79 @@ class OAuthHandlerTest {
     assertEquals(destinationDefId, capturedValues.get(0).getDestinationDefinitionId());
     assertEquals(destinationDefId, capturedValues.get(1).getDestinationDefinitionId());
     assertEquals(oauthParameterId, capturedValues.get(1).getOauthParameterId());
+  }
+
+  @Test
+  void testBuildJsonPathFromOAuthFlowInitParameters() {
+    final Map<String, List<String>> input = Map.ofEntries(
+        Map.entry("field1", List.of("1")),
+        Map.entry("field2", List.of("2", "3")));
+
+    final Map<String, String> expected = Map.ofEntries(
+        Map.entry("field1", "$.1"),
+        Map.entry("field2", "$.2.3"));
+
+    assertEquals(expected, handler.buildJsonPathFromOAuthFlowInitParameters(input));
+  }
+
+  @Test
+  void testGetOAuthInputConfiguration() {
+    final JsonNode hydratedConfig = Jsons.deserialize(
+        """
+        {
+          "field1": "1",
+          "field2": "2",
+          "field3": {
+            "field3_1": "3_1",
+            "field3_2": "3_2"
+          }
+        }
+        """);
+
+    final Map<String, String> pathsToGet = Map.ofEntries(
+        Map.entry("field1", "$.field1"),
+        Map.entry("field3_1", "$.field3.field3_1"),
+        Map.entry("field3_2", "$.field3.field3_2"));
+
+    final JsonNode expected = Jsons.deserialize(
+        """
+        {
+          "field1": "1",
+          "field3_1": "3_1",
+          "field3_2": "3_2"
+        }
+        """);
+
+    assertEquals(expected, handler.getOAuthInputConfiguration(hydratedConfig, pathsToGet));
+  }
+
+  @Test
+  void testGetOauthFromDBIfNeeded() {
+    final JsonNode fromInput = Jsons.deserialize(
+        """
+        {
+          "testMask": "**********",
+          "testNotMask": "this"
+        }
+        """);
+
+    final JsonNode fromDb = Jsons.deserialize(
+        """
+        {
+          "testMask": "mask",
+          "testNotMask": "notThis"
+        }
+        """);
+
+    final JsonNode expected = Jsons.deserialize(
+        """
+        {
+          "testMask": "mask",
+          "testNotMask": "this"
+        }
+        """);
+
+    assertEquals(expected, handler.getOauthFromDBIfNeeded(fromDb, fromInput));
   }
 
 }

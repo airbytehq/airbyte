@@ -7,6 +7,7 @@ package io.airbyte.integrations.destination.postgres;
 import static io.airbyte.db.PostgresUtils.getCertificate;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
@@ -174,14 +175,14 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
         .put(JdbcUtils.SSL_MODE_KEY, ImmutableMap.builder()
             .put("mode", "prefer")
             .build())
-         .put("tunnel_method", ImmutableMap.builder()
-             .put("tunnel_method", "NO_TUNNEL")
-             .build())
+        .put("tunnel_method", ImmutableMap.builder()
+            .put("tunnel_method", "NO_TUNNEL")
+            .build())
         .build());
 
     final var actual = runCheck(config);
     assertEquals(Status.FAILED, actual.getStatus());
-    assertEquals("Unsecured connection not allowed", actual.getMessage());
+    assertTrue(actual.getMessage().contains("Unsecured connection not allowed"));
   }
 
   @Test
@@ -222,7 +223,8 @@ public class PostgresDestinationStrictEncryptAcceptanceTest extends DestinationA
             .build())
         .build());
     final var actual = runCheck(config);
-    //DefaultCheckConnectionWorker is swallowing the NullPointerException
+    // DefaultCheckConnectionWorker is swallowing the NullPointerException
     assertNull(actual);
   }
+
 }

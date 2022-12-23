@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["string", "null"]
+    },
+    "url": {
+      "type": ["string", "null"]
+    },
+    "object": {
+      "type": ["string", "null"]
+    },
+    "value": {
+      "type": ["null", "string", "boolean"]
+    },
+    "custom_field": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    },
+    "person": {
+      "type": "object",
+      "properties": {
+        "ref_object": {
+          "type": ["string", "null"]
+        },
+        "object": {
+          "type": ["string", "null"]
+        },
+        "url": {
+          "type": ["string", "null"]
+        }
+      }
+    }
+  }
+}

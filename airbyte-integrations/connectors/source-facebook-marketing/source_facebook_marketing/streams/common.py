@@ -33,6 +33,15 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         logger.info(str(exc))
         logger.info(f"Caught retryable error after {details['tries']} tries. Waiting {details['wait']} more seconds then retrying...")
 
+    def reduce_request_record_limit(details):
+        _, exc, _ = sys.exc_info()
+        if (
+            details.get("kwargs", {}).get("params", {}).get("limit")
+            and exc.http_status() == http.client.INTERNAL_SERVER_ERROR
+            and exc.api_error_message() == "Please reduce the amount of data you're asking for, then retry your request"
+        ):
+            details["kwargs"]["params"]["limit"] = int(int(details["kwargs"]["params"]["limit"]) / 2)
+
     def should_retry_api_error(exc):
         if isinstance(exc, FacebookRequestError):
             call_rate_limit_error = exc.api_error_code() in FACEBOOK_RATE_LIMIT_ERROR_CODES
@@ -58,7 +67,7 @@ def retry_pattern(backoff_type, exception, **wait_gen_kwargs):
         backoff_type,
         exception,
         jitter=None,
-        on_backoff=log_retry_attempt,
+        on_backoff=[log_retry_attempt, reduce_request_record_limit],
         giveup=lambda exc: not should_retry_api_error(exc),
         **wait_gen_kwargs,
     )

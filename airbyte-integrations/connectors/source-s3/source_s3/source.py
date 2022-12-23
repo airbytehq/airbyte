@@ -48,19 +48,6 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
         )
 
         endpoint: str = Field("", description="Endpoint to an S3 compatible service. Leave empty to use AWS.", order=4)
-        use_ssl: bool = Field(
-            default=None,
-            title="Use TLS",
-            description="Whether the remote server is using a secure SSL/TLS connection. Only relevant if using an S3-compatible, "
-            "non-AWS server",
-            order=5,
-        )
-        verify_ssl_cert: bool = Field(
-            default=None,
-            title="Verify TLS Certificates",
-            description="Set this to false to allow self signed certificates. Only relevant if using an S3-compatible, non-AWS server",
-            order=6,
-        )
 
     provider: S3Provider
 
@@ -68,7 +55,7 @@ class SourceS3Spec(SourceFilesAbstractSpec, BaseModel):
 class SourceS3(SourceFilesAbstract):
     stream_class = IncrementalFileStreamS3
     spec_class = SourceS3Spec
-    documentation_url = "https://docs.airbyte.io/integrations/sources/s3"
+    documentation_url = "https://docs.airbyte.com/integrations/sources/s3"
 
     def read_config(self, config_path: str) -> Mapping[str, Any]:
         config: Mapping[str, Any] = super().read_config(config_path)

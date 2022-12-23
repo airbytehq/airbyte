@@ -2,6 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
+import os
 from dataclasses import InitVar, dataclass
 from functools import lru_cache
 from typing import Any, Mapping, MutableMapping, Optional, Union
@@ -59,7 +60,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
-        self.error_handler = self.error_handler or DefaultErrorHandler(options=options)
+        self.error_handler = self.error_handler or DefaultErrorHandler(options=options, config=self.config)
         self._options = options
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.
@@ -72,14 +73,14 @@ class HttpRequester(Requester, JsonSchemaMixin):
         return self.authenticator
 
     def get_url_base(self):
-        return self.url_base.eval(self.config)
+        return os.path.join(self.url_base.eval(self.config), "")
 
     def get_path(
         self, *, stream_state: Optional[StreamState], stream_slice: Optional[StreamSlice], next_page_token: Optional[Mapping[str, Any]]
     ) -> str:
         kwargs = {"stream_state": stream_state, "stream_slice": stream_slice, "next_page_token": next_page_token}
         path = self.path.eval(self.config, **kwargs)
-        return path
+        return path.strip("/")
 
     def get_method(self):
         return self._method
@@ -87,9 +88,9 @@ class HttpRequester(Requester, JsonSchemaMixin):
     # use a tiny cache to limit the memory footprint. It doesn't have to be large because we mostly
     # only care about the status of the last response received
     @lru_cache(maxsize=10)
-    def should_retry(self, response: requests.Response) -> ResponseStatus:
+    def interpret_response_status(self, response: requests.Response) -> ResponseStatus:
         # Cache the result because the HttpStream first checks if we should retry before looking at the backoff time
-        return self.error_handler.should_retry(response)
+        return self.error_handler.interpret_response(response)
 
     def get_request_params(
         self,

@@ -9,6 +9,7 @@ import io.airbyte.api.model.generated.AttemptFailureReason;
 import io.airbyte.api.model.generated.AttemptFailureSummary;
 import io.airbyte.api.model.generated.AttemptFailureType;
 import io.airbyte.api.model.generated.AttemptInfoRead;
+import io.airbyte.api.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStats;
 import io.airbyte.api.model.generated.AttemptStatus;
@@ -16,6 +17,7 @@ import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
 import io.airbyte.api.model.generated.JobConfigType;
 import io.airbyte.api.model.generated.JobDebugRead;
+import io.airbyte.api.model.generated.JobInfoLightRead;
 import io.airbyte.api.model.generated.JobInfoRead;
 import io.airbyte.api.model.generated.JobRead;
 import io.airbyte.api.model.generated.JobStatus;
@@ -36,10 +38,11 @@ import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogClientSingleton;
 import io.airbyte.config.helpers.LogConfigs;
-import io.airbyte.scheduler.client.SynchronousJobMetadata;
-import io.airbyte.scheduler.client.SynchronousResponse;
-import io.airbyte.scheduler.models.Attempt;
-import io.airbyte.scheduler.models.Job;
+import io.airbyte.persistence.job.models.Attempt;
+import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
+import io.airbyte.persistence.job.models.Job;
+import io.airbyte.server.scheduler.SynchronousJobMetadata;
+import io.airbyte.server.scheduler.SynchronousResponse;
 import io.airbyte.workers.helper.ProtocolConverters;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -65,6 +68,10 @@ public class JobConverter {
         .attempts(job.getAttempts().stream().map(this::getAttemptInfoRead).collect(Collectors.toList()));
   }
 
+  public JobInfoLightRead getJobInfoLightRead(final Job job) {
+    return new JobInfoLightRead().job(getJobRead(job));
+  }
+
   public static JobDebugRead getDebugJobInfoRead(final JobInfoRead jobInfoRead,
                                                  final SourceDefinitionRead sourceDefinitionRead,
                                                  final DestinationDefinitionRead destinationDefinitionRead,
@@ -80,19 +87,23 @@ public class JobConverter {
   }
 
   public static JobWithAttemptsRead getJobWithAttemptsRead(final Job job) {
+    return new JobWithAttemptsRead()
+        .job(getJobRead(job))
+        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+  }
+
+  public static JobRead getJobRead(final Job job) {
     final String configId = job.getScope();
     final JobConfigType configType = Enums.convertTo(job.getConfigType(), JobConfigType.class);
 
-    return new JobWithAttemptsRead()
-        .job(new JobRead()
-            .id(job.getId())
-            .configId(configId)
-            .configType(configType)
-            .resetConfig(extractResetConfigIfReset(job).orElse(null))
-            .createdAt(job.getCreatedAtInSecond())
-            .updatedAt(job.getUpdatedAtInSecond())
-            .status(Enums.convertTo(job.getStatus(), JobStatus.class)))
-        .attempts(job.getAttempts().stream().map(JobConverter::getAttemptRead).toList());
+    return new JobRead()
+        .id(job.getId())
+        .configId(configId)
+        .configType(configType)
+        .resetConfig(extractResetConfigIfReset(job).orElse(null))
+        .createdAt(job.getCreatedAtInSecond())
+        .updatedAt(job.getUpdatedAtInSecond())
+        .status(Enums.convertTo(job.getStatus(), JobStatus.class));
   }
 
   /**
@@ -229,6 +240,15 @@ public class JobConverter {
         .endedAt(metadata.getEndedAt())
         .succeeded(metadata.isSucceeded())
         .logs(getLogRead(metadata.getLogPath()));
+  }
+
+  public static AttemptNormalizationStatusRead convertAttemptNormalizationStatus(
+                                                                                 AttemptNormalizationStatus databaseStatus) {
+    return new AttemptNormalizationStatusRead()
+        .attemptNumber(databaseStatus.attemptNumber())
+        .hasRecordsCommitted(!databaseStatus.recordsCommitted().isEmpty())
+        .recordsCommitted(databaseStatus.recordsCommitted().orElse(0L))
+        .hasNormalizationFailed(databaseStatus.normalizationFailed());
   }
 
 }

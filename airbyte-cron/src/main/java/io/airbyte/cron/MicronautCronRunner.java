@@ -14,9 +14,10 @@ import io.micronaut.runtime.Micronaut;
  */
 public class MicronautCronRunner {
 
+  public static final String SCHEDULED_TRACE_OPERATION_NAME = "scheduled";
+
   public static void main(final String[] args) {
     Micronaut.build(args)
-        .eagerInitSingletons(true)
         .mainClass(MicronautCronRunner.class)
         .start();
   }

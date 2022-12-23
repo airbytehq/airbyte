@@ -1,26 +1,58 @@
-{
-  "Account": {
-    "SystemModstamp": "2122-01-18T21:18:20.000Z"
+[
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2122-01-18T21:18:20.000Z" },
+      "stream_descriptor": { "name": "Account" }
+    }
   },
-  "ActiveFeatureLicenseMetric": {
-    "SystemModstamp": "2122-08-22T05:08:29.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2122-08-22T05:08:29.000Z" },
+      "stream_descriptor": { "name": "ActiveFeatureLicenseMetric" }
+    }
   },
-  "ActivePermSetLicenseMetric": {
-    "SystemModstamp": "2122-08-22T05:03:27.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2122-08-22T05:03:27.000Z" },
+      "stream_descriptor": { "name": "ActivePermSetLicenseMetric" }
+    }
   },
-  "ActiveProfileMetric": {
-    "SystemModstamp": "2121-08-22T06:17:11.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2121-08-22T06:17:11.000Z" },
+      "stream_descriptor": { "name": "ActiveProfileMetric" }
+    }
   },
-  "Asset": {
-    "SystemModstamp": "2121-08-22T06:17:11.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2121-08-22T06:17:11.000Z" },
+      "stream_descriptor": { "name": "Asset" }
+    }
   },
-  "ObjectPermissions": {
-    "SystemModstamp": "2121-08-23T10:27:22.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2121-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "ObjectPermissions" }
+    }
   },
-  "PermissionSetTabSetting": {
-    "SystemModstamp": "2121-08-23T10:27:22.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "SystemModstamp": "2121-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "PermissionSetTabSetting" }
+    }
   },
-  "LeadHistory": {
-    "CreatedDate": "2121-08-23T10:27:22.000Z"
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": { "CreatedDate": "2121-08-23T10:27:22.000Z" },
+      "stream_descriptor": { "name": "LeadHistory" }
+    }
   }
-}
+]

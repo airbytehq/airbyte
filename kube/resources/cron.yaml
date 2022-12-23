@@ -16,28 +16,51 @@ spec:
         - name: airbyte-cron-container
           image: airbyte/cron
           env:
-            - name: POSTGRES_USER
+            - name: AIRBYTE_VERSION
               valueFrom:
-                secretKeyRef:
-                  name: airbyte-secrets
-                  key: DATABASE_USER
-            - name: POSTGRES_PWD
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: AIRBYTE_VERSION
+            - name: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CONFIGS_DATABASE_MINIMUM_FLYWAY_MIGRATION_VERSION
+            - name: DATABASE_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: airbyte-secrets
                   key: DATABASE_PASSWORD
-            - name: DB
-              value: "postgresql"
-            - name: DB_PORT
+            - name: DATABASE_URL
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: DATABASE_PORT
-            - name: POSTGRES_SEEDS
+                  key: DATABASE_URL
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: airbyte-secrets
+                  key: DATABASE_USER
+            - name: TEMPORAL_HOST
               valueFrom:
                 configMapKeyRef:
                   name: airbyte-env
-                  key: DATABASE_HOST
+                  key: TEMPORAL_HOST
+            - name: TEMPORAL_WORKER_PORTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: TEMPORAL_WORKER_PORTS
+            - name: WORKSPACE_ROOT
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: WORKSPACE_ROOT
+            - name: MICRONAUT_ENVIRONMENTS
+              valueFrom:
+                configMapKeyRef:
+                  name: airbyte-env
+                  key: CRON_MICRONAUT_ENVIRONMENTS
           volumeMounts:
             - name: airbyte-volume-configs
               mountPath: /configs

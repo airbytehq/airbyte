@@ -1,15 +1,18 @@
 import { motion } from "framer-motion";
 import React from "react";
 
+import styles from "./ContentWrapper.module.scss";
+
 interface IProps {
   children?: React.ReactNode;
   isOpen?: boolean;
   onToggled?: () => void;
 }
 
-const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
+const ContentWrapper: React.FC<React.PropsWithChildren<IProps>> = ({ children, isOpen, onToggled }) => {
   return (
     <motion.div
+      className={styles.container}
       animate={!isOpen ? "closed" : "open"}
       onAnimationComplete={onToggled}
       variants={{
@@ -19,7 +22,7 @@ const ContentWrapper: React.FC<IProps> = ({ children, isOpen, onToggled }) => {
           transition: { type: "tween" },
         },
         closed: {
-          height: "1px",
+          height: "0",
           opacity: 0,
           transition: { type: "tween" },
         },

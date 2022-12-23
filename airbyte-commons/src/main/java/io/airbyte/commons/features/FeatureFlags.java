@@ -12,12 +12,16 @@ public interface FeatureFlags {
 
   boolean autoDisablesFailingConnections();
 
-  boolean exposeSecretsInExport();
-
   boolean forceSecretMigration();
 
   boolean useStreamCapableState();
 
+  boolean autoDetectSchema();
+
   boolean logConnectorMessages();
+
+  boolean needStateValidation();
+
+  boolean applyFieldSelection();
 
 }

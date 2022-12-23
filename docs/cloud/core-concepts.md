@@ -14,7 +14,7 @@ A destination is a data warehouse, data lake, database, or an analytics tool whe
 
 ## Connector
 
-An Airbyte component which pulls data from, or pushes data to, a source or destination.
+An Airbyte component which pulls data from a source or pushes data to a destination.
 
 ## Connection
 
@@ -154,3 +154,8 @@ After a sync is complete, Airbyte normalizes the data. When setting up a connect
 A workspace is a grouping of sources, destinations, connections, and other configurations. It lets you collaborate with team members and share resources across your team under a shared billing account. 
 
 When you [sign up](http://cloud.airbyte.io/signup) for Airbyte Cloud, we automatically create your first workspace where you are the only user with access. You can set up your sources and destinations to start syncing data and invite other users to join your workspace.
+
+## Glossary of Terms
+
+You find and extended list of [Airbyte specific terms](https://glossary.airbyte.com/term/airbyte-glossary-of-terms/), [data engineering concepts](https://glossary.airbyte.com/term/data-engineering-concepts) or many [other data related terms](https://glossary.airbyte.com/).
+
