@@ -720,6 +720,9 @@
   "connectorBuilder.inputsButton": "Inputs",
   "connectorBuilder.optionalFieldsLabel": "Optional fields",
   "connectorBuilder.duplicateFieldID": "Make sure no field ID is used multiple times",
+  "connectorBuilder.streamConfiguration": "Configuration",
+  "connectorBuilder.streamSchema": "Schema",
+  "connectorBuilder.invalidSchema": "Invalid JSON - please fix schema to have it applied",
 
   "jobs.noAttemptsFailure": "Failed to start job.",
 
