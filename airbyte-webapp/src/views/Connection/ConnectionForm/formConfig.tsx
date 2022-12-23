@@ -90,8 +90,109 @@ export const createConnectionValidationSchema = ({
   mode,
   allowSubOneHourCronExpressions,
   allowAutoDetectSchema,
-}: CreateConnectionValidationSchemaArgs) =>
-  yup
+}: CreateConnectionValidationSchemaArgs) => {
+  const isNewStreamsTableEnabled = process.env.REACT_APP_NEW_STREAMS_TABLE ?? false;
+
+  if (isNewStreamsTableEnabled) {
+    return yup
+      .object({
+        // The connection name during Editing is handled separately from the form
+        name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
+        geography: yup.mixed<Geography>().oneOf(Object.values(Geography)),
+        scheduleType: yup
+          .string()
+          .oneOf([ConnectionScheduleType.manual, ConnectionScheduleType.basic, ConnectionScheduleType.cron]),
+        scheduleData: yup.mixed().when("scheduleType", (scheduleType) => {
+          if (scheduleType === ConnectionScheduleType.basic) {
+            return yup.object({
+              basicSchedule: yup
+                .object({
+                  units: yup.number().required("form.empty.error"),
+                  timeUnit: yup.string().required("form.empty.error"),
+                })
+                .defined("form.empty.error"),
+            });
+          } else if (scheduleType === ConnectionScheduleType.manual) {
+            return yup.mixed().notRequired();
+          }
+          return yup.object({
+            cron: yup
+              .object({
+                cronExpression: yup
+                  .string()
+                  .trim()
+                  .required("form.empty.error")
+                  .test("validCron", "form.cronExpression.error", validateCronExpression)
+                  .test(
+                    "validCronFrequency",
+                    "form.cronExpression.underOneHourNotAllowed",
+                    (expression) => allowSubOneHourCronExpressions || validateCronFrequencyOneHourOrMore(expression)
+                  ),
+                cronTimeZone: yup.string().required("form.empty.error"),
+              })
+              .defined("form.empty.error"),
+          });
+        }),
+        nonBreakingChangesPreference: allowAutoDetectSchema
+          ? yup.mixed().oneOf(Object.values(NonBreakingChangesPreference)).required("form.empty.error")
+          : yup.mixed().notRequired(),
+        namespaceDefinition: yup
+          .string()
+          .oneOf([
+            NamespaceDefinitionType.source,
+            NamespaceDefinitionType.destination,
+            NamespaceDefinitionType.customformat,
+          ])
+          .required("form.empty.error"),
+        namespaceFormat: yup.string().when("namespaceDefinition", {
+          is: NamespaceDefinitionType.customformat,
+          then: yup.string().trim().required("form.empty.error"),
+        }),
+        prefix: yup.string(),
+        syncCatalog: yup.object({
+          streams: yup.array().of(
+            yup.object({
+              id: yup
+                .string()
+                // This is required to get rid of id fields we are using to detect stream for edition
+                .when("$isRequest", (isRequest: boolean, schema: yup.StringSchema) =>
+                  isRequest ? schema.strip(true) : schema
+                ),
+              stream: yup.object(),
+              config: yup.object({
+                selected: yup.boolean(),
+                syncMode: yup.string(),
+                destinationSyncMode: yup.string(),
+                primaryKey: yup
+                  .array()
+                  .of(yup.array().of(yup.string()))
+                  .when(["syncMode", "destinationSyncMode", "selected"], {
+                    is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                      syncMode === SyncMode.incremental &&
+                      destinationSyncMode === DestinationSyncMode.append_dedup &&
+                      selected,
+                    then: yup.array().of(yup.array().of(yup.string())).min(1, "form.empty.error"),
+                  }),
+                cursorField: yup
+                  .array()
+                  .of(yup.string())
+                  .when(["syncMode", "destinationSyncMode", "selected"], {
+                    is: (syncMode: SyncMode, destinationSyncMode: DestinationSyncMode, selected: boolean) =>
+                      (destinationSyncMode === DestinationSyncMode.append ||
+                        destinationSyncMode === DestinationSyncMode.append_dedup) &&
+                      syncMode === SyncMode.incremental &&
+                      selected,
+                    then: yup.array().of(yup.string()).min(1, "form.empty.error"),
+                  }),
+              }),
+            })
+          ),
+        }),
+      })
+      .noUnknown();
+  }
+
+  return yup
     .object({
       // The connection name during Editing is handled separately from the form
       name: mode === "create" ? yup.string().required("form.empty.error") : yup.string().notRequired(),
@@ -206,6 +307,7 @@ export const createConnectionValidationSchema = ({
       }),
     })
     .noUnknown();
+};
 
 /**
  * Returns {@link Operation}[]

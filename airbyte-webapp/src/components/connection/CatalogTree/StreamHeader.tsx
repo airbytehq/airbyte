@@ -43,7 +43,6 @@ export interface StreamHeaderProps {
   onExpand: () => void;
   changedSelected: boolean;
   hasError: boolean;
-  configErrors?: Record<string, string>;
   disabled?: boolean;
 }
 

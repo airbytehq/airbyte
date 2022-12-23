@@ -1,6 +1,6 @@
 /* eslint-disable css-modules/no-unused-class */
 import classNames from "classnames";
-import { useField } from "formik";
+import { getIn, useFormikContext } from "formik";
 import isEqual from "lodash/isEqual";
 import { useMemo } from "react";
 
@@ -11,16 +11,15 @@ import { useBulkEditSelect } from "hooks/services/BulkEdit/BulkEditService";
 import { useConnectionFormService } from "hooks/services/ConnectionForm/ConnectionFormService";
 
 import styles from "./CatalogTreeTableRow.module.scss";
+
 type StatusToDisplay = "disabled" | "added" | "removed" | "changed" | "unchanged";
 
 export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
-  const { initialValues } = useConnectionFormService();
   const [isSelected] = useBulkEditSelect(stream.id);
+  const { initialValues } = useConnectionFormService();
+  const { errors } = useFormikContext();
 
-  const [, { error }] = useField(`schema.streams[${stream.id}].config`);
-
-  // in case error is an empty string
-  const hasError = error !== undefined;
+  const configErrors = getIn(errors, `syncCatalog.streams[${stream.id}].config`);
 
   const isStreamEnabled = stream.config?.selected;
 
@@ -67,7 +66,6 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
     [styles.removed]: statusToDisplay === "removed" && !isSelected,
     [styles.changed]: statusToDisplay === "changed" || isSelected,
     [styles.disabled]: statusToDisplay === "disabled",
-    [styles.error]: hasError,
   });
 
   return {
@@ -75,5 +73,6 @@ export const useCatalogTreeTableRowProps = (stream: SyncSchemaStream) => {
     isSelected,
     statusToDisplay,
     pillButtonVariant,
+    configErrors,
   };
 };
