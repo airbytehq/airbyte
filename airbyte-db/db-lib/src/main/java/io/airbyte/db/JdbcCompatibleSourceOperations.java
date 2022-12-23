@@ -20,21 +20,21 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    *
    * @param colIndex 1-based column index.
    */
-  void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
+  void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
 
   /**
    * Set the cursor field in incremental table query.
    */
-  void setStatementField(final PreparedStatement preparedStatement,
-                         final int parameterIndex,
-                         final SourceType cursorFieldType,
-                         final String value)
+  void setCursorField(final PreparedStatement preparedStatement,
+                      final int parameterIndex,
+                      final SourceType cursorFieldType,
+                      final String value)
       throws SQLException;
 
   /**
    * Determine the database specific type of the input field based on its column metadata.
    */
-  SourceType getFieldType(final JsonNode field);
+  SourceType getDatabaseFieldType(final JsonNode field);
 
   /**
    * @return the input identifiers with quotes and delimiters.

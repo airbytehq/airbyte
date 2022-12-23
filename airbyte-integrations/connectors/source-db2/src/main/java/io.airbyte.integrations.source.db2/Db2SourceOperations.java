@@ -38,7 +38,7 @@ public class Db2SourceOperations extends JdbcSourceOperations {
     try {
       queryContext.getObject(index);
       if (!queryContext.wasNull()) {
-        setJsonField(queryContext, index, jsonNode);
+        putJsonField(queryContext, index, jsonNode);
       }
     } catch (SQLException e) {
       if (DB2_UNIQUE_NUMBER_TYPES.contains(queryContext.getMetaData().getColumnTypeName(index))) {

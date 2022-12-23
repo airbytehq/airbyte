@@ -205,8 +205,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
             .fields(fields.stream()
                 // read the column metadata Json object, and determine its type
                 .map(f -> {
-                  final Datatype datatype = getFieldType(f);
-                  final JsonSchemaType jsonType = getType(datatype);
+                  final Datatype datatype = sourceOperations.getDatabaseFieldType(f);
+                  final JsonSchemaType jsonType = getAirbyteType(datatype);
                   LOGGER.info("Table {} column {} (type {}[{}], nullable {}) -> {}",
                       fields.get(0).get(INTERNAL_TABLE_NAME).asText(),
                       f.get(INTERNAL_COLUMN_NAME).asText(),
@@ -224,7 +224,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   private List<String> extractCursorFields(final List<JsonNode> fields) {
     return fields.stream()
-        .filter(field -> isCursorType(getFieldType(field)))
+        .filter(field -> isCursorType(sourceOperations.getDatabaseFieldType(field)))
         .map(field -> field.get(INTERNAL_COLUMN_NAME).asText())
         .collect(Collectors.toList());
   }
@@ -268,14 +268,6 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         .build());
   }
 
-  /**
-   * @param field Essential column information returned from
-   *        {@link AbstractJdbcSource#getColumnMetadata}.
-   */
-  private Datatype getFieldType(final JsonNode field) {
-    return sourceOperations.getFieldType(field);
-  }
-
   @Override
   public List<TableInfo<CommonField<Datatype>>> discoverInternal(final JdbcDatabase database)
       throws Exception {
@@ -283,7 +275,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
   }
 
   @Override
-  public JsonSchemaType getType(final Datatype columnType) {
+  public JsonSchemaType getAirbyteType(final Datatype columnType) {
     return sourceOperations.getJsonType(columnType);
   }
 
@@ -383,7 +375,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
               final PreparedStatement preparedStatement = connection.prepareStatement(sql.toString());
               LOGGER.info("Executing query for table {}: {}", tableName, preparedStatement);
-              sourceOperations.setStatementField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
+              sourceOperations.setCursorField(preparedStatement, 1, cursorFieldType, cursorInfo.getCursor());
               return preparedStatement;
             },
             sourceOperations::rowToJson);
@@ -430,7 +422,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           fullTableName,
           quotedCursorField);
       cursorRecordStatement = connection.prepareStatement(cursorRecordQuery);;
-      sourceOperations.setStatementField(cursorRecordStatement, 1, cursorFieldType, cursor);
+      sourceOperations.setCursorField(cursorRecordStatement, 1, cursorFieldType, cursor);
     }
     final ResultSet resultSet = cursorRecordStatement.executeQuery();
     if (resultSet.next()) {

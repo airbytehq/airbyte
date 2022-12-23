@@ -91,17 +91,17 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       }
 
       // convert to java types that will convert into reasonable json.
-      setJsonField(queryContext, i, jsonNode);
+      putJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;
   }
 
   @Override
-  public void setStatementField(final PreparedStatement preparedStatement,
-                                final int parameterIndex,
-                                final PostgresType cursorFieldType,
-                                final String value)
+  public void setCursorField(final PreparedStatement preparedStatement,
+                             final int parameterIndex,
+                             final PostgresType cursorFieldType,
+                             final String value)
       throws SQLException {
     switch (cursorFieldType) {
 
@@ -174,7 +174,8 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public void setJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  // This reads the actual value (in read).
+  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();
@@ -399,7 +400,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public PostgresType getFieldType(final JsonNode field) {
+  public PostgresType getDatabaseFieldType(final JsonNode field) {
     try {
       final String typeName = field.get(INTERNAL_COLUMN_TYPE_NAME).asText().toLowerCase();
       // Postgres boolean is mapped to JDBCType.BIT, but should be BOOLEAN
