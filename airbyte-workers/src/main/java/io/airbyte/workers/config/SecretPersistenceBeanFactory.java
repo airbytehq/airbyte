@@ -9,6 +9,7 @@ import io.airbyte.config.persistence.split_secrets.GoogleSecretManagerPersistenc
 import io.airbyte.config.persistence.split_secrets.LocalTestingSecretPersistence;
 import io.airbyte.config.persistence.split_secrets.MemorySecretPersistence;
 import io.airbyte.config.persistence.split_secrets.NoOpSecretsHydrator;
+import io.airbyte.config.persistence.split_secrets.RealSecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.SecretPersistence;
 import io.airbyte.config.persistence.split_secrets.SecretsHydrator;
 import io.airbyte.config.persistence.split_secrets.VaultSecretPersistence;
@@ -44,7 +45,7 @@ public class SecretPersistenceBeanFactory {
             pattern = "(?i)^testing_config_db_table$")
   @Requires(env = WorkerMode.CONTROL_PLANE)
   @Named("secretPersistence")
-  public SecretPersistence localTestingSecretPersistence(@Named("testDatabase") final Database configDatabase) {
+  public SecretPersistence localTestingSecretPersistence(@Named("configDatabase") final Database configDatabase) {
     return new LocalTestingSecretPersistence(configDatabase);
   }
 
@@ -78,14 +79,14 @@ public class SecretPersistenceBeanFactory {
 
   @Singleton
   @Requires(property = "airbyte.acceptance.test.enabled",
-      value = "true")
+            value = "true")
   public SecretsHydrator noOpSecretsHydrator() {
     return new NoOpSecretsHydrator();
   }
 
   @Singleton
   @Requires(property = "airbyte.acceptance.test.enabled",
-      value = "false")
+            value = "false")
   public SecretsHydrator secretsHydrator(@Named("secretPersistence") final SecretPersistence secretPersistence) {
     return new RealSecretsHydrator(secretPersistence);
   }
