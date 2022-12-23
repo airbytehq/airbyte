@@ -10,7 +10,12 @@ import io.airbyte.commons.functional.CheckedConsumer;
 import io.airbyte.commons.functional.CheckedFunction;
 import io.airbyte.db.JdbcCompatibleSourceOperations;
 import io.airbyte.db.SqlDatabase;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -39,20 +44,14 @@ public abstract class JdbcDatabase extends SqlDatabase {
 
   @Override
   public void execute(final String sql) throws SQLException {
-    execute(connection -> {
-      try (final Statement statement = connection.createStatement()) {
-        statement.execute(sql);
-      }
-    });
+    execute(connection -> connection.createStatement().execute(sql));
   }
 
   public void executeWithinTransaction(final List<String> queries) throws SQLException {
     execute(connection -> {
       connection.setAutoCommit(false);
-      try (final Statement statement = connection.createStatement()) {
-        for (final String s : queries) {
-          statement.execute(s);
-        }
+      for (final String s : queries) {
+        connection.createStatement().execute(s);
       }
       connection.commit();
       connection.setAutoCommit(true);
@@ -174,14 +173,13 @@ public abstract class JdbcDatabase extends SqlDatabase {
 
   public int queryInt(final String sql, final String... params) throws SQLException {
     try (final Stream<Integer> stream = unsafeQuery(c -> {
-      try (PreparedStatement statement = c.prepareStatement(sql)) {
-        int i = 1;
-        for (String param : params) {
-          statement.setString(i, param);
-          ++i;
-        }
-        return statement;
+      PreparedStatement statement = c.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
       }
+      return statement;
     }, rs -> rs.getInt(1))) {
       return stream.findFirst().get();
     }
@@ -195,14 +193,13 @@ public abstract class JdbcDatabase extends SqlDatabase {
   @Override
   public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
     return unsafeQuery(connection -> {
-      try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-        int i = 1;
-        for (final String param : params) {
-          statement.setString(i, param);
-          ++i;
-        }
-        return statement;
+      final PreparedStatement statement = connection.prepareStatement(sql);
+      int i = 1;
+      for (final String param : params) {
+        statement.setString(i, param);
+        ++i;
       }
+      return statement;
     }, sourceOperations::rowToJson);
   }
 
@@ -218,14 +215,13 @@ public abstract class JdbcDatabase extends SqlDatabase {
 
   public ResultSetMetaData queryMetadata(final String sql, final String... params) throws SQLException {
     try (final Stream<ResultSetMetaData> q = unsafeQuery(c -> {
-      try (PreparedStatement statement = c.prepareStatement(sql)) {
-        int i = 1;
-        for (String param : params) {
-          statement.setString(i, param);
-          ++i;
-        }
-        return statement;
+      PreparedStatement statement = c.prepareStatement(sql);
+      int i = 1;
+      for (String param : params) {
+        statement.setString(i, param);
+        ++i;
       }
+      return statement;
     },
         ResultSet::getMetaData)) {
       return q.findFirst().orElse(null);

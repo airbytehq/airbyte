@@ -62,15 +62,15 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
   public <T> Stream<T> unsafeResultSetQuery(final CheckedFunction<Connection, ResultSet, SQLException> query,
                                             final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = dataSource.getConnection();
-        final Stream<T> stream = toUnsafeStream(query.apply(connection), recordTransform)) {
-      return stream.onClose(() -> {
-        try {
-          connection.close();
-        } catch (final SQLException e) {
-          throw new RuntimeException(e);
-        }
-      });
+    try (final Connection connection = dataSource.getConnection()) {
+      return toUnsafeStream(query.apply(connection), recordTransform)
+              .onClose(() -> {
+                try {
+                  connection.close();
+                } catch (final SQLException e) {
+                  throw new RuntimeException(e);
+                }
+              });
     }
   }
 
@@ -110,18 +110,15 @@ public class DefaultJdbcDatabase extends JdbcDatabase {
                                    final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
     try (final Connection connection = dataSource.getConnection()) {
-      try (final PreparedStatement statement = statementCreator.apply(connection)) {
-        try (final Stream<T> stream = toUnsafeStream(statement.executeQuery(), recordTransform)) {
-          return stream.onClose(() -> {
-            try {
-              LOGGER.info("closing connection");
-              connection.close();
-            } catch (final SQLException e) {
-              throw new RuntimeException(e);
-            }
-          });
-        }
-      }
+      return toUnsafeStream(statementCreator.apply(connection).executeQuery(), recordTransform)
+              .onClose(() -> {
+                try {
+                  LOGGER.info("closing connection");
+                  connection.close();
+                } catch (final SQLException e) {
+                  throw new RuntimeException(e);
+                }
+              });
     }
   }
 

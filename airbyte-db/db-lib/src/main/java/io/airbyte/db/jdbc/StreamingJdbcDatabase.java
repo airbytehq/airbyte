@@ -61,21 +61,19 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
   public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                    final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-
     try (final Connection connection = dataSource.getConnection()) {
-      try (final PreparedStatement statement = statementCreator.apply(connection)) {
-        final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
-        streamingConfig.initialize(connection, statement);
-        return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
-            .onClose(() -> {
-              try {
-                connection.setAutoCommit(true);
-                connection.close();
-              } catch (final SQLException e) {
-                throw new RuntimeException(e);
-              }
-            });
-      }
+      final PreparedStatement statement = statementCreator.apply(connection);
+      final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
+      streamingConfig.initialize(connection, statement);
+      return toUnsafeStream(statement.executeQuery(), recordTransform, streamingConfig)
+          .onClose(() -> {
+            try {
+              connection.setAutoCommit(true);
+              connection.close();
+            } catch (final SQLException e) {
+              throw new RuntimeException(e);
+            }
+          });
     } catch (final SQLException e) {
       throw new RuntimeException(e);
     }
