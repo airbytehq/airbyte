@@ -20,6 +20,7 @@ import io.airbyte.validation.json.JsonSchemaValidator;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -35,7 +36,7 @@ public class V0ToV1MigrationTest {
     // airbyte-workers / airbyte-commons-protocol would reference it directly
     URI parentUri = MoreResources.readResourceAsFile("WellKnownTypes.json").getAbsoluteFile().toURI();
     validator = new JsonSchemaValidator(parentUri);
-    migration = new AirbyteMessageMigrationV1(null, validator);
+    migration = new AirbyteMessageMigrationV1(validator);
   }
 
   @Test
@@ -58,7 +59,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -88,7 +89,7 @@ public class V0ToV1MigrationTest {
     private void doTest(String oldSchemaString, String expectedSchemaString) {
       JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema));
+      AirbyteMessage upgradedMessage = migration.upgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
       assertEquals(expectedSchema, upgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
@@ -566,7 +567,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
       AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -592,7 +593,7 @@ public class V0ToV1MigrationTest {
     private void doTest(String oldDataString, String expectedDataString) {
       JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData));
+      AirbyteMessage upgradedMessage = migration.upgrade(createRecordMessage(oldData), Optional.empty());
 
       JsonNode expectedData = Jsons.deserialize(expectedDataString);
       assertEquals(expectedData, upgradedMessage.getRecord().getData());
@@ -677,7 +678,7 @@ public class V0ToV1MigrationTest {
           }
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(newSchema), Optional.empty());
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -707,7 +708,7 @@ public class V0ToV1MigrationTest {
     private void doTest(String oldSchemaString, String expectedSchemaString) {
       JsonNode oldSchema = Jsons.deserialize(oldSchemaString);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = migration.downgrade(createCatalogMessage(oldSchema), Optional.empty());
 
       JsonNode expectedSchema = Jsons.deserialize(expectedSchemaString);
       assertEquals(expectedSchema, downgradedMessage.getCatalog().getStreams().get(0).getJsonSchema());
@@ -1166,8 +1167,8 @@ public class V0ToV1MigrationTest {
           "42"
           """);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
+          .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
       io.airbyte.protocol.models.v0.AirbyteMessage expectedMessage = Jsons.deserialize(
           """
@@ -1196,8 +1197,8 @@ public class V0ToV1MigrationTest {
       ConfiguredAirbyteCatalog catalog = createConfiguredAirbyteCatalog(schemaString);
       JsonNode oldData = Jsons.deserialize(oldDataString);
 
-      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(catalog, validator)
-          .downgrade(createRecordMessage(oldData));
+      io.airbyte.protocol.models.v0.AirbyteMessage downgradedMessage = new AirbyteMessageMigrationV1(validator)
+          .downgrade(createRecordMessage(oldData), Optional.of(catalog));
 
       JsonNode expectedDowngradedRecord = Jsons.deserialize(expectedDataString);
       assertEquals(expectedDowngradedRecord, downgradedMessage.getRecord().getData());
