@@ -72,16 +72,6 @@ public abstract class SshPostgresDestinationAcceptanceTest extends JdbcDestinati
   }
 
   @Override
-  protected boolean supportsNormalization() {
-    return true;
-  }
-
-  @Override
-  protected boolean supportsDBT() {
-    return true;
-  }
-
-  @Override
   protected boolean implementsNamespaces() {
     return true;
   }

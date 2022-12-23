@@ -281,20 +281,6 @@ public abstract class DestinationAcceptanceTest {
   }
 
   /**
-   * Override to return true to if the destination implements basic normalization and it should be
-   * tested here.
-   *
-   * @return - a boolean.
-   */
-  protected boolean supportsNormalization() {
-    return false;
-  }
-
-  protected boolean supportsDBT() {
-    return false;
-  }
-
-  /**
    * Override to return true if a destination implements size limits on record size (then destination
    * should redefine getMaxRecordValueLimit() too)
    */
@@ -566,7 +552,6 @@ public abstract class DestinationAcceptanceTest {
   @Test
   public void specNormalizationValueShouldBeCorrect() throws Exception {
     final boolean normalizationFromDefinition = normalizationFromDefinition();
-    assertEquals(normalizationFromDefinition, supportsNormalization());
     if (normalizationFromDefinition) {
       boolean normalizationRunnerFactorySupportsDestinationImage;
       try {
@@ -580,11 +565,6 @@ public abstract class DestinationAcceptanceTest {
       }
       assertEquals(normalizationFromDefinition, normalizationRunnerFactorySupportsDestinationImage);
     }
-  }
-
-  @Test
-  public void specDBTValueShouldBeCorrect() {
-    assertEquals(dbtFromDefinition(), supportsDBT());
   }
 
   /**
@@ -1706,7 +1686,7 @@ public abstract class DestinationAcceptanceTest {
   }
 
   private void runAndCheck(AirbyteCatalog catalog, ConfiguredAirbyteCatalog configuredCatalog, List<AirbyteMessage> messages) throws Exception {
-    if (supportsNormalization()) {
+    if (normalizationFromDefinition()) {
       LOGGER.info("Normalization is supported! Run test with normalization.");
       runAndCheckWithNormalization(messages, configuredCatalog, catalog);
     } else {

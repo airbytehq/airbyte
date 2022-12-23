@@ -2859,8 +2859,10 @@ components:
           type: string
           format: date
         supportsDbt:
+          default: false
           type: boolean
         supportsNormalization:
+          default: false
           type: boolean
         resourceRequirements:
           $ref: "#/components/schemas/ActorDefinitionResourceRequirements"
