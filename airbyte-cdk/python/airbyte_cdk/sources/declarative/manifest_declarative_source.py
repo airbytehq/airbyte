@@ -5,11 +5,13 @@
 import inspect
 import json
 import logging
+import pkgutil
 import typing
 from dataclasses import dataclass, fields
 from enum import Enum, EnumMeta
 from typing import Any, Iterator, List, Mapping, MutableMapping, Union
 
+import yaml
 from airbyte_cdk.models import (
     AirbyteConnectionStatus,
     AirbyteMessage,
@@ -23,10 +25,12 @@ from airbyte_cdk.sources.declarative.declarative_source import DeclarativeSource
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.exceptions import InvalidConnectorDefinitionException
 from airbyte_cdk.sources.declarative.parsers.factory import DeclarativeComponentFactory
+from airbyte_cdk.sources.declarative.parsers.manifest_component_transformer import ManifestComponentTransformer
 from airbyte_cdk.sources.declarative.parsers.manifest_reference_resolver import ManifestReferenceResolver
 from airbyte_cdk.sources.declarative.types import ConnectionDefinition
 from airbyte_cdk.sources.streams.core import Stream
 from dataclasses_jsonschema import JsonSchemaMixin
+from jsonschema.exceptions import ValidationError
 from jsonschema.validators import validate
 
 
@@ -40,7 +44,7 @@ class ConcreteDeclarativeSource(JsonSchemaMixin):
 class ManifestDeclarativeSource(DeclarativeSource):
     """Declarative source defined by a manifest of low-code components that define source connector behavior"""
 
-    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "version"}
+    VALID_TOP_LEVEL_FIELDS = {"check", "definitions", "schemas", "spec", "streams", "type", "version"}
 
     def __init__(self, source_config: ConnectionDefinition, debug: bool = False):
         """
@@ -65,8 +69,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
     @property
     def connection_checker(self) -> ConnectionChecker:
         check = self._source_config["check"]
-        if "class_name" not in check:
-            check["class_name"] = "airbyte_cdk.sources.declarative.checks.check_stream.CheckStream"
+        if "type" not in check:
+            check["type"] = "CheckStream"
         return self._factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
@@ -90,8 +94,8 @@ class ManifestDeclarativeSource(DeclarativeSource):
 
         spec = self._source_config.get("spec")
         if spec:
-            if "class_name" not in spec:
-                spec["class_name"] = "airbyte_cdk.sources.declarative.spec.Spec"
+            if "type" not in spec:
+                spec["type"] = "Spec"
             spec_component = self._factory.create_component(spec, dict())()
             return spec_component.generate_spec()
         else:
@@ -119,6 +123,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
+        # Validates the connector manifest against the schema auto-generated from the low-code backend
         full_config = {}
         if "version" in self._source_config:
             full_config["version"] = self._source_config["version"]
@@ -127,13 +132,35 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if len(streams) > 0:
             full_config["streams"] = streams
         declarative_source_schema = ConcreteDeclarativeSource.json_schema()
-        validate(full_config, declarative_source_schema)
+
+        try:
+            validate(full_config, declarative_source_schema)
+        except ValidationError as e:
+            raise ValidationError("Validation against auto-generated schema failed") from e
+
+        # Validates the connector manifest against the low-code component json schema
+        manifest = self._source_config
+        if "type" not in manifest:
+            manifest["type"] = "DeclarativeSource"
+        manifest_transformer = ManifestComponentTransformer()
+        propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
+
+        try:
+            raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
+            declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
+
+        try:
+            validate(propagated_manifest, declarative_component_schema)
+        except ValidationError as e:
+            raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
     def _stream_configs(self):
         stream_configs = self._source_config.get("streams", [])
         for s in stream_configs:
-            if "class_name" not in s:
-                s["class_name"] = "airbyte_cdk.sources.declarative.declarative_stream.DeclarativeStream"
+            if "type" not in s:
+                s["type"] = "DeclarativeStream"
         return stream_configs
 
     @staticmethod
