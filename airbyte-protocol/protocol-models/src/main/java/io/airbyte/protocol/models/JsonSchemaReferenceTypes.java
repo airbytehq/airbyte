@@ -20,6 +20,8 @@ public class JsonSchemaReferenceTypes {
       "boolean");
 
   public static final String REF_KEY = "$ref";
+  public static final String TYPE_KEY = "type";
+  public static final String ONEOF_KEY = "oneOf";
 
   public static final String WELL_KNOWN_TYPES_FILENAME = "WellKnownTypes.json";
   public static final String STRING_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/String";

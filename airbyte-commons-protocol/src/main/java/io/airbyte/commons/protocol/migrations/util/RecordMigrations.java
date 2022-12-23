@@ -4,7 +4,9 @@
 
 package io.airbyte.commons.protocol.migrations.util;
 
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.ONEOF_KEY;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TYPE_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -59,7 +61,7 @@ public class RecordMigrations {
                                             JsonNode data,
                                             JsonNode schema) {
     // If this is a oneOf node, then we need to handle each oneOf case.
-    if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull("type") && schema.hasNonNull("oneOf")) {
+    if (!schema.hasNonNull(REF_KEY) && !schema.hasNonNull(TYPE_KEY) && schema.hasNonNull(ONEOF_KEY)) {
       return mutateOneOfNode(validator, schemaMatcher, transformer, data, schema);
     }
 
@@ -91,7 +93,7 @@ public class RecordMigrations {
                                               Transformer transformer,
                                               JsonNode data,
                                               JsonNode schema) {
-    JsonNode schemaOptions = schema.get("oneOf");
+    JsonNode schemaOptions = schema.get(ONEOF_KEY);
     if (schemaOptions.size() == 0) {
       // If the oneOf has no options, then don't do anything interesting.
       return new MigratedNode(data, validator.test(schema, data));
@@ -128,10 +130,10 @@ public class RecordMigrations {
     if (schema.hasNonNull(REF_KEY)) {
       // If the schema uses a reference type, then it's not an object schema.
       isObjectSchema = false;
-    } else if (schema.hasNonNull("type")) {
+    } else if (schema.hasNonNull(TYPE_KEY)) {
       // If the schema declares {type: object} or {type: [..., object, ...]}
       // Then this is an object schema
-      JsonNode typeNode = schema.get("type");
+      JsonNode typeNode = schema.get(TYPE_KEY);
       if (typeNode.isArray()) {
         isObjectSchema = false;
         for (JsonNode typeItem : typeNode) {
@@ -196,10 +198,10 @@ public class RecordMigrations {
     if (schema.hasNonNull(REF_KEY)) {
       // If the schema uses a reference type, then it's not an array schema.
       isArraySchema = false;
-    } else if (schema.hasNonNull("type")) {
+    } else if (schema.hasNonNull(TYPE_KEY)) {
       // If the schema declares {type: array} or {type: [..., array, ...]}
       // Then this is an array schema
-      JsonNode typeNode = schema.get("type");
+      JsonNode typeNode = schema.get(TYPE_KEY);
       if (typeNode.isArray()) {
         isArraySchema = false;
         for (JsonNode typeItem : typeNode) {
