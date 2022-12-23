@@ -49,7 +49,7 @@ public class StandardSyncPersistence {
   }
 
   private StandardSync toStandardSync(StandardSyncModel model) {
-    return new StandardSync().withConnectionId(model.connection_id());
+    return new StandardSync().withConnectionId(model.getId()).withName(model.getName());
   }
 
   // public static StandardSync toStandardSync(StandardSyncModel standardSyncModel) {
