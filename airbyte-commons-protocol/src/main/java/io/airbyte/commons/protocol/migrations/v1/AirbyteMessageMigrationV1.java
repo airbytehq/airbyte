@@ -66,7 +66,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
         if (maybeStream.isPresent()) {
           JsonNode schema = maybeStream.get().getStream().getJsonSchema();
           JsonNode oldData = record.getData();
-          MigratedNode downgradedNode = downgradeNode(oldData, schema);
+          MigratedNode downgradedNode = downgradeRecord(oldData, schema);
           record.setData(downgradedNode.node());
         }
       }
@@ -139,7 +139,7 @@ public class AirbyteMessageMigrationV1 implements AirbyteMessageMigration<io.air
    * downgrade anything that we can definitively say is a number. Should _not_ throw an exception if
    * bad things happen (e.g. we try to parse a non-numerical string as a number).
    */
-  private MigratedNode downgradeNode(JsonNode data, JsonNode schema) {
+  private MigratedNode downgradeRecord(JsonNode data, JsonNode schema) {
     return RecordMigrations.mutateDataNode(
         validator,
         s -> {
