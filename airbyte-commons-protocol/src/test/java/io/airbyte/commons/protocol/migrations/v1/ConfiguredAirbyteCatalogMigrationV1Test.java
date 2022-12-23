@@ -6,7 +6,6 @@ package io.airbyte.commons.protocol.migrations.v1;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.protocol.models.AirbyteStream;
 import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
@@ -43,14 +42,17 @@ public class ConfiguredAirbyteCatalogMigrationV1Test {
   public void testBasicUpgrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
-    JsonNode oldSchema = Jsons.deserialize(
-        """
-        {
-          "type": "string"
-        }
-        """);
+    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedCatalog = new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
+                Jsons.deserialize(
+                    """
+                    {
+                      "type": "string"
+                    }
+                    """)))));
 
-    ConfiguredAirbyteCatalog upgradedMessage = migration.upgrade(createDowngradedCatalogMessage(oldSchema));
+    ConfiguredAirbyteCatalog upgradedMessage = migration.upgrade(downgradedCatalog);
 
     ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
         """
@@ -74,14 +76,16 @@ public class ConfiguredAirbyteCatalogMigrationV1Test {
   public void testBasicDowngrade() {
     // This isn't actually a valid stream schema (since it's not an object)
     // but this test case is mostly about preserving the message structure, so it's not super relevant
-    JsonNode newSchema = Jsons.deserialize(
-        """
-        {
-          "$ref": "WellKnownTypes.json#/definitions/String"
-        }
-        """);
+    ConfiguredAirbyteCatalog upgradedCatalog = new ConfiguredAirbyteCatalog()
+        .withStreams(List.of(
+            new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(
+                Jsons.deserialize("""
+                                  {
+                                    "$ref": "WellKnownTypes.json#/definitions/String"
+                                  }
+                                  """)))));
 
-    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedMessage = migration.downgrade(createUpgradedCatalogMessage(newSchema));
+    io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog downgradedMessage = migration.downgrade(upgradedCatalog);
 
     io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog expectedMessage = Jsons.deserialize(
         """
@@ -99,19 +103,6 @@ public class ConfiguredAirbyteCatalogMigrationV1Test {
         """,
         io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog.class);
     assertEquals(expectedMessage, downgradedMessage);
-  }
-
-  private io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog createDowngradedCatalogMessage(JsonNode schema) {
-    return new io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog()
-        .withStreams(List.of(
-            new io.airbyte.protocol.models.v0.ConfiguredAirbyteStream().withStream(new io.airbyte.protocol.models.v0.AirbyteStream().withJsonSchema(
-                schema))));
-  }
-
-  private ConfiguredAirbyteCatalog createUpgradedCatalogMessage(JsonNode schema) {
-    return new ConfiguredAirbyteCatalog()
-        .withStreams(List.of(new ConfiguredAirbyteStream().withStream(new AirbyteStream().withJsonSchema(
-            schema))));
   }
 
 }
