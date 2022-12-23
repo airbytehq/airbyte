@@ -426,6 +426,14 @@ public class ConnectionsHandler {
     return new ConnectionReadList().connections(connectionReads);
   }
 
+  public ConnectionReadList listConnectionsForSource(final UUID sourceId, final boolean includeDeleted) throws IOException {
+    final List<ConnectionRead> connectionReads = Lists.newArrayList();
+    for (final StandardSync standardSync : configRepository.listConnectionsBySource(sourceId, includeDeleted)) {
+      connectionReads.add(ApiPojoConverters.internalToConnectionRead(standardSync));
+    }
+    return new ConnectionReadList().connections(connectionReads);
+  }
+
   public ConnectionReadList listConnections() throws JsonValidationException, ConfigNotFoundException, IOException {
     final List<ConnectionRead> connectionReads = Lists.newArrayList();
 
