@@ -571,6 +571,17 @@ public class AirbyteAcceptanceTestHarness {
     return database.query(context -> context.fetch(String.format("SELECT * FROM %s;", table)))
         .stream()
         .map(Record::intoMap)
+        .map(rec -> {
+          Map<String, Object> stringifiedNumbers = new HashMap<>();
+          for (String key : rec.keySet()) {
+            Object o = rec.get(key);
+            if (o instanceof Number) {
+              o = o.toString();
+            }
+            stringifiedNumbers.put(key, o);
+          }
+          return stringifiedNumbers;
+        })
         .map(Jsons::jsonNode)
         .collect(Collectors.toList());
   }
