@@ -1,3 +1,7 @@
+/*
+ * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
+ */
+
 package io.airbyte.integrations.destination.bigquery;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -32,12 +36,13 @@ public class BigQueryDestinationTestUtils {
     mapBuilder.put(BigQueryConsts.CONFIG_CREDS, tmpCredentialsJson.toString());
     mapBuilder.put(BigQueryConsts.CONFIG_DATASET_ID, datasetId);
     mapBuilder.put(BigQueryConsts.CONFIG_DATASET_LOCATION, tmpConfigJson.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText());
-    if(tmpConfigJson.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)) {
+    if (tmpConfigJson.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)) {
       mapBuilder.put(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT, tmpConfigJson.get(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT).asText());
     }
 
-    //if current test config includes GCS staging - add the staging configuration to the returned config object
-    if(tmpConfigJson.has(BigQueryConsts.LOADING_METHOD)) {
+    // if current test config includes GCS staging - add the staging configuration to the returned
+    // config object
+    if (tmpConfigJson.has(BigQueryConsts.LOADING_METHOD)) {
       final JsonNode loadingMethodJson = tmpConfigJson.get(BigQueryConsts.LOADING_METHOD);
       mapBuilder.put(BigQueryConsts.LOADING_METHOD, loadingMethodJson);
     }
@@ -50,8 +55,8 @@ public class BigQueryDestinationTestUtils {
         .setLocation(config.get(BigQueryConsts.CONFIG_DATASET_LOCATION).asText()).build();
     try {
       return bigquery.create(datasetInfo);
-    } catch(Exception ex) {
-      if(ex.getMessage().indexOf("Already Exists") > -1) {
+    } catch (Exception ex) {
+      if (ex.getMessage().indexOf("Already Exists") > -1) {
         return bigquery.getDataset(datasetId);
       }
     }
@@ -71,7 +76,7 @@ public class BigQueryDestinationTestUtils {
   public static boolean tearDownBigQuery(BigQuery bigquery, Dataset dataset, Logger LOGGER) {
     // allows deletion of a dataset that has contents
     final BigQuery.DatasetDeleteOption option = BigQuery.DatasetDeleteOption.deleteContents();
-    if(bigquery == null || dataset == null) {
+    if (bigquery == null || dataset == null) {
       return false;
     }
     try {
@@ -92,7 +97,7 @@ public class BigQueryDestinationTestUtils {
    * Remove all the GCS output from the tests.
    */
   public static boolean tearDownGcs(AmazonS3 s3Client, JsonNode config, Logger LOGGER) {
-    if(s3Client == null) {
+    if (s3Client == null) {
       return false;
     }
 
@@ -121,4 +126,5 @@ public class BigQueryDestinationTestUtils {
       return false;
     }
   }
+
 }

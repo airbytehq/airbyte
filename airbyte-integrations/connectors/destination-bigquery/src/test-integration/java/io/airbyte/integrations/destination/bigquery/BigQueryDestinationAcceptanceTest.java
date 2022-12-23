@@ -192,8 +192,8 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch(Exception ex) {
-      //ignore
+    } catch (Exception ex) {
+      // ignore
     }
   }
 
@@ -238,4 +238,5 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
       throw new RuntimeException(e);
     }
   }
+
 }

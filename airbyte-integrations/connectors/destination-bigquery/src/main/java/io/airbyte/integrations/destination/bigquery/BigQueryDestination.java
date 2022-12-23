@@ -194,17 +194,16 @@ public class BigQueryDestination extends BaseConnector implements Destination {
           new ByteArrayInputStream(credentialsString.getBytes(Charsets.UTF_8)));
     }
 
-    if (config.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)){
+    if (config.has(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT)) {
       return ImpersonatedCredentials.create(
-        credentials, 
-        config.get(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT).asText(), 
-        null,
-        Arrays.asList(
-          "https://www.googleapis.com/auth/bigquery",
-          "https://www.googleapis.com/auth/bigquery.insertdata",
-          "https://www.googleapis.com/auth/devstorage.read_write"
-        ), 
-        0); //0 = max = 3600 seconds
+          credentials,
+          config.get(BigQueryConsts.CONFIG_IMPERSONATE_ACCOUNT).asText(),
+          null,
+          Arrays.asList(
+              "https://www.googleapis.com/auth/bigquery",
+              "https://www.googleapis.com/auth/bigquery.insertdata",
+              "https://www.googleapis.com/auth/devstorage.read_write"),
+          0); // 0 = max = 3600 seconds
     } else {
       return credentials;
     }

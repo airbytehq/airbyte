@@ -75,6 +75,7 @@ import org.slf4j.LoggerFactory;
 
 @TestInstance(PER_CLASS)
 class BigQueryDestinationTest {
+
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
   protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
   protected static final Path CREDENTIALS_IMPERSONATE_PATH = Path.of("secrets/credentials-impersonate.json");
@@ -123,7 +124,7 @@ class BigQueryDestinationTest {
   protected static JsonNode configWithBadProjectId;
   protected static JsonNode insufficientRoleConfig;
   protected static JsonNode nonBillableConfig;
-  protected static JsonNode gcsStagingConfig; //default BigQuery config. Also used for setup/teardown
+  protected static JsonNode gcsStagingConfig; // default BigQuery config. Also used for setup/teardown
   protected BigQuery bigquery;
   protected Dataset dataset;
   protected static Map<String, JsonNode> configs;
@@ -138,8 +139,7 @@ class BigQueryDestinationTest {
         Arguments.of("config"),
         Arguments.of("configWithProjectId"),
         Arguments.of("configImpersonate"),
-        Arguments.of("gcsStagingConfig")
-    );
+        Arguments.of("gcsStagingConfig"));
   }
 
   private Stream<Arguments> failCheckTestConfigProvider() {
@@ -147,16 +147,14 @@ class BigQueryDestinationTest {
         Arguments.of("configImpersonateFail", "Error requesting access token"),
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
         Arguments.of("insufficientRoleConfig", "User does not have bigquery.datasets.create permission"),
-        Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier")
-    );
+        Arguments.of("nonBillableConfig", "Access Denied: BigQuery BigQuery: Streaming insert is not allowed in the free tier"));
   }
 
   private Stream<Arguments> failWriteTestConfigProvider() {
     return Stream.of(
         Arguments.of("configImpersonateFail", "Error requesting access token"),
         Arguments.of("configWithBadProjectId", "User does not have bigquery.datasets.create permission in project"),
-        Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied")
-    );
+        Arguments.of("insufficientRoleConfig", "Permission bigquery.tables.create denied"));
   }
 
   @BeforeAll
@@ -191,31 +189,32 @@ class BigQueryDestinationTest {
     }
 
     datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
-    //Set up config objects for test scenarios
-    //config - basic config for standard inserts that should succeed check and write tests
-    //this config is also used for housekeeping (checking records, and cleaning up)
+    // Set up config objects for test scenarios
+    // config - basic config for standard inserts that should succeed check and write tests
+    // this config is also used for housekeeping (checking records, and cleaning up)
     config = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, datasetId);
 
-    //all successful configs use the same project ID
+    // all successful configs use the same project ID
     projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
 
-    //configWithProjectId - config that uses project:dataset notation for datasetId
+    // configWithProjectId - config that uses project:dataset notation for datasetId
     final String dataSetWithProjectId = String.format("%s:%s", projectId, datasetId);
     configWithProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_STANDARD_INSERT_PATH, dataSetWithProjectId);
 
-    //configWithBadProjectId - config that uses "fake" project ID and should fail
+    // configWithBadProjectId - config that uses "fake" project ID and should fail
     final String dataSetWithBadProjectId = String.format("%s:%s", "fake", datasetId);
     configWithBadProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId);
 
-    //configImpersonate - config that uses account impersonation (https://github.com/airbytehq/airbyte/pull/15820)
+    // configImpersonate - config that uses account impersonation
+    // (https://github.com/airbytehq/airbyte/pull/15820)
     configImpersonate = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_IMPERSONATE_PATH, datasetId);
-    //config that does not have sufficient privileges to impersonate the account
+    // config that does not have sufficient privileges to impersonate the account
     configImpersonateFail = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_IMPERSONATE_FAIL_PATH, datasetId);
-    //config that has insufficient privileges
+    // config that has insufficient privileges
     insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH, datasetId);
-    //config that tries to write to a project with disabled billing (free tier)
+    // config that tries to write to a project with disabled billing (free tier)
     nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
-    //config with GCS staging
+    // config with GCS staging
     gcsStagingConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_GCS_STAGING_PATH, datasetId);
 
     MESSAGE_USERS1.getRecord().setNamespace(datasetId);
@@ -225,30 +224,34 @@ class BigQueryDestinationTest {
 
     catalog = new ConfiguredAirbyteCatalog().withStreams(Lists.newArrayList(
         CatalogHelpers.createConfiguredAirbyteStream(USERS_STREAM_NAME, datasetId,
-                io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
-                io.airbyte.protocol.models.Field
-                    .of("id", JsonSchemaType.STRING))
+            io.airbyte.protocol.models.Field.of("name", JsonSchemaType.STRING),
+            io.airbyte.protocol.models.Field
+                .of("id", JsonSchemaType.STRING))
             .withDestinationSyncMode(DestinationSyncMode.APPEND),
         CatalogHelpers.createConfiguredAirbyteStream(TASKS_STREAM_NAME, datasetId, Field.of("goal", JsonSchemaType.STRING))));
 
-    configs  = new HashMap<String, JsonNode>() {{
-      put("config", config);
-      put("configWithProjectId", configWithProjectId);
-      put("configImpersonate", configImpersonate);
-      put("configWithBadProjectId", configWithBadProjectId);
-      put("configImpersonateFail", configImpersonateFail);
-      put("insufficientRoleConfig", insufficientRoleConfig);
-      put("nonBillableConfig", nonBillableConfig);
-      put("gcsStagingConfig", gcsStagingConfig);
-    }};
+    configs = new HashMap<String, JsonNode>() {
+
+      {
+        put("config", config);
+        put("configWithProjectId", configWithProjectId);
+        put("configImpersonate", configImpersonate);
+        put("configWithBadProjectId", configWithBadProjectId);
+        put("configImpersonateFail", configImpersonateFail);
+        put("insufficientRoleConfig", insufficientRoleConfig);
+        put("nonBillableConfig", nonBillableConfig);
+        put("gcsStagingConfig", gcsStagingConfig);
+      }
+
+    };
   }
 
   protected void initBigQuery(JsonNode config) throws IOException {
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
     try {
       dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch(Exception ex) {
-      //ignore
+    } catch (Exception ex) {
+      // ignore
     }
   }
 
@@ -273,7 +276,7 @@ class BigQueryDestinationTest {
       if (!bqTornDown) {
         bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
       }
-      if(!gcsTornDown) {
+      if (!gcsTornDown) {
         tearDownGcs();
       }
     }));
@@ -292,7 +295,7 @@ class BigQueryDestinationTest {
    * Remove all the GCS output from the tests.
    */
   protected void tearDownGcs() {
-    if(this.s3Client == null) {
+    if (this.s3Client == null) {
       return;
     }
 
@@ -340,7 +343,7 @@ class BigQueryDestinationTest {
   @ParameterizedTest
   @MethodSource("failCheckTestConfigProvider")
   void testCheckFailures(String configName, String error) {
-    //TODO: this should always throw ConfigErrorException
+    // TODO: this should always throw ConfigErrorException
     JsonNode testConfig = configs.get(configName);
     final Exception ex = assertThrows(Exception.class, () -> {
       new BigQueryDestination().check(testConfig);
@@ -407,7 +410,7 @@ class BigQueryDestinationTest {
   }
 
   private Set<String> fetchNamesOfTablesInDb() throws InterruptedException {
-    if(dataset == null || bigquery == null) {
+    if (dataset == null || bigquery == null) {
       return Collections.emptySet();
     }
     final QueryJobConfiguration queryConfig = QueryJobConfiguration
@@ -415,7 +418,7 @@ class BigQueryDestinationTest {
         .setUseLegacySql(false)
         .build();
 
-    if(!dataset.exists()) {
+    if (!dataset.exists()) {
       return Collections.emptySet();
     }
     return StreamSupport
@@ -514,4 +517,5 @@ class BigQueryDestinationTest {
     }
     return false;
   }
+
 }

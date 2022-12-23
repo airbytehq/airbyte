@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcceptanceTest {
+
   private AmazonS3 s3Client;
   protected boolean gcsTornDown = false;
   private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryGcsDestinationAcceptanceTest.class);
@@ -39,7 +40,7 @@ public class BigQueryGcsDestinationAcceptanceTest extends BigQueryDestinationAcc
       if (!bqTornDown) {
         bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
       }
-      if(!gcsTornDown) {
+      if (!gcsTornDown) {
         gcsTornDown = BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
       }
     }));
