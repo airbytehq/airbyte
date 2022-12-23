@@ -98,7 +98,7 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = ({ streamNum })
         />
       </BuilderCard>
       <PaginationSection streamFieldPath={streamFieldPath} />
-      <StreamSlicerSection streamFieldPath={streamFieldPath} />
+      <StreamSlicerSection streamFieldPath={streamFieldPath} currentStreamIndex={streamNum} />
       <BuilderCard>
         <KeyValueListField
           path={streamFieldPath("requestOptions.requestParameters")}

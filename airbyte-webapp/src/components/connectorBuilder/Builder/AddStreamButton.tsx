@@ -3,6 +3,7 @@ import merge from "lodash/merge";
 import { useState } from "react";
 import React from "react";
 import { FormattedMessage, useIntl } from "react-intl";
+import { v4 as uuid } from "uuid";
 
 import { Button } from "components/ui/Button";
 import { Modal, ModalBody, ModalFooter } from "components/ui/Modal";
@@ -54,6 +55,7 @@ export const AddStreamButton: React.FC<AddStreamButtonProps> = ({ onAddStream, b
                 ...initialValues,
                 name: values.streamName,
                 urlPath: values.urlPath,
+                id: uuid(),
               }),
             ]);
             setIsOpen(false);

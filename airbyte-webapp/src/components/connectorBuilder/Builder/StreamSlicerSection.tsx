@@ -10,13 +10,15 @@ import { BuilderField } from "./BuilderField";
 import { BuilderOneOf } from "./BuilderOneOf";
 import { BuilderOptional } from "./BuilderOptional";
 import { InjectRequestOptionFields } from "./InjectRequestOptionFields";
+import { StreamReferenceField } from "./StreamReferenceField";
 import { ToggleGroupField } from "./ToggleGroupField";
 
 interface StreamSlicerSectionProps {
   streamFieldPath: (fieldPath: string) => string;
+  currentStreamIndex: number;
 }
 
-export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath }) => {
+export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ streamFieldPath, currentStreamIndex }) => {
   const [field, , helpers] = useField<SimpleRetrieverStreamSlicer | undefined>(streamFieldPath("streamSlicer"));
 
   const handleToggle = (newToggleValue: boolean) => {
@@ -177,6 +179,52 @@ export const StreamSlicerSection: React.FC<StreamSlicerSectionProps> = ({ stream
                     optional
                   />
                 </BuilderOptional>
+              </>
+            ),
+          },
+          {
+            label: "Substream",
+            typeValue: "SubstreamSlicer",
+            default: {
+              parent_key: "",
+              stream_slice_field: "",
+              parentStreamReference: "",
+            },
+            children: (
+              <>
+                <BuilderField
+                  type="string"
+                  path={streamFieldPath("streamSlicer.parent_key")}
+                  label="Parent key"
+                  tooltip="The key of the parent stream's records that will be the stream slice key"
+                />
+                <BuilderField
+                  type="string"
+                  path={streamFieldPath("streamSlicer.stream_slice_field")}
+                  label="Stream slice field"
+                  tooltip="The stream slice key"
+                />
+                <StreamReferenceField
+                  currentStreamIndex={currentStreamIndex}
+                  path={streamFieldPath("streamSlicer.parentStreamReference")}
+                  label="Parent stream"
+                  tooltip="The stream to read records from. Make sure there are no cyclic dependencies between streams"
+                />
+                <ToggleGroupField<RequestOption>
+                  label="Request option"
+                  tooltip="How to inject the slice value on an outgoing HTTP request"
+                  fieldPath={streamFieldPath("streamSlicer.request_option")}
+                  initialValues={{
+                    inject_into: "request_parameter",
+                    type: "RequestOption",
+                    field_name: "",
+                  }}
+                >
+                  <InjectRequestOptionFields
+                    path={streamFieldPath("streamSlicer.request_option")}
+                    descriptor="slice value"
+                  />
+                </ToggleGroupField>
               </>
             ),
           },
