@@ -39,6 +39,8 @@ public interface JobPersistence {
 
   List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
 
+  List<SyncStats> getStreamStats(long jobId, int attemptNumber) throws IOException;
+
   List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
   Job getJob(long jobId) throws IOException;

@@ -474,6 +474,12 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
+  public List<> getStreamStats(long jobId, int attemptNumber) throws IOException {
+    // bundle all the different stream stats together
+    return null;
+  }
+
+  @Override
   public List<NormalizationSummary> getNormalizationSummary(final long jobId, final int attemptNumber) throws IOException {
     return jobDatabase
         .query(ctx -> {

@@ -322,6 +322,60 @@ class DefaultJobPersistenceTest {
     assertNotEquals(created.getAttempts().get(0).getUpdatedAtInSecond(), updated.getAttempts().get(0).getUpdatedAtInSecond());
   }
 
+  @Nested
+  @DisplayName("Test writing in progress stats")
+  class WriteStats {
+
+    @Test
+    @DisplayName("Writing stats the first time should only write record and bytes information correctly")
+    void testWriteStatsFirst() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
+
+      final var stats = jobPersistence.getSyncStats(jobId, attemptNumber).stream().findFirst().get();
+      assertEquals(1000, stats.getBytesEmitted());
+      assertEquals(1000, stats.getRecordsEmitted());
+      assertEquals(1000, stats.getEstimatedBytes());
+      assertEquals(1000, stats.getEstimatedRecords());
+
+      assertEquals(null, stats.getRecordsCommitted());
+      assertEquals(null, stats.getDestinationStateMessagesEmitted());
+    }
+
+//    @Test
+//    @DisplayName("Writing stats multiple times should write record and bytes information correctly without exceptions")
+//    void testWriteSyncStatsRepeated() throws IOException, SQLException {
+//      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+//      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+//
+//      jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
+//
+//      final Optional<Record> record =
+//          jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
+//              attemptNumber).stream().findFirst());
+//      final Long attemptId = record.get().get("id", Long.class);
+//
+//      var stat = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
+//      assertEquals(1000, stat.getBytesEmitted());
+//      assertEquals(1000, stat.getRecordsEmitted());
+//      assertEquals(1000, stat.getEstimatedBytes());
+//      assertEquals(1000, stat.getEstimatedRecords());
+//
+//      jobPersistence.writeSyncStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, null);
+//      var stats = jobPersistence.getSyncStats(attemptId);
+//      assertEquals(1, stats.size());
+//
+//      stat = stats.stream().findFirst().get();
+//      assertEquals(2000, stat.getBytesEmitted());
+//      assertEquals(2000, stat.getRecordsEmitted());
+//      assertEquals(2000, stat.getEstimatedBytes());
+//      assertEquals(2000, stat.getEstimatedRecords());
+//
+//    }
+
+  }
+
   @Test
   @DisplayName("When getting the last replication job should return the most recently created job")
   void testGetLastSyncJobWithMultipleAttempts() throws IOException {
