@@ -12,9 +12,6 @@ import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.ConnectionProperty;
 import com.google.cloud.bigquery.Dataset;
 import com.google.cloud.bigquery.FieldList;
-import com.google.cloud.bigquery.Job;
-import com.google.cloud.bigquery.JobId;
-import com.google.cloud.bigquery.JobInfo;
 import com.google.cloud.bigquery.QueryJobConfiguration;
 import com.google.cloud.bigquery.TableResult;
 import com.google.common.collect.Streams;
@@ -33,23 +30,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.TimeZone;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.junit.jupiter.api.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
+public abstract class AbstractBigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest {
 
   private static final NamingConventionTransformer NAME_TRANSFORMER = new BigQuerySQLNameTransformer();
-  private static final Logger LOGGER = LoggerFactory.getLogger(BigQueryDestinationAcceptanceTest.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(AbstractBigQueryDestinationAcceptanceTest.class);
 
   protected static final String CONFIG_PROJECT_ID = "project_id";
-  protected static final String CONFIG_DATASET_LOCATION = "dataset_location";
-
+  protected Path secretsFile;
   protected BigQuery bigquery;
   protected Dataset dataset;
-  protected boolean bqTornDown = false;
 
   protected JsonNode config;
   protected final StandardNameTransformer namingResolver = new StandardNameTransformer();
@@ -155,7 +149,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .collect(Collectors.toList());
   }
 
-  private List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
+  protected List<JsonNode> retrieveRecordsFromTable(final String tableName, final String schema) throws InterruptedException {
     TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
 
     final QueryJobConfiguration queryConfig =
@@ -167,7 +161,7 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
             .setConnectionProperties(Collections.singletonList(ConnectionProperty.of("time_zone", "UTC")))
             .build();
 
-    final TableResult queryResults = executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
+    final TableResult queryResults = BigQueryUtils.executeQuery(bigquery, queryConfig).getLeft().getQueryResults();
     final FieldList fields = queryResults.getSchema().getFields();
     BigQuerySourceOperations sourceOperations = new BigQuerySourceOperations();
 
@@ -175,67 +169,19 @@ public class BigQueryDestinationAcceptanceTest extends DestinationAcceptanceTest
         .map(fieldValues -> sourceOperations.rowToJson(new BigQueryResultSet(fieldValues, fields))).collect(Collectors.toList());
   }
 
-  @Override
-  protected void setup(final TestDestinationEnv testEnv) throws Exception {
+  protected void setUpBigQuery() throws IOException {
+    //secrets file should be set by the inhereting class
+    Assertions.assertNotNull(secretsFile);
     final String datasetId = Strings.addRandomSuffix("airbyte_tests", "_", 8);
-    config = BigQueryDestinationTestUtils.createConfig(Path.of("secrets/credentials-standard.json"), datasetId);
-    bigquery = null;
-    dataset = null;
-    bqTornDown = false;
+    config = BigQueryDestinationTestUtils.createConfig(secretsFile, datasetId);
 
-    setUpBigQuery(config, datasetId);
-    addShutdownHook();
-  }
-
-  protected void setUpBigQuery(JsonNode config, String datasetId) throws IOException {
-    String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
+    final String projectId = config.get(BigQueryConsts.CONFIG_PROJECT_ID).asText();
     bigquery = BigQueryDestinationTestUtils.initBigQuery(config, projectId);
-    try {
-      dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
-    } catch(Exception ex) {
-      //ignore
-    }
+    dataset = BigQueryDestinationTestUtils.initDataSet(config, bigquery, datasetId);
   }
 
-  protected void addShutdownHook() {
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      if (!bqTornDown) {
-        bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
-      }
-    }));
+  protected void tearDownBigQuery() {
+    BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
   }
 
-  @Override
-  protected void tearDown(final TestDestinationEnv testEnv) {
-    bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
-  }
-
-  // todo (cgardens) - figure out how to share these helpers. they are currently copied from
-  // BigQueryDestination.
-  private static ImmutablePair<Job, String> executeQuery(final BigQuery bigquery, final QueryJobConfiguration queryConfig) {
-    final JobId jobId = JobId.of(UUID.randomUUID().toString());
-    final Job queryJob = bigquery.create(JobInfo.newBuilder(queryConfig).setJobId(jobId).build());
-    return executeQuery(queryJob);
-  }
-
-  private static ImmutablePair<Job, String> executeQuery(final Job queryJob) {
-    final Job completedJob = waitForQuery(queryJob);
-    if (completedJob == null) {
-      throw new RuntimeException("Job no longer exists");
-    } else if (completedJob.getStatus().getError() != null) {
-      // You can also look at queryJob.getStatus().getExecutionErrors() for all
-      // errors, not just the latest one.
-      return ImmutablePair.of(null, (completedJob.getStatus().getError().toString()));
-    }
-
-    return ImmutablePair.of(completedJob, null);
-  }
-
-  private static Job waitForQuery(final Job queryJob) {
-    try {
-      return queryJob.waitFor();
-    } catch (final Exception e) {
-      throw new RuntimeException(e);
-    }
-  }
 }

@@ -13,8 +13,6 @@ import static org.junit.jupiter.api.TestInstance.Lifecycle.PER_CLASS;
 import static org.mockito.Mockito.spy;
 
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.model.DeleteObjectsRequest.KeyVersion;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.cloud.bigquery.BigQuery;
 import com.google.cloud.bigquery.Dataset;
@@ -53,7 +51,6 @@ import java.nio.file.Path;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -112,7 +109,6 @@ class BigQueryDestinationTest {
   private static final NamingConventionTransformer NAMING_RESOLVER = new BigQuerySQLNameTransformer();
 
   protected static String projectId;
-  protected JsonNode credentialsJson;
   protected static String datasetId;
   protected static JsonNode config;
   protected static JsonNode configWithProjectId;
@@ -124,8 +120,6 @@ class BigQueryDestinationTest {
   protected Dataset dataset;
   protected static Map<String, JsonNode> configs;
   protected static ConfiguredAirbyteCatalog catalog;
-  protected boolean bqTornDown = false;
-  protected boolean gcsTornDown = false;
 
   private AmazonS3 s3Client;
 
@@ -162,13 +156,13 @@ class BigQueryDestinationTest {
       throw new IllegalStateException("""
                                       Json config not found. Must provide path to a big query credentials file,
                                        please add file with creds to
-                                      ../destination-bigquery/secrets/credentials-with-missed-dataset-creation-role.json.""");
+                                      <...>/destination-bigquery/secrets/credentials-with-missed-dataset-creation-role.json.""");
     }
     if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
       throw new IllegalStateException("""
                                       Json config not found. Must provide path to a big query credentials file,
                                        please add file with creds to
-                                      ../destination-bigquery/secrets/credentials-non-billable-project.json""");
+                                      <...>/destination-bigquery/secrets/credentials-non-billable-project.json""");
     }
     if (!Files.exists(CREDENTIALS_WITH_GCS_STAGING_PATH)) {
       throw new IllegalStateException(
@@ -238,24 +232,9 @@ class BigQueryDestinationTest {
     }
     bigquery = null;
     dataset = null;
-    bqTornDown = false;
-    gcsTornDown = false;
     final GcsDestinationConfig gcsDestinationConfig = GcsDestinationConfig
         .getGcsDestinationConfig(BigQueryUtils.getGcsJsonNodeConfig(gcsStagingConfig));
     this.s3Client = gcsDestinationConfig.getS3Client();
-
-    addShutdownHook();
-  }
-
-  protected void addShutdownHook() {
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      if (!bqTornDown) {
-        bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
-      }
-      if(!gcsTornDown) {
-        tearDownGcs();
-      }
-    }));
   }
 
   @AfterEach
@@ -263,39 +242,8 @@ class BigQueryDestinationTest {
     if (info.getDisplayName().equals("testSpec()")) {
       return;
     }
-    bqTornDown = BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
-    tearDownGcs();
-  }
-
-  /**
-   * Remove all the GCS output from the tests.
-   */
-  protected void tearDownGcs() {
-    if(this.s3Client == null) {
-      return;
-    }
-
-    final JsonNode properties = gcsStagingConfig.get(BigQueryConsts.LOADING_METHOD);
-    final String gcsBucketName = properties.get(BigQueryConsts.GCS_BUCKET_NAME).asText();
-    final String gcs_bucket_path = properties.get(BigQueryConsts.GCS_BUCKET_PATH).asText();
-
-    final List<KeyVersion> keysToDelete = new LinkedList<>();
-    final List<S3ObjectSummary> objects = s3Client
-        .listObjects(gcsBucketName, gcs_bucket_path)
-        .getObjectSummaries();
-    for (final S3ObjectSummary object : objects) {
-      keysToDelete.add(new KeyVersion(object.getKey()));
-    }
-
-    if (keysToDelete.size() > 0) {
-      LOGGER.info("Tearing down test bucket path: {}/{}", gcsBucketName, gcs_bucket_path);
-      // Google Cloud Storage doesn't accept request to delete multiple objects
-      for (final KeyVersion keyToDelete : keysToDelete) {
-        s3Client.deleteObject(gcsBucketName, keyToDelete.getKey());
-      }
-      LOGGER.info("Deleted {} file(s).", keysToDelete.size());
-    }
-    gcsTornDown = true;
+    BigQueryDestinationTestUtils.tearDownBigQuery(bigquery, dataset, LOGGER);
+    BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
 
   @Test
