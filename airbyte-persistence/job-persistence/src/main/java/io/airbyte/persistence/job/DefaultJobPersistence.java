@@ -421,27 +421,27 @@ public class DefaultJobPersistence implements JobPersistence {
                                              final DSLContext ctx,
                                              final Long attemptId) {
     final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
-    if (isExisting) {
+//    if (isExisting) {
       // what else do we need to update?
-      ctx.update(STREAM_STATS)
-          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-          .set(STREAM_STATS.UPDATED_AT, now)
-          // this is erroring out because this column actually needs to be a bigint to match the attempt id
-          // col
-          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
-          .execute();
-      return;
-    }
+//      ctx.update(STREAM_STATS)
+//          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+//          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+//          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+//          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
+//          .set(STREAM_STATS.UPDATED_AT, now)
+//          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+//          .execute();
+//      return;
+//    }
 
-    // insert into stream stats table
+    // insert or update into stream stats table
+    // insert stream name and namespace
     ctx.insertInto(STREAM_STATS)
         .set(STREAM_STATS.ID, UUID.randomUUID())
-        .set(STREAM_STATS.UPDATED_AT, now)
         .set(STREAM_STATS.CREATED_AT, now)
         .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+        .onDuplicateKeyUpdate()
+        .set(STREAM_STATS.UPDATED_AT, now)
         .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
         .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
         .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
