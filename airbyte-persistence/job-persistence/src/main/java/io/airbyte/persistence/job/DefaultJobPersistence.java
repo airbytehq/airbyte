@@ -383,57 +383,16 @@ public class DefaultJobPersistence implements JobPersistence {
     final OffsetDateTime now = OffsetDateTime.ofInstant(timeSupplier.get(), ZoneOffset.UTC);
     jobDatabase.transaction(ctx -> {
       final Optional<Record> record =
-          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId,
-              attemptNumber).stream().findFirst();
+          ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId, attemptNumber).stream().findFirst();
       final Long attemptId = record.get().get("id", Long.class);
 
-      final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
-
-      saveToSyncStatsTable(null, null, null, null);
-
-      if (saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx, attemptId)) {
-        return null;
-      }
-
+      // need to reconstruct the syncStats info.
+      saveToSyncStatsTable(now, null, attemptId, ctx);
       // write per stream stat info
+      saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx, attemptId);
       return null;
     });
 
-  }
-
-  private static boolean saveToStreamStatsTable(long estimatedRecords,
-                                                long estimatedBytes,
-                                                long recordsEmitted,
-                                                long bytesEmitted,
-                                                OffsetDateTime now,
-                                                DSLContext ctx,
-                                                Long attemptId) {
-    final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
-    if (isExisting) {
-      // what else do we need to update?
-      ctx.update(STREAM_STATS)
-          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-          .set(STREAM_STATS.UPDATED_AT, now)
-          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
-          .execute();
-      return true;
-    }
-
-    // insert into stream stats table
-    ctx.insertInto(STREAM_STATS)
-        .set(STREAM_STATS.ID, UUID.randomUUID())
-        .set(STREAM_STATS.UPDATED_AT, now)
-        .set(STREAM_STATS.CREATED_AT, now)
-        .set(STREAM_STATS.ATTEMPT_ID, attemptId)
-        .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-        .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-        .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-        .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-        .execute();
-    return false;
   }
 
   private static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
@@ -451,6 +410,42 @@ public class DefaultJobPersistence implements JobPersistence {
         .set(SYNC_STATS.MEAN_SECONDS_BEFORE_SOURCE_STATE_MESSAGE_EMITTED, syncStats.getMeanSecondsBeforeSourceStateMessageEmitted())
         .set(SYNC_STATS.MAX_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMaxSecondsBetweenStateMessageEmittedandCommitted())
         .set(SYNC_STATS.MEAN_SECONDS_BETWEEN_STATE_MESSAGE_EMITTED_AND_COMMITTED, syncStats.getMeanSecondsBetweenStateMessageEmittedandCommitted())
+        .execute();
+  }
+
+  private static void saveToStreamStatsTable(final long estimatedRecords,
+                                             final long estimatedBytes,
+                                             final long recordsEmitted,
+                                             final long bytesEmitted,
+                                             final OffsetDateTime now,
+                                             final DSLContext ctx,
+                                             final Long attemptId) {
+    final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
+    if (isExisting) {
+      // what else do we need to update?
+      ctx.update(STREAM_STATS)
+          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
+          .set(STREAM_STATS.UPDATED_AT, now)
+          // this is erroring out because this column actually needs to be a bigint to match the attempt id
+          // col
+          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+          .execute();
+      return;
+    }
+
+    // insert into stream stats table
+    ctx.insertInto(STREAM_STATS)
+        .set(STREAM_STATS.ID, UUID.randomUUID())
+        .set(STREAM_STATS.UPDATED_AT, now)
+        .set(STREAM_STATS.CREATED_AT, now)
+        .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+        .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+        .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+        .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+        .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
         .execute();
   }
 
