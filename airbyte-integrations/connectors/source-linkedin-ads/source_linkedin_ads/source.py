@@ -394,7 +394,7 @@ class SourceLinkedinAds(AbstractSource):
             )
         raise Exception("incorrect input parameters")
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector.
         :: for this check method the Customer must have the "r_liteprofile" scope enabled.

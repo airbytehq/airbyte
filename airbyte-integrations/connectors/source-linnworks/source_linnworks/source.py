@@ -95,7 +95,7 @@ class SourceLinnworks(AbstractSource):
             token=config["token"],
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             self._auth(config).get_auth_header()
         except Exception as error:

@@ -21,7 +21,7 @@ class SourcePardot(AbstractSource):
         pardot.login()
         return pardot
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             pardot = self._get_pardot_object(config)
             pardot.access_token

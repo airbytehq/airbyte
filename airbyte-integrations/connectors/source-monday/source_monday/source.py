@@ -160,7 +160,7 @@ class MondayAuthentication:
 
 
 class SourceMonday(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         url = "https://api.monday.com/v2"
         params = {"query": "query { me { is_guest created_at name id}}"}
         auth_header = MondayAuthentication(config).get_auth().get_auth_header()

@@ -105,7 +105,7 @@ class ConversationExport(IncrementalDixaStream):
 
 
 class SourceDixa(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Check connectivity using one day's worth of data.
         """

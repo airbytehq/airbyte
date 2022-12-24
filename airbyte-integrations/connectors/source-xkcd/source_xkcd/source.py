@@ -53,7 +53,7 @@ class Xkcd(XkcdStream):
 
 # Source
 class SourceXkcd(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             xkcd = Xkcd()
             xkcd_gen = xkcd.read_records(sync_mode=SyncMode.full_refresh)

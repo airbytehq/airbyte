@@ -67,7 +67,7 @@ class SourceIterable(AbstractSource):
     In this case it's better to use the one which takes params as a query param rather than as part of the url param.
     """
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(token=config["api_key"], auth_header="Api-Key", auth_method="")
             list_gen = Lists(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)

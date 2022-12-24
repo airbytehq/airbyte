@@ -27,7 +27,7 @@ class CheckStream(ConnectionChecker, JsonSchemaMixin):
     def __post_init__(self, options: Mapping[str, Any]):
         self._options = options
 
-    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, source: Source, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         streams = source.streams(config)
         stream_name_to_stream = {s.name: s for s in streams}
         if len(streams) == 0:

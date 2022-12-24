@@ -71,7 +71,7 @@ class AirtableStream(HttpStream, ABC):
 
 # Source
 class SourceAirtable(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         auth = TokenAuthenticator(token=config["api_key"])
         for table in config["tables"]:
             try:

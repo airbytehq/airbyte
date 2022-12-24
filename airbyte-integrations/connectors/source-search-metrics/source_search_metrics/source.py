@@ -315,7 +315,7 @@ class SearchMetricsAuthenticator(Oauth2Authenticator):
 
 # Source
 class SourceSearchMetrics(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector by granting the credentials.
         """

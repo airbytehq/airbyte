@@ -12,7 +12,7 @@ from . import extra_validations, streams
 
 
 class SourceOpenWeather(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             valid_config = extra_validations.validate(config)
             params = {

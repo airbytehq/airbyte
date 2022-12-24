@@ -342,7 +342,7 @@ class SourcePinterest(AbstractSource):
             refresh_token=config.get("refresh_token"),
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         url = f"{PinterestStream.url_base}user_account"

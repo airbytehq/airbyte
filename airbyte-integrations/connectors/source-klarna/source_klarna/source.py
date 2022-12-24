@@ -91,11 +91,11 @@ class Transactions(KlarnaStream):
 
 # Source
 class SourceKlarna(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
             auth = BasicHttpAuthenticator(username=config["username"], password=config["password"])

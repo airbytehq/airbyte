@@ -403,7 +403,7 @@ class CreditsLedgerEntries(IncrementalOrbStream):
 
 # Source
 class SourceOrb(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Makes a request to the /ping endpoint, which validates that the authentication credentials are appropriate.
         API Docs: https://docs.withorb.com/reference/ping

@@ -33,7 +33,7 @@ class NotionAuthenticator:
 
 
 class SourceNotion(AbstractSource):
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             authenticator = NotionAuthenticator(config).get_access_token()
             stream = Users(authenticator=authenticator, config=config)

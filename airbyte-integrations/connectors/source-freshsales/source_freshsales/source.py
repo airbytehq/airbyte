@@ -217,7 +217,7 @@ class UpcomingAppointments(FreshsalesStream):
 
 # Source
 class SourceFreshsales(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         auth = TokenAuthenticator(token=f'token={config["api_key"]}', auth_method="Token").get_auth_header()
         url = f'https://{config["domain_name"]}/crm/sales/api/contacts/filters'
         try:

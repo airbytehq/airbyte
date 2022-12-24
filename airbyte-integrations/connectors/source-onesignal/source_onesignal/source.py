@@ -16,7 +16,7 @@ from .streams import Apps, Devices, Notifications, Outcomes
 
 
 class SourceOnesignal(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             authenticator = TokenAuthenticator(config["user_auth_key"], "Basic")
             stream = Apps(authenticator=authenticator, config=config)

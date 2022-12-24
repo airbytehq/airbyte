@@ -34,7 +34,7 @@ class SourceRetently(AbstractSource):
         auth_method = f"api_key={api_key}"
         return TokenAuthenticator(token="", auth_method=auth_method)
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             auth = self.get_authenticator(config)
 

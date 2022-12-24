@@ -14,7 +14,7 @@ from .streams import Activities, Campaigns, Team, Unsubscribes
 
 
 class SourceLemlist(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             auth = HttpBasicAuthenticator(
                 (

@@ -27,7 +27,7 @@ from .streams import (
 
 
 class SourceChargebee(AbstractSource):
-    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         # Configure the Chargebee Python SDK
         chargebee.configure(api_key=config["site_api_key"], site=config["site"])
         try:

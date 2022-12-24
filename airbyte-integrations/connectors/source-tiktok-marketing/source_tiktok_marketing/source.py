@@ -83,7 +83,7 @@ class SourceTiktokMarketing(AbstractSource):
             "access_token": access_token,
         }
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         """
         Tests if the input configuration can be used to successfully connect to the integration
         """

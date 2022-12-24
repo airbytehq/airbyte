@@ -32,7 +32,7 @@ from .streams import (
 
 
 class SourceSendgrid(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             start_time = config.get("start_time")
             if start_time and isinstance(start_time, str):

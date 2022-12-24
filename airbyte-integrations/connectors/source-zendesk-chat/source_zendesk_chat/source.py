@@ -32,7 +32,7 @@ class ZendeskAuthentication:
 
 
 class SourceZendeskChat(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         authenticator = ZendeskAuthentication(config).get_auth()
         try:
             records = RoutingSettings(authenticator=authenticator).read_records(sync_mode=SyncMode.full_refresh)

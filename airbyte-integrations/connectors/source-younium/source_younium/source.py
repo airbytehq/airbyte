@@ -109,7 +109,7 @@ class SourceYounium(AbstractSource):
         auth = TokenAuthenticator(token=access_token)
         return auth
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
 
         try:
             stream = Invoice(authenticator=self.get_auth(config), **config)

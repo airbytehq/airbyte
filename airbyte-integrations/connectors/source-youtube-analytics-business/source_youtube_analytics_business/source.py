@@ -260,7 +260,7 @@ class SourceYoutubeAnalyticsBusiness(AbstractSource):
             refresh_token=refresh_token,
         )
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         authenticator = self.get_authenticator(config)
         jobs_resource = JobsResource(authenticator=authenticator)
         jobs = jobs_resource.list()

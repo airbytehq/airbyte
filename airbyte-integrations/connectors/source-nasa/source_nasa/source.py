@@ -158,13 +158,13 @@ class SourceNasa(AbstractSource):
         except ValueError:
             return self.invalid_parameter_value_template.format(self.date_key, date_str, f"It should be formatted as '{date_format}'")
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Verifies that the input configuration supplied by the user can be used to connect to the underlying data source.
 
         :param config:  the user-input config object conforming to the connector's spec.yaml
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         if self.start_date_key in config:
             start_date = self._parse_date(config[self.start_date_key])

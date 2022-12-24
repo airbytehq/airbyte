@@ -23,7 +23,7 @@ class SourceAmplitude(AbstractSource):
         token = b64encode(b":".join((username, password))).strip().decode("ascii")
         return token
 
-    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: AirbyteLogger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         try:
             auth = TokenAuthenticator(token=self._convert_auth_to_token(config["api_key"], config["secret_key"]), auth_method="Basic")
             list(Cohorts(authenticator=auth, data_region=config["data_region"]).read_records(SyncMode.full_refresh))

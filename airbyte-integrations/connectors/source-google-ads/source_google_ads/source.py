@@ -84,7 +84,7 @@ class SourceGoogleAds(AbstractSource):
                 return True
         return False
 
-    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, any]:
+    def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Any]:
         config = self._validate_and_transform(config)
         try:
             logger.info("Checking the config")

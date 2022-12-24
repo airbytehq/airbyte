@@ -13,7 +13,7 @@ from source_flexport.streams import Companies, FlexportError, FlexportStream, In
 
 
 class SourceFlexport(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         headers = {"Authorization": f"Bearer {config['api_key']}"}
         response = requests.get(f"{FlexportStream.url_base}network/companies?page=1&per=1", headers=headers)
 

@@ -762,7 +762,7 @@ class SnapchatOauth2Authenticator(Oauth2Authenticator):
 class SourceSnapchatMarketing(AbstractSource):
     """Source Snapchat Marketing helps to retrieve the different Ad data from Snapchat business account"""
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             auth = SnapchatOauth2Authenticator(
                 token_refresh_endpoint="https://accounts.snapchat.com/login/oauth2/access_token",

@@ -14,7 +14,7 @@ from .streams import Clients, Projects, Tags, Tasks, TimeEntries, UserGroups, Us
 
 # Source
 class SourceClockify(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         try:
             workspace_stream = Users(
                 authenticator=TokenAuthenticator(token=config["api_key"], auth_header="X-Api-Key", auth_method=""),

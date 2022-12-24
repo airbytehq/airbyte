@@ -73,7 +73,7 @@ class Events(TimelyIntegrationStream):
 
 
 class SourceTimely(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         account_id = config["account_id"]
         start_date = config["start_date"]
         bearer_token = config["bearer_token"]

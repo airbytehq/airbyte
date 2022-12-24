@@ -591,13 +591,13 @@ class StatesHistoryHospitalization(ByStateRkiCovidStream):
 
 # Source
 class SourceRkiCovid(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         """
         Testing connection availability for the connector.
 
         :param config:  the user-input config object conforming to the connector's spec.json
         :param logger:  logger object
-        :return Tuple[bool, any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
+        :return Tuple[bool, Any]: (True, None) if the input config can be used to connect to the API successfully, (False, error) otherwise.
         """
         try:
             req = requests.get(RkiCovidStream.url_base + "germany")

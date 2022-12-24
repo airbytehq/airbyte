@@ -57,7 +57,7 @@ class Pokemon(PokeapiStream):
 
 # Source
 class SourcePokeapi(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         input_pokemon = config["pokemon_name"]
         if input_pokemon not in pokemon_list.POKEMON_LIST:
             return False, f"Input Pokemon {input_pokemon} is invalid. Please check your spelling our input a valid Pokemon."

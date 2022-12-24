@@ -80,7 +80,7 @@ from . import pokemon_list
 logger = logging.getLogger("airbyte")
 
 class SourcePythonHttpExample(AbstractSource):
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         logger.info("Checking Pokemon API connection...")
         input_pokemon = config["pokemon_name"]
         if input_pokemon not in pokemon_list.POKEMON_LIST:

@@ -17,7 +17,7 @@ logger = logging.getLogger("airbyte")
 class SourceDockerhub(AbstractSource):
     jwt = None
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         username = config["docker_username"]
 
         # get JWT

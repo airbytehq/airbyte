@@ -142,7 +142,7 @@ class SourceCommercetools(AbstractSource):
         except requests.exceptions.RequestException as e:
             return None, e
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         region = config["region"]
         project_key = config["project_key"]
         host = config["host"]

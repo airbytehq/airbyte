@@ -38,7 +38,7 @@ from .streams import (
 class SourceXero(AbstractSource):
     config = None
 
-    def check_connection(self, logger, config) -> Tuple[bool, any]:
+    def check_connection(self, logger, config) -> Tuple[bool, Any]:
         self.config = config
         stream_kwargs = self.get_stream_kwargs(config)
 
