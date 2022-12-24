@@ -474,8 +474,7 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<> getStreamStats(long jobId, int attemptNumber) throws IOException {
-    // bundle all the different stream stats together
+  public List<SyncStats> getStreamStats(long jobId, int attemptNumber) throws IOException {
     return null;
   }
 
