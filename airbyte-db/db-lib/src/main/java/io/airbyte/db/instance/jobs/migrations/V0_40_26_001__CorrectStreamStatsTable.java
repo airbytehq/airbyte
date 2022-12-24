@@ -5,7 +5,6 @@
 package io.airbyte.db.instance.jobs.migrations;
 
 import static org.jooq.impl.DSL.constraint;
-import static org.jooq.impl.DSL.unique;
 
 import org.flywaydb.core.api.migration.BaseJavaMigration;
 import org.flywaydb.core.api.migration.Context;
@@ -30,9 +29,10 @@ public class V0_40_26_001__CorrectStreamStatsTable extends BaseJavaMigration {
       // This actually needs to be bigint.
       ctx.alterTable("stream_stats").alter("attempt_id").set(SQLDataType.BIGINT.nullable(false)).execute();
 
-      // The constraint should also take into account the stream namespace. Drop the constraint and recreate it.
+      // The constraint should also take into account the stream namespace. Drop the constraint and
+      // recreate it.
       ctx.alterTable("stream_stats").dropUnique("stream_stats_attempt_id_stream_name_key").execute();
-      ctx.alterTable("stream_stats").add(constraint("uniq_stream_attempt").unique("attempt_id","stream_name","stream_namespace")).execute();
+      ctx.alterTable("stream_stats").add(constraint("uniq_stream_attempt").unique("attempt_id", "stream_name", "stream_namespace")).execute();
     }
   }
 

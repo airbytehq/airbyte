@@ -421,18 +421,18 @@ public class DefaultJobPersistence implements JobPersistence {
                                              final DSLContext ctx,
                                              final Long attemptId) {
     final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
-//    if (isExisting) {
-      // what else do we need to update?
-//      ctx.update(STREAM_STATS)
-//          .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-//          .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-//          .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-//          .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-//          .set(STREAM_STATS.UPDATED_AT, now)
-//          .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
-//          .execute();
-//      return;
-//    }
+    // if (isExisting) {
+    // what else do we need to update?
+    // ctx.update(STREAM_STATS)
+    // .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
+    // .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
+    // .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
+    // .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
+    // .set(STREAM_STATS.UPDATED_AT, now)
+    // .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+    // .execute();
+    // return;
+    // }
 
     // insert or update into stream stats table
     // insert stream name and namespace
@@ -462,20 +462,19 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   @Override
-  public List<SyncStats> getSyncStats(final long jobId, final int attemptNumber) throws IOException {
-    return jobDatabase
+  public AttemptStats getAttemptStats(final long jobId, final int attemptNumber) throws IOException {
+    // need to confirm this is correctly sorted
+    final var syncStats = jobDatabase
         .query(ctx -> {
           final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
-          return ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-              .fetch(getSyncStatsRecordMapper())
-              .stream()
-              .toList();
+          return
+              ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+                  .orderBy(SYNC_STATS.UPDATED_AT.desc())
+                  .limit(1)
+                  .fetchOne(getSyncStatsRecordMapper());
         });
-  }
-
-  @Override
-  public List<SyncStats> getStreamStats(long jobId, int attemptNumber) throws IOException {
-    return null;
+    // hydrate perStreamStats
+    return new AttemptStats(syncStats, null);
   }
 
   @Override

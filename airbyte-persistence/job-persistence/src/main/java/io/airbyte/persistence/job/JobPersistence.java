@@ -37,9 +37,25 @@ import java.util.stream.Stream;
  */
 public interface JobPersistence {
 
-  List<SyncStats> getSyncStats(long jobId, int attemptNumber) throws IOException;
+  //
+  // SIMPLE GETTERS
+  //
 
-  List<SyncStats> getStreamStats(long jobId, int attemptNumber) throws IOException;
+  /**
+   * Convenience POJO for various stats data structures.
+   *
+   * @param combinedStats
+   * @param perStreamStats
+   */
+  record AttemptStats(SyncStats combinedStats, StreamSyncStats perStreamStats) {}
+
+  /**
+   * Retrieve the combined and per stream stats for a single attempt.
+   *
+   * @return {@link AttemptStats}
+   * @throws IOException
+   */
+  AttemptStats getAttemptStats(long jobId, int attemptNumber) throws IOException;
 
   List<NormalizationSummary> getNormalizationSummary(long jobId, int attemptNumber) throws IOException;
 
