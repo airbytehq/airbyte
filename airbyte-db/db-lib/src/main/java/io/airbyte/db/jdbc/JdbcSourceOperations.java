@@ -109,7 +109,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(final JDBCType jdbcType) {
+  public JsonSchemaType getAirbyteType(final JDBCType jdbcType) {
     return switch (jdbcType) {
       case BIT, BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT -> JsonSchemaType.INTEGER;

@@ -332,7 +332,7 @@ class TestJdbcUtils {
     final int columnCount = resultSet.getMetaData().getColumnCount();
     final Map<String, JsonSchemaType> actual = new HashMap<>(columnCount);
     for (int i = 1; i <= columnCount; i++) {
-      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getJsonType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
+      actual.put(resultSet.getMetaData().getColumnName(i), sourceOperations.getAirbyteType(JDBCType.valueOf(resultSet.getMetaData().getColumnType(i))));
     }
 
     final Map<String, JsonSchemaType> expected = ImmutableMap.<String, JsonSchemaType>builder()

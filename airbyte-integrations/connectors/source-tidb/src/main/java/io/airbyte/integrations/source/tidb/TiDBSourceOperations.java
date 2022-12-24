@@ -149,7 +149,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public JsonSchemaType getJsonType(final MysqlType mysqlType) {
+  public JsonSchemaType getAirbyteType(final MysqlType mysqlType) {
     return switch (mysqlType) {
       case
       // TINYINT(1) is boolean, but it should have been converted to MysqlType.BOOLEAN in {@link

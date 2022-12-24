@@ -11,6 +11,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import java.sql.JDBCType;
 import java.util.Collections;
 import java.util.Set;
@@ -94,19 +95,19 @@ class Db2JdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTest {
     }
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES))));
+            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_SPACES, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_SPACES + 2))));
+            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_SPACES + 2, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME2,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME))));
+            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITHOUT_CURSOR_TYPE))));
+            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITHOUT_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
     super.database.execute(connection -> connection.createStatement().execute(String
         .format("DROP TABLE IF EXISTS %s.%s", SCHEMA_NAME,
-            sourceOperations.enquoteIdentifier(connection, TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE))));
+            RelationalDbQueryUtils.enquoteIdentifier(TABLE_NAME_WITH_NULLABLE_CURSOR_TYPE, connection.getMetaData().getIdentifierQuoteString()))));
     super.tearDown();
   }
 

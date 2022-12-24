@@ -20,8 +20,9 @@ import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TABLE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_COLUMN_TYPE_NAME;
 import static io.airbyte.db.jdbc.JdbcConstants.JDBC_IS_NULLABLE;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
-import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullyQualifiedTableNameWithQuoting;
 import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -147,7 +148,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     LOGGER.info("Queueing query for table: {}", tableName);
     return queryTable(database, String.format("SELECT %s FROM %s",
         enquoteIdentifierList(columnNames, getQuoteString()),
-        getFullTableName(schemaName, tableName, getQuoteString())));
+        getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString())));
   }
 
   /**
@@ -276,7 +277,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
 
   @Override
   public JsonSchemaType getAirbyteType(final Datatype columnType) {
-    return sourceOperations.getJsonType(columnType);
+    return sourceOperations.getAirbyteType(columnType);
   }
 
   @Override
@@ -291,7 +292,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
           r -> {
             final String schemaName =
                 r.getObject(JDBC_COLUMN_SCHEMA_NAME) != null ? r.getString(JDBC_COLUMN_SCHEMA_NAME) : r.getString(JDBC_COLUMN_DATABASE_NAME);
-            final String streamName = sourceOperations.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
+            final String streamName = JdbcUtils.getFullyQualifiedTableName(schemaName, r.getString(JDBC_COLUMN_TABLE_NAME));
             final String primaryKey = r.getString(JDBC_COLUMN_COLUMN_NAME);
             return new SimpleImmutableEntry<>(streamName, primaryKey);
           }));
@@ -304,11 +305,9 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
     // Get primary keys one table at a time
     return tableInfos.stream()
         .collect(Collectors.toMap(
-            tableInfo -> sourceOperations
-                .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
+            tableInfo -> JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName()),
             tableInfo -> {
-              final String streamName = sourceOperations
-                  .getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
+              final String streamName = JdbcUtils.getFullyQualifiedTableName(tableInfo.getNameSpace(), tableInfo.getName());
               try {
                 final Map<String, List<String>> primaryKeys = aggregatePrimateKeys(database.bufferedResultSetQuery(
                     connection -> connection.getMetaData().getPrimaryKeys(getCatalog(database), tableInfo.getNameSpace(), tableInfo.getName()),
@@ -344,8 +343,8 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
         final Stream<JsonNode> stream = database.unsafeQuery(
             connection -> {
               LOGGER.info("Preparing query for table: {}", tableName);
-              final String fullTableName = sourceOperations.getFullyQualifiedTableNameWithQuoting(connection, schemaName, tableName);
-              final String quotedCursorField = sourceOperations.enquoteIdentifier(connection, cursorInfo.getCursorField());
+              final String fullTableName = getFullyQualifiedTableNameWithQuoting(schemaName, tableName, getQuoteString());
+              final String quotedCursorField = enquoteIdentifier(cursorInfo.getCursorField(), getQuoteString());
 
               final String operator;
               if (cursorInfo.getCursorRecordCount() <= 0L) {
@@ -395,7 +394,7 @@ public abstract class AbstractJdbcSource<Datatype> extends AbstractDbSource<Data
                                          final String schemaName,
                                          final String tableName)
       throws SQLException {
-    return sourceOperations.enquoteIdentifierList(connection, columnNames);
+    return enquoteIdentifierList(columnNames, getQuoteString());
   }
 
   protected String getCountColumnName() {

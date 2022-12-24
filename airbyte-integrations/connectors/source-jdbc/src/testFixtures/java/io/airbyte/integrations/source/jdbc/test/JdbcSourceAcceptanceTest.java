@@ -28,6 +28,7 @@ import io.airbyte.db.jdbc.StreamingJdbcDatabase;
 import io.airbyte.db.jdbc.streaming.AdaptiveStreamingQueryConfig;
 import io.airbyte.integrations.base.Source;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
+import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -391,16 +392,16 @@ public abstract class JdbcSourceAcceptanceTest {
     database.execute(connection -> {
       connection.createStatement().execute(
           String.format("CREATE TABLE %s(id VARCHAR(200) NOT NULL, name VARCHAR(200) NOT NULL)",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('1','picard')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('2', 'crusher')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, name) VALUES ('3', 'vash')",
-              sourceOperations.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
+              RelationalDbQueryUtils.getFullyQualifiedTableName(SCHEMA_NAME2, TABLE_NAME)));
     });
 
     final AirbyteCatalog actual = source.discover(config);
@@ -1082,29 +1083,29 @@ public abstract class JdbcSourceAcceptanceTest {
     final String streamName2 = tableNameWithSpaces;
 
     database.execute(connection -> {
+      final String identifierQuoteString = connection.getMetaData().getIdentifierQuoteString();
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-                  "id INTEGER, " + sourceOperations
-                      .enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)
+                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                  "id INTEGER, " + RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
                       + " VARCHAR(200)",
                   ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
               getFullyQualifiedTableName(
-                  sourceOperations.enquoteIdentifier(connection, tableNameWithSpaces)),
-              sourceOperations.enquoteIdentifier(connection, COL_LAST_NAME_WITH_SPACE)));
+                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(
@@ -1115,7 +1116,7 @@ public abstract class JdbcSourceAcceptanceTest {
   }
 
   public String getFullyQualifiedTableName(final String tableName) {
-    return sourceOperations.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
+    return RelationalDbQueryUtils.getFullyQualifiedTableName(getDefaultSchemaName(), tableName);
   }
 
   public void createSchemas() throws SQLException {

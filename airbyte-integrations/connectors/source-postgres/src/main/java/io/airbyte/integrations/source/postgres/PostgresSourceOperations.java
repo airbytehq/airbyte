@@ -174,7 +174,6 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  // This reads the actual value (in read).
   public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
@@ -447,7 +446,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public JsonSchemaType getJsonType(final PostgresType jdbcType) {
+  public JsonSchemaType getAirbyteType(final PostgresType jdbcType) {
     return switch (jdbcType) {
       case BOOLEAN -> JsonSchemaType.BOOLEAN;
       case TINYINT, SMALLINT, INTEGER, BIGINT -> JsonSchemaType.INTEGER;

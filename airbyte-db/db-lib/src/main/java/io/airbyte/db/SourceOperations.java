@@ -12,8 +12,5 @@ public interface SourceOperations<QueryResult, SourceType> {
 
   JsonNode rowToJson(QueryResult queryResult) throws SQLException;
 
-  JsonSchemaType getJsonType(SourceType sourceType);
-
-  //
-  // JsonSchemaType getJsonSchemaType(SourceType columnType);
+  JsonSchemaType getAirbyteType(SourceType sourceType);
 }
