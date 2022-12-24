@@ -526,7 +526,19 @@ where 1 = 1
             return column_name
         elif data_type.TYPE_VAR_NAME in definition and is_object(definition[data_type.TYPE_VAR_NAME]):
             sql_type = jinja_call("type_json()")
-        # Treat simple types from narrower to wider scope type: boolean < integer < number < string
+        # Treat simple types from wider scope TO narrower type: string > boolean > integer > number
+        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition)) or (
+            data_type.ONE_OF_VAR_NAME in definition and is_string(definition)
+        ):
+            sql_type = jinja_call("dbt_utils.type_string()")
+            if self.destination_type == DestinationType.CLICKHOUSE:
+                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
+                sql_type = f"'{sql_type}'"
+                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
+            elif self.destination_type == DestinationType.MYSQL:
+                # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
+                sql_type = f"{sql_type}(1024)"
+
         elif (data_type.REF_TYPE_VAR_NAME in definition and is_boolean(definition)) or (
             data_type.ONE_OF_VAR_NAME in definition and is_boolean(definition)
         ):
@@ -626,17 +638,6 @@ where 1 = 1
             else:
                 sql_type = jinja_call("dbt_utils.type_string()")
 
-        elif (data_type.REF_TYPE_VAR_NAME in definition and is_string(definition)) or (
-            data_type.ONE_OF_VAR_NAME in definition and is_string(definition)
-        ):
-            sql_type = jinja_call("dbt_utils.type_string()")
-            if self.destination_type == DestinationType.CLICKHOUSE:
-                trimmed_column_name = f"trim(BOTH '\"' from {column_name})"
-                sql_type = f"'{sql_type}'"
-                return f"nullif(accurateCastOrNull({trimmed_column_name}, {sql_type}), 'null') as {column_name}"
-            elif self.destination_type == DestinationType.MYSQL:
-                # Cast to `text` datatype. See https://github.com/airbytehq/airbyte/issues/7994
-                sql_type = f"{sql_type}(1024)"
         else:
             if data_type.REF_TYPE_VAR_NAME in definition:
                 print(
