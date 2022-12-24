@@ -64,7 +64,7 @@ public class TemporalBeanFactory {
   }
 
   @Singleton
-  //@Requires(env = WorkerMode.CONTROL_PLANE)
+  // @Requires(env = WorkerMode.CONTROL_PLANE)
   public OAuthConfigSupplier oAuthConfigSupplier(final ConfigRepository configRepository, final TrackingClient trackingClient) {
     return new OAuthConfigSupplier(configRepository, trackingClient);
   }
