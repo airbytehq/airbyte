@@ -281,8 +281,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromDestination(message);
 
-            if (message.getType() == Type.CONTROL) {
-              acceptDstControlMessage(destinationConfig, message.getControl(), connectorConfigUpdater);
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptDstControlMessage(destinationConfig, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating destination configuration", e);
             }
           }
         }
@@ -350,8 +354,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromSource(message);
 
-            if (message.getType() == Type.CONTROL) {
-              acceptSrcControlMessage(sourceConfig, message.getControl(), connectorConfigUpdater);
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptSrcControlMessage(sourceConfig, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating source configuration", e);
             }
 
             try {
