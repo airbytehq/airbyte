@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { TickIcon } from "components/icons/TickIcon";
 
 interface IProps {
-  text?: string;
+  text: string;
 }
 
 const Container = styled.div`
@@ -23,6 +23,9 @@ const Text = styled.div`
 `;
 
 const PlanClause: React.FC<IProps> = ({ text }) => {
+  if (text === "") {
+    return null;
+  }
   return (
     <Container>
       <TickIcon />
