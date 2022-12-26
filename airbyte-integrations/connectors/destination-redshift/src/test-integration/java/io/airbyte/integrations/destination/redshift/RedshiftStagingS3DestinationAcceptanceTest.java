@@ -18,6 +18,7 @@ import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DatabaseDriver;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.integrations.base.JavaBaseConstants;
+import io.airbyte.integrations.destination.record_buffer.FileBuffer;
 import io.airbyte.integrations.destination.redshift.operations.RedshiftSqlOperations;
 import io.airbyte.integrations.standardtest.destination.JdbcDestinationAcceptanceTest;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
@@ -109,6 +110,34 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
     final AirbyteConnectionStatus status = destination.check(invalidConfig);
     assertEquals(AirbyteConnectionStatus.Status.FAILED, status.getStatus());
     assertTrue(status.getMessage().contains("State code: 3D000; Error code: 500310;"));
+  }
+
+  /*
+   * FileBuffer Default Tests
+   */
+  @Test
+  public void testGetFileBufferDefault() {
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    assertEquals(destination.getNumberOfFileBuffers(config),
+        FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetFileBufferMaxLimited() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 100);
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+  }
+
+  @Test
+  public void testGetUserSpecifiedFileBufferCount() {
+    final JsonNode defaultConfig = Jsons.clone(config);
+    ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 10);
+    final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
+    // confirms that if a user sets number of file buffers lower than the default that the configuration
+    // respects the configuration
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), 10);
   }
 
   @Override
