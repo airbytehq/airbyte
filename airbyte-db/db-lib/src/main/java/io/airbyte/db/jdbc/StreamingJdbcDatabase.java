@@ -61,7 +61,8 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
   public <T> Stream<T> unsafeQuery(final CheckedFunction<Connection, PreparedStatement, SQLException> statementCreator,
                                    final CheckedFunction<ResultSet, T, SQLException> recordTransform)
       throws SQLException {
-    try (final Connection connection = dataSource.getConnection()) {
+    try {
+      final Connection connection = dataSource.getConnection();
       final PreparedStatement statement = statementCreator.apply(connection);
       final JdbcStreamingQueryConfig streamingConfig = streamingQueryConfigProvider.get();
       streamingConfig.initialize(connection, statement);

@@ -70,14 +70,13 @@ public class CockroachJdbcDatabase
   @Override
   public Stream<JsonNode> unsafeQuery(final String sql, final String... params) throws SQLException {
     return bufferedResultSetQuery(connection -> {
-      try (final PreparedStatement statement = connection.prepareStatement(sql)) {
-        int i = 1;
-        for (final String param : params) {
-          statement.setString(i, param);
-          ++i;
-        }
-        return statement.executeQuery();
+      final PreparedStatement statement = connection.prepareStatement(sql);
+      int i = 1;
+      for (final String param : params) {
+        statement.setString(i, param);
+        ++i;
       }
+      return statement.executeQuery();
     }, sourceOperations::rowToJson).stream();
 
   }
