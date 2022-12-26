@@ -43,16 +43,16 @@ class JiraStream(HttpStream, ABC):
     def next_page_token(self, response: requests.Response) -> Optional[Mapping[str, Any]]:
         response_json = response.json()
         if isinstance(response_json, dict):
-            if response_json.get("isLast"):
-                return
             startAt = response_json.get("startAt")
             if startAt is not None:
                 startAt += response_json["maxResults"]
-                if "total" in response_json:
-                    if startAt < response_json["total"]:
-                        return {"startAt": startAt}
-                elif len(response_json["values"]) == self.page_size:
-                    return {"startAt": startAt}
+                if "isLast" in response_json:
+                    if response_json["isLast"]:
+                        return
+                elif "total" in response_json:
+                    if startAt >= response_json["total"]:
+                        return
+                return {"startAt": startAt}
         elif isinstance(response_json, list):
             if len(response_json) == self.page_size:
                 query_params = dict(parse_qsl(urlparse.urlparse(response.url).query))
