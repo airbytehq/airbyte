@@ -75,7 +75,11 @@ export const StreamTester: React.FC<{
           orientation="horizontal"
           firstPanel={{
             children: (
-              <>{streamReadData !== undefined && !isError && <ResultDisplay slices={streamReadData.slices} />}</>
+              <>
+                {streamReadData !== undefined && !isError && (
+                  <ResultDisplay slices={streamReadData.slices} inferredSchema={streamReadData.inferred_schema} />
+                )}
+              </>
             ),
             minWidth: 80,
           }}
