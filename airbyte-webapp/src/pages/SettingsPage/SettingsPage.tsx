@@ -16,6 +16,7 @@ import useRouter from "hooks/useRouter";
 import { MessageBox } from "./components/MessageBox";
 // import UserManagementPage from "./pages/UserManagementPage";
 // import AccountSettingsPage from "./pages/AccountSettingsPage";
+import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
 
 const PageContainer = styled.div`
@@ -107,6 +108,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
               ? true
               : false,
+        },
+        {
+          path: `${SettingsRoute.Notifications}`,
+          name: <FormattedMessage id="settings.notificationSettings" />,
+          component: <NotificationPage />,
+          show: true,
         },
       ],
     },
