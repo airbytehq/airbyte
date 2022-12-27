@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.17.0
+TODO: PLACEHOLDER - Fill once all dependent PRs are merged in
+
 ## 0.16.2
 Fix the naming of OAuthAuthenticator
 
