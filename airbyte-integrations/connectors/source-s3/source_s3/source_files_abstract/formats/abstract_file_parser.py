@@ -108,3 +108,6 @@ class AbstractFileParser(ABC):
         :return: converted schema dict
         """
         return {column: cls.json_type_to_pyarrow_type(json_type, reverse=reverse) for column, json_type in schema.items()}
+
+    def _validate_config(self, config: Mapping[str, Any]):
+        pass
