@@ -1,5 +1,5 @@
-export const submitButtonClick = (options?: Partial<Cypress.ClickOptions> | undefined) => {
-  cy.get("button[type=submit]").click(options);
+export const submitButtonClick = () => {
+  cy.get("button[type=submit]").click();
 };
 
 export const updateField = (field: string, value: string) => {
