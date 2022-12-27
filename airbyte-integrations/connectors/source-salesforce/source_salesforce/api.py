@@ -256,10 +256,13 @@ class Salesforce:
         """
         stream_objects = {}
         for stream_object in self.describe()["sobjects"]:
+            if stream_object["name"].lower() == "activitymetric":
+                self.logger.warning(f"Stream {stream_object['name']} can not be used without object ID therefore will be ignored.")
+                continue
             if stream_object["queryable"]:
                 stream_objects[stream_object.pop("name")] = stream_object
             else:
-                self.logger.warn(f"Stream {stream_object['name']} is not queryable and will be ignored.")
+                self.logger.warning(f"Stream {stream_object['name']} is not queryable and will be ignored.")
 
         if catalog:
             return {
