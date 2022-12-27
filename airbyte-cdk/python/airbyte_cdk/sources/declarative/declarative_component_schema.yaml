@@ -19,7 +19,6 @@ properties:
     type: array
     items:
       "$ref": "#/definitions/DeclarativeStream"
-    minItems: 1
   version:
     type: string
   schemas:
