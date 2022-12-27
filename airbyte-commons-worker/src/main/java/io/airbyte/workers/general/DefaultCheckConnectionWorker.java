@@ -66,7 +66,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           Jsons.serialize(input.getConnectionConfiguration()));
       final int exitCode = process.exitValue();
       LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
-      ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
@@ -77,16 +77,14 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           .findFirst();
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
-      if (failureReason.isPresent()) {
-        jobOutput = jobOutput.withFailureReason(failureReason.get());
-      }
+      failureReason.ifPresent(jobOutput::setFailureReason);
 
       if (connectionStatus.isPresent()) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
             .withStatus(Enums.convertTo(connectionStatus.get().getStatus(), Status.class))
             .withMessage(connectionStatus.get().getMessage());
         LOGGER.debug("Check connection job received output: {}", output);
-        jobOutput = jobOutput.withCheckConnection(output);
+        jobOutput.setCheckConnection(output);
       } else {
         if (failureReason.isEmpty()) {
           throw new WorkerException("Error checking connection status: no status nor failure reason were outputted.");

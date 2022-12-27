@@ -59,7 +59,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       final String exitCodeMessage = String.format("Spec job subprocess finished with exit code %s", exitCode);
       LOGGER.debug(exitCodeMessage);
 
-      ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
       final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
@@ -70,12 +70,10 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
           .findFirst();
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
-      if (failureReason.isPresent()) {
-        jobOutput = jobOutput.withFailureReason(failureReason.get());
-      }
+      failureReason.ifPresent(jobOutput::setFailureReason);
 
       if (spec.isPresent()) {
-        jobOutput = jobOutput.withSpec(spec.get());
+        jobOutput.setSpec(spec.get());
       } else {
         if (failureReason.isEmpty()) {
           throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason.");
