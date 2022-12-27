@@ -97,7 +97,7 @@
             "table_name": {
               "type": "string",
               "title": "Destination Table Name",
-              "pattern": "^[a-z][a-z0-9]*$",
+              "pattern": "^[a-z][a-z0-9]*$"
             }
           }
         }
