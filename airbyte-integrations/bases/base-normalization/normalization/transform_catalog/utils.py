@@ -104,11 +104,14 @@ def is_airbyte_column(name: str) -> bool:
 def is_simple_property(definition: dict) -> bool:
     return (
         is_string(definition)
-        or is_binary_datatype(definition)
         or is_big_integer(definition)
         or is_long(definition)
         or is_number(definition)
         or is_boolean(definition)
+        or is_date(definition)
+        or is_time(definition)
+        or is_datetime(definition)
+        or is_binary_datatype(definition)
     )
 
 
