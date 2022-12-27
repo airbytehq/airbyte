@@ -46,8 +46,14 @@ import io.airbyte.persistence.job.models.Job;
 import io.airbyte.persistence.job.models.JobStatus;
 import io.airbyte.persistence.job.models.JobWithStatusAndTimestamp;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.nio.file.Path;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -69,6 +75,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.slf4j.Slf4j;
 import org.jooq.DSLContext;
 import org.jooq.Field;
 import org.jooq.InsertValuesStepN;
@@ -84,6 +91,7 @@ import org.jooq.impl.DSL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@Slf4j
 public class DefaultJobPersistence implements JobPersistence {
 
   // not static because job history test case manipulates these.
@@ -1144,6 +1152,55 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static Table<Record> getTable(final String schema, final String tableName) {
     return DSL.table(String.format("%s.%s", schema, tableName));
+  }
+
+  public static void main(String[] args) {
+    final String url = "jdbc:postgresql://34.172.209.107:5432/postgres";
+    final String user = "postgres";
+    final String password = "";
+
+    Connection conn;
+    try {
+      conn = DriverManager.getConnection(url, user, password);
+      conn.setAutoCommit(false);
+
+      log.info("Connected to the PostgreSQL server successfully.");
+
+      var numRecs = 15_000_000;
+      PreparedStatement st = conn.prepareStatement("SELECT * FROM towns limit ?");
+      st.setInt(1, numRecs);
+      st.setFetchSize(1_500_000);
+
+      var start = System.currentTimeMillis();
+      // 1,000,000 is roughly equal to 660MB, so 1.5 mil is roughly 1GB.
+      log.info("Starting query...");
+      ResultSet rs = st.executeQuery();
+
+      var currRecs = 0;
+      log.info("Starting loop...");
+      while (rs.next()) {
+        // every 10,000 records, we log
+        currRecs++;
+        if (currRecs % 100000 == 0) {
+          log.info("records loaded: {}", currRecs);
+        }
+      }
+      var end = System.currentTimeMillis();
+
+      var timeTakenSecs = (end - start) / 1000;
+      log.info("total time taken secs: {}", timeTakenSecs);
+
+      var perRecSizeMB = 0.000627618;
+      var totalSizeMB = perRecSizeMB * numRecs;
+
+      log.info("total records {}, total data mb: {}", currRecs, totalSizeMB);
+      log.info("throughput mb/s: {}", totalSizeMB/timeTakenSecs);
+
+      rs.close();
+      st.close();
+    } catch (SQLException e) {
+      System.out.println(e.getMessage());
+    }
   }
 
 }
