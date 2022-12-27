@@ -161,6 +161,7 @@ def get_parent_ids(parent) -> List:
 class SnapchatMarketingStream(HttpStream, ABC):
     url_base = "https://adsapi.snapchat.com/v1/"
     primary_key = "id"
+    raise_on_http_errors = True
 
     def __init__(self, start_date, end_date, **kwargs):
         super().__init__(**kwargs)
