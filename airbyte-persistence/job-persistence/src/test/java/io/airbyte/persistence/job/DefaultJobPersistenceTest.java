@@ -91,7 +91,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
 
@@ -424,7 +424,37 @@ class DefaultJobPersistenceTest {
       assertNotEquals(streamStatsRec.get(STREAM_STATS.CREATED_AT), streamStatsRec.get(STREAM_STATS.UPDATED_AT));
     }
 
-    // check with updates with no namespaces
+    @Test
+    @DisplayName("Writing multiple stats a stream with null namespace should write correctly without exceptions")
+    void testWriteNullNamespace() throws IOException, SQLException, InterruptedException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(2000, combined.getBytesEmitted());
+      assertEquals(2000, combined.getRecordsEmitted());
+      assertEquals(2000, combined.getEstimatedBytes());
+      assertEquals(2000, combined.getEstimatedRecords());
+
+      final var actStreamStats = stats.perStreamStats();
+      System.out.println(actStreamStats);
+      assertEquals(1, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
+    }
 
   }
 

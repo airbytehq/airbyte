@@ -27,14 +27,15 @@ public class V0_40_26_001__CorrectStreamStatsTable extends BaseJavaMigration {
     // old migration may not compile if there is any generated code.
     try (final DSLContext ctx = DSL.using(context.getConnection())) {
       // This actually needs to be bigint to match the id column on the attempts table.
-      ctx.alterTable("stream_stats").alter("attempt_id").set(SQLDataType.BIGINT.nullable(false)).execute();
+      String streamStats = "stream_stats";
+      ctx.alterTable(streamStats).alter("attempt_id").set(SQLDataType.BIGINT.nullable(false)).execute();
       // Not all streams provide a namespace.
-      ctx.alterTable("stream_stats").alter("stream_namespace").set(SQLDataType.VARCHAR.nullable(true)).execute();
+      ctx.alterTable(streamStats).alter("stream_namespace").set(SQLDataType.VARCHAR.nullable(true)).execute();
 
       // The constraint should also take into account the stream namespace. Drop the constraint and
       // recreate it.
-      ctx.alterTable("stream_stats").dropUnique("stream_stats_attempt_id_stream_name_key").execute();
-      ctx.alterTable("stream_stats").add(constraint("uniq_stream_attempt").unique("attempt_id", "stream_name", "stream_namespace")).execute();
+      ctx.alterTable(streamStats).dropUnique("stream_stats_attempt_id_stream_name_key").execute();
+      ctx.alterTable(streamStats).add(constraint("uniq_stream_attempt").unique("attempt_id", "stream_name", "stream_namespace")).execute();
     }
   }
 
