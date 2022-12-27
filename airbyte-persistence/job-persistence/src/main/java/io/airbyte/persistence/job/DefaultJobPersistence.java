@@ -478,6 +478,7 @@ public class DefaultJobPersistence implements JobPersistence {
               .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
               .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
               .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+              // this handles the usual upsert case
               .onConflict(STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAME, STREAM_STATS.STREAM_NAMESPACE)
               .doUpdate()
               .set(STREAM_STATS.UPDATED_AT, now)

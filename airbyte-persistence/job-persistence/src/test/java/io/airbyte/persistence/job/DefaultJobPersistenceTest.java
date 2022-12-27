@@ -359,7 +359,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Writing stats multiple times should write record and bytes information correctly without exceptions")
-    void testWriteSyncStatsRepeated() throws IOException, SQLException {
+    void testWriteStatsRepeated() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
@@ -391,7 +391,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Writing multiple stats of the same attempt id, stream name and namespace should update the previous record")
-    void testWriteStatsUpsert() throws IOException, SQLException, InterruptedException {
+    void testWriteStatsUpsert() throws IOException, SQLException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
@@ -426,7 +426,7 @@ class DefaultJobPersistenceTest {
 
     @Test
     @DisplayName("Writing multiple stats a stream with null namespace should write correctly without exceptions")
-    void testWriteNullNamespace() throws IOException, SQLException, InterruptedException {
+    void testWriteNullNamespace() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
 
