@@ -47,7 +47,7 @@ public interface JobPersistence {
    * @param combinedStats
    * @param perStreamStats
    */
-  record AttemptStats(SyncStats combinedStats, StreamSyncStats perStreamStats) {}
+  record AttemptStats(SyncStats combinedStats, List<StreamSyncStats> perStreamStats) {}
 
   /**
    * Retrieve the combined and per stream stats for a single attempt.

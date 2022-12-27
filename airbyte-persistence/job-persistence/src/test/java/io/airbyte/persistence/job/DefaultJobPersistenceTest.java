@@ -344,6 +344,31 @@ class DefaultJobPersistenceTest {
       assertEquals(null, stats.getDestinationStateMessagesEmitted());
     }
 
+    @Test
+    @DisplayName("Writing stats should update the previous record")
+    void testWriteStatsUpsert() throws IOException, SQLException, InterruptedException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
+
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, null);
+
+      final var stats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
+      assertEquals(2000, stats.getBytesEmitted());
+      assertEquals(2000, stats.getRecordsEmitted());
+      assertEquals(2000, stats.getEstimatedBytes());
+      assertEquals(2000, stats.getEstimatedRecords());
+
+      final var record = jobDatabase.query(ctx -> {
+        final var attemptId = DefaultJobPersistence.getAttemptId(jobId, attemptNumber, ctx);
+        return ctx.fetch("SELECT * from sync_stats where attempt_id = ?", attemptId).stream().findFirst().get();
+      });
+
+      // Check time stamps to confirm.
+      assertNotEquals(record.get(SYNC_STATS.CREATED_AT), record.get(SYNC_STATS.UPDATED_AT));
+    }
+
     // @Test
     // @DisplayName("Writing stats multiple times should write record and bytes information correctly
     // without exceptions")
@@ -376,6 +401,16 @@ class DefaultJobPersistenceTest {
     // assertEquals(2000, stat.getEstimatedRecords());
     //
     // }
+
+  }
+
+  @Nested
+  class UpsertUpdate {
+
+    @Test
+    void testWriteToSyncStats() throws IOException {
+
+    }
 
   }
 
