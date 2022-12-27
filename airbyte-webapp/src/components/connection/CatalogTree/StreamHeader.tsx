@@ -152,6 +152,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               path={cursorType === "sourceDefined" ? defaultCursorField : cursorField}
               placeholder={<FormattedMessage id="connectionForm.cursor.searchPlaceholder" />}
               onPathChange={onCursorChange}
+              id={`${stream.stream?.name}_cursor`}
             />
           )}
         </HeaderCell>
@@ -164,6 +165,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
               isMulti
               placeholder={<FormattedMessage id="connectionForm.primaryKey.searchPlaceholder" />}
               onPathChange={onPrimaryKeyChange}
+              id={`${stream.stream?.name}_primaryKey`}
             />
           )}
         </HeaderCell>
