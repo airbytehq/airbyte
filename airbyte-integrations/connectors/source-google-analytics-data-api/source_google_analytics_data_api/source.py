@@ -2,7 +2,6 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-import collections
 import datetime
 import json
 import logging
@@ -223,14 +222,10 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
         for row in r.get("rows", []):
             rows.append(
-                collections.ChainMap(
-                    *[
-                        self.add_primary_key(),
-                        self.add_property_id(self.config["property_id"]),
-                        self.add_dimensions(dimensions, row),
-                        self.add_metrics(metrics, metrics_type_map, row),
-                    ]
-                )
+                self.add_primary_key()
+                | self.add_property_id(self.config["property_id"])
+                | self.add_dimensions(dimensions, row)
+                | self.add_metrics(metrics, metrics_type_map, row)
             )
         r["records"] = rows
 
