@@ -11,6 +11,7 @@ from airbyte_cdk.sources import AbstractSource
 from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http.availability_strategy import HttpAvailabilityStrategy
 from airbyte_cdk.sources.streams.http.http import HttpStream
+from airbyte_cdk.sources.utils.stream_helpers import StreamHelper
 from requests import HTTPError
 
 logger = logging.getLogger("airbyte")
@@ -166,3 +167,47 @@ def test_http_availability_strategy_on_empty_stream(mocker):
 
     assert stream_is_available
     assert empty_stream.read_records.called
+
+
+def test_http_availability_no_stream_slices(mocker):
+    class RepoBasedStream(MockHttpStream):
+        def __init__(self, repositories: List[str], **kwargs):
+            super().__init__(**kwargs)
+            self.repositories = repositories
+
+        def stream_slices(self, **kwargs) -> Iterable[Optional[Mapping[str, Any]]]:
+            for repository in self.repositories:
+                yield {"repository": repository}
+
+        def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+            return f"repos/{stream_slice['repository']}/{self.name}"
+
+    class Branches(RepoBasedStream):
+        """"""
+
+    branches_stream = Branches(repositories=["user/repo1", "user/repo2"])
+    assert isinstance(branches_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    expected_first_slice = {"repository": "user/repo1"}
+    assert StreamHelper.get_stream_slice(branches_stream) == expected_first_slice
+    assert branches_stream.path(expected_first_slice) == "repos/user/repo1/branches"
+
+    req = requests.Response()
+    req.status_code = 200
+    mocker.patch.object(requests.Session, "send", return_value=req)
+
+    logger = logging.getLogger("airbyte.test-source")
+    stream_is_available, _ = branches_stream.check_availability(logger)
+    assert stream_is_available
+
+    bad_branches_stream = Branches(repositories=[])
+    assert isinstance(branches_stream.availability_strategy, HttpAvailabilityStrategy)
+
+    # # successfully fails as expected due to same error as below
+    # bad_slice_return_value = {}
+    # mock_stream_slices = mocker.patch.object(RepoBasedStream, "stream_slices", return_value=bad_slice_return_value)
+    # assert StreamHelper.get_stream_slice(branches_stream) == bad_slice_return_value
+    # assert branches_stream.path(bad_slice_return_value) == f"repos/user/repo1/branches"
+
+    stream_is_available, _ = bad_branches_stream.check_availability(logger)
+    assert stream_is_available
