@@ -397,8 +397,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   }
 
-  @VisibleForTesting
-  static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+  private static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
     // Although JOOQ supports upsert using the onConflict statement, we cannot use it as the table
     // currently has duplicate records and also doesn't contain the unique constraint on the attempt_id
     // column JOOQ requires. We are forced to check for existence.
