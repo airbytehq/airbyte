@@ -23,11 +23,11 @@ import {
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
-  expandStreamDetails
+  expandStreamDetails,
 } from "pages/replicationPage";
 import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
 import { goToSettingsPage } from "pages/settingsConnectionPage";
-import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "../commands/db";
+import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "commands/db";
 import {
   catalogDiffModal,
   newFieldsTable,
@@ -35,8 +35,8 @@ import {
   removedFieldsTable,
   removedStreamsTable,
   toggleStreamWithChangesAccordion,
-} from "../pages/modals/catalogDiffModal";
-import { updateSchemaModalConfirmBtnClick } from "../pages/modals/updateSchemaModal";
+} from "pages/modals/catalogDiffModal";
+import { updateSchemaModalConfirmBtnClick } from "pages/modals/updateSchemaModal";
 
 describe("Connection - main actions", () => {
   beforeEach(() => {
@@ -408,6 +408,7 @@ describe("Connection sync modes", () => {
   it("Connection sync mode Incremental Append", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
+    const streamName = "users";
 
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
@@ -419,11 +420,11 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("users");
+    searchStream(streamName);
     selectSyncMode("Incremental", "Append");
-    selectCursorField("col1");
+    selectCursorField(streamName, "col1");
 
-    submitButtonClick();
+    submitButtonClick({force: true});
     confirmStreamConfigurationChangedPopup();
 
     cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {
@@ -439,7 +440,7 @@ describe("Connection sync modes", () => {
     goToReplicationTab();
 
     searchStream("users");
-    checkCursorField("col1");
+    checkCursorField(streamName, "col1");
 
     deleteSource(sourceName);
     deleteDestination(destName);
@@ -448,6 +449,7 @@ describe("Connection sync modes", () => {
   it("Connection sync mode Incremental Deduped History - PK is defined", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
+    const streamName = "users";
 
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
@@ -459,9 +461,9 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("users");
+    searchStream(streamName);
     selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("col1");
+    selectCursorField(streamName, "col1");
     checkPreFilledPrimaryKeyField("id");
 
     submitButtonClick();
@@ -479,9 +481,9 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("users");
+    searchStream(streamName);
 
-    checkCursorField("col1");
+    checkCursorField(streamName, "col1");
     checkPreFilledPrimaryKeyField("id");
 
     deleteSource(sourceName);
@@ -491,6 +493,7 @@ describe("Connection sync modes", () => {
   it("Connection sync mode Incremental Deduped History - PK is not defined", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
+    const streamName = "cities";
 
     cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
@@ -502,11 +505,11 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("cities");
+    searchStream(streamName);
     selectSyncMode("Incremental", "Deduped + history");
-    selectCursorField("city");
+    selectCursorField(streamName, "city");
     isPrimaryKeyNonExist();
-    selectPrimaryKeyField("city_code");
+    selectPrimaryKeyField(streamName, ["city_code"]);
 
     submitButtonClick();
     confirmStreamConfigurationChangedPopup();
@@ -523,10 +526,10 @@ describe("Connection sync modes", () => {
 
     goToReplicationTab();
 
-    searchStream("cities");
+    searchStream(streamName);
 
-    checkCursorField("city");
-    checkPrimaryKey("city_code");
+    checkCursorField(streamName, "city");
+    checkPrimaryKey(streamName, ["city", "city_code"]);
 
     deleteSource(sourceName);
     deleteDestination(destName);
