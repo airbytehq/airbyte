@@ -5,10 +5,11 @@ import styled from "styled-components";
 interface Props {
   className?: string;
   icon?: IconDefinition;
+  error?: boolean;
 }
 
-const Box = styled.div`
-  background: ${({ theme }) => theme.yellow100};
+const Box = styled.div<{ error?: boolean }>`
+  background: ${({ theme, error }) => (error ? theme.red50 : theme.yellow100)};
   border-radius: 8px;
   padding: 18px 25px 22px;
   font-size: 14px;
@@ -17,9 +18,9 @@ const Box = styled.div`
   align-items: center;
 `;
 
-export const InfoBox: React.FC<React.PropsWithChildren<Props>> = ({ children, className, icon }) => {
+export const InfoBox: React.FC<React.PropsWithChildren<Props>> = ({ children, className, icon, error }) => {
   return (
-    <Box className={className}>
+    <Box className={className} error={error}>
       {icon && <FontAwesomeIcon size="lg" icon={icon} />}
       {children}
     </Box>

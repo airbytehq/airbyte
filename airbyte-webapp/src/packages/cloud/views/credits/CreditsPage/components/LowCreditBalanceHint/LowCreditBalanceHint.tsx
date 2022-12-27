@@ -1,5 +1,4 @@
 import { faCreditCard, faWarning } from "@fortawesome/free-solid-svg-icons";
-import classNames from "classnames";
 import { FormattedMessage } from "react-intl";
 
 import { InfoBox } from "components/ui/InfoBox";
@@ -7,12 +6,11 @@ import { InfoBox } from "components/ui/InfoBox";
 import { useGetCloudWorkspace } from "packages/cloud/services/workspaces/CloudWorkspacesService";
 import { useCurrentWorkspace } from "services/workspaces/WorkspacesService";
 
-// eslint-disable-next-line css-modules/no-unused-class
 import styles from "./LowCreditBalanceHint.module.scss";
 
 export const LOW_BALANCE_CREDIT_TRESHOLD = 20;
 
-export const LowCreditBalanceHint: React.FC = ({ children }) => {
+export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const workspace = useCurrentWorkspace();
   const cloudWorkspace = useGetCloudWorkspace(workspace.workspaceId);
 
@@ -27,7 +25,7 @@ export const LowCreditBalanceHint: React.FC = ({ children }) => {
     zeroBalance: faWarning,
   };
   return (
-    <InfoBox icon={ICONS[status]} className={classNames(styles.container, styles[status])}>
+    <InfoBox icon={ICONS[status]} error={status === "zeroBalance"} className={styles.container}>
       <div className={styles.wrapper}>
         <FormattedMessage id={`credits.${status}`} />
         {children}
