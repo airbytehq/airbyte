@@ -413,7 +413,7 @@ class HttpRequester(BaseModel):
 class DeclarativeSource(BaseModel):
     type: Literal["DeclarativeSource"]
     check: CheckStream
-    streams: List[DeclarativeStream]
+    streams: List[DeclarativeStream] = Field(..., min_items=1)
     version: str
     schemas: Optional[Schemas] = None
     spec: Optional[Spec] = None
