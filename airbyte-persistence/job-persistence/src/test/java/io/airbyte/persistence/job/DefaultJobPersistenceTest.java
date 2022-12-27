@@ -326,22 +326,23 @@ class DefaultJobPersistenceTest {
   @DisplayName("Test writing in progress stats")
   class WriteStats {
 
-//    @Test
-//    @DisplayName("Writing stats the first time should only write record and bytes information correctly")
-//    void testWriteStatsFirst() throws IOException, SQLException {
-//      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
-//      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-//      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
-//
-//      final var stats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
-//      assertEquals(1000, stats.getBytesEmitted());
-//      assertEquals(1000, stats.getRecordsEmitted());
-//      assertEquals(1000, stats.getEstimatedBytes());
-//      assertEquals(1000, stats.getEstimatedRecords());
-//
-//      assertEquals(null, stats.getRecordsCommitted());
-//      assertEquals(null, stats.getDestinationStateMessagesEmitted());
-//    }
+    @Test
+    @DisplayName("Writing stats the first time should only write record and bytes information correctly")
+    void testWriteStatsFirst() throws IOException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
+
+      final var stats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
+      assertEquals(1000, stats.getBytesEmitted());
+      assertEquals(1000, stats.getRecordsEmitted());
+      assertEquals(1000, stats.getEstimatedBytes());
+      assertEquals(1000, stats.getEstimatedRecords());
+
+      // As of this writing, committed and state messages are not expected.
+      assertEquals(null, stats.getRecordsCommitted());
+      assertEquals(null, stats.getDestinationStateMessagesEmitted());
+    }
 
     // @Test
     // @DisplayName("Writing stats multiple times should write record and bytes information correctly

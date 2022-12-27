@@ -386,16 +386,24 @@ public class DefaultJobPersistence implements JobPersistence {
           ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number = ?", jobId, attemptNumber).stream().findFirst();
       final Long attemptId = record.get().get("id", Long.class);
 
+      final var syncStats = new SyncStats()
+          .withEstimatedRecords(estimatedRecords)
+          .withEstimatedBytes(estimatedBytes)
+          .withRecordsEmitted(recordsEmitted)
+          .withBytesEmitted(bytesEmitted);
+
       // need to reconstruct the syncStats info.
-      saveToSyncStatsTable(now, null, attemptId, ctx);
+      saveToSyncStatsTable(now, syncStats, attemptId, ctx);
       // write per stream stat info
-      saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx, attemptId);
+      // saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx,
+      // attemptId);
       return null;
     });
 
   }
 
   private static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+    System.out.println("writing into this table");
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
         .set(SYNC_STATS.UPDATED_AT, now)
@@ -403,6 +411,8 @@ public class DefaultJobPersistence implements JobPersistence {
         .set(SYNC_STATS.ATTEMPT_ID, attemptId)
         .set(SYNC_STATS.BYTES_EMITTED, syncStats.getBytesEmitted())
         .set(SYNC_STATS.RECORDS_EMITTED, syncStats.getRecordsEmitted())
+        .set(SYNC_STATS.ESTIMATED_RECORDS, syncStats.getEstimatedRecords())
+        .set(SYNC_STATS.ESTIMATED_BYTES, syncStats.getEstimatedBytes())
         .set(SYNC_STATS.RECORDS_COMMITTED, syncStats.getRecordsCommitted())
         .set(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED, syncStats.getSourceStateMessagesEmitted())
         .set(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED, syncStats.getDestinationStateMessagesEmitted())
@@ -467,11 +477,9 @@ public class DefaultJobPersistence implements JobPersistence {
     final var syncStats = jobDatabase
         .query(ctx -> {
           final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
-          return
-              ctx.select(DSL.asterisk()).from(DSL.table("sync_stats")).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
-                  .orderBy(SYNC_STATS.UPDATED_AT.desc())
-                  .limit(1)
-                  .fetchOne(getSyncStatsRecordMapper());
+          return ctx.select(DSL.asterisk()).from(DSL.table(SYNC_STATS.getName())).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+              .orderBy(SYNC_STATS.UPDATED_AT.desc())
+              .fetchOne(getSyncStatsRecordMapper());
         });
     // hydrate perStreamStats
     return new AttemptStats(syncStats, null);
@@ -497,7 +505,9 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static RecordMapper<Record, SyncStats> getSyncStatsRecordMapper() {
-    return record -> new SyncStats().withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
+    return record -> new SyncStats()
+        .withBytesEmitted(record.get(SYNC_STATS.BYTES_EMITTED)).withRecordsEmitted(record.get(SYNC_STATS.RECORDS_EMITTED))
+        .withEstimatedBytes(record.get(SYNC_STATS.ESTIMATED_BYTES)).withEstimatedRecords(record.get(SYNC_STATS.ESTIMATED_RECORDS))
         .withSourceStateMessagesEmitted(record.get(SYNC_STATS.SOURCE_STATE_MESSAGES_EMITTED))
         .withDestinationStateMessagesEmitted(record.get(SYNC_STATS.DESTINATION_STATE_MESSAGES_EMITTED))
         .withRecordsCommitted(record.get(SYNC_STATS.RECORDS_COMMITTED))
