@@ -9,7 +9,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
@@ -24,14 +23,11 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +37,6 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
-
   private Process process;
 
   public DefaultGetSpecWorker(final IntegrationLauncher integrationLauncher,
@@ -60,20 +55,14 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
     ApmTraceUtils.addTagsToTrace(Map.of(JOB_ROOT_KEY, jobRoot, DOCKER_IMAGE_KEY, config.getDockerImage()));
     try {
       process = integrationLauncher.spec(jobRoot);
+      final int exitCode = process.exitValue();
+      final String exitCodeMessage = String.format("Spec job subprocess finished with exit code %s", exitCode);
+      LOGGER.debug(exitCodeMessage);
 
+      ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.SPEC);
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
-      try (final InputStream stdout = process.getInputStream()) {
-        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
-            .collect(Collectors.groupingBy(AirbyteMessage::getType));
-
-        // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
-        // this.
-        // retrieving spec should generally be instantaneous, but since docker images might not be pulled
-        // it could take a while longer depending on internet conditions as well.
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
-      }
+      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
 
       final Optional<ConnectorSpecification> spec = messagesByType
           .getOrDefault(Type.SPEC, new ArrayList<>()).stream()
@@ -81,19 +70,19 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
           .findFirst();
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.SPEC, messagesByType);
-      final int exitCode = process.exitValue();
-      final String exitCodeMessage = String.format("Spec job subprocess finished with exit code %s", exitCode);
-      LOGGER.debug(exitCodeMessage);
-      if (exitCode != 0) {
-        return WorkerUtils.getJobOutput(OutputType.SPEC, failureReason, exitCodeMessage, true);
-      } else {
-        if (spec.isEmpty()) {
-          throw new WorkerException("integration failed to output a spec struct.");
-        }
-        ConnectorJobOutput jobOutput = WorkerUtils.getJobOutput(OutputType.SPEC, failureReason, exitCodeMessage, false);
-
-        return jobOutput.withSpec(spec.get());
+      if (failureReason.isPresent()) {
+        jobOutput = jobOutput.withFailureReason(failureReason.get());
       }
+
+      if (spec.isPresent()) {
+        jobOutput = jobOutput.withSpec(spec.get());
+      } else {
+        if (failureReason.isEmpty()) {
+          throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason.");
+        }
+      }
+
+      return jobOutput;
     } catch (final Exception e) {
       throw new WorkerException(String.format("Error while getting spec from image %s", config.getDockerImage()), e);
     }

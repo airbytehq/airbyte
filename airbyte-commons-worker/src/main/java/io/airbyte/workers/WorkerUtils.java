@@ -5,7 +5,7 @@
 package io.airbyte.workers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.config.ConnectorJobOutput;
+import io.airbyte.commons.io.IOs;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.StandardSyncInput;
@@ -15,9 +15,11 @@ import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
-import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.FailureHelper.ConnectorCommand;
+import io.airbyte.workers.internal.AirbyteStreamFactory;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -122,23 +124,17 @@ public class WorkerUtils {
         .findFirst();
   }
 
-  public static ConnectorJobOutput getJobOutput(final OutputType outputType,
-      final Optional<FailureReason> failureReason,
-      final String defaultErrorMessage,
-      final boolean throwOnNoFailureReason)
-      throws WorkerException {
+  public static Map<Type, List<AirbyteMessage>> getMessagesByType(Process process, AirbyteStreamFactory streamFactory, int timeOut)
+      throws IOException {
+    final Map<Type, List<AirbyteMessage>> messagesByType;
+    try (final InputStream stdout = process.getInputStream()) {
+      messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+          .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
-    if (throwOnNoFailureReason && !failureReason.isPresent()) {
-      throw new WorkerException(defaultErrorMessage);
-    }
-    ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(outputType);
-    if (failureReason.isPresent()) {
-      return jobOutput.withFailureReason(failureReason.get());
-    } else {
-      return jobOutput;
+      WorkerUtils.gentleClose(process, timeOut, TimeUnit.MINUTES);
+      return messagesByType;
     }
   }
-
 
   public static Optional<FailureReason> getJobFailureReasonFromMessages(final OutputType outputType,
                                                                         final Map<Type, List<AirbyteMessage>> messagesByType) {

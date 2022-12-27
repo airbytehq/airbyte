@@ -10,7 +10,6 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.config.ConnectorJobOutput;
@@ -28,7 +27,6 @@ import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
 import io.airbyte.workers.internal.DefaultAirbyteStreamFactory;
 import io.airbyte.workers.process.IntegrationLauncher;
-import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,45 +70,40 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
           Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
+      final int exitCode = process.exitValue();
+      final String exitCodeMessage = String.format("Discover job subprocess finished with exit code %s", exitCode);
+      LOGGER.debug(exitCodeMessage);
+      ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
-
-      try (final InputStream stdout = process.getInputStream()) {
-        messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
-            .collect(Collectors.groupingBy(AirbyteMessage::getType));
-
-        WorkerUtils.gentleClose(process, 30, TimeUnit.MINUTES);
-      }
+      final Map<Type, List<AirbyteMessage>> messagesByType = WorkerUtils.getMessagesByType(process, streamFactory, 30);
 
       final Optional<AirbyteCatalog> catalog = messagesByType
           .getOrDefault(Type.CATALOG, new ArrayList<>()).stream()
           .map(AirbyteMessage::getCatalog)
           .findFirst();
 
-      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
-      final int exitCode = process.exitValue();
-      final String exitCodeMessage = String.format("Discover job subprocess finished with exit code %s", exitCode));
-      LOGGER.debug(exitCodeMessage);
+      final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
+      if (failureReason.isPresent()) {
+        jobOutput = jobOutput.withFailureReason(failureReason.get());
+      }
 
-      if (exitCode != 0) {
-        return WorkerUtils.getJobOutput(OutputType.DISCOVER_CATALOG_ID, failureReason, exitCodeMessage, true);
+      if (catalog.isPresent()) {
+        final UUID catalogId =
+            configRepository.writeActorCatalogFetchEvent(catalog.get(),
+                // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
+                // it, so we check again here.
+                discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
+                discoverSchemaInput.getConnectorVersion(),
+                discoverSchemaInput.getConfigHash());
+        jobOutput = jobOutput.withDiscoverCatalogId(catalogId);
       } else {
-        if (catalog.isEmpty()) {
+        if (failureReason.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");
-        } else {
-          final UUID catalogId =
-              configRepository.writeActorCatalogFetchEvent(catalog.get(),
-                  // NOTE: sourceId is marked required in the OpenAPI config but the code generator doesn't enforce
-                  // it, so we check again here.
-                  discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
-                  discoverSchemaInput.getConnectorVersion(),
-                  discoverSchemaInput.getConfigHash());
-          ConnectorJobOutput jobOutput = WorkerUtils.getJobOutput(OutputType.DISCOVER_CATALOG_ID, failureReason, exitCodeMessage, false);
-          return jobOutput.withDiscoverCatalogId(catalogId);
         }
       }
+      return jobOutput;
     } catch (final WorkerException e) {
       ApmTraceUtils.addExceptionToTrace(e);
       throw e;
