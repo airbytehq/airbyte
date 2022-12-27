@@ -24,6 +24,7 @@ inputs:
     required: false
   ec2-instance-id:
     required: false
+
 outputs:
   label:
     value: ${{ steps.start-ec2-runner.outputs.label }}
