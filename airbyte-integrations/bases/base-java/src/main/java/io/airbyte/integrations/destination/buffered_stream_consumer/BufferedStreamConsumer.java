@@ -140,9 +140,7 @@ public class BufferedStreamConsumer extends FailureTrackingAirbyteMessageConsume
         return;
       }
 
-      // pass in reference object of mapping stream -> false, any returned true would be flushed stream
-      // TODO: (ryankfu) we have knowledge into the different type of lifecycle manager
-      final Optional<BufferFlushType> flushType = bufferingStrategy.addRecord(stream, message);
+      final Optional flushType = bufferingStrategy.addRecord(stream, message);
       // if present means that a flush occurred
       if (flushType.isPresent()) {
         // TODO: (ryankfu) separate the logic for handling flush states in a separate
