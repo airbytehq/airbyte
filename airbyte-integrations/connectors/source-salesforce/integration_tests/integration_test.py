@@ -4,6 +4,7 @@
 
 import base64
 import json
+import os
 import time
 from datetime import datetime
 from pathlib import Path
@@ -132,15 +133,16 @@ def test_parallel_discover(input_sandbox_config):
     sf.login()
     stream_objects = sf.get_validated_streams(config=input_sandbox_config)
 
+    start_time = datetime.now()
+    parallel_schemas = sf.generate_schemas(stream_objects)
+    parallel_loading_time = (datetime.now() - start_time).total_seconds()
+
     # try to load all schema with the old consecutive logic
     consecutive_schemas = {}
     start_time = datetime.now()
     for stream_name, sobject_options in stream_objects.items():
         consecutive_schemas[stream_name] = sf.generate_schema(stream_name, sobject_options)
     consecutive_loading_time = (datetime.now() - start_time).total_seconds()
-    start_time = datetime.now()
-    parallel_schemas = sf.generate_schemas(stream_objects)
-    parallel_loading_time = (datetime.now() - start_time).total_seconds()
 
     print(f"\nparallel discover ~ {round(consecutive_loading_time/parallel_loading_time, 1)}x faster over traditional.\n")
 
