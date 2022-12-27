@@ -287,11 +287,10 @@ public class StagingConsumerFactory {
           writeConfig.clearStagedFiles();
 
           /*
-           * NOTE: OVERWRITE mode will be a future no-op since copying data from temp tables to raw destination tables is no longer used so
+`           * NOTE: OVERWRITE mode will be a future no-op since copying data from temp tables to raw destination tables is no longer used, so
            * instead we clear out the destination table upon #onStartFunction
            */
           switch (writeConfig.getSyncMode()) {
-            // case OVERWRITE -> queryList.add(stagingOperations.truncateTableQuery(database, schemaName, dstTableName));
             case APPEND, APPEND_DEDUP, OVERWRITE -> {}
             default -> throw new IllegalStateException("Unrecognized sync mode: " + writeConfig.getSyncMode());
           }

@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.destination.record_buffer;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,6 +22,8 @@ import io.airbyte.protocol.models.v0.AirbyteMessage;
 import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import io.airbyte.protocol.models.v0.AirbyteStreamNameNamespacePair;
 import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
+import java.nio.Buffer;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -76,7 +79,6 @@ public class SerializedBufferingStrategyTest {
     final AirbyteMessage message5 = generateMessage(stream2);
 
     when(recordWriter1.getByteCount()).thenReturn(10L); // one record in recordWriter1
-    // TODO: (ryankfu) fix tests to handle optional value
     assertFalse(buffering.addRecord(stream1, message1).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(10L); // one record in recordWriter2
     assertFalse(buffering.addRecord(stream2, message2).isPresent());
@@ -88,7 +90,11 @@ public class SerializedBufferingStrategyTest {
     when(recordWriter2.getByteCount()).thenReturn(20L); // second record in recordWriter2
     assertFalse(buffering.addRecord(stream2, message3).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(30L); // third record in recordWriter2
-    assertFalse(buffering.addRecord(stream2, message4).isPresent());
+
+    // Buffer reaches limit so a buffer flush occurs returning a buffer flush type of single stream
+    final Optional<BufferFlushType> flushType = buffering.addRecord(stream2, message4);
+    assertTrue(flushType.isPresent());
+    assertEquals(flushType.get(), BufferFlushType.FLUSH_SINGLE_STREAM);
 
     // The buffer limit is now reached for stream2, flushing that single stream only
     verify(perStreamFlushHook, times(0)).accept(stream1, recordWriter1);
@@ -129,7 +135,13 @@ public class SerializedBufferingStrategyTest {
     when(recordWriter1.getByteCount()).thenReturn(20L); // second record in recordWriter1
     assertFalse(buffering.addRecord(stream1, message4).isPresent());
     when(recordWriter2.getByteCount()).thenReturn(20L); // second record in recordWriter2
-    assertTrue(buffering.addRecord(stream2, message5).isPresent());
+
+    // In response to checkpointing, will need to know what type of buffer flush occurred to mark
+    // AirbyteStateMessage as committed depending on DestDefaultStateLifecycleManager
+    final Optional<BufferFlushType> flushType = buffering.addRecord(stream2, message5);
+    assertTrue(flushType.isPresent());
+    assertEquals(flushType.get(), BufferFlushType.FLUSH_ALL);
+
     // Buffer limit reached for total streams, flushing all streams
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);
@@ -165,7 +177,11 @@ public class SerializedBufferingStrategyTest {
     verify(perStreamFlushHook, times(0)).accept(stream2, recordWriter2);
     verify(perStreamFlushHook, times(0)).accept(stream3, recordWriter3);
 
-    assertTrue(buffering.addRecord(stream4, message4).isPresent());
+    // Since the concurrent stream threshold has been exceeded, all buffer streams are flush
+    final Optional<BufferFlushType> flushType = buffering.addRecord(stream4, message4);
+    assertTrue(flushType.isPresent());
+    assertEquals(flushType.get(), BufferFlushType.FLUSH_ALL);
+
     // Buffer limit reached for concurrent streams, flushing all streams
     verify(perStreamFlushHook, times(1)).accept(stream1, recordWriter1);
     verify(perStreamFlushHook, times(1)).accept(stream2, recordWriter2);

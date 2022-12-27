@@ -52,6 +52,10 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastPendingState);
   }
 
+  /*
+   * Similar to #markFlushedAsCommmitted, this method should no longer be used to align with the
+   * changes to destination checkpointing where flush/commit operations will be bundled
+   */
   @Override
   public void markPendingAsFlushed() {
     moveToNextPhase(streamToLastPendingState, streamToLastFlushedState);
@@ -62,6 +66,11 @@ public class DestStreamStateLifecycleManager implements DestStateLifecycleManage
     return listStatesInOrder(streamToLastFlushedState);
   }
 
+  /*
+   * During the process of migration to destination checkpointing, this method should no longer be
+   * in use in favor of #markPendingAsCommitted where states will be flushed/committed as a singular
+   * transaction
+   */
   @Override
   public void markFlushedAsCommitted() {
     moveToNextPhase(streamToLastFlushedState, streamToLastCommittedState);
