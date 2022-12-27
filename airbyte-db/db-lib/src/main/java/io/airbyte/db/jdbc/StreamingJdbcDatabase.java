@@ -71,6 +71,9 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
             try {
               connection.setAutoCommit(true);
               connection.close();
+              if (isStreamFailed) {
+                throw new RuntimeException(streamException);
+              }
             } catch (final SQLException e) {
               throw new RuntimeException(e);
             }
@@ -84,7 +87,7 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
    * This method differs from {@link DefaultJdbcDatabase#toUnsafeStream} in that it takes a streaming
    * config that adjusts the fetch size dynamically according to sampled row size.
    */
-  protected static <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
+  protected <T> Stream<T> toUnsafeStream(final ResultSet resultSet,
                                                 final CheckedFunction<ResultSet, T, SQLException> mapper,
                                                 final JdbcStreamingQueryConfig streamingConfig) {
     return StreamSupport.stream(new Spliterators.AbstractSpliterator<>(Long.MAX_VALUE, Spliterator.ORDERED) {
@@ -102,7 +105,10 @@ public class StreamingJdbcDatabase extends DefaultJdbcDatabase {
           return true;
         } catch (final SQLException e) {
           LOGGER.error("SQLState: {}, Message: {}", e.getSQLState(), e.getMessage());
-          throw new RuntimeException(e);
+          streamException = e;
+          isStreamFailed = true;
+          // throwing an exception in tryAdvance() method lead to the endless loop in Spliterator and stream will never close
+          return false;
         }
       }
 
