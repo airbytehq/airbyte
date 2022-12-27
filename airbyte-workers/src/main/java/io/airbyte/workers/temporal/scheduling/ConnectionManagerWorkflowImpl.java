@@ -20,6 +20,7 @@ import io.airbyte.commons.temporal.scheduling.SyncWorkflow;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowInternalState;
 import io.airbyte.commons.temporal.scheduling.state.WorkflowState;
 import io.airbyte.commons.temporal.scheduling.state.listener.NoopStateListener;
+import io.airbyte.config.ActorType;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.FailureReason;
@@ -420,8 +421,11 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       return checkFailure;
     }
 
-    final StandardCheckConnectionInput sourceConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(sourceConfig);
-    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, sourceConfiguration);
+    final StandardCheckConnectionInput standardCheckInputSource = new StandardCheckConnectionInput()
+        .withActorType(ActorType.SOURCE)
+        .withActorId(syncInput.getSourceId())
+        .withConnectionConfiguration(sourceConfig);
+    final CheckConnectionInput checkSourceInput = new CheckConnectionInput(jobRunConfig, sourceLauncherConfig, standardCheckInputSource);
 
     final int checkJobOutputVersion =
         Workflow.getVersion(CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG, Workflow.DEFAULT_VERSION, CHECK_PREVIOUS_JOB_OR_ATTEMPT_TAG_CURRENT_VERSION);
@@ -447,8 +451,12 @@ public class ConnectionManagerWorkflowImpl implements ConnectionManagerWorkflow 
       }
     }
 
-    final StandardCheckConnectionInput destinationConfiguration = new StandardCheckConnectionInput().withConnectionConfiguration(destinationConfig);
-    final CheckConnectionInput checkDestinationInput = new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, destinationConfiguration);
+    final StandardCheckConnectionInput standardCheckInputDestination = new StandardCheckConnectionInput()
+        .withActorType(ActorType.DESTINATION)
+        .withActorId(syncInput.getDestinationId())
+        .withConnectionConfiguration(destinationConfig);
+    final CheckConnectionInput checkDestinationInput =
+        new CheckConnectionInput(jobRunConfig, destinationLauncherConfig, standardCheckInputDestination);
 
     if (checkFailure.isFailed() || !isLastJobOrAttemptFailure) {
       log.info("DESTINATION CHECK: Skipped");

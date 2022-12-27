@@ -6,8 +6,16 @@ description: information required for connection.
 type: object
 required:
   - connectionConfiguration
+  - actorType
+  - actorId
 additionalProperties: false
 properties:
+  actorType:
+    "$ref": ActorType.yaml
+  actorId:
+    description: The ID of the actor being checked, so we can persist config updates
+    type: string
+    format: uuid
   connectionConfiguration:
     description: Integration specific blob. Must be a valid JSON string.
     type: object
