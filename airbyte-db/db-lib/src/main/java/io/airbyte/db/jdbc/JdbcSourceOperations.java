@@ -37,7 +37,7 @@ public class JdbcSourceOperations extends AbstractJdbcCompatibleSourceOperations
   }
 
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final int columnTypeInt = resultSet.getMetaData().getColumnType(colIndex);
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final JDBCType columnType = safeGetJdbcType(columnTypeInt);

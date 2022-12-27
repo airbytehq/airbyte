@@ -35,7 +35,7 @@ public class MssqlSourceOperations extends JdbcSourceOperations {
    * @throws SQLException
    */
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json)
       throws SQLException {
 
     final SQLServerResultSetMetaData metadata = (SQLServerResultSetMetaData) resultSet

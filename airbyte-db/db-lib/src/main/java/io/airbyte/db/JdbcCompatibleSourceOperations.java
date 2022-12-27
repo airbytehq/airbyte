@@ -18,7 +18,7 @@ public interface JdbcCompatibleSourceOperations<SourceType> extends SourceOperat
    *
    * @param colIndex 1-based column index.
    */
-  void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
+  void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException;
 
   /**
    * Set the cursor field in incremental table query.

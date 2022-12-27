@@ -91,7 +91,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
       }
 
       // convert to java types that will convert into reasonable json.
-      putJsonField(queryContext, i, jsonNode);
+      copyToJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;
@@ -174,7 +174,7 @@ public class PostgresSourceOperations extends AbstractJdbcCompatibleSourceOperat
   }
 
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final PgResultSetMetaData metadata = (PgResultSetMetaData) resultSet.getMetaData();
     final String columnName = metadata.getColumnName(colIndex);
     final String columnTypeName = metadata.getColumnTypeName(colIndex).toLowerCase();

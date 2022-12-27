@@ -5,6 +5,7 @@
 package io.airbyte.integrations.source.jdbc.test;
 
 import static io.airbyte.db.jdbc.JdbcUtils.getDefaultSourceOperations;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -1087,25 +1088,25 @@ public abstract class JdbcSourceAcceptanceTest {
       connection.createStatement()
           .execute(
               createTableQuery(getFullyQualifiedTableName(
-                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-                  "id INTEGER, " + RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+                  "id INTEGER, " + enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)
                       + " VARCHAR(200)",
                   ""));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (1,'picard')",
               getFullyQualifiedTableName(
-                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (2, 'crusher')",
               getFullyQualifiedTableName(
-                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
       connection.createStatement()
           .execute(String.format("INSERT INTO %s(id, %s) VALUES (3, 'vash')",
               getFullyQualifiedTableName(
-                  RelationalDbQueryUtils.enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
-              RelationalDbQueryUtils.enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
+                  enquoteIdentifier(tableNameWithSpaces, identifierQuoteString)),
+              enquoteIdentifier(COL_LAST_NAME_WITH_SPACE, identifierQuoteString)));
     });
 
     return CatalogHelpers.createConfiguredAirbyteStream(

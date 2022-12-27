@@ -72,7 +72,7 @@ public class MySqlSourceOperations extends AbstractJdbcCompatibleSourceOperation
    * @param colIndex 1-based column index.
    */
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();

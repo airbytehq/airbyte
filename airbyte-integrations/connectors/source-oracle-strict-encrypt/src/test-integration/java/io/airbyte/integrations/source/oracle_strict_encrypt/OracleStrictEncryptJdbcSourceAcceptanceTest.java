@@ -4,6 +4,7 @@
 
 package io.airbyte.integrations.source.oracle_strict_encrypt;
 
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifier;
 import static org.junit.Assert.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -21,7 +22,6 @@ import io.airbyte.integrations.base.ssh.SshHelpers;
 import io.airbyte.integrations.source.jdbc.AbstractJdbcSource;
 import io.airbyte.integrations.source.jdbc.test.JdbcSourceAcceptanceTest;
 import io.airbyte.integrations.source.oracle.OracleSource;
-import io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils;
 import io.airbyte.integrations.source.relationaldb.models.DbState;
 import io.airbyte.integrations.source.relationaldb.models.DbStreamState;
 import io.airbyte.protocol.models.Field;
@@ -154,7 +154,7 @@ class OracleStrictEncryptJdbcSourceAcceptanceTest extends JdbcSourceAcceptanceTe
       while (resultSet.next()) {
         final String tableName = resultSet.getString("TABLE_NAME");
         final String tableNameProcessed =
-            tableName.contains(" ") ? RelationalDbQueryUtils.enquoteIdentifier(tableName, connection.getMetaData().getIdentifierQuoteString())
+            tableName.contains(" ") ? enquoteIdentifier(tableName, connection.getMetaData().getIdentifierQuoteString())
                 : tableName;
         connection.createStatement().executeQuery("DROP TABLE " + schemaName + "." + tableNameProcessed);
       }

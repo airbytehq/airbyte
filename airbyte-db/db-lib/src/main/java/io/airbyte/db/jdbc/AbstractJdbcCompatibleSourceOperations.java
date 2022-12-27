@@ -55,7 +55,7 @@ public abstract class AbstractJdbcCompatibleSourceOperations<Datatype> implement
       }
 
       // convert to java types that will convert into reasonable json.
-      putJsonField(queryContext, i, jsonNode);
+      copyToJsonField(queryContext, i, jsonNode);
     }
 
     return jsonNode;

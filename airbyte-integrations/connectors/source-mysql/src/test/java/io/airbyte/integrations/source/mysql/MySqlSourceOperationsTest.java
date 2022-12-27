@@ -91,7 +91,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -111,7 +111,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -148,7 +148,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -168,7 +168,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -205,7 +205,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -225,7 +225,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -263,7 +263,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }
@@ -284,7 +284,7 @@ public class MySqlSourceOperationsTest {
         while (resultSet.next()) {
           final ObjectNode jsonNode = (ObjectNode) Jsons.jsonNode(Collections.emptyMap());
           for (int i = 1; i <= resultSet.getMetaData().getColumnCount(); i++) {
-            sqlSourceOperations.putJsonField(resultSet, i, jsonNode);
+            sqlSourceOperations.copyToJsonField(resultSet, i, jsonNode);
           }
           actualRecords.add(jsonNode);
         }

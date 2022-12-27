@@ -94,7 +94,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
   }
 
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final String columnName = resultSet.getMetaData().getColumnName(colIndex);
     final String columnTypeName = resultSet.getMetaData().getColumnTypeName(colIndex).toLowerCase();
 
@@ -103,7 +103,7 @@ public class SnowflakeSourceOperations extends JdbcSourceOperations {
       putTimestampWithTimezone(json, columnName, resultSet, colIndex);
       return;
     }
-    super.putJsonField(resultSet, colIndex, json);
+    super.copyToJsonField(resultSet, colIndex, json);
   }
 
   @Override

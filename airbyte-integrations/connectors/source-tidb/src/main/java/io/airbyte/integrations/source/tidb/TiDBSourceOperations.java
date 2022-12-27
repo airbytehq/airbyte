@@ -33,7 +33,7 @@ public class TiDBSourceOperations extends AbstractJdbcCompatibleSourceOperations
       YEAR, VARCHAR, TINYTEXT, TEXT, MEDIUMTEXT, LONGTEXT);
 
   @Override
-  public void putJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
+  public void copyToJsonField(final ResultSet resultSet, final int colIndex, final ObjectNode json) throws SQLException {
     final ResultSetMetaData metaData = (ResultSetMetaData) resultSet.getMetaData();
     final Field field = metaData.getFields()[colIndex - 1];
     final String columnName = field.getName();
