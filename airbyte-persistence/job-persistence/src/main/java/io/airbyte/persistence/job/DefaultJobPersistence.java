@@ -1181,6 +1181,7 @@ public class DefaultJobPersistence implements JobPersistence {
       while (rs.next()) {
         // every 10,000 records, we log
         currRecs++;
+        rs.getInt(1);
         if (currRecs % 100000 == 0) {
           log.info("records loaded: {}", currRecs);
         }
