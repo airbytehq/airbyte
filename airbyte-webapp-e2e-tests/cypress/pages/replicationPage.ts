@@ -113,9 +113,8 @@ export const selectCursorField = (streamName: string, cursorValue: string) =>
  * @param streamName
  * @param primaryKeyValues
  */
-export const selectPrimaryKeyField = (streamName: string, primaryKeyValues: string[]) => {
+export const selectPrimaryKeyField = (streamName: string, primaryKeyValues: string[]) =>
   selectFieldDropdownOption(streamName, "primaryKey", primaryKeyValues);
-};
 
 export const checkStreamFields = (listNames: Array<String>, listTypes: Array<String>) => {
   cy.get(streamFieldNames).each(($span, i) => {
@@ -145,18 +144,16 @@ const checkDropdownField = (streamName: string, dropdownType: Dropdown, expected
  * @param streamName
  * @param expectedValue
  */
-export const checkCursorField = (streamName: string, expectedValue: string) => {
+export const checkCursorField = (streamName: string, expectedValue: string) =>
   checkDropdownField(streamName, "cursor", expectedValue);
-};
 
 /**
  * Check selected value(s) in primary key dropdown
  * @param streamName
  * @param expectedValues
  */
-export const checkPrimaryKey = (streamName: string, expectedValues: string[]) => {
+export const checkPrimaryKey = (streamName: string, expectedValues: string[]) =>
   checkDropdownField(streamName, "primaryKey", expectedValues);
-};
 
 export const checkPreFilledPrimaryKeyField = (expectedValue: string) => {
   cy.get(preFilledPrimaryKeyText).contains(expectedValue);
