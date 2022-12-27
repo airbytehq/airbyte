@@ -70,7 +70,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         propagated_source_config = ManifestComponentTransformer().propagate_types_and_options("", resolved_source_config, {})
         self._source_config = propagated_source_config
         self._debug = debug
-        self._factory = DeclarativeComponentFactory()  # Legacy factory used to instantiate declarative components from the manifest
+        self._legacy_factory = DeclarativeComponentFactory()  # Legacy factory used to instantiate declarative components from the manifest
         self._constructor = ModelToComponentFactory()  # New factory which converts the manifest to Pydantic models to construct components
 
         self._validate_source()
@@ -88,7 +88,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         if self.construct_using_pydantic_models:
             return self._constructor.create_component(CheckStreamModel, check, dict())(source=self)
         else:
-            return self._factory.create_component(check, dict())(source=self)
+            return self._legacy_factory.create_component(check, dict())(source=self)
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
         self._emit_manifest_debug_message(extra_args={"source_name": self.name, "parsed_config": json.dumps(self._source_config)})
@@ -99,7 +99,9 @@ class ManifestDeclarativeSource(DeclarativeSource):
                 for stream_config in self._stream_configs()
             ]
         else:
-            source_streams = [self._factory.create_component(stream_config, config, True)() for stream_config in self._stream_configs()]
+            source_streams = [
+                self._legacy_factory.create_component(stream_config, config, True)() for stream_config in self._stream_configs()
+            ]
 
         for stream in source_streams:
             # make sure the log level is always applied to the stream's logger
@@ -123,7 +125,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
             if self.construct_using_pydantic_models:
                 spec_component = self._constructor.create_component(SpecModel, spec, dict())
             else:
-                spec_component = self._factory.create_component(spec, dict())()
+                spec_component = self._legacy_factory.create_component(spec, dict())()
             return spec_component.generate_spec()
         else:
             return super().spec(logger)
@@ -150,33 +152,38 @@ class ManifestDeclarativeSource(DeclarativeSource):
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
-        if self.construct_using_pydantic_models:
-            # Validates the connector manifest against the low-code component schema defined in declarative_component_schema.yaml
-            try:
-                raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
-                declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
-            except FileNotFoundError as e:
-                raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
+        # Validates the connector manifest against the schema auto-generated from the low-code backend
+        full_config = {}
+        if "version" in self._source_config:
+            full_config["version"] = self._source_config["version"]
+        full_config["check"] = self._source_config["check"]
+        streams = [self._legacy_factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
+        if len(streams) > 0:
+            full_config["streams"] = streams
+        declarative_source_schema = ConcreteDeclarativeSource.json_schema()
 
-            try:
-                validate(self._source_config, declarative_component_schema)
-            except ValidationError as e:
-                raise ValidationError("Validation against json schema defined in low_code_component_schema.yaml schema failed") from e
-        else:
-            # Validates the connector manifest against the one schema auto-generated from the component dataclasses
-            full_config = {}
-            if "version" in self._source_config:
-                full_config["version"] = self._source_config["version"]
-            full_config["check"] = self._source_config["check"]
-            streams = [self._factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
-            if len(streams) > 0:
-                full_config["streams"] = streams
-            declarative_source_schema = ConcreteDeclarativeSource.json_schema()
+        try:
+            validate(full_config, declarative_source_schema)
+        except ValidationError as e:
+            raise ValidationError("Validation against auto-generated schema failed") from e
 
-            try:
-                validate(full_config, declarative_source_schema)
-            except ValidationError as e:
-                raise ValidationError("Validation against auto-generated schema failed") from e
+        # Validates the connector manifest against the low-code component json schema
+        manifest = self._source_config
+        if "type" not in manifest:
+            manifest["type"] = "DeclarativeSource"
+        manifest_transformer = ManifestComponentTransformer()
+        propagated_manifest = manifest_transformer.propagate_types_and_options("", manifest, {})
+
+        try:
+            raw_component_schema = pkgutil.get_data("airbyte_cdk", "sources/declarative/declarative_component_schema.yaml")
+            declarative_component_schema = yaml.load(raw_component_schema, Loader=yaml.SafeLoader)
+        except FileNotFoundError as e:
+            raise FileNotFoundError(f"Failed to read manifest component json schema required for validation: {e}")
+
+        try:
+            validate(propagated_manifest, declarative_component_schema)
+        except ValidationError as e:
+            raise ValidationError("Validation against json schema defined in declarative_component_schema.yaml schema failed") from e
 
     def _stream_configs(self):
         stream_configs = self._source_config.get("streams", [])
