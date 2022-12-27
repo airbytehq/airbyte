@@ -229,8 +229,9 @@ class SyncWorkflowTest {
     verifyNormalize(normalizationActivity, normalizationInput);
     verifyDbtTransform(dbtTransformationActivity, syncInput.getResourceRequirements(),
         operatorDbtInput);
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     assertEquals(
         replicationSuccessOutput.withNormalizationSummary(normalizationSummary).getStandardSyncSummary(),
         actualOutput.getStandardSyncSummary());
@@ -246,8 +247,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -269,8 +271,9 @@ class SyncWorkflowTest {
 
     final StandardSyncOutput actualOutput = execute();
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationFailOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -296,8 +299,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -317,8 +321,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyNoInteractions(persistStateActivity);
     verifyNoInteractions(normalizationActivity);
@@ -343,8 +348,9 @@ class SyncWorkflowTest {
 
     assertThrows(WorkflowFailedException.class, this::execute);
 
-    verifyShouldRefreshSchema(refreshSchemaActivity);
-    verifyRefreshSchema(refreshSchemaActivity, sync);
+    // Temporarily disabled to address OC issue #1210
+    // verifyShouldRefreshSchema(refreshSchemaActivity);
+    // verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyReplication(replicationActivity, syncInput);
     verifyPersistState(persistStateActivity, sync, replicationSuccessOutput, syncInput.getCatalog());
     verifyNormalize(normalizationActivity, normalizationInput);
@@ -397,9 +403,10 @@ class SyncWorkflowTest {
   }
 
   @Test
+  @Disabled("Temporarily disabled to address OC issue #1210")
   void testSkipReplicationAfterRefreshSchema() {
     when(configFetchActivity.getStatus(any())).thenReturn(Optional.of(Status.INACTIVE));
-    StandardSyncOutput output = execute();
+    final StandardSyncOutput output = execute();
     verifyShouldRefreshSchema(refreshSchemaActivity);
     verifyRefreshSchema(refreshSchemaActivity, sync);
     verifyNoInteractions(replicationActivity);
