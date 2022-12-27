@@ -691,5 +691,6 @@
   "user.signup.description": "By submitting this form I agree to Daspire’s",
   "user.signup.terms": "Terms of Service",
   "user.signup.privacy": "Privacy Policy",
-  "user.signup.and": "and"
+  "user.signup.and": "and",
+  "user.resendInvite.message": "Invite has been sent!"
 }

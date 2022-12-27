@@ -7,6 +7,9 @@ import { Separator } from "components/Separator";
 
 interface IProps {
   onClose?: () => void;
+  onDelete?: () => void;
+  onCancel?: () => void;
+  isLoading?: boolean;
 }
 
 const ModalBodyContainer = styled.div`
@@ -43,7 +46,7 @@ const DeleteBtn = styled(LoadingButton)`
   margin-right: 68px;
 `;
 
-const DeleteUserModal: React.FC<IProps> = ({ onClose }) => {
+const DeleteUserModal: React.FC<IProps> = ({ onClose, onDelete, onCancel, isLoading }) => {
   return (
     <Modal size="sm" onClose={onClose}>
       <ModalBody>
@@ -57,10 +60,10 @@ const DeleteUserModal: React.FC<IProps> = ({ onClose }) => {
           </ConfirmationMessage>
           <Separator height="50px" />
           <ButtonsContainer>
-            <DeleteBtn size="lg" secondary onClick={onClose}>
+            <DeleteBtn size="lg" secondary onClick={onDelete} isLoading={isLoading}>
               <FormattedMessage id="user.deleteModal.deleteBtn" />
             </DeleteBtn>
-            <Button size="lg" onClick={onClose}>
+            <Button size="lg" onClick={onCancel}>
               <FormattedMessage id="user.deleteModal.cancelBtn" />
             </Button>
           </ButtonsContainer>

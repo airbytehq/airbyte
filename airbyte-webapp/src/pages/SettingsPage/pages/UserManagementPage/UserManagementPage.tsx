@@ -1,6 +1,6 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
@@ -8,12 +8,17 @@ import { Button, DropDownRow } from "components";
 import { Separator } from "components/Separator";
 
 import { ROLES } from "core/Constants/roles";
+import { useRoleOptions } from "services/roles/RolesService";
+import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
 import AddUserModal from "./components/AddUserModal";
 import ChangeRoleModal from "./components/ChangeRoleModal";
 import DeleteUserModal from "./components/DeleteUserModal";
 import UserTable from "./components/UserTable";
-import { User } from "./components/UserTableBody";
+
+interface IProps {
+  setMessageId: React.Dispatch<React.SetStateAction<string>>;
+}
 
 const HeaderContainer = styled.div`
   width: 100%;
@@ -42,42 +47,80 @@ const BtnText = styled.div`
   color: #ffffff;
 `;
 
-const UserManagementPage: React.FC = () => {
+const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
+  const roleOptions = useRoleOptions().filter((role) => role.label !== ROLES.Administrator_Owner);
+  const users = useListUsers();
+  const { onDeleteUser, onResendInvite, onUpdateRole } = useUserAsyncAction();
+
+  const [userId, setUserId] = useState<string>("");
+  const [userRole, setUserRole] = useState<number | undefined>();
+
+  // Delete user functionality
   const [deleteModal, setDeleteModal] = useState<boolean>(false);
-  const toggleDeleteModal = () => {
-    setDeleteModal(!deleteModal);
+  const [deleteLoading, setDeleteLoading] = useState<boolean>(false);
+  const toggleDeleteModal = () => setDeleteModal(!deleteModal);
+  const onDelete = (userId: string) => {
+    setUserId(userId);
+    toggleDeleteModal();
   };
-  const onDelete = () => {
+  const onConfirmDelete = useCallback(async () => {
+    setDeleteLoading(true);
+    onDeleteUser(userId)
+      .then(() => {
+        setDeleteLoading(false);
+        onCancelDelete();
+      })
+      .catch(() => {
+        setDeleteLoading(false);
+      });
+  }, [userId]);
+  const onCancelDelete = () => {
+    setUserId("");
     toggleDeleteModal();
   };
 
+  // Resend invite functionality
+  const resendInvite = useCallback(async (userId: string) => {
+    onResendInvite(userId)
+      .then(() => {
+        setMessageId("user.resendInvite.message");
+      })
+      .catch((err: any) => {
+        console.log(err);
+      });
+  }, []);
+
+  // Change role user functionality
   const [changeRoleModal, setChangeRoleModal] = useState<boolean>(false);
-  const toggleChangeRoleModal = () => {
-    setChangeRoleModal(!changeRoleModal);
+  const [changeRoleLoading, setChangeRoleLoading] = useState<boolean>(false);
+  const toggleChangeRoleModal = () => setChangeRoleModal(!changeRoleModal);
+  const onChangeRole = (userId: string, option: DropDownRow.IDataItem) => {
+    if (users.find((user) => user.id === userId)?.roleIndex !== option.value) {
+      toggleChangeRoleModal();
+      setUserId(userId);
+      setUserRole(option.value);
+    }
   };
-  const onChangeRole = (option: DropDownRow.IDataItem) => {
+  const onConfirmChangeRole = useCallback(async () => {
+    setChangeRoleLoading(true);
+    onUpdateRole({ id: userId, roleIndex: userRole as number })
+      .then(() => {
+        setChangeRoleLoading(false);
+        onCancelChangeRole();
+      })
+      .catch(() => {
+        setChangeRoleLoading(false);
+      });
+  }, [userId, userRole]);
+  const onCancelChangeRole = () => {
     toggleChangeRoleModal();
-    console.log(option);
+    setUserId("");
+    setUserRole(undefined);
   };
 
+  // Add user funcationality
   const [addUserModal, setAddUserModal] = useState<boolean>(false);
-  const toggleAddUserModal = () => {
-    setAddUserModal(!addUserModal);
-  };
-
-  const users: User[] = [
-    { _id: "1", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.Administrator_Owner, status: "Active" },
-    { _id: "2", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.User, status: "Active" },
-    { _id: "3", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.User, status: "Active" },
-    { _id: "4", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.User, status: "Active" },
-    { _id: "5", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.User, status: "Active" },
-    { _id: "6", name: "Joe Doe", email: "janedoe@example.com", role: ROLES.User, status: "Pending" },
-  ];
-
-  const roles: DropDownRow.IDataItem[] = [
-    { label: ROLES.Administrator, value: ROLES.Administrator },
-    { label: ROLES.User, value: ROLES.User },
-  ];
+  const toggleAddUserModal = () => setAddUserModal(!addUserModal);
 
   return (
     <>
@@ -92,10 +135,30 @@ const UserManagementPage: React.FC = () => {
         </Button>
       </HeaderContainer>
       <Separator />
-      <UserTable users={users} roles={roles} onDelete={onDelete} onChangeRole={onChangeRole} />
-      {addUserModal && <AddUserModal roles={roles} onClose={toggleAddUserModal} />}
-      {changeRoleModal && <ChangeRoleModal onClose={toggleChangeRoleModal} />}
-      {deleteModal && <DeleteUserModal onClose={toggleDeleteModal} />}
+      <UserTable
+        users={users}
+        roles={roleOptions}
+        onDelete={onDelete}
+        onChangeRole={onChangeRole}
+        onResendInvite={resendInvite}
+      />
+      {addUserModal && <AddUserModal roles={roleOptions} onClose={toggleAddUserModal} />}
+      {changeRoleModal && (
+        <ChangeRoleModal
+          onClose={toggleChangeRoleModal}
+          onChangeRole={onConfirmChangeRole}
+          onCancel={onCancelChangeRole}
+          isLoading={changeRoleLoading}
+        />
+      )}
+      {deleteModal && (
+        <DeleteUserModal
+          onClose={toggleDeleteModal}
+          onDelete={onConfirmDelete}
+          onCancel={onCancelDelete}
+          isLoading={deleteLoading}
+        />
+      )}
     </>
   );
 };

@@ -7,6 +7,9 @@ import { Separator } from "components/Separator";
 
 interface IProps {
   onClose?: () => void;
+  onChangeRole?: () => void;
+  onCancel?: () => void;
+  isLoading?: boolean;
 }
 
 const ModalBodyContainer = styled.div`
@@ -43,7 +46,7 @@ const ChangeBtn = styled(LoadingButton)`
   margin-right: 68px;
 `;
 
-const ChangeRoleModal: React.FC<IProps> = ({ onClose }) => {
+const ChangeRoleModal: React.FC<IProps> = ({ onClose, onChangeRole, onCancel, isLoading }) => {
   return (
     <Modal size="sm" onClose={onClose}>
       <ModalBody>
@@ -57,10 +60,10 @@ const ChangeRoleModal: React.FC<IProps> = ({ onClose }) => {
           </ConfirmationMessage>
           <Separator height="50px" />
           <ButtonsContainer>
-            <ChangeBtn size="lg" secondary onClick={onClose}>
+            <ChangeBtn size="lg" secondary onClick={onChangeRole} isLoading={isLoading}>
               <FormattedMessage id="user.changeRoleModal.changeBtn" />
             </ChangeBtn>
-            <Button size="lg" onClick={onClose}>
+            <Button size="lg" onClick={onCancel}>
               <FormattedMessage id="user.changeRoleModal.cancelBtn" />
             </Button>
           </ButtonsContainer>

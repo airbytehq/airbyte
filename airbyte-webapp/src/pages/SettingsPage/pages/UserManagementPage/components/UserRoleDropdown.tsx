@@ -2,38 +2,47 @@ import React, { useEffect, useState } from "react";
 
 import { DropDown, DropDownRow } from "components";
 
-import { ROLES } from "core/Constants/roles";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 
 interface IProps {
-  value: string;
+  value: number;
   options: DropDownRow.IDataItem[];
   onChange?: (option: DropDownRow.IDataItem) => void;
+  name?: string;
 }
 
-const UserRoleDropDown: React.FC<IProps> = ({ value, options, onChange }) => {
-  const [selectedRole, setSelectedRole] = useState<string | undefined>();
+const UserRoleDropDown: React.FC<IProps> = ({ value, options, onChange, name }) => {
+  const [selectedRole, setSelectedRole] = useState<number | undefined>();
 
   useEffect(() => {
     setSelectedRole(value);
   }, [value]);
 
   const onChangeRole = (option: DropDownRow.IDataItem) => {
-    setSelectedRole(option.value);
+    // setSelectedRole(option.value);
     onChange?.(option);
   };
 
-  if (selectedRole === ROLES.Administrator_Owner) {
-    return <DropDown isDisabled $withBorder $transparentBackground placeholder={selectedRole} />;
+  if (getRoleAgainstRoleNumber(selectedRole as number) === ROLES.Administrator_Owner) {
+    return (
+      <DropDown
+        isDisabled
+        $withBorder
+        $transparentBackground
+        placeholder={getRoleAgainstRoleNumber(selectedRole as number)}
+      />
+    );
   }
   return (
     <DropDown
-      isDisabled={selectedRole === ROLES.Administrator_Owner ? true : false}
+      isDisabled={getRoleAgainstRoleNumber(selectedRole as number) === ROLES.Administrator_Owner ? true : false}
       $withBorder
       $transparentBackground
       isSearchable
       options={options}
       value={selectedRole}
       onChange={(option: DropDownRow.IDataItem) => onChangeRole(option)}
+      name={name}
     />
   );
 };

@@ -5,13 +5,16 @@ import styled from "styled-components";
 import { DropDownRow } from "components";
 import { Row, Cell } from "components/SimpleTableComponents";
 
-import UserTableBody, { User } from "./UserTableBody";
+import { User } from "core/domain/user";
+
+import UserTableBody from "./UserTableBody";
 
 interface IProps {
   users: User[];
   roles: DropDownRow.IDataItem[];
-  onDelete: () => void;
-  onChangeRole: (option: DropDownRow.IDataItem) => void;
+  onDelete: (userId: string) => void;
+  onChangeRole: (userId: string, option: DropDownRow.IDataItem) => void;
+  onResendInvite: (userId: string) => void;
 }
 
 const TableContainer = styled.div`
@@ -32,7 +35,7 @@ const HeaderCell = styled(Cell)`
   color: #6b6b6f;
 `;
 
-const UserTable: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole }) => {
+const UserTable: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
   return (
     <TableContainer>
       <HeaderRow style={{ padding: "20px 0" }}>
@@ -52,7 +55,13 @@ const UserTable: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole }) =
           <FormattedMessage id="user.heading.action" />
         </HeaderCell>
       </HeaderRow>
-      <UserTableBody users={users} roles={roles} onDelete={onDelete} onChangeRole={onChangeRole} />
+      <UserTableBody
+        users={users}
+        roles={roles}
+        onDelete={onDelete}
+        onChangeRole={onChangeRole}
+        onResendInvite={onResendInvite}
+      />
     </TableContainer>
   );
 };

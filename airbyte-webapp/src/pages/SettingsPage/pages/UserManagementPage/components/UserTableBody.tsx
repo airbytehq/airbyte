@@ -8,23 +8,17 @@ import { DeleteIcon } from "components/icons/DeleteIcon";
 import { RefreshIcon } from "components/icons/RefreshIcon";
 import { Row, Cell } from "components/SimpleTableComponents";
 
-import { ROLES } from "core/Constants/roles";
+import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
+import { User } from "core/domain/user";
 
 import UserRoleDropdown from "./UserRoleDropdown";
-
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  status: string;
-}
 
 interface IProps {
   users: User[];
   roles: DropDownRow.IDataItem[];
-  onDelete: () => void;
-  onChangeRole: (option: DropDownRow.IDataItem) => void;
+  onDelete: (userId: string) => void;
+  onChangeRole: (userId: string, option: DropDownRow.IDataItem) => void;
+  onResendInvite: (userId: string) => void;
 }
 
 const BodyRow = styled(Row)<{
@@ -58,7 +52,7 @@ const ActionBtn = styled.button`
   background-color: transparent;
 `;
 
-const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole }) => {
+const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole, onResendInvite }) => {
   return (
     <>
       {users.map((user, index) => (
@@ -69,15 +63,19 @@ const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole 
           <BodyCell style={{ marginLeft: "40px" }}>{user.name}</BodyCell>
           <BodyCell>{user.email}</BodyCell>
           <BodyCell>
-            <UserRoleDropdown value={user.role} options={roles} onChange={onChangeRole} />
+            <UserRoleDropdown
+              value={user.roleIndex}
+              options={roles}
+              onChange={(option) => onChangeRole(user.id, option)}
+            />
           </BodyCell>
           <BodyCell>{user.status}</BodyCell>
           <BodyCell>
             <ActionCell>
-              {user.role !== ROLES.Administrator_Owner && (
+              {getRoleAgainstRoleNumber(user.roleIndex) !== ROLES.Administrator_Owner && (
                 <Tooltip
                   control={
-                    <ActionBtn onClick={onDelete}>
+                    <ActionBtn onClick={() => onDelete(user.id)}>
                       <DeleteIcon color="#6B6B6F" />
                     </ActionBtn>
                   }
@@ -90,7 +88,7 @@ const UserTableBody: React.FC<IProps> = ({ users, roles, onDelete, onChangeRole 
               {user.status === "Pending" && (
                 <Tooltip
                   control={
-                    <ActionBtn>
+                    <ActionBtn onClick={() => onResendInvite(user.id)}>
                       <RefreshIcon color="#6B6B6F" />
                     </ActionBtn>
                   }

@@ -1,21 +1,28 @@
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState } from "react";
-import { FormattedMessage } from "react-intl";
+import { Field, FieldArray, FieldProps, Formik, Form as FormikForm } from "formik";
+import React from "react";
+import { FormattedMessage, useIntl } from "react-intl";
 import styled from "styled-components";
+import * as Yup from "yup";
 
-import { Input, Button, DropDownRow, LoadingButton, Modal, ModalBody } from "components";
+import {
+  // Input,
+  Button,
+  DropDownRow,
+  LabeledInput,
+  LoadingButton,
+  Modal,
+  ModalBody,
+} from "components";
 import { DashIcon } from "components/icons/DashIcon";
 import { Separator } from "components/Separator";
-
-import { ROLES } from "core/Constants/roles";
 
 import UserRoleDropDown from "./UserRoleDropdown";
 
 interface NewUser {
-  id: string;
   email: string;
-  role: string;
+  role: number;
 }
 
 interface IProps {
@@ -42,7 +49,7 @@ const FieldsContainer = styled.div`
   width: 100%;
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
 `;
 
 const InputFieldContainer = styled.div`
@@ -56,11 +63,11 @@ const InputFieldLabel = styled.div`
   color: ${({ theme }) => theme.black300};
 `;
 
-const InputField = styled(Input)`
-  border: 1px solid #d1d5db;
-  background-color: white;
-  border-radius: 6px;
-`;
+// const InputField = styled(Input)`
+//   border: 1px solid #d1d5db;
+//   background-color: white;
+//   border-radius: 6px;
+// `;
 
 const RemoveUserBtn = styled.button`
   width: 26px;
@@ -101,75 +108,118 @@ const ChangeBtn = styled(LoadingButton)`
 `;
 
 const AddUserModal: React.FC<IProps> = ({ roles, onClose }) => {
-  const newUser: NewUser = { id: `${Math.random() * 1000 * Math.random()}`, email: "", role: ROLES.User };
-  const [newUsers, setNewUsers] = useState<NewUser[]>([newUser]);
+  const newUser: NewUser = { email: "", role: 3 };
+  const { formatMessage } = useIntl();
 
-  const addUser = () => {
-    setNewUsers((prevState) => {
-      const users = [...prevState, newUser];
-      return users;
-    });
-  };
-  const removeUser = (userId: string) => {
-    setNewUsers((prevState) => {
-      const users = prevState.filter((user) => user.id !== userId);
-      return users;
-    });
-  };
+  const addUserSchema = Yup.object({
+    users: Yup.array().of(
+      Yup.object().shape({
+        email: Yup.string().required("email required").email("Enter valid email"),
+        role: Yup.number(),
+      })
+    ),
+  });
   return (
     <Modal size="lg" onClose={onClose}>
       <ModalBody>
-        <ModalBodyContainer>
-          <ModalHeading>
-            <FormattedMessage id="user.addUserModal.heading" />
-          </ModalHeading>
-          <Separator height="30px" />
-          <FieldsContainer>
-            <InputFieldContainer style={{ marginRight: "30px" }}>
-              <InputFieldLabel>Email</InputFieldLabel>
-            </InputFieldContainer>
-            <InputFieldContainer>
-              <InputFieldLabel>Role</InputFieldLabel>
-            </InputFieldContainer>
-          </FieldsContainer>
-          <Separator height="4px" />
-          {newUsers.map((user, index) => (
-            <>
-              <FieldsContainer>
-                <InputFieldContainer style={{ marginRight: "30px" }}>
-                  <InputField value={user.email} />
-                </InputFieldContainer>
-                <InputFieldContainer>
-                  <UserRoleDropDown value={user.role} options={roles} />
-                </InputFieldContainer>
-                {index !== 0 && (
-                  <RemoveUserBtn onClick={() => removeUser(user.id)}>
-                    <DashIcon color="#6B6B6F" width={13} />
-                  </RemoveUserBtn>
-                )}
-              </FieldsContainer>
-              <Separator height="20px" />
-            </>
-          ))}
-          {newUsers.length >= 5 ? null : (
-            <>
-              <Separator height="10px" />
-              <AddMoreBtn onClick={addUser}>
-                <BtnIcon icon={faPlus} />
-                <FormattedMessage id="user.addUserModal.addMoreBtn" />
-              </AddMoreBtn>
-            </>
-          )}
-          <Separator height="60px" />
-          <ButtonsContainer>
-            <ChangeBtn size="lg" secondary onClick={onClose}>
-              <FormattedMessage id="user.addUserModal.cancelBtn" />
-            </ChangeBtn>
-            <Button size="lg" onClick={onClose} disabled>
-              <FormattedMessage id="user.addUserModal.sendInviteBtn" />
-            </Button>
-          </ButtonsContainer>
-        </ModalBodyContainer>
+        <Formik
+          initialValues={{ users: [newUser] }}
+          validationSchema={addUserSchema}
+          onSubmit={(values) => {
+            console.log(values);
+          }}
+          validateOnBlur
+          validateOnChange
+        >
+          {({ values, isSubmitting, handleChange }) => {
+            console.log(values);
+            return (
+              <ModalBodyContainer>
+                <ModalHeading>
+                  <FormattedMessage id="user.addUserModal.heading" />
+                </ModalHeading>
+                <Separator height="30px" />
+                <FormikForm style={{ width: "100%" }}>
+                  <FieldArray
+                    name="users"
+                    render={(arrayHandler) => {
+                      return (
+                        <>
+                          {values.users.map((user, index) => {
+                            return (
+                              <>
+                                <FieldsContainer>
+                                  <InputFieldContainer style={{ marginRight: "30px" }}>
+                                    <Field name={`users.${index}.email`}>
+                                      {({ field, meta }: FieldProps<string>) => (
+                                        <LabeledInput
+                                          {...field}
+                                          label={index === 0 && <FormattedMessage id="login.yourEmail" />}
+                                          type="text"
+                                          error={!!meta.error && meta.touched}
+                                          message={meta.touched && meta.error && formatMessage({ id: meta.error })}
+                                          style={{ width: "100%" }}
+                                        />
+                                      )}
+                                    </Field>
+                                  </InputFieldContainer>
+                                  <InputFieldContainer>
+                                    {index === 0 && (
+                                      <>
+                                        <InputFieldLabel>Role</InputFieldLabel>
+                                        <Separator height="4px" />
+                                      </>
+                                    )}
+                                    <UserRoleDropDown
+                                      value={user.role}
+                                      options={roles}
+                                      onChange={(option) => handleChange(`users.${index}.role`)(option.value)}
+                                      name={`users.${index}.role`}
+                                    />
+                                  </InputFieldContainer>
+                                  {index !== 0 && (
+                                    <RemoveUserBtn onClick={() => arrayHandler.remove(index)}>
+                                      <DashIcon color="#6B6B6F" width={13} />
+                                    </RemoveUserBtn>
+                                  )}
+                                </FieldsContainer>
+                                <Separator />
+                              </>
+                            );
+                          })}
+                          {values.users.length >= 5 ? null : (
+                            <>
+                              <Separator height="10px" />
+                              <AddMoreBtn onClick={() => arrayHandler.push(newUser)}>
+                                <BtnIcon icon={faPlus} />
+                                <FormattedMessage id="user.addUserModal.addMoreBtn" />
+                              </AddMoreBtn>
+                            </>
+                          )}
+                        </>
+                      );
+                    }}
+                  />
+                  <Separator height="60px" />
+                  <ButtonsContainer>
+                    <ChangeBtn size="lg" secondary onClick={onClose}>
+                      <FormattedMessage id="user.addUserModal.cancelBtn" />
+                    </ChangeBtn>
+                    <Button
+                      size="lg"
+                      type="submit"
+                      white
+                      // disabled={!(isValid && dirty)}
+                      isLoading={isSubmitting}
+                    >
+                      <FormattedMessage id="user.addUserModal.sendInviteBtn" />
+                    </Button>
+                  </ButtonsContainer>
+                </FormikForm>
+              </ModalBodyContainer>
+            );
+          }}
+        </Formik>
       </ModalBody>
     </Modal>
   );

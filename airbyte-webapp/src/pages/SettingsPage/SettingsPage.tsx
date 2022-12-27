@@ -20,7 +20,7 @@ import UserManagementPage from "./pages/UserManagementPage";
 
 const PageContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   background: transparent;
   display: flex;
   flex-direction: row;
@@ -89,7 +89,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
         {
           path: `${SettingsRoute.UserManagement}`,
           name: <FormattedMessage id="settings.user.management" />,
-          component: <UserManagementPage />,
+          component: <UserManagementPage setMessageId={setMessageId} />,
           show: true,
         },
         {
