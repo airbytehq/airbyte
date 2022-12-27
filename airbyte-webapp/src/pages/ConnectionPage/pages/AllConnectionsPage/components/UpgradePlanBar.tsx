@@ -4,6 +4,8 @@ import styled from "styled-components";
 
 import { Button } from "components";
 
+import { useUserPlanDetail } from "services/payments/PaymentsService";
+
 interface IProps {
   onUpgradePlan?: () => void;
 }
@@ -29,10 +31,20 @@ const Text = styled.div`
 `;
 
 export const UpgradePlanBar: React.FC<IProps> = ({ onUpgradePlan }) => {
+  const userPlanDetail = useUserPlanDetail();
+  const { expiresTime } = userPlanDetail;
+
+  const remainingDaysForFreeTrial = (): number => {
+    const currentDate: any = new Date();
+    const expiryDate: any = new Date(expiresTime * 1000);
+    const diff = expiryDate - currentDate;
+    const diffDays = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
   return (
     <Container>
       <Text>
-        <FormattedMessage id="upgrade.plan.countdown" />
+        <FormattedMessage id="upgrade.plan.countdown" values={{ count: remainingDaysForFreeTrial() }} />
       </Text>
       <Button size="lg" black onClick={() => onUpgradePlan?.()}>
         <FormattedMessage id="upgrade.plan.btn" />

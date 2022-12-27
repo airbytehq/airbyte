@@ -1,5 +1,5 @@
 import React from "react";
-import { FormattedMessage } from "react-intl";
+import { FormattedDate, FormattedMessage } from "react-intl";
 import styled from "styled-components";
 
 import { Modal, ModalBody, LoadingButton } from "components";
@@ -9,6 +9,7 @@ interface IProps {
   onConfirm?: () => void;
   onNotNow?: () => void;
   confirmLoading?: boolean;
+  expiresOn?: number;
 }
 
 const ModalBodyContainer = styled.div`
@@ -60,7 +61,7 @@ const BtnText = styled.div<{
   opacity: ${({ hide }) => (hide ? 0 : 1)};
 `;
 
-export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow, confirmLoading }) => {
+export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow, confirmLoading, expiresOn }) => {
   const onConfirmModal = () => onConfirm?.();
   const onNotNowModal = () => onNotNow?.();
   return (
@@ -69,7 +70,8 @@ export const CancelPlanModal: React.FC<IProps> = ({ onClose, onConfirm, onNotNow
         <ModalBodyContainer>
           <ModalHeading>Cancel subscription?</ModalHeading>
           <ModalBodyText>
-            You current plan expires on 20 Nov 2022.
+            Your current plan expires on{" "}
+            <FormattedDate value={(expiresOn as number) * 1000} day="numeric" month="long" year="numeric" />.
             <br />
             You will still be able to use your current plan until it expires.
             <br />
