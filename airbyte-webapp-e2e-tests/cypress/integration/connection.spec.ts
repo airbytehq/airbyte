@@ -424,7 +424,7 @@ describe("Connection sync modes", () => {
     selectSyncMode("Incremental", "Append");
     selectCursorField(streamName, "col1");
 
-    submitButtonClick({force: true});
+    submitButtonClick();
     confirmStreamConfigurationChangedPopup();
 
     cy.wait("@updateConnection", { timeout: 5000 }).then((interception) => {

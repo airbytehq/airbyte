@@ -13,6 +13,7 @@ const getFieldDropdownContainer = (streamName: string, type: string) => `div[id=
 const getFieldDropdownButton = (streamName: string, type: string) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
+const dropDownOverlayContainer = "div[data-testid='overlayContainer']"
 
 const streamFieldNames = "[class^='TreeRowWrapper_rowWrapper'] span";
 const streamDataTypes = "[class^='TreeRowWrapper_rowWrapper'] div:nth-child(2)";
@@ -89,15 +90,19 @@ const selectFieldDropdownOption = (streamName: string, dropdownType: Dropdown, v
     cy.get(button).click();
 
     if (Array.isArray(value)) {
-      // in case if checkboxes
+      // in case if multiple options need to be selected
       value.forEach((v) => cy.get(getFieldDropdownOption(v)).click());
     } else {
-      // in case if radiobutton
+      // in case if one option need to be selected
       cy.get(getFieldDropdownOption(value)).click();
     }
   });
-  // click outside(close dropdown)
-  cy.get("body").click(0, 0);
+  // close dropdown - click on dropdown overlay if exist
+  cy.get("body").then(($body) => {
+    if ($body.find(dropDownOverlayContainer).length > 0) {
+      cy.get(dropDownOverlayContainer).click();
+    }
+  });
 };
 
 /**
