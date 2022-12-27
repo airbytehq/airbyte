@@ -3,15 +3,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import styled from "styled-components";
 
-import { Link } from "components";
-
+// import { Link } from "components";
 // import { useCurrentWorkspace } from "hooks/services/useWorkspace";
 // import { ConnectionSettingsRoutes } from "pages/ConnectionPage/pages/ConnectionItemPage/ConnectionSettingsRoutes";
-//
 // import { RoutePaths } from "../../../pages/routePaths";
 
 interface IProps {
   id: string;
+  onClick: () => void;
 }
 
 const Content = styled.div`
@@ -19,6 +18,9 @@ const Content = styled.div`
   font-size: 17px;
   min-width: 17px;
   padding-right: 44px;
+  &:hover {
+    cursor: pointer;
+  }
 `;
 
 const Icon = styled(FontAwesomeIcon)`
@@ -33,7 +35,7 @@ const Icon = styled(FontAwesomeIcon)`
   // }
 `;
 // { id }
-const ConnectorCell: React.FC<IProps> = () => {
+const ConnectorCell: React.FC<IProps> = ({ onClick }) => {
   // const { workspaceId } = useCurrentWorkspace();
 
   // const openSettings = (event: React.MouseEvent) => {
@@ -41,12 +43,14 @@ const ConnectorCell: React.FC<IProps> = () => {
   // };
 
   // const settingPath = `/${RoutePaths.Workspaces}/${workspaceId}/${RoutePaths.Connections}/${id}/${ConnectionSettingsRoutes.REPLICATION}`;
-  //  to={settingPath} onClick={openSettings}
+
+  // to={settingPath} onClick={openSettings}
+
   return (
-    <Content>
-      <Link to="">
-        <Icon icon={faEdit} />
-      </Link>
+    <Content onClick={onClick}>
+      {/* <Link> */}
+      <Icon icon={faEdit} />
+      {/* </Link> */}
     </Content>
   );
 };
