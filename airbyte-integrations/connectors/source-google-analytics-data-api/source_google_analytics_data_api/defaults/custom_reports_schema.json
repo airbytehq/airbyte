@@ -1,0 +1,22 @@
+{
+  "type": "array",
+  "items": {
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "dimensions": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "metrics": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}
