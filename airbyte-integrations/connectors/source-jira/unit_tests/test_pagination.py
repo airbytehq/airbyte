@@ -7,7 +7,7 @@ import json
 from http import HTTPStatus
 
 import responses
-from source_jira.streams import Issues, Projects
+from source_jira.streams import Issues, Projects, Users
 from source_jira.utils import read_full_refresh
 
 
@@ -58,4 +58,32 @@ def test_pagination_issues():
         {"id": "4", "updated": "2022-01-01"},
         {"id": "5", "updated": "2022-01-01"},
         {"id": "6", "updated": "2022-01-01"}
+    ]
+
+
+@responses.activate
+def test_pagination_users():
+    domain = "domain.com"
+    responses_json = [
+        (HTTPStatus.OK, {}, json.dumps([{"self": "user1"}, {"self": "user2"}])),
+        (HTTPStatus.OK, {}, json.dumps([{"self": "user3"}, {"self": "user4"}])),
+        (HTTPStatus.OK, {}, json.dumps([{"self": "user5"}])),
+    ]
+
+    responses.add_callback(
+        responses.GET,
+        f"https://{domain}/rest/api/3/users/search",
+        callback=lambda request: responses_json.pop(0),
+        content_type="application/json",
+    )
+
+    stream = Users(authenticator=None, domain=domain, projects=[])
+    stream.page_size = 2
+    records = list(read_full_refresh(stream))
+    assert records == [
+        {"self": "user1"},
+        {"self": "user2"},
+        {"self": "user3"},
+        {"self": "user4"},
+        {"self": "user5"},
     ]
