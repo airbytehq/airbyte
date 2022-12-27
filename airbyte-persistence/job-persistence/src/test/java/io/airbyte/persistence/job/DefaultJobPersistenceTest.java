@@ -39,12 +39,14 @@ import io.airbyte.config.JobSyncConfig;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StandardSyncOutput;
 import io.airbyte.config.StandardSyncSummary;
+import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
 import io.airbyte.db.Database;
 import io.airbyte.db.factory.DSLContextFactory;
 import io.airbyte.db.factory.DataSourceFactory;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
 import io.airbyte.db.instance.test.TestDatabaseProviders;
+import io.airbyte.persistence.job.JobPersistence.AttemptStats;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptStatus;
 import io.airbyte.persistence.job.models.AttemptWithJobInfo;
@@ -331,17 +333,27 @@ class DefaultJobPersistenceTest {
     void testWriteStatsFirst() throws IOException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
+      final var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)),
+          new StreamSyncStats().withStreamName("name2").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
 
-      final var stats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
-      assertEquals(1000, stats.getBytesEmitted());
-      assertEquals(1000, stats.getRecordsEmitted());
-      assertEquals(1000, stats.getEstimatedBytes());
-      assertEquals(1000, stats.getEstimatedRecords());
+      AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(1000, combined.getBytesEmitted());
+      assertEquals(1000, combined.getRecordsEmitted());
+      assertEquals(1000, combined.getEstimatedBytes());
+      assertEquals(1000, combined.getEstimatedRecords());
 
       // As of this writing, committed and state messages are not expected.
-      assertEquals(null, stats.getRecordsCommitted());
-      assertEquals(null, stats.getDestinationStateMessagesEmitted());
+      assertEquals(null, combined.getRecordsCommitted());
+      assertEquals(null, combined.getDestinationStateMessagesEmitted());
+
+      final var actStreamStats = stats.perStreamStats();
+      assertEquals(2, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
     }
 
     @Test

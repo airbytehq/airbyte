@@ -391,9 +391,7 @@ public class DefaultJobPersistence implements JobPersistence {
           .withBytesEmitted(bytesEmitted);
       saveToSyncStatsTable(now, syncStats, attemptId, ctx);
 
-      // write per stream stat info
-      // saveToStreamStatsTable(estimatedRecords, estimatedBytes, recordsEmitted, bytesEmitted, now, ctx,
-      // attemptId);
+      saveToStreamStatsTable(now, streamStats, attemptId, ctx);
       return null;
     });
 
@@ -443,13 +441,10 @@ public class DefaultJobPersistence implements JobPersistence {
         .execute();
   }
 
-  private static void saveToStreamStatsTable(final long estimatedRecords,
-                                             final long estimatedBytes,
-                                             final long recordsEmitted,
-                                             final long bytesEmitted,
-                                             final OffsetDateTime now,
-                                             final DSLContext ctx,
-                                             final Long attemptId) {
+  private static void saveToStreamStatsTable(final OffsetDateTime now,
+                                             List<StreamSyncStats> streamStats,
+                                             final Long attemptId,
+                                             final DSLContext ctx) {
     final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
     // if (isExisting) {
     // what else do we need to update?
@@ -464,19 +459,27 @@ public class DefaultJobPersistence implements JobPersistence {
     // return;
     // }
 
-    // insert or update into stream stats table
-    // insert stream name and namespace
-    ctx.insertInto(STREAM_STATS)
-        .set(STREAM_STATS.ID, UUID.randomUUID())
-        .set(STREAM_STATS.CREATED_AT, now)
-        .set(STREAM_STATS.ATTEMPT_ID, attemptId)
-        .onDuplicateKeyUpdate()
-        .set(STREAM_STATS.UPDATED_AT, now)
-        .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-        .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-        .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-        .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-        .execute();
+    Optional.ofNullable(streamStats).orElse(Collections.emptyList()).forEach(
+        stats -> ctx.insertInto(STREAM_STATS)
+            .set(STREAM_STATS.ID, UUID.randomUUID())
+            .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+            .set(STREAM_STATS.STREAM_NAME, stats.getStreamName())
+            .set(STREAM_STATS.STREAM_NAMESPACE, stats.getStreamNamespace())
+            .set(STREAM_STATS.CREATED_AT, now)
+            .set(STREAM_STATS.UPDATED_AT, now)
+            .set(STREAM_STATS.BYTES_EMITTED, stats.getStats().getBytesEmitted())
+            .set(STREAM_STATS.RECORDS_EMITTED, stats.getStats().getRecordsEmitted())
+            .set(STREAM_STATS.ESTIMATED_BYTES, stats.getStats().getEstimatedBytes())
+            .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getStats().getEstimatedRecords())
+            .onConflict(
+                STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAMESPACE, STREAM_STATS.STREAM_NAME)
+            .doUpdate()
+            .set(STREAM_STATS.UPDATED_AT, now)
+            .set(STREAM_STATS.BYTES_EMITTED, stats.getStats().getBytesEmitted())
+            .set(STREAM_STATS.RECORDS_EMITTED, stats.getStats().getRecordsEmitted())
+            .set(STREAM_STATS.ESTIMATED_BYTES, stats.getStats().getEstimatedBytes())
+            .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getStats().getEstimatedRecords())
+            .execute());
   }
 
   @Override

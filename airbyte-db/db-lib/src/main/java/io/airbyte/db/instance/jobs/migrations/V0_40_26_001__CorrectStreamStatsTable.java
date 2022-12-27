@@ -26,8 +26,10 @@ public class V0_40_26_001__CorrectStreamStatsTable extends BaseJavaMigration {
     // As database schema changes, the generated jOOQ code can be deprecated. So
     // old migration may not compile if there is any generated code.
     try (final DSLContext ctx = DSL.using(context.getConnection())) {
-      // This actually needs to be bigint.
+      // This actually needs to be bigint to match the id column on the attempts table.
       ctx.alterTable("stream_stats").alter("attempt_id").set(SQLDataType.BIGINT.nullable(false)).execute();
+      // Not all streams provide a namespace.
+      ctx.alterTable("stream_stats").alter("stream_namespace").set(SQLDataType.VARCHAR.nullable(true)).execute();
 
       // The constraint should also take into account the stream namespace. Drop the constraint and
       // recreate it.
