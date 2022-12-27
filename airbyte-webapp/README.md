@@ -35,6 +35,7 @@ Note: needs to be run from the root directory of the Airbyte project.
 ## Change log:
 #### 2022.12.27
 1. Add an edit icon to the connections page (file: EntityTable/ConnectionTable.tsx&EntityTable/components/ConnectionSettingsCell.tsx&Switch/Switch.tsx)
+2. Displays notification Settings (file: SettingsPage/SettingsPage.tsx&SettingsPage/pages/NotificationPage/NotificationPage.tsx)
 #### 2022.12.14
 1. Add sign out button in sidebar (file: en.json&SideBar.tsx)
 #### 2022.12.13
