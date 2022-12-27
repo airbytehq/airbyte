@@ -399,6 +399,9 @@ public class DefaultJobPersistence implements JobPersistence {
 
   @VisibleForTesting
   static void saveToSyncStatsTable(final OffsetDateTime now, final SyncStats syncStats, final Long attemptId, final DSLContext ctx) {
+    // Although JOOQ supports upsert using the onConflict statement, we cannot use it as the table
+    // currently has duplicate records and also doesn't contain the unique constraint on the attempt_id
+    // column JOOQ requires. We are forced to check for existence.
     final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
     if (isExisting) {
       ctx.update(SYNC_STATS)
@@ -419,9 +422,6 @@ public class DefaultJobPersistence implements JobPersistence {
       return;
     }
 
-    // Although JOOQ supports upsert using the onConflict statement, we cannot use it as the table
-    // currently has duplicate records and also doesn't contain the unique constraint on the attempt_id
-    // column JOOQ requires.
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
         .set(SYNC_STATS.CREATED_AT, now)
@@ -442,29 +442,51 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static void saveToStreamStatsTable(final OffsetDateTime now,
-                                             final List<StreamSyncStats> streamStats,
+                                             final List<StreamSyncStats> perStreamStats,
                                              final Long attemptId,
                                              final DSLContext ctx) {
-    Optional.ofNullable(streamStats).orElse(Collections.emptyList()).forEach(
-        stats -> ctx.insertInto(STREAM_STATS)
-            .set(STREAM_STATS.ID, UUID.randomUUID())
-            .set(STREAM_STATS.ATTEMPT_ID, attemptId)
-            .set(STREAM_STATS.STREAM_NAME, stats.getStreamName())
-            .set(STREAM_STATS.STREAM_NAMESPACE, stats.getStreamNamespace())
-            .set(STREAM_STATS.CREATED_AT, now)
-            .set(STREAM_STATS.UPDATED_AT, now)
-            .set(STREAM_STATS.BYTES_EMITTED, stats.getStats().getBytesEmitted())
-            .set(STREAM_STATS.RECORDS_EMITTED, stats.getStats().getRecordsEmitted())
-            .set(STREAM_STATS.ESTIMATED_BYTES, stats.getStats().getEstimatedBytes())
-            .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getStats().getEstimatedRecords())
-            .onConflict(STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAMESPACE, STREAM_STATS.STREAM_NAME)
-            .doUpdate()
-            .set(STREAM_STATS.UPDATED_AT, now)
-            .set(STREAM_STATS.BYTES_EMITTED, stats.getStats().getBytesEmitted())
-            .set(STREAM_STATS.RECORDS_EMITTED, stats.getStats().getRecordsEmitted())
-            .set(STREAM_STATS.ESTIMATED_BYTES, stats.getStats().getEstimatedBytes())
-            .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getStats().getEstimatedRecords())
-            .execute());
+    Optional.ofNullable(perStreamStats).orElse(Collections.emptyList()).forEach(
+        streamStats -> {
+          // We cannot entirely rely on JOOQ's generated SQL for upserts as it does not support null fields
+          // for conflict detection.
+          // We are forced to separately check for existence for the null namespace case.
+          final var stats = streamStats.getStats();
+          if (streamStats.getStreamNamespace() == null) {
+            final var isExisting =
+                ctx.fetchExists(STREAM_STATS, STREAM_STATS.ATTEMPT_ID.eq(attemptId).and(STREAM_STATS.STREAM_NAME.eq(streamStats.getStreamName())));
+            if (isExisting) {
+              ctx.update(STREAM_STATS)
+                  .set(STREAM_STATS.UPDATED_AT, now)
+                  .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+                  .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+                  .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+                  .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+                  .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+                  .execute();
+              return;
+            }
+          }
+
+          ctx.insertInto(STREAM_STATS)
+              .set(STREAM_STATS.ID, UUID.randomUUID())
+              .set(STREAM_STATS.ATTEMPT_ID, attemptId)
+              .set(STREAM_STATS.STREAM_NAME, streamStats.getStreamName())
+              .set(STREAM_STATS.STREAM_NAMESPACE, streamStats.getStreamNamespace())
+              .set(STREAM_STATS.CREATED_AT, now)
+              .set(STREAM_STATS.UPDATED_AT, now)
+              .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+              .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+              .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+              .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+              .onConflict(STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAME, STREAM_STATS.STREAM_NAMESPACE)
+              .doUpdate()
+              .set(STREAM_STATS.UPDATED_AT, now)
+              .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+              .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+              .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+              .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+              .execute();
+        });
   }
 
   @Override

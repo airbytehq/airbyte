@@ -91,7 +91,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert"})
+@SuppressWarnings({"PMD.JUnitTestsShouldIncludeAssert", "PMD.AvoidDuplicateLiterals"})
 @DisplayName("DefaultJobPersistance")
 class DefaultJobPersistenceTest {
 
@@ -451,7 +451,6 @@ class DefaultJobPersistenceTest {
       assertEquals(2000, combined.getEstimatedRecords());
 
       final var actStreamStats = stats.perStreamStats();
-      System.out.println(actStreamStats);
       assertEquals(1, actStreamStats.size());
       assertEquals(streamStats, actStreamStats);
     }
