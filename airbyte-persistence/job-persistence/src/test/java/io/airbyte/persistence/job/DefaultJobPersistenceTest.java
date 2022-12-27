@@ -7,6 +7,7 @@ package io.airbyte.persistence.job;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.AIRBYTE_METADATA;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.STREAM_STATS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.SYNC_STATS;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -340,7 +341,7 @@ class DefaultJobPersistenceTest {
               .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
       jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
 
-      AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
       final var combined = stats.combinedStats();
       assertEquals(1000, combined.getBytesEmitted());
       assertEquals(1000, combined.getRecordsEmitted());
@@ -357,72 +358,73 @@ class DefaultJobPersistenceTest {
     }
 
     @Test
-    @DisplayName("Writing stats should update the previous record")
+    @DisplayName("Writing stats multiple times should write record and bytes information correctly without exceptions")
+    void testWriteSyncStatsRepeated() throws IOException, SQLException {
+      final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
+      final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
+
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
+      when(timeSupplier.get()).thenReturn(Instant.now());
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
+
+      final AttemptStats stats = jobPersistence.getAttemptStats(jobId, attemptNumber);
+      final var combined = stats.combinedStats();
+      assertEquals(2000, combined.getBytesEmitted());
+      assertEquals(2000, combined.getRecordsEmitted());
+      assertEquals(2000, combined.getEstimatedBytes());
+      assertEquals(2000, combined.getEstimatedRecords());
+
+      final var actStreamStats = stats.perStreamStats();
+      assertEquals(1, actStreamStats.size());
+      assertEquals(streamStats, actStreamStats);
+
+    }
+
+    @Test
+    @DisplayName("Writing multiple stats of the same attempt id, stream name and namespace should update the previous record")
     void testWriteStatsUpsert() throws IOException, SQLException, InterruptedException {
       final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
       final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
 
+      // First write.
+      var streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(500L).withRecordsEmitted(500L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, streamStats);
+
+      // Second write.
       when(timeSupplier.get()).thenReturn(Instant.now());
-      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, null);
+      streamStats = List.of(
+          new StreamSyncStats().withStreamName("name1").withStreamNamespace("ns")
+              .withStats(new SyncStats().withBytesEmitted(1000L).withRecordsEmitted(1000L).withEstimatedBytes(10000L).withEstimatedRecords(2000L)));
+      jobPersistence.writeStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, streamStats);
 
-      final var stats = jobPersistence.getAttemptStats(jobId, attemptNumber).combinedStats();
-      assertEquals(2000, stats.getBytesEmitted());
-      assertEquals(2000, stats.getRecordsEmitted());
-      assertEquals(2000, stats.getEstimatedBytes());
-      assertEquals(2000, stats.getEstimatedRecords());
-
-      final var record = jobDatabase.query(ctx -> {
+      final var syncStatsRec = jobDatabase.query(ctx -> {
         final var attemptId = DefaultJobPersistence.getAttemptId(jobId, attemptNumber, ctx);
         return ctx.fetch("SELECT * from sync_stats where attempt_id = ?", attemptId).stream().findFirst().get();
       });
 
-      // Check time stamps to confirm.
-      assertNotEquals(record.get(SYNC_STATS.CREATED_AT), record.get(SYNC_STATS.UPDATED_AT));
+      // Check time stamps to confirm upsert.
+      assertNotEquals(syncStatsRec.get(SYNC_STATS.CREATED_AT), syncStatsRec.get(SYNC_STATS.UPDATED_AT));
+
+      final var streamStatsRec = jobDatabase.query(ctx -> {
+        final var attemptId = DefaultJobPersistence.getAttemptId(jobId, attemptNumber, ctx);
+        return ctx.fetch("SELECT * from stream_stats where attempt_id = ?", attemptId).stream().findFirst().get();
+      });
+      // Check time stamps to confirm upsert.
+      assertNotEquals(streamStatsRec.get(STREAM_STATS.CREATED_AT), streamStatsRec.get(STREAM_STATS.UPDATED_AT));
     }
 
-    // @Test
-    // @DisplayName("Writing stats multiple times should write record and bytes information correctly
-    // without exceptions")
-    // void testWriteSyncStatsRepeated() throws IOException, SQLException {
-    // final long jobId = jobPersistence.enqueueJob(SCOPE, SPEC_JOB_CONFIG).orElseThrow();
-    // final int attemptNumber = jobPersistence.createAttempt(jobId, LOG_PATH);
-    //
-    // jobPersistence.writeSyncStats(jobId, attemptNumber, 1000, 1000, 1000, 1000, null);
-    //
-    // final Optional<Record> record =
-    // jobDatabase.query(ctx -> ctx.fetch("SELECT id from attempts where job_id = ? AND attempt_number =
-    // ?", jobId,
-    // attemptNumber).stream().findFirst());
-    // final Long attemptId = record.get().get("id", Long.class);
-    //
-    // var stat = jobPersistence.getSyncStats(attemptId).stream().findFirst().get();
-    // assertEquals(1000, stat.getBytesEmitted());
-    // assertEquals(1000, stat.getRecordsEmitted());
-    // assertEquals(1000, stat.getEstimatedBytes());
-    // assertEquals(1000, stat.getEstimatedRecords());
-    //
-    // jobPersistence.writeSyncStats(jobId, attemptNumber, 2000, 2000, 2000, 2000, null);
-    // var stats = jobPersistence.getSyncStats(attemptId);
-    // assertEquals(1, stats.size());
-    //
-    // stat = stats.stream().findFirst().get();
-    // assertEquals(2000, stat.getBytesEmitted());
-    // assertEquals(2000, stat.getRecordsEmitted());
-    // assertEquals(2000, stat.getEstimatedBytes());
-    // assertEquals(2000, stat.getEstimatedRecords());
-    //
-    // }
-
-  }
-
-  @Nested
-  class UpsertUpdate {
-
-    @Test
-    void testWriteToSyncStats() throws IOException {
-
-    }
+    // check with updates with no namespaces
 
   }
 

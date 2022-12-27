@@ -420,8 +420,8 @@ public class DefaultJobPersistence implements JobPersistence {
     }
 
     // Although JOOQ supports upsert using the onConflict statement, we cannot use it as the table
-    // currently has duplicate records
-    // and also doesn't contain the unique constraint on the attempt_id column JOOQ requires.
+    // currently has duplicate records and also doesn't contain the unique constraint on the attempt_id
+    // column JOOQ requires.
     ctx.insertInto(SYNC_STATS)
         .set(SYNC_STATS.ID, UUID.randomUUID())
         .set(SYNC_STATS.CREATED_AT, now)
@@ -442,23 +442,9 @@ public class DefaultJobPersistence implements JobPersistence {
   }
 
   private static void saveToStreamStatsTable(final OffsetDateTime now,
-                                             List<StreamSyncStats> streamStats,
+                                             final List<StreamSyncStats> streamStats,
                                              final Long attemptId,
                                              final DSLContext ctx) {
-    final var isExisting = ctx.fetchExists(SYNC_STATS, SYNC_STATS.ATTEMPT_ID.eq(attemptId));
-    // if (isExisting) {
-    // what else do we need to update?
-    // ctx.update(STREAM_STATS)
-    // .set(STREAM_STATS.BYTES_EMITTED, bytesEmitted)
-    // .set(STREAM_STATS.RECORDS_EMITTED, recordsEmitted)
-    // .set(STREAM_STATS.ESTIMATED_BYTES, estimatedBytes)
-    // .set(STREAM_STATS.ESTIMATED_RECORDS, estimatedRecords)
-    // .set(STREAM_STATS.UPDATED_AT, now)
-    // .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
-    // .execute();
-    // return;
-    // }
-
     Optional.ofNullable(streamStats).orElse(Collections.emptyList()).forEach(
         stats -> ctx.insertInto(STREAM_STATS)
             .set(STREAM_STATS.ID, UUID.randomUUID())
@@ -471,8 +457,7 @@ public class DefaultJobPersistence implements JobPersistence {
             .set(STREAM_STATS.RECORDS_EMITTED, stats.getStats().getRecordsEmitted())
             .set(STREAM_STATS.ESTIMATED_BYTES, stats.getStats().getEstimatedBytes())
             .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getStats().getEstimatedRecords())
-            .onConflict(
-                STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAMESPACE, STREAM_STATS.STREAM_NAME)
+            .onConflict(STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAMESPACE, STREAM_STATS.STREAM_NAME)
             .doUpdate()
             .set(STREAM_STATS.UPDATED_AT, now)
             .set(STREAM_STATS.BYTES_EMITTED, stats.getStats().getBytesEmitted())
