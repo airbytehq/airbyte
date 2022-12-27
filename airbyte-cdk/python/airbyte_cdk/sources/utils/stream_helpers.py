@@ -43,7 +43,8 @@ class StreamHelper:
         )
         # Replacing the below try/except block with just return next(slices)
         # Makes the new test (and all existing tests) pass.
-        try:
-            return next(slices)
-        except StopIteration:
-            return {}
+        return next(slices)
+        # try:
+        #     return next(slices)
+        # except StopIteration:
+        #     return {}
