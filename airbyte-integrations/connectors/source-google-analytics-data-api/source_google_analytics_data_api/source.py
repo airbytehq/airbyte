@@ -10,6 +10,7 @@ import uuid
 from abc import ABC
 from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
 
+import jsonschema
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
@@ -77,6 +78,10 @@ authenticator_class_map: Dict = {
         },
     ),
 }
+
+
+class ConfigurationError(Exception):
+    pass
 
 
 def get_authenticator(credentials):
@@ -337,8 +342,25 @@ class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractS
 class SourceGoogleAnalyticsDataApi(AbstractSource):
     def __init__(self, *args, **kwargs):
         super(SourceGoogleAnalyticsDataApi, self).__init__(*args, **kwargs)
-
         self._authenticator = None
+
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        if "custom_reports" in config:
+            try:
+                config["custom_reports"] = json.loads(config["custom_reports"])
+            except ValueError:
+                raise ConfigurationError("custom_reports is not valid JSON")
+        else:
+            config["custom_reports"] = []
+
+        schema = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/custom_reports_schema.json"))
+        try:
+            jsonschema.validate(instance=config["custom_reports"], schema=schema)
+        except jsonschema.ValidationError as e:
+            key_path = "custom_reports." + ".".join(map(str, e.path))
+            raise ConfigurationError(f"{key_path}: {e.message}")
+
+        return config
 
     def get_authenticator(self, config: Mapping[str, Any]):
         if not self._authenticator:
@@ -346,6 +368,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return self._authenticator
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        try:
+            config = self._validate_and_transform(config)
+        except ConfigurationError as e:
+            return False, str(e)
         authenticator = self.get_authenticator(config)
         stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=authenticator)
         try:
@@ -358,13 +384,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         authenticator = self.get_authenticator(config)
 
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
-        if "custom_reports" in config:
-            custom_reports = json.loads(config["custom_reports"])
-            reports += custom_reports
+        config = self._validate_and_transform(config)
 
         return [
             type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(
                 config=dict(**config, metrics=report["metrics"], dimensions=report["dimensions"]), authenticator=authenticator
             )
-            for report in reports
+            for report in reports + config["custom_reports"]
         ]
