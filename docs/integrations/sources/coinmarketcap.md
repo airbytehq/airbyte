@@ -6,18 +6,18 @@ This source can sync data from the [Coinmarketcap API](https://coinmarketcap.com
 
 ## This Source Supports the Following Streams
 
-* [categories](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyCategories)
-* [listing](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsLatest)
-* [quotes](https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesLatest)
-* [fiat](https://coinmarketcap.com/api/documentation/v1/#tag/fiat)
-* [exchange](https://coinmarketcap.com/api/documentation/v1/#tag/exchange)
+- [categories](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyCategories)
+- [listing](https://coinmarketcap.com/api/documentation/v1/#operation/getV1CryptocurrencyListingsLatest)
+- [quotes](https://coinmarketcap.com/api/documentation/v1/#operation/getV2CryptocurrencyQuotesLatest)
+- [fiat](https://coinmarketcap.com/api/documentation/v1/#tag/fiat)
+- [exchange](https://coinmarketcap.com/api/documentation/v1/#tag/exchange)
 
 ### Features
 
-| Feature | Supported?\(Yes/No\) | Notes |
-| :--- | :--- | :--- |
-| Full Refresh Sync | Yes |  |
-| Incremental Sync | No |  |
+| Feature           | Supported?\(Yes/No\) | Notes |
+| :---------------- | :------------------- | :---- |
+| Full Refresh Sync | Yes                  |       |
+| Incremental Sync  | No                   |       |
 
 ### Performance considerations
 
@@ -27,13 +27,14 @@ Coinmarketcap APIs are under rate limits for the number of API calls allowed per
 
 ### Requirements
 
-* [API token](https://coinmarketcap.com/api/documentation/v1/#section/Authentication)
-* Data Type:
-  * latest
-  * historical
+- [API token](https://coinmarketcap.com/api/documentation/v1/#section/Authentication)
+- Data Type:
+  - latest
+  - historical
 
 ## Changelog
 
-| Version | Date       | Pull Request                                              | Subject                                    |
-| :------ | :--------- | :-------------------------------------------------------- | :----------------------------------------- |
+| Version | Date       | Pull Request                                              | Subject                                         |
+| :------ | :--------- | :-------------------------------------------------------- | :---------------------------------------------- |
+| 0.1.1   | 2022-11-01 | [#18790](https://github.com/airbytehq/airbyte/pull/18790) | Correct coinmarket spec                         |
 | 0.1.0   | 2022-10-29 | [#18565](https://github.com/airbytehq/airbyte/pull/18565) | 🎉 New Source: Coinmarketcap API [low-code CDK] |
