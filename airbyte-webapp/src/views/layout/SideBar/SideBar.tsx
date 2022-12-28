@@ -1,6 +1,6 @@
-import { faSignOut } from "@fortawesome/free-solid-svg-icons";
-import { faHome } from "@fortawesome/free-solid-svg-icons";
-import { faGear } from "@fortawesome/free-solid-svg-icons";
+import { faSignOut, faHome, faGear, faInbox, faDatabase } from "@fortawesome/free-solid-svg-icons";
+// import {  } from "@fortawesome/free-solid-svg-icons";
+// import { faGear } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import React from "react";
@@ -85,13 +85,14 @@ const Logo = styled.img`
 `;
 
 const LogOut = styled.div`
+  width: 100%;
+  box-sizing: border-box;
+  //  padding-left: 54px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #6b6b6f;
   margin: 20px 0;
-  // height: 50px;
-  // border:1px solid red;
   &:hover {
     cursor: pointer;
     color: #4f46e5;
@@ -120,6 +121,7 @@ const LogOut = styled.div`
 const MenuItemIcon = styled(FontAwesomeIcon)`
   font-size: 16px;
   line-height: 16px;
+  font-weight: normal;
 `;
 
 // const SettingIcon = styled(FontAwesomeIcon)`
@@ -146,7 +148,13 @@ export const useCalculateSidebarItemStyles = (route: string) => {
   const menuItemStyle = () => {
     // const isActive = location.pathname.split("/").length >= 4 && location.pathname.split("/")[3] === route;
     const isActive = location.pathname.split("/").length >= 2 && location.pathname.split("/")[1] === route;
-    return classnames(styles.menuItem, { [styles.active]: isActive }, { [styles.inActive]: !isActive });
+    const isSetting = route === "settings";
+    return classnames(
+      styles.menuItem,
+      { [styles.inActive]: !isActive },
+      { [styles.inActiveSetting]: isSetting },
+      { [styles.active]: isActive }
+    );
   };
 
   return menuItemStyle();
@@ -177,6 +185,26 @@ const SideBar: React.FC = () => {
               </div>
               <Text>
                 <FormattedMessage id="sidebar.DaspireDashboard" />
+              </Text>
+            </NavLink>
+          </MenuItem>
+          <MenuItem>
+            <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Source)} to={RoutePaths.Source}>
+              <div>
+                <MenuItemIcon icon={faInbox} />
+              </div>
+              <Text>
+                <FormattedMessage id="sidebar.sources" />
+              </Text>
+            </NavLink>
+          </MenuItem>
+          <MenuItem>
+            <NavLink className={useCalculateSidebarItemStyles(RoutePaths.Destination)} to={RoutePaths.Destination}>
+              <div>
+                <MenuItemIcon icon={faDatabase} />
+              </div>
+              <Text>
+                <FormattedMessage id="sidebar.destinations" />
               </Text>
             </NavLink>
           </MenuItem>

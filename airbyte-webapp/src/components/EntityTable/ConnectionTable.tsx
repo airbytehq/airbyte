@@ -10,6 +10,7 @@ import Table from "components/Table";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import useRouter from "hooks/useRouter";
 
+import { RoutePaths } from "../../pages/routePaths";
 import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 // import ConnectorCell from "./components/ConnectorCell";
 // import FrequencyCell from "./components/FrequencyCell";
@@ -78,7 +79,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
 
   // const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
 
-  const onClickRows = (connectionId: string) => push(`/connections/${connectionId}`);
+  const onClickRows = (connectionId: string) => push(`/${RoutePaths.Connections}/${connectionId}`);
 
   const columns = React.useMemo(
     () => [
