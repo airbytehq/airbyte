@@ -506,10 +506,10 @@ public class DefaultJobPersistence implements JobPersistence {
     return jobDatabase
         .query(ctx -> {
           final Long attemptId = getAttemptId(jobId, attemptNumber, ctx);
-          final var syncStats = ctx.select(DSL.asterisk()).from(DSL.table(SYNC_STATS.getName())).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
+          final var syncStats = ctx.select(DSL.asterisk()).from(SYNC_STATS).where(SYNC_STATS.ATTEMPT_ID.eq(attemptId))
               .orderBy(SYNC_STATS.UPDATED_AT.desc())
               .fetchOne(getSyncStatsRecordMapper());
-          final var perStreamStats = ctx.select(DSL.asterisk()).from(DSL.table(STREAM_STATS.getName())).where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+          final var perStreamStats = ctx.select(DSL.asterisk()).from(STREAM_STATS).where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
               .fetch(getStreamStatsRecordsMapper());
           return new AttemptStats(syncStats, perStreamStats);
         });
