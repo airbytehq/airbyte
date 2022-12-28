@@ -8,7 +8,7 @@ package io.airbyte.workers.process;
  * The following variables help, either via names or labels, add metadata to processes actually
  * running operations to ease operations.
  */
-public class Metadata {
+public final class Metadata {
 
   /**
    * General Metadata
