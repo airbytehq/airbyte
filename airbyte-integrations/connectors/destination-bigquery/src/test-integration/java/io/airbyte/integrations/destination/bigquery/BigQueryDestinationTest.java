@@ -74,7 +74,7 @@ import org.slf4j.LoggerFactory;
 class BigQueryDestinationTest {
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
   protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
-  protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
+  protected static final Path CREDENTIALS_NO_DATASET_CREATION_PATH =
       Path.of("secrets/credentials-standard-no-dataset-creation.json");
   protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
       Path.of("secrets/credentials-standard-non-billable-project.json");
@@ -150,23 +150,20 @@ class BigQueryDestinationTest {
   public static void beforeAll() throws IOException {
     if (!Files.exists(CREDENTIALS_STANDARD_INSERT_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a big query credentials file. By default destination-bigquery/secrets/credentials-standard.json");
+          String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", CREDENTIALS_STANDARD_INSERT_PATH));
     }
-    if (!Files.exists(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH)) {
-      throw new IllegalStateException("""
-                                      Json config not found. Must provide path to a big query credentials file,
-                                       please add file with creds to
-                                      <...>/destination-bigquery/secrets/credentials-standard-no-dataset-creation.json.""");
+    if (!Files.exists(CREDENTIALS_NO_DATASET_CREATION_PATH)) {
+      throw new IllegalStateException(
+          String.format("Must provide path to a big query credentials file. Please add file with credentials to %s",
+              CREDENTIALS_NO_DATASET_CREATION_PATH));
     }
     if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
-      throw new IllegalStateException("""
-                                      Json config not found. Must provide path to a big query credentials file,
-                                       please add file with creds to
-                                      <...>/destination-bigquery/secrets/credentials-standard-non-billable-project.json""");
+      throw new IllegalStateException(
+          String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", CREDENTIALS_NON_BILLABLE_PROJECT_PATH));
     }
     if (!Files.exists(CREDENTIALS_WITH_GCS_STAGING_PATH)) {
       throw new IllegalStateException(
-          "Must provide path to a bigquery credentials file for testing GCS Staging. By default destination-bigquery/secrets/credentials-gcs-staging.json");
+          String.format("Must provide path to a big query credentials file. Please add file with credentials to %s", CREDENTIALS_WITH_GCS_STAGING_PATH));
     }
 
     datasetId = Strings.addRandomSuffix(DATASET_NAME_PREFIX, "_", 8);
@@ -187,7 +184,7 @@ class BigQueryDestinationTest {
     configWithBadProjectId = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_BAD_PROJECT_PATH, dataSetWithBadProjectId);
 
     //config that has insufficient privileges
-    insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH, datasetId);
+    insufficientRoleConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NO_DATASET_CREATION_PATH, datasetId);
     //config that tries to write to a project with disabled billing (free tier)
     nonBillableConfig = BigQueryDestinationTestUtils.createConfig(CREDENTIALS_NON_BILLABLE_PROJECT_PATH, "testnobilling");
     //config with GCS staging
