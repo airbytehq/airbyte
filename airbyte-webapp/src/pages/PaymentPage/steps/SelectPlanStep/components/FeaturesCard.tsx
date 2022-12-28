@@ -11,7 +11,7 @@ import { Row, Cell } from "components/SimpleTableComponents";
 import { ProductItem, ProcessedPackageMap } from "core/domain/product";
 
 import EnterpriseCell from "./EnterpriseCell";
-import ProcessionalCell from "./ProcessionalCell";
+import ProfessionalCell from "./ProfessionalCell";
 
 interface IProps {
   onSelectPlan?: () => void;
@@ -73,7 +73,7 @@ const FeaturesCard: React.FC<IProps> = ({
             <FormattedMessage id="feature.header.plan" />
           </HeaderCell>
           <HeaderCell>
-            <FormattedMessage id="feature.header.processional" />
+            <FormattedMessage id="feature.header.professional" />
           </HeaderCell>
           <HeaderCell>
             <FormattedMessage id="feature.header.enterprise" />
@@ -84,7 +84,7 @@ const FeaturesCard: React.FC<IProps> = ({
             <FormattedMessage id="feature.cell.pricing" />
           </BodyCell>
           <BodyCell>
-            <ProcessionalCell
+            <ProfessionalCell
               price={product?.price}
               selectPlanBtnDisability={selectPlanBtnDisability}
               paymentLoading={paymentLoading}
@@ -104,7 +104,7 @@ const FeaturesCard: React.FC<IProps> = ({
         {packagesMap.features.map((item) => (
           <FeatureBodyRow borderBottom="1px solid #E5E7EB">
             <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.processional?.itemScope}</FeatureBodyCell>
+            <FeatureBodyCell>{item.professional?.itemScope}</FeatureBodyCell>
             <FeatureBodyCell>{item.enterprise?.itemScope}</FeatureBodyCell>
           </FeatureBodyRow>
         ))}
@@ -116,7 +116,7 @@ const FeaturesCard: React.FC<IProps> = ({
         {packagesMap.dataReplication.map((item) => (
           <FeatureBodyRow borderBottom="1px solid #E5E7EB">
             <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
-            <FeatureBodyCell>{item.processional?.itemScope}</FeatureBodyCell>
+            <FeatureBodyCell>{item.professional?.itemScope}</FeatureBodyCell>
             <FeatureBodyCell>{item.enterprise?.itemScope}</FeatureBodyCell>
           </FeatureBodyRow>
         ))}
@@ -129,14 +129,14 @@ const FeaturesCard: React.FC<IProps> = ({
           <FeatureBodyRow borderBottom="1px solid #E5E7EB">
             <FeatureBodyCell>{item.itemName}</FeatureBodyCell>
             <FeatureBodyCell>
-              {item.processional?.itemScope === "false" || item.processional?.itemScope === "true" ? (
-                item.processional?.itemScope === "false" ? (
+              {item.professional?.itemScope === "false" || item.professional?.itemScope === "true" ? (
+                item.professional?.itemScope === "false" ? (
                   <DashIcon />
                 ) : (
                   <TickIcon />
                 )
               ) : (
-                item.processional?.itemScope
+                item.professional?.itemScope
               )}
             </FeatureBodyCell>
             <FeatureBodyCell>

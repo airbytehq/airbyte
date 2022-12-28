@@ -4,7 +4,7 @@ import { ProductService } from "core/domain/product";
 import {
   PackageItem,
   ProcessedPackageMapItem,
-  ProcessedProcessionalPackageMap,
+  ProcessedProfessionalPackageMap,
   ProcessedEnterprisePackageMap,
 } from "core/domain/product";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
@@ -40,26 +40,26 @@ export const usePackagesDetail = () => {
   return useSuspenseQuery(productKeys.packagesDetail(), () => service.packagesDetail()).data;
 };
 
-export const useProcessionalPackageMap = () => {
-  const { Processional } = usePackagesDetail().packageMap;
+export const useProfessionalPackageMap = () => {
+  const { Professional } = usePackagesDetail().packageMap;
 
-  const processionalPackageMap: ProcessedProcessionalPackageMap = Processional.reduce(
-    (acc_value: ProcessedProcessionalPackageMap, curr_value: PackageItem) => {
+  const professionalPackageMap: ProcessedProfessionalPackageMap = Professional.reduce(
+    (acc_value: ProcessedProfessionalPackageMap, curr_value: PackageItem) => {
       if (curr_value.itemType === PlanItemTypeEnum.Features) {
-        acc_value.processionalFeatures.push({ itemName: curr_value.itemName, processional: curr_value });
+        acc_value.professionalFeatures.push({ itemName: curr_value.itemName, professional: curr_value });
       } else if (curr_value.itemType === PlanItemTypeEnum.Data_Replication) {
-        acc_value.processionalDataReplication.push({ itemName: curr_value.itemName, processional: curr_value });
+        acc_value.professionalDataReplication.push({ itemName: curr_value.itemName, professional: curr_value });
       } else if (curr_value.itemType === PlanItemTypeEnum.Support) {
-        acc_value.processionalSupport.push({ itemName: curr_value.itemName, processional: curr_value });
+        acc_value.professionalSupport.push({ itemName: curr_value.itemName, professional: curr_value });
       } else {
         return acc_value;
       }
       return acc_value;
     },
-    { processionalFeatures: [], processionalDataReplication: [], processionalSupport: [] }
+    { professionalFeatures: [], professionalDataReplication: [], professionalSupport: [] }
   );
 
-  return processionalPackageMap;
+  return professionalPackageMap;
 };
 
 export const useEnterprisePackageMap = () => {
@@ -85,18 +85,18 @@ export const useEnterprisePackageMap = () => {
 };
 
 export const usePackagesMap = () => {
-  const { processionalFeatures, processionalDataReplication, processionalSupport } = useProcessionalPackageMap();
+  const { professionalFeatures, professionalDataReplication, professionalSupport } = useProfessionalPackageMap();
   const { enterpriseFeatures, enterpriseDataReplication, enterpriseSupport } = useEnterprisePackageMap();
 
-  const features = processionalFeatures.map((item: ProcessedPackageMapItem, i: number) => ({
+  const features = professionalFeatures.map((item: ProcessedPackageMapItem, i: number) => ({
     ...item,
     ...enterpriseFeatures[i],
   }));
-  const dataReplication = processionalDataReplication.map((item: ProcessedPackageMapItem, i: number) => ({
+  const dataReplication = professionalDataReplication.map((item: ProcessedPackageMapItem, i: number) => ({
     ...item,
     ...enterpriseDataReplication[i],
   }));
-  const support = processionalSupport.map((item: ProcessedPackageMapItem, i: number) => ({
+  const support = professionalSupport.map((item: ProcessedPackageMapItem, i: number) => ({
     ...item,
     ...enterpriseSupport[i],
   }));
