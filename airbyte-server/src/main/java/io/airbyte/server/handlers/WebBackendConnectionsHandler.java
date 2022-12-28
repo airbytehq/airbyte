@@ -49,6 +49,7 @@ import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
 import io.airbyte.commons.enums.Enums;
 import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.lang.MoreBooleans;
+import io.airbyte.config.ActorCatalog;
 import io.airbyte.config.ActorCatalogFetchEvent;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.persistence.ConfigNotFoundException;
@@ -521,13 +522,12 @@ public class WebBackendConnectionsHandler {
     if (webBackendConnectionPatch.getSyncCatalog() != null) {
       // Get the most recent actor catalog fetched for this connection's source and the newly updated sync
       // catalog
-      SourceIdRequestBody requestBody = new SourceIdRequestBody().sourceId(originalConnectionRead.getSourceId());
-      ActorCatalogWithUpdatedAt mostRecentActorCatalog = sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(requestBody);
+      Optional<ActorCatalog> mostRecentActorCatalog = configRepository.getMostRecentActorCatalogForSource(originalConnectionRead.getSourceId());
       AirbyteCatalog newAirbyteCatalog = webBackendConnectionPatch.getSyncCatalog();
       // Get the diff between these two catalogs to check for breaking changes
-      if (mostRecentActorCatalog.getCatalog() != null) {
+      if (mostRecentActorCatalog.isPresent()) {
         final io.airbyte.protocol.models.AirbyteCatalog mostRecentAirbyteCatalog =
-            Jsons.object((JsonNode) mostRecentActorCatalog.getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
+            Jsons.object(mostRecentActorCatalog.get().getCatalog(), io.airbyte.protocol.models.AirbyteCatalog.class);
         final CatalogDiff catalogDiff =
             connectionsHandler.getDiff(newAirbyteCatalog, CatalogConverter.toApi(mostRecentAirbyteCatalog),
                 CatalogConverter.toProtocol(newAirbyteCatalog));
