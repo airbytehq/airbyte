@@ -118,9 +118,7 @@ public class WorkerUtils {
         .map(AirbyteControlMessage::getConnectorConfig)
         .toList();
 
-    if (configMessages.size() == 0)
-      return Optional.empty();
-    return Optional.of(configMessages.get(configMessages.size() - 1));
+    return configMessages.isEmpty() ? Optional.empty() : Optional.of(configMessages.get(configMessages.size() - 1));
   }
 
   public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
