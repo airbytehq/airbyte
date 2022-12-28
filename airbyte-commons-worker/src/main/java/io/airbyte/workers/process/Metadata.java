@@ -38,4 +38,5 @@ public class Metadata {
   public static final String NORMALIZE_STEP = "normalize";
   public static final String CUSTOM_STEP = "custom";
   public static final String ORCHESTRATOR_STEP = "orchestrator";
+
 }
