@@ -43,7 +43,7 @@ public class FileBuffer implements BufferStorage {
    * before another stream's buffer can be created. Increasing the default max will reduce likelihood
    * of thrashing but not entirely eliminate unless number of buffers equals streams to be synced
    */
-  public static final int DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER = 15;
+  public static final int DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER = 10;
   public static final String FILE_BUFFER_COUNT_KEY = "file_buffer_count";
   // This max is subject to change as no proper load testing has been done to verify the side effects
   public static final int MAX_CONCURRENT_STREAM_IN_BUFFER = 50;
