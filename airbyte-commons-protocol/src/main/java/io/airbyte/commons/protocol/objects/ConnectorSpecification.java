@@ -19,11 +19,11 @@ public interface ConnectorSpecification {
 
   JsonNode getConnectorSpecification();
 
-  boolean getSupportsIncremental();
+  Boolean isSupportingIncremental();
 
-  boolean getSupportsNormalization();
+  Boolean isSupportingNormalization();
 
-  boolean getSupportsDBT();
+  Boolean isSupportingDBT();
 
   // TODO should be a new Enum
   List<DestinationSyncMode> getSupportedDestinationSyncModes();

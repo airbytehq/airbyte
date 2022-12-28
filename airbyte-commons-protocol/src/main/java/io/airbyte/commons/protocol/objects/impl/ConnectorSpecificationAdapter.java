@@ -11,7 +11,9 @@ import io.airbyte.protocol.models.AuthSpecification;
 import io.airbyte.protocol.models.DestinationSyncMode;
 import java.net.URI;
 import java.util.List;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public class ConnectorSpecificationAdapter implements ConnectorSpecification {
 
   final io.airbyte.protocol.models.ConnectorSpecification connectorSpecification;
@@ -36,17 +38,17 @@ public class ConnectorSpecificationAdapter implements ConnectorSpecification {
   }
 
   @Override
-  public boolean getSupportsIncremental() {
+  public Boolean isSupportingIncremental() {
     return connectorSpecification.getSupportsIncremental();
   }
 
   @Override
-  public boolean getSupportsNormalization() {
+  public Boolean isSupportingNormalization() {
     return connectorSpecification.getSupportsNormalization();
   }
 
   @Override
-  public boolean getSupportsDBT() {
+  public Boolean isSupportingDBT() {
     return connectorSpecification.getSupportsDBT();
   }
 

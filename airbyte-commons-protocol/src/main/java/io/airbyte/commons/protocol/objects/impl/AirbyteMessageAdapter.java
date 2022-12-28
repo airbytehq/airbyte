@@ -10,7 +10,9 @@ import io.airbyte.commons.protocol.objects.ConnectorSpecification;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import java.util.Map;
+import lombok.EqualsAndHashCode;
 
+@EqualsAndHashCode
 public class AirbyteMessageAdapter implements AirbyteMessage {
 
   private final io.airbyte.protocol.models.AirbyteMessage airbyteMessage;
@@ -26,7 +28,7 @@ public class AirbyteMessageAdapter implements AirbyteMessage {
 
   @Override
   public ConnectorSpecification getSpec() {
-    return null;
+    return new ConnectorSpecificationAdapter(airbyteMessage.getSpec());
   }
 
   @Override
