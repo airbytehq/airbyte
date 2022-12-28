@@ -91,7 +91,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       if (input.getActorId() != null && input.getActorType() != null) {
         LOGGER.info("has actor and type");
-        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getConfigControlMessage(messagesByType);
+        final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getLastConfigControlMessage(messagesByType);
         LOGGER.info("opt config msg {}", optionalConfigMsg.orElse(null));
         optionalConfigMsg.ifPresent(
             configMessage -> {

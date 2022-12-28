@@ -96,7 +96,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           .map(AirbyteMessage::getCatalog)
           .findFirst();
 
-      final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getConfigControlMessage(messagesByType);
+      final Optional<AirbyteControlConnectorConfigMessage> optionalConfigMsg = WorkerUtils.getLastConfigControlMessage(messagesByType);
       optionalConfigMsg.ifPresent(
           configMessage -> connectorConfigUpdater.updateSource(
               UUID.fromString(discoverSchemaInput.getSourceId()),
