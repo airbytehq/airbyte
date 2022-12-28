@@ -8,7 +8,7 @@ import logging
 import pkgutil
 import uuid
 from abc import ABC
-from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Mapping, MutableMapping, Optional, Set, Tuple, Union
 
 import jsonschema
 import requests
@@ -344,7 +344,7 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         super(SourceGoogleAnalyticsDataApi, self).__init__(*args, **kwargs)
         self._authenticator = None
 
-    def _validate_and_transform(self, config: Mapping[str, Any]):
+    def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
             try:
                 config["custom_reports"] = json.loads(config["custom_reports"])
@@ -360,6 +360,10 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
             key_path = "custom_reports." + ".".join(map(str, e.path))
             raise ConfigurationError(f"{key_path}: {e.message}")
 
+        existing_names = {r["name"] for r in config["custom_reports"]} & report_names
+        if existing_names:
+            existing_names = ", ".join(existing_names)
+            raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default reports.")
         return config
 
     def get_authenticator(self, config: Mapping[str, Any]):
@@ -368,23 +372,20 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return self._authenticator
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
+        reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
         try:
-            config = self._validate_and_transform(config)
+            config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
         except ConfigurationError as e:
             return False, str(e)
         authenticator = self.get_authenticator(config)
         stream = GoogleAnalyticsDataApiTestConnectionStream(config=config, authenticator=authenticator)
-        try:
-            next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
-        except Exception as e:
-            return False, str(e)
+        next(stream.read_records(sync_mode=SyncMode.full_refresh))
         return True, None
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        authenticator = self.get_authenticator(config)
-
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
-        config = self._validate_and_transform(config)
+        config = self._validate_and_transform(config, report_names={r["name"] for r in reports})
+        authenticator = self.get_authenticator(config)
 
         return [
             type(report["name"], (GoogleAnalyticsDataApiGenericStream,), {})(

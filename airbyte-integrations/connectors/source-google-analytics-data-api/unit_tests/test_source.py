@@ -27,7 +27,7 @@ json_credentials = """
 
 
 @pytest.fixture
-def patch_base_class(mocker):
+def patch_base_class():
     return {
         "config": {
             "property_id": "108176369",
@@ -39,13 +39,9 @@ def patch_base_class(mocker):
 
 def test_check_connection(mocker, patch_base_class):
     source = SourceGoogleAnalyticsDataApi()
-    record = MagicMock()
-
-    logger_mock, config_mock = MagicMock(), MagicMock()
-    config_mock.__getitem__.side_effect = patch_base_class["config"].__getitem__
-
-    mocker.patch.object(HttpStream, "read_records", return_value=[record])
-    assert source.check(logger_mock, config_mock) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
+    mocker.patch.object(HttpStream, "read_records", return_value=iter([{}]))
+    logger = MagicMock()
+    assert source.check(logger, patch_base_class["config"]) == AirbyteConnectionStatus(status=Status.SUCCEEDED)
 
 
 def test_streams(mocker, patch_base_class):
