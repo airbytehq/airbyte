@@ -169,6 +169,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final SourceConnection source = new SourceConnection()
+        .withSourceId(sourceConfig.getSourceId())
         .withSourceDefinitionId(sourceConfig.getSourceDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(sourceConfig.getWorkspaceId());
@@ -189,6 +190,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedSource.getConfiguration());
 
     final SourceCoreConfig sourceCoreConfig = new SourceCoreConfig()
+        .sourceId(updatedSource.getSourceId())
         .connectionConfiguration(updatedSource.getConfiguration())
         .sourceDefinitionId(updatedSource.getSourceDefinitionId());
 
@@ -217,6 +219,7 @@ public class SchedulerHandler {
     // todo (cgardens) - narrow the struct passed to the client. we are not setting fields that are
     // technically declared as required.
     final DestinationConnection destination = new DestinationConnection()
+        .withDestinationId(destinationConfig.getDestinationId())
         .withDestinationDefinitionId(destinationConfig.getDestinationDefinitionId())
         .withConfiguration(partialConfig)
         .withWorkspaceId(destinationConfig.getWorkspaceId());
@@ -235,6 +238,7 @@ public class SchedulerHandler {
     jsonSchemaValidator.ensure(spec.getConnectionSpecification(), updatedDestination.getConfiguration());
 
     final DestinationCoreConfig destinationCoreConfig = new DestinationCoreConfig()
+        .destinationId(updatedDestination.getDestinationId())
         .connectionConfiguration(updatedDestination.getConfiguration())
         .destinationDefinitionId(updatedDestination.getDestinationDefinitionId());
 
@@ -390,8 +394,8 @@ public class SchedulerHandler {
   // wants the connection disabled when non-breaking changes are detected. If so, disable that
   // connection. Modify the current discoveredSchema object to add a CatalogDiff,
   // containsBreakingChange paramter, and connectionStatus parameter.
-  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(SourceDiscoverSchemaRead discoveredSchema,
-                                                                 SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
+  private void generateCatalogDiffsAndDisableConnectionsIfNeeded(final SourceDiscoverSchemaRead discoveredSchema,
+                                                                 final SourceDiscoverSchemaRequestBody discoverSchemaRequestBody)
       throws JsonValidationException, ConfigNotFoundException, IOException {
     final ConnectionReadList connectionsForSource = connectionsHandler.listConnectionsForSource(discoverSchemaRequestBody.getSourceId(), false);
     for (final ConnectionRead connectionRead : connectionsForSource.getConnections()) {
@@ -399,12 +403,13 @@ public class SchedulerHandler {
           .getConnectionAirbyteCatalog(connectionRead.getConnectionId());
       final io.airbyte.api.model.generated.@NotNull AirbyteCatalog currentAirbyteCatalog =
           connectionRead.getSyncCatalog();
-      CatalogDiff diff = connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
-          CatalogConverter.toProtocol(currentAirbyteCatalog));
-      boolean containsBreakingChange = containsBreakingChange(diff);
-      ConnectionUpdate updateObject =
+      final CatalogDiff diff =
+          connectionsHandler.getDiff(catalogUsedToMakeConfiguredCatalog.orElse(currentAirbyteCatalog), discoveredSchema.getCatalog(),
+              CatalogConverter.toProtocol(currentAirbyteCatalog));
+      final boolean containsBreakingChange = containsBreakingChange(diff);
+      final ConnectionUpdate updateObject =
           new ConnectionUpdate().breakingChange(containsBreakingChange).connectionId(connectionRead.getConnectionId());
-      ConnectionStatus connectionStatus;
+      final ConnectionStatus connectionStatus;
       if (shouldDisableConnection(containsBreakingChange, connectionRead.getNonBreakingChangesPreference(), diff)) {
         connectionStatus = ConnectionStatus.INACTIVE;
       } else {
