@@ -6,8 +6,6 @@ description: job check connection config
 type: object
 additionalProperties: false
 required:
-  - actorType
-  - actorId
   - connectionConfiguration
   - dockerImage
 properties:
