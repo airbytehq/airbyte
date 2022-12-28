@@ -20,7 +20,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
-import io.airbyte.commons.protocol.objects.ConnectorSpecification;
+import io.airbyte.commons.protocol.objects.impl.ConnectorSpecificationAdapter;
 import io.airbyte.commons.temporal.JobMetadata;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalResponse;
@@ -247,8 +247,9 @@ class DefaultSynchronousSchedulerClientTest {
     void testCreateGetSpecJob() throws IOException {
       final JobGetSpecConfig jobSpecConfig = new JobGetSpecConfig().withDockerImage(DOCKER_IMAGE).withIsCustomConnector(false);
 
-      final ConnectorSpecification mockOutput = mock(ConnectorSpecification.class);
-      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withSpec(mockOutput);
+      // TODO this should be mocking io.airbyte.commons.protocol.objects.ConnectorSpecification
+      final io.airbyte.protocol.models.ConnectorSpecification mockOutput = mock(io.airbyte.protocol.models.ConnectorSpecification.class);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withSpec(new ConnectorSpecificationAdapter(mockOutput));
       when(temporalClient.submitGetSpec(any(UUID.class), eq(0), eq(jobSpecConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
       // TODO this should be returning the ConnectorSpecification interface
