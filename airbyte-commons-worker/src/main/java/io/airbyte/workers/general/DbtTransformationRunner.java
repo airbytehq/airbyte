@@ -5,9 +5,9 @@
 package io.airbyte.workers.general;
 
 import static io.airbyte.workers.process.Metadata.CUSTOM_STEP;
-import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
 import static io.airbyte.workers.process.Metadata.SYNC_JOB;
-import static io.airbyte.workers.process.Metadata.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -107,7 +107,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               files,
               "/bin/bash",
               resourceRequirements,
-              Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, CUSTOM_STEP),
+              Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));

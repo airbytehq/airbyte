@@ -5,10 +5,10 @@
 package io.airbyte.workers.normalization;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
-import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
 import static io.airbyte.workers.process.Metadata.NORMALIZE_STEP;
 import static io.airbyte.workers.process.Metadata.SYNC_JOB;
-import static io.airbyte.workers.process.Metadata.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -91,7 +91,7 @@ class DefaultNormalizationRunnerTest {
     when(processFactory.create(NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
         DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), false, false, files, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, NORMALIZE_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
         Map.of(),
         Map.of(),
         "run",

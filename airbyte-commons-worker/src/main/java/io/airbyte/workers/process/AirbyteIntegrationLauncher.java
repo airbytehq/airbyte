@@ -10,11 +10,11 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import static io.airbyte.workers.process.Metadata.CHECK_JOB;
 import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
-import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
 import static io.airbyte.workers.process.Metadata.READ_STEP;
 import static io.airbyte.workers.process.Metadata.SPEC_JOB;
 import static io.airbyte.workers.process.Metadata.SYNC_JOB;
-import static io.airbyte.workers.process.Metadata.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.base.Preconditions;
@@ -81,7 +81,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         Collections.emptyMap(),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SPEC_JOB),
+        Map.of(JOB_TYPE_KEY, SPEC_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "spec");
@@ -102,7 +102,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, CHECK_JOB),
+        Map.of(JOB_TYPE_KEY, CHECK_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "check",
@@ -124,7 +124,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         ImmutableMap.of(configFilename, configContents),
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, DISCOVER_JOB),
+        Map.of(JOB_TYPE_KEY, DISCOVER_JOB),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "discover",
@@ -170,7 +170,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, READ_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, READ_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         arguments.toArray(new String[arguments.size()]));
@@ -200,7 +200,7 @@ public class AirbyteIntegrationLauncher implements IntegrationLauncher {
         files,
         null,
         resourceRequirement,
-        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, WRITE_STEP),
+        Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, WRITE_STEP),
         getWorkerMetadata(),
         Collections.emptyMap(),
         "write",

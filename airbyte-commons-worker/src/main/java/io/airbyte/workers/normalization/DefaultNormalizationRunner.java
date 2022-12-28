@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.normalization;
 
-import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE_KEY;
 import static io.airbyte.workers.process.Metadata.NORMALIZE_STEP;
 import static io.airbyte.workers.process.Metadata.SYNC_JOB;
-import static io.airbyte.workers.process.Metadata.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -134,7 +134,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, NORMALIZE_STEP),
+          Map.of(JOB_TYPE_KEY, SYNC_JOB, SYNC_STEP_KEY, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);

@@ -141,6 +141,9 @@ public class KubeProcessFactory implements ProcessFactory {
     }
   }
 
+  /**
+   * Returns general labels to be applied to all Kubernetes pods. All general labels should be added here.
+   */
   public static Map<String, String> getLabels(final String jobId, final int attemptId, final Map<String, String> customLabels) {
     final var allLabels = new HashMap<>(customLabels);
 
