@@ -617,7 +617,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ActorCatalog"
+                $ref: "#/components/schemas/ActorCatalogWithUpdatedAt"
         "404":
           $ref: "#/components/responses/NotFoundResponse"
         "422":
@@ -3680,8 +3680,8 @@ components:
         logType:
           $ref: "#/components/schemas/LogType"
     # ACTOR CATALOG
-    ActorCatalog:
-      description: describes a source ActorCatalog
+    ActorCatalogWithUpdatedAt:
+      description: A source actor catalog with the timestamp it was mostly recently updated
       type: object
       properties:
         updatedAt:
