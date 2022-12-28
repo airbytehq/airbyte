@@ -6,8 +6,6 @@ description: information required for connection.
 type: object
 required:
   - connectionConfiguration
-  - actorType
-  - actorId
 additionalProperties: false
 properties:
   actorType:
