@@ -13,4 +13,5 @@ public enum AirbyteMessageType {
   TRACE,
   SPEC,
   CONTROL
+
 }

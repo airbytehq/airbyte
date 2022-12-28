@@ -23,7 +23,7 @@ public class AirbyteMessageAdapter implements AirbyteMessage {
 
   @Override
   public AirbyteMessageType getType() {
-    return toTypes.get(airbyteMessage.getType());
+    return fromProtocolObject(airbyteMessage.getType());
   }
 
   @Override
@@ -36,7 +36,11 @@ public class AirbyteMessageAdapter implements AirbyteMessage {
     return airbyteMessage.getTrace();
   }
 
-  private final static Map<io.airbyte.protocol.models.AirbyteMessage.Type, AirbyteMessageType> toTypes = Map.of(
+  public static AirbyteMessageType fromProtocolObject(final Type type) {
+    return fromProtocolObject.get(type);
+  }
+
+  private final static Map<Type, AirbyteMessageType> fromProtocolObject = Map.of(
       Type.RECORD, AirbyteMessageType.RECORD,
       Type.STATE, AirbyteMessageType.STATE,
       Type.LOG, AirbyteMessageType.RECORD,
