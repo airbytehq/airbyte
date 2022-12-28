@@ -236,6 +236,7 @@
             "title": "Logical Replication (CDC)",
             "description": "Logical replication uses the Postgres write-ahead log (WAL) to detect inserts, updates, and deletes. This needs to be configured on the source database itself. Only available on Postgres 10 and above. Read the <a href=\"https://docs.airbyte.com/integrations/sources/postgres\">docs</a>.",
             "required": ["method", "replication_slot", "publication"],
+            "additionalProperties": true,
             "properties": {
               "method": {
                 "type": "string",
