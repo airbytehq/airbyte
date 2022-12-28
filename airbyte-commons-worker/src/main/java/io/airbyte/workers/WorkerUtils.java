@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -111,9 +112,18 @@ public class WorkerUtils {
                                                               final Map<Type, List<AirbyteMessage>> messagesByType,
                                                               final String defaultErrorMessage)
       throws WorkerException {
+    return getJobFailureOutputOrThrow(
+        outputType,
+        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream().map(AirbyteMessage::getTrace),
+        defaultErrorMessage);
+  }
+
+  public static ConnectorJobOutput getJobFailureOutputOrThrow(final OutputType outputType,
+                                                              final Stream<AirbyteTraceMessage> traceMessages,
+                                                              final String defaultErrorMessage)
+      throws WorkerException {
     final Optional<AirbyteTraceMessage> traceMessage =
-        messagesByType.getOrDefault(Type.TRACE, new ArrayList<>()).stream()
-            .map(AirbyteMessage::getTrace)
+        traceMessages
             .filter(trace -> trace.getType() == AirbyteTraceMessage.Type.ERROR)
             .findFirst();
 

@@ -11,13 +11,14 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
 import datadog.trace.api.Trace;
 import io.airbyte.commons.io.IOs;
 import io.airbyte.commons.io.LineGobbler;
+import io.airbyte.commons.protocol.objects.AirbyteMessage;
+import io.airbyte.commons.protocol.objects.AirbyteMessageType;
+import io.airbyte.commons.protocol.objects.ConnectorSpecification;
+import io.airbyte.commons.protocol.objects.impl.AirbyteMessageAdapter;
 import io.airbyte.config.ConnectorJobOutput;
 import io.airbyte.config.ConnectorJobOutput.OutputType;
 import io.airbyte.config.JobGetSpecConfig;
 import io.airbyte.metrics.lib.ApmTraceUtils;
-import io.airbyte.protocol.models.AirbyteMessage;
-import io.airbyte.protocol.models.AirbyteMessage.Type;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.internal.AirbyteStreamFactory;
@@ -62,9 +63,11 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
-      final Map<Type, List<AirbyteMessage>> messagesByType;
+      final Map<AirbyteMessageType, List<AirbyteMessage>> messagesByType;
       try (final InputStream stdout = process.getInputStream()) {
         messagesByType = streamFactory.create(IOs.newBufferedReader(stdout))
+            // TODO AirbyteStreamFactory should be outputing io.commons.protocol.objects.AirbyteMessage directly
+            .map(AirbyteMessageAdapter::new)
             .collect(Collectors.groupingBy(AirbyteMessage::getType));
 
         // todo (cgardens) - let's pre-fetch the images outside of the worker so we don't need account for
@@ -75,7 +78,7 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       }
 
       final Optional<ConnectorSpecification> spec = messagesByType
-          .getOrDefault(Type.SPEC, new ArrayList<>()).stream()
+          .getOrDefault(AirbyteMessageType.SPEC, new ArrayList<>()).stream()
           .map(AirbyteMessage::getSpec)
           .findFirst();
 
@@ -89,7 +92,9 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
       } else {
         return WorkerUtils.getJobFailureOutputOrThrow(
             OutputType.SPEC,
-            messagesByType,
+            // TODO Could be worth adding a helper that takes a stream of messages and provides streams of
+            // messages per type
+            messagesByType.getOrDefault(AirbyteMessageType.TRACE, List.of()).stream().map(AirbyteMessage::getTrace),
             String.format("Spec job subprocess finished with exit code %s", exitCode));
       }
     } catch (final Exception e) {

@@ -160,7 +160,7 @@ public class DefaultSynchronousSchedulerClient implements SynchronousSchedulerCl
         jobReportingContext,
         null,
         () -> temporalClient.submitGetSpec(jobId, 0, jobSpecConfig),
-        ConnectorJobOutput::getSpec,
+        connectorJobOutput -> connectorJobOutput.getSpec().getRaw(),
         null);
   }
 

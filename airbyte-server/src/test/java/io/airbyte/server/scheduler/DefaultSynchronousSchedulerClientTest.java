@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import io.airbyte.commons.json.Jsons;
+import io.airbyte.commons.protocol.objects.ConnectorSpecification;
 import io.airbyte.commons.temporal.JobMetadata;
 import io.airbyte.commons.temporal.TemporalClient;
 import io.airbyte.commons.temporal.TemporalResponse;
@@ -37,7 +38,6 @@ import io.airbyte.persistence.job.errorreporter.JobErrorReporter;
 import io.airbyte.persistence.job.factory.OAuthConfigSupplier;
 import io.airbyte.persistence.job.tracker.JobTracker;
 import io.airbyte.persistence.job.tracker.JobTracker.JobState;
-import io.airbyte.protocol.models.ConnectorSpecification;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.UUID;
@@ -251,7 +251,8 @@ class DefaultSynchronousSchedulerClientTest {
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withSpec(mockOutput);
       when(temporalClient.submitGetSpec(any(UUID.class), eq(0), eq(jobSpecConfig)))
           .thenReturn(new TemporalResponse<>(jobOutput, createMetadata(true)));
-      final SynchronousResponse<ConnectorSpecification> response = schedulerClient.createGetSpecJob(DOCKER_IMAGE, false);
+      // TODO this should be returning the ConnectorSpecification interface
+      final SynchronousResponse<io.airbyte.protocol.models.ConnectorSpecification> response = schedulerClient.createGetSpecJob(DOCKER_IMAGE, false);
       assertEquals(mockOutput, response.getOutput());
     }
 

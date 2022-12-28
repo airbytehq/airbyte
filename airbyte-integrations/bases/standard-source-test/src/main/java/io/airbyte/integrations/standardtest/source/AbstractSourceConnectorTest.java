@@ -155,7 +155,9 @@ public abstract class AbstractSourceConnectorTest {
   protected ConnectorSpecification runSpec() throws WorkerException {
     final io.airbyte.protocol.models.ConnectorSpecification spec = new DefaultGetSpecWorker(
         new AirbyteIntegrationLauncher(JOB_ID, JOB_ATTEMPT, getImageName(), processFactory, workerConfigs.getResourceRequirements(), false))
-            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec();
+            // TODO using ConnectorSpecification interface from airbyte-commons-protocol, we would make us
+            // protocol version agnostic here.
+            .run(new JobGetSpecConfig().withDockerImage(getImageName()), jobRoot).getSpec().getRaw();
     return convertProtocolObject(spec, ConnectorSpecification.class);
   }
 
