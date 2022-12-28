@@ -20,6 +20,7 @@ import static org.mockito.Mockito.when;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.AirbyteCatalog;
 import io.airbyte.api.model.generated.AirbyteStream;
 import io.airbyte.api.model.generated.AirbyteStreamAndConfiguration;
@@ -124,6 +125,8 @@ class WebBackendConnectionsHandlerTest {
   private StateHandler stateHandler;
   private WebBackendConnectionsHandler wbHandler;
 
+  private SourceHandler sourceHandler;
+
   private SourceRead sourceRead;
   private ConnectionRead connectionRead;
   private ConnectionRead brokenConnectionRead;
@@ -155,7 +158,7 @@ class WebBackendConnectionsHandlerTest {
     connectionsHandler = mock(ConnectionsHandler.class);
     stateHandler = mock(StateHandler.class);
     operationsHandler = mock(OperationsHandler.class);
-    final SourceHandler sourceHandler = mock(SourceHandler.class);
+    sourceHandler = mock(SourceHandler.class);
     final DestinationHandler destinationHandler = mock(DestinationHandler.class);
     final JobHistoryHandler jobHistoryHandler = mock(JobHistoryHandler.class);
     configRepository = mock(ConfigRepository.class);
@@ -1090,8 +1093,9 @@ class WebBackendConnectionsHandlerTest {
         new ConnectionRead().connectionId(expected.getConnectionId()).breakingChange(true).sourceId(sourceId));
 
     final CatalogDiff catalogDiff = new CatalogDiff().transforms(List.of());
-    when(configRepository.getMostRecentActorCatalogForSource(sourceId)).thenReturn(Optional.of(new ActorCatalog().withCatalog(Jsons.deserialize(
-        "{\"streams\": [{\"name\": \"cat_names\", \"namespace\": \"public\", \"json_schema\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"number\", \"airbyte_type\": \"integer\"}}}}]}"))));
+
+    when(sourceHandler.getMostRecentSourceActorCatalogWithUpdatedAt(any())).thenReturn(new ActorCatalogWithUpdatedAt().catalog(Jsons.deserialize(
+        "{\"streams\": [{\"name\": \"cat_names\", \"namespace\": \"public\", \"json_schema\": {\"type\": \"object\", \"properties\": {\"id\": {\"type\": \"number\", \"airbyte_type\": \"integer\"}}}}]}")));
     when(connectionsHandler.getDiff(any(), any(), any())).thenReturn(catalogDiff, catalogDiff);
 
     when(configRepository.getConfiguredCatalogForConnection(expected.getConnectionId()))
