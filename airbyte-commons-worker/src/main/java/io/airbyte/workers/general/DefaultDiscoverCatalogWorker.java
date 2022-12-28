@@ -73,7 +73,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
       final int exitCode = process.exitValue();
       final String exitCodeMessage = String.format("Discover job subprocess finished with exit code %s", exitCode);
       LOGGER.debug(exitCodeMessage);
-      ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
+      final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
 
@@ -85,9 +85,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           .findFirst();
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
-      if (failureReason.isPresent()) {
-        jobOutput = jobOutput.withFailureReason(failureReason.get());
-      }
+      failureReason.ifPresent(jobOutput::setFailureReason);
 
       if (catalog.isPresent()) {
         final UUID catalogId =
@@ -97,7 +95,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
                 discoverSchemaInput.getSourceId() == null ? null : UUID.fromString(discoverSchemaInput.getSourceId()),
                 discoverSchemaInput.getConnectorVersion(),
                 discoverSchemaInput.getConfigHash());
-        jobOutput = jobOutput.withDiscoverCatalogId(catalogId);
+        jobOutput.setDiscoverCatalogId(catalogId);
       } else {
         if (failureReason.isEmpty()) {
           throw new WorkerException("Integration failed to output a catalog struct.");
