@@ -1,6 +1,8 @@
 {
   "type": "array",
   "items": {
+    "type": "object",
+    "required": ["name", "dimensions", "metrics"],
     "properties": {
       "name": {
         "type": "string"
