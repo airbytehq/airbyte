@@ -6,6 +6,7 @@ package io.airbyte.workers.temporal.scheduling.activities;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
+
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.config.BasicSchedule;
 import io.airbyte.config.Cron;

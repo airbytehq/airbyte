@@ -9,10 +9,10 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.CONNECTION_ID_KEY;
 
 import com.google.common.annotations.VisibleForTesting;
 import datadog.trace.api.Trace;
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
 import io.airbyte.api.client.model.generated.ConnectionRead;
+import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
 import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
@@ -74,8 +74,9 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                  final JobPersistence jobPersistence,
                                  @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                  @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
-      final ConnectionApi connectionApi) {
-    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier, connectionApi);
+                                 final ConnectionApi connectionApi) {
+    this(configRepository, jobPersistence, new WorkspaceHelper(configRepository, jobPersistence), syncJobMaxAttempts, currentSecondsSupplier,
+        connectionApi);
   }
 
   @VisibleForTesting
@@ -84,7 +85,7 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
                                     final WorkspaceHelper workspaceHelper,
                                     @Value("${airbyte.worker.sync.max-attempts}") final Integer syncJobMaxAttempts,
                                     @Named("currentSecondsSupplier") final Supplier<Long> currentSecondsSupplier,
-                                 final ConnectionApi connectionApi) {
+                                    final ConnectionApi connectionApi) {
     this.configRepository = configRepository;
     this.jobPersistence = jobPersistence;
     this.workspaceHelper = workspaceHelper;
