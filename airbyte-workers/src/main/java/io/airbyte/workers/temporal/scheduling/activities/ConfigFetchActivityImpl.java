@@ -21,11 +21,8 @@ import io.airbyte.api.client.model.generated.ConnectionScheduleType;
 import io.airbyte.api.client.model.generated.ConnectionStatus;
 import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.commons.temporal.exception.RetryableException;
-import io.airbyte.config.Cron;
 import io.airbyte.config.StandardSync;
-import io.airbyte.config.StandardSync.ScheduleType;
 import io.airbyte.config.StandardSync.Status;
-import io.airbyte.config.helpers.ScheduleHelpers;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.metrics.lib.ApmTraceUtils;
@@ -113,16 +110,11 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
   public ScheduleRetrieverOutput getTimeToWait(final ScheduleRetrieverInput input) {
     try {
       ApmTraceUtils.addTagsToTrace(Map.of(CONNECTION_ID_KEY, input.getConnectionId()));
-//      final StandardSync standardSync = configRepository.getStandardSync(input.getConnectionId());
       final ConnectionIdRequestBody connectionIdRequestBody = new ConnectionIdRequestBody().connectionId(input.getConnectionId());
       final ConnectionRead connectionRead = connectionApi.getConnection(connectionIdRequestBody);
-//      if (standardSync.getScheduleType() != null) {
-//        return this.getTimeToWaitFromScheduleType(standardSync, input.getConnectionId());
-//      }
-      if(connectionRead.getScheduleType() != null) {
+      if (connectionRead.getScheduleType() != null) {
         return this.getTimeToWaitFromScheduleType(connectionRead, input.getConnectionId());
       }
-//      return this.getTimeToWaitFromLegacy(standardSync, input.getConnectionId());
       return this.getTimeToWaitFromLegacy(connectionRead, input.getConnectionId());
     } catch (final IOException | ApiException e) {
       throw new RetryableException(e);
@@ -312,4 +304,5 @@ public class ConfigFetchActivityImpl implements ConfigFetchActivity {
         throw new RuntimeException("Unhandled TimeUnitEnum: " + timeUnitEnum);
     }
   }
+
 }
