@@ -44,7 +44,10 @@ export const UpgradePlanBar: React.FC<IProps> = ({ onUpgradePlan }) => {
   return (
     <Container>
       <Text>
-        <FormattedMessage id="upgrade.plan.countdown" values={{ count: remainingDaysForFreeTrial() }} />
+        <FormattedMessage
+          id={remainingDaysForFreeTrial() >= 0 ? "upgrade.plan.trialPeriod.countdown" : "upgrade.plan.trialPeriod.end"}
+          values={{ count: remainingDaysForFreeTrial() }}
+        />
       </Text>
       <Button size="lg" black onClick={() => onUpgradePlan?.()}>
         <FormattedMessage id="upgrade.plan.btn" />
