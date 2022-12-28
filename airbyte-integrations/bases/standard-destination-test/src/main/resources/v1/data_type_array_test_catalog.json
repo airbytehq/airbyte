@@ -6,11 +6,9 @@
         "properties": {
           "string_array": {
             "type": ["array"],
-            "items": [
-              {
+            "items": {
                 "$ref": "WellKnownTypes.json#/definitions/String"
               }
-            ]
           },
           "array_date": {
             "type": ["array"],
