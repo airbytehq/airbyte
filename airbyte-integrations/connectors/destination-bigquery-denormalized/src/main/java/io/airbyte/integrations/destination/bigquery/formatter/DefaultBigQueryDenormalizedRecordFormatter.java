@@ -293,7 +293,7 @@ public class DefaultBigQueryDenormalizedRecordFormatter extends DefaultBigQueryR
                 && StringUtils.equalsAnyIgnoreCase(airbyteType.asText(),
                 "big_integer", "integer")) {
               builder.setType(StandardSQLTypeName.INT64);
-            }  else {
+            } else {
               builder.setType(primaryType.getBigQueryType());
             }
           }
