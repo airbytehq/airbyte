@@ -25,37 +25,6 @@ public class KubeProcessFactory implements ProcessFactory {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(KubeProcessFactory.class);
 
-  /**
-   * LABELS
-   */
-  private static final String JOB_LABEL_KEY = "job_id";
-  private static final String ATTEMPT_LABEL_KEY = "attempt_id";
-  private static final String WORKER_POD_LABEL_KEY = "airbyte";
-  private static final String WORKER_POD_LABEL_VALUE = "worker-pod";
-
-  /**
-   * The following variables help, either via names or labels, add metadata to processes actually
-   * running operations. These are more readable forms of
-   * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
-   */
-  public static final String JOB_TYPE = "job_type";
-  public static final String SYNC_JOB = "sync";
-  public static final String SPEC_JOB = "spec";
-  public static final String CHECK_JOB = "check";
-  public static final String DISCOVER_JOB = "discover";
-
-  /**
-   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
-   * with naming/labels to help operations.
-   */
-  public static final String SYNC_STEP = "sync_step";
-  public static final String READ_STEP = "read";
-  public static final String WRITE_STEP = "write";
-  public static final String NORMALIZE_STEP = "normalize";
-  public static final String CUSTOM_STEP = "custom";
-
-  public static final String CONNECTION_ID_LABEL_KEY = "connection_id";
-
   private final WorkerConfigs workerConfigs;
   private final String namespace;
   private final KubernetesClient fabricClient;
@@ -176,9 +145,9 @@ public class KubeProcessFactory implements ProcessFactory {
     final var allLabels = new HashMap<>(customLabels);
 
     final var generalKubeLabels = Map.of(
-        JOB_LABEL_KEY, jobId,
-        ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
-        WORKER_POD_LABEL_KEY, WORKER_POD_LABEL_VALUE);
+        Metadata.JOB_LABEL_KEY, jobId,
+        Metadata.ATTEMPT_LABEL_KEY, String.valueOf(attemptId),
+        Metadata.WORKER_POD_LABEL_KEY, Metadata.WORKER_POD_LABEL_VALUE);
 
     allLabels.putAll(generalKubeLabels);
 

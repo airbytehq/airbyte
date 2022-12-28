@@ -5,10 +5,10 @@
 package io.airbyte.workers.normalization;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
-import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
-import static io.airbyte.workers.process.KubeProcessFactory.NORMALIZE_STEP;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.NORMALIZE_STEP;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -31,7 +31,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.WorkerConfigs;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

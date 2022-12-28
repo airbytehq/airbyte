@@ -4,10 +4,10 @@
 
 package io.airbyte.workers.general;
 
-import static io.airbyte.workers.process.KubeProcessFactory.CUSTOM_STEP;
-import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.CUSTOM_STEP;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
@@ -22,7 +22,6 @@ import io.airbyte.config.ResourceRequirements;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.normalization.NormalizationRunner;
-import io.airbyte.workers.process.AirbyteIntegrationLauncher;
 import io.airbyte.workers.process.ProcessFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;

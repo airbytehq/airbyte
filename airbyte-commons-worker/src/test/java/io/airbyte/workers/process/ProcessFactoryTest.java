@@ -4,7 +4,7 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

@@ -4,14 +4,14 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.KubeProcessFactory.CHECK_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.DISCOVER_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
-import static io.airbyte.workers.process.KubeProcessFactory.READ_STEP;
-import static io.airbyte.workers.process.KubeProcessFactory.SPEC_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
-import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
-import static io.airbyte.workers.process.KubeProcessFactory.WRITE_STEP;
+import static io.airbyte.workers.process.Metadata.CHECK_JOB;
+import static io.airbyte.workers.process.Metadata.DISCOVER_JOB;
+import static io.airbyte.workers.process.Metadata.JOB_TYPE;
+import static io.airbyte.workers.process.Metadata.READ_STEP;
+import static io.airbyte.workers.process.Metadata.SPEC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_JOB;
+import static io.airbyte.workers.process.Metadata.SYNC_STEP;
+import static io.airbyte.workers.process.Metadata.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
