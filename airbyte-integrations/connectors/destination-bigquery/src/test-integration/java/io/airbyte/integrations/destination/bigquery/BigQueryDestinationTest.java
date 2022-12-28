@@ -75,9 +75,9 @@ class BigQueryDestinationTest {
   protected static final Path CREDENTIALS_STANDARD_INSERT_PATH = Path.of("secrets/credentials-standard.json");
   protected static final Path CREDENTIALS_BAD_PROJECT_PATH = Path.of("secrets/credentials-badproject.json");
   protected static final Path CREDENTIALS_WITH_MISSED_CREATE_DATASET_ROLE_PATH =
-      Path.of("secrets/credentials-with-missed-dataset-creation-role.json");
+      Path.of("secrets/credentials-standard-no-dataset-creation.json");
   protected static final Path CREDENTIALS_NON_BILLABLE_PROJECT_PATH =
-      Path.of("secrets/credentials-non-billable-project.json");
+      Path.of("secrets/credentials-standard-non-billable-project.json");
   protected static final Path CREDENTIALS_WITH_GCS_STAGING_PATH =
       Path.of("secrets/credentials-gcs-staging.json");
 
@@ -156,13 +156,13 @@ class BigQueryDestinationTest {
       throw new IllegalStateException("""
                                       Json config not found. Must provide path to a big query credentials file,
                                        please add file with creds to
-                                      <...>/destination-bigquery/secrets/credentials-with-missed-dataset-creation-role.json.""");
+                                      <...>/destination-bigquery/secrets/credentials-standard-no-dataset-creation.json.""");
     }
     if (!Files.exists(CREDENTIALS_NON_BILLABLE_PROJECT_PATH)) {
       throw new IllegalStateException("""
                                       Json config not found. Must provide path to a big query credentials file,
                                        please add file with creds to
-                                      <...>/destination-bigquery/secrets/credentials-non-billable-project.json""");
+                                      <...>/destination-bigquery/secrets/credentials-standard-non-billable-project.json""");
     }
     if (!Files.exists(CREDENTIALS_WITH_GCS_STAGING_PATH)) {
       throw new IllegalStateException(
