@@ -3,6 +3,8 @@
 #
 
 import calendar
+import functools
+import logging
 import re
 import time
 from abc import ABC
@@ -31,6 +33,21 @@ DATETIME_FORMAT: str = "%Y-%m-%dT%H:%M:%SZ"
 LAST_END_TIME_KEY: str = "_last_end_time"
 END_OF_STREAM_KEY: str = "end_of_stream"
 
+logger = logging.getLogger("airbyte")
+
+
+def sleep_before_executing(sleep_time: float):
+    def wrapper(function):
+        @functools.wraps(function)
+        def inner(*args, **kwargs):
+            logger.info(f"Sleeping {sleep_time} seconds before next request")
+            time.sleep(int(sleep_time))
+            return function(*args, **kwargs)
+
+        return inner
+
+    return wrapper
+
 
 def to_int(s):
     "https://github.com/airbytehq/airbyte/issues/13673"
@@ -51,7 +68,7 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
     Used to async execute a set of requests.
     """
 
-    def send_future(self, request: requests.PreparedRequest, **kwargs) -> Future:
+    def send_future(self, request: requests.PreparedRequest, sleep_time: float, **kwargs) -> Future:
         """
         Use instead of default `Session.send()` method.
         `Session.send()` should not be overridden as it used by `requests-futures` lib.
@@ -62,8 +79,10 @@ class SourceZendeskSupportFuturesSession(FuturesSession):
         else:
             # avoid calling super to not break pickled method
             func = partial(requests.Session.send, self)
+            func = sleep_before_executing(sleep_time)(func)
 
         if isinstance(self.executor, ProcessPoolExecutor):
+            self.logger.warning("ProcessPoolExecutor is used to perform IO related tasks for unknown reason!")
             # verify function can be pickled
             try:
                 dumps(func)
@@ -93,10 +112,9 @@ class BaseSourceZendeskSupportStream(HttpStream, ABC):
             return retry_after
 
         # the header X-Rate-Limit returns the amount of requests per minute
-        # we try to wait twice as long
         rate_limit = float(response.headers.get("X-Rate-Limit", 0))
         if rate_limit and rate_limit > 0:
-            return (60.0 / rate_limit) * 2
+            return 60.0 / rate_limit
         return super().backoff_time(response)
 
     @staticmethod
@@ -211,7 +229,7 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         stream_state: Mapping[str, Any] = None,
     ):
         records_count = self.get_api_records_count(stream_slice=stream_slice, stream_state=stream_state)
-
+        self.logger.info(f"Records count is {records_count}")
         page_count = ceil(records_count / self.page_size)
         for page_number in range(1, page_count + 1):
             params = self.request_params(stream_state=stream_state, stream_slice=stream_slice)
@@ -228,15 +246,21 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
 
             request_kwargs = self.request_kwargs(stream_state=stream_state, stream_slice=stream_slice)
             self.future_requests.append(
-                {"future": self._send_request(request, request_kwargs), "request": request, "request_kwargs": request_kwargs, "retries": 0}
+                {
+                    "future": self._send_request(request, 0, request_kwargs),
+                    "request": request,
+                    "request_kwargs": request_kwargs,
+                    "retries": 0,
+                }
             )
+        self.logger.info(f"Generated {len(self.future_requests)} future requests")
 
-    def _send(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
-        response: Future = self._session.send_future(request, **request_kwargs)
+    def _send(self, request: requests.PreparedRequest, sleep_time: float, request_kwargs: Mapping[str, Any]) -> Future:
+        response: Future = self._session.send_future(request, sleep_time, **request_kwargs)
         return response
 
-    def _send_request(self, request: requests.PreparedRequest, request_kwargs: Mapping[str, Any]) -> Future:
-        return self._send(request, request_kwargs)
+    def _send_request(self, request: requests.PreparedRequest, sleep_time: float, request_kwargs: Mapping[str, Any]) -> Future:
+        return self._send(request, sleep_time, request_kwargs)
 
     def request_params(
         self, stream_state: Mapping[str, Any] = None, next_page_token: Mapping[str, Any] = None, **kwargs
@@ -270,12 +294,14 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
             if original_exception:
                 raise original_exception
             raise DefaultBackoffException(request=request, response=response)
+        sleep_time = 0
         if response is not None:
             backoff_time = self.backoff_time(response)
-            time.sleep(max(0, int(backoff_time - response.elapsed.total_seconds())))
+            sleep_time = max(0, int(backoff_time - response.elapsed.total_seconds()))
+        self.logger.info(f"Adding a request to be retried in {sleep_time} seconds")
         self.future_requests.append(
             {
-                "future": self._send_request(request, request_kwargs),
+                "future": self._send_request(request, sleep_time, request_kwargs),
                 "request": request,
                 "request_kwargs": request_kwargs,
                 "retries": retries + 1,
@@ -292,17 +318,21 @@ class SourceZendeskSupportStream(BaseSourceZendeskSupportStream):
         self.generate_future_requests(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
 
         while len(self.future_requests) > 0:
+            self.logger.info("Starting another while loop iteration")
             item = self.future_requests.popleft()
             request, retries, future, kwargs = item["request"], item["retries"], item["future"], item["request_kwargs"]
 
             try:
                 response = future.result()
             except TRANSIENT_EXCEPTIONS as exc:
+                self.logger.info("Will retry the request because of a transient exception")
                 self._retry(request=request, retries=retries, original_exception=exc, **kwargs)
                 continue
             if self.should_retry(response):
+                self.logger.info("Will retry the request for other reason")
                 self._retry(request=request, retries=retries, response=response, **kwargs)
                 continue
+            self.logger.info("Request successful, will parse the response now")
             yield from self.parse_response(response, stream_state=stream_state, stream_slice=stream_slice)
 
 
