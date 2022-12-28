@@ -160,7 +160,7 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
 
   /**
    * Retrieves user configured file buffer amount so as long it doesn't exceed the maximum number
-   * of file buffers
+   * of file buffers and sets the minimum number to the default
    *
    * NOTE: If Out Of Memory Exceptions (OOME) occur, this can be a likely cause as this hard limit
    * has not been thoroughly load tested across all instance sizes
@@ -170,9 +170,12 @@ public class RedshiftStagingS3Destination extends AbstractJdbcDestination implem
    */
   @VisibleForTesting
   public int getNumberOfFileBuffers(final JsonNode config) {
-    return config.has(FileBuffer.FILE_BUFFER_COUNT_KEY) ?
-        Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER)
-        : FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER;
+    int numOfFileBuffers = 1;
+    if (config.has(FileBuffer.FILE_BUFFER_COUNT_KEY)) {
+      numOfFileBuffers = Math.min(config.get(FileBuffer.FILE_BUFFER_COUNT_KEY).asInt(), FileBuffer.MAX_CONCURRENT_STREAM_IN_BUFFER);
+    }
+    // Only allows for values 15 <= numOfFileBuffers <= 50
+    return Math.max(numOfFileBuffers, FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   private boolean isPurgeStagingData(final JsonNode config) {

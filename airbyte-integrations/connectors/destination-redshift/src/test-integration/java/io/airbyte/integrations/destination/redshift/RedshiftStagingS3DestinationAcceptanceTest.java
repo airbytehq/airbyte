@@ -131,13 +131,12 @@ public class RedshiftStagingS3DestinationAcceptanceTest extends JdbcDestinationA
   }
 
   @Test
-  public void testGetUserSpecifiedFileBufferCount() {
+  public void testGetMinimumFileBufferCount() {
     final JsonNode defaultConfig = Jsons.clone(config);
     ((ObjectNode) defaultConfig).put(FileBuffer.FILE_BUFFER_COUNT_KEY, 10);
     final RedshiftStagingS3Destination destination = new RedshiftStagingS3Destination();
-    // confirms that if a user sets number of file buffers lower than the default that the configuration
-    // respects the configuration
-    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), 10);
+    // User cannot set number of file counts below the default file buffer count
+    assertEquals(destination.getNumberOfFileBuffers(defaultConfig), FileBuffer.DEFAULT_MAX_CONCURRENT_STREAM_IN_BUFFER);
   }
 
   @Override
