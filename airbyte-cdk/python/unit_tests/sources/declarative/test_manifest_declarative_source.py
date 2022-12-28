@@ -32,7 +32,7 @@ class MockManifestDeclarativeSource(ManifestDeclarativeSource):
     """
 
 
-class TestYamlDeclarativeSource:
+class TestManifestDeclarativeSource:
     @pytest.fixture
     def use_external_yaml_spec(self):
         # Our way of resolving the absolute path to root of the airbyte-cdk unit test directory where spec.yaml files should

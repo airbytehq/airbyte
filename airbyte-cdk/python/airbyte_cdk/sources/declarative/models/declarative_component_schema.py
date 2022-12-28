@@ -30,17 +30,20 @@ class ApiKeyAuthenticator(BaseModel):
     type: Literal["ApiKeyAuthenticator"]
     api_token: str
     header: Optional[str] = None
+    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BasicHttpAuthenticator(BaseModel):
     type: Literal["BasicHttpAuthenticator"]
     username: str
-    password: Optional[str] = None
+    password: Optional[str] = ""
+    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class BearerAuthenticator(BaseModel):
     type: Literal["BearerAuthenticator"]
     api_token: str
+    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class CheckStream(BaseModel):
@@ -138,6 +141,7 @@ class OAuthAuthenticator(BaseModel):
     refresh_request_body: Optional[Dict[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[str] = None
+    _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class DefaultSchemaLoader(BaseModel):
@@ -239,7 +243,7 @@ class PrimaryKey(BaseModel):
 
 class RecordFilter(BaseModel):
     type: Literal["RecordFilter"]
-    backoff_time_in_seconds: Optional[str] = ""
+    condition: Optional[str] = ""
     _options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 

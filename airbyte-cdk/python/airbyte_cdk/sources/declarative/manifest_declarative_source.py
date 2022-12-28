@@ -58,7 +58,7 @@ class ManifestDeclarativeSource(DeclarativeSource):
         self.logger = logging.getLogger(f"airbyte.{self.name}")
 
         # Controls whether we build components using the manual handwritten schema and Pydantic models or the legacy flow
-        self.construct_using_pydantic_models = construct_using_pydantic_models
+        self.construct_using_pydantic_models = True
 
         # For ease of use we don't require the type to be specified at the top level manifest, but it should be included during processing
         manifest = dict(source_config)
@@ -152,21 +152,6 @@ class ManifestDeclarativeSource(DeclarativeSource):
             logger.setLevel(logging.DEBUG)
 
     def _validate_source(self):
-        # Validates the connector manifest against the schema auto-generated from the low-code backend
-        full_config = {}
-        if "version" in self._source_config:
-            full_config["version"] = self._source_config["version"]
-        full_config["check"] = self._source_config["check"]
-        streams = [self._legacy_factory.create_component(stream_config, {}, False)() for stream_config in self._stream_configs()]
-        if len(streams) > 0:
-            full_config["streams"] = streams
-        declarative_source_schema = ConcreteDeclarativeSource.json_schema()
-
-        try:
-            validate(full_config, declarative_source_schema)
-        except ValidationError as e:
-            raise ValidationError("Validation against auto-generated schema failed") from e
-
         # Validates the connector manifest against the low-code component json schema
         manifest = self._source_config
         if "type" not in manifest:

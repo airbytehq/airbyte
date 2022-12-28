@@ -2,7 +2,7 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
+from dataclasses import dataclass
 from typing import Any, List, Mapping, Union
 
 import requests
@@ -15,8 +15,6 @@ class JsonDecoder(Decoder, JsonSchemaMixin):
     """
     Decoder strategy that returns the json-encoded content of a response, if any.
     """
-
-    options: InitVar[Mapping[str, Any]]
 
     def decode(self, response: requests.Response) -> Union[Mapping[str, Any], List]:
         try:

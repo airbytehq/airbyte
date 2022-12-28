@@ -74,6 +74,9 @@ definitions:
         type: string
       header:
         type: string
+      $options:
+        type: object
+        additionalProperties: true
   BasicHttpAuthenticator:
     description: Authenticator for requests authenticated with a username and optional password
     type: object
@@ -88,6 +91,10 @@ definitions:
         type: string
       password:
         type: string
+        default: ""
+      $options:
+        type: object
+        additionalProperties: true
   BearerAuthenticator:
     description: Authenticator for requests authenticated with a Bearer token
     type: object
@@ -100,6 +107,9 @@ definitions:
         enum: [BearerAuthenticator]
       api_token:
         type: string
+      $options:
+        type: object
+        additionalProperties: true
   CartesianProductStreamSlicer:
     description: Stream slicer that iterates over the cartesian product of input stream slicers
     type: object
@@ -399,6 +409,9 @@ definitions:
           type: string
       token_expiry_date:
         type: string
+      $options:
+        type: object
+        additionalProperties: true
   DeclarativeStream:
     description: A stream whose behavior is described by a set of declarative low code components
     type: object
@@ -847,7 +860,7 @@ definitions:
       type:
         type: string
         enum: [RecordFilter]
-      backoff_time_in_seconds:
+      condition:
         type: string
         default: ""
       $options:

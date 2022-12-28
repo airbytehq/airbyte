@@ -9,7 +9,6 @@ from typing import Any, Mapping
 OPTIONS_STR = "$options"
 
 
-# todo: For better granularity, we may want this to be keyed on the object + field
 DEFAULT_MODEL_TYPES: Mapping[str, str] = {
     # CompositeErrorHandler
     "CompositeErrorHandler.error_handlers": "DefaultErrorHandler",

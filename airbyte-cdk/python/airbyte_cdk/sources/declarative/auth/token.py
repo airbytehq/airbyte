@@ -101,9 +101,9 @@ class BasicHttpAuthenticator(AbstractHeaderAuthenticator, DeclarativeAuthenticat
     """
 
     username: Union[InterpolatedString, str]
+    password: Union[InterpolatedString, str]
     config: Config
     options: InitVar[Mapping[str, Any]]
-    password: Union[InterpolatedString, str] = ""
 
     def __post_init__(self, options):
         self._username = InterpolatedString.create(self.username, options=options)

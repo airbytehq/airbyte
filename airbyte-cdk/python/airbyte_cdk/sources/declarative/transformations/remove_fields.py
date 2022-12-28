@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping
+from dataclasses import dataclass
+from typing import List
 
 import dpath.exceptions
 import dpath.util
@@ -40,7 +40,6 @@ class RemoveFields(RecordTransformation, JsonSchemaMixin):
     """
 
     field_pointers: List[FieldPointer]
-    options: InitVar[Mapping[str, Any]]
 
     def transform(self, record: Record, **kwargs) -> Record:
         """

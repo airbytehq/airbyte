@@ -2,8 +2,8 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import InitVar, dataclass
-from typing import Any, List, Mapping, Union
+from dataclasses import dataclass
+from typing import List, Union
 
 import airbyte_cdk.sources.declarative.requesters.error_handlers.response_status as response_status
 import requests
@@ -39,9 +39,8 @@ class CompositeErrorHandler(ErrorHandler, JsonSchemaMixin):
     """
 
     error_handlers: List[ErrorHandler]
-    options: InitVar[Mapping[str, Any]]
 
-    def __post_init__(self, options: Mapping[str, Any]):
+    def __post_init__(self):
         if not self.error_handlers:
             raise ValueError("CompositeErrorHandler expects at least 1 underlying error handler")
 
