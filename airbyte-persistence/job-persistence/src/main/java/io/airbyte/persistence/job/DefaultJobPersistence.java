@@ -36,6 +36,7 @@ import io.airbyte.config.JobOutput;
 import io.airbyte.config.NormalizationSummary;
 import io.airbyte.config.StreamSyncStats;
 import io.airbyte.config.SyncStats;
+import io.airbyte.config.persistence.PersistenceHelpers;
 import io.airbyte.db.Database;
 import io.airbyte.db.ExceptionWrappingDatabase;
 import io.airbyte.db.instance.jobs.JobsDatabaseSchema;
@@ -447,23 +448,21 @@ public class DefaultJobPersistence implements JobPersistence {
     Optional.ofNullable(perStreamStats).orElse(Collections.emptyList()).forEach(
         streamStats -> {
           // We cannot entirely rely on JOOQ's generated SQL for upserts as it does not support null fields
-          // for conflict detection.
-          // We are forced to separately check for existence for the null namespace case.
+          // for conflict detection. We are forced to separately check for existence.
           final var stats = streamStats.getStats();
-          if (streamStats.getStreamNamespace() == null) {
-            final var isExisting =
-                ctx.fetchExists(STREAM_STATS, STREAM_STATS.ATTEMPT_ID.eq(attemptId).and(STREAM_STATS.STREAM_NAME.eq(streamStats.getStreamName())));
-            if (isExisting) {
-              ctx.update(STREAM_STATS)
-                  .set(STREAM_STATS.UPDATED_AT, now)
-                  .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
-                  .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
-                  .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
-                  .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
-                  .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
-                  .execute();
-              return;
-            }
+          final var isExisting =
+              ctx.fetchExists(STREAM_STATS, STREAM_STATS.ATTEMPT_ID.eq(attemptId).and(STREAM_STATS.STREAM_NAME.eq(streamStats.getStreamName()))
+                  .and(PersistenceHelpers.isNullOrEquals(STREAM_STATS.STREAM_NAMESPACE, streamStats.getStreamNamespace())));
+          if (isExisting) {
+            ctx.update(STREAM_STATS)
+                .set(STREAM_STATS.UPDATED_AT, now)
+                .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
+                .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
+                .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
+                .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
+                .where(STREAM_STATS.ATTEMPT_ID.eq(attemptId))
+                .execute();
+            return;
           }
 
           ctx.insertInto(STREAM_STATS)
@@ -477,9 +476,6 @@ public class DefaultJobPersistence implements JobPersistence {
               .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
               .set(STREAM_STATS.ESTIMATED_BYTES, stats.getEstimatedBytes())
               .set(STREAM_STATS.ESTIMATED_RECORDS, stats.getEstimatedRecords())
-              // this handles the usual upsert case
-              .onConflict(STREAM_STATS.ATTEMPT_ID, STREAM_STATS.STREAM_NAME, STREAM_STATS.STREAM_NAMESPACE)
-              .doUpdate()
               .set(STREAM_STATS.UPDATED_AT, now)
               .set(STREAM_STATS.BYTES_EMITTED, stats.getBytesEmitted())
               .set(STREAM_STATS.RECORDS_EMITTED, stats.getRecordsEmitted())
