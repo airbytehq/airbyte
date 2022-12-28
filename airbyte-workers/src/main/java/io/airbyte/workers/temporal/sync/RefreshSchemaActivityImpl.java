@@ -7,15 +7,14 @@ package io.airbyte.workers.temporal.sync;
 import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
 
 import datadog.trace.api.Trace;
-import io.airbyte.api.client.generated.ConnectionApi;
 import io.airbyte.api.client.generated.SourceApi;
+import io.airbyte.api.client.invoker.generated.ApiException;
+import io.airbyte.api.client.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.client.model.generated.SourceDiscoverSchemaRequestBody;
+import io.airbyte.api.client.model.generated.SourceIdRequestBody;
 import io.airbyte.commons.features.EnvVariableFeatureFlags;
-import io.airbyte.config.ActorCatalogFetchEvent;
 import jakarta.inject.Singleton;
-import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,15 +22,11 @@ import lombok.extern.slf4j.Slf4j;
 @Singleton
 public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
-  private final ConnectionApi connectionApi;
-
   private final SourceApi sourceApi;
   private final EnvVariableFeatureFlags envVariableFeatureFlags;
 
-  public RefreshSchemaActivityImpl(ConnectionApi connectionApi,
-                                   SourceApi sourceApi,
+  public RefreshSchemaActivityImpl(SourceApi sourceApi,
                                    EnvVariableFeatureFlags envVariableFeatureFlags) {
-    this.connectionApi = connectionApi;
     this.sourceApi = sourceApi;
     this.envVariableFeatureFlags = envVariableFeatureFlags;
   }
@@ -65,12 +60,13 @@ public class RefreshSchemaActivityImpl implements RefreshSchemaActivity {
 
   private boolean schemaRefreshRanRecently(UUID sourceCatalogId) {
     try {
-      Optional<ActorCatalogFetchEvent> mostRecentFetchEvent = Optional.empty();
-      if (mostRecentFetchEvent.isEmpty()) {
+      SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody().sourceId(sourceCatalogId);
+      ActorCatalogWithUpdatedAt mostRecentFetchEvent = sourceApi.getMostRecentSourceActorCatalog(sourceIdRequestBody);
+      if (mostRecentFetchEvent.getUpdatedAt() == null) {
         return false;
       }
-      return mostRecentFetchEvent.get().getCreatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
-    } catch (IOException e) {
+      return mostRecentFetchEvent.getUpdatedAt() > OffsetDateTime.now().minusHours(24l).toEpochSecond();
+    } catch (ApiException e) {
       // catching this exception because we don't want to block replication due to a failed schema refresh
       log.info("Encountered an error fetching most recent actor catalog fetch event: ", e);
       return true;

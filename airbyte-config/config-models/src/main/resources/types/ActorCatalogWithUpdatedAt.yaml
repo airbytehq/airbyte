@@ -1,6 +1,6 @@
 ---
 "$schema": http://json-schema.org/draft-07/schema#
-title: ActorCatalogWithCreatedAt
+title: ActorCatalogWithUpdatedAt
 description: Catalog of an actor with its most recent ActorCatalogFetchEvent created_at timestamp.
 type: object
 additionalProperties: false
@@ -8,7 +8,7 @@ required:
   - id
   - catalog
   - catalogHash
-  - createdAt
+  - updatedAt
 properties:
   id:
     type: string
@@ -18,6 +18,6 @@ properties:
     existingJavaType: com.fasterxml.jackson.databind.JsonNode
   catalogHash:
     type: string
-  createdAt:
+  updatedAt:
     type: integer
     format: int64

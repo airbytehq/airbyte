@@ -6,7 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.generated.ActorCatalog;
+import io.airbyte.api.model.generated.ActorCatalogWithUpdatedAt;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.SourceCloneConfiguration;
 import io.airbyte.api.model.generated.SourceCloneRequestBody;
@@ -133,13 +133,14 @@ public class SourceHandler {
     return buildSourceRead(sourceIdRequestBody.getSourceId());
   }
 
-  public Optional<ActorCatalog> getMostRecentSourceActorCatalog(final SourceIdRequestBody sourceIdRequestBody)
+  public ActorCatalogWithUpdatedAt getMostRecentSourceActorCatalogWithUpdatedAt(final SourceIdRequestBody sourceIdRequestBody)
       throws IOException {
-    Optional<io.airbyte.config.ActorCatalogWithCreatedAt> actorCatalog = configRepository.getMostRecentSourceActorCatalog(sourceIdRequestBody.getSourceId());
-    if(!actorCatalog.isPresent()) {
-      return Optional.empty();
+    Optional<io.airbyte.config.ActorCatalogWithUpdatedAt> actorCatalog =
+        configRepository.getMostRecentSourceActorCatalog(sourceIdRequestBody.getSourceId());
+    if (actorCatalog.isEmpty()) {
+      return new ActorCatalogWithUpdatedAt();
     } else {
-      return new ActorCatalog().catalog(actorCatalog.get().getCatalog()).updatedAt(actorCatalog.get().getCreatedAt());
+      return new ActorCatalogWithUpdatedAt().updatedAt(actorCatalog.get().getUpdatedAt()).catalog(actorCatalog.get().getCatalog());
     }
   }
 
