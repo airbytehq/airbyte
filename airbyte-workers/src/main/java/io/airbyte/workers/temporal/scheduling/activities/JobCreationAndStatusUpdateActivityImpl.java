@@ -180,11 +180,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         if(syncStats.getRecordsCommitted() != 0 || syncStats.getBytesEmitted() != 0){
             // 插入Daspire RPC调用
             String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
+          final UUID connectionId = UUID.fromString(job.getScope());
+          String connectionName = jobPersistence.getConnectionName(connectionId);
             Map<String, Object> param = Map.of("workspaceId", workspaceId,
                 "connectionId", job.getScope(),
                 "attemptId", attemptId,
                 "recordsCommitted", syncStats.getRecordsCommitted(),
-                "bytesCommitted", syncStats.getBytesEmitted());
+                "bytesCommitted", syncStats.getBytesEmitted(),
+                "connectionName", connectionName);
             HttpUtil.daspireConnectionCount(param);
         }
       } else {
