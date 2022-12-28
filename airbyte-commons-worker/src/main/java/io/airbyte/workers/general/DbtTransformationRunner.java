@@ -4,6 +4,11 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.workers.process.KubeProcessFactory.CUSTOM_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -93,7 +98,7 @@ public class DbtTransformationRunner implements AutoCloseable {
       Collections.addAll(dbtArguments, Commandline.translateCommandline(dbtConfig.getDbtArguments()));
       process =
           processFactory.create(
-              AirbyteIntegrationLauncher.CUSTOM_STEP,
+              CUSTOM_STEP,
               jobId,
               attempt,
               jobRoot,
@@ -103,8 +108,7 @@ public class DbtTransformationRunner implements AutoCloseable {
               files,
               "/bin/bash",
               resourceRequirements,
-              Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-                  AirbyteIntegrationLauncher.CUSTOM_STEP),
+              Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, CUSTOM_STEP),
               Collections.emptyMap(),
               Collections.emptyMap(),
               dbtArguments.toArray(new String[0]));

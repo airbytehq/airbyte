@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.PROCESS_EXIT_VALUE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+import static io.airbyte.workers.process.KubeProcessFactory.CONNECTION_ID_LABEL_KEY;
 
 import com.google.common.base.Stopwatch;
 import datadog.trace.api.Trace;
@@ -57,7 +58,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class LauncherWorker<INPUT, OUTPUT> implements Worker<INPUT, OUTPUT> {
 
-  private static final String CONNECTION_ID_LABEL_KEY = "connection_id";
   private static final Duration MAX_DELETION_TIMEOUT = Duration.ofSeconds(45);
 
   private final UUID connectionId;

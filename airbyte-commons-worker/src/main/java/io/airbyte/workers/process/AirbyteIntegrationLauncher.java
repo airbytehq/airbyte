@@ -8,6 +8,14 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
 import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+import static io.airbyte.workers.process.KubeProcessFactory.CHECK_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.DISCOVER_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
+import static io.airbyte.workers.process.KubeProcessFactory.READ_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.SPEC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.WRITE_STEP;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -27,28 +35,7 @@ import java.util.Map;
 
 public class AirbyteIntegrationLauncher implements IntegrationLauncher {
 
-  /**
-   * The following variables help, either via names or labels, add metadata to processes actually
-   * running operations. These are more readable forms of
-   * {@link io.airbyte.config.JobTypeResourceLimit.JobType}.
-   */
-  public static final String JOB_TYPE = "job_type";
-  public static final String SYNC_JOB = "sync";
-  public static final String SPEC_JOB = "spec";
-  public static final String CHECK_JOB = "check";
-  public static final String DISCOVER_JOB = "discover";
-
   private static final String CONFIG = "--config";
-
-  /**
-   * A sync job can actually be broken down into the following steps. Try to be as precise as possible
-   * with naming/labels to help operations.
-   */
-  public static final String SYNC_STEP = "sync_step";
-  public static final String READ_STEP = "read";
-  public static final String WRITE_STEP = "write";
-  public static final String NORMALIZE_STEP = "normalize";
-  public static final String CUSTOM_STEP = "custom";
 
   private final String jobId;
   private final int attempt;

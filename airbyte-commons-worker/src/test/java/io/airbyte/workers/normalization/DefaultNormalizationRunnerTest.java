@@ -5,6 +5,10 @@
 package io.airbyte.workers.normalization;
 
 import static io.airbyte.commons.logging.LoggingHelper.RESET;
+import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
+import static io.airbyte.workers.process.KubeProcessFactory.NORMALIZE_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -85,11 +89,10 @@ class DefaultNormalizationRunnerTest {
         WorkerConstants.DESTINATION_CONFIG_JSON_FILENAME, Jsons.serialize(config),
         WorkerConstants.DESTINATION_CATALOG_JSON_FILENAME, Jsons.serialize(catalog));
 
-    when(processFactory.create(AirbyteIntegrationLauncher.NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
+    when(processFactory.create(NORMALIZE_STEP, JOB_ID, JOB_ATTEMPT, jobRoot,
         DockerUtils.getTaggedImageName(NORMALIZATION_IMAGE, NORMALIZATION_TAG), false, false, files, null,
         workerConfigs.getResourceRequirements(),
-        Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-            AirbyteIntegrationLauncher.NORMALIZE_STEP),
+        Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, NORMALIZE_STEP),
         Map.of(),
         Map.of(),
         "run",

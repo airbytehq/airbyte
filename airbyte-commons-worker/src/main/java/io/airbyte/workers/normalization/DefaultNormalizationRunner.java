@@ -4,6 +4,11 @@
 
 package io.airbyte.workers.normalization;
 
+import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
+import static io.airbyte.workers.process.KubeProcessFactory.NORMALIZE_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
@@ -120,7 +125,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
     try {
       LOGGER.info("Running with normalization version: {}", normalizationImageName);
       process = processFactory.create(
-          AirbyteIntegrationLauncher.NORMALIZE_STEP,
+          NORMALIZE_STEP,
           jobId,
           attempt,
           jobRoot,
@@ -130,8 +135,7 @@ public class DefaultNormalizationRunner implements NormalizationRunner {
           false, files,
           null,
           resourceRequirements,
-          Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SYNC_JOB, AirbyteIntegrationLauncher.SYNC_STEP,
-              AirbyteIntegrationLauncher.NORMALIZE_STEP),
+          Map.of(JOB_TYPE, SYNC_JOB, SYNC_STEP, NORMALIZE_STEP),
           Collections.emptyMap(),
           Collections.emptyMap(),
           args);

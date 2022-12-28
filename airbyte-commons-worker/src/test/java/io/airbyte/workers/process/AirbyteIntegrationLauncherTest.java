@@ -4,14 +4,14 @@
 
 package io.airbyte.workers.process;
 
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.CHECK_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.DISCOVER_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.JOB_TYPE;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.READ_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SPEC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_JOB;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.SYNC_STEP;
-import static io.airbyte.workers.process.AirbyteIntegrationLauncher.WRITE_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.CHECK_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.DISCOVER_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.JOB_TYPE;
+import static io.airbyte.workers.process.KubeProcessFactory.READ_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.SPEC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_JOB;
+import static io.airbyte.workers.process.KubeProcessFactory.SYNC_STEP;
+import static io.airbyte.workers.process.KubeProcessFactory.WRITE_STEP;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
@@ -72,7 +72,7 @@ class AirbyteIntegrationLauncherTest {
     launcher.spec(JOB_ROOT);
 
     Mockito.verify(processFactory).create(SPEC_JOB, JOB_ID, JOB_ATTEMPT, JOB_ROOT, FAKE_IMAGE, false, false, Collections.emptyMap(), null,
-        workerConfigs.getResourceRequirements(), Map.of(AirbyteIntegrationLauncher.JOB_TYPE, AirbyteIntegrationLauncher.SPEC_JOB), JOB_METADATA,
+        workerConfigs.getResourceRequirements(), Map.of(JOB_TYPE, SPEC_JOB), JOB_METADATA,
         Map.of(),
         "spec");
   }
