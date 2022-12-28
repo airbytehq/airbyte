@@ -9,14 +9,14 @@ export interface PackageItem {
 
 export interface ProcessedPackageMapItem {
   itemName: string;
-  processional?: PackageItem;
+  professional?: PackageItem;
   enterprise?: PackageItem;
 }
 
-export interface ProcessedProcessionalPackageMap {
-  processionalFeatures: ProcessedPackageMapItem[];
-  processionalDataReplication: ProcessedPackageMapItem[];
-  processionalSupport: ProcessedPackageMapItem[];
+export interface ProcessedProfessionalPackageMap {
+  professionalFeatures: ProcessedPackageMapItem[];
+  professionalDataReplication: ProcessedPackageMapItem[];
+  professionalSupport: ProcessedPackageMapItem[];
 }
 
 export interface ProcessedEnterprisePackageMap {
@@ -32,7 +32,7 @@ export interface ProcessedPackageMap {
 }
 
 export interface PackageMap {
-  Processional: PackageItem[];
+  Professional: PackageItem[];
   Enterprise: PackageItem[];
 }
 
