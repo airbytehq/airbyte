@@ -48,10 +48,10 @@ public class BigQueryGcsDestinationAcceptanceTest extends AbstractBigQueryDestin
   @Override
   protected void tearDown(TestDestinationEnv testEnv) {
     tearDownBigQuery();
-    tarDownGcs();
+    tearDownGcs();
   }
 
-  protected void tarDownGcs() {
+  protected void tearDownGcs() {
     BigQueryDestinationTestUtils.tearDownGcs(s3Client, config, LOGGER);
   }
 }
