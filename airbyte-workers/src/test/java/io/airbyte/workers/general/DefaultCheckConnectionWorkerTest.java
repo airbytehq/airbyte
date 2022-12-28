@@ -11,6 +11,8 @@ import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -28,6 +30,7 @@ import io.airbyte.config.StandardCheckConnectionOutput.Status;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.workers.WorkerConstants;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.ConnectorConfigUpdater;
@@ -48,6 +51,7 @@ class DefaultCheckConnectionWorkerTest {
 
   private static final Path TEST_ROOT = Path.of("/tmp/airbyte_tests");
   private static final JsonNode CREDS = Jsons.jsonNode(ImmutableMap.builder().put("apiKey", "123").build());
+  private static final Config CONNECTOR_CONFIG = new Config().withAdditionalProperty("apiKey", "321");
 
   private static final ActorType ACTOR_TYPE = ActorType.SOURCE;
   private static final UUID ACTOR_ID = UUID.randomUUID();
@@ -60,6 +64,7 @@ class DefaultCheckConnectionWorkerTest {
   private AirbyteStreamFactory successStreamFactory;
   private AirbyteStreamFactory failureStreamFactory;
   private AirbyteStreamFactory traceMessageStreamFactory;
+  private AirbyteStreamFactory configMessageStreamFactory;
 
   @BeforeEach
   void setup() throws IOException, WorkerException {
@@ -87,6 +92,10 @@ class DefaultCheckConnectionWorkerTest {
 
     final AirbyteMessage traceMessage = AirbyteMessageUtils.createErrorMessage("some error from the connector", 123.0);
     traceMessageStreamFactory = noop -> Lists.newArrayList(traceMessage).stream();
+
+    final AirbyteMessage configMessage1 = AirbyteMessageUtils.createConfigControlMessage(new Config().withAdditionalProperty("apiKey", "123"), 1D);
+    final AirbyteMessage configMessage2 = AirbyteMessageUtils.createConfigControlMessage(CONNECTOR_CONFIG, 2D);
+    configMessageStreamFactory = noop -> Lists.newArrayList(configMessage1, configMessage2, successMessage).stream();
   }
 
   @Test
@@ -98,6 +107,62 @@ class DefaultCheckConnectionWorkerTest {
   void testSuccessfulConnection() throws WorkerException {
     final DefaultCheckConnectionWorker worker = new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, successStreamFactory);
     final ConnectorJobOutput output = worker.run(input, jobRoot);
+
+    verifyNoInteractions(connectorConfigUpdater);
+
+    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
+    assertNull(output.getFailureReason());
+
+    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
+    assertEquals(Status.SUCCEEDED, checkOutput.getStatus());
+    assertNull(checkOutput.getMessage());
+  }
+
+  @Test
+  void testCheckConnectionWithConfigUpdateSource() throws WorkerException {
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, configMessageStreamFactory);
+    final ConnectorJobOutput output = worker.run(input, jobRoot);
+
+    verify(connectorConfigUpdater).updateSource(ACTOR_ID, CONNECTOR_CONFIG);
+    verifyNoMoreInteractions(connectorConfigUpdater);
+
+    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
+    assertNull(output.getFailureReason());
+
+    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
+    assertEquals(Status.SUCCEEDED, checkOutput.getStatus());
+    assertNull(checkOutput.getMessage());
+  }
+
+  @Test
+  void testCheckConnectionWithConfigUpdateDestination() throws WorkerException {
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, configMessageStreamFactory);
+
+    final StandardCheckConnectionInput destinationInput = input.withActorType(ActorType.DESTINATION);
+    final ConnectorJobOutput output = worker.run(destinationInput, jobRoot);
+
+    verify(connectorConfigUpdater).updateDestination(ACTOR_ID, CONNECTOR_CONFIG);
+    verifyNoMoreInteractions(connectorConfigUpdater);
+
+    assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
+    assertNull(output.getFailureReason());
+
+    final StandardCheckConnectionOutput checkOutput = output.getCheckConnection();
+    assertEquals(Status.SUCCEEDED, checkOutput.getStatus());
+    assertNull(checkOutput.getMessage());
+  }
+
+  @Test
+  void testCheckConnectionWithConfigUpdateNoActor() throws WorkerException {
+    final DefaultCheckConnectionWorker worker =
+        new DefaultCheckConnectionWorker(integrationLauncher, connectorConfigUpdater, configMessageStreamFactory);
+
+    final StandardCheckConnectionInput noActorInput = input.withActorId(null);
+    final ConnectorJobOutput output = worker.run(noActorInput, jobRoot);
+
+    verifyNoInteractions(connectorConfigUpdater);
 
     assertEquals(output.getOutputType(), OutputType.CHECK_CONNECTION);
     assertNull(output.getFailureReason());

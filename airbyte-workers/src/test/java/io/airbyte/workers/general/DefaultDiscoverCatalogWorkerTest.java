@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,6 +35,7 @@ import io.airbyte.protocol.models.AirbyteCatalog;
 import io.airbyte.protocol.models.AirbyteMessage;
 import io.airbyte.protocol.models.AirbyteMessage.Type;
 import io.airbyte.protocol.models.CatalogHelpers;
+import io.airbyte.protocol.models.Config;
 import io.airbyte.protocol.models.Field;
 import io.airbyte.protocol.models.JsonSchemaType;
 import io.airbyte.workers.WorkerConstants;
@@ -114,6 +116,36 @@ class DefaultDiscoverCatalogWorkerTest {
     assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
     assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
     verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
+    verifyNoInteractions(connectorConfigUpdater);
+
+    Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
+      while (process.getErrorStream().available() != 0) {
+        Thread.sleep(50);
+      }
+    });
+
+    verify(process).exitValue();
+  }
+
+  @SuppressWarnings("BusyWait")
+  @Test
+  void testDiscoverSchemaWithConfigUpdate() throws Exception {
+    final Config connectorConfig1 = new Config().withAdditionalProperty("apiKey", "123");
+    final Config connectorConfig2 = new Config().withAdditionalProperty("apiKey", "321");
+    final AirbyteStreamFactory configMsgStreamFactory = noop -> Lists.newArrayList(
+        AirbyteMessageUtils.createConfigControlMessage(connectorConfig1, 1D),
+        AirbyteMessageUtils.createConfigControlMessage(connectorConfig2, 2D),
+        new AirbyteMessage().withType(Type.CATALOG).withCatalog(CATALOG)).stream();
+
+    final DefaultDiscoverCatalogWorker worker =
+        new DefaultDiscoverCatalogWorker(mConfigRepository, integrationLauncher, connectorConfigUpdater, configMsgStreamFactory);
+    final ConnectorJobOutput output = worker.run(INPUT, jobRoot);
+
+    assertNull(output.getFailureReason());
+    assertEquals(OutputType.DISCOVER_CATALOG_ID, output.getOutputType());
+    assertEquals(CATALOG_ID, output.getDiscoverCatalogId());
+    verify(mConfigRepository).writeActorCatalogFetchEvent(eq(CATALOG), eq(SOURCE_ID), any(), any());
+    verify(connectorConfigUpdater).updateSource(SOURCE_ID, connectorConfig2);
 
     Assertions.assertTimeout(Duration.ofSeconds(5), () -> {
       while (process.getErrorStream().available() != 0) {
