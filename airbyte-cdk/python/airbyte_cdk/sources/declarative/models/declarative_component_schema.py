@@ -18,6 +18,7 @@ class AddedFieldDefinition(BaseModel):
     type: Literal["AddedFieldDefinition"]
     path: List[str]
     value: str
+    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
 class AddFields(BaseModel):

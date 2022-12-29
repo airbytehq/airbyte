@@ -43,6 +43,9 @@ definitions:
           type: string
       value:
         type: string
+      $options:
+        type: object
+        additionalProperties: true
   AddFields:
     description: Transformation which adds field to an output record. The path of the added field can be nested.
     type: object

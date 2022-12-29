@@ -13,10 +13,14 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    CartesianProductStreamSlicer as CartesianProductStreamSlicerModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
@@ -38,6 +42,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListStreamSlicer as ListStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
@@ -48,6 +53,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
@@ -61,9 +67,16 @@ from airbyte_cdk.sources.declarative.requesters.request_options import Interpola
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice, SubstreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import (
+    CartesianProductStreamSlicer,
+    DatetimeStreamSlicer,
+    ListStreamSlicer,
+    SingleSlice,
+    SubstreamSlicer,
+)
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
+from airbyte_cdk.sources.declarative.transformations.add_fields import AddedFieldDefinition
 from airbyte_cdk.sources.declarative.types import Config
 from pydantic import BaseModel
 
@@ -80,8 +93,15 @@ def create_component_from_model(model: BaseModel, config: Config, **kwargs) -> A
     return component_constructor(model=model, config=config, **kwargs)  # todo tbd check this
 
 
+def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config) -> AddedFieldDefinition:
+    return AddedFieldDefinition(path=model.path, value=model.value)
+
+
 def create_add_fields(model: AddFieldsModel, config: Config) -> AddFields:
-    return AddFields(fields=model.fields, options=model.options)
+    added_field_definitions = [
+        create_component_from_model(model=added_field_definition_model, config=config) for added_field_definition_model in model.fields
+    ]
+    return AddFields(fields=added_field_definitions, options=model.options)
 
 
 def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config) -> ApiKeyAuthenticator:
@@ -98,6 +118,11 @@ def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config)
         config=config,
         options=model.options,
     )
+
+
+def create_cartesian_product_slicer(model: CartesianProductStreamSlicerModel, config: Config) -> CartesianProductStreamSlicer:
+    stream_slicers = [create_component_from_model(model=stream_slicer_model, config=config) for stream_slicer_model in model.stream_slicers]
+    return CartesianProductStreamSlicer(stream_slicers=stream_slicers)
 
 
 def create_check_stream(model: CheckStreamModel, config: Config):
@@ -242,7 +267,7 @@ def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config
     response_filters = []
     if model.response_filters:
         for response_filter_model in model.response_filters:
-            backoff_strategies.append(create_component_from_model(model=response_filter_model, config=config))
+            response_filters.append(create_component_from_model(model=response_filter_model, config=config))
     else:
         response_filters.append(
             HttpResponseFilter(
@@ -262,8 +287,8 @@ def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config
 
 def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwargs) -> DefaultPaginator:
     decoder = create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder()
-    page_size_option = create_request_option(model=model.page_size_option, config=config) if model.page_size_option else None
-    page_token_option = create_request_option(model=model.page_token_option, config=config) if model.page_token_option else None
+    page_size_option = create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
+    page_token_option = create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
     pagination_strategy = create_component_from_model(model=model.pagination_strategy, config=config)
 
     url_base = (
@@ -311,13 +336,21 @@ def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequ
 
 
 def create_http_response_filter(model: HttpResponseFilterModel, config: Config) -> HttpResponseFilter:
-    # continue from here
-
-    return HttpResponseFilter(action=model.action, config=config, options=model.options)
+    action = ResponseAction(model.action.value)
+    http_codes = set(model.http_codes)  # JSON schema notation has no set data type. The schema enforces an array of unique elements
+    return HttpResponseFilter(
+        action=action,
+        error_message=model.error_message or "",
+        error_message_contains=model.error_message_contains,
+        http_codes=http_codes,
+        predicate=model.predicate or "",
+        config=config,
+        options=model.options,
+    )
 
 
 def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config) -> InlineSchemaLoader:
-    return InlineSchemaLoader(schema=model.schema, options={})
+    return InlineSchemaLoader(schema=model.schema_, options={})
 
 
 def create_interpolated_request_options_provider(
@@ -339,6 +372,16 @@ def create_json_decoder(model: JsonDecoderModel, config: Config) -> JsonDecoder:
 
 def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config) -> JsonFileSchemaLoader:
     return JsonFileSchemaLoader(file_path=model.file_path, config=config, options=model.options)
+
+
+def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config) -> ListStreamSlicer:
+    return ListStreamSlicer(
+        cursor_field=model.cursor_field,
+        request_option=model.request_option,
+        slice_values=model.slice_values,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config) -> MinMaxDatetime:
@@ -413,6 +456,10 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
     )
 
 
+def create_single_slice(model: SingleSliceModel, config: Config) -> SingleSlice:
+    return SingleSlice()
+
+
 def create_spec(model: SpecModel, config: Config) -> Spec:
     return Spec(connection_specification=model.connection_specification, documentation_url=model.documentation_url, options={})
 
@@ -444,11 +491,13 @@ class ModelToComponentFactory:
 
 # todo this is better up top but need to make it a forward reference
 PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
+    AddedFieldDefinitionModel: create_added_field_definition,
     AddFieldsModel: create_add_fields,
     ApiKeyAuthenticatorModel: create_api_key_authenticator,
     BasicHttpAuthenticatorModel: create_basic_http_authenticator,
     BearerAuthenticatorModel: create_bearer_authenticator,
     CheckStreamModel: create_check_stream,
+    CartesianProductStreamSlicerModel: create_cartesian_product_slicer,
     CompositeErrorHandlerModel: create_composite_error_handler,
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
@@ -467,6 +516,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     InterpolatedRequestOptionsProviderModel: create_interpolated_request_options_provider,
     JsonDecoderModel: create_json_decoder,
     JsonFileSchemaLoaderModel: create_json_file_schema_loader,
+    ListStreamSlicerModel: create_list_stream_slicer,
     MinMaxDatetimeModel: create_min_max_datetime,
     NoPaginationModel: create_no_pagination,
     OffsetIncrementModel: create_offset_increment,
@@ -475,10 +525,11 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     RecordFilterModel: create_record_filter,
     RecordSelectorModel: create_record_selector,
     RemoveFieldsModel: create_remove_fields,
+    RequestOptionModel: create_request_option,
     SimpleRetrieverModel: create_simple_retriever,
+    SingleSliceModel: create_single_slice,
     SpecModel: create_spec,
     SubstreamSlicerModel: create_substream_slicer,
-    # todo add models for stream slicer types
 }
 
 
