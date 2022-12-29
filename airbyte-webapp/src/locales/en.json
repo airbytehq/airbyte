@@ -664,6 +664,11 @@
   "user.changeRoleModal.cancelBtn": "Cancel",
 
   "user.addUserModal.heading": "Add new user",
+  "user.addUserModal.email.empty.error": "required",
+  "user.addUserModal.email.valid.error": "invalid email",
+  "user.addUserModal.role.empty.error": "required",
+  "user.addUserModal.email.fieldLabel": "Email",
+  "user.addUserModal.role.fieldLabel": "Role",
   "user.addUserModal.addMoreBtn": "Add more",
   "user.addUserModal.cancelBtn": "Cancel",
   "user.addUserModal.sendInviteBtn": "Send Invite",

@@ -8,7 +8,7 @@ import {
 } from "../domain/payment";
 import { ProductItemsList, PackagesDetail } from "../domain/product";
 import { RolesList, UpdateRoleRequestBody } from "../domain/role";
-import { UsersList } from "../domain/user";
+import { UsersList, NewUser, NewUserRegisterBody } from "../domain/user";
 import { apiOverride } from "./apiOverride";
 
 type SecondParameter<T extends (...args: any) => any> = T extends (config: any, args: infer P) => any ? P : never;
@@ -110,12 +110,13 @@ export const listUser = (options?: SecondParameter<typeof apiOverride>) => {
   return apiOverride<UsersList>({ url: `/user/management/list`, method: "get" }, options);
 };
 
-export const addUsers = (options?: SecondParameter<typeof apiOverride>) => {
-  return apiOverride(
+export const addUsers = (users: NewUser[], options?: SecondParameter<typeof apiOverride>) => {
+  return apiOverride<UsersList>(
     {
       url: `/user/management/add`,
       method: "post",
       headers: { "Content-Type": "application/json" },
+      data: users,
     },
     options
   );
@@ -153,6 +154,21 @@ export const updateUserRole = (
       method: "post",
       headers: { "Content-Type": "application/json" },
       data: UpdateRoleBody,
+    },
+    options
+  );
+};
+
+export const registerNewUser = (
+  newUserRegisterBody: NewUserRegisterBody,
+  options?: SecondParameter<typeof apiOverride>
+) => {
+  return apiOverride(
+    {
+      url: `/user/management/register`,
+      method: "post",
+      headers: { "Content-Type": "application/json" },
+      data: newUserRegisterBody,
     },
     options
   );

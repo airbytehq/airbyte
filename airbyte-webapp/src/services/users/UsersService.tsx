@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "react-query";
 
 import { useUser } from "core/AuthContext";
 import { UpdateRoleRequestBody } from "core/domain/role";
-import { User, UserService, UsersList } from "core/domain/user";
+import { NewUser, NewUserRegisterBody, User, UserService, UsersList } from "core/domain/user";
 import { useSuspenseQuery } from "services/connector/useSuspenseQuery";
 import { useDefaultRequestMiddlewares } from "services/useDefaultRequestMiddlewares";
 
@@ -33,9 +33,12 @@ export const useAddUsers = () => {
   const service = useUserService();
   const queryClient = useQueryClient();
 
-  return useMutation(() => service.add(), {
-    onSuccess: (_data) => {
-      queryClient.setQueryData(userKeys.list(), (lst: UsersList | undefined) => ({ data: lst?.data } as UsersList));
+  return useMutation((users: NewUser[]) => service.add(users), {
+    onSuccess: (_data: any) => {
+      queryClient.setQueryData(userKeys.list(), (lst: UsersList | undefined) => {
+        const users = lst?.data.concat(_data?.data);
+        return { data: users } as UsersList;
+      });
     },
   });
 };
@@ -84,19 +87,26 @@ export const useUpdateRole = () => {
   });
 };
 
+export const useRegisterUser = () => {
+  const service = useUserService();
+  return useMutation((newUserRegisterBody: NewUserRegisterBody) => service.registerUser(newUserRegisterBody));
+};
+
 export const useUserAsyncAction = (): {
-  onAddUser: () => Promise<any>;
+  onAddUser: (users: NewUser[]) => Promise<any>;
   onDeleteUser: (id: string) => Promise<any>;
   onResendInvite: (id: string) => Promise<any>;
   onUpdateRole: (UpdateRoleBody: UpdateRoleRequestBody) => Promise<any>;
+  onRegisterUser: (newUserRegisterBody: NewUserRegisterBody) => Promise<any>;
 } => {
   const { mutateAsync: addUsers } = useAddUsers();
   const { mutateAsync: deleteUser } = useDeleteUser();
   const { mutateAsync: resendInvite } = useResendInvite();
   const { mutateAsync: updateRole } = useUpdateRole();
+  const { mutateAsync: registerUser } = useRegisterUser();
 
-  const onAddUser = async () => {
-    return await addUsers();
+  const onAddUser = async (users: NewUser[]) => {
+    return await addUsers(users);
   };
 
   const onDeleteUser = async (id: string) => {
@@ -111,10 +121,15 @@ export const useUserAsyncAction = (): {
     return await updateRole(UpdateRoleBody);
   };
 
+  const onRegisterUser = async (newUserRegisterBody: NewUserRegisterBody) => {
+    return await registerUser(newUserRegisterBody);
+  };
+
   return {
     onAddUser,
     onDeleteUser,
     onResendInvite,
     onUpdateRole,
+    onRegisterUser,
   };
 };

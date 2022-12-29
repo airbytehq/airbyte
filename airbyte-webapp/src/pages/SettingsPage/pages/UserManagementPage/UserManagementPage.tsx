@@ -11,9 +11,9 @@ import { ROLES } from "core/Constants/roles";
 import { useRoleOptions } from "services/roles/RolesService";
 import { useListUsers, useUserAsyncAction } from "services/users/UsersService";
 
-import AddUserModal from "./components/AddUserModal";
 import ChangeRoleModal from "./components/ChangeRoleModal";
 import DeleteUserModal from "./components/DeleteUserModal";
+import InviteUserModal from "./components/InviteUserModal";
 import UserTable from "./components/UserTable";
 
 interface IProps {
@@ -142,7 +142,7 @@ const UserManagementPage: React.FC<IProps> = ({ setMessageId }) => {
         onChangeRole={onChangeRole}
         onResendInvite={resendInvite}
       />
-      {addUserModal && <AddUserModal roles={roleOptions} onClose={toggleAddUserModal} />}
+      {addUserModal && <InviteUserModal roles={roleOptions} onClose={toggleAddUserModal} />}
       {changeRoleModal && (
         <ChangeRoleModal
           onClose={toggleChangeRoleModal}

@@ -6,6 +6,9 @@ import * as yup from "yup";
 import { LabeledInput, Link, LoadingButton } from "components";
 
 import { useConfig } from "config";
+import { useUser } from "core/AuthContext";
+import useRouter from "hooks/useRouter";
+import { useUserAsyncAction } from "services/users/UsersService";
 
 import { BottomBlock, FieldItem, Form, RowFieldItem } from "../../components/FormComponents";
 import styles from "./SignupForm.module.scss";
@@ -61,6 +64,7 @@ export const EmailField: React.FC<{ label?: React.ReactNode }> = ({ label }) => 
     <Field name="email">
       {({ field, meta }: FieldProps<string>) => (
         <LabeledInput
+          disabled
           {...field}
           label={label || <FormattedMessage id="user.signup.email" />}
           type="text"
@@ -145,17 +149,35 @@ export const SignupForm: React.FC = () => {
   }, []);
 
   const config = useConfig();
+  const { query } = useRouter();
+  const { onRegisterUser } = useUserAsyncAction();
+  const { setUser } = useUser();
   return (
     <Formik<FormValues>
       initialValues={{
         firstName: "",
         lastName: "",
-        email: "",
+        email: query?.email,
         password: "",
         confirmPassword: "",
       }}
       validationSchema={validationSchema}
-      onSubmit={(values) => console.log(values)}
+      onSubmit={(values) => {
+        const { firstName, lastName, password, confirmPassword } = values;
+        onRegisterUser({
+          firstName,
+          lastName,
+          invitedId: query?.invitedId,
+          password,
+          confirmPassword,
+        })
+          .then((response: any) => {
+            setUser?.(response?.data);
+          })
+          .catch((error: any) => {
+            console.log(error);
+          });
+      }}
       validateOnBlur
       validateOnChange
     >
