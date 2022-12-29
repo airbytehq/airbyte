@@ -66,7 +66,7 @@ def get_dimensions_type(d: str) -> str:
 
 
 authenticator_class_map: Dict = {
-    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": json.loads(credentials["credentials_json"])}),
+    "Service": (GoogleServiceKeyAuthenticator, lambda credentials: {"credentials": credentials["credentials_json"]}),
     "Client": (
         auth.Oauth2Authenticator,
         lambda credentials: {
@@ -364,6 +364,13 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         if existing_names:
             existing_names = ", ".join(existing_names)
             raise ConfigurationError(f"custom_reports: {existing_names} already exist as a default reports.")
+
+        if "credentials_json" in config["credentials"]:
+            try:
+                config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
+            except ValueError:
+                raise ConfigurationError("credentials.credentials_json is not valid JSON")
+
         return config
 
     def get_authenticator(self, config: Mapping[str, Any]):
