@@ -22,6 +22,7 @@ import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.base.JavaBaseConstants;
 import io.airbyte.integrations.destination.NamingConventionTransformer;
 import io.airbyte.integrations.standardtest.destination.DestinationAcceptanceTest;
+import io.airbyte.integrations.standardtest.destination.ProtocolVersion;
 import io.airbyte.integrations.standardtest.destination.argproviders.DataArgumentsProvider;
 import io.airbyte.integrations.standardtest.destination.comparator.TestDataComparator;
 import io.airbyte.protocol.models.v0.AirbyteCatalog;
@@ -83,6 +84,11 @@ public class SnowflakeInsertDestinationAcceptanceTest extends DestinationAccepta
   @Override
   protected boolean supportObjectDataTypeTest() {
     return true;
+  }
+
+  @Override
+  public ProtocolVersion getProtocolVersion() {
+    return ProtocolVersion.V1;
   }
 
   public JsonNode getStaticConfig() {
