@@ -34,8 +34,7 @@ class DestinationTimeplus(Destination):
         apikey=config["apikey"]
         if endpoint[-1]=='/':
             endpoint=endpoint[0:len(endpoint)-1]
-        env = Environment()
-        env.apikey(apikey)._conf().host=endpoint+"/api"
+        env = Environment().address(endpoint).apikey(apikey)
         stream_list = Stream(env=env).list()
         all_streams = {s.name for s in stream_list}
 
@@ -109,8 +108,7 @@ class DestinationTimeplus(Destination):
                 return AirbyteConnectionStatus(status=Status.FAILED, message="API Key must be 60 characters")
             if endpoint[-1]=='/':
                 endpoint=endpoint[0:len(endpoint)-1]
-            env = Environment()
-            env.apikey(apikey)._conf().host=endpoint+"/api"
+            env = Environment().address(endpoint).apikey(apikey)
             Stream(env=env).list()
             logger.info("Successfully connected to "+endpoint)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)

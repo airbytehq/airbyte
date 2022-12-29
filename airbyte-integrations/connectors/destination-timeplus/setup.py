@@ -8,7 +8,7 @@ from setuptools import find_packages, setup
 
 MAIN_REQUIREMENTS = [
     "airbyte-cdk",
-    "timeplus~=1.1.0",
+    "timeplus~=1.1.1",
 ]
 
 TEST_REQUIREMENTS = ["pytest~=6.2"]
