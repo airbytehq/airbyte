@@ -113,6 +113,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         grant_type: str = "refresh_token",
         client_id_config_path: Sequence[str] = ("credentials", "client_id"),
         client_secret_config_path: Sequence[str] = ("credentials", "client_secret"),
+        access_token_config_path: Sequence[str] = ("credentials", "access_token"),
         refresh_token_config_path: Sequence[str] = ("credentials", "refresh_token"),
     ):
         """
@@ -129,10 +130,12 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             grant_type (str, optional): OAuth grant type. Defaults to "refresh_token".
             client_id_config_path (Sequence[str]): Dpath to the client_id field in the connector configuration. Defaults to ("credentials", "client_id").
             client_secret_config_path (Sequence[str]): Dpath to the client_secret field in the connector configuration. Defaults to ("credentials", "client_secret").
+            access_token_config_path (Sequence[str]): Dpath to the access_token field in the connector configuration. Defaults to ("credentials", "access_token").
             refresh_token_config_path (Sequence[str]): Dpath to the refresh_token field in the connector configuration. Defaults to ("credentials", "refresh_token").
         """
         self._client_id_config_path = client_id_config_path
         self._client_secret_config_path = client_secret_config_path
+        self._access_token_config_path = access_token_config_path
         self._refresh_token_config_path = refresh_token_config_path
         self._refresh_token_name = refresh_token_name
         self._connector_config = observe_connector_config(connector_config)
@@ -181,13 +184,20 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     def get_refresh_token(self) -> str:
         return dpath.util.get(self._connector_config, self._refresh_token_config_path)
 
-    def set_refresh_token(self, new_refresh_token: str):
-        """Set the new refresh token value. The mutation of the connector_config object will emit an Airbyte control message.
+
+    def _update_config_with_access_and_refresh_tokens(self, new_access_token: str, new_refresh_token: str):
+        """Update the connector configuration with new access and refresh token values. 
+        The mutation of the connector_config object will emit Airbyte control messages.
 
         Args:
+            new_access_token (str): The new access token value.
             new_refresh_token (str): The new refresh token value.
         """
+        # TODO alafanechere this will sequentially emit two control messages. 
+        # We should rework the observer/config mutation logic if we want to have atomic config updates in a single control message.
+        dpath.util.set(self._connector_config, self._access_token_config_path, new_access_token)
         dpath.util.set(self._connector_config, self._refresh_token_config_path, new_refresh_token)
+
 
     def get_access_token(self) -> str:
         """Retrieve new access and refresh token if the access token has expired.
@@ -200,7 +210,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             new_access_token, access_token_expires_in, new_refresh_token = self.refresh_access_token()
             self.access_token = new_access_token
             self.set_token_expiry_date(t0, access_token_expires_in)
-            self.set_refresh_token(new_refresh_token)
+            self._update_config_with_access_and_refresh_tokens(new_access_token, new_refresh_token)
         return self.access_token
 
     def refresh_access_token(self) -> Tuple[str, int, str]:

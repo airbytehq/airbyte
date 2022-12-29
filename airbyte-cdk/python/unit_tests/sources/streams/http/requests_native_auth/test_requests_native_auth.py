@@ -218,9 +218,11 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         authenticator.token_has_expired = mocker.Mock(return_value=True)
         access_token = authenticator.get_access_token()
         captured = capsys.readouterr()
-        airbyte_message = json.loads(captured.out)
+        airbyte_message = json.loads(captured.out.split("\n")[-2])
         expected_new_config = connector_config.copy()
+        expected_new_config["credentials"]["access_token"] = "new_access_token"
         expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
+
         assert airbyte_message["control"]["connectorConfig"]["config"] == expected_new_config
         assert authenticator.access_token == access_token == "new_access_token"
         assert authenticator.get_refresh_token() == "new_refresh_token"
