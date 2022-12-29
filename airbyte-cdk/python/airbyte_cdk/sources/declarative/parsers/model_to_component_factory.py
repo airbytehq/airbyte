@@ -7,7 +7,7 @@ from __future__ import annotations
 import importlib
 from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
 
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -16,6 +16,7 @@ from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFil
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import BearerAuthenticator as BearerAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
@@ -88,6 +89,14 @@ def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config
 
 def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config) -> BasicHttpAuthenticator:
     return BasicHttpAuthenticator(password=model.password, username=model.username, config=config, options=model.options)
+
+
+def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config) -> BearerAuthenticator:
+    return BearerAuthenticator(
+        api_token=model.api_token,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_check_stream(model: CheckStreamModel, config: Config):
@@ -422,6 +431,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     AddFieldsModel: create_add_fields,
     ApiKeyAuthenticatorModel: create_api_key_authenticator,
     BasicHttpAuthenticatorModel: create_basic_http_authenticator,
+    BearerAuthenticatorModel: create_bearer_authenticator,
     CheckStreamModel: create_check_stream,
     CompositeErrorHandlerModel: create_composite_error_handler,
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
