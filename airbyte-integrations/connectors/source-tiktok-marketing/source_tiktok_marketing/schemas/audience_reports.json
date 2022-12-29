@@ -169,6 +169,9 @@
         },
         "placement": {
           "type": ["null", "string"]
+        },
+        "province_id": {
+          "type": ["null", "string"]
         }
       }
     }
