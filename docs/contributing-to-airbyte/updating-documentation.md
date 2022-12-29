@@ -96,13 +96,23 @@ To add a redirect, open the [`docusaurus.config.js`](https://github.com/airbyteh
 Copy this section, replace the values, and [test the changes locally](#editing-on-your-local-machine) by going to the path you created a redirect for and verify that the address changes to the new one.
 
 :::note 
-Your path **needs* a leading slash `/` to work
+Your path **needs** a leading slash `/` to work
 :::
 
 ### Deploying and reverting the documentation site
 
 :::note
 Only the Airbyte team and maintainers have permissions to deploy the documentation site.
+:::
+
+#### Automated documentation site deployment
+
+When `docs/` folder gets changed in `master` branch of the repository, [`Deploy docs.airbyte.com` Github workflow](https://github.com/airbytehq/airbyte/actions/workflows/deploy-docs-site.yml) steps in, builds and deploys the documentation site.  This process is automatic, takes five to ten minutes, and needs no human intervention.
+
+#### Manual documentation site deployment
+
+:::note
+Manual deployment is reserved for emergency cases.  Please, bear in mind that automatic deployment is triggered by changes to `docs/` folder, so it needs to be disabled to avoid interference with manual deployment.
 :::
 
 You'll need a GitHub SSH key to deploy the documentation site using the [deployment tool](https://github.com/airbytehq/airbyte/blob/master/tools/bin/deploy_docusaurus). 

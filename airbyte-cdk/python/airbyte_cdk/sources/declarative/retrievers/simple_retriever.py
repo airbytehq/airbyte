@@ -95,7 +95,7 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
 
         Unexpected but transient exceptions (connection timeout, DNS resolution failed, etc..) are retried by default.
         """
-        return self.requester.should_retry(response).action == ResponseAction.RETRY
+        return self.requester.interpret_response_status(response).action == ResponseAction.RETRY
 
     def backoff_time(self, response: requests.Response) -> Optional[float]:
         """
@@ -107,11 +107,20 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
          :return how long to backoff in seconds. The return value may be a floating point number for subsecond precision. Returning None defers backoff
          to the default backoff behavior (e.g using an exponential algorithm).
         """
-        should_retry = self.requester.should_retry(response)
+        should_retry = self.requester.interpret_response_status(response)
         if should_retry.action != ResponseAction.RETRY:
             raise ValueError(f"backoff_time can only be applied on retriable response action. Got {should_retry.action}")
         assert should_retry.action == ResponseAction.RETRY
         return should_retry.retry_in
+
+    def error_message(self, response: requests.Response) -> str:
+        """
+        Constructs an error message which can incorporate the HTTP response received from the partner API.
+
+        :param response: The incoming HTTP response from the partner API
+        :return The error message string to be emitted
+        """
+        return self.requester.interpret_response_status(response).error_message
 
     def _get_request_options(
         self,
@@ -299,9 +308,10 @@ class SimpleRetriever(Retriever, HttpStream, JsonSchemaMixin):
         # if fail -> raise exception
         # if ignore -> ignore response and return no records
         # else -> delegate to record selector
-        response_status = self.requester.should_retry(response)
+        response_status = self.requester.interpret_response_status(response)
         if response_status.action == ResponseAction.FAIL:
-            raise ReadException(f"Request {response.request} failed with response {response}")
+            error_message = response_status.error_message or f"Request {response.request} failed with response {response}"
+            raise ReadException(error_message)
         elif response_status.action == ResponseAction.IGNORE:
             self.logger.info(f"Ignoring response for failed request with error message {HttpStream.parse_response_error_message(response)}")
             return []

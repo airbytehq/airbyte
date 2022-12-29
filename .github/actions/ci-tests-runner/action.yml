@@ -67,8 +67,8 @@ runs:
         IPS=($(hostname -I))
         LOCAL_IP_PORT="${IPS[0]}:${PORT}"
         gcloud compute start-iap-tunnel sonarqube-1-vm 80 --local-host-port=${LOCAL_IP_PORT} --zone=europe-central2-a --project dataline-integration-testing &
-        echo ::set-output name=pid::$!
-        echo "::set-output name=sonar-host::http://${LOCAL_IP_PORT}/"
+        echo pid=$! >> $GITHUB_OUTPUT
+        echo "sonar-host=http://${LOCAL_IP_PORT}/" >> $GITHUB_OUTPUT
         echo "::echo::on"
 
     - name: Python Tests
@@ -124,18 +124,18 @@ runs:
         fi
 
         # join the array to string format
-        echo ::set-output name=external_reports::$(IFS=, ; echo "${REPORT_FILES[*]}")
-        echo ::set-output name=options::$(IFS=' ' ; echo "${OPTIONS[*]}")
+        echo external_reports=$(IFS=, ; echo "${REPORT_FILES[*]}") >> $GITHUB_OUTPUT
+        echo options=$(IFS=' ' ; echo "${OPTIONS[*]}") >> $GITHUB_OUTPUT
 
     - name: Create SonarQube Project
       shell: bash
       id: create-sq-project
       run: |
         ci_sonar_qube --pr ${{ inputs.pull-request-id }} --create --module ${{ inputs.module-name }} --host ${{ steps.gcloud-tunnel.outputs.sonar-host }} --token ${{ inputs.sonar-token }}
-        echo "::set-output name=sq_project_name::$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})"
+        echo "sq_project_name=$(ci_sonar_qube --pr ${{ inputs.pull-request-id }} --print_key --module ${{ inputs.module-name }})" >> $GITHUB_OUTPUT
         ROOT_DIR=$(git rev-parse --show-toplevel)
         MODULE_DIR=$(python -c "print('${{ inputs.module-folder }}'.replace('${ROOT_DIR}', '.'))")
-        echo "::set-output name=module_dir::${MODULE_DIR}"
+        echo "module_dir::${MODULE_DIR}" >> $GITHUB_OUTPUT
 
     - name: SonarQube Scan
 
@@ -168,7 +168,7 @@ runs:
         body="${body//'%'/'%25'}"
         body="${body//$'\n'/'%0A'}"
         body="${body//$'\r'/'%0D'}"
-        echo "::set-output name=sq-report::$body"
+        echo "sq-report=$body" >> $GITHUB_OUTPUT
 
     - name: Add Comment
       if: ${{ github.event_name == 'pull_request' }}

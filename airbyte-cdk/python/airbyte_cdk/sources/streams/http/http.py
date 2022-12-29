@@ -243,6 +243,15 @@ class HttpStream(Stream, ABC):
         """
         return None
 
+    def error_message(self, response: requests.Response) -> str:
+        """
+        Override this method to specify a custom error message which can incorporate the HTTP response received
+
+        :param response: The incoming HTTP response from the partner API
+        :return:
+        """
+        return ""
+
     def _create_prepared_request(
         self,
         path: str,
@@ -296,10 +305,13 @@ class HttpStream(Stream, ABC):
             )
         if self.should_retry(response):
             custom_backoff_time = self.backoff_time(response)
+            error_message = self.error_message(response)
             if custom_backoff_time:
-                raise UserDefinedBackoffException(backoff=custom_backoff_time, request=request, response=response)
+                raise UserDefinedBackoffException(
+                    backoff=custom_backoff_time, request=request, response=response, error_message=error_message
+                )
             else:
-                raise DefaultBackoffException(request=request, response=response)
+                raise DefaultBackoffException(request=request, response=response, error_message=error_message)
         elif self.raise_on_http_errors:
             # Raise any HTTP exceptions that happened in case there were unexpected ones
             try:

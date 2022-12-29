@@ -1,4 +1,4 @@
-import { ConnectorIcon } from "components/ConnectorIcon";
+import { ConnectorIcon } from "components/common/ConnectorIcon";
 
 import { Connector, ConnectorDefinition } from "core/domain/connector";
 import { ReleaseStage } from "core/request/AirbyteClient";

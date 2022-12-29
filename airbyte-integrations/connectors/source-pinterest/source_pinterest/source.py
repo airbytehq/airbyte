@@ -128,8 +128,8 @@ class BoardSectionPins(PinterestSubStream, PinterestStream):
 
 class IncrementalPinterestStream(PinterestStream, ABC):
     def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
-        latest_state = latest_record.get(self.cursor_field, self.start_date)
-        current_state = current_stream_state.get(self.cursor_field, self.start_date)
+        latest_state = latest_record.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
+        current_state = current_stream_state.get(self.cursor_field, self.start_date.format("YYYY-MM-DD"))
 
         if isinstance(latest_state, int) and isinstance(current_state, str):
             current_state = datetime.strptime(current_state, "%Y-%m-%d").timestamp()
@@ -152,7 +152,7 @@ class IncrementalPinterestStream(PinterestStream, ABC):
             ...]
         """
 
-        start_date = pendulum.parse(self.start_date)
+        start_date = self.start_date
         end_date = pendulum.now()
 
         # determine stream_state, if no stream_state we use start_date
@@ -293,6 +293,20 @@ class AdAnalytics(PinterestAnalyticsStream):
 
 
 class SourcePinterest(AbstractSource):
+    def _validate_and_transform(self, config: Mapping[str, Any]):
+        today = pendulum.today()
+        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
+        latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
+
+        start_date = config["start_date"]
+        if not start_date:
+            config["start_date"] = latest_date_allowed_by_api
+        else:
+            config["start_date"] = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
+            if (today - config["start_date"]).days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
+                config["start_date"] = latest_date_allowed_by_api
+        return config
+
     @staticmethod
     def get_authenticator(config):
         config = config.get("credentials") or config
@@ -310,6 +324,7 @@ class SourcePinterest(AbstractSource):
         )
 
     def check_connection(self, logger, config) -> Tuple[bool, any]:
+        config = self._validate_and_transform(config)
         authenticator = self.get_authenticator(config)
         url = f"{PinterestStream.url_base}user_account"
         auth_headers = {"Accept": "application/json", **authenticator.get_auth_header()}
@@ -321,19 +336,7 @@ class SourcePinterest(AbstractSource):
             return False, e
 
     def streams(self, config: Mapping[str, Any]) -> List[Stream]:
-        today = pendulum.today()
-        AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP = 914
-        latest_date_allowed_by_api = today.subtract(days=AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP)
-
-        start_date = config.get("start_date")
-        if not start_date:
-            config["start_date"] = latest_date_allowed_by_api
-        else:
-            start_date_formatted = pendulum.from_format(config["start_date"], "YYYY-MM-DD")
-            delta_today_start_date = today - start_date_formatted
-            if delta_today_start_date.days > AMOUNT_OF_DAYS_ALLOWED_FOR_LOOKUP:
-                config["start_date"] = latest_date_allowed_by_api
-
+        config = self._validate_and_transform(config)
         config["authenticator"] = self.get_authenticator(config)
         return [
             AdAccountAnalytics(AdAccounts(config), config=config),

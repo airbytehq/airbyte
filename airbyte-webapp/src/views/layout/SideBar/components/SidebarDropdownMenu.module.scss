@@ -19,7 +19,7 @@
   border-radius: variables.$border-radius-md;
   color: colors.$grey-30;
   text-decoration: none;
-  transition: variables.$transition-out;
+  transition: all variables.$transition-out;
 
   .text {
     margin-top: 7px;

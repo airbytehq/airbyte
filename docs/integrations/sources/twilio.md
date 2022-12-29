@@ -80,6 +80,7 @@ For more information, see [the Twilio docs for rate limitations](https://support
 
 | Version | Date       | Pull Request                                             | Subject                                                                                                 |
 |:--------|:-----------|:---------------------------------------------------------|:--------------------------------------------------------------------------------------------------------|
+| 0.1.13  | 2022-10-25 | [18423](https://github.com/airbytehq/airbyte/pull/18423) | Implement datetime slicing for streams supporting incremental syncs                                     |
 | 0.1.11  | 2022-09-30 | [17478](https://github.com/airbytehq/airbyte/pull/17478) | Add lookback_window parameters                                                                          |
 | 0.1.10  | 2022-09-29 | [17410](https://github.com/airbytehq/airbyte/pull/17410) | Migrate to per-stream states                                                                            |
 | 0.1.9   | 2022-09-26 | [17134](https://github.com/airbytehq/airbyte/pull/17134) | Add test data for Message Media and Conferences                                                         |

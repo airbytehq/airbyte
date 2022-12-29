@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 
 import { SyncSchemaField, SyncSchemaFieldObject } from "core/domain/catalog";
 import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
@@ -7,13 +6,8 @@ import { AirbyteStreamConfiguration } from "core/request/AirbyteClient";
 import { FieldHeader } from "./FieldHeader";
 import { FieldRow } from "./FieldRow";
 import { pathDisplayName } from "./PathPopout";
+import styles from "./StreamFieldTable.module.scss";
 import { TreeRowWrapper } from "./TreeRowWrapper";
-
-const RowsContainer = styled.div`
-  background: ${({ theme }) => theme.whiteColor};
-  border-radius: 8px;
-  margin: 0 10px 5px 10px;
-`;
 
 interface StreamFieldTableProps {
   syncSchemaFields: SyncSchemaField[];
@@ -30,7 +24,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
       <TreeRowWrapper noBorder>
         <FieldHeader />
       </TreeRowWrapper>
-      <RowsContainer>
+      <div className={styles.rowsContainer}>
         {props.syncSchemaFields.map((field) => (
           <TreeRowWrapper depth={1} key={pathDisplayName(field.path)}>
             <FieldRow
@@ -43,7 +37,7 @@ export const StreamFieldTable: React.FC<StreamFieldTableProps> = (props) => {
             />
           </TreeRowWrapper>
         ))}
-      </RowsContainer>
+      </div>
     </>
   );
 };

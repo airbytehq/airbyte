@@ -5,10 +5,15 @@
 package io.airbyte.metrics.reporter;
 
 import static io.airbyte.db.instance.configs.jooq.generated.Tables.CONNECTION;
+import static io.airbyte.db.instance.jobs.jooq.generated.Tables.ATTEMPTS;
 import static io.airbyte.db.instance.jobs.jooq.generated.Tables.JOBS;
+import static org.jooq.impl.DSL.asterisk;
+import static org.jooq.impl.DSL.count;
 import static org.jooq.impl.SQLDataType.VARCHAR;
 
+import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.configs.jooq.generated.enums.StatusType;
+import io.airbyte.db.instance.jobs.jooq.generated.enums.AttemptStatus;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import jakarta.inject.Singleton;
 import java.util.HashMap;
@@ -25,22 +30,32 @@ class MetricRepository {
     this.ctx = ctx;
   }
 
-  int numberOfPendingJobs() {
-    return ctx.selectCount()
-        .from(JOBS)
-        .where(JOBS.STATUS.eq(JobStatus.pending))
-        .fetchOne(0, int.class);
-  }
-
-  int numberOfRunningJobs() {
-    return ctx.selectCount()
+  Map<String, Integer> numberOfPendingJobsByGeography() {
+    var result = ctx.select(CONNECTION.GEOGRAPHY.cast(String.class), count(asterisk()).as("count"))
         .from(JOBS)
         .join(CONNECTION)
         .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
-        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.eq(StatusType.active)))
-        .fetchOne(0, int.class);
+        .where(JOBS.STATUS.eq(JobStatus.pending))
+        .groupBy(CONNECTION.GEOGRAPHY);
+    return (Map<String, Integer>) result.fetchMap(0, 1);
   }
 
+  Map<String, Integer> numberOfRunningJobsByTaskQueue() {
+    var result = ctx.select(ATTEMPTS.PROCESSING_TASK_QUEUE, count(asterisk()).as("count"))
+        .from(JOBS)
+        .join(CONNECTION)
+        .on(CONNECTION.ID.cast(VARCHAR(255)).eq(JOBS.SCOPE))
+        .join(ATTEMPTS)
+        .on(ATTEMPTS.JOB_ID.eq(JOBS.ID))
+        .where(JOBS.STATUS.eq(JobStatus.running).and(CONNECTION.STATUS.eq(StatusType.active)))
+        .and(ATTEMPTS.STATUS.eq(AttemptStatus.running))
+        .groupBy(ATTEMPTS.PROCESSING_TASK_QUEUE);
+    return (Map<String, Integer>) result.fetchMap(0, 1);
+
+  }
+
+  // This is a rare case and not likely to be related to data planes; So we will monitor them as a
+  // whole.
   int numberOfOrphanRunningJobs() {
     return ctx.selectCount()
         .from(JOBS)
@@ -50,12 +65,32 @@ class MetricRepository {
         .fetchOne(0, int.class);
   }
 
-  long oldestPendingJobAgeSecs() {
-    return oldestJobAgeSecs(JobStatus.pending);
+  Map<GeographyType, Double> oldestPendingJobAgeSecsByGeography() {
+    final var query =
+        """
+        SELECT cast(connection.geography as varchar) AS geography, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds
+        FROM jobs
+        JOIN connection
+        ON jobs.scope::uuid = connection.id
+        WHERE jobs.status = 'pending'
+        GROUP BY geography;
+        """;
+    final var result = ctx.fetch(query);
+    return (Map<GeographyType, Double>) result.intoMap(0, 1);
   }
 
-  long oldestRunningJobAgeSecs() {
-    return oldestJobAgeSecs(JobStatus.running);
+  Map<String, Double> oldestRunningJobAgeSecsByTaskQueue() {
+    final var query =
+        """
+        SELECT attempts.processing_task_queue AS task_queue, MAX(EXTRACT(EPOCH FROM (current_timestamp - jobs.created_at))) AS run_duration_seconds
+        FROM jobs
+        JOIN attempts
+        ON jobs.id = attempts.job_id
+        WHERE jobs.status = 'running' AND attempts.status = 'running'
+        GROUP BY task_queue;
+        """;
+    final var result = ctx.fetch(query);
+    return (Map<String, Double>) result.intoMap(0, 1);
   }
 
   List<Long> numberOfActiveConnPerWorkspace() {
@@ -216,20 +251,6 @@ class MetricRepository {
     }
 
     return results;
-  }
-
-  private long oldestJobAgeSecs(final JobStatus status) {
-    final var query = """
-                      SELECT id, EXTRACT(EPOCH FROM (current_timestamp - created_at)) AS run_duration_seconds
-                      FROM jobs WHERE status = ?::job_status
-                      ORDER BY created_at ASC limit 1;
-                      """;
-    final var result = ctx.fetchOne(query, status.getLiteral());
-    if (result == null) {
-      return 0L;
-    }
-    // as double can have rounding errors, round down to remove noise.
-    return result.getValue("run_duration_seconds", Double.class).longValue();
   }
 
 }

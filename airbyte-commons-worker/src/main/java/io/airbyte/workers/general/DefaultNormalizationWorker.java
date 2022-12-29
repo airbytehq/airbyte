@@ -4,11 +4,17 @@
 
 package io.airbyte.workers.general;
 
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ROOT_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.WORKER_OPERATION_NAME;
+
+import datadog.trace.api.Trace;
 import io.airbyte.commons.io.LineGobbler;
 import io.airbyte.config.Configs.WorkerEnvironment;
 import io.airbyte.config.FailureReason;
 import io.airbyte.config.NormalizationInput;
 import io.airbyte.config.NormalizationSummary;
+import io.airbyte.metrics.lib.ApmTraceUtils;
 import io.airbyte.protocol.models.AirbyteTraceMessage;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
@@ -19,6 +25,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.slf4j.Logger;
@@ -50,9 +57,12 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     this.cancelled = new AtomicBoolean(false);
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public NormalizationSummary run(final NormalizationInput input, final Path jobRoot) throws WorkerException {
     final long startTime = System.currentTimeMillis();
+
+    ApmTraceUtils.addTagsToTrace(Map.of(JOB_ID_KEY, jobId, JOB_ROOT_KEY, jobRoot));
 
     try (normalizationRunner) {
       LineGobbler.startSection("DEFAULT NORMALIZATION");
@@ -69,6 +79,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
         buildFailureReasonsAndSetFailure();
       }
     } catch (final Exception e) {
+      ApmTraceUtils.addExceptionToTrace(e);
       buildFailureReasonsAndSetFailure();
     }
 
@@ -105,6 +116,7 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
     failed = true;
   }
 
+  @Trace(operationName = WORKER_OPERATION_NAME)
   @Override
   public void cancel() {
     LOGGER.info("Cancelling normalization runner...");
@@ -112,7 +124,8 @@ public class DefaultNormalizationWorker implements NormalizationWorker {
       cancelled.set(true);
       normalizationRunner.close();
     } catch (final Exception e) {
-      e.printStackTrace();
+      ApmTraceUtils.addExceptionToTrace(e);
+      LOGGER.error("Unable to cancel normalization runner.", e);
     }
   }
 

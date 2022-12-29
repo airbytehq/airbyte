@@ -21,6 +21,7 @@ declare global {
 export interface Config {
   segment: { token: string; enabled: boolean };
   apiUrl: string;
+  connectorBuilderApiUrl: string;
   oauthRedirectUrl: string;
   healthCheckInterval: number;
   version?: string;

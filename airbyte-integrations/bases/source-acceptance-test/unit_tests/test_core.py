@@ -236,22 +236,30 @@ def test_additional_properties_is_true(discovered_catalog, expectation):
 
 
 @pytest.mark.parametrize(
-    "schema, record, should_fail",
+    "schema, record, expectation",
     [
-        ({"type": "object"}, {"aa": 23}, False),
-        ({"type": "object"}, {}, False),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"aa": 23}, True),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, False),
-        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"root": {"created": "23"}}, True),
+        ({"type": "object"}, {"aa": 23}, does_not_raise()),
+        ({"type": "object"}, {}, does_not_raise()),
+        (
+            {"type": "object", "properties": {"created": {"type": "string"}}},
+            {"aa": 23},
+            pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
+        ),
+        ({"type": "object", "properties": {"created": {"type": "string"}}}, {"created": "23"}, does_not_raise()),
+        (
+            {"type": "object", "properties": {"created": {"type": "string"}}},
+            {"root": {"created": "23"}},
+            pytest.raises(AssertionError, match="should have some fields mentioned by json schema"),
+        ),
         # Recharge shop stream case
         (
             {"type": "object", "properties": {"shop": {"type": ["null", "object"]}, "store": {"type": ["null", "object"]}}},
             {"shop": {"a": "23"}, "store": {"b": "23"}},
-            False,
+            does_not_raise(),
         ),
     ],
 )
-def test_read(schema, record, should_fail):
+def test_read(schema, record, expectation):
     catalog = ConfiguredAirbyteCatalog(
         streams=[
             ConfiguredAirbyteStream(
@@ -267,10 +275,7 @@ def test_read(schema, record, should_fail):
         AirbyteMessage(type=Type.RECORD, record=AirbyteRecordMessage(stream="test_stream", data=record, emitted_at=111))
     ]
     t = _TestBasicRead()
-    if should_fail:
-        with pytest.raises(AssertionError, match="should have some fields mentioned by json schema"):
-            t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
-    else:
+    with expectation:
         t.test_read(None, catalog, input_config, [], docker_runner_mock, MagicMock())
 
 

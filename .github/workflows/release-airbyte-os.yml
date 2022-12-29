@@ -135,8 +135,9 @@ jobs:
         run: |
           chmod +x tools/bin/pr_body.sh
           body=$(./tools/bin/pr_body.sh)
-          body="${body//$'\n'/'%0A'}"
-          echo ::set-output name=PR_BODY::$body
+          echo "PR_BODY<<EOF" >> $GITHUB_ENV
+          echo "$body" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v3
@@ -146,7 +147,7 @@ jobs:
           branch-suffix: random
           delete-branch: true
           title: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
-          body: ${{ steps.pr_body.outputs.PR_BODY }}
+          body: ${{ env.PR_BODY }}
           commit-message: Bump Airbyte version from ${{ steps.bump_version.outputs.PREV_VERSION }} to ${{ steps.bump_version.outputs.NEW_VERSION }}
       - name: PR Details
         run: |

@@ -4,9 +4,9 @@
 
 package io.airbyte.workers.temporal.check.connection;
 
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.DOCKER_IMAGE_KEY;
-import static io.airbyte.workers.temporal.trace.TemporalTraceConstants.Tags.JOB_ID_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.ACTIVITY_TRACE_OPERATION_NAME;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.DOCKER_IMAGE_KEY;
+import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.JOB_ID_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import datadog.trace.api.Trace;

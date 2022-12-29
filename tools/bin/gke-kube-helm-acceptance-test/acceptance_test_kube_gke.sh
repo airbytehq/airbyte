@@ -66,7 +66,7 @@ kubectl port-forward svc/airbyte-server-svc 8001:8001 --namespace=$NAMESPACE &
 
 kubectl port-forward svc/postgres-source-svc 2000:5432 --namespace=$NAMESPACE &
 
-kubectl port-forward svc/postgres-destination-svc 3000:5432 --namespace=$NAMESPACE &
+kubectl port-forward svc/postgres-destination-svc 4000:5432 --namespace=$NAMESPACE &
 
 sleep 10s
 

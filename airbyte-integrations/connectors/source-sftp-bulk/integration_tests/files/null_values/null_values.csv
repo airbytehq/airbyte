@@ -1,0 +1,6 @@
+string_col,int_col
+"hello",1
+"foo",2
+"bar",
+"baz",3
+,4

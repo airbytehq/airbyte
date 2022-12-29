@@ -155,6 +155,7 @@ Incremental sync is supported only if you add `ga:date` dimension to your custom
 
 | Version | Date       | Pull Request                                             | Subject                                                                                      |
 |:--------|:-----------|:---------------------------------------------------------|:---------------------------------------------------------------------------------------------|
+| 0.1.31  | 2022-10-30 | [18670](https://github.com/airbytehq/airbyte/pull/18670) | Add `Custom Reports` schema validation on `check connection`                                                                               |
 | 0.1.30  | 2022-10-13 | [17943](https://github.com/airbytehq/airbyte/pull/17943) | Fix pagination                                                                               |
 | 0.1.29  | 2022-10-12 | [17905](https://github.com/airbytehq/airbyte/pull/17905) | Handle exceeded daily quota gracefully                                                       |
 | 0.1.28  | 2022-09-24 | [16920](https://github.com/airbytehq/airbyte/pull/16920) | Added segments and filters to custom reports                                                 |

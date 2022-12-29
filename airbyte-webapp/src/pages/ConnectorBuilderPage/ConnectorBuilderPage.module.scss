@@ -1,0 +1,16 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.leftPanel {
+  overflow: hidden;
+}
+
+.rightPanel {
+  border-top-left-radius: variables.$border-radius-md;
+  border-bottom-left-radius: variables.$border-radius-md;
+  background-color: colors.$white;
+}
+
+.container {
+  background-image: linear-gradient(colors.$dark-blue-900, colors.$dark-blue-1000);
+}

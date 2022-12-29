@@ -123,7 +123,7 @@ public class SnowflakeDataSourceUtils {
       } else {
         LOGGER.error("Failed to obtain accessToken using refresh token. " + jsonResponse);
         throw new RuntimeException(
-            "Failed to obtain accessToken using refresh token.");
+            "Failed to obtain accessToken using refresh token. " + jsonResponse);
       }
     } catch (final InterruptedException e) {
       throw new IOException("Failed to refreshToken", e);

@@ -11,17 +11,16 @@ export type DropDownOptionProps = {
   data: { disabled: boolean; index: number; fullText?: boolean } & DropDownOptionDataItem;
 } & OptionProps<OptionType, boolean>;
 
-export interface DropDownOptionDataItem {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export interface DropDownOptionDataItem<Value = any, Config = any> {
   label?: string;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  value?: any;
+  value?: Value;
   groupValue?: string;
   groupValueText?: string;
   img?: React.ReactNode;
   primary?: boolean;
   secondary?: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config?: any;
+  config?: Config;
 }
 
 export const OptionView = styled.div<{
@@ -61,6 +60,12 @@ export const DropDownOption: React.FC<DropDownOptionProps> = (props) => {
         isSelected={props.isSelected && !props.isMulti}
         isDisabled={props.isDisabled}
         isFocused={props.isFocused}
+        onClick={(event) => {
+          // This custom onClick handler prevents the click event from bubbling up outside of the option
+          // for cases where the Dropdown is a child of a clickable parent such as a table row.
+          props.selectOption(props.data);
+          event.stopPropagation();
+        }}
       >
         <DropDownText primary={props.data.primary} secondary={props.data.secondary} fullText={props.data.fullText}>
           {props.isMulti && (

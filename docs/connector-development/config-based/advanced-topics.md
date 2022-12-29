@@ -227,7 +227,7 @@ If the input string is a raw string, the interpolated string will be the same.
 `"hello world" -> "hello world"`
 
 The engine will evaluate the content passed within `{{...}}`, interpolating the keys from context-specific arguments.
-The "options" keyword [see ($options)](#object-instantiation) can be referenced.
+The "options" keyword [see ($options)](#options) can be referenced.
 
 For example, some_object.inner_object.key will evaluate to "Hello airbyte" at runtime.
 

@@ -194,6 +194,7 @@ inferred that the document ID refers to a document within the synced collection.
 
 Every ref is serialized as a JSON object with 2 or 3 fields, as listed above. The `type` field must be
 one of these strings:
+
 |                                    Reference Type                                       |    `type` string    |
 | --------------------------------------------------------------------------------------- | ------------------- |
 | Document                                                                                | `"document"`        |

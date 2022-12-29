@@ -14,8 +14,8 @@ import com.mongodb.MongoException;
 import com.mongodb.MongoSecurityException;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
+import io.airbyte.commons.exceptions.ConnectionErrorException;
 import io.airbyte.commons.util.MoreIterators;
-import io.airbyte.db.exception.ConnectionErrorException;
 import io.airbyte.db.jdbc.JdbcUtils;
 import io.airbyte.db.mongodb.MongoDatabase;
 import io.airbyte.db.mongodb.MongoUtils.MongoInstanceType;
@@ -25,6 +25,7 @@ import io.airbyte.integrations.base.AirbyteStreamNameNamespacePair;
 import io.airbyte.integrations.base.AirbyteTraceMessageUtility;
 import io.airbyte.integrations.base.Destination;
 import io.airbyte.integrations.base.IntegrationRunner;
+import io.airbyte.integrations.base.ssh.SshWrappedDestination;
 import io.airbyte.integrations.destination.mongodb.exception.MongodbDatabaseException;
 import io.airbyte.protocol.models.AirbyteConnectionStatus;
 import io.airbyte.protocol.models.AirbyteMessage;
@@ -61,12 +62,16 @@ public class MongodbDestination extends BaseConnector implements Destination {
 
   private final MongodbNameTransformer namingResolver;
 
+  public static Destination sshWrappedDestination() {
+    return new SshWrappedDestination(new MongodbDestination(), JdbcUtils.HOST_LIST_KEY, JdbcUtils.PORT_LIST_KEY);
+  }
+
   public MongodbDestination() {
     namingResolver = new MongodbNameTransformer();
   }
 
   public static void main(final String[] args) throws Exception {
-    final Destination destination = new MongodbDestination();
+    final Destination destination = sshWrappedDestination();
     LOGGER.info("starting destination: {}", MongodbDestination.class);
     new IntegrationRunner(destination).run(args);
     LOGGER.info("completed destination: {}", MongodbDestination.class);

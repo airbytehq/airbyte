@@ -5,15 +5,17 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { LoadingPage, MainPageWithScroll } from "components";
-import { EmptyResourceListView } from "components/EmptyResourceListView";
-import HeadTitle from "components/HeadTitle";
+import { EmptyResourceListView } from "components/common/EmptyResourceListView";
+import { HeadTitle } from "components/common/HeadTitle";
 import { Button } from "components/ui/Button";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { useTrackPage, PageTrackingCodes } from "hooks/services/Analytics";
 import { useConnectionList } from "hooks/services/useConnectionHook";
+import { links } from "utils/links";
 
 import { RoutePaths } from "../../../routePaths";
+import styles from "./AllConnectionsPage.module.scss";
 import ConnectionsTable from "./components/ConnectionsTable";
 
 const AllConnectionsPage: React.FC = () => {
@@ -48,6 +50,18 @@ const AllConnectionsPage: React.FC = () => {
           resourceType="connections"
           onCreateClick={onCreateClick}
           buttonLabel={formatMessage({ id: "connection.createFirst" })}
+          footer={
+            <FormattedMessage
+              id="connection.emptyStateFooter"
+              values={{
+                demoLnk: (children: React.ReactNode) => (
+                  <a href={links.demoLink} target="_blank" rel="noreferrer noopener" className={styles.link}>
+                    {children}
+                  </a>
+                ),
+              }}
+            />
+          }
         />
       )}
     </Suspense>

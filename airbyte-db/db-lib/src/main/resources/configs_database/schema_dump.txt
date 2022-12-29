@@ -108,6 +108,7 @@ create table "public"."connection"(
   "notify_schema_changes" bool not null default true,
   "non_breaking_change_preference" varchar(7) not null default '''ignore''::character varying',
   "breaking_change" bool not null default false,
+  "unsupported_protocol_version" bool not null default false,
   constraint "connection_pkey"
     primary key ("id")
 );

@@ -49,6 +49,7 @@ class BaseDatabaseConfigPersistenceTest {
   static PostgreSQLContainer<?> container;
   static Database database;
   static DatabaseConfigPersistence configPersistence;
+  static StandardSyncPersistence standardSyncPersistence;
   static JsonSecretsProcessor jsonSecretsProcessor;
   static DataSource dataSource;
   static DSLContext dslContext;

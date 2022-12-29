@@ -21,7 +21,7 @@ from airbyte_cdk.models import (
 )
 from airbyte_cdk.sources import Source
 
-from .client import Client
+from .client import Client, ConfigurationError
 from .utils import dropbox_force_download
 
 
@@ -96,12 +96,25 @@ class SourceFile(Source):
         """
         config = self._validate_and_transform(config)
         client = self._get_client(config)
-        logger.info(f"Checking access to {client.reader.full_url}...")
+        source_url = client.reader.full_url
+        logger.info(f"Checking access to {source_url}...")
+        if "docs.google.com/spreadsheets" in source_url:
+            reason = f"Failed to load {source_url}: please use the Official Google Sheets Source connector"
+            logger.error(reason)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         try:
             with client.reader.open():
+                list(client.streams)
                 return AirbyteConnectionStatus(status=Status.SUCCEEDED)
+        except (TypeError, ValueError, ConfigurationError) as err:
+            reason = (
+                f"Failed to load {source_url}\n Please check File Format and Reader Options are set correctly"
+                f"\n{repr(err)}\n{traceback.format_exc()}"
+            )
+            logger.error(reason)
+            return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
         except Exception as err:
-            reason = f"Failed to load {client.reader.full_url}: {repr(err)}\n{traceback.format_exc()}"
+            reason = f"Failed to load {source_url}: {repr(err)}\n{traceback.format_exc()}"
             logger.error(reason)
             return AirbyteConnectionStatus(status=Status.FAILED, message=reason)
 

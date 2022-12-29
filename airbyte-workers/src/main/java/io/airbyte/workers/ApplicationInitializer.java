@@ -4,6 +4,8 @@
 
 package io.airbyte.workers;
 
+import datadog.trace.api.GlobalTracer;
+import datadog.trace.api.Tracer;
 import io.airbyte.commons.temporal.TemporalInitializationUtils;
 import io.airbyte.commons.temporal.TemporalJobType;
 import io.airbyte.commons.temporal.TemporalUtils;
@@ -24,6 +26,8 @@ import io.airbyte.workers.temporal.scheduling.ConnectionManagerWorkflowImpl;
 import io.airbyte.workers.temporal.spec.SpecWorkflowImpl;
 import io.airbyte.workers.temporal.support.TemporalProxyHelper;
 import io.airbyte.workers.temporal.sync.SyncWorkflowImpl;
+import io.airbyte.workers.tracing.StorageObjectGetInterceptor;
+import io.airbyte.workers.tracing.TemporalSdkInterceptor;
 import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.context.env.Environment;
@@ -133,7 +137,7 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
   @Override
   public void onApplicationEvent(final ServiceReadyEvent event) {
     try {
-      datadog.trace.api.GlobalTracer.get().addTraceInterceptor(new StorageObjectGetInterceptor());
+      configureTracer();
       initializeCommonDependencies();
 
       if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
@@ -154,6 +158,12 @@ public class ApplicationInitializer implements ApplicationEventListener<ServiceR
       log.error("Unable to initialize application.", e);
       throw new IllegalStateException(e);
     }
+  }
+
+  private void configureTracer() {
+    final Tracer globalTracer = GlobalTracer.get();
+    globalTracer.addTraceInterceptor(new StorageObjectGetInterceptor());
+    globalTracer.addTraceInterceptor(new TemporalSdkInterceptor());
   }
 
   private void initializeCommonDependencies()

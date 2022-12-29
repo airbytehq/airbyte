@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { Text } from "components/ui/Text";
+import { Heading } from "components/ui/Heading";
 
 import Status from "core/statuses";
 import { useOnboardingService } from "hooks/services/Onboarding/OnboardingService";
@@ -50,14 +50,14 @@ const FinalStep: React.FC = () => {
       </div>
       <ProgressBlock connection={connection} onSync={onSync} />
       {isFirstSyncSuccessful && <FirstSuccessfulSync />}
-      <Text as="h2" className={styles.title}>
+      <Heading as="h2" className={styles.title}>
         <FormattedMessage
           id="onboarding.useCases"
           values={{
             name: (name: React.ReactNode[]) => <HighlightedText>{name}</HighlightedText>,
           }}
         />
-      </Text>
+      </Heading>
 
       {visibleUseCases?.map((item, key) => (
         <UseCaseBlock key={item} count={key + 1} href={useCaseLinks[item]} onSkip={skipCase} id={item} />

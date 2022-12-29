@@ -32,13 +32,15 @@ jobs:
           # The sed removes carriage returns so that the body is easier to parse later, and
           #   escapes backticks so that they are not executed as commands.
           PR_BODY=$(printf '%s' "$PR" | jq '.[0].body' | sed 's/\\r//g' | sed 's/`/\\`/g')
-          echo ::set-output name=pr_body::${PR_BODY}
+          echo "pr_body<<EOF" >> $GITHUB_ENV
+          echo "$PR_BODY" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
       - name: Extract Changelog
         id: extract_changelog
         shell: bash
         run: |-
           set -x
-          PR_BODY=${{ steps.fetch_pr_body.outputs.pr_body}}
+          PR_BODY=${{ env.pr_body}}
           if [[ $PR_BODY = "null" ]]; then
             echo "No PR body exists for this commit, so a release cannot be generated."
             exit 1
@@ -61,7 +63,7 @@ jobs:
         shell: bash
         run: |
           VERSION=$(grep -w VERSION .env | cut -d"=" -f2)
-          echo ::set-output name=VERSION::${VERSION}
+          echo VERSION=${VERSION} >> $GITHUB_OUTPUT
       - name: Create Release
         id: create_release
         uses: ncipollo/release-action@v1

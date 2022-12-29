@@ -3,5 +3,6 @@
   "domain": "invaliddomain.atlassian.net",
   "email": "test@test.com",
   "projects": ["invalidproject"],
-  "start_date": "2021-09-25T00:00:00Z"
+  "start_date": "2021-09-25T00:00:00Z",
+  "max_results": 0
 }

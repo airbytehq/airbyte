@@ -30,7 +30,6 @@ export const PropertyLabel: React.FC<React.PropsWithChildren<PropertyLabelProps>
   return (
     <ControlLabels
       className={className}
-      labelAdditionLength={0}
       label={label}
       infoTooltipContent={
         (descriptionToDisplay || examples) && (

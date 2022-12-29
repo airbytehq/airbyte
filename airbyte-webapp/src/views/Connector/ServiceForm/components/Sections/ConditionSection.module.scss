@@ -1,8 +1,8 @@
-@use "../../../../../scss/colors";
+@use "scss/colors";
 
 .groupDropdown {
   margin-left: auto;
   padding: 0 2px;
   background-color: colors.$white;
-  min-width: 240px;
+  min-width: calc(50% - 100px);
 }

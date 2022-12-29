@@ -6,7 +6,6 @@ package io.airbyte.config.init;
 
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
-import io.airbyte.config.persistence.ConfigPersistence;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
@@ -49,9 +48,9 @@ public class ApplyDefinitionsHelper {
     } else {
       // todo (pedroslopez): Logic to apply definitions should be moved outside of the
       // DatabaseConfigPersistence class and behavior standardized
-      final ConfigPersistence dbConfigPersistence = configRepository.getConfigPersistence();
-      final ConfigPersistence providerConfigPersistence = new DefinitionProviderToConfigPersistenceAdapter(definitionsProvider);
-      dbConfigPersistence.loadData(providerConfigPersistence);
+      configRepository.seedActorDefinitions(
+          definitionsProvider.getSourceDefinitions(),
+          definitionsProvider.getDestinationDefinitions());
     }
   }
 

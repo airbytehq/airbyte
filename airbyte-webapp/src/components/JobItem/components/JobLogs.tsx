@@ -3,8 +3,8 @@ import React, { useState } from "react";
 import { FormattedMessage } from "react-intl";
 import { useLocation } from "react-router-dom";
 
-import StatusIcon from "components/StatusIcon";
-import { StatusIconStatus } from "components/StatusIcon/StatusIcon";
+import { StatusIcon } from "components/ui/StatusIcon";
+import { StatusIconStatus } from "components/ui/StatusIcon/StatusIcon";
 
 import { JobsWithJobs } from "pages/ConnectionPage/pages/ConnectionItemPage/JobsList";
 import { useGetDebugInfoJob } from "services/job/JobService";

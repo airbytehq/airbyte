@@ -339,6 +339,14 @@ public class ConnectionsHandler {
     if (patch.getResourceRequirements() != null) {
       sync.setResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(patch.getResourceRequirements()));
     }
+
+    if (patch.getGeography() != null) {
+      sync.setGeography(ApiPojoConverters.toPersistenceGeography(patch.getGeography()));
+    }
+
+    if (patch.getBreakingChange() != null) {
+      sync.setBreakingChange(patch.getBreakingChange());
+    }
   }
 
   private void validateConnectionPatch(final WorkspaceHelper workspaceHelper, final StandardSync persistedSync, final ConnectionUpdate patch) {

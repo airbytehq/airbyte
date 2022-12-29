@@ -4,56 +4,26 @@ This page guides you through the process of setting up the Freshdesk source conn
 
 ## Prerequisites
 
-* Freshdesk Account
-* Domain URL
-* Freshdesk API Key
+To set up the Freshdesk source connector, you'll need the Freshdesk [domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url) and the [API key](https://support.freshdesk.com/support/solutions/articles/215517).
 
-## Step 1: Set up Freshdesk
+## Set up the Freshdesk connector in Airbyte
 
-### Get Domain URL
+1. [Log into your Airbyte Cloud](https://cloud.airbyte.io/workspaces) account or navigate to the Airbyte Open Source dashboard.
+2. Click **Sources** and then click **+ New source**.
+3. On the Set up the source page, select **Freshdesk** from the Source type dropdown.
+4. Enter the name for the Freshdesk connector.
+5. For **Domain**, enter your [Freshdesk domain URL](https://support.freshdesk.com/en/support/solutions/articles/50000004704-customizing-your-helpdesk-url).
+6. For **API Key**, enter your [Freshdesk API key](https://support.freshdesk.com/support/solutions/articles/215517).
+7. For **Start Date**, enter the date in YYYY-MM-DD format. The data added on and after this date will be replicated.
+8. For **Requests per minute**, enter the number of requests per minute that this source allowed to use. The Freshdesk rate limit is 50 requests per minute per app per account.
+9. Click **Set up source**.
 
-You can find your domain URL by logging into your account and check the URL in your browser, the domain url should look like: `https://myaccount.freshdesk.com/...`, where `myaccount.freshdesk.com` - is your domain URL.
+## Supported sync modes 
 
-### Get Freshdesk API Key
-
-Follow the link to read more about [how to find your API key](https://support.freshdesk.com/support/solutions/articles/215517). You need the admin permissions to access the account settings.
-
-
-## Step 2: Set up the Freshdesk connector in Airbyte
-
-**For Airbyte Cloud**
-
-1. Log into your [Airbyte Cloud](https://cloud.airbyte.io/workspaces) account. 
-2. Click **Sources** and then click **+ New source**. 
-3. On the source setup page, select **Freshdesk** from the Source type dropdown and enter a name for this connector. 
-4. Enter your `Domain URL`.
-5. Enter your `Freshdesk API Key`.
-6. Choose the `Start Date` as the starting point for your data replication.
-5. Click `Set up source`.
-
-**For Airbyte Open Source:**
-
-1. Go to local Airbyte page.
-2. Click **Sources** and then click **+ New source**. 
-3. On the source setup page, select **Freshdesk** from the Source type dropdown and enter a name for this connector. 
-4. Enter your `Domain URL`.
-5. Enter your `Freshdesk API Key`.
-6. Choose the `Start Date` as the starting point for your data replication.
-5. Click `Set up source`.
-
-## Supported sync modes & Features
-
-| Feature           | Supported? |
-| :---------------- | :--------- |
-| Full Refresh Sync | Yes        |
-| Incremental Sync  | Yes        |
-| SSL connection    | Yes        |
-| Namespaces        | No         |
-
-The Freshdesk supports full refresh and incremental sync. You can choose if this connector will copy only the new or updated data, or all rows in the tables and columns you set up for replication, every time a sync is run. There are two types of incremental sync:
-
-* server level \(native\) - when API supports filter on specific columns that Airbyte use to track changes \(`updated_at`, `created_at`, etc\)
-* client level - when API doesn't support filter and Airbyte performs filtration on its side.
+* [Full Refresh - Overwrite](https://docs.airbyte.com/understanding-airbyte/glossary#full-refresh-sync)
+* [Full Refresh - Append](https://docs.airbyte.com/understanding-airbyte/connections/full-refresh-append)
+* [Incremental - Append](https://docs.airbyte.com/understanding-airbyte/connections/incremental-append)
+* [Incremental - Deduped History](https://docs.airbyte.com/understanding-airbyte/connections/incremental-deduped-history)
 
 ## Supported Streams
 
@@ -71,11 +41,9 @@ Several output streams are available from this source:
 * [Tickets](https://developers.freshdesk.com/api/#tickets) \(Native Incremental Sync\)
 * [Time Entries](https://developers.freshdesk.com/api/#time-entries)
 
-If there are more endpoints you'd like Airbyte to support, please [create an issue.](https://github.com/airbytehq/airbyte/issues/new/choose)
-
 ## Performance considerations
 
-The Freshdesk connector should not run into Freshdesk API limitations under normal usage. Please [create an issue](https://github.com/airbytehq/airbyte/issues) if you see any rate limit issues that are not automatically retried successfully.
+The Freshdesk connector should not run into Freshdesk API limitations under normal usage. [Create an issue](https://github.com/airbytehq/airbyte/issues) if you encounter any rate limit issues that are not automatically retried successfully.
 
 
 ## Changelog

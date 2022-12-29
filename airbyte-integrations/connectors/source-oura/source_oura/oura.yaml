@@ -1,0 +1,118 @@
+version: "0.1.0"
+
+definitions:
+  selector:
+    extractor:
+      field_pointer: ["data"]
+  base_requester:
+    url_base: "https://api.ouraring.com/v2/usercollection"
+    http_method: "GET"
+    authenticator:
+      type: BearerAuthenticator
+      api_token: "{{ config['api_key'] }}"
+  date_requester:
+    $ref: "*ref(definitions.base_requester)"
+    request_options_provider:
+      request_parameters:
+        start_date: "{{ config['start_date'].split('T')[0] }}"
+        end_date: "{{ config['end_date'].split('T')[0] }}"
+  datetime_requester:
+    $ref: "*ref(definitions.base_requester)"
+    request_options_provider:
+      request_parameters:
+        start_datetime: "{{ config['start_datetime'] }}"
+        end_datetime: "{{ config['end_datetime'] }}"
+  paginator:
+    type: DefaultPaginator
+    pagination_strategy:
+      type: CursorPagination
+      cursor_value: "{{ response['next_token'] }}"
+      page_size: 100 # Not used, but check fails without it
+    page_token_option:
+      field_name: "next_token"
+      inject_into: "request_parameter"
+    url_base: "*ref(definitions.base_requester.url_base)"
+    page_size_option: # Not used, but check fails without it
+      field_name: ""
+      inject_into: "request_parameter"
+  base_retriever:
+    record_selector:
+      $ref: "*ref(definitions.selector)"
+    paginator:
+      $ref: "*ref(definitions.paginator)"
+  date_retriever:
+    $ref: "*ref(definitions.base_retriever)"
+    requester:
+      $ref: "*ref(definitions.date_requester)"
+  datetime_retriever:
+    $ref: "*ref(definitions.base_retriever)"
+    requester:
+      $ref: "*ref(definitions.datetime_requester)"
+  date_stream:
+    retriever:
+      $ref: "*ref(definitions.date_retriever)"
+  datetime_stream:
+    retriever:
+      $ref: "*ref(definitions.datetime_retriever)"
+  daily_activity_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "daily_activity"
+      primary_key: "timestamp"
+      path: "/daily_activity"
+  daily_readiness_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "daily_readiness"
+      primary_key: "timestamp"
+      path: "/daily_readiness"
+  daily_sleep_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "daily_sleep"
+      primary_key: "timestamp"
+      path: "/daily_sleep"
+  heart_rate_stream:
+    $ref: "*ref(definitions.datetime_stream)"
+    $options:
+      name: "heart_rate"
+      primary_key: "timestamp"
+      path: "/heartrate"
+  sessions_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "sessions"
+      primary_key: "start_datetime"
+      path: "/session"
+  sleep_periods_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "sleep_periods"
+      primary_key: "bedtime_start"
+      path: "/sleep"
+  tags_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "tags"
+      primary_key: "timestamp"
+      path: "/tag"
+  workouts_stream:
+    $ref: "*ref(definitions.date_stream)"
+    $options:
+      name: "workouts"
+      primary_key: "start_datetime"
+      path: "/workout"
+
+streams:
+  - "*ref(definitions.daily_activity_stream)"
+  - "*ref(definitions.daily_readiness_stream)"
+  - "*ref(definitions.daily_sleep_stream)"
+  - "*ref(definitions.heart_rate_stream)"
+  - "*ref(definitions.sessions_stream)"
+  - "*ref(definitions.sleep_periods_stream)"
+  - "*ref(definitions.tags_stream)"
+  - "*ref(definitions.workouts_stream)"
+
+check:
+  stream_names:
+    - "heart_rate"

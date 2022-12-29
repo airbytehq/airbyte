@@ -103,6 +103,7 @@ The above connector image is tagged with `dev`. You can change this to use anoth
 :::
 
 - In your browser, visit [http://localhost:8000/](http://localhost:8000/)
+- Log in with the default user `airbyte` and default password `password`
 - Go to `Settings` (gear icon in lower left corner) 
 - Go to `Sources` or `Destinations` (depending on which connector you are testing)
 - Update the version number to use your docker image tag (default is `dev`)

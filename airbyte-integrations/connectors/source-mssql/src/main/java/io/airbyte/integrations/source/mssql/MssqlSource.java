@@ -7,6 +7,10 @@ package io.airbyte.integrations.source.mssql;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_DELETED_AT;
 import static io.airbyte.integrations.debezium.internals.DebeziumEventUtils.CDC_UPDATED_AT;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.enquoteIdentifierList;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getFullTableName;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.getIdentifierWithQuoting;
+import static io.airbyte.integrations.source.relationaldb.RelationalDbQueryUtils.queryTable;
 import static java.util.stream.Collectors.toList;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -80,7 +84,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
     LOGGER.info("Queueing query for table: {}", tableName);
 
     final String newIdentifiers = getWrappedColumnNames(database, null, columnNames, schemaName, tableName);
-    final String preparedSqlQuery = String.format("SELECT %s FROM %s", newIdentifiers, getFullTableName(schemaName, tableName));
+    final String preparedSqlQuery = String.format("SELECT %s FROM %s", newIdentifiers, getFullTableName(schemaName, tableName, getQuoteString()));
 
     LOGGER.info("Prepared SQL query for TableFullRefresh is: " + preparedSqlQuery);
     return queryTable(database, preparedSqlQuery);
@@ -107,8 +111,8 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
       final SQLServerResultSetMetaData sqlServerResultSetMetaData = (SQLServerResultSetMetaData) database
           .queryMetadata(String
               .format("SELECT TOP 1 %s FROM %s", // only first row is enough to get field's type
-                  enquoteIdentifierList(columnNames),
-                  getFullTableName(schemaName, tableName)));
+                  enquoteIdentifierList(columnNames, getQuoteString()),
+                  getFullTableName(schemaName, tableName, getQuoteString())));
 
       // metadata will be null if table doesn't contain records
       if (sqlServerResultSetMetaData != null) {
@@ -127,7 +131,7 @@ public class MssqlSource extends AbstractJdbcSource<JDBCType> implements Source 
           .map(
               el -> hierarchyIdColumns.contains(el) ? String
                   .format("%s.ToString() as %s%s%s", el, identifierQuoteString, el, identifierQuoteString)
-                  : getIdentifierWithQuoting(el))
+                  : getIdentifierWithQuoting(el, getQuoteString()))
           .toList());
     } catch (final SQLException e) {
       LOGGER.error("Failed to fetch metadata to prepare a proper request.", e);

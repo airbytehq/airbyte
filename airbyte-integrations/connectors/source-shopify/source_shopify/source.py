@@ -22,7 +22,7 @@ from .utils import ShopifyRateLimiter as limiter
 
 class ShopifyStream(HttpStream, ABC):
     # Latest Stable Release
-    api_version = "2021-07"
+    api_version = "2022-10"
     # Page size
     limit = 250
     # Define primary key as sort key for full_refresh, or very first sync for incremental_refresh
@@ -67,26 +67,27 @@ class ShopifyStream(HttpStream, ABC):
 
     @limiter.balance_rate_limit()
     def parse_response(self, response: requests.Response, **kwargs) -> Iterable[Mapping]:
-        json_response = response.json() or {}
-        records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
-        # transform method was implemented according to issue 4841
-        # Shopify API returns price fields as a string and it should be converted to number
-        # this solution designed to convert string into number, but in future can be modified for general purpose
-        if isinstance(records, dict):
-            # for cases when we have a single record as dict
-            # add shop_url to the record to make querying easy
-            records["shop_url"] = self.config["shop"]
-            yield self._transformer.transform(records)
-        else:
-            # for other cases
-            for record in records:
+        if response.status_code is requests.codes.OK:
+            json_response = response.json()
+            records = json_response.get(self.data_field, []) if self.data_field is not None else json_response
+            # transform method was implemented according to issue 4841
+            # Shopify API returns price fields as a string and it should be converted to number
+            # this solution designed to convert string into number, but in future can be modified for general purpose
+            if isinstance(records, dict):
+                # for cases when we have a single record as dict
                 # add shop_url to the record to make querying easy
-                record["shop_url"] = self.config["shop"]
-                yield self._transformer.transform(record)
+                records["shop_url"] = self.config["shop"]
+                yield self._transformer.transform(records)
+            else:
+                # for other cases
+                for record in records:
+                    # add shop_url to the record to make querying easy
+                    record["shop_url"] = self.config["shop"]
+                    yield self._transformer.transform(record)
 
     def should_retry(self, response: requests.Response) -> bool:
         if response.status_code == 404:
-            self.logger.warn(f"Stream `{self.name}` is not available, skipping.")
+            self.logger.warn(f"Stream `{self.name}` is not available, skipping...")
             setattr(self, "raise_on_http_errors", False)
             return False
         return super().should_retry(response)

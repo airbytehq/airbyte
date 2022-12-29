@@ -4,11 +4,11 @@ import { FormattedMessage, useIntl } from "react-intl";
 import { ReleaseStageBadge } from "components/ReleaseStageBadge";
 import { Button } from "components/ui/Button";
 import { DropDownOptionDataItem } from "components/ui/DropDown";
+import { Heading } from "components/ui/Heading";
 import { Popout } from "components/ui/Popout";
 import { Text } from "components/ui/Text";
 
 import { ReleaseStage } from "core/request/AirbyteClient";
-import { FeatureItem, useFeature } from "hooks/services/Feature";
 
 import styles from "./TableItemTitle.module.scss";
 
@@ -31,7 +31,6 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
   entityIcon,
   releaseStage,
 }) => {
-  const allowCreateConnection = useFeature(FeatureItem.AllowCreateConnection);
   const { formatMessage } = useIntl();
   const options = [
     {
@@ -49,19 +48,17 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
       <div className={styles.entityInfo}>
         {entityIcon && <div className={styles.entityIcon}>{entityIcon}</div>}
         <div>
-          <Text as="h2" size="md">
-            {entityName}
-          </Text>
-          <Text as="p" size="lg" bold className={styles.entityType}>
+          <Heading as="h2">{entityName}</Heading>
+          <Text size="lg" bold className={styles.entityType}>
             <span>{entity}</span>
             <ReleaseStageBadge stage={releaseStage} />
           </Text>
         </div>
       </div>
       <div className={styles.content}>
-        <Text as="h3" size="sm">
+        <Heading as="h3" size="sm">
           <FormattedMessage id="tables.connections" />
-        </Text>
+        </Heading>
         <Popout
           data-testid={`select-${type}`}
           options={options}
@@ -76,7 +73,7 @@ const TableItemTitle: React.FC<TableItemTitleProps> = ({
           menuShouldBlockScroll={false}
           onChange={onSelect}
           targetComponent={({ onOpen }) => (
-            <Button onClick={onOpen} disabled={!allowCreateConnection}>
+            <Button onClick={onOpen}>
               <FormattedMessage id={`tables.${type}Add`} />
             </Button>
           )}

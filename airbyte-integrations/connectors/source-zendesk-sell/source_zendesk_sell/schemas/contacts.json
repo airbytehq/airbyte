@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": ["null", "number"]
+    },
+    "creator_id": {
+      "type": ["null", "number"]
+    },
+    "owner_id": {
+      "type": ["null", "number"]
+    },
+    "is_organization": {
+      "type": ["null", "boolean"]
+    },
+    "contact_id": {
+      "type": ["null", "number"]
+    },
+    "parent_organization_id": {
+      "type": ["null", "number"]
+    },
+    "name": {
+      "type": ["null", "string"]
+    },
+    "first_name": {
+      "type": ["null", "string"]
+    },
+    "last_name": {
+      "type": ["null", "string"]
+    },
+    "customer_status": {
+      "type": ["null", "string"]
+    },
+    "prospect_status": {
+      "type": ["null", "string"]
+    },
+    "title": {
+      "type": ["null", "string"]
+    },
+    "description": {
+      "type": ["null", "string"]
+    },
+    "industry": {
+      "type": ["null", "string"]
+    },
+    "website": {
+      "type": ["null", "string"]
+    },
+    "email": {
+      "type": ["null", "string"]
+    },
+    "phone": {
+      "type": ["null", "string"]
+    },
+    "mobile": {
+      "type": ["null", "string"]
+    },
+    "fax": {
+      "type": ["null", "string"]
+    },
+    "twitter": {
+      "type": ["null", "string"]
+    },
+    "facebook": {
+      "type": ["null", "string"]
+    },
+    "linkedin": {
+      "type": ["null", "string"]
+    },
+    "skype": {
+      "type": ["null", "string"]
+    },
+    "address": {
+      "type": ["null", "string"]
+    },
+    "billing_address": {
+      "type": ["null", "string"]
+    },
+    "shipping_address": {
+      "type": ["null", "string"]
+    },
+    "tags": {
+      "type": ["null", "array"]
+    },
+    "custom_fields": {
+      "type": ["null", "object"]
+    },
+    "created_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    },
+    "updated_at": {
+      "type": ["null", "string"],
+      "format": "date-time",
+      "airbyte_type": "timestamp_with_timezone"
+    }
+  }
+}

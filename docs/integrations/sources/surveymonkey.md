@@ -2,6 +2,12 @@
 
 This page guides you through the process of setting up the SurveyMonkey source connector.
 
+:::note
+
+OAuth for Survey Monkey is officially supported only for the US. We are testing how to enable it in the EU at the moment. If you run into any issues, please [reach out to us](mailto:product@airbyte.io) so we can promptly assist you.
+
+:::
+
 ## Prerequisites 
 
  ### For Airbyte Open Source:

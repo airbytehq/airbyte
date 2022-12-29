@@ -3,8 +3,8 @@ import { FormattedMessage } from "react-intl";
 import { useNavigate } from "react-router-dom";
 
 import { CloudInviteUsersHint } from "components/CloudInviteUsersHint";
+import { HeadTitle } from "components/common/HeadTitle";
 import { FormPageContent } from "components/ConnectorBlocks";
-import HeadTitle from "components/HeadTitle";
 import { PageHeader } from "components/ui/PageHeader";
 
 import { ConnectionConfiguration } from "core/domain/connection";

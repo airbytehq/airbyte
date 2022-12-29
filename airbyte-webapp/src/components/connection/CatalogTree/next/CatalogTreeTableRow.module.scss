@@ -1,0 +1,48 @@
+@use "scss/colors";
+@use "scss/variables";
+
+.icon {
+  margin-right: 7px;
+  margin-top: -1px;
+
+  &.plus {
+    color: colors.$green;
+  }
+
+  &.minus {
+    color: colors.$red;
+  }
+}
+
+.streamHeaderContent {
+  background: colors.$white;
+  border-bottom: 1px solid colors.$grey-50;
+
+  &:hover {
+    background: colors.$grey-30;
+    cursor: pointer;
+  }
+
+  &.disabledChange {
+    background-color: colors.$red-50;
+  }
+
+  &.enabledChange {
+    background-color: colors.$green-50;
+  }
+
+  &.error {
+    border: 1px solid colors.$red;
+  }
+
+  &.selected {
+    background-color: colors.$blue-transparent;
+  }
+}
+
+.streamRowCheckboxCell {
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  padding-left: 27px;
+}

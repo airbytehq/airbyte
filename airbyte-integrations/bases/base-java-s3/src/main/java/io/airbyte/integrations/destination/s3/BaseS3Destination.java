@@ -42,9 +42,8 @@ public abstract class BaseS3Destination extends BaseConnector implements Destina
     try {
       final S3DestinationConfig destinationConfig = configFactory.getS3DestinationConfig(config, storageProvider());
       final AmazonS3 s3Client = destinationConfig.getS3Client();
-      final S3StorageOperations storageOperations = new S3StorageOperations(nameTransformer, s3Client, destinationConfig);
 
-      S3BaseChecks.attemptS3WriteAndDelete(storageOperations, destinationConfig, destinationConfig.getBucketName());
+      S3BaseChecks.testIAMUserHasListObjectPermission(s3Client, destinationConfig.getBucketName());
       S3BaseChecks.testSingleUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
       S3BaseChecks.testMultipartUpload(s3Client, destinationConfig.getBucketName(), destinationConfig.getBucketPath());
 

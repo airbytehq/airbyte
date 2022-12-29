@@ -586,7 +586,8 @@ class ConnectionsHandlerTest {
             .syncCatalog(catalogForUpdate)
             .resourceRequirements(resourceRequirements)
             .sourceCatalogId(newSourceCatalogId)
-            .operationIds(List.of(operationId, otherOperationId));
+            .operationIds(List.of(operationId, otherOperationId))
+            .geography(io.airbyte.api.model.generated.Geography.EU);
 
         final ConfiguredAirbyteCatalog expectedPersistedCatalog = ConnectionHelpers.generateBasicConfiguredAirbyteCatalog();
         expectedPersistedCatalog.getStreams().get(0).getStream().withName(AZKABAN_USERS);
@@ -600,7 +601,8 @@ class ConnectionsHandlerTest {
             .withCatalog(expectedPersistedCatalog)
             .withResourceRequirements(ApiPojoConverters.resourceRequirementsToInternal(resourceRequirements))
             .withSourceCatalogId(newSourceCatalogId)
-            .withOperationIds(List.of(operationId, otherOperationId));
+            .withOperationIds(List.of(operationId, otherOperationId))
+            .withGeography(Geography.EU);
 
         when(configRepository.getStandardSync(standardSync.getConnectionId())).thenReturn(standardSync);
 
