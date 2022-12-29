@@ -792,7 +792,7 @@ definitions:
         enum: [OffsetIncrement]
       page_size:
         anyOf:
-          - type: number
+          - type: integer
           - type: string
       $options:
         type: object

@@ -7,12 +7,13 @@ from __future__ import annotations
 import importlib
 from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
 
-from airbyte_cdk.sources.declarative.auth.token import BasicHttpAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
@@ -25,6 +26,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    InterpolatedRequestOptionsProvider as InterpolatedRequestOptionsProviderModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
@@ -45,6 +49,7 @@ from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action i
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
+from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
 from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
@@ -68,11 +73,15 @@ def create_component_from_model(model: BaseModel, config: Config, **kwargs) -> A
 
 
 def create_add_fields(model: AddFieldsModel, config: Config) -> AddFields:
-    return AddFields(fields=model.fields, options=model._options)
+    return AddFields(fields=model.fields, options=model.options)
+
+
+def create_api_key_authenticator(model: ApiKeyAuthenticatorModel, config: Config) -> ApiKeyAuthenticator:
+    return ApiKeyAuthenticator(api_token=model.api_token, header=model.header, config=config, options=model.options)
 
 
 def create_basic_http_authenticator(model: BasicHttpAuthenticatorModel, config: Config) -> BasicHttpAuthenticator:
-    return BasicHttpAuthenticator(password=model.password, username=model.username, config=config, options=model._options)
+    return BasicHttpAuthenticator(password=model.password, username=model.username, config=config, options=model.options)
 
 
 def create_check_stream(model: CheckStreamModel, config: Config):
@@ -99,7 +108,7 @@ def create_cursor_pagination(model: CursorPaginationModel, config: Config) -> Cu
         page_size=model.page_size,
         stop_condition=model.stop_condition,
         config=config,
-        options=model._options,
+        options=model.options,
     )
 
 
@@ -117,6 +126,24 @@ def create_custom_component(model, config: Config) -> type:
     model_args = model.dict()
     model_args["config"] = config
     model_args["options"] = model_args.pop("$options", {})
+
+    # todo: we may need to investigate if we can pull type hints to figure out field types, otherwise type will always need to be defined
+
+    # Pydantic is unable to parse a custom component's fields that are subcomponents into models because their fields and types are not
+    # defined in the schema. The fields and types are defined within the Python class implementation. Pydantic can only parse down to
+    # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
+    for model_field, model_value in model_args.items():
+        if isinstance(model_value, dict) and model_field != "options" and model_field != "config":
+            type_name = model_value.get("type", None)
+            if not type_name:
+                raise ValueError(
+                    f"Error while parsing custom component {model.class_name}. Subcomponent field '{model_field}' should have a 'type' specified"
+                )
+            model_type = TYPE_NAME_TO_MODEL.get(type_name, None)
+            if model_type:
+                parsed_model = model_type.parse_obj(model_value)
+                model_args[model_field] = create_component_from_model(model=parsed_model, config=config)
+
     kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
     return custom_component_class(**kwargs)
 
@@ -127,7 +154,7 @@ def create_declarative_stream(model: DeclarativeStreamModel, config: Config) -> 
     if model.schema_loader:
         schema_loader = create_component_from_model(model=model.schema_loader, config=config)
     else:
-        schema_loader = DefaultSchemaLoader(config=config, options=model._options)
+        schema_loader = DefaultSchemaLoader(config=config, options=model.options)
 
     transformations = []
     if model.transformations:
@@ -152,7 +179,7 @@ def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config
         for backoff_strategy_model in model.backoff_strategies:
             backoff_strategies.append(create_component_from_model(model=backoff_strategy_model, config=config))
     else:
-        backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, options=model._options))
+        backoff_strategies.append(DEFAULT_BACKOFF_STRATEGY(config=config, options=model.options))
 
     response_filters = []
     if model.response_filters:
@@ -161,17 +188,17 @@ def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config
     else:
         response_filters.append(
             HttpResponseFilter(
-                ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=config, options=model._options
+                ResponseAction.RETRY, http_codes=HttpResponseFilter.DEFAULT_RETRIABLE_ERRORS, config=config, options=model.options
             )
         )
-        response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, options=model._options))
+        response_filters.append(HttpResponseFilter(ResponseAction.IGNORE, config=config, options=model.options))
 
     return DefaultErrorHandler(
         backoff_strategies=backoff_strategies,
         max_retries=model.max_retries,
         response_filters=response_filters,
         config=config,
-        options=model._options,
+        options=model.options,
     )
 
 
@@ -190,18 +217,22 @@ def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwa
         pagination_strategy=pagination_strategy,
         url_base=url_base,
         config=config,
-        options=model._options,
+        options=model.options,
     )
 
 
 def create_dpath_extractor(model: DpathExtractorModel, config: Config) -> DpathExtractor:
     decoder = create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder()
-    return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, options=model._options)
+    return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, options=model.options)
 
 
 def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequester:
     authenticator = create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
-    error_handler = create_component_from_model(model=model.error_handler, config=config) if model.error_handler else None
+    error_handler = (
+        create_component_from_model(model=model.error_handler, config=config)
+        if model.error_handler
+        else DefaultErrorHandler(backoff_strategies=[], response_filters=[], config=config, options=model.options)
+    )
     request_options_provider = (
         create_component_from_model(model=model.request_options_provider, config=config) if model.request_options_provider else None
     )
@@ -215,14 +246,27 @@ def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequ
         http_method=model.http_method,
         request_options_provider=request_options_provider,
         config=config,
-        options=model._options,
+        options=model.options,
     )
 
 
 def create_http_response_filter(model: HttpResponseFilterModel, config: Config) -> HttpResponseFilter:
     # continue from here
 
-    return HttpResponseFilter(action=model.action, config=config, options=model._options)
+    return HttpResponseFilter(action=model.action, config=config, options=model.options)
+
+
+def create_interpolated_request_options_provider(
+    model: InterpolatedRequestOptionsProviderModel, config: Config
+) -> InterpolatedRequestOptionsProvider:
+    return InterpolatedRequestOptionsProvider(
+        request_body_data=model.request_body_data,
+        request_body_json=model.request_body_json,
+        request_headers=model.request_headers,
+        request_parameters=model.request_parameters,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_json_decoder(model: JsonDecoderModel, config: Config) -> JsonDecoder:
@@ -230,7 +274,7 @@ def create_json_decoder(model: JsonDecoderModel, config: Config) -> JsonDecoder:
 
 
 def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config) -> JsonFileSchemaLoader:
-    return JsonFileSchemaLoader(file_path=model.file_path, config=config, options=model._options)
+    return JsonFileSchemaLoader(file_path=model.file_path, config=config, options=model.options)
 
 
 def create_no_pagination(model: NoPaginationModel, config: Config) -> NoPagination:
@@ -238,11 +282,11 @@ def create_no_pagination(model: NoPaginationModel, config: Config) -> NoPaginati
 
 
 def create_offset_increment(model: OffsetIncrementModel, config: Config) -> OffsetIncrement:
-    return OffsetIncrement(page_size=model.page_size, config=config, options=model._options)
+    return OffsetIncrement(page_size=model.page_size, config=config, options=model.options)
 
 
 def create_page_increment(model: PageIncrementModel, config: Config) -> PageIncrement:
-    return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, options=model._options)
+    return PageIncrement(page_size=model.page_size, start_from_page=model.start_from_page, options=model.options)
 
 
 def create_parent_stream_config(model: ParentStreamConfigModel, config: Config) -> ParentStreamConfig:
@@ -254,7 +298,7 @@ def create_parent_stream_config(model: ParentStreamConfigModel, config: Config) 
 
 
 def create_record_filter(model: RecordFilterModel, config: Config) -> RecordFilter:
-    return RecordFilter(condition=model.condition, config=config, options=model._options)
+    return RecordFilter(condition=model.condition, config=config, options=model.options)
 
 
 def create_request_option(model: RequestOptionModel, config: Config) -> RequestOption:
@@ -266,7 +310,7 @@ def create_record_selector(model: RecordSelectorModel, config: Config) -> Record
     extractor = create_component_from_model(model=model.extractor, config=config)
     record_filter = create_component_from_model(model.record_filter, config=config) if model.record_filter else None
 
-    return RecordSelector(extractor=extractor, record_filter=record_filter, options=model._options)
+    return RecordSelector(extractor=extractor, record_filter=record_filter, options=model.options)
 
 
 def create_remove_fields(model: RemoveFieldsModel, config: Config) -> RemoveFields:
@@ -291,7 +335,7 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
         record_selector=record_selector,
         stream_slicer=stream_slicer,
         config=config,
-        options=model._options,
+        options=model.options,
     )
 
 
@@ -306,7 +350,7 @@ def create_substream_slicer(model: SubstreamSlicerModel, config: Config) -> Subs
             [create_component_from_model(model=parent_stream_config, config=config) for parent_stream_config in model.parent_stream_configs]
         )
 
-    return SubstreamSlicer(parent_stream_configs=parent_stream_configs, options=model._options)
+    return SubstreamSlicer(parent_stream_configs=parent_stream_configs, options=model.options)
 
 
 class ModelToComponentFactory:
@@ -327,6 +371,7 @@ class ModelToComponentFactory:
 # todo this is better up top but need to make it a forward reference
 PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     AddFieldsModel: create_add_fields,
+    ApiKeyAuthenticatorModel: create_api_key_authenticator,
     BasicHttpAuthenticatorModel: create_basic_http_authenticator,
     CheckStreamModel: create_check_stream,
     CompositeErrorHandlerModel: create_composite_error_handler,
@@ -339,6 +384,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     DpathExtractorModel: create_dpath_extractor,
     HttpRequesterModel: create_http_requester,
     HttpResponseFilterModel: create_http_response_filter,
+    InterpolatedRequestOptionsProviderModel: create_interpolated_request_options_provider,
     JsonDecoderModel: create_json_decoder,
     JsonFileSchemaLoaderModel: create_json_file_schema_loader,
     NoPaginationModel: create_no_pagination,
@@ -353,6 +399,10 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     SubstreamSlicerModel: create_substream_slicer,
     # todo add models for stream slicer types
 }
+
+
+# Needed for the case where we need to perform a second parse on the fields of a custom component
+TYPE_NAME_TO_MODEL = {"DeclarativeStream": DeclarativeStreamModel, "RequestOption": RequestOptionModel}
 
 
 def _get_class_from_fully_qualified_class_name(class_name: str):

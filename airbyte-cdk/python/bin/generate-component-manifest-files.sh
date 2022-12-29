@@ -21,6 +21,8 @@ function main() {
       --use-title-as-name \
       --disable-timestamp \
       --enum-field-as-literal one
+
+    sed -i '' 's/_options:/options:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
   done
 }
 
