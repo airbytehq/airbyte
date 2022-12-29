@@ -9,6 +9,7 @@ import {
   checkConnectionToDestinationForUpdate,
   createDestination,
   deleteDestination,
+  cloneDestination,
   DestinationCoreConfig,
   DestinationCreate,
   DestinationUpdate,
@@ -16,6 +17,7 @@ import {
   getDestination,
   listDestinationsForWorkspace,
   updateDestination,
+  DestinationCloneRequestBody,
 } from "../../request/AirbyteClient";
 
 export class DestinationService extends AirbyteRequestService {
@@ -77,5 +79,9 @@ export class DestinationService extends AirbyteRequestService {
 
   public delete(destinationId: string) {
     return deleteDestination({ destinationId }, this.requestOptions);
+  }
+
+  public clone(destinationCloneData: DestinationCloneRequestBody) {
+    return cloneDestination(destinationCloneData, this.requestOptions);
   }
 }

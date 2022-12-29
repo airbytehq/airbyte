@@ -292,6 +292,7 @@
   "sources.debugInfoModalTitle": "Information about this job",
   "sources.airbyteVersion": "Daspire Version",
   "sources.copyText": "Copy",
+  "sources.editText": "Edit",
   "sources.copied": "Copied",
   "sources.failureOrigin": "Failure Origin",
   "sources.message": "Message",
