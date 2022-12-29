@@ -118,7 +118,7 @@ describe("Connection - main actions", () => {
       expect(interception.request)
         .property("body")
         .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
+          name: `${sourceName} <> ${destName}`,
           prefix: "auto_test",
           namespaceDefinition: "customformat",
           namespaceFormat: "${SOURCE_NAMESPACE}_test",
@@ -266,7 +266,7 @@ describe("Connection - main actions", () => {
       expect(interception.request)
         .property("body")
         .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
+          name: `${sourceName} <> ${destName}`,
           namespaceDefinition: "customformat",
           namespaceFormat: "${SOURCE_NAMESPACE}_DestinationNamespaceCustomFormat",
           status: "active",
@@ -332,7 +332,7 @@ describe("Connection - main actions", () => {
       expect(interception.request)
         .property("body")
         .to.contain({
-          name: `${sourceName} <> ${destName}Connection name`,
+          name: `${sourceName} <> ${destName}`,
           namespaceDefinition: "destination",
           namespaceFormat: "${SOURCE_NAMESPACE}",
           status: "active",
