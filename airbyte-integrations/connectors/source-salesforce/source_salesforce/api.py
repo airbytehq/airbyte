@@ -338,20 +338,14 @@ class Salesforce:
                 return name, None, str(e)
             return name, result, None
 
-        stream_names = list(stream_objects.keys())
-        # try to split all requests by chunks
-        stream_schemas = {}
-        for i in range(0, len(stream_names), self.parallel_tasks_size):
-            chunk_stream_names = stream_names[i : i + self.parallel_tasks_size]
-            with concurrent.futures.ThreadPoolExecutor(max_workers=len(chunk_stream_names)) as executor:
-                for stream_name, schema, err in executor.map(
-                    lambda args: load_schema(*args), [(stream_name, stream_objects[stream_name]) for stream_name in chunk_stream_names]
-                ):
-                    if err:
-                        self.logger.error(f"Loading error of the {stream_name} schema: {err}")
-                        continue
-                    stream_schemas[stream_name] = schema
-        return stream_schemas
+        schemas = {}
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            for stream_name, schema, err in executor.map(lambda args: load_schema(*args), stream_objects.items()):
+                if err:
+                    self.logger.error(f"Loading error of the {stream_name} schema: {err}")
+                    continue
+                schemas[stream_name] = schema
+        return schemas
 
     @staticmethod
     def get_pk_and_replication_key(json_schema: Mapping[str, Any]) -> Tuple[Optional[str], Optional[str]]:
