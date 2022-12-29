@@ -7,9 +7,8 @@ This connector is built by following the [Building a Python Destination](https:/
 ## Local development
 
 ### Prerequisites
-**To iterate on this connector, make sure to complete this prerequisites section.**
 
-#### Minimum Python version required `= 3.7.0`
+#### Minimum Python version required `= 3.9.0`
 
 #### Build & Activate Virtual Environment and install dependencies
 From this connector directory, create a virtual environment:
@@ -49,7 +48,6 @@ and place them into `secrets/config.json`.
 ```
 python main.py spec
 python main.py check --config secrets/config.json
-python main.py discover --config secrets/config.json
 cat integration_tests/messages.jsonl | python main.py write --config secrets/config.json --catalog integration_tests/configured_catalog.json
 ```
 

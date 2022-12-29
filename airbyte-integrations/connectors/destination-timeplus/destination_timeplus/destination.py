@@ -10,8 +10,7 @@ from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status, DestinationSyncMode, Type, AirbyteStream
 
 import json
-import timeplus_client
-from timeplus_client.rest import ApiException
+from timeplus import Stream, Environment
 
 class DestinationTimeplus(Destination):
     def write(
@@ -35,12 +34,9 @@ class DestinationTimeplus(Destination):
         apikey=config["apikey"]
         if endpoint[-1]=='/':
             endpoint=endpoint[0:len(endpoint)-1]
-        configuration = timeplus_client.Configuration()
-        configuration.api_key['X-Api-Key'] = apikey
-        configuration.host=endpoint+"/api"
-        api_client=timeplus_client.ApiClient(configuration)
-        stream_api = timeplus_client.StreamsV1beta1Api(api_client)
-        stream_list = stream_api.v1beta1_streams_get()
+        env = Environment()
+        env.apikey(apikey)._conf().host=endpoint+"/api"
+        stream_list = Stream(env=env).list()
         all_streams = {s.name for s in stream_list}
 
         # only support "overwrite", "append"
@@ -49,10 +45,10 @@ class DestinationTimeplus(Destination):
             stream_exists = configured_stream.stream.name in all_streams
             if is_overwrite and stream_exists:
                 # delete the existing stream
-                stream_api.v1beta1_streams_name_delete(configured_stream.stream.name)
+                Stream(env=env).name(configured_stream.stream.name).get().delete()
             if is_overwrite or not stream_exists:
                 # create a new stream
-                DestinationTimeplus.create_stream(stream_api, configured_stream.stream)
+                DestinationTimeplus.create_stream(env, configured_stream.stream)
                 
         for message in input_messages:
             if message.type == Type.STATE:
@@ -63,41 +59,23 @@ class DestinationTimeplus(Destination):
                 record = message.record
                 
                 # this code is to send data to a single-column stream
-                # batch_body=timeplus_client.IngestData(columns=['raw'],data=[[json.dumps(record.data)]])
-                # stream_api.v1beta1_streams_name_ingest_post(batch_body,record.stream)
+                # Stream(env=env).name(record.stream).column("raw", "string").ingest(payload=record.data)
 
-                # using a hacking way to send JSON objects directly to Timeplus, without using the default compact mode.
-                api_client.call_api(
-                    f"/v1beta1/streams/{record.stream}/ingest",
-                    "POST",
-                    {},
-                    {"format":"streaming"},
-                    {},
-                    body=record.data,
-                    post_params=[],
-                    files={},
-                    response_type=None,
-                    auth_settings=["ApiKeyAuth"],
-                    async_req=False,
-                    _return_http_data_only=False,
-                    _preload_content=True,
-                    _request_timeout=False,
-                    collection_formats={},
-                )
+                Stream(env=env).name(record.stream).ingest(payload=record.data, format="streaming")
             else:
                 # ignore other message types for now
                 continue
         pass
 
     @staticmethod
-    def create_stream(stream_api,stream: AirbyteStream):
+    def create_stream(env,stream: AirbyteStream):
         # singlel-column stream
-        # stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=stream.name, columns=[timeplus_client.ColumnDef(name='raw',type='string')]))
+        # Stream(env=env).name(stream.name).column('raw','string').create()
         
-        columns=[]
+        tp_stream=Stream(env=env).name(stream.name)
         for name,v in stream.json_schema['properties'].items():
-            columns.append(timeplus_client.ColumnDef(name=name,type=DestinationTimeplus.type_mapping(v)))
-        stream_api.v1beta1_streams_post(timeplus_client.StreamDef(name=stream.name,columns=columns))
+            tp_stream.column(name,DestinationTimeplus.type_mapping(v))
+        tp_stream.create()
 
     @staticmethod
     def type_mapping(v) -> str:
@@ -131,10 +109,9 @@ class DestinationTimeplus(Destination):
                 return AirbyteConnectionStatus(status=Status.FAILED, message="API Key must be 60 characters")
             if endpoint[-1]=='/':
                 endpoint=endpoint[0:len(endpoint)-1]
-            configuration = timeplus_client.Configuration()
-            configuration.api_key['X-Api-Key'] = apikey
-            configuration.host=endpoint+"/api"
-            timeplus_client.APIKeysV1beta1Api(timeplus_client.ApiClient(configuration)).v1beta1_auth_api_keys_get()
+            env = Environment()
+            env.apikey(apikey)._conf().host=endpoint+"/api"
+            Stream(env=env).list()
             logger.info("Successfully connected to "+endpoint)
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
