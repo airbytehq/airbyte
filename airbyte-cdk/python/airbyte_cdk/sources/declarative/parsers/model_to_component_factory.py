@@ -23,6 +23,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeStreamSlicer as DatetimeStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
@@ -157,18 +158,31 @@ def create_custom_component(model, config: Config) -> type:
     # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
     for model_field, model_value in model_args.items():
         if isinstance(model_value, dict) and model_field != "options" and model_field != "config":
-            type_name = model_value.get("type", None)
-            if not type_name:
-                raise ValueError(
-                    f"Error while parsing custom component {model.class_name}. Subcomponent field '{model_field}' should have a 'type' specified"
-                )
-            model_type = TYPE_NAME_TO_MODEL.get(type_name, None)
-            if model_type:
-                parsed_model = model_type.parse_obj(model_value)
-                model_args[model_field] = create_component_from_model(model=parsed_model, config=config)
+            model_args[model_field] = _create_nested_component(model, model_field, model_value, config)
+        elif isinstance(model_value, list):
+            vals = []
+            for v in model_value:
+                vals.append(_create_nested_component(model, model_field, v, config))
+            model_args[model_field] = vals
 
     kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
     return custom_component_class(**kwargs)
+
+
+def _create_nested_component(model, model_field, model_value, config):
+    type_name = model_value.get("type", None)
+    if not type_name:
+        raise ValueError(
+            f"Error while parsing custom component {model.class_name}. Subcomponent field '{model_field}' should have a 'type' specified"
+        )
+    model_type = TYPE_NAME_TO_MODEL.get(type_name, None)
+    if model_type:
+        parsed_model = model_type.parse_obj(model_value)
+        return create_component_from_model(model=parsed_model, config=config)
+    else:
+        raise ValueError(
+            f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"
+        )
 
 
 def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Config) -> DatetimeStreamSlicer:
@@ -252,7 +266,9 @@ def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwa
     page_token_option = create_request_option(model=model.page_token_option, config=config) if model.page_token_option else None
     pagination_strategy = create_component_from_model(model=model.pagination_strategy, config=config)
 
-    url_base = kwargs["url_base"]  # todo remove this later, just want to spike an example of passing args from another components fields
+    url_base = (
+        kwargs["url_base"] if "url_base" in kwargs else model.url_base
+    )  # todo remove this later, just want to spike an example of passing args from another components fields
 
     return DefaultPaginator(
         decoder=decoder,
@@ -437,6 +453,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
     CustomBackoffStrategyModel: create_custom_component,
+    CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
     DatetimeStreamSlicerModel: create_datetime_stream_slicer,
@@ -466,7 +483,16 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
 
 
 # Needed for the case where we need to perform a second parse on the fields of a custom component
-TYPE_NAME_TO_MODEL = {"DeclarativeStream": DeclarativeStreamModel, "RequestOption": RequestOptionModel}
+TYPE_NAME_TO_MODEL = {
+    "CustomStreamSlicer": CustomStreamSlicerModel,
+    "DatetimeStreamSlicer": DatetimeStreamSlicerModel,
+    "DeclarativeStream": DeclarativeStreamModel,
+    "DefaultPaginator": DefaultPaginatorModel,
+    "HttpRequester": HttpRequesterModel,
+    "RequestOption": RequestOptionModel,
+    "RecordSelector": RecordSelectorModel,
+    "SubstreamSlicer": SubstreamSlicerModel,
+}
 
 
 def _get_class_from_fully_qualified_class_name(class_name: str):
