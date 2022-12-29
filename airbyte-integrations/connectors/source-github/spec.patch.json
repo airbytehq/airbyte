@@ -82,5 +82,6 @@
         }
       ]
     }
-  }
+  },
+  "required": ["start_date", "repository", "credentials"]
 }

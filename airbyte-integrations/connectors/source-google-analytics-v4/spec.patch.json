@@ -78,5 +78,6 @@
     "window_in_days": {
       "description": "Number of days each read will cover, beginning at the start date. Choose a value between 1 (one day) and 364 (one year)."
     }
-  }
+  },
+  "required": ["view_id", "start_date", "credentials"]
 }
