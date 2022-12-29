@@ -14,6 +14,18 @@
 
 import Cypress from "cypress";
 
+const pgp = require("pg-promise")();
+const postgresConfig = require(require("path").resolve("cypress.json"));
+
+function dbConnection(query: any, userDefineConnection: undefined) {
+  let connection = postgresConfig.db;
+  if (userDefineConnection != undefined) {
+    connection = userDefineConnection;
+  }
+  const db = pgp(connection);
+  return db.any(query).finally(db.$pool.end);
+}
+
 /**
  * @type {Cypress.PluginConfig}
  */
@@ -21,6 +33,6 @@ module.exports = (on: Cypress.PluginEvents, config: Cypress.PluginConfigOptions)
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
   on("task", {
-    dbQuery: (query) => require("cypress-postgres")(query.query, query.connection),
+    dbQuery: (query) => dbConnection(query.query, query.connection),
   });
 };
