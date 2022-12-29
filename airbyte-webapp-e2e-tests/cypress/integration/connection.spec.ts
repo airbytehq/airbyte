@@ -60,8 +60,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Update connection", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString("Test update connection source cypress");
     const destName = appendRandomString("Test update connection destination cypress");
 
