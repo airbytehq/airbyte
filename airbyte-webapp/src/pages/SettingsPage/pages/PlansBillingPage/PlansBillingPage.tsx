@@ -67,14 +67,8 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
   }, [status]);
 
   useEffect(() => {
-    // console.log("===> PLAN DETAIL <===");
-    // console.log(userPlanDetail.selectedProduct);
-    // console.log("===> PREVIOUS PLAN DETAIL <===");
-    // console.log(prevUserPlanDetail?.selectedProduct);
-    // console.log(!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct));
     if (prevUserPlanDetail?.selectedProduct !== undefined) {
       if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
-        // console.log( "TEST 01 PASS" );
         setMessageId?.("subscription.plan.update");
       }
     }
