@@ -20,6 +20,7 @@ export const enum Action {
   DISABLE = "Disable",
   REENABLE = "Reenable",
   DELETE = "Delete",
+  CLONE = "Clone",
   REQUEST = "Request",
   SKIP = "Skip",
   FEEDBACK = "Feedback",

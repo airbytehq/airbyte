@@ -33,6 +33,8 @@ Note: needs to be run from the root directory of the Airbyte project.
 
 
 ## Change log:
+#### 2022.12.29
+1. Add copy function for ource/destination page
 #### 2022.12.28
 1. Show source & destination pages (file: views/layout/sideBar)
 #### 2022.12.27
