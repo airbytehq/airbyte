@@ -5,6 +5,7 @@
 import json
 import logging
 
+import freezegun
 import pendulum
 import pytest
 import requests
@@ -188,6 +189,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
                 "refresh_token": "my_refresh_token",
                 "client_id": "my_client_id",
                 "client_secret": "my_client_secret",
+                "access_token_expiration_datetime": "2022-12-31T00:00:00+00:00"
             }
         }
 
@@ -209,6 +211,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
                 token_refresh_endpoint="foobar",
             )
 
+    @freezegun.freeze_time("2022-12-31")
     def test_get_access_token(self, capsys, mocker, connector_config):
         authenticator = SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
@@ -222,7 +225,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         expected_new_config = connector_config.copy()
         expected_new_config["credentials"]["access_token"] = "new_access_token"
         expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
-
+        expected_new_config["credentials"]["access_token_expiration_datetime"] = "2022-12-31T00:00:42+00:00"
         assert airbyte_message["control"]["connectorConfig"]["config"] == expected_new_config
         assert authenticator.access_token == access_token == "new_access_token"
         assert authenticator.get_refresh_token() == "new_refresh_token"
