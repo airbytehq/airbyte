@@ -178,7 +178,7 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onClickRow, onSync })
     [sortBy, sortOrder, entity, onSortClick, onSync, allowSync, allowAutoDetectSchema]
   );
 
-  return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows />;
+  return <Table columns={columns} data={sortingData} onClickRow={onClickRow} erroredRows testId="connectionsTable" />;
 };
 
 export default ConnectionTable;
