@@ -9,6 +9,7 @@ from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_
 
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
+from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
@@ -17,20 +18,25 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import BasicHttpAuthenticator as BasicHttpAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CheckStream as CheckStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CompositeErrorHandler as CompositeErrorHandlerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import ConstantBackoffStrategy as ConstantBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeStreamSlicer as DatetimeStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
     InterpolatedRequestOptionsProvider as InterpolatedRequestOptionsProviderModel,
 )
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonDecoder as JsonDecoderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
@@ -44,16 +50,16 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ExponentialBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
 from airbyte_cdk.sources.declarative.requesters.request_option import RequestOptionType
 from airbyte_cdk.sources.declarative.requesters.request_options import InterpolatedRequestOptionsProvider
 from airbyte_cdk.sources.declarative.retrievers import SimpleRetriever
-from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, JsonFileSchemaLoader
+from airbyte_cdk.sources.declarative.schema import DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader
 from airbyte_cdk.sources.declarative.spec import Spec
-from airbyte_cdk.sources.declarative.stream_slicers import SingleSlice, SubstreamSlicer
+from airbyte_cdk.sources.declarative.stream_slicers import DatetimeStreamSlicer, SingleSlice, SubstreamSlicer
 from airbyte_cdk.sources.declarative.stream_slicers.substream_slicer import ParentStreamConfig
 from airbyte_cdk.sources.declarative.transformations import AddFields, RemoveFields
 from airbyte_cdk.sources.declarative.types import Config
@@ -94,6 +100,14 @@ def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Co
         for error_handler_model in model.error_handlers:
             error_handlers.append(create_component_from_model(model=error_handler_model, config=config))
     return CompositeErrorHandler(error_handlers=error_handlers)
+
+
+def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config) -> ConstantBackoffStrategy:
+    return ConstantBackoffStrategy(
+        backoff_time_in_seconds=model.backoff_time_in_seconds,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_cursor_pagination(model: CursorPaginationModel, config: Config) -> CursorPaginationStrategy:
@@ -146,6 +160,27 @@ def create_custom_component(model, config: Config) -> type:
 
     kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
     return custom_component_class(**kwargs)
+
+
+def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Config) -> DatetimeStreamSlicer:
+    start_datetime = (
+        model.start_datetime if isinstance(model.start_datetime, str) else create_min_max_datetime(model.start_datetime, config)
+    )
+    end_datetime = model.end_datetime if isinstance(model.end_datetime, str) else create_min_max_datetime(model.end_datetime, config)
+    return DatetimeStreamSlicer(
+        cursor_field=model.cursor_field,
+        datetime_format=model.datetime_format,
+        end_datetime=end_datetime,
+        start_datetime=start_datetime,
+        step=model.step,
+        end_time_option=model.end_time_option,
+        lookback_window=model.lookback_window,
+        start_time_option=model.start_time_option,
+        stream_state_field_end=model.stream_state_field_end,
+        stream_state_field_start=model.stream_state_field_start,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_declarative_stream(model: DeclarativeStreamModel, config: Config) -> DeclarativeStream:
@@ -256,6 +291,10 @@ def create_http_response_filter(model: HttpResponseFilterModel, config: Config) 
     return HttpResponseFilter(action=model.action, config=config, options=model.options)
 
 
+def create_inline_schema_loader(model: InlineSchemaLoaderModel, config: Config) -> InlineSchemaLoader:
+    return InlineSchemaLoader(schema=model.schema, options={})
+
+
 def create_interpolated_request_options_provider(
     model: InterpolatedRequestOptionsProviderModel, config: Config
 ) -> InterpolatedRequestOptionsProvider:
@@ -277,7 +316,17 @@ def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Con
     return JsonFileSchemaLoader(file_path=model.file_path, config=config, options=model.options)
 
 
-def create_no_pagination(model: NoPaginationModel, config: Config) -> NoPagination:
+def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config) -> MinMaxDatetime:
+    return MinMaxDatetime(
+        datetime=model.datetime,
+        datetime_format=model.datetime_format,
+        max_datetime=model.max_datetime,
+        min_datetime=model.min_datetime,
+        options=model.options,
+    )
+
+
+def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
     return NoPagination()
 
 
@@ -375,18 +424,23 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     BasicHttpAuthenticatorModel: create_basic_http_authenticator,
     CheckStreamModel: create_check_stream,
     CompositeErrorHandlerModel: create_composite_error_handler,
+    ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
+    CustomBackoffStrategyModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
+    DatetimeStreamSlicerModel: create_datetime_stream_slicer,
     DeclarativeStreamModel: create_declarative_stream,
     DefaultErrorHandlerModel: create_default_error_handler,
     DefaultPaginatorModel: create_default_paginator,
     DpathExtractorModel: create_dpath_extractor,
     HttpRequesterModel: create_http_requester,
     HttpResponseFilterModel: create_http_response_filter,
+    InlineSchemaLoaderModel: create_inline_schema_loader,
     InterpolatedRequestOptionsProviderModel: create_interpolated_request_options_provider,
     JsonDecoderModel: create_json_decoder,
     JsonFileSchemaLoaderModel: create_json_file_schema_loader,
+    MinMaxDatetimeModel: create_min_max_datetime,
     NoPaginationModel: create_no_pagination,
     OffsetIncrementModel: create_offset_increment,
     PageIncrementModel: create_page_increment,
