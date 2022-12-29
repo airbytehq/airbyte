@@ -41,6 +41,9 @@ import { updateSchemaModalConfirmBtnClick } from "pages/modals/updateSchemaModal
 describe("Connection - main actions", () => {
   beforeEach(() => {
     initialSetupCompleted();
+
+    cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
   });
 
   it("Create new connection", () => {
@@ -86,8 +89,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Update connection (pokeAPI)", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -179,9 +180,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Saving a connection's schedule type only changes expected values", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-    cy.intercept("/api/v1/web_backend/connections/get").as("getConnection");
-
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -245,8 +243,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Saving a connection's destination namespace with 'Custom format' option", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -291,8 +287,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Saving a connection's destination namespace with 'Mirror source structure' option", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -314,8 +308,6 @@ describe("Connection - main actions", () => {
   });
 
   it("Saving a connection's destination namespace with 'Destination default' option", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString("Test update connection PokeAPI source cypress");
     const destName = appendRandomString("Test update connection Local JSON destination cypress");
 
@@ -399,6 +391,8 @@ describe("Connection sync modes", () => {
   beforeEach(() => {
     initialSetupCompleted();
     populateDBSource();
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
   });
 
   afterEach(() => {
@@ -409,8 +403,6 @@ describe("Connection sync modes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     createTestConnection(sourceName, destName);
 
@@ -450,8 +442,6 @@ describe("Connection sync modes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     createTestConnection(sourceName, destName);
 
@@ -494,8 +484,6 @@ describe("Connection sync modes", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "cities";
-
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
 
     createTestConnection(sourceName, destName);
 
@@ -540,6 +528,8 @@ describe("Connection - detect changes in source", () => {
   beforeEach(() => {
     initialSetupCompleted();
     populateDBSource();
+
+    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
   });
 
   afterEach(() => {
@@ -547,8 +537,6 @@ describe("Connection - detect changes in source", () => {
   });
 
   it("Create a connection, update data in source, show diff modal, reset streams", () => {
-    cy.intercept("/api/v1/web_backend/connections/update").as("updateConnection");
-
     const sourceName = appendRandomString(
       "Test refresh source schema with changed data - connection Postgres source cypress"
     );
