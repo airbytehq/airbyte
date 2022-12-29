@@ -40,11 +40,6 @@ helm.sh/chart: {{ include "airbyte.chart" . }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
-{{- if .Values.extraLabels}}
-{{- with mergeOverwrite .Values.extraLabels .Values.global.extraLabels }}
-{{ toYaml .}}
-{{- end }}
-{{- end }}
 {{- end }}
 
 {{/*
@@ -53,11 +48,6 @@ Selector labels
 {{- define "airbyte.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "airbyte.name" . }}
 app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Values.extraSelectorLabels}}
-{{- with mergeOverwrite .Values.extraSelectorLabels .Values.global.extraSelectorLabels }}
-{{ toYaml .}}
-{{- end }}
-{{- end }}
 {{- end }}
 
 {{/*
