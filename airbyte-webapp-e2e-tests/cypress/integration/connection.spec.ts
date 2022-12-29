@@ -25,8 +25,8 @@ import {
   checkStreamFields,
   expandStreamDetails,
 } from "pages/replicationPage";
-import { openSourceDestinationFromGrid, goToSourcePage } from "pages/sourcePage";
-import { goToSettingsPage } from "pages/settingsConnectionPage";
+import { openSourceDestinationFromGrid, goToSourcePage, openSourceOverview } from "pages/sourcePage";
+import { goToSettingsPage, openConnectionOverviewByDestinationName } from "pages/settingsConnectionPage";
 import { cleanDBSource, makeChangesInDBSource, populateDBSource } from "commands/db";
 import {
   catalogDiffModal,
@@ -68,8 +68,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
