@@ -22,7 +22,9 @@ function main() {
       --disable-timestamp \
       --enum-field-as-literal one
 
-    sed -i '' 's/_options:/options:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
+    temp_file=$(mktemp)
+    sed 's/_options:/options:/g' "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py" > "${temp_file}"
+    mv "${temp_file}" "$ROOT_DIR/$OUTPUT_DIR/$filename_wo_ext.py"
   done
 }
 
