@@ -3970,6 +3970,8 @@ components:
       properties:
         streamName:
           type: string
+        streamNamespace:
+          type: string
         stats:
           $ref: "#/components/schemas/AttemptStats"
     AttemptFailureSummary:
