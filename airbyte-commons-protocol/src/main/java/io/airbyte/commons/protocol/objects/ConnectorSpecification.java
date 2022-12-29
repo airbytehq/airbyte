@@ -5,12 +5,19 @@
 package io.airbyte.commons.protocol.objects;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import io.airbyte.commons.protocol.objects.serde.ConnectionSpecificationDeserializer;
+import io.airbyte.commons.protocol.objects.serde.ConnectionSpecificationSerializer;
+import io.airbyte.commons.protocol.objects.serde.JsonSerializable;
 import io.airbyte.protocol.models.AdvancedAuth;
 import io.airbyte.protocol.models.AuthSpecification;
 import java.net.URI;
 import java.util.List;
 
-public interface ConnectorSpecification {
+@JsonDeserialize(using = ConnectionSpecificationDeserializer.class)
+@JsonSerialize(using = ConnectionSpecificationSerializer.class)
+public interface ConnectorSpecification extends JsonSerializable {
 
   URI getDocumentationUrl();
 

@@ -5,6 +5,7 @@
 package io.airbyte.commons.protocol.objects.impl;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import io.airbyte.commons.json.Jsons;
 import io.airbyte.commons.protocol.objects.ConnectorSpecification;
 import io.airbyte.commons.protocol.objects.DestinationSyncMode;
 import io.airbyte.protocol.models.AdvancedAuth;
@@ -66,6 +67,15 @@ public class ConnectorSpecificationAdapter implements ConnectorSpecification {
   @Override
   public AdvancedAuth getAdvancedAuth() {
     return connectorSpecification.getAdvancedAuth();
+  }
+
+  @Override
+  public String toJson() {
+    return Jsons.serialize(connectorSpecification);
+  }
+
+  static public ConnectorSpecification fromJson(final String jsonString) {
+    return new ConnectorSpecificationAdapter(Jsons.deserialize(jsonString, io.airbyte.protocol.models.ConnectorSpecification.class));
   }
 
   @Override
