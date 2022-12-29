@@ -6,10 +6,11 @@ package io.airbyte.integrations.source.postgres;
 
 import static io.airbyte.db.jdbc.JdbcUtils.AMPERSAND;
 import static io.airbyte.db.jdbc.JdbcUtils.EQUALS;
+import static io.airbyte.db.jdbc.JdbcUtils.PLATFORM_DATA_INCREASE_FACTOR;
 import static io.airbyte.integrations.debezium.AirbyteDebeziumHandler.shouldUseCDC;
 import static io.airbyte.integrations.source.jdbc.JdbcSSLConnectionUtils.PARAM_CA_CERTIFICATE;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA;
-import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_NO_SCHEMA_QUERY;
+import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.ROW_COUNT_RESULT_COL;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TABLE_ESTIMATE_QUERY;
 import static io.airbyte.integrations.source.postgres.PostgresQueryUtils.TOTAL_BYTES_RESULT_COL;
@@ -521,10 +522,10 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
     final String resultColName = "nullValue";
     // Query: Only if cursor column allows null values, query whether it contains one
     if (StringUtils.isNotBlank(schema)) {
-      query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA,
+      query = String.format(NULL_CURSOR_VALUE_WITH_SCHEMA_QUERY,
           schema, tableName, columnName, schema, tableName, columnName, resultColName);
     } else {
-      query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA,
+      query = String.format(NULL_CURSOR_VALUE_NO_SCHEMA_QUERY,
           tableName, columnName, tableName, columnName, resultColName);
     }
     LOGGER.debug("null value query: {}", query);
@@ -554,8 +555,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // is to
       // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
       // However, this approach doesn't account for different row sizes.
-      AirbyteTraceMessageUtility.emitEstimateTrace(2 * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info("estimate for table: " + fullTableName + " : {total_bytes:" + syncByteCount + ", row_count : " + syncRowCount);
+      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+          fullTableName, syncRowCount, syncByteCount, syncRowCount, syncByteCount));
     } catch (final SQLException e) {
       throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
     }
@@ -587,8 +589,9 @@ public class PostgresSource extends AbstractJdbcSource<PostgresType> implements 
       // is to
       // read a row and Stringify it to better understand the accurate volume of data sent over the wire.
       // However, this approach doesn't account for different row sizes
-      AirbyteTraceMessageUtility.emitEstimateTrace(2 * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
-      LOGGER.info("estimate for table: " + fullTableName + " : {row_count:" + syncRowCount + ", total_bytes : " + syncByteCount);
+      AirbyteTraceMessageUtility.emitEstimateTrace(PLATFORM_DATA_INCREASE_FACTOR * syncByteCount, Type.STREAM, syncRowCount, tableName, schemaName);
+      LOGGER.info(String.format("Estimate for table: %s : {sync_row_count: %s, sync_bytes: %s, total_table_row_count: %s, total_table_bytes: %s}",
+          fullTableName, syncRowCount, syncByteCount, tableRowCount, tableRowCount));
     } catch (final SQLException e) {
       throw new ConfigErrorException("Error occurred while attempting to estimate sync size", e);
     }
