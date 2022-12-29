@@ -274,7 +274,7 @@ def previous_discovered_catalog_fixture(
     """JSON schemas for each stream"""
     if previous_connector_docker_runner is None:
         logging.warning(
-            "\n We could not retrieve the previous connector spec as a connector runner for the previous connector version could not be instantiated."
+            "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
         )
         return None
     if not previous_cached_schemas:
