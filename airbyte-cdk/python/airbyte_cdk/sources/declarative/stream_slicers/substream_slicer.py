@@ -27,6 +27,7 @@ class ParentStreamConfig(JsonSchemaMixin):
     stream: Stream
     parent_key: str
     stream_slice_field: str
+    options: InitVar[Mapping[str, Any]]
     request_option: Optional[RequestOption] = None
 
 

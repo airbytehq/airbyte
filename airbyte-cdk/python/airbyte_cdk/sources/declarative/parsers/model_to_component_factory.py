@@ -97,7 +97,7 @@ def create_component_from_model(model: BaseModel, config: Config, **kwargs) -> A
 
 
 def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config) -> AddedFieldDefinition:
-    return AddedFieldDefinition(path=model.path, value=model.value)
+    return AddedFieldDefinition(path=model.path, value=model.value, options=model.options)
 
 
 def create_add_fields(model: AddFieldsModel, config: Config) -> AddFields:
@@ -137,7 +137,7 @@ def create_composite_error_handler(model: CompositeErrorHandlerModel, config: Co
     if model.error_handlers:
         for error_handler_model in model.error_handlers:
             error_handlers.append(create_component_from_model(model=error_handler_model, config=config))
-    return CompositeErrorHandler(error_handlers=error_handlers)
+    return CompositeErrorHandler(error_handlers=error_handlers, options=model.options)
 
 
 def create_constant_backoff_strategy(model: ConstantBackoffStrategyModel, config: Config) -> ConstantBackoffStrategy:
@@ -152,7 +152,7 @@ def create_cursor_pagination(model: CursorPaginationModel, config: Config) -> Cu
     if model.decoder:
         decoder = create_component_from_model(model=model.decoder, config=config)
     else:
-        decoder = JsonDecoder()
+        decoder = JsonDecoder(options=model.options)
 
     return CursorPaginationStrategy(
         cursor_value=model.cursor_value,
@@ -202,7 +202,7 @@ def create_custom_component(model, config: Config) -> type:
 def _get_defaults(model) -> Dict:
     return {
         "CustomRecordExtractor": {
-            "decoder": JsonDecoder(),
+            "decoder": JsonDecoder(options={}),
         }
     }.get(model.type, {})
 
@@ -303,7 +303,7 @@ def create_default_error_handler(model: DefaultErrorHandlerModel, config: Config
 
 
 def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwargs) -> DefaultPaginator:
-    decoder = create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder()
+    decoder = create_component_from_model(model=model.decoder, config=config) if model.decoder else JsonDecoder(options={})
     page_size_option = create_component_from_model(model=model.page_size_option, config=config) if model.page_size_option else None
     page_token_option = create_component_from_model(model=model.page_token_option, config=config) if model.page_token_option else None
     pagination_strategy = create_component_from_model(model=model.pagination_strategy, config=config)
@@ -324,7 +324,7 @@ def create_default_paginator(model: DefaultPaginatorModel, config: Config, **kwa
 
 
 def create_dpath_extractor(model: DpathExtractorModel, config: Config) -> DpathExtractor:
-    decoder = create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder()
+    decoder = create_component_from_model(model.decoder, config=config) if model.decoder else JsonDecoder(options={})
     return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, options=model.options)
 
 
@@ -384,7 +384,7 @@ def create_interpolated_request_options_provider(
 
 
 def create_json_decoder(model: JsonDecoderModel, config: Config) -> JsonDecoder:
-    return JsonDecoder()
+    return JsonDecoder(options={})
 
 
 def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Config) -> JsonFileSchemaLoader:
@@ -416,7 +416,7 @@ def create_no_auth(model: NoAuthModel, config: Config) -> NoAuth:
 
 
 def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
-    return NoPagination()
+    return NoPagination(options={})
 
 
 def create_offset_increment(model: OffsetIncrementModel, config: Config) -> OffsetIncrement:
@@ -431,7 +431,11 @@ def create_parent_stream_config(model: ParentStreamConfigModel, config: Config) 
     declarative_stream = create_component_from_model(model.stream, config=config)
     request_option = create_component_from_model(model.request_option, config=config) if model.request_option else None
     return ParentStreamConfig(
-        parent_key=model.parent_key, request_option=request_option, stream=declarative_stream, stream_slice_field=model.stream_slice_field
+        parent_key=model.parent_key,
+        request_option=request_option,
+        stream=declarative_stream,
+        stream_slice_field=model.stream_slice_field,
+        options=model.options,
     )
 
 
@@ -440,8 +444,8 @@ def create_record_filter(model: RecordFilterModel, config: Config) -> RecordFilt
 
 
 def create_request_option(model: RequestOptionModel, config: Config) -> RequestOption:
-    inject_into = RequestOptionType(model.inject_into.value)  # todo does this work?
-    return RequestOption(field_name=model.field_name, inject_into=inject_into)
+    inject_into = RequestOptionType(model.inject_into.value)
+    return RequestOption(field_name=model.field_name, inject_into=inject_into, options={})
 
 
 def create_record_selector(model: RecordSelectorModel, config: Config) -> RecordSelector:
@@ -452,7 +456,7 @@ def create_record_selector(model: RecordSelectorModel, config: Config) -> Record
 
 
 def create_remove_fields(model: RemoveFieldsModel, config: Config) -> RemoveFields:
-    return RemoveFields(field_pointers=model.field_pointers)
+    return RemoveFields(field_pointers=model.field_pointers, options={})
 
 
 def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> SimpleRetriever:
@@ -461,9 +465,11 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
     paginator = (
         create_component_from_model(model=model.paginator, config=config, url_base=model.requester.url_base)
         if model.paginator
-        else NoPagination()
+        else NoPagination(options={})
     )
-    stream_slicer = create_component_from_model(model=model.stream_slicer, config=config) if model.stream_slicer else SingleSlice()
+    stream_slicer = (
+        create_component_from_model(model=model.stream_slicer, config=config) if model.stream_slicer else SingleSlice(options={})
+    )
 
     return SimpleRetriever(
         name=model.name,
@@ -478,7 +484,7 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
 
 
 def create_single_slice(model: SingleSliceModel, config: Config) -> SingleSlice:
-    return SingleSlice()
+    return SingleSlice(options={})
 
 
 def create_spec(model: SpecModel, config: Config) -> Spec:

@@ -18,6 +18,7 @@ class AddedFieldDefinition(JsonSchemaMixin):
 
     path: FieldPointer
     value: Union[InterpolatedString, str]
+    options: InitVar[Mapping[str, Any]]
 
 
 @dataclass(frozen=True)

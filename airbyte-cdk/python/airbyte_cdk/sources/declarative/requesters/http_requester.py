@@ -10,6 +10,7 @@ from typing import Any, Mapping, MutableMapping, Optional, Union
 import requests
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import DeclarativeAuthenticator, NoAuth
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
+from airbyte_cdk.sources.declarative.requesters.error_handlers import DefaultErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.error_handler import ErrorHandler
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_status import ResponseStatus
 from airbyte_cdk.sources.declarative.requesters.request_options.interpolated_request_options_provider import (
@@ -39,12 +40,12 @@ class HttpRequester(Requester, JsonSchemaMixin):
     name: str
     url_base: Union[InterpolatedString, str]
     path: Union[InterpolatedString, str]
-    error_handler: ErrorHandler
     config: Config
     options: InitVar[Mapping[str, Any]]
     http_method: Union[str, HttpMethod] = HttpMethod.GET
     request_options_provider: Optional[InterpolatedRequestOptionsProvider] = None
     authenticator: DeclarativeAuthenticator = None
+    error_handler: Optional[ErrorHandler] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.url_base = InterpolatedString.create(self.url_base, options=options)
@@ -59,6 +60,7 @@ class HttpRequester(Requester, JsonSchemaMixin):
         if type(self.http_method) == str:
             self.http_method = HttpMethod[self.http_method]
         self._method = self.http_method
+        self.error_handler = self.error_handler or DefaultErrorHandler(options=options, config=self.config)
         self._options = options
 
     # We are using an LRU cache in should_retry() method which requires all incoming arguments (including self) to be hashable.

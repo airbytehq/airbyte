@@ -2,9 +2,9 @@
 # Copyright (c) 2022 Airbyte, Inc., all rights reserved.
 #
 
-from dataclasses import dataclass
+from dataclasses import InitVar, dataclass
 from enum import Enum
-from typing import Optional
+from typing import Any, Mapping, Optional
 
 from dataclasses_jsonschema import JsonSchemaMixin
 
@@ -32,9 +32,10 @@ class RequestOption(JsonSchemaMixin):
     """
 
     inject_into: RequestOptionType
+    options: InitVar[Mapping[str, Any]]
     field_name: Optional[str] = None
 
-    def __post_init__(self):
+    def __post_init__(self, options: Mapping[str, Any]):
         if self.inject_into == RequestOptionType.path:
             if self.field_name is not None:
                 raise ValueError(f"RequestOption with path cannot have a field name. Get {self.field_name}")

@@ -7,6 +7,7 @@ from typing import Any, List, Mapping, Union
 
 import dpath.util
 import requests
+from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.decoders.decoder import Decoder
 from airbyte_cdk.sources.declarative.extractors.record_extractor import RecordExtractor
 from airbyte_cdk.sources.declarative.interpolation.interpolated_string import InterpolatedString
@@ -54,9 +55,9 @@ class DpathExtractor(RecordExtractor, JsonSchemaMixin):
     """
 
     field_pointer: List[Union[InterpolatedString, str]]
-    decoder: Decoder
     config: Config
     options: InitVar[Mapping[str, Any]]
+    decoder: Decoder = JsonDecoder(options={})
 
     def __post_init__(self, options: Mapping[str, Any]):
         for pointer_index in range(len(self.field_pointer)):
