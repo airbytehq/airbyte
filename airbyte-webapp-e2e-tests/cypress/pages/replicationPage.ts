@@ -8,16 +8,16 @@ const destinationNamespaceDefault = "div[data-testid='namespaceDefinition-destin
 const destinationNamespaceSource = "div[data-testid='namespaceDefinition-source']";
 const destinationNamespaceCustomInput = "input[data-testid='input']";
 const syncModeDropdown = "div[data-testid='syncSettingsDropdown'] input";
+
 // Table dropdown (pathPopout)
 const getFieldDropdownContainer = (streamName: string, type: string) => `div[id='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownButton = (streamName: string, type: string) =>
   `button[data-testid='${streamName}_${type}_pathPopout']`;
 const getFieldDropdownOption = (value: string) => `div[data-testid='${value}']`;
-const dropDownOverlayContainer = "div[data-testid='overlayContainer']"
-
-const streamFieldNames = "[class^='TreeRowWrapper_rowWrapper'] span";
-const streamDataTypes = "[class^='TreeRowWrapper_rowWrapper'] div:nth-child(2)";
-const ExpandStreamDetailsTableBtn = "[class^='Arrow_container__']";
+const dropDownOverlayContainer = "div[data-testid='overlayContainer']";
+const streamNameCell = "[data-testid='nameCell']";
+const streamDataTypeCell = "[data-testid='dataTypeCell']";
+const getExpandStreamArrowBtn = (streamName: string) => `[data-testid='${streamName}_expandStreamDetails']`;
 const preFilledPrimaryKeyText = "div[class^='PathPopout_text']";
 
 const successResult = "div[data-id='success-result']";
@@ -36,9 +36,7 @@ export const enterConnectionName = (name: string) => {
   cy.get(connectionNameInput).type(name);
 };
 
-export const expandStreamDetails = () => {
-  cy.get(ExpandStreamDetailsTableBtn).click();
-};
+export const expandStreamDetailsByName = (streamName: string) => cy.get(getExpandStreamArrowBtn(streamName)).click();
 
 export const selectSchedule = (value: string) => {
   cy.get(scheduleDropdown).click();
@@ -122,11 +120,11 @@ export const selectPrimaryKeyField = (streamName: string, primaryKeyValues: stri
   selectFieldDropdownOption(streamName, "primaryKey", primaryKeyValues);
 
 export const checkStreamFields = (listNames: Array<String>, listTypes: Array<String>) => {
-  cy.get(streamFieldNames).each(($span, i) => {
+  cy.get(streamNameCell).each(($span, i) => {
     expect($span.text()).to.equal(listNames[i]);
   });
 
-  cy.get(streamDataTypes).each(($span, i) => {
+  cy.get(streamDataTypeCell).each(($span, i) => {
     expect($span.text()).to.equal(listTypes[i]);
   });
 };
