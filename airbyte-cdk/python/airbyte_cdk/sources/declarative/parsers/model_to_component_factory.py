@@ -184,19 +184,22 @@ def create_custom_component(model, config: Config) -> type:
     # defined in the schema. The fields and types are defined within the Python class implementation. Pydantic can only parse down to
     # the custom component and this code performs a second parse to convert the sub-fields first into models, then declarative components
     for model_field, model_value in model_args.items():
-        if isinstance(model_value, dict) and model_field != "options" and model_field != "config":
+        if _is_component(model_field, model_value):
             model_args[model_field] = _create_nested_component(model, model_field, model_value, config)
         elif isinstance(model_value, list):
             vals = []
             for v in model_value:
-                vals.append(_create_nested_component(model, model_field, v, config))
+                if _is_component(model_field, v):
+                    vals.append(_create_nested_component(model, model_field, v, config))
             model_args[model_field] = vals
 
     kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
     return custom_component_class(**kwargs)
 
 
-def _create_nested_component(model, model_field, model_value, config):
+
+
+def _create_nested_component(model, model_field: str, model_value: Any, config: Config) -> Any:
     type_name = model_value.get("type", None)
     if not type_name:
         raise ValueError(
@@ -210,6 +213,10 @@ def _create_nested_component(model, model_field, model_value, config):
         raise ValueError(
             f"Error creating custom component {model.class_name}. Subcomponent creation has not been implemented for '{type_name}'"
         )
+
+
+def _is_component(model_field: str, model_value: Any) -> bool:
+    return isinstance(model_value, dict) and model_field != "options" and model_field != "config"
 
 
 def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Config) -> DatetimeStreamSlicer:
