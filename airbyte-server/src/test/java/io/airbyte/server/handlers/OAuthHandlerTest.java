@@ -205,7 +205,8 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "**********",
-          "testNotMask": "this"
+          "testNotMask": "this",
+          "testOtherType": true
         }
         """);
 
@@ -213,7 +214,8 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "mask",
-          "testNotMask": "notThis"
+          "testNotMask": "notThis",
+          "testOtherType": true
         }
         """);
 
@@ -221,7 +223,8 @@ class OAuthHandlerTest {
         """
         {
           "testMask": "mask",
-          "testNotMask": "this"
+          "testNotMask": "this",
+          "testOtherType": true
         }
         """);
 
