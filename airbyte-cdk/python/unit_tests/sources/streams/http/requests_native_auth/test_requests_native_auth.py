@@ -9,7 +9,6 @@ import freezegun
 import pendulum
 import pytest
 import requests
-from airbyte_cdk.config_observation import ObservedDict
 from airbyte_cdk.sources.streams.http.requests_native_auth import (
     BasicHttpAuthenticator,
     MultipleTokenAuthenticator,
