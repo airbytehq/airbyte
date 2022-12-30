@@ -150,7 +150,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             access_token_name=access_token_name,
             expires_in_name=expires_in_name,
             refresh_request_body=refresh_request_body,
-            grant_type=grant_type
+            grant_type=grant_type,
         )
 
     def _validate_connector_config(self):
@@ -194,7 +194,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     @access_token.setter
     def access_token(self, new_access_token: str):
         dpath.util.set(self._connector_config, self._access_token_config_path, new_access_token)
-    
+
     def get_refresh_token(self) -> str:
         return dpath.util.get(self._connector_config, self._refresh_token_config_path)
 
@@ -204,14 +204,13 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
     def get_token_expiry_date(self) -> pendulum.DateTime:
         return pendulum.parse(dpath.util.get(self._connector_config, self._token_expiry_date_config_path))
 
-    def set_token_expiry_date(self,  new_token_expiry_date):
+    def set_token_expiry_date(self, new_token_expiry_date):
         dpath.util.set(self._connector_config, self._token_expiry_date_config_path, new_token_expiry_date)
-
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""
         return pendulum.now("UTC") > self.get_token_expiry_date()
-    
+
     @staticmethod
     def get_new_token_expiry_date(access_token_expires_in: int):
         return pendulum.now("UTC").add(seconds=access_token_expires_in)
@@ -241,4 +240,3 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             )
         except Exception as e:
             raise Exception(f"Error while refreshing access token and refresh token: {e}") from e
-
