@@ -23,7 +23,7 @@ import {
   selectPrimaryKeyField,
   checkPreFilledPrimaryKeyField,
   checkStreamFields,
-  expandStreamDetails,
+  expandStreamDetailsByName,
 } from "pages/replicationPage";
 import { goToSourcePage, openSourceOverview } from "pages/sourcePage";
 import { goToSettingsPage, openConnectionOverviewByDestinationName } from "pages/settingsConnectionPage";
@@ -362,9 +362,10 @@ describe("Connection - stream view", () => {
   it("Stream view", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
+    const streamName = "users";
 
-    const collectionNames = ["Field name", "col1", "id"];
-    const collectionTypes = ["Data type", "String", "Integer"];
+    const collectionNames = ["col1", "id"];
+    const collectionTypes = ["String", "Integer"];
 
     createTestConnection(sourceName, destName);
 
@@ -374,8 +375,8 @@ describe("Connection - stream view", () => {
 
     goToReplicationTab();
 
-    searchStream("users");
-    expandStreamDetails();
+    searchStream(streamName);
+    expandStreamDetailsByName(streamName);
     checkStreamFields(collectionNames, collectionTypes);
 
     deleteSource(sourceName);
