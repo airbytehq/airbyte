@@ -133,33 +133,41 @@ public class JobHistoryHandler {
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
+  /**
+   * Retrieve stats for a given job id and attempt number and hydrate the api model with the retrieved
+   * information.
+   *
+   * @param jobId the job the attempt belongs to. Used as an index to retrieve stats.
+   * @param a the attempt to hydrate stats for.
+   * @throws IOException
+   */
   private void hydrateWithStats(final long jobId, final AttemptRead a) throws IOException {
-      a.setTotalStats(new AttemptStats());
+    a.setTotalStats(new AttemptStats());
 
-      final var attemptStats = jobPersistence.getAttemptStats(jobId, a.getId().intValue());
-      final var combinedStats = attemptStats.combinedStats();
-      if (combinedStats == null) {
-        // If overall stats are missing, assume stream stats are also missing, since overall stats are
-        // easier to produce than stream stats. Exit early.
-        return;
-      }
+    final var attemptStats = jobPersistence.getAttemptStats(jobId, a.getId().intValue());
+    final var combinedStats = attemptStats.combinedStats();
+    if (combinedStats == null) {
+      // If overall stats are missing, assume stream stats are also missing, since overall stats are
+      // easier to produce than stream stats. Exit early.
+      return;
+    }
 
-      a.getTotalStats()
-          .estimatedBytes(combinedStats.getEstimatedBytes())
-          .estimatedRecords(combinedStats.getEstimatedRecords())
-          .bytesEmitted(combinedStats.getBytesEmitted())
-          .recordsEmitted(combinedStats.getRecordsEmitted());
+    a.getTotalStats()
+        .estimatedBytes(combinedStats.getEstimatedBytes())
+        .estimatedRecords(combinedStats.getEstimatedRecords())
+        .bytesEmitted(combinedStats.getBytesEmitted())
+        .recordsEmitted(combinedStats.getRecordsEmitted());
 
-      final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
-          .streamName(s.getStreamName())
-          .streamNamespace(s.getStreamNamespace())
-          .stats(new AttemptStats()
-              .bytesEmitted(s.getStats().getBytesEmitted())
-              .recordsEmitted(s.getStats().getRecordsEmitted())
-              .estimatedBytes(s.getStats().getEstimatedBytes())
-              .estimatedRecords(s.getStats().getEstimatedRecords())))
-          .collect(Collectors.toList());
-      a.setStreamStats(streamStats);
+    final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
+        .streamName(s.getStreamName())
+        .streamNamespace(s.getStreamNamespace())
+        .stats(new AttemptStats()
+            .bytesEmitted(s.getStats().getBytesEmitted())
+            .recordsEmitted(s.getStats().getRecordsEmitted())
+            .estimatedBytes(s.getStats().getEstimatedBytes())
+            .estimatedRecords(s.getStats().getEstimatedRecords())))
+        .collect(Collectors.toList());
+    a.setStreamStats(streamStats);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
