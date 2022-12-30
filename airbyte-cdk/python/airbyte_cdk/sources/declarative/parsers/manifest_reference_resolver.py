@@ -116,6 +116,7 @@ class ManifestReferenceResolver:
                 if not isinstance(evaluated_ref, dict):
                     return evaluated_ref
                 else:
+                    # The values defined on the component take precedence over the reference values
                     return evaluated_ref | evaluated_dict
             else:
                 return evaluated_dict
@@ -143,7 +144,8 @@ class ManifestReferenceResolver:
         except (KeyError, IndexError):
             raise UndefinedReferenceException(path, reference)
 
-    def _read_reference_value(self, ref: str, manifest_node: Mapping[str, Any]) -> Any:
+    @staticmethod
+    def _read_reference_value(ref: str, manifest_node: Mapping[str, Any]) -> Any:
         """
         Read the value at the referenced location of the manifest.
 
