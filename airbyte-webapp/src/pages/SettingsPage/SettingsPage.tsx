@@ -21,7 +21,7 @@ import PlansBillingPage from "./pages/PlansBillingPage";
 
 const PageContainer = styled.div`
   width: 100%;
-  min-height: 100vh;
+  height: 100%;
   background: transparent;
   display: flex;
   flex-direction: row;
@@ -87,18 +87,18 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
   const menuItems: CategoryItem[] = pageConfig?.menuConfig || [
     {
       routes: [
-        // {
-        //   path: `${SettingsRoute.UserManagement}`,
-        //   name: <FormattedMessage id="settings.user.management" />,
-        //   component: <UserManagementPage />,
-        //   show: true,
-        // },
-        // {
-        //   path: `${SettingsRoute.AccountSettings}`,
-        //   name: <FormattedMessage id="settings.account.settings" />,
-        //   component: <AccountSettingsPage />,
-        //   show: true,
-        // },
+        {
+          path: `${SettingsRoute.UserManagement}`,
+          name: <FormattedMessage id="settings.user.management" />,
+          component: <UserManagementPage setMessageId={setMessageId} />,
+          show: true,
+        },
+        {
+          path: `${SettingsRoute.AccountSettings}`,
+          name: <FormattedMessage id="settings.account.settings" />,
+          component: <AccountSettingsPage />,
+          show: true,
+        },
         {
           path: `${SettingsRoute.PlanAndBilling}`,
           name: <FormattedMessage id="settings.plan.billing" />,

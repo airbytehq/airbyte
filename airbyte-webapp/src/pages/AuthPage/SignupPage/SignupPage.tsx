@@ -1,25 +1,18 @@
 import React from "react";
 import { FormattedMessage } from "react-intl";
-
-// import { Text } from "components/base/Text";
 import styled from "styled-components";
 
 import HeadTitle from "components/HeadTitle";
 
 import { PageTrackingCodes, useTrackPage } from "hooks/services/Analytics";
 
-// import { OAuthLogin } from "../OAuthLogin";
 import { Link } from "../../../components/Link";
 import { RoutePaths } from "../../routePaths";
 import { SignupForm } from "./components/SignupForm";
-// import styles from "../LoginPage/LoginPage.module.scss";
-// import SpecialBlock from "./components/SpecialBlock";
-// import styles from "./SignupPage.module.scss";
 
 interface SignupPageProps {
   highlightStyle?: React.CSSProperties;
 }
-// highlightStyle
 
 const Container = styled.div`
   display: flex;
@@ -214,8 +207,6 @@ const SignupPage: React.FC<SignupPageProps> = () => {
         <SignupFormContainer>
           <SignupForm />
         </SignupFormContainer>
-        {/* <OAuthLogin isSignUpPage />*/}
-        {/* <Disclaimer />*/}
       </FormContent>
     </Container>
   );
