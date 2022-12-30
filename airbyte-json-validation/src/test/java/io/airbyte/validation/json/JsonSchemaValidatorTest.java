@@ -20,7 +20,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.util.Set;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 
 class JsonSchemaValidatorTest {
