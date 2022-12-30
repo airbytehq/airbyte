@@ -6,7 +6,7 @@ from typing import Any, List, Mapping, Sequence, Tuple, Union
 
 import dpath
 import pendulum
-from airbyte_cdk.config_observation import observe_connector_config
+from airbyte_cdk.config_observation import emit_configuration_as_airbyte_control_message
 from airbyte_cdk.sources.streams.http.requests_native_auth.abstract_oauth import AbstractOauth2Authenticator
 
 
@@ -138,7 +138,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         self._refresh_token_config_path = refresh_token_config_path
         self._access_token_expiration_datetime_config_path = access_token_expiration_datetime_config_path
         self._refresh_token_name = refresh_token_name
-        self._connector_config = observe_connector_config(connector_config)
+        self._connector_config = connector_config
         self._validate_connector_config()
         super().__init__(
             token_refresh_endpoint,
@@ -197,12 +197,10 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             new_refresh_token (str): The new refresh token value.
             new_access_token_expiration_datetime (pendulum.DateTime): The new access token expiration date.
         """
-        # TODO alafanechere this will sequentially emit three control messages. 
-        # We should rework the observer/config mutation logic if we want to have atomic config updates in a single control message.
         dpath.util.set(self._connector_config, self._access_token_config_path, new_access_token)
         dpath.util.set(self._connector_config, self._refresh_token_config_path, new_refresh_token)
         dpath.util.set(self._connector_config, self._access_token_expiration_datetime_config_path, new_access_token_expiration_datetime)
-
+        emit_configuration_as_airbyte_control_message(self._connector_config)
 
     def get_access_token(self) -> str:
         """Retrieve new access and refresh token if the access token has expired.
@@ -227,3 +225,4 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
             )
         except Exception as e:
             raise Exception(f"Error while refreshing access token and refresh token: {e}") from e
+

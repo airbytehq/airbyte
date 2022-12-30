@@ -198,11 +198,10 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         return {"no_credentials_key": "foo"}
 
     def test_init(self, connector_config):
-        authenticator = SingleUseRefreshTokenOauth2Authenticator(
+        SingleUseRefreshTokenOauth2Authenticator(
             connector_config,
             token_refresh_endpoint="foobar",
         )
-        assert isinstance(authenticator._connector_config, ObservedDict)
 
     def test_init_with_invalid_config(self, invalid_connector_config):
         with pytest.raises(ValueError):
@@ -221,7 +220,7 @@ class TestSingleUseRefreshTokenOauth2Authenticator:
         authenticator.token_has_expired = mocker.Mock(return_value=True)
         access_token = authenticator.get_access_token()
         captured = capsys.readouterr()
-        airbyte_message = json.loads(captured.out.split("\n")[-2])
+        airbyte_message = json.loads(captured.out)
         expected_new_config = connector_config.copy()
         expected_new_config["credentials"]["access_token"] = "new_access_token"
         expected_new_config["credentials"]["refresh_token"] = "new_refresh_token"
