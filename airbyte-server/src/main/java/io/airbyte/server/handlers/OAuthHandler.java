@@ -43,6 +43,7 @@ import java.net.http.HttpClient;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
@@ -342,10 +343,17 @@ public class OAuthHandler {
 
   @VisibleForTesting
   JsonNode getOAuthInputConfiguration(final JsonNode hydratedSourceConnectionConfiguration, final Map<String, String> pathsToGet) {
-    return Jsons.jsonNode(pathsToGet.entrySet().stream()
-        .collect(Collectors.toMap(
-            Map.Entry::getKey,
-            entry -> JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, entry.getValue()).get())));
+    final Map<String, JsonNode> result = new HashMap<>();
+    pathsToGet.forEach((k, v) -> {
+      final Optional<JsonNode> configValue = JsonPaths.getSingleValue(hydratedSourceConnectionConfiguration, v);
+      if (configValue.isPresent()) {
+        result.put(k, configValue.get());
+      } else {
+        LOGGER.warn("Missing the key {} from the config stored in DB", k);
+      }
+    });
+
+    return Jsons.jsonNode(result);
   }
 
 }
