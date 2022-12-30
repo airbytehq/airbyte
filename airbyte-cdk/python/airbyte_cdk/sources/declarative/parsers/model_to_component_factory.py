@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import importlib
-from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
+from typing import Any, Callable, Dict, List, Literal, Mapping, Type, Union, get_type_hints
 
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
@@ -28,6 +28,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CursorPagination as CursorPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomBackoffStrategy as CustomBackoffStrategyModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomPaginationStrategy as CustomPaginationStrategyModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeStreamSlicer as DatetimeStreamSlicerModel
@@ -193,10 +194,17 @@ def create_custom_component(model, config: Config) -> type:
                     vals.append(_create_nested_component(model, model_field, v, config))
             model_args[model_field] = vals
 
-    kwargs = {class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args}
+    kwargs = _get_defaults(model)
+    kwargs.update({class_field: model_args[class_field] for class_field in component_fields.keys() if class_field in model_args})
     return custom_component_class(**kwargs)
 
 
+def _get_defaults(model) -> Dict:
+    return {
+        "CustomRecordExtractor": {
+            "decoder": JsonDecoder(),
+        }
+    }.get(model.type, {})
 
 
 def _create_nested_component(model, model_field: str, model_value: Any, config: Config) -> Any:
@@ -515,6 +523,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     ConstantBackoffStrategyModel: create_constant_backoff_strategy,
     CursorPaginationModel: create_cursor_pagination,
     CustomBackoffStrategyModel: create_custom_component,
+    CustomRecordExtractorModel: create_custom_component,
     CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
@@ -549,6 +558,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
 
 # Needed for the case where we need to perform a second parse on the fields of a custom component
 TYPE_NAME_TO_MODEL = {cls.__name__.partition("Model")[0]: cls for cls in PYDANTIC_MODEL_TO_CONSTRUCTOR}
+
 
 def _get_class_from_fully_qualified_class_name(class_name: str):
     split = class_name.split(".")
