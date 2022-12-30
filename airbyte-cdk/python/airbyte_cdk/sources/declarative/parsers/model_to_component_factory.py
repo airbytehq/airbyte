@@ -7,6 +7,7 @@ from __future__ import annotations
 import importlib
 from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
 
+from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
 from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
@@ -44,6 +45,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import JsonFileSchemaLoader as JsonFileSchemaLoaderModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ListStreamSlicer as ListStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
@@ -394,6 +396,10 @@ def create_min_max_datetime(model: MinMaxDatetimeModel, config: Config) -> MinMa
     )
 
 
+def create_no_auth(model: NoAuthModel, config: Config) -> NoAuth:
+    return NoAuth(options=model.options)
+
+
 def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> NoPagination:
     return NoPagination()
 
@@ -518,6 +524,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     JsonFileSchemaLoaderModel: create_json_file_schema_loader,
     ListStreamSlicerModel: create_list_stream_slicer,
     MinMaxDatetimeModel: create_min_max_datetime,
+    NoAuthModel: create_no_auth,
     NoPaginationModel: create_no_pagination,
     OffsetIncrementModel: create_offset_increment,
     PageIncrementModel: create_page_increment,
