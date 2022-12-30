@@ -125,7 +125,7 @@ def create_bearer_authenticator(model: BearerAuthenticatorModel, config: Config)
 
 def create_cartesian_product_slicer(model: CartesianProductStreamSlicerModel, config: Config) -> CartesianProductStreamSlicer:
     stream_slicers = [create_component_from_model(model=stream_slicer_model, config=config) for stream_slicer_model in model.stream_slicers]
-    return CartesianProductStreamSlicer(stream_slicers=stream_slicers)
+    return CartesianProductStreamSlicer(stream_slicers=stream_slicers, options=model.options)
 
 
 def create_check_stream(model: CheckStreamModel, config: Config):
