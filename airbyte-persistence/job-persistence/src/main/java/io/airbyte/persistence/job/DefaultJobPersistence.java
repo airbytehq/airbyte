@@ -849,7 +849,7 @@ public class DefaultJobPersistence implements JobPersistence {
 
   private static Attempt getAttemptFromRecord(final Record record) {
     return new Attempt(
-        record.get(ATTEMPT_NUMBER, Long.class),
+        record.get(ATTEMPT_NUMBER, int.class),
         record.get(JOB_ID, Long.class),
         Path.of(record.get("log_path", String.class)),
         record.get("attempt_output", String.class) == null ? null : Jsons.deserialize(record.get("attempt_output", String.class), JobOutput.class),

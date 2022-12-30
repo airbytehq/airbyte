@@ -6,6 +6,9 @@ package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
+import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStats;
+import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationDefinitionIdRequestBody;
 import io.airbyte.api.model.generated.DestinationDefinitionRead;
@@ -120,12 +123,42 @@ public class JobHistoryHandler {
 
     final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
 
-    final List<JobWithAttemptsRead> jobReads = jobs
-        .stream()
-        .map(JobConverter::getJobWithAttemptsRead)
-        .collect(Collectors.toList());
+    final List<JobWithAttemptsRead> jobReads = jobs.stream().map(JobConverter::getJobWithAttemptsRead).collect(Collectors.toList());
+    hydrateWithStats(jobReads);
 
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
+  }
+
+  private void hydrateWithStats(final List<JobWithAttemptsRead> jobReads) throws IOException {
+    for (final JobWithAttemptsRead jwar : jobReads) {
+      for (final AttemptRead a : jwar.getAttempts()) {
+        // make sure the attempt id is correct
+        System.out.println(a.getId().intValue());
+        final var attemptStats = jobPersistence.getAttemptStats(jwar.getJob().getId(), a.getId().intValue());
+
+        final var combinedStats = attemptStats.combinedStats();
+        if (combinedStats == null) {
+          a.setTotalStats(new AttemptStats());
+          continue;
+        }
+
+        a.getTotalStats()
+            .estimatedBytes(combinedStats.getEstimatedBytes())
+            .estimatedRecords(combinedStats.getEstimatedRecords())
+            .bytesEmitted(combinedStats.getBytesEmitted())
+            .recordsEmitted(combinedStats.getRecordsEmitted());
+
+        final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
+            .streamName(s.getStreamName())
+            .stats(new AttemptStats()
+                .bytesEmitted(s.getStats().getBytesEmitted())
+                .recordsEmitted(s.getStats().getRecordsEmitted())
+                .estimatedBytes(s.getStats().getEstimatedBytes())
+                .estimatedRecords(s.getStats().getEstimatedRecords())))
+            .collect(Collectors.toList());
+        a.setStreamStats(streamStats);
+      }
+    }
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {

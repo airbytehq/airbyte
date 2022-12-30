@@ -77,7 +77,7 @@ import org.junit.jupiter.api.Test;
 class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
-  private static final long ATTEMPT_ID = 1002L;
+  private static final int ATTEMPT_ID = 1002;
   private static final String JOB_CONFIG_ID = "ef296385-6796-413f-ac1b-49c4caba3f2b";
   private static final JobStatus JOB_STATUS = JobStatus.SUCCEEDED;
   private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
@@ -134,7 +134,7 @@ class JobHistoryHandlerTest {
 
   private static AttemptRead toAttemptRead(final Attempt a) {
     return new AttemptRead()
-        .id(a.getId())
+        .id((long) a.getAttemptNumber())
         .status(Enums.convertTo(a.getStatus(), io.airbyte.api.model.generated.AttemptStatus.class))
         .createdAt(a.getCreatedAtInSecond())
         .updatedAt(a.getUpdatedAtInSecond())
@@ -146,7 +146,7 @@ class JobHistoryHandlerTest {
   }
 
   @BeforeEach
-  void setUp() throws IOException, JsonValidationException, ConfigNotFoundException {
+  void setUp() {
     testJobAttempt = createAttempt(JOB_ID, CREATED_AT, AttemptStatus.SUCCEEDED);
     testJob = new Job(JOB_ID, JOB_CONFIG.getConfigType(), JOB_CONFIG_ID, JOB_CONFIG, ImmutableList.of(testJobAttempt), JOB_STATUS, null, CREATED_AT,
         CREATED_AT);
