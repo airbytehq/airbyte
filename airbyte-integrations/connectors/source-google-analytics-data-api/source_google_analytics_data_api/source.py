@@ -357,8 +357,14 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         try:
             jsonschema.validate(instance=config["custom_reports"], schema=schema)
         except jsonschema.ValidationError as e:
-            key_path = "custom_reports." + ".".join(map(str, e.path))
+            key_path = "custom_reports"
+            if e.path:
+                key_path += "." + ".".join(map(str, e.path))
             raise ConfigurationError(f"{key_path}: {e.message}")
+
+        for n, custom_report in enumerate(config["custom_reports"]):
+            if not custom_report["dimensions"] and not custom_report["metrics"]:
+                raise ConfigurationError(f"custom_reports.{n}: dimensions or metrics is required")
 
         existing_names = {r["name"] for r in config["custom_reports"]} & report_names
         if existing_names:
