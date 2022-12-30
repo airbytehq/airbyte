@@ -205,7 +205,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
         return pendulum.parse(dpath.util.get(self._connector_config, self._token_expiry_date_config_path))
 
     def set_token_expiry_date(self, new_token_expiry_date):
-        dpath.util.set(self._connector_config, self._token_expiry_date_config_path, new_token_expiry_date)
+        dpath.util.set(self._connector_config, self._token_expiry_date_config_path, str(new_token_expiry_date))
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""
