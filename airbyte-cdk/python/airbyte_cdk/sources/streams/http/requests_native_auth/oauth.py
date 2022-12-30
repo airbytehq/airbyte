@@ -210,7 +210,7 @@ class SingleUseRefreshTokenOauth2Authenticator(Oauth2Authenticator):
 
     def token_has_expired(self) -> bool:
         """Returns True if the token is expired"""
-        return pendulum.now("UTC") > self.token_expiry_date
+        return pendulum.now("UTC") > self.get_token_expiry_date()
     
     @staticmethod
     def get_new_token_expiry_date(access_token_expires_in: int):
