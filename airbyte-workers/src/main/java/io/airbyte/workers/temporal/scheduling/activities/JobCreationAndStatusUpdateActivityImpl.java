@@ -220,7 +220,6 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final Job job = jobPersistence.getJob(jobId);
       final UUID connectionId = UUID.fromString(job.getScope());
 
-      //job 运行失败调用Daspire接口推送
       String externalMessage = job.getLastFailedAttempt().get().getFailureSummary().get().getFailures().get(0).getExternalMessage();
       String failureOrigin = job.getLastFailedAttempt().get().getFailureSummary().get().getFailures().get(0).getFailureOrigin().value();
       String connectionName = jobPersistence.getConnectionName(connectionId);

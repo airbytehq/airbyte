@@ -6,17 +6,7 @@ package io.airbyte.server.handlers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import io.airbyte.api.model.generated.ConnectionRead;
-import io.airbyte.api.model.generated.SourceCloneConfiguration;
-import io.airbyte.api.model.generated.SourceCloneRequestBody;
-import io.airbyte.api.model.generated.SourceCreate;
-import io.airbyte.api.model.generated.SourceDefinitionIdRequestBody;
-import io.airbyte.api.model.generated.SourceIdRequestBody;
-import io.airbyte.api.model.generated.SourceRead;
-import io.airbyte.api.model.generated.SourceReadList;
-import io.airbyte.api.model.generated.SourceSearch;
-import io.airbyte.api.model.generated.SourceUpdate;
-import io.airbyte.api.model.generated.WorkspaceIdRequestBody;
+import io.airbyte.api.model.generated.*;
 import io.airbyte.commons.lang.MoreBooleans;
 import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardSourceDefinition;
@@ -30,7 +20,9 @@ import io.airbyte.server.converters.ConfigurationUpdate;
 import io.airbyte.validation.json.JsonSchemaValidator;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -321,4 +313,15 @@ public class SourceHandler {
         .name(sourceConnection.getName());
   }
 
+  public List<WebBackendConnectionFilterParamItem> listFilterParam() throws IOException {
+    List<WebBackendConnectionFilterParamItem> result = new LinkedList<>();
+    List<Map<String, String>> listMap = configRepository.listFilterParamSources();
+    listMap.forEach(item -> {
+      WebBackendConnectionFilterParamItem paramItem = new WebBackendConnectionFilterParamItem();
+      paramItem.setValue(item.get("value"));
+      paramItem.setKey(item.get("key"));
+      result.add(paramItem);
+    });
+    return result;
+  }
 }
