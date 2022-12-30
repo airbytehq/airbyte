@@ -9,6 +9,7 @@ import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.SOURCE_DEFINITION_ID
 import static io.airbyte.metrics.lib.ApmTraceConstants.Tags.WORKSPACE_ID_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.annotations.VisibleForTesting;
 import io.airbyte.analytics.TrackingClient;
 import io.airbyte.api.model.generated.CompleteDestinationOAuthRequest;
@@ -40,7 +41,6 @@ import io.airbyte.server.handlers.helpers.OAuthPathExtractor;
 import io.airbyte.validation.json.JsonValidationException;
 import java.io.IOException;
 import java.net.http.HttpClient;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -321,23 +321,24 @@ public class OAuthHandler {
 
   @VisibleForTesting
   JsonNode getOauthFromDBIfNeeded(final JsonNode oAuthInputConfigurationFromDB, final JsonNode oAuthInputConfigurationFromInput) {
-    final Map<String, String> result = new HashMap<>();
+    final ObjectNode result = (ObjectNode) Jsons.emptyObject();
 
-    Jsons.deserializeToStringMap(oAuthInputConfigurationFromInput)
-        .forEach((k, v) -> {
-          if (AirbyteSecretConstants.SECRETS_MASK.equals(v)) {
-            if (oAuthInputConfigurationFromDB.has(k)) {
-              result.put(k, oAuthInputConfigurationFromDB.get(k).textValue());
-            } else {
-              LOGGER.warn("Missing the key {} in the config store in DB", k);
-            }
+    oAuthInputConfigurationFromInput.fields().forEachRemaining(entry -> {
+      final String k = entry.getKey();
+      final JsonNode v = entry.getValue();
 
-          } else {
-            result.put(k, v);
-          }
-        });
+      if (AirbyteSecretConstants.SECRETS_MASK.equals(v.textValue())) {
+        if (oAuthInputConfigurationFromDB.has(k)) {
+          result.set(k, oAuthInputConfigurationFromDB.get(k));
+        } else {
+          LOGGER.warn("Missing the key {} in the config store in DB", k);
+        }
+      } else {
+        result.set(k, v);
+      }
+    });
 
-    return Jsons.jsonNode(result);
+    return result;
   }
 
   @VisibleForTesting
