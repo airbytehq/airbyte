@@ -412,6 +412,8 @@ definitions:
           type: string
       token_expiry_date:
         type: string
+      token_expiry_date_format:
+        type: string
       $options:
         type: object
         additionalProperties: true
@@ -449,7 +451,6 @@ definitions:
         default: ""
       schema_loader:
         anyOf:
-          - "$ref": "#/definitions/DefaultSchemaLoader"
           - "$ref": "#/definitions/InlineSchemaLoader"
           - "$ref": "#/definitions/JsonFileSchemaLoader"
       stream_cursor_field:
@@ -521,18 +522,6 @@ definitions:
         "$ref": "#/definitions/RequestOption"
       page_token_option:
         "$ref": "#/definitions/RequestOption"
-      $options:
-        type: object
-        additionalProperties: true
-  DefaultSchemaLoader:
-    description: Loads a schema from the default location or returns an empty schema for streams that have not defined their schema file yet.
-    type: object
-    required:
-      - type
-    properties:
-      type:
-        type: string
-        enum: [DefaultSchemaLoader]
       $options:
         type: object
         additionalProperties: true

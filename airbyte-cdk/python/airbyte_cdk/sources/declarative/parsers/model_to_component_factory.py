@@ -7,8 +7,14 @@ from __future__ import annotations
 import importlib
 from typing import Any, Callable, List, Literal, Mapping, Type, Union, get_type_hints
 
+from airbyte_cdk.sources.declarative.auth import DeclarativeOauth2Authenticator
 from airbyte_cdk.sources.declarative.auth.declarative_authenticator import NoAuth
-from airbyte_cdk.sources.declarative.auth.token import ApiKeyAuthenticator, BasicHttpAuthenticator, BearerAuthenticator
+from airbyte_cdk.sources.declarative.auth.token import (
+    ApiKeyAuthenticator,
+    BasicHttpAuthenticator,
+    BearerAuthenticator,
+    SessionTokenAuthenticator,
+)
 from airbyte_cdk.sources.declarative.checks import CheckStream
 from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
@@ -31,6 +37,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRecordExtractor as CustomRecordExtractorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomRetriever as CustomRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomStreamSlicer as CustomStreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import CustomTransformation as CustomTransformationModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DatetimeStreamSlicer as DatetimeStreamSlicerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DeclarativeStream as DeclarativeStreamModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
@@ -51,6 +58,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import MinMaxDatetime as MinMaxDatetimeModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoAuth as NoAuthModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import NoPagination as NoPaginationModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import OAuthAuthenticator as OAuthAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import OffsetIncrement as OffsetIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import PageIncrement as PageIncrementModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ParentStreamConfig as ParentStreamConfigModel
@@ -58,6 +66,7 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RecordSelector as RecordSelectorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RemoveFields as RemoveFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import RequestOption as RequestOptionModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import SessionTokenAuthenticator as SessionTokenAuthenticatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SimpleRetriever as SimpleRetrieverModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
@@ -424,6 +433,24 @@ def create_no_pagination(model: NoPaginationModel, config: Config, **kwargs) -> 
     return NoPagination(options={})
 
 
+def create_oauth_authenticator(model: OAuthAuthenticatorModel, config: Config) -> DeclarativeOauth2Authenticator:
+    return DeclarativeOauth2Authenticator(
+        access_token_name=model.access_token_name,
+        client_id=model.client_id,
+        client_secret=model.client_secret,
+        expires_in_name=model.expires_in_name,
+        grant_type=model.grant_type,
+        refresh_request_body=model.refresh_request_body,
+        refresh_token=model.refresh_token,
+        scopes=model.scopes,
+        token_expiry_date=model.token_expiry_date,
+        token_expiry_date_format=model.token_expiry_date_format,
+        token_refresh_endpoint=model.token_refresh_endpoint,
+        config=config,
+        options=model.options,
+    )
+
+
 def create_offset_increment(model: OffsetIncrementModel, config: Config) -> OffsetIncrement:
     return OffsetIncrement(page_size=model.page_size, config=config, options=model.options)
 
@@ -462,6 +489,21 @@ def create_record_selector(model: RecordSelectorModel, config: Config) -> Record
 
 def create_remove_fields(model: RemoveFieldsModel, config: Config) -> RemoveFields:
     return RemoveFields(field_pointers=model.field_pointers, options={})
+
+
+def create_session_token_authenticator(model: SessionTokenAuthenticatorModel, config: Config) -> SessionTokenAuthenticator:
+    return SessionTokenAuthenticator(
+        api_url=model.api_url,
+        header=model.header,
+        login_url=model.login_url,
+        password=model.password,
+        session_token=model.session_token,
+        session_token_response_key=model.session_token_response_key,
+        username=model.username,
+        validate_session_url=model.validate_session_url,
+        config=config,
+        options=model.options,
+    )
 
 
 def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> SimpleRetriever:
@@ -548,6 +590,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     CustomRetrieverModel: create_custom_component,
     CustomPaginationStrategyModel: create_custom_component,
     CustomStreamSlicerModel: create_custom_component,
+    CustomTransformationModel: create_custom_component,
     DatetimeStreamSlicerModel: create_datetime_stream_slicer,
     DeclarativeStreamModel: create_declarative_stream,
     DefaultErrorHandlerModel: create_default_error_handler,
@@ -564,6 +607,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     MinMaxDatetimeModel: create_min_max_datetime,
     NoAuthModel: create_no_auth,
     NoPaginationModel: create_no_pagination,
+    OAuthAuthenticatorModel: create_oauth_authenticator,
     OffsetIncrementModel: create_offset_increment,
     PageIncrementModel: create_page_increment,
     ParentStreamConfigModel: create_parent_stream_config,
@@ -571,6 +615,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     RecordSelectorModel: create_record_selector,
     RemoveFieldsModel: create_remove_fields,
     RequestOptionModel: create_request_option,
+    SessionTokenAuthenticatorModel: create_session_token_authenticator,
     SimpleRetrieverModel: create_simple_retriever,
     SingleSliceModel: create_single_slice,
     SpecModel: create_spec,

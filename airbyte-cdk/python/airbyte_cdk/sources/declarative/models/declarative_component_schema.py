@@ -142,11 +142,7 @@ class OAuthAuthenticator(BaseModel):
     refresh_request_body: Optional[Dict[str, Any]] = None
     scopes: Optional[List[str]] = None
     token_expiry_date: Optional[str] = None
-    options: Optional[Dict[str, Any]] = Field(None, alias="$options")
-
-
-class DefaultSchemaLoader(BaseModel):
-    type: Literal["DefaultSchemaLoader"]
+    token_expiry_date_format: Optional[str] = None
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")
 
 
@@ -447,7 +443,7 @@ class DeclarativeStream(BaseModel):
     checkpoint_interval: Optional[int] = None
     name: Optional[str] = ""
     primary_key: Optional[Union[str, List[str], List[List[str]]]] = ""
-    schema_loader: Optional[Union[DefaultSchemaLoader, InlineSchemaLoader, JsonFileSchemaLoader]] = None
+    schema_loader: Optional[Union[InlineSchemaLoader, JsonFileSchemaLoader]] = None
     stream_cursor_field: Optional[Union[str, List[str]]] = None
     transformations: Optional[List[Union[AddFields, CustomTransformation, RemoveFields]]] = None
     options: Optional[Dict[str, Any]] = Field(None, alias="$options")

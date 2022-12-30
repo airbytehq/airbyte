@@ -155,7 +155,6 @@ spec:
     assert len(streams_to_check) == 1
     assert list(streams_to_check)[0] == "list_stream"
 
-    # spec = factory.create_component(config["spec"], input_config)()
     spec = factory.create_component(model_type=SpecModel, component_definition=config["spec"], config=input_config)
 
     assert isinstance(spec, Spec)
