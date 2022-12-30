@@ -65,7 +65,7 @@ class AmazonAdsConfig(BaseModel):
 
     report_generation_max_retries: int = Field(
         title="Report Generation Maximum Retries *",
-        description="Maximum retries Airbyte will attempt for fetching report data. Default is 5.",
+        description="Maximum retries Daspire will attempt for fetching report data. Default is 5.",
         default=5,
         examples=[5, 10, 15],
         order=6,

@@ -47,7 +47,7 @@ const Message = styled.div`
   color: #6b6b6f;
 `;
 
-const ProcessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
+const ProfessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability, paymentLoading, onSelectPlan }) => {
   const { user } = useUser();
   return (
     <Container>
@@ -56,7 +56,7 @@ const ProcessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
       </PricingContainer>
       <Separator />
       <Message>
-        <FormattedMessage id="feature.cell.processional.message" />
+        <FormattedMessage id="feature.cell.professional.message" />
       </Message>
       <Separator />
       <LoadingButton
@@ -67,13 +67,12 @@ const ProcessionalCell: React.FC<IProps> = ({ price = 0, selectPlanBtnDisability
           ((price > 0 ? false : true) || selectPlanBtnDisability) &&
           getStatusAgainstStatusNumber(user.status) !== STATUSES.Pause_Subscription
         }
-        // disabled={(price > 0 ? false: true) || (selectPlanBtnDisability)}
         isLoading={paymentLoading}
       >
-        <FormattedMessage id="feature.cell.processional.btnText" />
+        <FormattedMessage id="feature.cell.professional.btnText" />
       </LoadingButton>
     </Container>
   );
 };
 
-export default ProcessionalCell;
+export default ProfessionalCell;

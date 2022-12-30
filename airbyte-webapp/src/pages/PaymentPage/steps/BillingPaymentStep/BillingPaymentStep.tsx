@@ -129,7 +129,13 @@ const BillingPaymentStep: React.FC<IProps> = ({
             </ContentHeading>
             <ContentText>
               Next billing date:&nbsp;
-              <FormattedDate value={planDetail?.expiresTime} day="numeric" month="long" year="numeric" />.<br />
+              <FormattedDate
+                value={(planDetail?.expiresTime as number) * 1000}
+                day="numeric"
+                month="long"
+                year="numeric"
+              />
+              <br />
               You can cancel at any time.
             </ContentText>
           </ContentItem>

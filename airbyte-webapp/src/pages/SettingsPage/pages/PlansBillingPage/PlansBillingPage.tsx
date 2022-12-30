@@ -1,3 +1,4 @@
+import _ from "lodash";
 import React, { useCallback, useEffect, useState } from "react";
 import { FormattedMessage, FormattedDate } from "react-intl";
 import styled from "styled-components";
@@ -9,6 +10,7 @@ import { Separator } from "components/Separator";
 import { useUser } from "core/AuthContext";
 import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
 import { PlanItem, PlanItemTypeEnum } from "core/domain/payment";
+import { usePrevious } from "hooks/usePrevstate";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useAuthDetail, useAuthenticationService } from "services/auth/AuthSpecificationService";
@@ -56,12 +58,21 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
   const authDetail = useAuthDetail();
   const { status } = authDetail;
   const userPlanDetail = useUserPlanDetail();
+  const prevUserPlanDetail = usePrevious(userPlanDetail);
 
   useEffect(() => {
     if (status && user.status !== status) {
       updateUserStatus?.(status);
     }
   }, [status]);
+
+  useEffect(() => {
+    if (prevUserPlanDetail?.selectedProduct !== undefined) {
+      if (!_.isEqual(userPlanDetail.selectedProduct, prevUserPlanDetail?.selectedProduct)) {
+        setMessageId?.("subscription.plan.update");
+      }
+    }
+  }, [prevUserPlanDetail, userPlanDetail]);
 
   const [toggleCancel, setToggleCancel] = useState<boolean>(false);
   const [confirmLoading, setConfirmLoading] = useState<boolean>(false);
@@ -113,6 +124,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
           onConfirm={onCancelSubscription}
           onNotNow={toggleCancleSuscriptionModal}
           confirmLoading={confirmLoading}
+          expiresOn={userPlanDetail.expiresTime}
         />
       )}
       <div className={styles.container}>
@@ -127,15 +139,24 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
             <div className={styles.planTitle}>
               <FormattedMessage id="plan.type.heading" />
             </div>
-            <div className={styles.planValue}>{userPlanDetail.name}</div>
+            <div className={styles.planValue}>
+              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name} plan`}
+            </div>
           </div>
           <Separator height="40px" />
           <div className={styles.rowContainer}>
             <div className={styles.planTitle}>
-              <FormattedMessage id="plan.endsOn.heading" />
+              <FormattedMessage
+                id={
+                  getStatusAgainstStatusNumber(user.status) === STATUSES.Free_Trial ||
+                  getStatusAgainstStatusNumber(user.status) === STATUSES.Pause_Subscription
+                    ? "plan.endsOn.heading"
+                    : "plan.renewsOn.heading"
+                }
+              />
             </div>
             <div className={styles.planValue}>
-              <FormattedDate value={userPlanDetail.expiresTime} day="numeric" month="long" year="numeric" />
+              <FormattedDate value={userPlanDetail.expiresTime * 1000} day="numeric" month="long" year="numeric" />
             </div>
           </div>
           <Separator height="40px" />

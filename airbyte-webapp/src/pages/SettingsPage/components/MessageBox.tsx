@@ -22,6 +22,7 @@ const Container = styled.div`
   z-index: 3;
   left: 50%;
   transform: translateX(-50%);
+  min-width: 750px;
 `;
 
 const Message = styled.div`
