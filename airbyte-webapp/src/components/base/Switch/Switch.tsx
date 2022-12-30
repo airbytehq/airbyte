@@ -26,7 +26,7 @@ export const Switch: React.FC<SwitchProps> = ({ loading, small, checked, value, 
         type="checkbox"
         value={value}
         disabled={loading || props.disabled}
-        checked={checked || !!value}
+        defaultChecked={checked || !!value}
       />
       <span className={spanStyle} />
     </label>

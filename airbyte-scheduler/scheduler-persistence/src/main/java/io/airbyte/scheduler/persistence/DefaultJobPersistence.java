@@ -100,6 +100,8 @@ public class DefaultJobPersistence implements JobPersistence {
   static final String BASE_JOB_SELECT_AND_JOIN = jobSelectAndJoin("jobs");
 
   private static final String AIRBYTE_METADATA_TABLE = "airbyte_metadata";
+
+  private static final String CONNECTION_TABLE = "connection";
   public static final String ORDER_BY_JOB_TIME_ATTEMPT_TIME =
       "ORDER BY jobs.created_at DESC, jobs.id DESC, attempts.created_at ASC, attempts.id ASC ";
 
@@ -674,6 +676,14 @@ public class DefaultJobPersistence implements JobPersistence {
         METADATA_KEY_COL,
         METADATA_VAL_COL,
         true)));
+  }
+
+  @Override
+  public String getConnectionName(UUID connectionId) throws IOException {
+    return jobDatabase.query(ctx -> ctx.select()
+            .from(CONNECTION_TABLE)
+            .where(DSL.field("id").eq(connectionId))
+            .fetchOne("name", String.class));
   }
 
   @Override

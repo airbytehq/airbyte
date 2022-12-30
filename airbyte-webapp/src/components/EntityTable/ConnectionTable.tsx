@@ -10,7 +10,8 @@ import Table from "components/Table";
 import { FeatureItem, useFeature } from "hooks/services/Feature";
 import useRouter from "hooks/useRouter";
 
-// import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
+import { RoutePaths } from "../../pages/routePaths";
+import ConnectionSettingsCell from "./components/ConnectionSettingsCell";
 // import ConnectorCell from "./components/ConnectorCell";
 // import FrequencyCell from "./components/FrequencyCell";
 import LastSyncCell from "./components/LastSyncCell";
@@ -77,6 +78,8 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
   // );
 
   // const sortingData = React.useMemo(() => data.sort(sortData), [sortData, data]);
+
+  const onClickRows = (connectionId: string) => push(`/${RoutePaths.Connections}/${connectionId}`);
 
   const columns = React.useMemo(
     () => [
@@ -208,12 +211,21 @@ const ConnectionTable: React.FC<IProps> = ({ data, entity, onChangeStatus, onSyn
       //     />
       //   ),
       // },
-      // {
-      //   Header: "",
-      //   accessor: "connectionId",
-      //   customWidth: 1,
-      //   Cell: ({ cell }: CellProps<ITableDataItem>) => <ConnectionSettingsCell id={cell.value} />,
-      // },
+      {
+        Header: "",
+        accessor: "connectionId",
+        customWidth: 1,
+        Cell: ({ cell }: CellProps<ITableDataItem>) => {
+          return (
+            <ConnectionSettingsCell
+              id={cell.value}
+              onClick={() => {
+                onClickRows(cell.value);
+              }}
+            />
+          );
+        },
+      },
     ],
     [allowSync, entity, onChangeStatus, onSync, onSortClick, sortBy, sortOrder]
   );

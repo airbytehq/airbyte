@@ -9,6 +9,7 @@ import {
   checkConnectionToSourceForUpdate,
   createSource,
   deleteSource,
+  cloneSource,
   discoverSchemaForSource,
   executeSourceCheckConnection,
   getSource,
@@ -17,6 +18,7 @@ import {
   SourceCreate,
   SourceUpdate,
   updateSource,
+  SourceCloneRequestBody,
 } from "../../request/AirbyteClient";
 import { ConnectionConfiguration } from "../connection";
 
@@ -76,6 +78,10 @@ export class SourceService extends AirbyteRequestService {
 
   public delete(sourceId: string) {
     return deleteSource({ sourceId }, this.requestOptions);
+  }
+
+  public clone(sourceCloneData: SourceCloneRequestBody) {
+    return cloneSource(sourceCloneData, this.requestOptions);
   }
 
   public async discoverSchema(sourceId: string, disableCache?: boolean) {

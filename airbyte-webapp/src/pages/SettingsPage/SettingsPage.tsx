@@ -14,9 +14,10 @@ import { getRoleAgainstRoleNumber, ROLES } from "core/Constants/roles";
 import useRouter from "hooks/useRouter";
 
 import { MessageBox } from "./components/MessageBox";
-import AccountSettingsPage from "./pages/AccountSettingsPage";
+// import UserManagementPage from "./pages/UserManagementPage";
+// import AccountSettingsPage from "./pages/AccountSettingsPage";
+import NotificationPage from "./pages/NotificationPage";
 import PlansBillingPage from "./pages/PlansBillingPage";
-import UserManagementPage from "./pages/UserManagementPage";
 
 const PageContainer = styled.div`
   width: 100%;
@@ -107,6 +108,12 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ pageConfig }) => {
             getRoleAgainstRoleNumber(user.role) === ROLES.Administrator
               ? true
               : false,
+        },
+        {
+          path: `${SettingsRoute.Notifications}`,
+          name: <FormattedMessage id="settings.notificationSettings" />,
+          component: <NotificationPage />,
+          show: true,
         },
       ],
     },

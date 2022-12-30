@@ -180,11 +180,14 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
         if(syncStats.getRecordsCommitted() != 0 || syncStats.getBytesEmitted() != 0){
             // 插入Daspire RPC调用
             String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
+          final UUID connectionId = UUID.fromString(job.getScope());
+          String connectionName = jobPersistence.getConnectionName(connectionId);
             Map<String, Object> param = Map.of("workspaceId", workspaceId,
                 "connectionId", job.getScope(),
                 "attemptId", attemptId,
                 "recordsCommitted", syncStats.getRecordsCommitted(),
-                "bytesCommitted", syncStats.getBytesEmitted());
+                "bytesCommitted", syncStats.getBytesEmitted(),
+                "connectionName", connectionName);
             HttpUtil.daspireConnectionCount(param);
         }
       } else {
@@ -215,12 +218,18 @@ public class JobCreationAndStatusUpdateActivityImpl implements JobCreationAndSta
       final long jobId = input.getJobId();
       jobPersistence.failJob(jobId);
       final Job job = jobPersistence.getJob(jobId);
+      final UUID connectionId = UUID.fromString(job.getScope());
+
+      //job 运行失败调用Daspire接口推送
+      String externalMessage = job.getLastFailedAttempt().get().getFailureSummary().get().getFailures().get(0).getExternalMessage();
+      String failureOrigin = job.getLastFailedAttempt().get().getFailureSummary().get().getFailures().get(0).getFailureOrigin().value();
+      String connectionName = jobPersistence.getConnectionName(connectionId);
+      String workspaceId = jobNotifier.getWorkspaceForJobId(jobId);
+      HttpUtil.jobFail(workspaceId,connectionName,connectionId.toString(), externalMessage, failureOrigin);
 
       jobNotifier.failJob(input.getReason(), job);
       emitJobIdToReleaseStagesMetric(OssMetricsRegistry.JOB_FAILED_BY_RELEASE_STAGE, jobId);
       trackCompletion(job, JobStatus.FAILED);
-
-      final UUID connectionId = UUID.fromString(job.getScope());
       final JobSyncConfig jobSyncConfig = job.getConfig().getSync();
       final SyncJobReportingContext jobContext =
           new SyncJobReportingContext(jobId, jobSyncConfig.getSourceDockerImage(), jobSyncConfig.getDestinationDockerImage());

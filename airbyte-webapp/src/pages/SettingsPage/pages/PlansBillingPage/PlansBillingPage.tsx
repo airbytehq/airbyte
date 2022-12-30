@@ -8,7 +8,7 @@ import { Separator } from "components/Separator";
 
 import { useUser } from "core/AuthContext";
 import { getStatusAgainstStatusNumber, STATUSES } from "core/Constants/statuses";
-import { PlanItemTypeEnum } from "core/domain/payment";
+import { PlanItem, PlanItemTypeEnum } from "core/domain/payment";
 import useRouter from "hooks/useRouter";
 import { RoutePaths } from "pages/routePaths";
 import { useAuthDetail, useAuthenticationService } from "services/auth/AuthSpecificationService";
@@ -91,11 +91,18 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
 
   const upgradePlan = () => push(`/${RoutePaths.Payment}`);
 
-  const manipulatePlanScope = (planScope: string, planType: string): string => {
-    if (planType === PlanItemTypeEnum.Features) {
-      return convert_M_To_Million(planScope);
+  const manipulatePlanDetail = (planItem: PlanItem): string => {
+    if (planItem.planItemType === PlanItemTypeEnum.Features) {
+      return `${planItem.planItemName}: ${convert_M_To_Million(planItem.planItemScope as string)}`;
+    } else if (planItem.planItemType === PlanItemTypeEnum.Data_Replication) {
+      return `${planItem.planItemName}: ${planItem.planItemScope}`;
+    } else if (planItem.planItemType === PlanItemTypeEnum.Support) {
+      if (planItem.planItemScope === "false") {
+        return "";
+      }
+      return `${planItem.planItemName}: ${planItem.planItemScope}`;
     }
-    return planScope;
+    return "";
   };
 
   return (
@@ -139,11 +146,7 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
             <div className={styles.planDetailRowContainer}>
               <div className={styles.rowContainer}>
                 {userPlanDetail.planDetail.map((item) => (
-                  <PlanClause
-                    text={`${manipulatePlanScope(item.planItemScope as string, item.planItemType)} ${
-                      item.planItemName
-                    }`}
-                  />
+                  <PlanClause text={manipulatePlanDetail(item) as string} />
                 ))}
               </div>
             </div>
