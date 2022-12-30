@@ -113,7 +113,14 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
         </div>
       )}
       <ArrowCell>
-        {hasFields ? <ArrowBlock onExpand={onExpand} isItemHasChildren={hasFields} isItemOpen={isRowExpanded} /> : null}
+        {hasFields ? (
+          <ArrowBlock
+            onExpand={onExpand}
+            isItemHasChildren={hasFields}
+            isItemOpen={isRowExpanded}
+            data-testid={`${stream.stream?.name}_expandStreamDetails`}
+          />
+        ) : null}
       </ArrowCell>
       <div className={streamHeaderContentStyle}>
         <HeaderCell flex={0.4}>
@@ -132,7 +139,7 @@ export const StreamHeader: React.FC<StreamHeaderProps> = ({
             </span>
           )}
         </HeaderCell>
-        <HeaderCell ellipsis title={stream.stream?.name || ""}>
+        <HeaderCell ellipsis title={stream.stream?.name || ""} data-testid="streamNameCell">
           {stream.stream?.name}
         </HeaderCell>
         <Cell flex={1.5}>
