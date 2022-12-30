@@ -77,7 +77,7 @@ import org.junit.jupiter.api.Test;
 class JobHistoryHandlerTest {
 
   private static final long JOB_ID = 100L;
-  private static final int ATTEMPT_ID = 1002;
+  private static final int ATTEMPT_NUMBER = 0;
   private static final String JOB_CONFIG_ID = "ef296385-6796-413f-ac1b-49c4caba3f2b";
   private static final JobStatus JOB_STATUS = JobStatus.SUCCEEDED;
   private static final JobConfig.ConfigType CONFIG_TYPE = JobConfig.ConfigType.CHECK_CONNECTION_SOURCE;
@@ -89,17 +89,9 @@ class JobHistoryHandlerTest {
   private static final LogRead EMPTY_LOG_READ = new LogRead().logLines(new ArrayList<>());
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
-  private SourceRead sourceRead;
-  private ConnectionRead connectionRead;
-  private DestinationRead destinationRead;
   private ConnectionsHandler connectionsHandler;
   private SourceHandler sourceHandler;
   private DestinationHandler destinationHandler;
-  private SourceDefinitionsHandler sourceDefinitionsHandler;
-  private DestinationDefinitionsHandler destinationDefinitionsHandler;
-  private StandardDestinationDefinition standardDestinationDefinition;
-  private StandardSourceDefinition standardSourceDefinition;
-  private AirbyteVersion airbyteVersion;
   private Job testJob;
   private Attempt testJobAttempt;
   private JobPersistence jobPersistence;
@@ -142,7 +134,7 @@ class JobHistoryHandlerTest {
   }
 
   private static Attempt createAttempt(final long jobId, final long timestamps, final AttemptStatus status) {
-    return new Attempt(ATTEMPT_ID, jobId, LOG_PATH, null, status, null, timestamps, timestamps, timestamps);
+    return new Attempt(ATTEMPT_NUMBER, jobId, LOG_PATH, null, status, null, timestamps, timestamps, timestamps);
   }
 
   @BeforeEach
@@ -153,11 +145,11 @@ class JobHistoryHandlerTest {
 
     connectionsHandler = mock(ConnectionsHandler.class);
     sourceHandler = mock(SourceHandler.class);
-    sourceDefinitionsHandler = mock(SourceDefinitionsHandler.class);
     destinationHandler = mock(DestinationHandler.class);
-    destinationDefinitionsHandler = mock(DestinationDefinitionsHandler.class);
-    airbyteVersion = mock(AirbyteVersion.class);
     jobPersistence = mock(JobPersistence.class);
+    final SourceDefinitionsHandler sourceDefinitionsHandler = mock(SourceDefinitionsHandler.class);
+    final DestinationDefinitionsHandler destinationDefinitionsHandler = mock(DestinationDefinitionsHandler.class);
+    final AirbyteVersion airbyteVersion = mock(AirbyteVersion.class);
     jobHistoryHandler = new JobHistoryHandler(jobPersistence, WorkerEnvironment.DOCKER, LogConfigs.EMPTY, connectionsHandler, sourceHandler,
         sourceDefinitionsHandler, destinationHandler, destinationDefinitionsHandler, airbyteVersion);
   }
@@ -305,16 +297,16 @@ class JobHistoryHandlerTest {
   @Test
   @DisplayName("Should return the right info to debug this job")
   void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
-    standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    SourceRead sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
-    destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
+    DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
-    connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     when(connectionsHandler.getConnection(UUID.fromString(testJob.getScope()))).thenReturn(connectionRead);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
