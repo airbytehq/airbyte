@@ -95,6 +95,21 @@ class JobHistoryHandlerTest {
   private static final LogRead EMPTY_LOG_READ = new LogRead().logLines(new ArrayList<>());
   private static final long CREATED_AT = System.currentTimeMillis() / 1000;
 
+  private static final AttemptStats ATTEMPT_STATS = new AttemptStats(new SyncStats().withBytesEmitted(10L).withRecordsEmitted(10L),
+      List.of(
+          new StreamSyncStats().withStreamNamespace("ns1").withStreamName("stream1")
+              .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L)),
+          new StreamSyncStats().withStreamName("stream2")
+              .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L))));
+
+  private static final io.airbyte.api.model.generated.AttemptStats ATTEMPT_STATS_API = new io.airbyte.api.model.generated.AttemptStats()
+      .bytesEmitted(10L).recordsEmitted(10L);
+
+  private static final List<AttemptStreamStats> ATTEMPT_STREAM_STATS = List.of(
+      new AttemptStreamStats().streamNamespace("ns1").streamName("stream1")
+          .stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)),
+      new AttemptStreamStats().streamName("stream2").stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)));
+
   private ConnectionsHandler connectionsHandler;
   private SourceHandler sourceHandler;
   private DestinationHandler destinationHandler;
@@ -163,21 +178,6 @@ class JobHistoryHandlerTest {
   @Nested
   @DisplayName("When listing jobs")
   class ListJobs {
-
-    private static final AttemptStats ATTEMPT_STATS = new AttemptStats(new SyncStats().withBytesEmitted(10L).withRecordsEmitted(10L),
-        List.of(
-            new StreamSyncStats().withStreamNamespace("ns1").withStreamName("stream1")
-                .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L)),
-            new StreamSyncStats().withStreamName("stream2")
-                .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L))));
-
-    private static final io.airbyte.api.model.generated.AttemptStats ATTEMPT_STATS_API = new io.airbyte.api.model.generated.AttemptStats()
-        .bytesEmitted(10L).recordsEmitted(10L);
-
-    private static final List<AttemptStreamStats> ATTEMPT_STREAM_STATS = List.of(
-        new AttemptStreamStats().streamNamespace("ns1").streamName("stream1")
-            .stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)),
-        new AttemptStreamStats().streamName("stream2").stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)));
 
     @Test
     @DisplayName("Should return jobs with/without attempts in descending order")
@@ -323,16 +323,16 @@ class JobHistoryHandlerTest {
   @Test
   @DisplayName("Should return the right info to debug this job")
   void testGetDebugJobInfo() throws IOException, JsonValidationException, ConfigNotFoundException, URISyntaxException {
-    StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
+    final StandardSourceDefinition standardSourceDefinition = SourceDefinitionHelpers.generateSourceDefinition();
     final SourceConnection source = SourceHelpers.generateSource(UUID.randomUUID());
-    SourceRead sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
+    final SourceRead sourceRead = SourceHelpers.getSourceRead(source, standardSourceDefinition);
 
-    StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
+    final StandardDestinationDefinition standardDestinationDefinition = DestinationDefinitionHelpers.generateDestination();
     final DestinationConnection destination = DestinationHelpers.generateDestination(UUID.randomUUID());
-    DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
+    final DestinationRead destinationRead = DestinationHelpers.getDestinationRead(destination, standardDestinationDefinition);
 
     final StandardSync standardSync = ConnectionHelpers.generateSyncWithSourceId(source.getSourceId());
-    ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
+    final ConnectionRead connectionRead = ConnectionHelpers.generateExpectedConnectionRead(standardSync);
     when(connectionsHandler.getConnection(UUID.fromString(testJob.getScope()))).thenReturn(connectionRead);
 
     final SourceIdRequestBody sourceIdRequestBody = new SourceIdRequestBody();
@@ -343,10 +343,13 @@ class JobHistoryHandlerTest {
     destinationIdRequestBody.setDestinationId(connectionRead.getDestinationId());
     when(destinationHandler.getDestination(destinationIdRequestBody)).thenReturn(destinationRead);
     when(jobPersistence.getJob(JOB_ID)).thenReturn(testJob);
+    when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
 
     final JobIdRequestBody requestBody = new JobIdRequestBody().id(JOB_ID);
     final JobDebugInfoRead jobDebugInfoActual = jobHistoryHandler.getJobDebugInfo(requestBody);
-    final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(toAttemptInfoList(ImmutableList.of(testJobAttempt)));
+    final List<AttemptInfoRead> attemptInfoReads = toAttemptInfoList(ImmutableList.of(testJobAttempt));
+    attemptInfoReads.forEach(read -> read.getAttempt().totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS));
+    final JobDebugInfoRead exp = new JobDebugInfoRead().job(toDebugJobInfo(testJob)).attempts(attemptInfoReads);
 
     assertEquals(exp, jobDebugInfoActual);
   }

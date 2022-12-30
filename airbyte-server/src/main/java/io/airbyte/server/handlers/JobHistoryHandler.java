@@ -5,6 +5,7 @@
 package io.airbyte.server.handlers;
 
 import com.google.common.base.Preconditions;
+import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.AttemptRead;
 import io.airbyte.api.model.generated.AttemptStats;
@@ -121,45 +122,44 @@ public class JobHistoryHandler {
           (request.getPagination() != null && request.getPagination().getRowOffset() != null) ? request.getPagination().getRowOffset() : 0);
     }
 
-    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
-
     final List<JobWithAttemptsRead> jobReads = jobs.stream().map(JobConverter::getJobWithAttemptsRead).collect(Collectors.toList());
-    hydrateWithStats(jobReads);
+    for (final JobWithAttemptsRead jwar : jobReads) {
+      for (final AttemptRead a : jwar.getAttempts()) {
+        hydrateWithStats(jwar.getJob().getId(), a);
+      }
+    }
 
+    final Long totalJobCount = jobPersistence.getJobCount(configTypes, configId);
     return new JobReadList().jobs(jobReads).totalJobCount(totalJobCount);
   }
 
-  private void hydrateWithStats(final List<JobWithAttemptsRead> jobReads) throws IOException {
-    for (final JobWithAttemptsRead jwar : jobReads) {
-      for (final AttemptRead a : jwar.getAttempts()) {
-        a.setTotalStats(new AttemptStats());
+  private void hydrateWithStats(final long jobId, final AttemptRead a) throws IOException {
+      a.setTotalStats(new AttemptStats());
 
-        final var attemptStats = jobPersistence.getAttemptStats(jwar.getJob().getId(), a.getId().intValue());
-        final var combinedStats = attemptStats.combinedStats();
-        if (combinedStats == null) {
-          // If overall stats are missing, assume stream stats are also missing, since overall stats are
-          // easier to produce than stream stats.
-          continue;
-        }
-
-        a.getTotalStats()
-            .estimatedBytes(combinedStats.getEstimatedBytes())
-            .estimatedRecords(combinedStats.getEstimatedRecords())
-            .bytesEmitted(combinedStats.getBytesEmitted())
-            .recordsEmitted(combinedStats.getRecordsEmitted());
-
-        final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
-            .streamName(s.getStreamName())
-            .streamNamespace(s.getStreamNamespace())
-            .stats(new AttemptStats()
-                .bytesEmitted(s.getStats().getBytesEmitted())
-                .recordsEmitted(s.getStats().getRecordsEmitted())
-                .estimatedBytes(s.getStats().getEstimatedBytes())
-                .estimatedRecords(s.getStats().getEstimatedRecords())))
-            .collect(Collectors.toList());
-        a.setStreamStats(streamStats);
+      final var attemptStats = jobPersistence.getAttemptStats(jobId, a.getId().intValue());
+      final var combinedStats = attemptStats.combinedStats();
+      if (combinedStats == null) {
+        // If overall stats are missing, assume stream stats are also missing, since overall stats are
+        // easier to produce than stream stats. Exit early.
+        return;
       }
-    }
+
+      a.getTotalStats()
+          .estimatedBytes(combinedStats.getEstimatedBytes())
+          .estimatedRecords(combinedStats.getEstimatedRecords())
+          .bytesEmitted(combinedStats.getBytesEmitted())
+          .recordsEmitted(combinedStats.getRecordsEmitted());
+
+      final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
+          .streamName(s.getStreamName())
+          .streamNamespace(s.getStreamNamespace())
+          .stats(new AttemptStats()
+              .bytesEmitted(s.getStats().getBytesEmitted())
+              .recordsEmitted(s.getStats().getRecordsEmitted())
+              .estimatedBytes(s.getStats().getEstimatedBytes())
+              .estimatedRecords(s.getStats().getEstimatedRecords())))
+          .collect(Collectors.toList());
+      a.setStreamStats(streamStats);
   }
 
   public JobInfoRead getJobInfo(final JobIdRequestBody jobIdRequestBody) throws IOException {
@@ -176,6 +176,10 @@ public class JobHistoryHandler {
       throws ConfigNotFoundException, IOException, JsonValidationException {
     final Job job = jobPersistence.getJob(jobIdRequestBody.getId());
     final JobInfoRead jobinfoRead = jobConverter.getJobInfoRead(job);
+
+    for (final AttemptInfoRead a : jobinfoRead.getAttempts()) {
+      hydrateWithStats(job.getId(), a.getAttempt());
+    }
 
     final JobDebugInfoRead jobDebugInfoRead = buildJobDebugInfoRead(jobinfoRead);
     if (temporalClient != null) {
