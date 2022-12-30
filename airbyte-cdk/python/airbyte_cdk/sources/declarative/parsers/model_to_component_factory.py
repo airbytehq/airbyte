@@ -36,6 +36,9 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultErrorHandler as DefaultErrorHandlerModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DefaultPaginator as DefaultPaginatorModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import DpathExtractor as DpathExtractorModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import (
+    ExponentialBackoffStrategy as ExponentialBackoffStrategyModel,
+)
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpRequester as HttpRequesterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import HttpResponseFilter as HttpResponseFilterModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import InlineSchemaLoader as InlineSchemaLoaderModel
@@ -59,9 +62,16 @@ from airbyte_cdk.sources.declarative.models.declarative_component_schema import 
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SingleSlice as SingleSliceModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import Spec as SpecModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import SubstreamSlicer as SubstreamSlicerModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitTimeFromHeader as WaitTimeFromHeaderModel
+from airbyte_cdk.sources.declarative.models.declarative_component_schema import WaitUntilTimeFromHeader as WaitUntilTimeFromHeaderModel
 from airbyte_cdk.sources.declarative.requesters import HttpRequester, RequestOption
 from airbyte_cdk.sources.declarative.requesters.error_handlers import CompositeErrorHandler, DefaultErrorHandler, HttpResponseFilter
-from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import ConstantBackoffStrategy, ExponentialBackoffStrategy
+from airbyte_cdk.sources.declarative.requesters.error_handlers.backoff_strategies import (
+    ConstantBackoffStrategy,
+    ExponentialBackoffStrategy,
+    WaitTimeFromHeaderBackoffStrategy,
+    WaitUntilTimeFromHeaderBackoffStrategy,
+)
 from airbyte_cdk.sources.declarative.requesters.error_handlers.response_action import ResponseAction
 from airbyte_cdk.sources.declarative.requesters.paginators import DefaultPaginator, NoPagination
 from airbyte_cdk.sources.declarative.requesters.paginators.strategies import CursorPaginationStrategy, OffsetIncrement, PageIncrement
@@ -319,6 +329,10 @@ def create_dpath_extractor(model: DpathExtractorModel, config: Config) -> DpathE
     return DpathExtractor(decoder=decoder, field_pointer=model.field_pointer, config=config, options=model.options)
 
 
+def create_exponential_backoff_strategy(model: ExponentialBackoffStrategyModel, config: Config) -> ExponentialBackoffStrategy:
+    return ExponentialBackoffStrategy(factor=model.factor, options=model.options, config=config)
+
+
 def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequester:
     authenticator = create_component_from_model(model=model.authenticator, config=config) if model.authenticator else None
     error_handler = (
@@ -492,6 +506,16 @@ def create_substream_slicer(model: SubstreamSlicerModel, config: Config) -> Subs
     return SubstreamSlicer(parent_stream_configs=parent_stream_configs, options=model.options)
 
 
+def create_wait_time_from_header(model: WaitTimeFromHeaderModel, config: Config) -> WaitTimeFromHeaderBackoffStrategy:
+    return WaitTimeFromHeaderBackoffStrategy(header=model.header, options=model.options, config=config, regex=model.regex)
+
+
+def create_wait_until_time_from_header(model: WaitUntilTimeFromHeaderModel, config: Config) -> WaitUntilTimeFromHeaderBackoffStrategy:
+    return WaitUntilTimeFromHeaderBackoffStrategy(
+        header=model.header, options=model.options, config=config, min_wait=model.min_wait, regex=model.regex
+    )
+
+
 class ModelToComponentFactory:
     @staticmethod
     def create_component(model_type: Type[BaseModel], component_definition: ComponentDefinition, config: Config) -> type:
@@ -529,6 +553,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     DefaultErrorHandlerModel: create_default_error_handler,
     DefaultPaginatorModel: create_default_paginator,
     DpathExtractorModel: create_dpath_extractor,
+    ExponentialBackoffStrategyModel: create_exponential_backoff_strategy,
     HttpRequesterModel: create_http_requester,
     HttpResponseFilterModel: create_http_response_filter,
     InlineSchemaLoaderModel: create_inline_schema_loader,
@@ -550,6 +575,8 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
     SingleSliceModel: create_single_slice,
     SpecModel: create_spec,
     SubstreamSlicerModel: create_substream_slicer,
+    WaitTimeFromHeaderModel: create_wait_time_from_header,
+    WaitUntilTimeFromHeaderModel: create_wait_until_time_from_header,
 }
 
 
