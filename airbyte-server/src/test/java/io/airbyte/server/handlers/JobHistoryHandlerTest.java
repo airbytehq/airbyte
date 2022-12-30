@@ -6,6 +6,8 @@ package io.airbyte.server.handlers;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -14,6 +16,7 @@ import io.airbyte.api.model.generated.AttemptInfoRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusRead;
 import io.airbyte.api.model.generated.AttemptNormalizationStatusReadList;
 import io.airbyte.api.model.generated.AttemptRead;
+import io.airbyte.api.model.generated.AttemptStreamStats;
 import io.airbyte.api.model.generated.ConnectionRead;
 import io.airbyte.api.model.generated.DestinationIdRequestBody;
 import io.airbyte.api.model.generated.DestinationRead;
@@ -42,9 +45,12 @@ import io.airbyte.config.SourceConnection;
 import io.airbyte.config.StandardDestinationDefinition;
 import io.airbyte.config.StandardSourceDefinition;
 import io.airbyte.config.StandardSync;
+import io.airbyte.config.StreamSyncStats;
+import io.airbyte.config.SyncStats;
 import io.airbyte.config.helpers.LogConfigs;
 import io.airbyte.config.persistence.ConfigNotFoundException;
 import io.airbyte.persistence.job.JobPersistence;
+import io.airbyte.persistence.job.JobPersistence.AttemptStats;
 import io.airbyte.persistence.job.models.Attempt;
 import io.airbyte.persistence.job.models.AttemptNormalizationStatus;
 import io.airbyte.persistence.job.models.AttemptStatus;
@@ -158,6 +164,21 @@ class JobHistoryHandlerTest {
   @DisplayName("When listing jobs")
   class ListJobs {
 
+    private static final AttemptStats ATTEMPT_STATS = new AttemptStats(new SyncStats().withBytesEmitted(10L).withRecordsEmitted(10L),
+        List.of(
+            new StreamSyncStats().withStreamNamespace("ns1").withStreamName("stream1")
+                .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L)),
+            new StreamSyncStats().withStreamName("stream2")
+                .withStats(new SyncStats().withRecordsEmitted(5L).withBytesEmitted(5L))));
+
+    private static final io.airbyte.api.model.generated.AttemptStats ATTEMPT_STATS_API = new io.airbyte.api.model.generated.AttemptStats()
+        .bytesEmitted(10L).recordsEmitted(10L);
+
+    private static final List<AttemptStreamStats> ATTEMPT_STREAM_STATS = List.of(
+        new AttemptStreamStats().streamNamespace("ns1").streamName("stream1")
+            .stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)),
+        new AttemptStreamStats().streamName("stream2").stats(new io.airbyte.api.model.generated.AttemptStats().recordsEmitted(5L).bytesEmitted(5L)));
+
     @Test
     @DisplayName("Should return jobs with/without attempts in descending order")
     void testListJobs() throws IOException {
@@ -174,6 +195,7 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobs(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, pagesize, rowOffset))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
+      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -181,8 +203,8 @@ class JobHistoryHandlerTest {
           .pagination(new Pagination().pageSize(pagesize).rowOffset(rowOffset));
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
-      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
-          testJobAttempt)));
+      final var expAttemptRead = toAttemptRead(testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS);
+      final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(expAttemptRead));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);
@@ -215,6 +237,7 @@ class JobHistoryHandlerTest {
 
       when(jobPersistence.listJobs(configTypes, JOB_CONFIG_ID, pagesize, rowOffset)).thenReturn(List.of(latestJob, secondJob, firstJob));
       when(jobPersistence.getJobCount(configTypes, JOB_CONFIG_ID)).thenReturn(3L);
+      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
 
       final JobListRequestBody requestBody = new JobListRequestBody()
           .configTypes(List.of(CONFIG_TYPE_FOR_API, JobConfigType.SYNC, JobConfigType.DISCOVER_SCHEMA))
@@ -223,9 +246,11 @@ class JobHistoryHandlerTest {
       final JobReadList jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var firstJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(firstJob)).attempts(ImmutableList.of(toAttemptRead(testJobAttempt)));
+          new JobWithAttemptsRead().job(toJobInfo(firstJob))
+              .attempts(ImmutableList.of(toAttemptRead(testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
       final var secondJobWithAttemptRead =
-          new JobWithAttemptsRead().job(toJobInfo(secondJob)).attempts(ImmutableList.of(toAttemptRead(secondJobAttempt)));
+          new JobWithAttemptsRead().job(toJobInfo(secondJob))
+              .attempts(ImmutableList.of(toAttemptRead(secondJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJob)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, secondJobWithAttemptRead, firstJobWithAttemptRead)).totalJobCount(3L);
@@ -249,6 +274,7 @@ class JobHistoryHandlerTest {
       when(jobPersistence.listJobsIncludingId(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID, jobId2, pagesize))
           .thenReturn(List.of(latestJobNoAttempt, successfulJob));
       when(jobPersistence.getJobCount(Set.of(Enums.convertTo(CONFIG_TYPE_FOR_API, ConfigType.class)), JOB_CONFIG_ID)).thenReturn(2L);
+      when(jobPersistence.getAttemptStats(anyLong(), anyInt())).thenReturn(ATTEMPT_STATS);
 
       final var requestBody = new JobListRequestBody()
           .configTypes(Collections.singletonList(CONFIG_TYPE_FOR_API))
@@ -258,7 +284,7 @@ class JobHistoryHandlerTest {
       final var jobReadList = jobHistoryHandler.listJobsFor(requestBody);
 
       final var successfulJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(successfulJob)).attempts(ImmutableList.of(toAttemptRead(
-          testJobAttempt)));
+          testJobAttempt).totalStats(ATTEMPT_STATS_API).streamStats(ATTEMPT_STREAM_STATS)));
       final var latestJobWithAttemptRead = new JobWithAttemptsRead().job(toJobInfo(latestJobNoAttempt)).attempts(Collections.emptyList());
       final JobReadList expectedJobReadList =
           new JobReadList().jobs(List.of(latestJobWithAttemptRead, successfulJobWithAttemptRead)).totalJobCount(2L);

@@ -132,13 +132,13 @@ public class JobHistoryHandler {
   private void hydrateWithStats(final List<JobWithAttemptsRead> jobReads) throws IOException {
     for (final JobWithAttemptsRead jwar : jobReads) {
       for (final AttemptRead a : jwar.getAttempts()) {
-        // make sure the attempt id is correct
-        System.out.println(a.getId().intValue());
-        final var attemptStats = jobPersistence.getAttemptStats(jwar.getJob().getId(), a.getId().intValue());
+        a.setTotalStats(new AttemptStats());
 
+        final var attemptStats = jobPersistence.getAttemptStats(jwar.getJob().getId(), a.getId().intValue());
         final var combinedStats = attemptStats.combinedStats();
         if (combinedStats == null) {
-          a.setTotalStats(new AttemptStats());
+          // If overall stats are missing, assume stream stats are also missing, since overall stats are
+          // easier to produce than stream stats.
           continue;
         }
 
@@ -150,6 +150,7 @@ public class JobHistoryHandler {
 
         final var streamStats = attemptStats.perStreamStats().stream().map(s -> new AttemptStreamStats()
             .streamName(s.getStreamName())
+            .streamNamespace(s.getStreamNamespace())
             .stats(new AttemptStats()
                 .bytesEmitted(s.getStats().getBytesEmitted())
                 .recordsEmitted(s.getStats().getRecordsEmitted())
