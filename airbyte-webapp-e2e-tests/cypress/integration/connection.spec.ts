@@ -434,7 +434,7 @@ describe("Connection sync modes", () => {
     deleteDestination(destName);
   });
 
-  it.only("Connection sync mode Incremental Deduped History - PK is defined", () => {
+  it("Connection sync mode Incremental Deduped History - PK is defined", () => {
     const sourceName = appendRandomString("Test connection Postgres source cypress");
     const destName = appendRandomString("Test connection Postgres destination cypress");
     const streamName = "users";
