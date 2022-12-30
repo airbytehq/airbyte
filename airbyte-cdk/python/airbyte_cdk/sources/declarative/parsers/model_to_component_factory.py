@@ -548,17 +548,7 @@ PYDANTIC_MODEL_TO_CONSTRUCTOR: [Type[BaseModel], Callable] = {
 
 
 # Needed for the case where we need to perform a second parse on the fields of a custom component
-TYPE_NAME_TO_MODEL = {
-    "CustomStreamSlicer": CustomStreamSlicerModel,
-    "DatetimeStreamSlicer": DatetimeStreamSlicerModel,
-    "DeclarativeStream": DeclarativeStreamModel,
-    "DefaultPaginator": DefaultPaginatorModel,
-    "HttpRequester": HttpRequesterModel,
-    "RequestOption": RequestOptionModel,
-    "RecordSelector": RecordSelectorModel,
-    "SubstreamSlicer": SubstreamSlicerModel,
-}
-
+TYPE_NAME_TO_MODEL = {cls.__name__.partition("Model")[0]: cls for cls in PYDANTIC_MODEL_TO_CONSTRUCTOR}
 
 def _get_class_from_fully_qualified_class_name(class_name: str):
     split = class_name.split(".")
