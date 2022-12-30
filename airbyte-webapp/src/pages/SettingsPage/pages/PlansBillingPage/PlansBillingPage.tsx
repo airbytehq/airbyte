@@ -139,7 +139,9 @@ const PlansBillingPage: React.FC<IProps> = ({ setMessageId }) => {
             <div className={styles.planTitle}>
               <FormattedMessage id="plan.type.heading" />
             </div>
-            <div className={styles.planValue}>{userPlanDetail.name}</div>
+            <div className={styles.planValue}>
+              {userPlanDetail.name === "Free trial" ? userPlanDetail.name : `${userPlanDetail.name} plan`}
+            </div>
           </div>
           <Separator height="40px" />
           <div className={styles.rowContainer}>
