@@ -21,7 +21,7 @@ logger = getLogger("airbyte")
 
 class DestinationDatabend(Destination):
     def write(
-            self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -81,8 +81,8 @@ class DestinationDatabend(Destination):
             client = DatabendClient(**config)
             cursor = client.open()
             cursor.execute("DROP TABLE IF EXISTS test")
-            cursor.execute('CREATE TABLE if not exists test (x Int32,y VARCHAR)')
-            cursor.execute('INSERT INTO test (x,y) VALUES (%,%)', [1, 'yy', 2, 'xx'])
+            cursor.execute("CREATE TABLE if not exists test (x Int32,y VARCHAR)")
+            cursor.execute("INSERT INTO test (x,y) VALUES (%,%)", [1, "yy", 2, "xx"])
             cursor.execute("DROP TABLE IF EXISTS test")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:

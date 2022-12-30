@@ -81,7 +81,7 @@ class DestinationNameTransformer:
         return self.__normalize_non_column_identifier_name(input_name=schema_name, in_jinja=in_jinja, truncate=truncate)
 
     def normalize_table_name(
-            self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, table_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         """
         @param table_name is the table to normalize
@@ -98,7 +98,7 @@ class DestinationNameTransformer:
         )
 
     def normalize_column_name(
-            self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         """
         @param column_name is the column to normalize
@@ -125,7 +125,7 @@ class DestinationNameTransformer:
             middle = round(limit / 2)
             # truncate in the middle to preserve prefix/suffix instead
             prefix = input_name[: limit - middle - 1]
-            suffix = input_name[1 - middle:]
+            suffix = input_name[1 - middle :]
             # Add extra characters '__', signaling a truncate in identifier
             print(f"Truncating {input_name} (#{len(input_name)}) to {prefix}_{suffix} (#{2 + len(prefix) + len(suffix)})")
             mid = "__"
@@ -145,7 +145,7 @@ class DestinationNameTransformer:
     # Private methods
 
     def __normalize_non_column_identifier_name(
-            self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, input_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         # We force standard naming for non column names (see issue #1785)
         result = transform_standard_naming(input_name)
@@ -161,7 +161,7 @@ class DestinationNameTransformer:
         return result
 
     def __normalize_identifier_name(
-            self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
+        self, column_name: str, in_jinja: bool = False, truncate: bool = True, conflict: bool = False, conflict_level: int = 0
     ) -> str:
         result = self.__normalize_naming_conventions(column_name, is_column=True)
         if truncate:
