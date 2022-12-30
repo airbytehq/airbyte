@@ -468,7 +468,7 @@ def create_simple_retriever(model: SimpleRetrieverModel, config: Config) -> Simp
     return SimpleRetriever(
         name=model.name,
         paginator=paginator,
-        primary_key=model.primary_key,
+        primary_key=model.primary_key.__root__,
         requester=requester,
         record_selector=record_selector,
         stream_slicer=stream_slicer,
