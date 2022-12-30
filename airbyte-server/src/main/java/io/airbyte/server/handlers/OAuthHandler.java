@@ -327,6 +327,7 @@ public class OAuthHandler {
       final String k = entry.getKey();
       final JsonNode v = entry.getValue();
 
+      // Note: This does not currently handle replacing masked secrets within nested objects.
       if (AirbyteSecretConstants.SECRETS_MASK.equals(v.textValue())) {
         if (oAuthInputConfigurationFromDB.has(k)) {
           result.set(k, oAuthInputConfigurationFromDB.get(k));
