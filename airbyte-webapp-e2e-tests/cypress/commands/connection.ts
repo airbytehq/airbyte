@@ -4,19 +4,7 @@ import { createPokeApiSource, createPostgresSource } from "./source";
 import { openAddSource } from "pages/destinationPage";
 import { selectSchedule, setupDestinationNamespaceSourceFormat, enterConnectionName } from "pages/replicationPage";
 
-enum Schedule {
-  MANUAL = "Manual",
-}
-
-interface ReplicationSettings {
-  schedule: Schedule;
-}
-
-export const createTestConnection = (
-  sourceName: string,
-  destinationName: string,
-  connectionSettings: ReplicationSettings = {} as ReplicationSettings
-) => {
+export const createTestConnection = (sourceName: string, destinationName: string) => {
   cy.intercept("/api/v1/sources/discover_schema").as("discoverSchema");
   cy.intercept("/api/v1/web_backend/connections/create").as("createConnection");
 
@@ -49,12 +37,11 @@ export const createTestConnection = (
   cy.get("div").contains(sourceName).click();
 
   cy.wait("@discoverSchema");
-  const { schedule } = connectionSettings;
-  // enterConnectionName("Connection name"); // FIXME: do we need to append tha string to name?
-  if (schedule) {
-    selectSchedule(schedule);
-  }
-  // setupDestinationNamespaceSourceFormat(); // FIXME: do we need just to click on inputs?
+
+  enterConnectionName("Connection name");
+  selectSchedule("Manual");
+
+  setupDestinationNamespaceSourceFormat();
   submitButtonClick();
 
   cy.wait("@createConnection", { requestTimeout: 10000 });
