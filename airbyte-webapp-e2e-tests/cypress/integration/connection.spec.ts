@@ -93,8 +93,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -157,8 +157,6 @@ describe("Connection - main actions", () => {
     cy.get("div").contains(sourceName).should("exist");
     cy.get("div").contains(destName).should("exist");
 
-    openSourceDestinationFromGrid(sourceName);
-
     goToReplicationTab();
 
     selectSchedule("Cron");
@@ -184,8 +182,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(`${sourceName} <> ${destName}`);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     let loadedConnection: any = null; // Should be a WebBackendConnectionRead
     cy.wait("@getConnection").then((interception) => {
@@ -229,8 +227,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToSettingsPage();
 
@@ -247,8 +245,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -291,8 +289,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -312,8 +310,8 @@ describe("Connection - main actions", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -371,8 +369,8 @@ describe("Connection - stream view", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -405,8 +403,8 @@ describe("Connection sync modes", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -424,8 +422,8 @@ describe("Connection sync modes", () => {
     checkSuccessResult();
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -444,8 +442,8 @@ describe("Connection sync modes", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -486,8 +484,8 @@ describe("Connection sync modes", () => {
     createTestConnection(sourceName, destName);
 
     goToSourcePage();
-    openSourceDestinationFromGrid(sourceName);
-    openSourceDestinationFromGrid(destName);
+    openSourceOverview(sourceName);
+    openConnectionOverviewByDestinationName(destName);
 
     goToReplicationTab();
 
@@ -547,7 +545,6 @@ describe("Connection - detect changes in source", () => {
     cy.get("div").contains(destName).should("exist");
 
     makeChangesInDBSource();
-    openSourceDestinationFromGrid(sourceName);
     goToReplicationTab();
     refreshSourceSchemaBtnClick();
 
