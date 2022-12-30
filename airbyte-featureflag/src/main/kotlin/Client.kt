@@ -2,7 +2,7 @@
  * Copyright (c) 2022 Airbyte, Inc., all rights reserved.
  */
 
-package io.airbyte.commons.featureflag
+package io.airbyte.featureflag
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -13,18 +13,20 @@ import com.launchdarkly.sdk.LDContext
 import com.launchdarkly.sdk.LDUser
 import com.launchdarkly.sdk.server.LDClient
 import java.nio.file.Path
+import java.util.concurrent.locks.ReentrantReadWriteLock
+import kotlin.concurrent.read
 
-/**
- * How I'm envisioning this working (currently, still very much a POC/rough):
- */
-class ExampleController(private val ffClient: Client) {
-    fun get(userId: String): String {
-        if (ffClient.enabled(Flag.FeatureOne, User(userId), false)) {
-            return "feature enabled"
-        }
-        return "feature not enabled"
-    }
-}
+///**
+// * How I'm envisioning this working (currently, still very much a POC/rough):
+// */
+//class ExampleController(private val ffClient: Client) {
+//    fun get(userId: String): String {
+//        if (ffClient.enabled(Flag.FeatureOne, User(userId), false)) {
+//            return "feature enabled"
+//        }
+//        return "feature not enabled"
+//    }
+//}
 
 /**
  * Open Questions:
@@ -37,11 +39,11 @@ class ExampleController(private val ffClient: Client) {
 /**
  * Flag contains all the feature-flags utilized by the code.
  */
-sealed class Flag(internal val key: String) {
-    object FeatureOne : Flag("feature-one")
-    object FeatureTwo : Flag("feature-two")
-    class Temp(key: String) : Flag(key)
-}
+//sealed class Flag(internal val key: String) {
+//    object FeatureOne : Flag("feature-one")
+//    object FeatureTwo : Flag("feature-two")
+//    class Temp(key: String) : Flag(key)
+//}
 
 /**
  * Context abstraction around LaunchDarkly v6 context idea
@@ -72,10 +74,13 @@ data class User(override val key: String) : Context {
 
 
 /**
- * Feature Flag Client interfaced, modeled after the LaunchDarkly client.
+ * Feature Flag Client interfaced.
  */
 sealed interface Client {
-    fun enabled(key: Flag, ctx: Context, default: Boolean): Boolean
+    /**
+     * Returns true if the flag with the provided context should be enabled. Returns false otherwise.
+     */
+    fun enabled(key: Flag, ctx: Context): Boolean
 }
 
 /**
@@ -114,8 +119,11 @@ private fun Context.toLDContext(): LDContext {
 class LD(sdkKey: String) : Client {
     private val ldClient: LDClient = LDClient(sdkKey)
 
-    override fun enabled(flag: Flag, ctx: Context, default: Boolean): Boolean {
-        return ldClient.boolVariation(flag.key, ctx.toLDUser(), default)
+    override fun enabled(flag: Flag, ctx: Context): Boolean {
+        return when (flag) {
+            is EnvVar -> flag.enabled()
+            else -> ldClient.boolVariation(flag.key, ctx.toLDUser(), flag.default)
+        }
     }
 }
 
@@ -132,16 +140,24 @@ class LD(sdkKey: String) : Client {
  */
 private data class OSSFlag(val name: String, val enabled: Boolean)
 
+/** The yaml mapper is used for reading the feature-flag configuration file. */
 private val yamlMapper = ObjectMapper(YAMLFactory()).registerKotlinModule()
 
 /**
  * OSS implementation
- *   need to setup a file-watcher on the config to ensure changes are picked up without requiring a restart of the app
+ *   need to set up a file-watcher on the config to ensure changes are picked up without requiring a restart of the app
  */
 class OSS(config: Path) : Client {
+    /** flags contains a mapping of the flag-name to the flag properties */
     private var flags: Map<String, OSSFlag> = yamlMapper.readValue<List<OSSFlag>>(config.toFile()).associateBy { it.name }
 
-    override fun enabled(flag: Flag, ctx: Context, default: Boolean): Boolean {
-        return flags[flag.key]?.enabled ?: default
+    /** lock is used for ensuring access to the flags map is handled correctly when the map is being updated. */
+    private val lock = ReentrantReadWriteLock()
+
+    override fun enabled(flag: Flag, ctx: Context): Boolean {
+        return when (flag) {
+            is EnvVar -> flag.enabled()
+            else -> lock.read { flags[flag.key]?.enabled ?: flag.default }
+        }
     }
 }
