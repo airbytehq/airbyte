@@ -79,6 +79,8 @@ authenticator_class_map: Dict = {
     ),
 }
 
+DATE_FORMAT = "%Y-%m-%d"
+
 
 class ConfigurationError(Exception):
     pass
@@ -238,8 +240,6 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
 
 
 class IncrementalGoogleAnalyticsDataApiStream(GoogleAnalyticsDataApiBaseStream, IncrementalMixin, ABC):
-    _date_format = "%Y-%m-%d"
-
     def __init__(self, *args, **kwargs):
         super(IncrementalGoogleAnalyticsDataApiStream, self).__init__(*args, **kwargs)
         self._cursor_value = None
@@ -255,11 +255,11 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
 
     @property
     def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value or utils.string_to_date(self.config["date_ranges_start_date"], self._date_format)}
+        return {self.cursor_field: self._cursor_value or self.config["date_ranges_start_date"]}
 
     @state.setter
     def state(self, value):
-        self._cursor_value = utils.string_to_date(value[self.cursor_field], self._date_format) + datetime.timedelta(days=1)
+        self._cursor_value = utils.string_to_date(value[self.cursor_field], DATE_FORMAT) + datetime.timedelta(days=1)
 
     def request_body_json(
         self,
@@ -306,8 +306,8 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
 
             dates.append(
                 {
-                    "startDate": utils.date_to_string(start_date, self._date_format),
-                    "endDate": utils.date_to_string(end_date, self._date_format),
+                    "startDate": utils.date_to_string(start_date, DATE_FORMAT),
+                    "endDate": utils.date_to_string(end_date, DATE_FORMAT),
                 }
             )
 
@@ -376,6 +376,11 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
                 config["credentials"]["credentials_json"] = json.loads(config["credentials"]["credentials_json"])
             except ValueError:
                 raise ConfigurationError("credentials.credentials_json is not valid JSON")
+
+        try:
+            config["date_ranges_start_date"] = datetime.datetime.strptime(config["date_ranges_start_date"], DATE_FORMAT).date()
+        except ValueError as e:
+            raise ConfigurationError(str(e))
 
         return config
 

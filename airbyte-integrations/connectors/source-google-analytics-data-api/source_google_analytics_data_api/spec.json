@@ -84,8 +84,9 @@
       },
       "date_ranges_start_date": {
         "type": "string",
-        "title": "Date Range Start Date",
-        "description": "The start date. One of the values Ndaysago, yesterday, today or in the format YYYY-MM-DD",
+        "title": "Start Date",
+        "description": "The start date from which to replicate report data in the format YYYY-MM-DD. Data generated before this date will not be included in the report.",
+        "format": "date",
         "order": 2
       },
       "custom_reports": {
