@@ -1,3 +1,4 @@
+import "@testing-library/jest-dom";
 import { act, Queries, queries, render as rtlRender, RenderOptions, RenderResult } from "@testing-library/react";
 import React, { Suspense } from "react";
 import { IntlProvider } from "react-intl";
