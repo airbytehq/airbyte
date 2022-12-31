@@ -86,7 +86,7 @@ sealed interface Client {
 /**
  * LaunchDarkly v5 version
  *
- * LaunchDarkly v6 introduces LDContext which replaces the LDUser class,
+ * LaunchDarkly v6 introduces the LDContext class which replaces the LDUser class,
  * however this is only available to early-access users accounts currently.
  *
  * Once v6 is GA, this method would be removed and replaced with toLDContext.
@@ -116,13 +116,11 @@ private fun Context.toLDContext(): LDContext {
  * LaunchDarkly implementation
  *   currently accepts a sdkKey, should instead have the LDClient provided
  */
-class LD(sdkKey: String) : Client {
-    private val ldClient: LDClient = LDClient(sdkKey)
-
+class LD(private val client: LDClient) : Client {
     override fun enabled(flag: Flag, ctx: Context): Boolean {
         return when (flag) {
             is EnvVar -> flag.enabled()
-            else -> ldClient.boolVariation(flag.key, ctx.toLDUser(), flag.default)
+            else -> client.boolVariation(flag.key, ctx.toLDUser(), flag.default)
         }
     }
 }
