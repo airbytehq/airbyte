@@ -97,7 +97,7 @@ class DefaultErrorHandler(ErrorHandler, JsonSchemaMixin):
     response_filters: Optional[List[HttpResponseFilter]] = None
     max_retries: Optional[int] = 5
     _max_retries: int = field(init=False, repr=False, default=5)
-    backoff_strategies: List[BackoffStrategy] = None
+    backoff_strategies: Optional[List[BackoffStrategy]] = None
 
     def __post_init__(self, options: Mapping[str, Any]):
         self.response_filters = self.response_filters or []

@@ -20,6 +20,7 @@ from airbyte_cdk.sources.declarative.datetime import MinMaxDatetime
 from airbyte_cdk.sources.declarative.declarative_stream import DeclarativeStream
 from airbyte_cdk.sources.declarative.decoders import JsonDecoder
 from airbyte_cdk.sources.declarative.extractors import DpathExtractor, RecordFilter, RecordSelector
+from airbyte_cdk.sources.declarative.interpolation import InterpolatedString
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddedFieldDefinition as AddedFieldDefinitionModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import AddFields as AddFieldsModel
 from airbyte_cdk.sources.declarative.models.declarative_component_schema import ApiKeyAuthenticator as ApiKeyAuthenticatorModel
@@ -116,7 +117,8 @@ def create_component_from_model(model: BaseModel, config: Config, **kwargs) -> A
 
 
 def create_added_field_definition(model: AddedFieldDefinitionModel, config: Config) -> AddedFieldDefinition:
-    return AddedFieldDefinition(path=model.path, value=model.value, options=model.options)
+    interpolated_value = InterpolatedString.create(model.value, options=model.options)
+    return AddedFieldDefinition(path=model.path, value=interpolated_value, options=model.options)
 
 
 def create_add_fields(model: AddFieldsModel, config: Config) -> AddFields:
@@ -242,15 +244,35 @@ def create_datetime_stream_slicer(model: DatetimeStreamSlicerModel, config: Conf
         model.start_datetime if isinstance(model.start_datetime, str) else create_min_max_datetime(model.start_datetime, config)
     )
     end_datetime = model.end_datetime if isinstance(model.end_datetime, str) else create_min_max_datetime(model.end_datetime, config)
+
+    end_time_option = (
+        RequestOption(
+            inject_into=RequestOptionType(model.end_time_option.inject_into.value),
+            field_name=model.end_time_option.field_name,
+            options=model.options,
+        )
+        if model.end_time_option
+        else None
+    )
+    start_time_option = (
+        RequestOption(
+            inject_into=RequestOptionType(model.start_time_option.inject_into.value),
+            field_name=model.start_time_option.field_name,
+            options=model.options,
+        )
+        if model.start_time_option
+        else None
+    )
+
     return DatetimeStreamSlicer(
         cursor_field=model.cursor_field,
         datetime_format=model.datetime_format,
         end_datetime=end_datetime,
         start_datetime=start_datetime,
         step=model.step,
-        end_time_option=model.end_time_option,
+        end_time_option=end_time_option,
         lookback_window=model.lookback_window,
-        start_time_option=model.start_time_option,
+        start_time_option=start_time_option,
         stream_state_field_end=model.stream_state_field_end,
         stream_state_field_start=model.stream_state_field_start,
         config=config,
@@ -368,7 +390,9 @@ def create_http_requester(model: HttpRequesterModel, config: Config) -> HttpRequ
 
 def create_http_response_filter(model: HttpResponseFilterModel, config: Config) -> HttpResponseFilter:
     action = ResponseAction(model.action.value)
-    http_codes = set(model.http_codes)  # JSON schema notation has no set data type. The schema enforces an array of unique elements
+    http_codes = (
+        set(model.http_codes) if model.http_codes else set()
+    )  # JSON schema notation has no set data type. The schema enforces an array of unique elements
     return HttpResponseFilter(
         action=action,
         error_message=model.error_message or "",
@@ -406,9 +430,18 @@ def create_json_file_schema_loader(model: JsonFileSchemaLoaderModel, config: Con
 
 
 def create_list_stream_slicer(model: ListStreamSlicerModel, config: Config) -> ListStreamSlicer:
+    request_option = (
+        RequestOption(
+            inject_into=RequestOptionType(model.request_option.inject_into.value),
+            field_name=model.request_option.field_name,
+            options=model.options,
+        )
+        if model.request_option
+        else None
+    )
     return ListStreamSlicer(
         cursor_field=model.cursor_field,
-        request_option=model.request_option,
+        request_option=request_option,
         slice_values=model.slice_values,
         config=config,
         options=model.options,
