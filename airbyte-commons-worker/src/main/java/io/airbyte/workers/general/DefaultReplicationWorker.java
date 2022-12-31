@@ -34,7 +34,6 @@ import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
 import io.airbyte.workers.RecordSchemaValidator;
 import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
-import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
@@ -57,7 +56,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -115,7 +113,9 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.mapper = mapper;
     this.destination = destination;
     this.messageTracker = messageTracker;
+    // use a virtual thread here?
     this.executors = Executors.newFixedThreadPool(2);
+//    this.executors = Executors.newVirtualThreadPerTaskExecutor();
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
@@ -308,52 +308,56 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Replication thread started.");
-      Long recordsRead = 0L;
+      AtomicReference<Long> recordsRead = new AtomicReference<>(0L);
       final Map<AirbyteStreamNameNamespacePair, ImmutablePair<Set<String>, Integer>> validationErrors = new HashMap<>();
       final Map<AirbyteStreamNameNamespacePair, List<String>> streamToSelectedFields = new HashMap<>();
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
       try {
+        // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
-          final Optional<AirbyteMessage> messageOptional;
-          try {
-            messageOptional = source.attemptRead();
-          } catch (final Exception e) {
-            throw new SourceException("Source process read attempt failed", e);
-          }
-
-          if (messageOptional.isPresent()) {
-            final AirbyteMessage airbyteMessage = messageOptional.get();
-            if (fieldSelectionEnabled) {
-              filterSelectedFields(streamToSelectedFields, airbyteMessage);
-            }
-            validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
-            final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
-
-            messageTracker.acceptFromSource(message);
-
+          // everything in here can be given to a virtual thread
+          Thread.ofVirtual().start(() -> {
+            final Optional<AirbyteMessage> messageOptional;
             try {
-              if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
-                destination.accept(message);
+              messageOptional = source.attemptRead();
+            } catch (final Exception e) {
+              throw new SourceException("Source process read attempt failed", e);
+            }
+
+            if (messageOptional.isPresent()) {
+              final AirbyteMessage airbyteMessage = messageOptional.get();
+              if (fieldSelectionEnabled) {
+                filterSelectedFields(streamToSelectedFields, airbyteMessage);
               }
-            } catch (final Exception e) {
-              throw new DestinationException("Destination process message delivery failed", e);
-            }
+              validateSchema(recordSchemaValidator, validationErrors, airbyteMessage);
+              final AirbyteMessage message = mapper.mapMessage(airbyteMessage);
 
-            recordsRead += 1;
+              messageTracker.acceptFromSource(message);
 
-            if (recordsRead % 1000 == 0) {
-              LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+              try {
+                if (message.getType() == Type.RECORD || message.getType() == Type.STATE) {
+                  destination.accept(message);
+                }
+              } catch (final Exception e) {
+                throw new DestinationException("Destination process message delivery failed", e);
+              }
+
+              recordsRead.updateAndGet(v -> v + 1);
+
+              if (recordsRead.get() % 1000 == 0) {
+                LOGGER.info("Records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
+              }
+            } else {
+              LOGGER.info("Source has no more messages, closing connection.");
+              try {
+                source.close();
+              } catch (final Exception e) {
+                throw new SourceException("Source cannot be stopped!", e);
+              }
             }
-          } else {
-            LOGGER.info("Source has no more messages, closing connection.");
-            try {
-              source.close();
-            } catch (final Exception e) {
-              throw new SourceException("Source cannot be stopped!", e);
-            }
-          }
+          });
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
@@ -557,22 +561,22 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     // avoid noise by validating only if the stream has less than 10 records with validation errors
     final boolean streamHasLessThenTenErrs =
         validationErrors.get(messageStream) == null || validationErrors.get(messageStream).getRight() < 10;
-    if (streamHasLessThenTenErrs) {
-      try {
-        recordSchemaValidator.validateSchema(record, messageStream);
-      } catch (final RecordSchemaValidationException e) {
-        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
-        if (exceptionWithCount == null) {
-          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
-        } else {
-          final Integer currentCount = exceptionWithCount.getRight();
-          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
-          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
-          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
-        }
-      }
-
-    }
+//    if (streamHasLessThenTenErrs) {
+//      try {
+//        recordSchemaValidator.validateSchema(record, messageStream);
+//      } catch (final RecordSchemaValidationException e) {
+//        final ImmutablePair<Set<String>, Integer> exceptionWithCount = validationErrors.get(messageStream);
+//        if (exceptionWithCount == null) {
+//          validationErrors.put(messageStream, new ImmutablePair<>(e.errorMessages, 1));
+//        } else {
+//          final Integer currentCount = exceptionWithCount.getRight();
+//          final Set<String> currentErrorMessages = exceptionWithCount.getLeft();
+//          final Set<String> updatedErrorMessages = Stream.concat(currentErrorMessages.stream(), e.errorMessages.stream()).collect(Collectors.toSet());
+//          validationErrors.put(messageStream, new ImmutablePair<>(updatedErrorMessages, currentCount + 1));
+//        }
+//      }
+//
+//    }
   }
 
   /**
