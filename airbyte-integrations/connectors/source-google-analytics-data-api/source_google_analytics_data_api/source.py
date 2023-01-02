@@ -14,7 +14,7 @@ import jsonschema
 import requests
 from airbyte_cdk.models import SyncMode
 from airbyte_cdk.sources import AbstractSource
-from airbyte_cdk.sources.streams import IncrementalMixin, Stream
+from airbyte_cdk.sources.streams import Stream
 from airbyte_cdk.sources.streams.http import HttpStream, auth
 from source_google_analytics_data_api import utils
 from source_google_analytics_data_api.authenticator import GoogleServiceKeyAuthenticator
@@ -239,13 +239,7 @@ class GoogleAnalyticsDataApiBaseStream(GoogleAnalyticsDataApiAbstractStream):
         yield r
 
 
-class IncrementalGoogleAnalyticsDataApiStream(GoogleAnalyticsDataApiBaseStream, IncrementalMixin, ABC):
-    def __init__(self, *args, **kwargs):
-        super(IncrementalGoogleAnalyticsDataApiStream, self).__init__(*args, **kwargs)
-        self._cursor_value = None
-
-
-class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStream):
+class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
     _default_window_in_days = 1
     _record_date_format = "%Y%m%d"
 
@@ -253,13 +247,14 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
     def cursor_field(self) -> Union[str, List[str]]:
         return "date"
 
-    @property
-    def state(self) -> MutableMapping[str, Any]:
-        return {self.cursor_field: self._cursor_value or self.config["date_ranges_start_date"]}
-
-    @state.setter
-    def state(self, value):
-        self._cursor_value = utils.string_to_date(value[self.cursor_field], DATE_FORMAT) + datetime.timedelta(days=1)
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]):
+        updated_state = utils.string_to_date(latest_record[self.cursor_field], self._record_date_format)
+        stream_state_value = current_stream_state.get(self.cursor_field)
+        if stream_state_value:
+            stream_state_value = utils.string_to_date(stream_state_value, self._record_date_format)
+            updated_state = max(updated_state, stream_state_value)
+        current_stream_state[self.cursor_field] = updated_state.strftime(self._record_date_format)
+        return current_stream_state
 
     def request_body_json(
         self,
@@ -285,8 +280,6 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
         records = super().read_records(sync_mode=sync_mode, cursor_field=cursor_field, stream_slice=stream_slice, stream_state=stream_state)
         for record in records:
             for row in record["records"]:
-                next_cursor_value = utils.string_to_date(row[self.cursor_field], self._record_date_format)
-                self._cursor_value = max(self._cursor_value, next_cursor_value) if self._cursor_value else next_cursor_value
                 yield row
 
     def stream_slices(
@@ -295,7 +288,13 @@ class GoogleAnalyticsDataApiGenericStream(IncrementalGoogleAnalyticsDataApiStrea
         dates = []
 
         today: datetime.date = datetime.date.today()
-        start_date: datetime.date = self.state[self.cursor_field]
+
+        start_date = stream_state.get(self.cursor_field)
+        if start_date:
+            start_date = utils.string_to_date(start_date, self._record_date_format)
+            start_date = max(start_date, self.config["date_ranges_start_date"])
+        else:
+            start_date = self.config["date_ranges_start_date"]
 
         timedelta: int = self.config["window_in_days"] or self._default_window_in_days
 
