@@ -18,14 +18,15 @@ export const LowCreditBalanceHint: React.FC<React.PropsWithChildren<unknown>> = 
     return null;
   }
 
-  const status = cloudWorkspace.remainingCredits === 0 ? "zeroBalance" : "lowBalance";
+  const status = cloudWorkspace.remainingCredits <= 0 ? "zeroBalance" : "lowBalance";
+  const variant = status === "zeroBalance" ? "error" : "default";
 
   const ICONS = {
     lowBalance: faCreditCard,
     zeroBalance: faWarning,
   };
   return (
-    <InfoBox icon={ICONS[status]} error={status === "zeroBalance"} className={styles.container}>
+    <InfoBox className={styles.container} icon={ICONS[status]} variant={variant}>
       <div className={styles.wrapper}>
         <FormattedMessage id={`credits.${status}`} />
         {children}
