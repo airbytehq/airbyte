@@ -22,6 +22,10 @@ public class JsonSchemaReferenceTypes {
   public static final String REF_KEY = "$ref";
   public static final String TYPE_KEY = "type";
   public static final String ONEOF_KEY = "oneOf";
+  public static final String PROPERTIES_KEY = "properties";
+  public static final String ITEMS_KEY = "items";
+  public static final String OBJECT_TYPE = "object";
+  public static final String ARRAY_TYPE = "array";
 
   public static final String WELL_KNOWN_TYPES_FILENAME = "WellKnownTypes.json";
   public static final String STRING_REFERENCE = WELL_KNOWN_TYPES_FILENAME + "#/definitions/String";

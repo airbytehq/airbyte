@@ -4,7 +4,11 @@
 
 package io.airbyte.commons.protocol.migrations.util;
 
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.ARRAY_TYPE;
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.ITEMS_KEY;
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.OBJECT_TYPE;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.ONEOF_KEY;
+import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.PROPERTIES_KEY;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.REF_KEY;
 import static io.airbyte.protocol.models.JsonSchemaReferenceTypes.TYPE_KEY;
 
@@ -137,17 +141,17 @@ public class RecordMigrations {
       if (typeNode.isArray()) {
         isObjectSchema = false;
         for (JsonNode typeItem : typeNode) {
-          if ("object".equals(typeItem.asText())) {
+          if (OBJECT_TYPE.equals(typeItem.asText())) {
             isObjectSchema = true;
           }
         }
       } else {
-        isObjectSchema = "object".equals(typeNode.asText());
+        isObjectSchema = OBJECT_TYPE.equals(typeNode.asText());
       }
     } else {
       // If the schema doesn't declare a type at all (which is bad practice, but let's handle it anyway)
       // Then check for a properties entry, and assume that this is an object if it's present
-      isObjectSchema = schema.hasNonNull("properties");
+      isObjectSchema = schema.hasNonNull(PROPERTIES_KEY);
     }
 
     if (!isObjectSchema) {
@@ -157,7 +161,7 @@ public class RecordMigrations {
     } else {
       // If the schema _is_ for an object, then recurse into each field
       ObjectNode mutatedData = (ObjectNode) Jsons.emptyObject();
-      JsonNode propertiesNode = schema.get("properties");
+      JsonNode propertiesNode = schema.get(PROPERTIES_KEY);
 
       Iterator<Entry<String, JsonNode>> dataFields = data.fields();
       boolean matchedSchema = true;
@@ -205,24 +209,24 @@ public class RecordMigrations {
       if (typeNode.isArray()) {
         isArraySchema = false;
         for (JsonNode typeItem : typeNode) {
-          if ("array".equals(typeItem.asText())) {
+          if (ARRAY_TYPE.equals(typeItem.asText())) {
             isArraySchema = true;
           }
         }
       } else {
-        isArraySchema = "array".equals(typeNode.asText());
+        isArraySchema = ARRAY_TYPE.equals(typeNode.asText());
       }
     } else {
       // If the schema doesn't declare a type at all (which is bad practice, but let's handle it anyway)
       // Then check for an items entry, and assume that this is an array if it's present
-      isArraySchema = schema.hasNonNull("items");
+      isArraySchema = schema.hasNonNull(ITEMS_KEY);
     }
 
     if (!isArraySchema) {
       return new MigratedNode(data, false);
     } else {
       ArrayNode mutatedItems = Jsons.arrayNode();
-      JsonNode itemsNode = schema.get("items");
+      JsonNode itemsNode = schema.get(ITEMS_KEY);
       if (itemsNode == null) {
         // We _could_ check additionalItems, but much like the additionalProperties comment for objects:
         // it's a lot of work for no payoff
