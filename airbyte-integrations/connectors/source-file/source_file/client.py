@@ -27,6 +27,8 @@ from yaml import safe_load
 
 from .utils import backoff_handler
 
+SSH_TIMEOUT = 60
+
 
 class ConfigurationError(Exception):
     """Client mis-configured"""
@@ -116,7 +118,7 @@ class URLFile:
             except ValueError as err:
                 raise ValueError(f"{_port_value} is not a valid integer for the port") from err
             # Explicitly turn off ssh keys stored in ~/.ssh
-            transport_params = {"connect_kwargs": {"look_for_keys": False}}
+            transport_params = {"connect_kwargs": {"look_for_keys": False}, "timeout": SSH_TIMEOUT}
             if "password" in self._provider:
                 password = self._provider["password"]
                 uri = f"{storage}{user}:{password}@{host}:{port}/{url}"
