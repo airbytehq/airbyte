@@ -34,7 +34,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         helpers.setValue(undefined);
       }
     },
-    [field, helpers, property.isRequired]
+    [field, helpers]
   );
 
   if (property.type === "array" && !property.enum) {
