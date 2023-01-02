@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class AirbyteMessageV1SerDeTest {
 
   @Test
-  void v0SerDeRoundTripTest() throws URISyntaxException {
+  void v1SerDeRoundTripTest() throws URISyntaxException {
     final AirbyteMessageV1Deserializer deser = new AirbyteMessageV1Deserializer();
     final AirbyteMessageV1Serializer ser = new AirbyteMessageV1Serializer();
 
