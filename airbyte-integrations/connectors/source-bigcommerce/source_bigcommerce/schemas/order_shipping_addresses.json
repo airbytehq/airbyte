@@ -20,6 +20,9 @@
     "cost_ex_tax": {
       "type": ["null", "string"]
     },
+    "cost_tax": {
+      "type": ["null", "string"]
+    },
     "cost_inc_tax": {
       "type": ["null", "string"]
     },

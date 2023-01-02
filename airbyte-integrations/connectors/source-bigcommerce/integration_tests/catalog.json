@@ -815,6 +815,9 @@
           "cost_inc_tax": {
             "type": ["null", "string"]
           },
+          "cost_tax": {
+            "type": ["null", "string"]
+          },
           "cost_tax_class_id": {
             "type": ["null", "integer"]
           },
