@@ -86,12 +86,19 @@ export const PageDisplay: React.FC<PageDisplayProps> = ({ page, className, infer
             <Tab.Panel className={styles.tabPanel} key={tab.key}>
               {tab.key === "schema" && (
                 <Button
+                  variant="secondary"
                   disabled={field.value === formattedSchema}
                   onClick={() => {
                     helpers.setValue(formattedSchema);
                   }}
                 >
-                  <FormattedMessage id="connectorBuilder.useSchemaButton" />
+                  <FormattedMessage
+                    id={
+                      field.value === formattedSchema || !field.value
+                        ? "connectorBuilder.useSchemaButton"
+                        : "connectorBuilder.overwriteSchemaButton"
+                    }
+                  />
                 </Button>
               )}
               <pre>{tab.content}</pre>

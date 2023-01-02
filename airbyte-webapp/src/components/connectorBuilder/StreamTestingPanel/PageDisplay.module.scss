@@ -34,4 +34,13 @@
 .tabPanel {
   max-height: 100%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: variables.$spacing-md;
+  margin-top: variables.$spacing-md;
+  align-items: stretch;
+
+  & > pre {
+    margin-top: 0;
+  }
 }
