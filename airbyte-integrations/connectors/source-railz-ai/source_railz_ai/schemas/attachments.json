@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -30,14 +30,10 @@
       "type": ["null", "object"],
       "properties": {
         "type": {
-          "type": ["null", "string"],
-          "enum" : [
-            "bill",
-            "invoice"
-          ]
+          "type": ["null", "string"]
         },
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string", "integer"]
         }
       }
     },

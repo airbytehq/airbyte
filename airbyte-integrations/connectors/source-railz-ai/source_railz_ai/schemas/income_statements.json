@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "reportId": {
-      "type": "string"
+      "type": ["string", "array"]
     },
     "startDate": {
       "type": "string",
@@ -20,24 +20,10 @@
       "type": "string"
     },
     "section": {
-      "type": "string",
-      "enum" : [
-        "Income",
-        "Expenses"
-      ]
+      "type": "string"
     },
     "subSection": {
-      "type": "string",
-      "enum" : [
-        "Income",
-        "Cost of Goods Sold",
-        "Operating Expenses",
-        "Other Income",
-        "Other Expenses",
-        "Uncategorized Expenses",
-        "Uncategorized Income",
-        "Expenses"
-      ]
+      "type": "string"
     },
     "group": {
       "type": ["null", "string"]
@@ -46,10 +32,10 @@
       "type": ["null", "string"]
     },
     "accountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "subAccountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "account": {
       "type": "string"

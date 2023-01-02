@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -63,7 +63,7 @@
             "type": "number"
           },
           "discountPercentage": {
-            "type": ["null", "number"]
+            "type": ["null", "number", "string"]
           },
           "taxRateRef": {
             "type": ["null", "object"],
@@ -143,15 +143,7 @@
       "type": ["null", "number"]
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "paid",
-        "partiallyPaid",
-        "void",
-        "unknown",
-        "draft"
-      ]
+      "type": "string"
     },
     "memo": {
       "type": ["null", "string"]

@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "reportId": {
-      "type": "string"
+      "type": ["string", "array"]
     },
     "startDate": {
       "type": "string",
@@ -20,33 +20,10 @@
       "type": "string"
     },
     "section": {
-      "type": "string",
-      "enum" : [
-        "Income",
-        "Expenses",
-        "Assets",
-        "Liabilities",
-        "Equity"
-      ]
+      "type": "string"
     },
     "subSection": {
-      "type": "string",
-      "enum" : [
-        "Income",
-        "Cost of Goods Sold",
-        "Operating Expenses",
-        "Other Income",
-        "Other Expenses",
-        "Uncategorized Expenses",
-        "Uncategorized Income",
-        "Expenses",
-        "Current Assets",
-        "Non-Current Assets",
-        "Current Liabilities",
-        "Non-Current Liabilities",
-        "Equity",
-        "Other Assets Other Liabilities"
-      ]
+      "type": "string"
     },
     "group": {
       "type": ["null", "string"]
@@ -55,10 +32,10 @@
       "type": ["null", "string"]
     },
     "accountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "subAccountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "fullyQualifiedName": {
       "type": "string"
@@ -78,7 +55,7 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "name": {
             "type": ["null", "string"]

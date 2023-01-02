@@ -12,7 +12,7 @@
       "type": "string"
     },
     "accountId": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "currentBalance": {
       "type": ["null", "number"]
@@ -36,15 +36,7 @@
       "type": ["null", "string"]
     },
     "accountType": {
-      "type": "string",
-      "enum": [
-        "investment",
-        "credit",
-        "depository",
-        "loan",
-        "brokerage",
-        "other"
-      ]
+      "type": "string"
     },
     "accountSubType": {
       "type": ["null", "string"]

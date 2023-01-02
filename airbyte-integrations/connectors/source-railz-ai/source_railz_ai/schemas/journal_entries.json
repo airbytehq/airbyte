@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -88,12 +88,7 @@
                 "type": ["null", "string"]
               },
               "type": {
-                "type": ["null", "string"],
-                "enum" : [
-                  "customer",
-                  "employee",
-                  "vendor"
-                ]
+                "type": ["null", "string"]
               }
             }
           },

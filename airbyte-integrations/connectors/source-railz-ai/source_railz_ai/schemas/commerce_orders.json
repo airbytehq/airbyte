@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -40,7 +40,7 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "productId": {
             "type": ["null", "string"]
@@ -69,7 +69,7 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "totalAmount": {
             "type": "number"
@@ -83,23 +83,10 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "type": {
-            "type": "number",
-            "enum" : [
-              "failedPayout",
-              "payment",
-              "paymentFee",
-              "paymentFeeRefund",
-              "payout",
-              "refund",
-              "transfer",
-              "dispute",
-              "order",
-              "other",
-              "unknown"
-            ]
+            "type": "number"
           },
           "totalAmount": {
             "type": "number"
@@ -169,7 +156,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "customerName": {
           "type": ["null", "string"]
@@ -183,7 +170,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string", "integer"]
         },
         "name": {
           "type": "string"
@@ -217,36 +204,13 @@
       "format": "date-time"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "closed",
-        "cancelled",
-        "unknown",
-        "draft"
-      ]
+      "type": "string"
     },
     "paymentStatus": {
-      "type": "string",
-      "enum": [
-        "pending",
-        "approved",
-        "paid",
-        "failed",
-        "cancelled",
-        "refunded",
-        "unknown"
-      ]
+      "type": "string"
     },
     "fulfillmentStatus": {
-      "type": "string",
-      "enum": [
-        "fulfilled",
-        "partial",
-        "unfulfilled",
-        "cancelled",
-        "unknown"
-      ]
+      "type": "string"
     }
   }
 }

@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -19,7 +19,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -59,7 +59,7 @@
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -70,7 +70,7 @@
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -84,18 +84,13 @@
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
               },
               "type": {
-                "type": ["null", "string"],
-                "enum" : [
-                  "customer",
-                  "employee",
-                  "unknown"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
@@ -106,14 +101,7 @@
                 "type": "string"
               },
               "type": {
-                "type": ["null", "string"],
-                "enum" : [
-                  "billPayment",
-                  "transfer",
-                  "journalEntry",
-                  "paymentOnAccount",
-                  "other"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
@@ -126,14 +114,7 @@
                   "type": "string"
                 },
                 "type": {
-                  "type": ["null", "string"],
-                  "enum" : [
-                    "billPayment",
-                    "transfer",
-                    "journalEntry",
-                    "paymentOnAccount",
-                    "other"
-                  ]
+                  "type": ["null", "string"]
                 }
               }
             }
@@ -151,14 +132,7 @@
       "type": "number"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "paid",
-        "void",
-        "unknown",
-        "draft"
-      ]
+      "type": "string"
     },
     "memo": {
       "type": ["null", "string"]

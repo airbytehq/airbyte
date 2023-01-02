@@ -17,7 +17,10 @@
       "format": "date-time"
     },
     "metadata": {
-      "type": "array"
+      "type": ["null", "array"],
+      "items": {
+        "type" : "string"
+      }
     },
     "connections": {
       "type": "array",

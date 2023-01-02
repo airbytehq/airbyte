@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "reportId": {
-      "type": "string"
+      "type": ["string", "array"]
     },
     "startDate": {
       "type": "string",
@@ -20,26 +20,10 @@
       "type": "string"
     },
     "section": {
-      "type": "string",
-      "enum" : [
-        "Operating Activities",
-        "Financing Activities",
-        "Investing Activities",
-        "Cash"
-      ]
+      "type": "string"
     },
     "subSection": {
-      "type": "string",
-      "enum" : [
-        "Payments",
-        "Adjustments",
-        "Changes",
-        "Proceeds",
-        "Stock",
-        "Intangibles",
-        "Property Plant And Equipment",
-        "Cash"
-      ]
+      "type": "string"
     },
     "group": {
       "type": ["null", "string"]
@@ -48,10 +32,10 @@
       "type": ["null", "string"]
     },
     "accountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "subAccountId": {
-      "type": ["null", "string"]
+      "type": ["null", "string", "integer"]
     },
     "account": {
       "type": "string"

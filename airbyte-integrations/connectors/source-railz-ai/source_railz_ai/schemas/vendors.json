@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -64,12 +64,7 @@
             "type": ["null", "string"]
           },
           "type": {
-            "type": "string",
-            "enum": [
-              "billing",
-              "shipping",
-              "other"
-            ]
+            "type": "string"
           }
         }
       }
@@ -110,22 +105,12 @@
                 "type": ["null", "string"]
               },
               "type": {
-                "type": "string",
-                "enum": [
-                  "billing",
-                  "shipping",
-                  "other"
-                ]
+                "type": "string"
               }
             }
           },
           "status": {
-            "type": "string",
-            "enum": [
-              "unknown",
-              "active",
-              "archived"
-            ]
+            "type": "string"
           },
           "modifiedDate": {
             "type": ["null", "string"],
@@ -141,12 +126,7 @@
       "type": ["null", "number"]
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "unknown",
-        "active",
-        "archived"
-      ]
+      "type": "string"
     },
     "subsidiaryRefs": {
       "type": ["null", "array"],

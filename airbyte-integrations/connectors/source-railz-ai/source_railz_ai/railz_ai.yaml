@@ -204,7 +204,7 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     datetime_format: "%Y-%m-%d"
-    step: 1d
+    step: 5d
     start_time_option:
       field_name: startDate
       inject_into: "request_parameter"
@@ -221,6 +221,7 @@ definitions:
       stream_slicer:
         $ref: "*ref(definitions.base_datetime_stream_slicer_options)"
         class_name: source_railz_ai.components.RailzAiIncrementalSlicer
+    stream_cursor_field: "endDate"
 
 # Incremental Reports Without Parameter:
   base_incremental_reports_without_parameter_stream:
@@ -228,13 +229,13 @@ definitions:
     retriever:
       $ref: "*ref(definitions.base_stream.retriever)"
       class_name: source_railz_ai.components.RailzAiIncrementalReportsRetriever
-      meta_fields: "{{ options['meta_fields'] or () }}"
+      meta_fields: "{{ options['meta_fields'] }}"
       record_selector:
         $ref: "*ref(definitions.selector_reports)"
       stream_slicer:
         $ref: "*ref(definitions.base_datetime_stream_slicer_options)"
-        type: DatetimeStreamSlicer
-        step: 1m
+        class_name: source_railz_ai.components.RailzAiIncrementalReportsSlicer
+        step: 2m
         cursor_field: "{{ options['stream_cursor_field'] or 'endDate' }}"
     primary_key: ""
 
@@ -254,7 +255,7 @@ definitions:
       $ref: "*ref(definitions.base_incremental_reports_month_stream.retriever)"
       stream_slicer:
         $ref: "*ref(definitions.base_incremental_reports_without_parameter_stream.retriever.stream_slicer)"
-        step: 3m
+        step: 6m
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -266,34 +267,12 @@ definitions:
       $ref: "*ref(definitions.base_incremental_reports_month_stream.retriever)"
       stream_slicer:
         $ref: "*ref(definitions.base_incremental_reports_without_parameter_stream.retriever.stream_slicer)"
-        step: 1y
+        step: 2y
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
           request_parameters:
             reportFrequency: "year"
-  base_portfolio_metrics_options:
-    path: "/portfolioMetrics"
-    schema_name: "portfolio_metrics"
-    meta_fields:
-      - "startDate"
-      - "endDate"
-    primary_key: ""
-  portfolio_metrics_month_stream:
-    $ref: "*ref(definitions.base_incremental_reports_month_stream)"
-    $options:
-      $ref: "*ref(definitions.base_portfolio_metrics_options)"
-      name: "portfolio_metrics_month"
-  portfolio_metrics_quarter_stream:
-    $ref: "*ref(definitions.base_incremental_reports_quarter_stream)"
-    $options:
-      $ref: "*ref(definitions.base_portfolio_metrics_options)"
-      name: "portfolio_metrics_quarter"
-  portfolio_metrics_year_stream:
-    $ref: "*ref(definitions.base_incremental_reports_year_stream)"
-    $options:
-      $ref: "*ref(definitions.base_portfolio_metrics_options)"
-      name: "portfolio_metrics_year"
 
 # Incremental Service:
   base_incremental_service_stream:
@@ -518,7 +497,7 @@ definitions:
     retriever:
       $ref: "*ref(definitions.base_incremental_service_stream.retriever)"
       class_name: source_railz_ai.components.RailzAiIncrementalReportsRetriever
-      meta_fields: "{{ options['meta_fields'] or () }}"
+      meta_fields: "{{ options['meta_fields'] }}"
       record_selector:
         $ref: "*ref(definitions.selector_reports)"
       stream_slicer:
@@ -526,38 +505,15 @@ definitions:
         class_name: source_railz_ai.components.RailzAiIncrementalServiceReportsSlicer
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 1m
+          step: 2m
           cursor_field: "{{ options['stream_cursor_field'] or 'endDate' }}"
     primary_key: ""
+    stream_cursor_field: "endDate"
   bank_reconciliation_stream:
     $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
     $options:
       name: "bank_reconciliation"
       path: "/bankReconciliation"
-      service_names: []
-  business_valuations_stream:
-    $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
-    $options:
-      name: "business_valuations"
-      path: "/businessValuations"
-      service_names: []
-  credit_ratings_stream:
-    $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
-    $options:
-      name: "credit_ratings"
-      path: "/creditRatings"
-      service_names: []
-  credit_scores_stream:
-    $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
-    $options:
-      name: "credit_scores"
-      path: "/creditScores"
-      service_names: []
-  probability_of_default_stream:
-    $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream)"
-    $options:
-      name: "probability_of_default"
-      path: "/probabilityOfDefault"
       service_names: []
 
 # Incremental Service Reports:
@@ -578,7 +534,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 3m
+          step: 6m
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -592,7 +548,7 @@ definitions:
         $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer)"
         base_datetime_stream_slicer_options:
           $ref: "*ref(definitions.base_incremental_service_reports_month_without_parameter_stream.retriever.stream_slicer.base_datetime_stream_slicer_options)"
-          step: 1y
+          step: 2y
       requester:
         $ref: "*ref(definitions.requester)"
         request_options_provider:
@@ -881,17 +837,13 @@ streams:
 #  - "*ref(definitions.tax_benchmarking_stream)"
 # Full Refresh Service
   - "*ref(definitions.customers_stream)"
-  - "*ref(definitions.attachments_stream)"
+#  - "*ref(definitions.attachments_stream)" # works through webhooks only
   - "*ref(definitions.accounts_stream)"
   - "*ref(definitions.inventory_stream)"
   - "*ref(definitions.tax_rates_stream)"
   - "*ref(definitions.tracking_categories_stream)"
   - "*ref(definitions.vendors_stream)"
   - "*ref(definitions.bank_accounts_stream)"
-# Incremental Reports
-  - "*ref(definitions.portfolio_metrics_month_stream)"
-  - "*ref(definitions.portfolio_metrics_quarter_stream)"
-  - "*ref(definitions.portfolio_metrics_year_stream)"
 # Incremental Service
   - "*ref(definitions.accounting_transactions_stream)"
   - "*ref(definitions.bank_transfers_stream)"
@@ -912,11 +864,7 @@ streams:
   - "*ref(definitions.commerce_products_stream)"
   - "*ref(definitions.commerce_transactions_stream)"
 # Incremental Service Reports Without Parameter:
-  - "*ref(definitions.bank_reconciliation_stream)"
-  - "*ref(definitions.business_valuations_stream)"
-  - "*ref(definitions.credit_ratings_stream)"
-  - "*ref(definitions.credit_scores_stream)"
-  - "*ref(definitions.probability_of_default_stream)"
+#  - "*ref(definitions.bank_reconciliation_stream)" # doesn't support any service yet
 # Incremental Service Reports
   - "*ref(definitions.ap_aging_month_stream)"
   - "*ref(definitions.ap_aging_quarter_stream)"
@@ -936,22 +884,22 @@ streams:
   - "*ref(definitions.trial_balances_month_stream)"
   - "*ref(definitions.trial_balances_quarter_stream)"
   - "*ref(definitions.trial_balances_year_stream)"
-  - "*ref(definitions.fraud_risk_metrics_month_stream)"
-  - "*ref(definitions.fraud_risk_metrics_quarter_stream)"
-  - "*ref(definitions.fraud_risk_metrics_year_stream)"
-  - "*ref(definitions.financial_ratios_month_stream)"
-  - "*ref(definitions.financial_ratios_quarter_stream)"
-  - "*ref(definitions.financial_ratios_year_stream)"
+#  - "*ref(definitions.fraud_risk_metrics_month_stream)" # (this and every below) don't support any service yet
+#  - "*ref(definitions.fraud_risk_metrics_quarter_stream)"
+#  - "*ref(definitions.fraud_risk_metrics_year_stream)"
+#  - "*ref(definitions.financial_ratios_month_stream)"
+#  - "*ref(definitions.financial_ratios_quarter_stream)"
+#  - "*ref(definitions.financial_ratios_year_stream)"
 # Incremental Service Reports With financialStatementType Parameter
-  - "*ref(definitions.financial_forecasts_month_balance_sheets_stream)"
-  - "*ref(definitions.financial_forecasts_month_income_statements_stream)"
-  - "*ref(definitions.financial_forecasts_month_cashflow_statements_stream)"
-  - "*ref(definitions.financial_forecasts_quarter_balance_sheets_stream)"
-  - "*ref(definitions.financial_forecasts_quarter_income_statements_stream)"
-  - "*ref(definitions.financial_forecasts_quarter_cashflow_statements_stream)"
-  - "*ref(definitions.financial_forecasts_year_balance_sheets_stream)"
-  - "*ref(definitions.financial_forecasts_year_income_statements_stream)"
-  - "*ref(definitions.financial_forecasts_year_cashflow_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_month_balance_sheets_stream)"
+#  - "*ref(definitions.financial_forecasts_month_income_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_month_cashflow_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_quarter_balance_sheets_stream)"
+#  - "*ref(definitions.financial_forecasts_quarter_income_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_quarter_cashflow_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_year_balance_sheets_stream)"
+#  - "*ref(definitions.financial_forecasts_year_income_statements_stream)"
+#  - "*ref(definitions.financial_forecasts_year_cashflow_statements_stream)"
 
 check:
   stream_names:

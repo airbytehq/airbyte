@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "reportId": {
-      "type": "string"
+      "type": ["string", "array"]
     },
     "startDate": {
       "type": "string",
@@ -71,7 +71,7 @@
             "type": ["null", "string"]
           },
           "accountId": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "description": {
             "type": ["null", "string"]
@@ -98,7 +98,7 @@
             "type": ["null", "string"]
           },
           "accountId": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "description": {
             "type": ["null", "string"]
@@ -107,31 +107,7 @@
             "type": "string"
           },
           "accountingTransactionType": {
-            "type": ["null", "string"],
-            "enum" : [
-              "expense",
-              "invoice",
-              "payment",
-              "payroll",
-              "journalEntry",
-              "bill",
-              "vendorCreditNote",
-              "creditNote",
-              "billPayment",
-              "bankTransaction",
-              "transfer",
-              "deposit",
-              "refund",
-              "estimate",
-              "inventoryAdjustment",
-              "purchaseOrder",
-              "taxPayment",
-              "taxAdjustment",
-              "taxRefund",
-              "taxReversal",
-              "other",
-              "unknown"
-            ]
+            "type": ["null", "string"]
           },
           "isPosting": {
             "type": ["null", "boolean"]
@@ -155,29 +131,10 @@
                 "type": "string"
               },
               "section": {
-                "type": ["null", "string"],
-                 "enum" : [
-                    "Assets",
-                    "Expenses",
-                    "Income",
-                    "Liabilities",
-                    "Equity"
-                  ]
+                "type": ["null", "string"]
               },
               "subSection": {
-                "type": ["null", "string"],
-                "enum" : [
-                  "Current Assets",
-                  "Non-Current Assets",
-                  "Current Liabilities",
-                  "Non-Current Liabilities",
-                  "Equity",
-                  "Income",
-                  "Other Income",
-                  "Operating Expenses",
-                  "Other Expenses",
-                  "Cost of Goods Sold"
-                ]
+                "type": ["null", "string"]
               },
               "group": {
                 "type": ["null", "string"]

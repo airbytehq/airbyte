@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -29,12 +29,7 @@
       "format": "date-time"
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "active",
-        "archived",
-        "draft"
-      ]
+      "type": "string"
     },
     "isGiftCard": {
       "type": ["null", "boolean"]
@@ -45,7 +40,7 @@
         "type": ["null", "object"],
         "properties": {
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "name": {
             "type": "string"
@@ -66,13 +61,7 @@
                 "type": ["null", "number"]
               },
               "unitOfMeasure": {
-                "type": ["null", "string"],
-                "enum" : [
-                  "g",
-                  "kg",
-                  "lb",
-                  "oz"
-                ]
+                "type": ["null", "string"]
               }
             }
           },
@@ -97,7 +86,7 @@
                       "type": ["null", "object"],
                       "properties": {
                         "id": {
-                          "type": ["null", "string"]
+                          "type": ["null", "string", "integer"]
                         },
                         "name": {
                           "type": ["null", "string"]

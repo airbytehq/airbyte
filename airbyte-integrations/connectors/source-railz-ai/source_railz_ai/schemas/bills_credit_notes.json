@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -23,7 +23,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -63,13 +63,13 @@
             "type": "number"
           },
           "discountPercentage": {
-            "type": ["null", "number"]
+            "type": ["null", "number", "string"]
           },
           "taxRateRef": {
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -83,7 +83,7 @@
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -94,7 +94,7 @@
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -108,13 +108,13 @@
             }
           },
           "id": {
-            "type": "string"
+            "type": ["string", "integer"]
           },
           "accountRef": {
             "type": ["null", "object"],
             "properties": {
               "id": {
-                "type": "string"
+                "type": ["string", "integer"]
               },
               "name": {
                 "type": ["null", "string"]
@@ -143,15 +143,7 @@
       "type": ["null", "number"]
     },
     "status": {
-      "type": "string",
-      "enum": [
-        "open",
-        "paid",
-        "partiallyPaid",
-        "void",
-        "unknown",
-        "draft"
-      ]
+      "type": "string"
     },
     "memo": {
       "type": "string"
@@ -182,7 +174,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": ["null", "string"]
+          "type": ["null", "string", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -193,7 +185,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]

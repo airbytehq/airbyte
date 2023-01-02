@@ -3,7 +3,7 @@
   "type": "object",
   "properties": {
     "id": {
-      "type": "string"
+      "type": ["string", "integer"]
     },
     "businessName": {
       "type": "string"
@@ -19,7 +19,7 @@
       "type": ["null", "object"],
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -39,7 +39,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]
@@ -50,7 +50,7 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": ["string", "integer"]
         },
         "name": {
           "type": ["null", "string"]

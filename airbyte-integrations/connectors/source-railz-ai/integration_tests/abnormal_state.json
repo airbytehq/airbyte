@@ -1,5 +1,848 @@
 {
-  "portfolio_metrics_month": {
-    "start_date": "2999-12-31"
+  "accounting_transactions": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "bank_transfers": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "bills": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "bills_credit_notes": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "bills_payments": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "deposits": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "estimates": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "invoices": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "invoices_credit_notes": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "invoices_payments": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "journal_entries": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "purchase_orders": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "refunds": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "bank_transactions": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "commerce_disputes": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "commerce_orders": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "commerce_products": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
+  },
+  "commerce_transactions": {
+    "b_quickbooksDesktop": {
+      "quickbooksDesktop": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_xero": {
+      "xero": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_freshbooks": {
+      "freshbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_dynamicsBusinessCentral": {
+      "dynamicsBusinessCentral": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_oracleNetsuite": {
+      "oracleNetsuite": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageBusinessCloud": {
+      "sageBusinessCloud": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_quickbooks": {
+      "quickbooks": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_sageIntacct": {
+      "sageIntacct": {
+          "start_time" : "2999-12-31"
+      }
+    },
+    "b_wave": {
+      "wave": {
+          "start_time" : "2999-12-31"
+      }
+    }
   }
 }
