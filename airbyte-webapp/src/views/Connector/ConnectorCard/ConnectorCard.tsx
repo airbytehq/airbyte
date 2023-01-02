@@ -2,8 +2,8 @@ import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
 import JobLogs from "components/JobItem/components/JobLogs";
+import { Button } from "components/ui/Button";
 import { Card } from "components/ui/Card";
-import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
 
 import {
@@ -15,7 +15,6 @@ import {
 } from "core/domain/connector";
 import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/AirbyteClient";
 import { LogsRequestError } from "core/request/LogsRequestError";
-import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
 import {
   ConnectorCardValues,
@@ -87,7 +86,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
   const [saved, setSaved] = useState(false);
   const [errorStatusRequest, setErrorStatusRequest] = useState<Error | null>(null);
   const [isFormSubmitting, setIsFormSubmitting] = useState(false);
-  const [advancedMode] = useAdvancedModeSetting();
+  const [logsVisible, setLogsVisible] = useState(false);
 
   const { setDocumentationUrl, setDocumentationPanelOpen } = useDocumentationPanelContext();
   const {
@@ -230,12 +229,17 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             />
           )}
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-          {job && (advancedMode || !job.succeeded) && (
+          {job && (
             <div className={styles.connectionTestLogs}>
-              <Heading as="h4">
-                <FormattedMessage id="connector.failedTestLogsHeading" />
-              </Heading>
-              <JobLogs job={job} jobIsFailed />
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setLogsVisible(!logsVisible);
+                }}
+              >
+                <FormattedMessage id={logsVisible ? "connector.hideLogs" : "connector.showLogs"} />
+              </Button>
+              {logsVisible && <JobLogs job={job} jobIsFailed />}
             </div>
           )}
         </div>
