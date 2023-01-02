@@ -5914,7 +5914,7 @@
     supported_destination_sync_modes:
     - "overwrite"
     - "append"
-- dockerImage: "airbyte/destination-snowflake:0.4.40"
+- dockerImage: "airbyte/destination-snowflake:0.4.41"
   spec:
     documentationUrl: "https://docs.airbyte.com/integrations/destinations/snowflake"
     connectionSpecification:
@@ -6049,6 +6049,13 @@
             - "password"
             order: 2
             properties:
+              auth_type:
+                type: "string"
+                const: "Username and Password"
+                enum:
+                - "Username and Password"
+                default: "Username and Password"
+                order: 0
               password:
                 description: "Enter the password associated with the username."
                 type: "string"
