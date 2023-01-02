@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.16.3
+Add utility class to infer schemas from real records
+
 ## 0.16.2
 Fix the naming of OAuthAuthenticator
 
