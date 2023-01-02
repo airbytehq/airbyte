@@ -582,6 +582,7 @@
   "connector.optionsHeader": "Options",
   "connector.exampleValues": "Example {count, plural, one {value} other {values}}",
   "connector.oauthCredentialsMissing": "OAuth login is temporarily unavailable for this connector. Please try again later.",
+  "connector.failedTestLogsHeading": "Connection test logs",
 
   "credits.credits": "Credits",
   "credits.whatAreCredits": "What are credits?",

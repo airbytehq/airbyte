@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { FormattedMessage } from "react-intl";
 
-import { JobItem } from "components/JobItem/JobItem";
+import JobLogs from "components/JobItem/components/JobLogs";
 import { Card } from "components/ui/Card";
+import { Heading } from "components/ui/Heading";
 import { Spinner } from "components/ui/Spinner";
 
 import {
@@ -16,7 +17,12 @@ import { DestinationRead, SourceRead, SynchronousJobRead } from "core/request/Ai
 import { LogsRequestError } from "core/request/LogsRequestError";
 import { useAdvancedModeSetting } from "hooks/services/useAdvancedModeSetting";
 import { generateMessageFromError } from "utils/errorStatusMessage";
-import { ConnectorCardValues, ConnectorForm, ConnectorFormValues } from "views/Connector/ConnectorForm";
+import {
+  ConnectorCardValues,
+  ConnectorForm,
+  ConnectorFormProps,
+  ConnectorFormValues,
+} from "views/Connector/ConnectorForm";
 
 import { useDocumentationPanelContext } from "../ConnectorDocumentationLayout/DocumentationPanelContext";
 import { ConnectorDefinitionTypeControl } from "../ConnectorForm/components/Controls/ConnectorServiceTypeControl";
@@ -132,6 +138,11 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
     setDocumentationUrl,
   ]);
 
+  const handleTestConnector: ConnectorFormProps["testConnector"] = (v) => {
+    setErrorStatusRequest(null);
+    return testConnector(v);
+  };
+
   const onHandleSubmit = async (values: ConnectorFormValues) => {
     if (!selectedConnectorDefinition) {
       return;
@@ -210,7 +221,7 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
               isTestConnectionInProgress={isTestConnectionInProgress}
               connectionTestSuccess={connectionTestSuccess}
               onStopTesting={onStopTesting}
-              testConnector={testConnector}
+              testConnector={handleTestConnector}
               onSubmit={onHandleSubmit}
               formValues={formValues}
               errorMessage={error && generateMessageFromError(error)}
@@ -219,7 +230,14 @@ export const ConnectorCard: React.FC<ConnectorCardCreateProps | ConnectorCardEdi
             />
           )}
           {/* Show the job log only if advanced mode is turned on or the actual job failed (not the check inside the job) */}
-          {job && (advancedMode || !job.succeeded) && <JobItem job={job} />}
+          {job && (advancedMode || !job.succeeded) && (
+            <div className={styles.connectionTestLogs}>
+              <Heading as="h4">
+                <FormattedMessage id="connector.failedTestLogsHeading" />
+              </Heading>
+              <JobLogs job={job} jobIsFailed />
+            </div>
+          )}
         </div>
       </div>
     </Card>
