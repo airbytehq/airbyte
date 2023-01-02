@@ -28,7 +28,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
   const onChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       field.onChange(e);
-      if (!property.isRequired && e.target.value === "") {
+      if (e.target.value === "") {
         // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
         // an empty string which might fail connector validation
         helpers.setValue(undefined);
@@ -80,7 +80,7 @@ export const Control: React.FC<ControlProps> = ({ property, name, disabled, erro
         withTime={property.format === "date-time"}
         onChange={(value) => {
           helpers.setTouched(true);
-          if (!property.isRequired && value === "") {
+          if (value === "") {
             // in case the input is not required and the user deleted their value, reset to undefined to avoid sending
             // an empty string which might fail connector validation
             helpers.setValue(undefined);
