@@ -428,7 +428,7 @@ def _prepared_request_to_airbyte_message(request: requests.PreparedRequest) -> A
     return AirbyteMessage(type=MessageType.LOG, log=AirbyteLogMessage(level=Level.INFO, message=log_message))
 
 
-def _body_binary_string_to_dict(body_str) -> Optional[Mapping[str, str]]:
+def _body_binary_string_to_dict(body_str: str) -> Optional[Mapping[str, str]]:
     if body_str:
         if isinstance(body_str, (bytes, bytearray)):
             body_str = body_str.decode()
