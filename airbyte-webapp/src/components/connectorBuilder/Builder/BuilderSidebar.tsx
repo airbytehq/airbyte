@@ -1,4 +1,4 @@
-import { faSliders } from "@fortawesome/free-solid-svg-icons";
+import { faSliders, faUser } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import classnames from "classnames";
 import { useFormikContext } from "formik";
@@ -11,14 +11,10 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import {
-  BuilderView,
-  DEFAULT_BUILDER_FORM_VALUES,
-  useConnectorBuilderState,
-} from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
-import { BuilderFormValues } from "../types";
+import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
 import { useBuilderErrors } from "../useBuilderErrors";
 import { AddStreamButton } from "./AddStreamButton";
 import styles from "./BuilderSidebar.module.scss";
@@ -77,7 +73,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
   };
   const handleViewSelect = (selectedView: BuilderView) => {
     setSelectedView(selectedView);
-    if (selectedView !== "global") {
+    if (selectedView !== "global" && selectedView !== "inputs") {
       setTestStreamIndex(selectedView);
     }
   };
@@ -107,6 +103,19 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
       >
         <FontAwesomeIcon icon={faSliders} />
         <FormattedMessage id="connectorBuilder.globalConfiguration" />
+      </ViewSelectButton>
+
+      <ViewSelectButton
+        showErrorIndicator={false}
+        className={styles.globalConfigButton}
+        selected={selectedView === "inputs"}
+        onClick={() => handleViewSelect("inputs")}
+      >
+        <FontAwesomeIcon icon={faUser} />
+        <FormattedMessage
+          id="connectorBuilder.userInputs"
+          values={{ number: values.inputs.length + getInferredInputs(values).length }}
+        />
       </ViewSelectButton>
 
       <div className={styles.streamsHeader}>

@@ -16,7 +16,10 @@ import { ResultDisplay } from "./ResultDisplay";
 import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
-export const StreamTester: React.FC = () => {
+export const StreamTester: React.FC<{
+  hasConfigJsonErrors: boolean;
+  setTestInputOpen: (open: boolean) => void;
+}> = ({ hasConfigJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
   const { jsonManifest, testStreamIndex } = useConnectorBuilderState();
   const { streams, configJson } = useConnectorBuilderAPI();
@@ -59,7 +62,11 @@ export const StreamTester: React.FC = () => {
         {streams[testStreamIndex]?.url}
       </Text>
 
-      <StreamTestButton readStream={readStream} />
+      <StreamTestButton
+        readStream={readStream}
+        hasConfigJsonErrors={hasConfigJsonErrors}
+        setTestInputOpen={setTestInputOpen}
+      />
 
       {isFetching && (
         <div className={styles.fetchingSpinner}>

@@ -14,13 +14,23 @@ import styles from "./StreamTestButton.module.scss";
 
 interface StreamTestButtonProps {
   readStream: () => void;
+  hasConfigJsonErrors: boolean;
+  setTestInputOpen: (open: boolean) => void;
 }
 
-export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }) => {
+export const StreamTestButton: React.FC<StreamTestButtonProps> = ({
+  readStream,
+  hasConfigJsonErrors,
+  setTestInputOpen,
+}) => {
   const { editorView, yamlIsValid, testStreamIndex } = useConnectorBuilderState();
   const { hasErrors, validateAndTouch } = useBuilderErrors();
 
   const handleClick = () => {
+    if (hasConfigJsonErrors) {
+      setTestInputOpen(true);
+      return;
+    }
     if (editorView === "yaml") {
       readStream();
       return;
@@ -39,7 +49,7 @@ export const StreamTestButton: React.FC<StreamTestButtonProps> = ({ readStream }
     tooltipContent = <FormattedMessage id="connectorBuilder.invalidYamlTest" />;
   }
 
-  if (editorView === "ui" && hasErrors(true, ["global", testStreamIndex])) {
+  if ((editorView === "ui" && hasErrors(false)) || hasConfigJsonErrors) {
     showWarningIcon = true;
     tooltipContent = <FormattedMessage id="connectorBuilder.configErrorsTest" />;
   }

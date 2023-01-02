@@ -82,7 +82,10 @@ class ApiErrorBoundaryComponent extends React.Component<
 
   componentDidCatch(error: { message: string; status?: number; __type?: string }) {
     if (isFormBuildError(error)) {
-      this.props.trackError(error);
+      this.props.trackError(error, {
+        id: "formBuildError",
+        connectorDefinitionId: error.connectorDefinitionId,
+      });
     }
   }
 
@@ -106,7 +109,13 @@ class ApiErrorBoundaryComponent extends React.Component<
     if (errorId === ErrorId.FormBuild) {
       return (
         <ErrorOccurredView
-          message={<FormattedMessage id={message} />}
+          message={
+            <>
+              <FormattedMessage id={message} />
+              <br />
+              <FormattedMessage id="errorView.upgradeConnectors" />
+            </>
+          }
           docLink="https://docs.airbyte.com/connector-development/connector-specification-reference/#airbyte-modifications-to-jsonschema"
         />
       );

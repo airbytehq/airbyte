@@ -30,8 +30,14 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
   return useMemo(
     () => (
       <Formik initialValues={initialFormValues.current} onSubmit={noop} validationSchema={builderFormValidationSchema}>
-        {({ values }) => (
-          <Panels editorView={editorView} switchToUI={switchToUI} values={values} switchToYaml={switchToYaml} />
+        {({ values, validateForm }) => (
+          <Panels
+            editorView={editorView}
+            validateForm={validateForm}
+            switchToUI={switchToUI}
+            values={values}
+            switchToYaml={switchToYaml}
+          />
         )}
       </Formik>
     ),
@@ -53,11 +59,13 @@ const Panels = React.memo(
     switchToUI,
     switchToYaml,
     values,
+    validateForm,
   }: {
     editorView: string;
     switchToUI: () => void;
     values: BuilderFormValues;
     switchToYaml: () => void;
+    validateForm: () => void;
   }) => {
     const { formatMessage } = useIntl();
     return (
@@ -69,7 +77,7 @@ const Panels = React.memo(
               {editorView === "yaml" ? (
                 <YamlEditor toggleYamlEditor={switchToUI} />
               ) : (
-                <Builder values={values} toggleYamlEditor={switchToYaml} />
+                <Builder values={values} validateForm={validateForm} toggleYamlEditor={switchToYaml} />
               )}
             </>
           ),

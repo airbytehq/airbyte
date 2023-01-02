@@ -28,7 +28,7 @@ jest.doMock("views/Connection/ConnectionForm/components/refreshSourceSchemaWithC
 }));
 
 const TestWrapperWithAutoDetectSchema: React.FC<React.PropsWithChildren<Record<string, unknown>>> = ({ children }) => (
-  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchemaChanges]}>{children}</TestWrapper>
+  <TestWrapper features={[...defaultOssFeatures, FeatureItem.AllowAutoDetectSchema]}>{children}</TestWrapper>
 );
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
