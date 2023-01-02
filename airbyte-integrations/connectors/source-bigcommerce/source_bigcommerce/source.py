@@ -137,14 +137,14 @@ class OrderSubstream(IncrementalBigcommerceStream, ABC):
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
-class CatalogProductSubStream(IncrementalBigcommerceStream, ABC):
+class ProductSubStream(IncrementalBigcommerceStream, ABC):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
-        catalog_products_stream = CatalogProducts(
+        products_stream = Products(
             authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token
         )
-        for data in catalog_products_stream.read_records(sync_mode=SyncMode.full_refresh):
+        for data in products_stream.read_records(sync_mode=SyncMode.full_refresh):
             slice = super().read_records(stream_slice={"product_id": data["id"]}, **kwargs)
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
@@ -156,7 +156,7 @@ class Customers(IncrementalBigcommerceStream):
         return f"{self.data_field}"
 
 
-class CatalogProducts(IncrementalBigcommerceStream):
+class Products(IncrementalBigcommerceStream):
     data_field = "products"
     # Override `order_field` because Products API do not accept `asc` value
     order_field = "date_modified"
@@ -165,7 +165,7 @@ class CatalogProducts(IncrementalBigcommerceStream):
         return f"catalog/{self.data_field}"
 
 
-class CatalogProductVariants(CatalogProductSubStream):
+class ProductVariants(ProductSubStream):
     api_version = "v3"
     data_field = "variants"
     cursor_field = "id"
@@ -359,10 +359,10 @@ class SourceBigcommerce(AbstractSource):
             Pages(**args),
             Orders(**args),
             Transactions(**args),
-            CatalogProducts(**args),
+            Products(**args),
             Channels(**args),
             Store(**args),
             OrderProducts(**args),
             OrderShippingAddresses(**args),
-            CatalogProductVariants(**args),
+            ProductVariants(**args),
         ]

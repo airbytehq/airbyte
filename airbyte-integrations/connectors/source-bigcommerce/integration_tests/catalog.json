@@ -974,7 +974,7 @@
       }
     },
     {
-      "name": "catalog_products",
+      "name": "products",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -1774,7 +1774,7 @@
       }
     },
     {
-      "name": "catalog_product_variants",
+      "name": "product_variants",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
