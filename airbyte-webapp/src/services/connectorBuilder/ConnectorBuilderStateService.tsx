@@ -82,11 +82,25 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   );
   const manifest = jsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
-  const [editorView, setEditorView] = useState<EditorView>("ui");
+  const [editorView, rawSetEditorView] = useLocalStorage<EditorView>("connectorBuilderEditorView", "ui");
 
   const derivedJsonManifest = useMemo(
     () => (editorView === "yaml" ? manifest : convertToManifest(builderFormValues)),
     [editorView, builderFormValues, manifest]
+  );
+
+  const manifestRef = useRef(derivedJsonManifest);
+  manifestRef.current = derivedJsonManifest;
+
+  const setEditorView = useCallback(
+    (view: EditorView) => {
+      if (view === "yaml") {
+        // when switching to yaml, store the currently derived json manifest
+        setJsonManifest(manifestRef.current);
+      }
+      rawSetEditorView(view);
+    },
+    [rawSetEditorView, setJsonManifest]
   );
 
   const [yamlIsValid, setYamlIsValid] = useState(true);
@@ -102,7 +116,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
   const lastValidJsonManifest = useMemo(
     () =>
       editorView !== "ui"
-        ? undefined
+        ? jsonManifest
         : builderFormValues === lastValidBuilderFormValues
         ? jsonManifest
         : convertToManifest(lastValidBuilderFormValues),
@@ -122,7 +136,7 @@ export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren
     yamlIsValid,
     testStreamIndex,
     selectedView,
-    editorView,
+    editorView: editorView || "ui",
     setBuilderFormValues,
     setJsonManifest,
     setYamlIsValid,
