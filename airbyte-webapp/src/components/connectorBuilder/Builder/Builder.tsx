@@ -13,6 +13,7 @@ import { StreamConfigView } from "./StreamConfigView";
 
 interface BuilderProps {
   values: BuilderFormValues;
+  validateForm: () => void;
   toggleYamlEditor: () => void;
 }
 
@@ -27,11 +28,20 @@ function getView(selectedView: BuilderView) {
   }
 }
 
-export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor }) => {
+export const Builder: React.FC<BuilderProps> = ({ values, toggleYamlEditor, validateForm }) => {
   const { setBuilderFormValues, selectedView } = useConnectorBuilderState();
-  const debouncedSetBuilderFormValues = useMemo(() => debounce(setBuilderFormValues, 200), [setBuilderFormValues]);
+  const debouncedSetBuilderFormValues = useMemo(
+    () =>
+      debounce((values) => {
+        // kick off formik validation
+        validateForm();
+        // update upstream state
+        setBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
+      }, 200),
+    [setBuilderFormValues, validateForm]
+  );
   useEffect(() => {
-    debouncedSetBuilderFormValues(values, builderFormValidationSchema.isValidSync(values));
+    debouncedSetBuilderFormValues(values);
   }, [values, debouncedSetBuilderFormValues]);
 
   return (
