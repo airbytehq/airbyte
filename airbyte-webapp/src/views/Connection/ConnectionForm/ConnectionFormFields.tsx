@@ -9,6 +9,7 @@ import { useUnmount } from "react-use";
 import { ControlLabels } from "components";
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 import { Button } from "components/ui/Button";
+import { FlexContainer } from "components/ui/Flex";
 import { Heading } from "components/ui/Heading";
 import { Input } from "components/ui/Input";
 
@@ -74,7 +75,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
             {values.namespaceDefinition === NamespaceDefinitionType.customformat && (
               <Field name="namespaceFormat">
                 {({ field, meta }: FieldProps<string>) => (
-                  <div className={styles.flexRow}>
+                  <FlexContainer alignItems="flex-start">
                     <div className={styles.leftFieldCol}>
                       <ControlLabels
                         className={styles.namespaceFormatLabel}
@@ -93,13 +94,13 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                         })}
                       />
                     </div>
-                  </div>
+                  </FlexContainer>
                 )}
               </Field>
             )}
             <Field name="prefix">
               {({ field }: FieldProps<string>) => (
-                <div className={styles.flexRow}>
+                <FlexContainer alignItems="flex-start">
                   <div className={styles.leftFieldCol}>
                     <ControlLabels
                       nextLine
@@ -122,7 +123,7 @@ export const ConnectionFormFields: React.FC<ConnectionFormFieldsProps> = ({ valu
                       style={{ pointerEvents: mode === "readonly" ? "none" : "auto" }}
                     />
                   </div>
-                </div>
+                </FlexContainer>
               )}
             </Field>
           </Section>
