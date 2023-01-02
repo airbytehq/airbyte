@@ -105,7 +105,7 @@ public class ReplicationJobOrchestrator implements JobOrchestrator<StandardSyncI
 
     // At this moment, if either source or destination is from custom connector image, we will put all
     // jobs into isolated pool to run.
-    boolean useIsolatedPool = sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector();
+    final boolean useIsolatedPool = sourceLauncherConfig.getIsCustomConnector() || destinationLauncherConfig.getIsCustomConnector();
     log.info("Setting up source launcher...");
     final var sourceLauncher = new AirbyteIntegrationLauncher(
         sourceLauncherConfig.getJobId(),

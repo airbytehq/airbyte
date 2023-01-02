@@ -38,7 +38,7 @@ import org.junit.jupiter.api.Test;
  * Integration test testing the {@link RedshiftInsertDestination}. As the Redshift test credentials
  * contain S3 credentials by default, we remove these credentials.
  */
-class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
+public class RedshiftInsertDestinationAcceptanceTest extends RedshiftStagingS3DestinationAcceptanceTest {
 
   public static final String DATASET_ID = Strings.addRandomSuffix("airbyte_tests", "_", 8);
   private static final String TYPE = "type";
