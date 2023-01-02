@@ -24,7 +24,7 @@ const DEFAULT_JSON_MANIFEST_VALUES: ConnectorManifest = {
 export type EditorView = "ui" | "yaml";
 export type BuilderView = "global" | "inputs" | number;
 
-interface StateContext {
+interface FormStateContext {
   builderFormValues: BuilderFormValues;
   jsonManifest: ConnectorManifest;
   lastValidJsonManifest: DeclarativeComponentSchema | undefined;
@@ -43,17 +43,17 @@ interface StateContext {
   setEditorView: (editorView: EditorView) => void;
 }
 
-interface APIContext {
+interface TestStateContext {
   streams: StreamsListReadStreamsItem[];
   streamListErrorMessage: string | undefined;
-  configJson: StreamReadRequestBodyConfig;
-  setConfigJson: (value: StreamReadRequestBodyConfig) => void;
+  testInputJson: StreamReadRequestBodyConfig;
+  setTestInputJson: (value: StreamReadRequestBodyConfig) => void;
 }
 
-export const ConnectorBuilderStateContext = React.createContext<StateContext | null>(null);
-export const ConnectorBuilderAPIContext = React.createContext<APIContext | null>(null);
+export const ConnectorBuilderFormStateContext = React.createContext<FormStateContext | null>(null);
+export const ConnectorBuilderTestStateContext = React.createContext<TestStateContext | null>(null);
 
-export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+export const ConnectorBuilderFormStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   // manifest values
   const [storedBuilderFormValues, setStoredBuilderFormValues] = useLocalStorage<BuilderFormValues>(
     "connectorBuilderFormValues",
@@ -132,24 +132,24 @@ export const ConnectorBuilderStateProvider: React.FC<React.PropsWithChildren<unk
     setEditorView,
   };
 
-  return <ConnectorBuilderStateContext.Provider value={ctx}>{children}</ConnectorBuilderStateContext.Provider>;
+  return <ConnectorBuilderFormStateContext.Provider value={ctx}>{children}</ConnectorBuilderFormStateContext.Provider>;
 };
 
-export const ConnectorBuilderAPIProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
+export const ConnectorBuilderTestStateProvider: React.FC<React.PropsWithChildren<unknown>> = ({ children }) => {
   const { formatMessage } = useIntl();
-  const { lastValidJsonManifest, testStreamIndex, setTestStreamIndex } = useConnectorBuilderState();
+  const { lastValidJsonManifest, testStreamIndex, setTestStreamIndex } = useConnectorBuilderFormState();
 
   const manifest = lastValidJsonManifest ?? DEFAULT_JSON_MANIFEST_VALUES;
 
   // config
-  const [configJson, setConfigJson] = useState<StreamReadRequestBodyConfig>({});
+  const [testInputJson, setTestInputJson] = useState<StreamReadRequestBodyConfig>({});
 
   // streams
   const {
     data: streamListRead,
     isError: isStreamListError,
     error: streamListError,
-  } = useListStreams({ manifest, config: configJson });
+  } = useListStreams({ manifest, config: testInputJson });
   const unknownErrorMessage = formatMessage({ id: "connectorBuilder.unknownError" });
   const streamListErrorMessage = isStreamListError
     ? streamListError instanceof Error
@@ -169,15 +169,15 @@ export const ConnectorBuilderAPIProvider: React.FC<React.PropsWithChildren<unkno
   const ctx = {
     streams,
     streamListErrorMessage,
-    configJson,
-    setConfigJson,
+    testInputJson,
+    setTestInputJson,
   };
 
-  return <ConnectorBuilderAPIContext.Provider value={ctx}>{children}</ConnectorBuilderAPIContext.Provider>;
+  return <ConnectorBuilderTestStateContext.Provider value={ctx}>{children}</ConnectorBuilderTestStateContext.Provider>;
 };
 
-export const useConnectorBuilderAPI = (): APIContext => {
-  const connectorBuilderState = useContext(ConnectorBuilderAPIContext);
+export const useConnectorBuilderTestState = (): TestStateContext => {
+  const connectorBuilderState = useContext(ConnectorBuilderTestStateContext);
   if (!connectorBuilderState) {
     throw new Error("useConnectorBuilderAPI must be used within a ConnectorBuilderAPIProvider.");
   }
@@ -185,8 +185,8 @@ export const useConnectorBuilderAPI = (): APIContext => {
   return connectorBuilderState;
 };
 
-export const useConnectorBuilderState = (): StateContext => {
-  const connectorBuilderState = useContext(ConnectorBuilderStateContext);
+export const useConnectorBuilderFormState = (): FormStateContext => {
+  const connectorBuilderState = useContext(ConnectorBuilderFormStateContext);
   if (!connectorBuilderState) {
     throw new Error("useConnectorBuilderState must be used within a ConnectorBuilderStateProvider.");
   }
@@ -195,8 +195,8 @@ export const useConnectorBuilderState = (): StateContext => {
 };
 
 export const useSelectedPageAndSlice = () => {
-  const { testStreamIndex } = useConnectorBuilderState();
-  const { streams } = useConnectorBuilderAPI();
+  const { testStreamIndex } = useConnectorBuilderFormState();
+  const { streams } = useConnectorBuilderTestState();
 
   const selectedStreamName = streams[testStreamIndex].name;
 

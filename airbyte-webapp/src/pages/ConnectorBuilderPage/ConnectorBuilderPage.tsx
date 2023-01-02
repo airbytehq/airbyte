@@ -10,9 +10,9 @@ import { YamlEditor } from "components/connectorBuilder/YamlEditor";
 import { ResizablePanels } from "components/ui/ResizablePanels";
 
 import {
-  ConnectorBuilderAPIProvider,
-  ConnectorBuilderStateProvider,
-  useConnectorBuilderState,
+  ConnectorBuilderTestStateProvider,
+  ConnectorBuilderFormStateProvider,
+  useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import styles from "./ConnectorBuilderPage.module.scss";
@@ -21,7 +21,7 @@ import styles from "./ConnectorBuilderPage.module.scss";
 const noop = function () {};
 
 const ConnectorBuilderPageInner: React.FC = React.memo(() => {
-  const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
+  const { builderFormValues, editorView, setEditorView } = useConnectorBuilderFormState();
 
   const switchToUI = useCallback(() => setEditorView("ui"), [setEditorView]);
   const switchToYaml = useCallback(() => setEditorView("yaml"), [setEditorView]);
@@ -46,11 +46,11 @@ const ConnectorBuilderPageInner: React.FC = React.memo(() => {
 });
 
 export const ConnectorBuilderPage: React.FC = () => (
-  <ConnectorBuilderStateProvider>
-    <ConnectorBuilderAPIProvider>
+  <ConnectorBuilderFormStateProvider>
+    <ConnectorBuilderTestStateProvider>
       <ConnectorBuilderPageInner />
-    </ConnectorBuilderAPIProvider>
-  </ConnectorBuilderStateProvider>
+    </ConnectorBuilderTestStateProvider>
+  </ConnectorBuilderFormStateProvider>
 );
 
 const Panels = React.memo(

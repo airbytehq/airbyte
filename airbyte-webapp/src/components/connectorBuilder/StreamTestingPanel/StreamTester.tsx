@@ -7,8 +7,8 @@ import { Text } from "components/ui/Text";
 
 import { useReadStream } from "services/connectorBuilder/ConnectorBuilderApiService";
 import {
-  useConnectorBuilderAPI,
-  useConnectorBuilderState,
+  useConnectorBuilderTestState,
+  useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { LogsDisplay } from "./LogsDisplay";
@@ -17,12 +17,12 @@ import { StreamTestButton } from "./StreamTestButton";
 import styles from "./StreamTester.module.scss";
 
 export const StreamTester: React.FC<{
-  hasConfigJsonErrors: boolean;
+  hasTestInputJsonErrors: boolean;
   setTestInputOpen: (open: boolean) => void;
-}> = ({ hasConfigJsonErrors, setTestInputOpen }) => {
+}> = ({ hasTestInputJsonErrors, setTestInputOpen }) => {
   const { formatMessage } = useIntl();
-  const { jsonManifest, testStreamIndex } = useConnectorBuilderState();
-  const { streams, configJson } = useConnectorBuilderAPI();
+  const { jsonManifest, testStreamIndex } = useConnectorBuilderFormState();
+  const { streams, testInputJson } = useConnectorBuilderTestState();
   const {
     data: streamReadData,
     refetch: readStream,
@@ -32,7 +32,7 @@ export const StreamTester: React.FC<{
   } = useReadStream({
     manifest: jsonManifest,
     stream: streams[testStreamIndex]?.name,
-    config: configJson,
+    config: testInputJson,
   });
 
   const [logsFlex, setLogsFlex] = useState(0);
@@ -64,7 +64,7 @@ export const StreamTester: React.FC<{
 
       <StreamTestButton
         readStream={readStream}
-        hasConfigJsonErrors={hasConfigJsonErrors}
+        hasTestInputJsonErrors={hasTestInputJsonErrors}
         setTestInputOpen={setTestInputOpen}
       />
 

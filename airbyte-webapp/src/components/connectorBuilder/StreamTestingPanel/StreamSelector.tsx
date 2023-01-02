@@ -6,8 +6,8 @@ import { Heading } from "components/ui/Heading";
 import { ListBox, ListBoxControlButtonProps } from "components/ui/ListBox";
 
 import {
-  useConnectorBuilderAPI,
-  useConnectorBuilderState,
+  useConnectorBuilderTestState,
+  useConnectorBuilderFormState,
 } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { ReactComponent as CaretDownIcon } from "../../ui/ListBox/CaretDownIcon.svg";
@@ -30,8 +30,8 @@ const ControlButton: React.FC<ListBoxControlButtonProps<string>> = ({ selectedOp
 
 export const StreamSelector: React.FC<StreamSelectorProps> = ({ className }) => {
   const { formatMessage } = useIntl();
-  const { selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
-  const { streams } = useConnectorBuilderAPI();
+  const { selectedView, testStreamIndex, setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
+  const { streams } = useConnectorBuilderTestState();
   const options = streams.map((stream) => {
     const label =
       stream.name && stream.name.trim() ? capitalize(stream.name) : formatMessage({ id: "connectorBuilder.emptyName" });

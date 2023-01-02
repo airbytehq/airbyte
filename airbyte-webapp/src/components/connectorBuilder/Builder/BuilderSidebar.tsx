@@ -11,7 +11,7 @@ import { Heading } from "components/ui/Heading";
 import { Text } from "components/ui/Text";
 
 import { useConfirmationModalService } from "hooks/services/ConfirmationModal";
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { DownloadYamlButton } from "../DownloadYamlButton";
 import { BuilderFormValues, DEFAULT_BUILDER_FORM_VALUES, getInferredInputs } from "../types";
@@ -57,7 +57,7 @@ export const BuilderSidebar: React.FC<BuilderSidebarProps> = React.memo(({ class
   const { formatMessage } = useIntl();
   const { hasErrors } = useBuilderErrors();
   const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { yamlManifest, selectedView, setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
   const { values, setValues } = useFormikContext<BuilderFormValues>();
   const handleResetForm = () => {
     openConfirmationModal({

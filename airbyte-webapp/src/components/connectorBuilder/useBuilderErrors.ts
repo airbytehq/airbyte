@@ -3,14 +3,13 @@ import { FormikErrors, useFormikContext } from "formik";
 import intersection from "lodash/intersection";
 import { useCallback } from "react";
 
-import { BuilderView, useConnectorBuilderState } from "services/connectorBuilder/ConnectorBuilderStateService";
+import { BuilderView, useConnectorBuilderFormState } from "services/connectorBuilder/ConnectorBuilderStateService";
 
 import { BuilderFormValues } from "./types";
 
 export const useBuilderErrors = () => {
   const { touched, errors, validateForm, setFieldTouched } = useFormikContext<BuilderFormValues>();
-  console.log(touched);
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderState();
+  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
 
   const invalidViews = useCallback(
     (ignoreUntouched: boolean, limitToViews?: BuilderView[], inputErrors?: FormikErrors<BuilderFormValues>) => {
