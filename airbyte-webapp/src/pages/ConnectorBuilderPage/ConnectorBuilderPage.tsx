@@ -20,8 +20,13 @@ const ConnectorBuilderPageInner: React.FC = () => {
   const { builderFormValues, editorView, setEditorView } = useConnectorBuilderState();
 
   return (
-    <Formik initialValues={builderFormValues} onSubmit={() => undefined} validationSchema={builderFormValidationSchema}>
-      {({ values }) => {
+    <Formik
+      initialValues={builderFormValues}
+      onSubmit={() => undefined}
+      validationSchema={builderFormValidationSchema}
+      validateOnChange={false}
+    >
+      {({ values, validateForm }) => {
         return (
           <ResizablePanels
             className={classnames({
@@ -34,7 +39,11 @@ const ConnectorBuilderPageInner: React.FC = () => {
                   {editorView === "yaml" ? (
                     <YamlEditor toggleYamlEditor={() => setEditorView("ui")} />
                   ) : (
-                    <Builder values={values} toggleYamlEditor={() => setEditorView("yaml")} />
+                    <Builder
+                      values={values}
+                      toggleYamlEditor={() => setEditorView("yaml")}
+                      validateForm={validateForm}
+                    />
                   )}
                 </>
               ),

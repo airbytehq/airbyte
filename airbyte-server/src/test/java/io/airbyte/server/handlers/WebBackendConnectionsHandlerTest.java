@@ -457,6 +457,24 @@ class WebBackendConnectionsHandlerTest {
   }
 
   @Test
+  void testWebBackendGetConnectionWithDiscoveryMissingCatalogUsedToMakeConfiguredCatalog()
+      throws IOException, ConfigNotFoundException, JsonValidationException {
+    final UUID newCatalogId = UUID.randomUUID();
+    when(configRepository.getMostRecentActorCatalogFetchEventForSource(any()))
+        .thenReturn(Optional.of(new ActorCatalogFetchEvent().withActorCatalogId(newCatalogId)));
+    when(configRepository.getActorCatalogById(any())).thenReturn(new ActorCatalog().withId(UUID.randomUUID()));
+    final SourceDiscoverSchemaRead schemaRead =
+        new SourceDiscoverSchemaRead().catalogDiff(expectedWithNewSchema.getCatalogDiff()).catalog(expectedWithNewSchema.getSyncCatalog())
+            .breakingChange(false).connectionStatus(ConnectionStatus.ACTIVE);
+    when(schedulerHandler.discoverSchemaForSourceFromSourceId(any())).thenReturn(schemaRead);
+    when(connectionsHandler.getConnectionAirbyteCatalog(connectionRead.getConnectionId())).thenReturn(Optional.empty());
+
+    final WebBackendConnectionRead result = testWebBackendGetConnection(true, connectionRead,
+        operationReadList);
+    assertEquals(expectedWithNewSchema, result);
+  }
+
+  @Test
   void testWebBackendGetConnectionWithDiscoveryAndFieldSelectionAddField() throws ConfigNotFoundException,
       IOException, JsonValidationException {
     // Mock this because the API uses it to determine whether there was a schema change.
