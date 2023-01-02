@@ -1,6 +1,6 @@
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "object",
-  "title": "Product Response",
   "properties": {
     "name": {
       "type": ["null", "string"]

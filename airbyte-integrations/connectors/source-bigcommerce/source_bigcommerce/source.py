@@ -125,7 +125,7 @@ class IncrementalBigcommerceStream(BigcommerceStream, ABC):
             yield from records_slice
 
 
-class OrderSubstream(IncrementalBigcommerceStream):
+class OrderSubstream(IncrementalBigcommerceStream, ABC):
     def read_records(
         self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
     ) -> Iterable[Mapping[str, Any]]:
@@ -137,6 +137,18 @@ class OrderSubstream(IncrementalBigcommerceStream):
             yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
 
 
+class CatalogProductSubStream(IncrementalBigcommerceStream, ABC):
+    def read_records(
+        self, stream_state: Mapping[str, Any] = None, stream_slice: Optional[Mapping[str, Any]] = None, **kwargs
+    ) -> Iterable[Mapping[str, Any]]:
+        catalog_products_stream = CatalogProducts(
+            authenticator=self.authenticator, start_date=self.start_date, store_hash=self.store_hash, access_token=self.access_token
+        )
+        for data in catalog_products_stream.read_records(sync_mode=SyncMode.full_refresh):
+            slice = super().read_records(stream_slice={"product_id": data["id"]}, **kwargs)
+            yield from self.filter_records_newer_than_state(stream_state=stream_state, records_slice=slice)
+
+
 class Customers(IncrementalBigcommerceStream):
     data_field = "customers"
 
@@ -144,13 +156,32 @@ class Customers(IncrementalBigcommerceStream):
         return f"{self.data_field}"
 
 
-class Products(IncrementalBigcommerceStream):
+class CatalogProducts(IncrementalBigcommerceStream):
     data_field = "products"
-    # Override `order_field` bacause Products API do not acept `asc` value
+    # Override `order_field` because Products API do not accept `asc` value
     order_field = "date_modified"
 
     def path(self, **kwargs) -> str:
         return f"catalog/{self.data_field}"
+
+
+class CatalogProductVariants(CatalogProductSubStream):
+    api_version = "v3"
+    data_field = "variants"
+    cursor_field = "id"
+
+    def path(self, stream_slice: Mapping[str, Any] = None, **kwargs) -> str:
+        product_id = stream_slice["product_id"]
+        return f"catalog/products/{product_id}/{self.data_field}"
+
+    def get_updated_state(self, current_stream_state: MutableMapping[str, Any], latest_record: Mapping[str, Any]) -> Mapping[str, Any]:
+        return {self.cursor_field: max(latest_record.get(self.cursor_field, 0), current_stream_state.get(self.cursor_field, 0))}
+
+    def request_params(
+            self, **kwargs
+    ) -> MutableMapping[str, Any]:
+        params = {"limit": self.limit}
+        return params
 
 
 class Orders(IncrementalBigcommerceStream):
@@ -269,7 +300,7 @@ class OrderShippingAddresses(OrderSubstream):
 
 class Channels(IncrementalBigcommerceStream):
     data_field = "channels"
-    # Override `order_field` bacause Channels API do not acept `asc` value
+    # Override `order_field` because Channels API do not accept `asc` value
     order_field = "date_modified"
 
     def path(self, **kwargs) -> str:
@@ -328,9 +359,10 @@ class SourceBigcommerce(AbstractSource):
             Pages(**args),
             Orders(**args),
             Transactions(**args),
-            Products(**args),
+            CatalogProducts(**args),
             Channels(**args),
             Store(**args),
             OrderProducts(**args),
             OrderShippingAddresses(**args),
+            CatalogProductVariants(**args),
         ]

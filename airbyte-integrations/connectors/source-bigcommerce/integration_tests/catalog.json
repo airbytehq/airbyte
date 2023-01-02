@@ -974,7 +974,7 @@
       }
     },
     {
-      "name": "products",
+      "name": "catalog_products",
       "json_schema": {
         "$schema": "http://json-schema.org/draft-07/schema#",
         "type": "object",
@@ -1769,6 +1769,108 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    {
+      "name": "catalog_product_variants",
+      "json_schema": {
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "type": "object",
+        "properties": {
+          "cost_price": {
+            "type": ["null", "number"]
+          },
+          "price": {
+            "type": ["null", "number"]
+          },
+          "sale_price": {
+            "type": ["null", "number"]
+          },
+          "retail_price": {
+            "type": ["null", "number"]
+          },
+          "weight": {
+            "type": ["null", "number"]
+          },
+          "width": {
+            "type": ["null", "number"]
+          },
+          "height": {
+            "type": ["null", "number"]
+          },
+          "depth": {
+            "type": ["null", "number"]
+          },
+          "is_free_shipping": {
+            "type": ["null", "boolean"]
+          },
+          "fixed_cost_shipping_price": {
+            "type": ["null", "number"]
+          },
+          "purchasing_disabled": {
+            "type": ["null", "boolean"]
+          },
+          "purchasing_disabled_message": {
+            "type": ["null", "string"]
+          },
+          "upc": {
+            "type": ["null", "string"]
+          },
+          "inventory_level": {
+            "type": ["null", "integer"]
+          },
+          "inventory_warning_level": {
+            "type": ["null", "integer"]
+          },
+          "bin_picking_number": {
+            "type": ["null", "string"]
+          },
+          "mpn": {
+            "type": ["null", "string"]
+          },
+          "gtin": {
+            "type": ["null", "string"]
+          },
+          "id": {
+            "type": ["null", "integer"]
+          },
+          "product_id": {
+            "type": ["null", "integer"]
+          },
+          "sku": {
+            "type": ["null", "string"]
+          },
+          "sku_id": {
+            "type": ["null", "integer"]
+          },
+          "option_values": {
+            "type": ["null", "array"],
+            "items": {
+              "type": ["null", "object"],
+              "title": "productVariantOptionValue_Full",
+              "properties": {
+                "option_display_name": {
+                  "type": ["null", "string"]
+                },
+                "label": {
+                  "type": ["null", "boolean"]
+                },
+                "id": {
+                  "type": ["null", "integer"]
+                },
+                "option_id": {
+                  "type": ["null", "integer"]
+                }
+              }
+            }
+          },
+          "calculated_price": {
+            "type": ["null", "number"]
+          },
+          "calculated_weight": {
+            "type": ["null", "number"]
           }
         }
       }

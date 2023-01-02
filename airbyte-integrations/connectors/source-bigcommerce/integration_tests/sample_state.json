@@ -72,7 +72,18 @@
         "date_modified": "2022-01-10T00:17:08+00:00"
       },
       "stream_descriptor": {
-        "name": "products"
+        "name": "catalog_products"
+      }
+    }
+  },
+  {
+    "type": "STREAM",
+    "stream": {
+      "stream_state": {
+        "id": 1
+      },
+      "stream_descriptor": {
+        "name": "catalog_product_variants"
       }
     }
   },
