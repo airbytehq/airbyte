@@ -8,11 +8,11 @@ interface FlexContainerProps {
   /**
    * The flex-direction css property
    */
-  direction?: "row" | "column";
+  direction?: "row" | "column" | "row-reverse" | "column-reverse";
   /**
    * gap between the flex items - defaults to `md` if not provided. None means no gap is applied, the others map to the respective scss spacing variable.
    */
-  gap?: "none" | "sm" | "md" | "lg" | "xl";
+  gap?: "none" | "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
   /**
    * The align-items css property
    */
@@ -38,11 +38,16 @@ export const FlexContainer: React.FC<React.PropsWithChildren<FlexContainerProps 
 }) => {
   const fullClassName = classNames(
     {
+      [styles.directionRow]: direction === "row",
       [styles.directionColumn]: direction === "column",
+      [styles.directionRowReverse]: direction === "row-reverse",
+      [styles.directionColumnReverse]: direction === "column-reverse",
+      [styles.gapXs]: gap === "xs",
       [styles.gapSm]: gap === "sm",
       [styles.gapMd]: gap === "md",
       [styles.gapLg]: gap === "lg",
       [styles.gapXl]: gap === "xl",
+      [styles.gap2xl]: gap === "2xl",
       [styles.alignItemsStart]: alignItems === "flex-start",
       [styles.alignItemsEnd]: alignItems === "flex-end",
       [styles.alignItemsCenter]: alignItems === "center",

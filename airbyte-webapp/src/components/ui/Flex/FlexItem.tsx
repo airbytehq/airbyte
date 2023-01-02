@@ -10,9 +10,9 @@ interface FlexItemProps {
    */
   grow?: boolean;
   /**
-   * The `self-align` css property
+   * The `align-self` css property
    */
-  selfAlign?: "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
+  alignSelf?: "flex-start" | "flex-end" | "center" | "baseline" | "stretch";
 }
 
 /**
@@ -23,18 +23,18 @@ interface FlexItemProps {
 export const FlexItem: React.FC<React.PropsWithChildren<FlexItemProps & HTMLAttributes<HTMLDivElement>>> = ({
   className,
   grow,
-  selfAlign,
+  alignSelf,
   children,
   ...otherProps
 }) => {
   const fullClassName = classNames(
     {
       [styles.grow]: grow,
-      [styles.alignSelfStart]: selfAlign === "flex-start",
-      [styles.alignSelfEnd]: selfAlign === "flex-end",
-      [styles.alignSelfCenter]: selfAlign === "center",
-      [styles.alignSelfBaseline]: selfAlign === "baseline",
-      [styles.alignSelfStretch]: selfAlign === "stretch",
+      [styles.alignSelfStart]: alignSelf === "flex-start",
+      [styles.alignSelfEnd]: alignSelf === "flex-end",
+      [styles.alignSelfCenter]: alignSelf === "center",
+      [styles.alignSelfBaseline]: alignSelf === "baseline",
+      [styles.alignSelfStretch]: alignSelf === "stretch",
     },
     className
   );

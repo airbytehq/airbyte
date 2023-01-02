@@ -1,11 +1,27 @@
-@use "../../../scss/variables";
+@use "scss/variables";
 
 .container {
   display: flex;
 }
 
+.directionRow {
+  flex-direction: row;
+}
+
 .directionColumn {
   flex-direction: column;
+}
+
+.directionColumnReverse {
+  flex-direction: column-reverse;
+}
+
+.directionRowReverse {
+  flex-direction: row-reverse;
+}
+
+.gapXs {
+  gap: variables.$spacing-xs;
 }
 
 .gapSm {
@@ -22,6 +38,10 @@
 
 .gapXl {
   gap: variables.$spacing-xl;
+}
+
+.gap2xl {
+  gap: variables.$spacing-2xl;
 }
 
 .alignItemsStart {
