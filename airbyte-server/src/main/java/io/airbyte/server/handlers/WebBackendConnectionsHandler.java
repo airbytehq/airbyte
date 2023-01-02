@@ -348,10 +348,7 @@ public class WebBackendConnectionsHandler {
       /*
        * constructs a full picture of all existing configured + all new / updated streams in the newest
        * catalog.
-       */
-      syncCatalog = updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.get(),
-          refreshedCatalog.get().getCatalog());
-      /*
+       *
        * Diffing the catalog used to make the configured catalog gives us the clearest diff between the
        * schema when the configured catalog was made and now. In the case where we do not have the
        * original catalog used to make the configured catalog, we make due, but using the configured
@@ -359,6 +356,9 @@ public class WebBackendConnectionsHandler {
        * but was present at time of configuration will appear in the diff as an added stream which is
        * confusing. We need to figure out why source_catalog_id is not always populated in the db.
        */
+      syncCatalog = updateSchemaWithRefreshedDiscoveredCatalog(configuredCatalog, catalogUsedToMakeConfiguredCatalog.orElse(configuredCatalog),
+          refreshedCatalog.get().getCatalog());
+
       diff = refreshedCatalog.get().getCatalogDiff();
       connection.setBreakingChange(refreshedCatalog.get().getBreakingChange());
       connection.setStatus(refreshedCatalog.get().getConnectionStatus());
