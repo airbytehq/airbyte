@@ -29,12 +29,13 @@ public class DatabricksS3StreamCopierFactory implements DatabricksStreamCopierFa
     try {
       final AirbyteStream stream = configuredStream.getStream();
       final String schema = StreamCopierFactory.getSchema(stream.getNamespace(), configuredSchema, nameTransformer);
+      final String catalog = databricksConfig.getDatabricksCatalog();
 
       S3DestinationConfig s3Config = databricksConfig.getStorageConfig().getS3DestinationConfigOrThrow();
       final AmazonS3 s3Client = s3Config.getS3Client();
       final ProductionWriterFactory writerFactory = new ProductionWriterFactory();
       final Timestamp uploadTimestamp = new Timestamp(System.currentTimeMillis());
-      return new DatabricksS3StreamCopier(stagingFolder, schema, configuredStream, s3Client, database,
+      return new DatabricksS3StreamCopier(stagingFolder, catalog, schema, configuredStream, s3Client, database,
           databricksConfig, nameTransformer, sqlOperations, writerFactory, uploadTimestamp);
     } catch (final Exception e) {
       throw new RuntimeException(e);
