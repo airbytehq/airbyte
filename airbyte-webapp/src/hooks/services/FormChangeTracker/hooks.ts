@@ -1,5 +1,5 @@
 import uniqueId from "lodash/uniqueId";
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { createGlobalState } from "react-use";
 
 import { FormChangeTrackerServiceApi } from "./types";
@@ -10,6 +10,8 @@ export const useUniqueFormId = (formId?: string) => useMemo(() => formId ?? uniq
 
 export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
   const [changedFormsById, setChangedFormsById] = useChangedFormsById();
+  const changedFormsByIdRef = useRef(changedFormsById);
+  changedFormsByIdRef.current = changedFormsById;
 
   const hasFormChanges = useMemo<boolean>(
     () => Object.values(changedFormsById ?? {}).some((changed) => !!changed),
@@ -22,18 +24,18 @@ export const useFormChangeTrackerService = (): FormChangeTrackerServiceApi => {
 
   const clearFormChange = useCallback(
     (id: string) => {
-      setChangedFormsById({ ...changedFormsById, [id]: false });
+      setChangedFormsById({ ...changedFormsByIdRef.current, [id]: false });
     },
-    [changedFormsById, setChangedFormsById]
+    [changedFormsByIdRef, setChangedFormsById]
   );
 
   const trackFormChange = useCallback(
     (id: string, changed: boolean) => {
-      if (Boolean(changedFormsById?.[id]) !== changed) {
-        setChangedFormsById({ ...changedFormsById, [id]: changed });
+      if (Boolean(changedFormsByIdRef.current?.[id]) !== changed) {
+        setChangedFormsById({ ...changedFormsByIdRef.current, [id]: changed });
       }
     },
-    [changedFormsById, setChangedFormsById]
+    [changedFormsByIdRef, setChangedFormsById]
   );
 
   return {
