@@ -43,28 +43,28 @@ public class TemporalBeanFactory {
 
   @Singleton
   @Requires(env = WorkerMode.CONTROL_PLANE)
-  public TrackingClient trackingClient(final Optional<TrackingStrategy> trackingStrategy,
+  public TrackingClient trackingClient(final TrackingStrategy trackingStrategy,
                                        final DeploymentMode deploymentMode,
-                                       final Optional<JobPersistence> jobPersistence,
+                                       final JobPersistence jobPersistence,
                                        final WorkerEnvironment workerEnvironment,
                                        @Value("${airbyte.role}") final String airbyteRole,
                                        final AirbyteVersion airbyteVersion,
-                                       final Optional<ConfigRepository> configRepository)
+                                       final ConfigRepository configRepository)
       throws IOException {
 
     TrackingClientSingleton.initialize(
-        trackingStrategy.orElseThrow(),
-        new Deployment(deploymentMode, jobPersistence.orElseThrow().getDeployment().orElseThrow(),
+        trackingStrategy,
+        new Deployment(deploymentMode, jobPersistence.getDeployment().orElseThrow(),
             workerEnvironment),
         airbyteRole,
         airbyteVersion,
-        configRepository.orElseThrow());
+        configRepository);
 
     return TrackingClientSingleton.get();
   }
 
   @Singleton
-  // @Requires(env = WorkerMode.CONTROL_PLANE)
+  @Requires(env = WorkerMode.CONTROL_PLANE)
   public OAuthConfigSupplier oAuthConfigSupplier(final ConfigRepository configRepository, final TrackingClient trackingClient) {
     return new OAuthConfigSupplier(configRepository, trackingClient);
   }
