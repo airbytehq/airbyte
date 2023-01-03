@@ -1,9 +1,7 @@
 import {
   ConnectionStatus,
-  DestinationDefinitionRead,
   DestinationRead,
   JobStatus,
-  SourceDefinitionRead,
   SourceRead,
   WebBackendConnectionListItem,
 } from "core/request/AirbyteClient";
@@ -17,9 +15,8 @@ const getConnectorTypeName = (connectorSpec: DestinationRead | SourceRead) => {
 // TODO: types in next methods look a bit ugly
 export function getEntityTableData<
   S extends "source" | "destination",
-  SoD extends S extends "source" ? SourceRead : DestinationRead,
-  Def extends S extends "source" ? SourceDefinitionRead : DestinationDefinitionRead
->(entities: SoD[], connections: WebBackendConnectionListItem[], definitions: Def[], type: S): EntityTableDataItem[] {
+  SoD extends S extends "source" ? SourceRead : DestinationRead
+>(entities: SoD[], connections: WebBackendConnectionListItem[], type: S): EntityTableDataItem[] {
   const connectType = type === "source" ? "destination" : "source";
 
   const mappedEntities = entities.map((entityItem) => {
@@ -29,21 +26,13 @@ export function getEntityTableData<
       (connectionItem) => connectionItem[`${type}Id` as "sourceId" | "destinationId"] === entitySoDId
     );
 
-    const definitionId = `${type}DefinitionId` as keyof Def;
-    const entityDefinitionId = entityItem[`${type}DefinitionId` as keyof SoD];
-
-    const definition = definitions.find(
-      // @ts-expect-error ignored during react-scripts update
-      (def) => def[definitionId] === entityDefinitionId
-    );
-
     if (!entityConnections.length) {
       return {
         entityId: entitySoDId,
         entityName: entityItem.name,
         enabled: true,
         connectorName: entitySoDName,
-        connectorIcon: definition?.icon,
+        connectorIcon: entityItem.icon,
         lastSync: null,
         connectEntities: [],
       };
@@ -69,7 +58,7 @@ export function getEntityTableData<
       connectorName: entitySoDName,
       lastSync: sortBySync?.[0].latestSyncJobCreatedAt,
       connectEntities,
-      connectorIcon: definition?.icon,
+      connectorIcon: entityItem.icon,
     };
   });
 
