@@ -25,51 +25,15 @@ interface StreamConfigViewProps {
 
 export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ streamNum }) => {
   const { formatMessage } = useIntl();
-  const [field, , helpers] = useField<BuilderStream[]>("streams");
-  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
-  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
 
   const streamPath = `streams[${streamNum}]`;
   const streamFieldPath = (fieldPath: string) => `${streamPath}.${fieldPath}`;
-
-  const handleDelete = () => {
-    openConfirmationModal({
-      text: "connectorBuilder.deleteStreamModal.text",
-      title: "connectorBuilder.deleteStreamModal.title",
-      submitButtonText: "connectorBuilder.deleteStreamModal.submitButton",
-      onSubmit: () => {
-        const updatedStreams = field.value.filter((_, index) => index !== streamNum);
-        const streamToSelect = streamNum >= updatedStreams.length ? updatedStreams.length - 1 : streamNum;
-        const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
-        helpers.setValue(updatedStreams);
-        setSelectedView(viewToSelect);
-        setTestStreamIndex(streamToSelect);
-        closeConfirmationModal();
-      },
-    });
-  };
 
   return (
     <BuilderConfigView heading={formatMessage({ id: "connectorBuilder.stream" })}>
       {/* Not using intl for the labels and tooltips in this component in order to keep maintainence simple */}
       <BuilderTitle path={streamFieldPath("name")} label="Stream Name" size="md" />
-      <div className={styles.controls}>
-        <AddStreamButton
-          onAddStream={(addedStreamNum) => {
-            setSelectedView(addedStreamNum);
-            setTestStreamIndex(addedStreamNum);
-          }}
-          initialValues={field.value[streamNum]}
-          button={
-            <button className={styles.controlButton} type="button">
-              <FontAwesomeIcon icon={faCopy} />
-            </button>
-          }
-        />
-        <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
-          <FontAwesomeIcon icon={faTrashCan} />
-        </button>
-      </div>
+      <StreamControls streamNum={streamNum} />
       <BuilderCard>
         <BuilderField
           type="string"
@@ -120,3 +84,44 @@ export const StreamConfigView: React.FC<StreamConfigViewProps> = React.memo(({ s
     </BuilderConfigView>
   );
 });
+
+const StreamControls = ({ streamNum }: { streamNum: number }) => {
+  const [field, , helpers] = useField<BuilderStream[]>("streams");
+  const { openConfirmationModal, closeConfirmationModal } = useConfirmationModalService();
+  const { setSelectedView, setTestStreamIndex } = useConnectorBuilderFormState();
+  const handleDelete = () => {
+    openConfirmationModal({
+      text: "connectorBuilder.deleteStreamModal.text",
+      title: "connectorBuilder.deleteStreamModal.title",
+      submitButtonText: "connectorBuilder.deleteStreamModal.submitButton",
+      onSubmit: () => {
+        const updatedStreams = field.value.filter((_, index) => index !== streamNum);
+        const streamToSelect = streamNum >= updatedStreams.length ? updatedStreams.length - 1 : streamNum;
+        const viewToSelect: BuilderView = updatedStreams.length === 0 ? "global" : streamToSelect;
+        helpers.setValue(updatedStreams);
+        setSelectedView(viewToSelect);
+        setTestStreamIndex(streamToSelect);
+        closeConfirmationModal();
+      },
+    });
+  };
+  return (
+    <div className={styles.controls}>
+      <AddStreamButton
+        onAddStream={(addedStreamNum) => {
+          setSelectedView(addedStreamNum);
+          setTestStreamIndex(addedStreamNum);
+        }}
+        initialValues={field.value[streamNum]}
+        button={
+          <button className={styles.controlButton} type="button">
+            <FontAwesomeIcon icon={faCopy} />
+          </button>
+        }
+      />
+      <button className={classNames(styles.deleteButton, styles.controlButton)} type="button" onClick={handleDelete}>
+        <FontAwesomeIcon icon={faTrashCan} />
+      </button>
+    </div>
+  );
+};
