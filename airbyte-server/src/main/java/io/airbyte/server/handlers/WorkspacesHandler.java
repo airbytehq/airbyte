@@ -52,7 +52,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class WorkspacesHandler {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(WorkspacesHandler.class);

@@ -12,7 +12,6 @@ import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 
 @Singleton
-@Requires(env = WorkerMode.CONTROL_PLANE)
 public class HealthCheckHandler {
 
   private final ConfigRepository repository;
