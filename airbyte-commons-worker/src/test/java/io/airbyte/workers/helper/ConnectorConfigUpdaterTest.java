@@ -9,7 +9,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.api.client.AirbyteApiClient;
 import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiException;
@@ -26,24 +25,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class UpdateConnectorConfigHelperTest {
+class ConnectorConfigUpdaterTest {
 
   private static final UUID SOURCE_ID = UUID.randomUUID();
   private static final String SOURCE_NAME = "source-stripe";
   private static final UUID DESTINATION_ID = UUID.randomUUID();
   private static final String DESTINATION_NAME = "destination-google-sheets";
 
-  private final AirbyteApiClient airbyteApiClient = mock(AirbyteApiClient.class);
   private final SourceApi mSourceApi = mock(SourceApi.class);
   private final DestinationApi mDestinationApi = mock(DestinationApi.class);
 
-  private UpdateConnectorConfigHelper updateConnectorConfigHelper;
+  private ConnectorConfigUpdater connectorConfigUpdater;
 
   @BeforeEach
   void setUp() throws ApiException {
-    when(airbyteApiClient.getSourceApi()).thenReturn(mSourceApi);
-    when(airbyteApiClient.getDestinationApi()).thenReturn(mDestinationApi);
-
     when(mSourceApi.getSource(new SourceIdRequestBody()
         .sourceId(SOURCE_ID))).thenReturn(new SourceRead()
             .sourceId(SOURCE_ID)
@@ -54,7 +49,7 @@ class UpdateConnectorConfigHelperTest {
             .destinationId(DESTINATION_ID)
             .name(DESTINATION_NAME));
 
-    updateConnectorConfigHelper = new UpdateConnectorConfigHelper(airbyteApiClient);
+    connectorConfigUpdater = new ConnectorConfigUpdater(mSourceApi, mDestinationApi);
   }
 
   @Test
@@ -69,7 +64,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mSourceApi.updateSource(Mockito.any())).thenReturn(new SourceRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateSource(SOURCE_ID, newConfiguration);
+    connectorConfigUpdater.updateSource(SOURCE_ID, newConfiguration);
     verify(mSourceApi).updateSource(expectedSourceUpdate);
   }
 
@@ -85,7 +80,7 @@ class UpdateConnectorConfigHelperTest {
 
     when(mDestinationApi.updateDestination(Mockito.any())).thenReturn(new DestinationRead().connectionConfiguration(configJson));
 
-    updateConnectorConfigHelper.updateDestination(DESTINATION_ID, newConfiguration);
+    connectorConfigUpdater.updateDestination(DESTINATION_ID, newConfiguration);
     verify(mDestinationApi).updateDestination(expectedDestinationUpdate);
   }
 

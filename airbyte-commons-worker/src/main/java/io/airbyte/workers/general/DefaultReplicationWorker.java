@@ -37,9 +37,9 @@ import io.airbyte.workers.WorkerMetricReporter;
 import io.airbyte.workers.WorkerUtils;
 import io.airbyte.workers.exception.RecordSchemaValidationException;
 import io.airbyte.workers.exception.WorkerException;
+import io.airbyte.workers.helper.ConnectorConfigUpdater;
 import io.airbyte.workers.helper.FailureHelper;
 import io.airbyte.workers.helper.ThreadedTimeTracker;
-import io.airbyte.workers.helper.UpdateConnectorConfigHelper;
 import io.airbyte.workers.internal.AirbyteDestination;
 import io.airbyte.workers.internal.AirbyteMapper;
 import io.airbyte.workers.internal.AirbyteSource;
@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -100,7 +101,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private final AtomicBoolean hasFailed;
   private final RecordSchemaValidator recordSchemaValidator;
   private final WorkerMetricReporter metricReporter;
-  private final UpdateConnectorConfigHelper updateConnectorConfigHelper;
+  private final ConnectorConfigUpdater connectorConfigUpdater;
   private final boolean fieldSelectionEnabled;
 
   public DefaultReplicationWorker(final String jobId,
@@ -111,7 +112,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                   final MessageTracker messageTracker,
                                   final RecordSchemaValidator recordSchemaValidator,
                                   final WorkerMetricReporter metricReporter,
-                                  final UpdateConnectorConfigHelper updateConnectorConfigHelper,
+                                  final ConnectorConfigUpdater connectorConfigUpdater,
                                   final boolean fieldSelectionEnabled) {
     this.jobId = jobId;
     this.attempt = attempt;
@@ -122,7 +123,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     this.executors = Executors.newFixedThreadPool(2);
     this.recordSchemaValidator = recordSchemaValidator;
     this.metricReporter = metricReporter;
-    this.updateConnectorConfigHelper = updateConnectorConfigHelper;
+    this.connectorConfigUpdater = connectorConfigUpdater;
     this.fieldSelectionEnabled = fieldSelectionEnabled;
 
     this.cancelled = new AtomicBoolean(false);
@@ -196,7 +197,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       // note: `whenComplete` is used instead of `exceptionally` so that the original exception is still
       // thrown
       final CompletableFuture<?> readFromDstThread = CompletableFuture.runAsync(
-          readFromDstRunnable(destination, cancelled, messageTracker, updateConnectorConfigHelper, mdc, timeTracker, destinationConfig),
+          readFromDstRunnable(destination, cancelled, messageTracker, connectorConfigUpdater, mdc, timeTracker, destinationConfig.getDestinationId()),
           executors)
           .whenComplete((msg, ex) -> {
             if (ex != null) {
@@ -217,12 +218,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
               cancelled,
               mapper,
               messageTracker,
-              updateConnectorConfigHelper,
+              connectorConfigUpdater,
               mdc,
               recordSchemaValidator,
               metricReporter,
               timeTracker,
-              sourceConfig,
+              sourceConfig.getSourceId(),
               fieldSelectionEnabled),
           executors)
           .whenComplete((msg, ex) -> {
@@ -260,10 +261,10 @@ public class DefaultReplicationWorker implements ReplicationWorker {
   private static Runnable readFromDstRunnable(final AirbyteDestination destination,
                                               final AtomicBoolean cancelled,
                                               final MessageTracker messageTracker,
-                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper,
+                                              final ConnectorConfigUpdater connectorConfigUpdater,
                                               final Map<String, String> mdc,
                                               final ThreadedTimeTracker timeHolder,
-                                              final WorkerDestinationConfig destinationConfig) {
+                                              final UUID destinationId) {
     return () -> {
       MDC.setContextMap(mdc);
       LOGGER.info("Destination output thread started.");
@@ -281,8 +282,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromDestination(message);
 
-            if (message.getType() == Type.CONTROL) {
-              acceptDstControlMessage(destinationConfig, message.getControl(), updateConnectorConfigHelper);
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptDstControlMessage(destinationId, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating destination configuration", e);
             }
           }
         }
@@ -315,12 +320,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                                                            final AtomicBoolean cancelled,
                                                            final AirbyteMapper mapper,
                                                            final MessageTracker messageTracker,
-                                                           final UpdateConnectorConfigHelper updateConnectorConfigHelper,
+                                                           final ConnectorConfigUpdater connectorConfigUpdater,
                                                            final Map<String, String> mdc,
                                                            final RecordSchemaValidator recordSchemaValidator,
                                                            final WorkerMetricReporter metricReporter,
                                                            final ThreadedTimeTracker timeHolder,
-                                                           final WorkerSourceConfig sourceConfig,
+                                                           final UUID sourceId,
                                                            final boolean fieldSelectionEnabled) {
     return () -> {
       MDC.setContextMap(mdc);
@@ -350,8 +355,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
 
             messageTracker.acceptFromSource(message);
 
-            if (message.getType() == Type.CONTROL) {
-              acceptSrcControlMessage(sourceConfig, message.getControl(), updateConnectorConfigHelper);
+            try {
+              if (message.getType() == Type.CONTROL) {
+                acceptSrcControlMessage(sourceId, message.getControl(), connectorConfigUpdater);
+              }
+            } catch (final Exception e) {
+              LOGGER.error("Error updating source configuration", e);
             }
 
             try {
@@ -412,19 +421,19 @@ public class DefaultReplicationWorker implements ReplicationWorker {
     };
   }
 
-  private static void acceptSrcControlMessage(final WorkerSourceConfig sourceConfig,
+  private static void acceptSrcControlMessage(final UUID sourceId,
                                               final AirbyteControlMessage controlMessage,
-                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
+                                              final ConnectorConfigUpdater connectorConfigUpdater) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateSource(sourceConfig.getSourceId(), controlMessage.getConnectorConfig().getConfig());
+      connectorConfigUpdater.updateSource(sourceId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 
-  private static void acceptDstControlMessage(final WorkerDestinationConfig destinationConfig,
+  private static void acceptDstControlMessage(final UUID destinationId,
                                               final AirbyteControlMessage controlMessage,
-                                              final UpdateConnectorConfigHelper updateConnectorConfigHelper) {
+                                              final ConnectorConfigUpdater connectorConfigUpdater) {
     if (controlMessage.getType() == AirbyteControlMessage.Type.CONNECTOR_CONFIG) {
-      updateConnectorConfigHelper.updateDestination(destinationConfig.getDestinationId(), controlMessage.getConnectorConfig().getConfig());
+      connectorConfigUpdater.updateDestination(destinationId, controlMessage.getConnectorConfig().getConfig());
     }
   }
 

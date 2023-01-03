@@ -29,14 +29,16 @@ import org.slf4j.LoggerFactory;
  * useful for migrating configuration to a new version or for enabling connectors that require
  * single-use or short-lived OAuth tokens.
  */
-public class UpdateConnectorConfigHelper {
+public class ConnectorConfigUpdater {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(UpdateConnectorConfigHelper.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ConnectorConfigUpdater.class);
 
-  private final AirbyteApiClient apiClient;
+  private final SourceApi sourceApi;
+  private final DestinationApi destinationApi;
 
-  public UpdateConnectorConfigHelper(final AirbyteApiClient apiClient) {
-    this.apiClient = apiClient;
+  public ConnectorConfigUpdater(final SourceApi sourceApi, final DestinationApi destinationApi) {
+    this.sourceApi = sourceApi;
+    this.destinationApi = destinationApi;
   }
 
   /**
@@ -44,7 +46,6 @@ public class UpdateConnectorConfigHelper {
    * parameters will be masked when saving.
    */
   public void updateSource(final UUID sourceId, final Config config) {
-    final SourceApi sourceApi = apiClient.getSourceApi();
     final SourceRead source = AirbyteApiClient.retryWithJitter(
         () -> sourceApi.getSource(new SourceIdRequestBody().sourceId(sourceId)),
         "get source");
@@ -67,7 +68,6 @@ public class UpdateConnectorConfigHelper {
    * parameters will be masked when saving.
    */
   public void updateDestination(final UUID destinationId, final Config config) {
-    final DestinationApi destinationApi = apiClient.getDestinationApi();
     final DestinationRead destination = AirbyteApiClient.retryWithJitter(
         () -> destinationApi.getDestination(new DestinationIdRequestBody().destinationId(destinationId)),
         "get destination");

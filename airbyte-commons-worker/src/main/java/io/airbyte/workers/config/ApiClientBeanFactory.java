@@ -9,6 +9,8 @@ import com.auth0.jwt.JWTCreator;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.airbyte.api.client.AirbyteApiClient;
+import io.airbyte.api.client.generated.ConnectionApi;
+import io.airbyte.api.client.generated.DestinationApi;
 import io.airbyte.api.client.generated.SourceApi;
 import io.airbyte.api.client.invoker.generated.ApiClient;
 import io.airbyte.commons.temporal.config.WorkerMode;
@@ -58,7 +60,7 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
-  public AirbyteApiClient airbyteApiClient(ApiClient apiClient) {
+  public AirbyteApiClient airbyteApiClient(final ApiClient apiClient) {
     return new AirbyteApiClient(apiClient);
   }
 
@@ -68,15 +70,28 @@ public class ApiClientBeanFactory {
   }
 
   @Singleton
+  public DestinationApi destinationApi(final ApiClient apiClient) {
+    return new DestinationApi(apiClient);
+  }
+
+  @Singleton
+  public ConnectionApi connectionApi(final ApiClient apiClient) {
+    return new ConnectionApi(apiClient);
+  }
+
+  @Singleton
   public HttpClient httpClient() {
     return HttpClient.newHttpClient();
   }
 
   @Singleton
   @Named("internalApiScheme")
-  public String internalApiScheme(final Environment environment) {
+  public String internalApiScheme(@Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode, final Environment environment) {
     // control plane workers communicate with the Airbyte API within their internal network, so https
     // isn't needed
+    if (isInTestMode) {
+      return "http";
+    }
     return environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE) ? "http" : "https";
   }
 
@@ -97,8 +112,9 @@ public class ApiClientBeanFactory {
                                      @Value("${airbyte.control.plane.auth-endpoint}") final String controlPlaneAuthEndpoint,
                                      @Value("${airbyte.data.plane.service-account.email}") final String dataPlaneServiceAccountEmail,
                                      @Value("${airbyte.data.plane.service-account.credentials-path}") final String dataPlaneServiceAccountCredentialsPath,
+                                     @Value("${airbyte.acceptance.test.enabled}") final boolean isInTestMode,
                                      final Environment environment) {
-    if (environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
+    if (isInTestMode || environment.getActiveNames().contains(WorkerMode.CONTROL_PLANE)) {
       // control plane workers communicate with the Airbyte API within their internal network, so a signed
       // JWT isn't needed
       return airbyteApiAuthHeaderValue;
