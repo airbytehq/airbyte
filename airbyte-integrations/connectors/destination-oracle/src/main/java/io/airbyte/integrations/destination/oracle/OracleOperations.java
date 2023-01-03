@@ -9,7 +9,7 @@ import io.airbyte.commons.json.Jsons;
 import io.airbyte.db.jdbc.JdbcDatabase;
 import io.airbyte.integrations.destination.StandardNameTransformer;
 import io.airbyte.integrations.destination.jdbc.SqlOperations;
-import io.airbyte.protocol.models.AirbyteRecordMessage;
+import io.airbyte.protocol.models.v0.AirbyteRecordMessage;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -151,7 +151,7 @@ public class OracleOperations implements SqlOperations {
   }
 
   @Override
-  public String copyTableQuery(final JdbcDatabase database,
+  public String insertTableQuery(final JdbcDatabase database,
                                final String schemaName,
                                final String sourceTableName,
                                final String destinationTableName) {

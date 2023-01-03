@@ -57,14 +57,8 @@ public class PersistStateActivityImpl implements PersistStateActivity {
               AirbyteApiClient.retryWithJitter(
                   () -> airbyteApiClient.getStateApi().getState(new ConnectionIdRequestBody().connectionId(connectionId)),
                   "get state");
-          if (featureFlags.needStateValidation() && previousState != null) {
-            final StateType newStateType = maybeStateWrapper.get().getStateType();
-            final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
 
-            if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
-              validateStreamStates(maybeStateWrapper.get(), configuredCatalog);
-            }
-          }
+          validate(configuredCatalog, maybeStateWrapper, previousState);
 
           AirbyteApiClient.retryWithJitter(
               () -> {
@@ -83,6 +77,42 @@ public class PersistStateActivityImpl implements PersistStateActivity {
     } else {
       return false;
     }
+  }
+
+  /**
+   * Validates whether it is safe to persist the new state based on the previously saved state.
+   *
+   * @param configuredCatalog The configured catalog of streams for the connection.
+   * @param newState The new state.
+   * @param previousState The previous state.
+   */
+  private void validate(final ConfiguredAirbyteCatalog configuredCatalog,
+                        final Optional<StateWrapper> newState,
+                        final ConnectionState previousState) {
+    /**
+     * If state validation is enabled and the previous state exists and is not empty, make sure that
+     * state will not be lost as part of the migration from legacy -> per stream.
+     *
+     * Otherwise, it is okay to update if the previous state is missing or empty.
+     */
+    if (featureFlags.needStateValidation() && !isStateEmpty(previousState)) {
+      final StateType newStateType = newState.get().getStateType();
+      final StateType prevStateType = convertClientStateTypeToInternal(previousState.getStateType());
+
+      if (isMigration(newStateType, prevStateType) && newStateType == StateType.STREAM) {
+        validateStreamStates(newState.get(), configuredCatalog);
+      }
+    }
+  }
+
+  /**
+   * Test whether the connection state is empty.
+   *
+   * @param connectionState The connection state.
+   * @return {@code true} if the connection state is null or empty, {@code false} otherwise.
+   */
+  private boolean isStateEmpty(final ConnectionState connectionState) {
+    return connectionState == null || connectionState.getState() == null || connectionState.getState().isEmpty();
   }
 
   @VisibleForTesting

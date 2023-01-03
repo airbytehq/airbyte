@@ -8,7 +8,7 @@ import static io.debezium.connector.postgresql.PostgresOffsetContext.LAST_COMMIT
 import static io.debezium.connector.postgresql.SourceInfo.LSN_KEY;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import io.airbyte.protocol.models.ConfiguredAirbyteCatalog;
+import io.airbyte.protocol.models.v0.ConfiguredAirbyteCatalog;
 import io.debezium.config.Configuration;
 import io.debezium.connector.common.OffsetReader;
 import io.debezium.connector.postgresql.PostgresConnectorConfig;
