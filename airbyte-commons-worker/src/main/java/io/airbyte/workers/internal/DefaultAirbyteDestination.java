@@ -29,6 +29,7 @@ import java.nio.file.Path;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
@@ -40,6 +41,10 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
   public static final MdcScope.Builder CONTAINER_LOG_MDC_BUILDER = new Builder()
       .setLogPrefix("destination")
       .setPrefixColor(Color.YELLOW_BACKGROUND);
+  static final Set<Integer> IGNORED_EXIT_CODES = Set.of(
+      0, // Normal exit
+      143 // SIGTERM
+  );
 
   private final IntegrationLauncher integrationLauncher;
   private final AirbyteStreamFactory streamFactory;
@@ -120,7 +125,7 @@ public class DefaultAirbyteDestination implements AirbyteDestination {
 
     LOGGER.debug("Closing destination process");
     WorkerUtils.gentleClose(destinationProcess, 1, TimeUnit.MINUTES);
-    if (destinationProcess.isAlive() || getExitValue() != 0) {
+    if (destinationProcess.isAlive() || !IGNORED_EXIT_CODES.contains(getExitValue())) {
       final String message =
           destinationProcess.isAlive() ? "Destination has not terminated " : "Destination process exit with code " + getExitValue();
       throw new WorkerException(message + ". This warning is normal if the job was cancelled.");
