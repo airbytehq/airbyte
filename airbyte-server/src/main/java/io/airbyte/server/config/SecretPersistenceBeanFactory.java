@@ -4,7 +4,6 @@
 
 package io.airbyte.server.config;
 
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.SecretsRepositoryReader;
 import io.airbyte.config.persistence.SecretsRepositoryWriter;

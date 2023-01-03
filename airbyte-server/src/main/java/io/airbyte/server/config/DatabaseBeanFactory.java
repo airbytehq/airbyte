@@ -4,7 +4,6 @@
 
 package io.airbyte.server.config;
 
-import io.airbyte.commons.temporal.config.WorkerMode;
 import io.airbyte.config.persistence.ConfigRepository;
 import io.airbyte.config.persistence.StatePersistence;
 import io.airbyte.config.persistence.StreamResetPersistence;
@@ -16,7 +15,6 @@ import io.airbyte.db.instance.DatabaseConstants;
 import io.airbyte.persistence.job.DefaultJobPersistence;
 import io.airbyte.persistence.job.JobPersistence;
 import io.micronaut.context.annotation.Factory;
-import io.micronaut.context.annotation.Requires;
 import io.micronaut.context.annotation.Value;
 import io.micronaut.flyway.FlywayConfigurationProperties;
 import jakarta.inject.Named;
