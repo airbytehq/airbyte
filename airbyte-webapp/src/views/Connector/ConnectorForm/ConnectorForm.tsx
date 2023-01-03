@@ -1,7 +1,5 @@
-import { Formik, getIn, setIn, useFormikContext } from "formik";
-import { JSONSchema7 } from "json-schema";
-import React, { useCallback, useEffect } from "react";
-import { useDeepCompareEffect } from "react-use";
+import { Formik } from "formik";
+import React, { useCallback } from "react";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
@@ -9,68 +7,11 @@ import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/doma
 import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
-import { isDefined } from "utils/common";
 
-import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
+import { ConnectorFormContextProvider } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import { useBuildForm, useBuildUiWidgetsContext, useConstructValidationSchema } from "./useBuildForm";
-
-/**
- * This function sets all initial const values in the form to current values
- * @param schema
- * @param initialValues
- * @constructor
- */
-const PatchInitialValuesWithWidgetConfig: React.FC<{
-  schema: JSONSchema7;
-  initialValues: ConnectorFormValues;
-}> = ({ schema, initialValues }) => {
-  const { widgetsInfo } = useConnectorForm();
-  const { setFieldValue } = useFormikContext<ConnectorFormValues>();
-
-  useDeepCompareEffect(() => {
-    const widgetsInfoEntries = Object.entries(widgetsInfo);
-
-    // set all const fields to form field values, so we could send form
-    const patchedConstValues = widgetsInfoEntries
-      .filter(([_, value]) => isDefined(value.const))
-      .reduce((acc, [key, value]) => setIn(acc, key, value.const), initialValues);
-
-    // set default fields as current values, so values could be populated correctly
-    // fix for https://github.com/airbytehq/airbyte/issues/6791
-    const patchedDefaultValues = widgetsInfoEntries
-      .filter(([key, value]) => isDefined(value.default) && !isDefined(getIn(patchedConstValues, key)))
-      .reduce((acc, [key, value]) => setIn(acc, key, value.default), patchedConstValues);
-
-    if (patchedDefaultValues?.connectionConfiguration) {
-      setTimeout(() => {
-        // We need to push this out one execution slot, so the form isn't still in its
-        // initialization status and won't react to this call but would just take the initialValues instead.
-        setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
-      });
-    }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [schema]);
-
-  return null;
-};
-
-/**
- * Formik does not revalidate the form in case the validationSchema it's using changes.
- * This component just forces a revalidation of the form whenever the validation schema changes.
- */
-const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }> = ({ validationSchema }) => {
-  // The validationSchema is passed into this component instead of pulled from the FormikContext, since
-  // due to https://github.com/jaredpalmer/formik/issues/2092 the validationSchema from the formik context will
-  // always be undefined.
-  const { validateForm } = useFormikContext();
-  useEffect(() => {
-    validateForm();
-  }, [validateForm, validationSchema]);
-  return null;
-};
+import { useBuildForm } from "./useBuildForm";
 
 export interface ConnectorFormProps {
   formType: "source" | "destination";
@@ -107,15 +48,12 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     connectorId,
   } = props;
 
-  const { formFields, initialValues, jsonSchema } = useBuildForm(
+  const { formFields, initialValues, validationSchema } = useBuildForm(
+    Boolean(isEditMode),
     formType,
     selectedConnectorDefinitionSpecification,
     formValues
   );
-
-  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues);
-
-  const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
   const getValues = useCallback(
     (values: ConnectorFormValues) =>
@@ -147,20 +85,15 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
       {({ dirty }) => (
         <ConnectorFormContextProvider
           formType={formType}
-          widgetsInfo={uiWidgetsInfo}
           getValues={getValues}
-          setUiWidgetsInfo={setUiWidgetsInfo}
-          resetUiWidgetsInfo={resetUiWidgetsInfo}
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
           validationSchema={validationSchema}
           connectorId={connectorId}
         >
-          <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
           <FormChangeTracker changed={dirty} formId={formId} />
-          <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
             formFields={formFields}
