@@ -64,8 +64,7 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
           Jsons.serialize(input.getConnectionConfiguration()));
-      final int exitCode = process.exitValue();
-      LOGGER.debug("Check connection job subprocess finished with exit code {}", exitCode);
+
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.CHECK_CONNECTION);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -78,12 +77,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.CHECK_CONNECTION, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
-
+      final int exitCode = process.exitValue();
+      LOGGER.info("Check connection job subprocess finished with exit code {}", exitCode);
       if (connectionStatus.isPresent()) {
         final StandardCheckConnectionOutput output = new StandardCheckConnectionOutput()
             .withStatus(Enums.convertTo(connectionStatus.get().getStatus(), Status.class))
             .withMessage(connectionStatus.get().getMessage());
-        LOGGER.debug("Check connection job received output: {}", output);
+        LOGGER.info("Check connection job received output: {}", output);
         jobOutput.setCheckConnection(output);
       } else {
         if (failureReason.isEmpty()) {
@@ -95,11 +95,13 @@ public class DefaultCheckConnectionWorker implements CheckConnectionWorker {
           }
         }
       }
+      LineGobbler.endSection("CHECK");
       return jobOutput;
 
     } catch (final Exception e) {
       ApmTraceUtils.addExceptionToTrace(e);
       LOGGER.error("Unexpected error while checking connection: ", e);
+      LineGobbler.endSection("CHECK");
       throw new WorkerException("Unexpected error while getting checking connection.", e);
     }
   }

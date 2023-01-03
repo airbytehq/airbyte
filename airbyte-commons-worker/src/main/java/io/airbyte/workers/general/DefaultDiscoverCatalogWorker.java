@@ -70,9 +70,7 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
           jobRoot,
           WorkerConstants.SOURCE_CONFIG_JSON_FILENAME,
           Jsons.serialize(discoverSchemaInput.getConnectionConfiguration()));
-      final int exitCode = process.exitValue();
-      final String exitCodeMessage = String.format("Discover job subprocess finished with exit code %s", exitCode);
-      LOGGER.debug(exitCodeMessage);
+
       final ConnectorJobOutput jobOutput = new ConnectorJobOutput().withOutputType(OutputType.DISCOVER_CATALOG_ID);
 
       LineGobbler.gobble(process.getErrorStream(), LOGGER::error);
@@ -86,6 +84,9 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
 
       final Optional<FailureReason> failureReason = WorkerUtils.getJobFailureReasonFromMessages(OutputType.DISCOVER_CATALOG_ID, messagesByType);
       failureReason.ifPresent(jobOutput::setFailureReason);
+
+      final int exitCode = process.exitValue();
+      LOGGER.info(String.format("Discover job subprocess finished with exit code %s", exitCode));
 
       if (catalog.isPresent()) {
         final UUID catalogId =
