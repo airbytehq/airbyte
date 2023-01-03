@@ -314,11 +314,12 @@ public class DefaultReplicationWorker implements ReplicationWorker {
       if (fieldSelectionEnabled) {
         populatedStreamToSelectedFields(catalog, streamToSelectedFields);
       }
+      var virtualExecutor = Executors.newVirtualThreadPerTaskExecutor();
       try {
         // can this while be handled by a virtual thread too?
         while (!cancelled.get() && !source.isFinished()) {
           // everything in here can be given to a virtual thread
-          Thread.ofVirtual().start(() -> {
+//          virtualExecutor.submit(() -> {
             final Optional<AirbyteMessage> messageOptional;
             try {
               messageOptional = source.attemptRead();
@@ -357,7 +358,7 @@ public class DefaultReplicationWorker implements ReplicationWorker {
                 throw new SourceException("Source cannot be stopped!", e);
               }
             }
-          });
+//          });
         }
         timeHolder.trackSourceReadEndTime();
         LOGGER.info("Total records read: {} ({})", recordsRead, FileUtils.byteCountToDisplaySize(messageTracker.getTotalBytesEmitted()));
