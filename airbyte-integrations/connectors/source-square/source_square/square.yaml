@@ -91,7 +91,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: "P30D"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format_granularity: "PT0.000001S"
+        cursor_granularity: "PT0.000001S"
         cursor_field: "created_at"
         start_time_option:
           field_name: begin_time
@@ -139,7 +139,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: "P30D"
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format_granularity: "PT0.000001S"
+        cursor_granularity: "PT0.000001S"
         cursor_field: "updated_at"
         start_time_option:
           field_name: begin_time
@@ -289,7 +289,7 @@ definitions:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
         step: P30D
         datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-        datetime_format_granularity: "PT0.000001S"
+        cursor_granularity: "PT0.000001S"
         parent_stream: "*ref(definitions.locations_stream)"
         cursor_field: "updated_at"
         parent_key: "id"

@@ -58,7 +58,7 @@ definitions:
     step: "P365D"
     cursor_field: "date_updated"
     datetime_format: "%Y-%m-%d"
-    datetime_format_granularity: "P1D"
+    cursor_granularity: "P1D"
 
   stream_slicer__cursor_date_created:
     #    type: DatetimeStreamSlicer
@@ -78,7 +78,7 @@ definitions:
     step: "P365D"
     cursor_field: "date_created"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format_granularity: "PT0.000001S"
+    cursor_granularity: "PT0.000001S"
 
   stream_slicer__cursor_date_updated:
     #    type: DatetimeStreamSlicer
@@ -98,7 +98,7 @@ definitions:
     step: "P365D"
     cursor_field: "date_updated"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-    datetime_format_granularity: "PT0.000001S"
+    cursor_granularity: "PT0.000001S"
   retriever:
     record_selector:
       $ref: "*ref(definitions.selector)"

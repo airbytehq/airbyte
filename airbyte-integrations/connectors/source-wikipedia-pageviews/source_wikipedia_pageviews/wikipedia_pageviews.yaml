@@ -21,7 +21,7 @@ definitions:
     step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y/%m/%d"
-    datetime_format_granularity: "P1D"
+    cursor_granularity: "P1D"
   per_article_stream_slicer:
     type: DatetimeStreamSlicer
     start_datetime: "{{config.start}}"
@@ -29,7 +29,7 @@ definitions:
     step: "P1D"
     cursor_field: "timestamp"
     datetime_format: "%Y%m%d"
-    datetime_format_granularity: "P1D"
+    cursor_granularity: "P1D"
 
   per_article_requester:
     $options:

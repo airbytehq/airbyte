@@ -18,7 +18,7 @@ stream_slicers = [
         step="P10D",
         cursor_field="timestamp",
         datetime_format="%Y-%m-%dT%H:%M:%S.%f%z",
-        datetime_format_granularity="PT0.000001S",
+        cursor_granularity="PT0.000001S",
         start_time_option=RequestOption(inject_into="request_parameter", field_name="after", options={}),
         end_time_option=RequestOption(inject_into="request_parameter", field_name="before", options={}),
         config={},

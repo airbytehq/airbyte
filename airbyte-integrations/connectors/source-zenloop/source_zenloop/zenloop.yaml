@@ -80,7 +80,7 @@ definitions:
     type: DatetimeStreamSlicer
     cursor_field: "inserted_at"
     datetime_format: "%Y-%m-%dT%H:%M:%S.%fZ"
-    datetime_format_granularity: "PT0.000001S"
+    cursor_granularity: "PT0.000001S"
     start_datetime:
       datetime: "{{ config['date_from'] }}"
       datetime_format: "%Y-%m-%d"

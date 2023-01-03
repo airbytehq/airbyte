@@ -22,7 +22,7 @@ definitions:
   stream_slicer:
     cursor_field: "{{ options['stream_cursor_field'] }}"
     datetime_format: "%s"
-    datetime_format_granularity: "PT1S"
+    cursor_granularity: "PT1S"
     start_datetime:
       datetime: "{{ config['since'] }}"
       datetime_format: "%Y-%m-%d %H:%M:%S"

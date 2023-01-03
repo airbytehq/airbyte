@@ -16,7 +16,7 @@ from source_square.components import SquareSubstreamSlicer
 from source_square.source import SourceSquare
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-DATETIME_FORMAT_GRANULARITY = "PT0.000001S"
+CURSOR_GRANULARITY = "PT0.000001S"
 
 
 @pytest.fixture
@@ -85,7 +85,7 @@ def test_sub_slicer(last_record, expected, records):
         step="P1D",
         cursor_field="updated_at",
         datetime_format=DATETIME_FORMAT,
-        datetime_format_granularity=DATETIME_FORMAT_GRANULARITY,
+        cursor_granularity=CURSOR_GRANULARITY,
         options=None,
         config={"start_date": "2021-01-01T00:00:00.000000+0000"},
         parent_key="id",
@@ -121,7 +121,7 @@ def test_sub_slicer_request_body(last_record, records, expected_data):
         step="P1D",
         cursor_field="updated_at",
         datetime_format=DATETIME_FORMAT,
-        datetime_format_granularity=DATETIME_FORMAT_GRANULARITY,
+        cursor_granularity=CURSOR_GRANULARITY,
         options=None,
         config={"start_date": "2021-01-01T00:00:00.000000Z"},
         parent_key="id",

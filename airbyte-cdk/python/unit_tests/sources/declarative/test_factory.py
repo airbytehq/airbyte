@@ -235,7 +235,7 @@ def test_datetime_stream_slicer():
         type: DatetimeStreamSlicer
         $options:
           datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z"
-          datetime_format_granularity: "PT0.000001S"
+          cursor_granularity: "PT0.000001S"
         start_datetime:
           type: MinMaxDatetime
           datetime: "{{ config['start_time'] }}"

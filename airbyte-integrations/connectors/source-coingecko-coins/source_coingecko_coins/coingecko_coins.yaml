@@ -22,7 +22,7 @@ definitions:
       datetime_format: "%d-%m-%Y"
     step: "P1D"
     datetime_format: "%d-%m-%Y"
-    datetime_format_granularity: "P1D"
+    cursor_granularity: "P1D"
     cursor_field: "date"
     start_time_option:
       field_name: "date"

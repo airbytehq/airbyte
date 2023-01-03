@@ -38,7 +38,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         step (str): size of the timewindow (ISO8601 duration)
         cursor_field (Union[InterpolatedString, str]): record's cursor field
         datetime_format (str): format of the datetime
-        datetime_format_granularity (str): smallest increment the datetime_format has (ISO8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
+        cursor_granularity (str): smallest increment the datetime_format has (ISO 8601 duration) that will be used to ensure that the start of a slice does not overlap with the end of the previous one
         config (Config): connection config
         start_time_option (Optional[RequestOption]): request option for start time
         end_time_option (Optional[RequestOption]): request option for end time
@@ -52,7 +52,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
     step: str
     cursor_field: Union[InterpolatedString, str]
     datetime_format: str
-    datetime_format_granularity: str
+    cursor_granularity: str
     config: Config
     options: InitVar[Mapping[str, Any]]
     _cursor: dict = field(repr=False, default=None)  # tracks current datetime
@@ -73,7 +73,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         self._interpolation = JinjaInterpolation()
 
         self._step = self._parse_timedelta(self.step)
-        self._datetime_format_granularity = self._parse_timedelta(self.datetime_format_granularity)
+        self._cursor_granularity = self._parse_timedelta(self.cursor_granularity)
         self.cursor_field = InterpolatedString.create(self.cursor_field, options=options)
         self.stream_slice_field_start = InterpolatedString.create(self.stream_state_field_start or "start_time", options=options)
         self.stream_slice_field_end = InterpolatedString.create(self.stream_state_field_end or "end_time", options=options)
@@ -154,7 +154,7 @@ class DatetimeStreamSlicer(StreamSlicer, JsonSchemaMixin):
         end_field = self.stream_slice_field_end.eval(self.config)
         dates = []
         while start <= end:
-            end_date = self._get_date(start + step - self._datetime_format_granularity, end, min)
+            end_date = self._get_date(start + step - self._cursor_granularity, end, min)
             dates.append({start_field: self._format_datetime(start), end_field: self._format_datetime(end_date)})
             start += step
         return dates

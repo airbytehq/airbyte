@@ -55,7 +55,7 @@ Schema:
       - step
       - cursor_field
       - datetime_format
-      - datetime_format_granularity
+      - cursor_granularity
     additional_properties: false
     properties:
       "$options":
@@ -70,7 +70,7 @@ Schema:
         type: string
       datetime_format:
         type: string
-      datetime_format_granularity:
+      cursor_granularity:
         type: string
       start_time_option:
         "$ref": "#/definitions/RequestOption"
@@ -107,7 +107,7 @@ stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
   datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z",
-  datetime_format_granularity: "PT0.000001S"
+  cursor_granularity: "PT0.000001S"
   step: "P1D"
 ```
 
@@ -120,7 +120,7 @@ stream_slicer:
   start_datetime: "2021-02-01T00:00:00.000000+0000",
   end_datetime: "2021-03-01T00:00:00.000000+0000",
   datetime_format: "%Y-%m-%dT%H:%M:%S.%f%z",
-  datetime_format_granularity: "PT0.000001S"
+  cursor_granularity: "PT0.000001S"
   lookback_window: "P31D"
   step: "P1D"
 ```
@@ -134,6 +134,8 @@ The `datetime_format` can be used to specify the format of the start and end tim
 
 The Stream's state will be derived by reading the record's `cursor_field`.
 If the `cursor_field` is `created`, and the record is `{"id": 1234, "created": "2021-02-02T00:00:00.000000+0000"}`, then the state after reading that record is `"created": "2021-02-02T00:00:00.000000+0000"`. [^1]
+
+Note that all durations are expressed as [ISO 8601 durations](https://en.wikipedia.org/wiki/ISO_8601#Durations).
 
 #### Cursor update
 

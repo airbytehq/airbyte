@@ -29,7 +29,7 @@ definitions:
     #   format: "%Y-%m-%d %H:%M:%S.%f"
     step: "P1M"
     datetime_format: "mm-YYYY"
-    datetime_format_granularity: "P1M"
+    cursor_granularity: "P1M"
     cursor_field: airdate
     # start_time_option:
     #   field_name: "date"

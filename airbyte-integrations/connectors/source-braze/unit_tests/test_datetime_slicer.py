@@ -21,7 +21,7 @@ def test_datetime_slicer():
         step="P3D",
         cursor_field="time",
         datetime_format="%Y-%m-%d",
-        datetime_format_granularity="P1D",
+        cursor_granularity="P1D",
         config={},
         options={},
         step_option=RequestOption(field_name="step", inject_into=RequestOptionType.request_parameter, options={})

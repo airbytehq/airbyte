@@ -29,7 +29,7 @@ definitions:
       datetime: "{{ now_utc().strftime('%Y-%m-%dT%H:%M:%S') }}"
       datetime_format: "%Y-%m-%dT%H:%M:%S"
     datetime_format: "%Y-%m-%dT%H:%M:%S"
-    datetime_format_granularity: PT1S
+    cursor_granularity: PT1S
     step: P30D
     start_time_option:
       field_name: modified_after

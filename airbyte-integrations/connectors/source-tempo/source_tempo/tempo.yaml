@@ -66,7 +66,7 @@ definitions:
       stream_slicer:
         cursor_field: "startDate"
         datetime_format: "%Y-%m-%d"
-        datetime_format_granularity: "P1D"
+        cursor_granularity: "P1D"
         start_datetime:
           datetime: "2020-01-01"
           datetime_format: "%Y-%m-%d"

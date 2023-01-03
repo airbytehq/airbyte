@@ -330,7 +330,7 @@ definitions:
       - cursor_field
       - end_datetime
       - datetime_format
-      - datetime_format_granularity
+      - cursor_granularity
       - start_datetime
       - step
     properties:
@@ -341,7 +341,7 @@ definitions:
         type: string
       datetime_format:
         type: string
-      datetime_format_granularity:
+      cursor_granularity:
         type: string
       end_datetime:
         anyOf:
