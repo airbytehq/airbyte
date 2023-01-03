@@ -76,7 +76,12 @@ public class DefaultGetSpecWorker implements GetSpecWorker {
         jobOutput.setSpec(spec.get());
       } else {
         if (failureReason.isEmpty()) {
-          throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason.");
+          final String stderr = WorkerUtils.getStdErrFromErrorStream(process.getErrorStream());
+          if (stderr.isEmpty()) {
+            throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason.");
+          } else {
+            throw new WorkerException("Integration failed to output a spec struct and did not output a failure reason:\n" + stderr);
+          }
         }
       }
 

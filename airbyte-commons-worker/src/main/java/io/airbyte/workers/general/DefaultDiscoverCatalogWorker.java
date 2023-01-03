@@ -98,7 +98,12 @@ public class DefaultDiscoverCatalogWorker implements DiscoverCatalogWorker {
         jobOutput.setDiscoverCatalogId(catalogId);
       } else {
         if (failureReason.isEmpty()) {
-          throw new WorkerException("Integration failed to output a catalog struct.");
+          final String stderr = WorkerUtils.getStdErrFromErrorStream(process.getErrorStream());
+          if (stderr.isEmpty()) {
+            throw new WorkerException("Integration failed to output a catalog struct.");
+          } else {
+            throw new WorkerException("Integration failed to output a catalog struct:\n" + stderr);
+          }
         }
       }
       return jobOutput;
