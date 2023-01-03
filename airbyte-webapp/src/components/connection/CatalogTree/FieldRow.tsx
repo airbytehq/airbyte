@@ -54,7 +54,8 @@ const FieldRowInner: React.FC<FieldRowProps> = ({
   const isCursor = equal(config?.cursorField, field.path);
   const isPrimaryKey = !!config?.primaryKey?.some((p) => equal(p, field.path));
   const isNestedField = SyncSchemaFieldObject.isNestedField(field);
-  const isDisabled = isCursor || isPrimaryKey || isNestedField;
+  const isDisabled = (isCursorEnabled && isCursor) || (isPrimaryKeyEnabled && isPrimaryKey) || isNestedField;
+
   const renderDisabledReasonMessage = useCallback(() => {
     if (isNestedField) {
       return <FormattedMessage id="form.field.sync.nestedFieldTooltip" values={{ fieldName: field.path[0] }} />;

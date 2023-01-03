@@ -80,9 +80,7 @@ export const addFieldToPrimaryKey = (
     config?.fieldSelectionEnabled &&
     !previouslySelectedFields.find((field) => isEqual(field, fieldPath))
   ) {
-    debugger;
     if (previouslySelectedFields.length === numberOfFieldsInStream - 1) {
-      debugger;
       return { primaryKey: newPrimaryKey, selectedFields: [], fieldSelectionEnabled: false };
     }
     return {
