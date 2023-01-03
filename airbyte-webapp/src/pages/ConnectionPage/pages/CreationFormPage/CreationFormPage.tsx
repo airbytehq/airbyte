@@ -222,7 +222,6 @@ export const CreationFormPage: React.FC = () => {
           } as Record<EntityStepsTypes, string>
         )[type];
 
-  console.log({ currentStep }, { type });
   return (
     <>
       <HeadTitle titles={[{ id: "connection.newConnectionTitle" }]} />
