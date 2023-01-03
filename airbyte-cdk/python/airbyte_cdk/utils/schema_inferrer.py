@@ -38,7 +38,7 @@ class SchemaInferrer:
     throughout its lifecycle via the accumulate method.
 
     Instances of this class are stateful, meaning they build their inferred schemas
-    from every record passed into the accumulate method until the reset() method is called.
+    from every record passed into the accumulate method.
 
     """
 
