@@ -1,9 +1,12 @@
+import { JSONSchema7Type } from "json-schema";
+import intersection from "lodash/intersection";
 import pick from "lodash/pick";
 
 import { FormBlock } from "core/form/types";
+import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "core/jsonSchema/types";
 import { isDefined } from "utils/common";
 
-import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
+import { FormBuildError } from "./FormBuildError";
 
 /**
  * Returns {@link FormBlock} representation of jsonSchema
@@ -16,7 +19,7 @@ import { AirbyteJSONSchemaDefinition, AirbyteJSONSchema } from "./types";
  * @param path
  * @param parentSchema
  */
-export const jsonSchemaToUiWidget = (
+export const jsonSchemaToFormBlock = (
   jsonSchema: AirbyteJSONSchemaDefinition,
   key = "",
   path: string = key,
@@ -37,20 +40,49 @@ export const jsonSchemaToUiWidget = (
   }
 
   if (jsonSchema.oneOf?.length && jsonSchema.oneOf.length > 0) {
-    const conditions = Object.fromEntries(
-      jsonSchema.oneOf.map((condition) => {
-        if (typeof condition === "boolean") {
-          return [];
-        }
-        return [condition.title, jsonSchemaToUiWidget({ ...condition, type: jsonSchema.type }, key, path)];
-      })
-    );
+    let possibleConditionSelectionKeys = null as string[] | null;
+    const conditions = jsonSchema.oneOf.map((condition) => {
+      if (typeof condition === "boolean") {
+        throw new FormBuildError("connectorForm.error.oneOfWithNonObjects");
+      }
+      const formBlock = jsonSchemaToFormBlock({ ...condition, type: jsonSchema.type }, key, path);
+      if (formBlock._type !== "formGroup") {
+        throw new FormBuildError("connectorForm.error.oneOfWithNonObjects");
+      }
+
+      const constProperties = formBlock.properties
+        .filter((property) => property.const)
+        .map((property) => property.fieldKey);
+
+      if (!possibleConditionSelectionKeys) {
+        // if this is the first condition, all const properties are candidates
+        possibleConditionSelectionKeys = constProperties;
+      } else {
+        // if there are candidates already, intersect with the const properties of the current condition
+        possibleConditionSelectionKeys = intersection(possibleConditionSelectionKeys, constProperties);
+      }
+      return formBlock;
+    });
+
+    if (!possibleConditionSelectionKeys?.length) {
+      // no shared const property in oneOf. This should never happen per specification, fail hard
+      throw new FormBuildError("connectorForm.error.oneOfWithoutConst");
+    }
+    const selectionKey = possibleConditionSelectionKeys[0];
+    const selectionPath = `${path}.${selectionKey}`;
+    // can't contain undefined values as we would have thrown on this with connectorForm.error.oneOfWithoutConst
+    const selectionConstValues = conditions.map(
+      (condition) => condition.properties.find((property) => property.path === selectionPath)?.const
+    ) as JSONSchema7Type[];
 
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formCondition",
       path: path || key,
       fieldKey: key,
+      selectionPath,
+      selectionKey,
+      selectionConstValues,
       conditions,
       isRequired,
     };
@@ -67,20 +99,19 @@ export const jsonSchemaToUiWidget = (
       _type: "objectArray",
       path: path || key,
       fieldKey: key,
-      properties: jsonSchemaToUiWidget(jsonSchema.items, key, path),
+      properties: jsonSchemaToFormBlock(jsonSchema.items, key, path),
       isRequired,
     };
   }
 
   if (jsonSchema.type === "object") {
     const properties = Object.entries(jsonSchema.properties || []).map(([k, schema]) =>
-      jsonSchemaToUiWidget(schema, k, path ? `${path}.${k}` : k, jsonSchema)
+      jsonSchemaToFormBlock(schema, k, path ? `${path}.${k}` : k, jsonSchema)
     );
 
     return {
       ...pickDefaultFields(jsonSchema),
       _type: "formGroup",
-      jsonSchema,
       path: path || key,
       fieldKey: key,
       properties,

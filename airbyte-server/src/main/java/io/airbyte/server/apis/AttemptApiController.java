@@ -26,8 +26,8 @@ public class AttemptApiController implements AttemptApi {
   @Override
   @Post(uri = "/save_stats",
         processes = MediaType.APPLICATION_JSON)
-  public InternalOperationResult saveStats(final SaveStatsRequestBody saveStatsRequestBody) {
-    throw new UnsupportedOperationException();
+  public InternalOperationResult saveStats(final SaveStatsRequestBody requestBody) {
+    return ApiHelper.execute(() -> attemptHandler.saveStats(requestBody));
   }
 
   @Override
