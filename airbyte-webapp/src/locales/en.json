@@ -153,7 +153,7 @@
   "connectionForm.nonBreakingChangesPreference.label": "Non-breaking schema updates detected*",
   "connectionForm.nonBreakingChangesPreference.message": "Set how Airbyte handles syncs when it detects a non-breaking schema change in the source",
   "connectionForm.nonBreakingChangesPreference.ignore": "Ignore",
-  "connectionForm.nonBreakingChangesPreference.disable": "Pause sync",
+  "connectionForm.schemaChangesBackdrop.message": "Please review the schema updates before making changes to the connection",
 
   "connectionForm.modal.destinationNamespace.title": "Destination namespace",
   "connectionForm.modal.destinationNamespace.option.source": "Mirror source structure",
@@ -225,6 +225,8 @@
   "form.field.destinationName": "Destination name",
   "form.field.primaryKey": "Primary key",
   "form.field.cursorField": "Cursor field",
+  "form.field.sourceDefinedCursor": "Source-Defined Cursor",
+  "form.field.sourceDefinedPK": "Source-Defined Primary key",
 
   "preferences.headTitle": "Preferences",
   "preferences.title": "Specify your preferences",
@@ -378,6 +380,10 @@
   "connection.catalogTree.sourceSchema": "'<source schema>",
   "connection.catalogTree.destinationSchema": "'<destination schema>",
 
+  "connection.schemaUpdateNotifications.title": "Schema update notifications",
+  "connection.schemaUpdateNotifications.info": "Send webhook notifications when your source schema has changed",
+  "connection.schemaUpdateNotifications.error": "Unable to save the schema update notifications setting at this time.",
+
   "connection.geographyTitle": "Data residency",
   "connection.requestNewGeography": "Request a new geography",
   "connection.geographyDescription": "Choose where the data for this connection will be processed. Depending on your network configuration, you may need to <ipLink>add IP addresses</ipLink> to your allowlist. <docLink>Learn more</docLink>.",
@@ -507,7 +513,7 @@
   "admin.documentationUrl": "Connector Documentation URL",
   "admin.reloadAfterSuccess": "Note: The app will be reloaded after success submit",
   "admin.documentationUrl.placeholder": "https://hub.docker.com/r/airbyte/integration-singer-postgres-source",
-  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these field.",
+  "admin.learnMore": "<lnk>Learn more from our documentation</lnk> to understand how to fill these fields.",
   "admin.exportConfigurationText": "Download an archive of all configuration and state data. Exported data can be upgraded to another Airbyte version or can be exported to a different Airbyte deployment. For more information visit the <lnk>configuration archive</lnk> page in our docs.",
   "admin.importConfigurationText": "Upload an archive of all configuration and state data. <warn>Warning: This will overwrite all existing configuration!</warn>",
   "admin.logs": "Logs",
@@ -668,6 +674,11 @@
   "connectorBuilder.uiYamlToggle.yaml": "YAML",
   "connectorBuilder.resetAll": "Reset all",
   "connectorBuilder.emptyName": "(empty)",
+  "connectorBuilder.key": "key",
+  "connectorBuilder.value": "value",
+  "connectorBuilder.addKeyValue": "Add",
+
+  "jobs.noAttemptsFailure": "Failed to start job.",
 
   "cloudApi.loginCallbackUrlError": "There was an error connecting to the developer portal. Please try again."
 }

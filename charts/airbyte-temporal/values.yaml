@@ -4,6 +4,10 @@ global:
   configMapName: ""
   secretName: ""
   extraContainers: []
+  ## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+  extraSelectorLabels: {}
+  ## extraLabels [object] - use to specify own additional labels for deployment
+  extraLabels: {}
   database:
     secretName: ""
     secretValue: ""
@@ -31,6 +35,10 @@ service:
 ##  temporal.podAnnotations [object] Add extra annotations to the temporal pod
 ##
 podAnnotations: {}
+
+##  temporal.podLabels [object] Add extra labels to the temporal pod
+##
+podLabels: {}
 
 ##  temporal.containerSecurityContext Security context for the container
 ## Examples:
@@ -171,3 +179,8 @@ secrets: {}
 #   POSTGRES_PWD: 12345
 
 env_vars: {}
+
+## extraSelectorLables [object] - use to specify own additional selector labels for deployment
+extraSelectorLabels: {}
+## extraLabels [object] - use to specify own additional labels for deployment
+extraLabels: {}

@@ -224,6 +224,8 @@ const CatalogSectionInner: React.FC<CatalogSectionInnerProps> = ({
             onSelectedChange={onSelectStream}
             shouldDefinePk={shouldDefinePk}
             shouldDefineCursor={shouldDefineCursor}
+            isCursorDefinitionSupported={cursorRequired}
+            isPKDefinitionSupported={pkRequired}
             stream={stream}
           />
         ) : (
