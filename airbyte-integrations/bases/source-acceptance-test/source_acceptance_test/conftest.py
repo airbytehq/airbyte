@@ -272,6 +272,11 @@ def previous_discovered_catalog_fixture(
     connector_config, previous_connector_docker_runner: ConnectorRunner, previous_cached_schemas
 ) -> MutableMapping[str, AirbyteStream]:
     """JSON schemas for each stream"""
+    if previous_connector_docker_runner is None:
+        logging.warning(
+            "\n We could not retrieve the previous discovered catalog as a connector runner for the previous connector version could not be instantiated."
+        )
+        return None
     if not previous_cached_schemas:
         output = previous_connector_docker_runner.call_discover(config=connector_config)
         catalogs = [message.catalog for message in output if message.type == Type.CATALOG]
