@@ -86,10 +86,15 @@ Only certain Airbyte staff can access Airbyte infrastructure and technical logs 
 
 ### Network security
 
-- You may need to allowlist one of our IP addresses to enable access to Airbyte:
+- You may need to allowlist our IP addresses to enable access to Airbyte:
   - 34.106.109.131
   - 34.106.196.165
   - 34.106.60.246
+  - 34.106.229.69
+  - 34.106.127.139
+  - 34.106.218.58
+  - 34.106.115.240
+  - 34.106.225.141
 
 ### Credential management
 
