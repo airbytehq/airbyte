@@ -11,7 +11,8 @@
         "title": "URL base",
         "type": "string",
         "format": "uri",
-        "default": "https://secure-wms.com/"
+        "default": "https://secure-wms.com/",
+        "pattern": "^https://"
       },
       "client_id": {
         "title": "Client ID",

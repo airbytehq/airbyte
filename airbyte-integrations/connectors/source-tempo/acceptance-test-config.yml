@@ -1,19 +1,41 @@
 # See [Source Acceptance Tests](https://docs.airbyte.com/connector-development/testing-connectors/source-acceptance-tests-reference)
 # for more information about how to configure these tests
 connector_image: airbyte/source-tempo:dev
-tests:
+acceptance_tests:
   spec:
-    - spec_path: "source_tempo/spec.json"
+    tests:
+      - spec_path: "source_tempo/spec.json"
   connection:
-    - config_path: "secrets/config.json"
-      status: "succeed"
-    - config_path: "integration_tests/invalid_config.json"
-      status: "failed"
+    tests:
+      - config_path: "secrets/config.json"
+        status: "succeed"
+      - config_path: "integration_tests/invalid_config.json"
+        status: "failed"
   discovery:
-    - config_path: "secrets/config.json"
+    tests:
+      - config_path: "secrets/config.json"
+        backward_compatibility_tests_config:
+          disable_for_version: "0.2.6"
   basic_read:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        expect_records:
+          path: "integration_tests/expected_records.txt"
+      - config_path: "secrets/accounts_only_config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        empty_streams:
+          - name: "worklogs"
+            bypass_reason: "token scope does not include this stream"
+          - name: "workload-schemes"
+            bypass_reason: "token scope does not include this stream"
   full_refresh:
-    - config_path: "secrets/config.json"
-      configured_catalog_path: "integration_tests/configured_catalog.json"
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+  incremental:
+    tests:
+      - config_path: "secrets/config.json"
+        configured_catalog_path: "integration_tests/configured_catalog.json"
+        future_state:
+          future_state_path: "integration_tests/abnormal_state.json"

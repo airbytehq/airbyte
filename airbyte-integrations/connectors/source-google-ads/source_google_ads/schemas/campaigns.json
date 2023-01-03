@@ -249,10 +249,10 @@
       "type": ["null", "number"]
     },
     "metrics.conversions": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "metrics.conversions_value": {
-      "type": ["null", "integer"]
+      "type": ["null", "number"]
     },
     "metrics.cost_micros": {
       "type": ["null", "integer"]

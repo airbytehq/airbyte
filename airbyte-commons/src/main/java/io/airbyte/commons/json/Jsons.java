@@ -61,6 +61,30 @@ public class Jsons {
     }
   }
 
+  public static <T> T deserialize(final String jsonString, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(jsonString, valueTypeRef);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final Class<T> klass) {
+    try {
+      return OBJECT_MAPPER.readValue(file, klass);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  public static <T> T deserialize(final File file, final TypeReference<T> valueTypeRef) {
+    try {
+      return OBJECT_MAPPER.readValue(file, valueTypeRef);
+    } catch (final IOException e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   public static <T> T convertValue(final Object object, final Class<T> klass) {
     return OBJECT_MAPPER.convertValue(object, klass);
   }
@@ -279,6 +303,10 @@ public class Jsons {
           }
         },
         Entry::getValue)));
+  }
+
+  public static Map<String, String> deserializeToStringMap(JsonNode json) {
+    return OBJECT_MAPPER.convertValue(json, new TypeReference<>() {});
   }
 
   /**

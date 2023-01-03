@@ -34,3 +34,31 @@ Issues are added to the following project: `SAT-high-test-strictness-level`
 **Real execution**:
 `python create_issues.py --dry False`
 
+## Create migration PRs for GA connectors (`create_prs.py`)
+This script will create one PR per GA connectors to migrate to `high` test strictness level.
+
+### What it does:
+1. Iterate on all GA connectors in `../../../../../airbyte-config/init/src/main/resources/seed/source_definitions.yaml`
+2. Create a branch for each GA connector
+3. Locally migrate `acceptance_test_config.yml` to the latest format
+4. Commit and push the changes on this branch
+5. Open a PR for this branch
+6. Run a SAT on this branch by posting a `/test` comment on the PR
+
+An example of the PR it creates can be found [here](https://github.com/airbytehq/airbyte/pull/19136)
+
+PR get created with the following labels:
+* `area/connectors`
+* `team/connectors-python` 
+* `type/enhancement` 
+* `test-strictness-level`
+
+PR are added to the following project: `SAT-high-test-strictness-level`
+
+### How to run:
+**Dry run**:
+`python create_prs.py`
+
+**Real execution**:
+`python create_prs.py --dry False`
+

@@ -1,3 +1,5 @@
+import pick from "lodash/pick";
+
 import { FormBlock } from "core/form/types";
 import { isDefined } from "utils/common";
 
@@ -94,6 +96,7 @@ export const jsonSchemaToUiWidget = (
     isRequired,
     isSecret: !!jsonSchema.airbyte_secret,
     multiline: !!jsonSchema.multiline,
+    format: jsonSchema.format,
     type: (Array.isArray(jsonSchema.type) ? jsonSchema.type[0] : jsonSchema.type) ?? "null",
   };
 };
@@ -108,7 +111,7 @@ function isKeyRequired(key: string, parentSchema?: AirbyteJSONSchemaDefinition):
   return isRequired;
 }
 
-const defaultFields: Array<keyof AirbyteJSONSchema> = [
+const defaultFields = [
   "default",
   "examples",
   "description",
@@ -116,24 +119,21 @@ const defaultFields: Array<keyof AirbyteJSONSchema> = [
   "order",
   "const",
   "title",
+  "enum",
 
   // airbyte specific fields
   "airbyte_hidden",
-];
+] as const;
 
-const pickDefaultFields = (schema: AirbyteJSONSchema): Partial<AirbyteJSONSchema> => {
-  const partialSchema: Partial<AirbyteJSONSchema> = {
-    ...Object.fromEntries(Object.entries(schema).filter(([k]) => defaultFields.includes(k as keyof AirbyteJSONSchema))),
-  };
+const pickDefaultFields = (schema: AirbyteJSONSchema) => {
+  const partialSchema = pick(schema, defaultFields);
 
   if (typeof schema.items === "object" && !Array.isArray(schema.items) && schema.items.enum) {
     partialSchema.enum = schema.items.enum;
-  } else if (schema.enum) {
-    if (schema.enum?.length === 1 && isDefined(schema.default)) {
-      partialSchema.const = schema.default;
-    } else {
-      partialSchema.enum = schema.enum;
-    }
+  } else if (schema.enum && schema.enum?.length === 1 && isDefined(schema.default)) {
+    partialSchema.const = schema.default;
+    // remove enum key as it has been "picked" already above
+    delete partialSchema.enum;
   }
 
   return partialSchema;

@@ -101,6 +101,7 @@ acceptance_tests:  # Tests configuration
 Verify that a `spec` operation issued to the connector returns a valid connector specification. 
 Additional tests are validating the backward compatibility of the current specification compared to the specification of the previous connector version. If no previous connector version is found (by default the test looks for a docker image with the same name but with the `latest` tag), this test is skipped. 
 These backward compatibility tests can be bypassed by changing the value of the `backward_compatibility_tests_config.disable_for_version` input in `acceptance-test-config.yml` (see below).
+One more test validates the specification against containing exposed secrets. This means fields that potentially could hold a secret value should be explicitly marked with `"airbyte_secret": true`. If an input field like `api_key` / `password` / `client_secret` / etc. is exposed, the test will fail.
 
 | Input                                                            | Type   | Default             | Note                                                                                                                  |
 | :--------------------------------------------------------------- | :----- | :------------------ | :-------------------------------------------------------------------------------------------------------------------- |
@@ -327,3 +328,30 @@ acceptance_tests:
         timeout_seconds: 1200
 ...
 ```
+
+#### Incremental: `future_state` must be set
+In `high` test strictness level we expect the `future_state` configuration to be set.
+The future state JSON file (usually `abnormal_states.json`) must contain one state for each stream declared in the configured catalog.
+`missing_streams` can be set to ignore a subset of the streams with a valid bypass reason. E.G:
+
+```yaml
+test_strictness_level: high
+connector_image: airbyte/source-my-connector:dev
+acceptance_tests:
+  ...
+  incremental:
+    tests:
+      - config_path: secrets/config.json
+        configured_catalog_path: integration_tests/configured_catalog.json
+        cursor_paths:
+          ... 
+        future_state:
+          future_state_path: integration_tests/abnormal_state.json
+          missing_streams:
+            - name: my_missing_stream
+              bypass_reason: "Please fill a good reason"
+```
+
+## Caching
+We cache discovered catalogs by default for performance and reuse the same discovered catalog through all tests.
+You can disable this behavior by setting `cached_discovered_catalog: False` at the root of the configuration.

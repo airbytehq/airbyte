@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.airbyte.db.instance.configs.jooq.generated.enums.GeographyType;
 import io.airbyte.db.instance.jobs.jooq.generated.enums.JobStatus;
 import io.airbyte.metrics.lib.MetricAttribute;
 import io.airbyte.metrics.lib.MetricClient;
@@ -40,7 +39,7 @@ class EmitterTest {
 
   @Test
   void TestNumPendingJobs() {
-    final var value = Map.of("AUTO", 101, "EU", 20);
+    final var value = Map.of(AUTO_REGION, 101, EU_REGION, 20);
     when(repo.numberOfPendingJobsByGeography()).thenReturn(value);
 
     final var emitter = new NumPendingJobs(client, repo);
@@ -49,9 +48,9 @@ class EmitterTest {
     assertEquals(Duration.ofSeconds(15), emitter.getDuration());
     verify(repo).numberOfPendingJobsByGeography();
     verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 101,
-        new MetricAttribute(MetricTags.GEOGRAPHY, "AUTO"));
+        new MetricAttribute(MetricTags.GEOGRAPHY, AUTO_REGION));
     verify(client).gauge(OssMetricsRegistry.NUM_PENDING_JOBS, 20,
-        new MetricAttribute(MetricTags.GEOGRAPHY, "EU"));
+        new MetricAttribute(MetricTags.GEOGRAPHY, EU_REGION));
     verify(client).count(OssMetricsRegistry.EST_NUM_METRICS_EMITTED_BY_REPORTER, 1);
   }
 
@@ -105,7 +104,7 @@ class EmitterTest {
 
   @Test
   void TestOldestPendingJob() {
-    final var value = Map.of(GeographyType.AUTO, 101.0, GeographyType.EU, 20.0);
+    final var value = Map.of(AUTO_REGION, 101.0, EU_REGION, 20.0);
     when(repo.oldestPendingJobAgeSecsByGeography()).thenReturn(value);
 
     final var emitter = new OldestPendingJob(client, repo);

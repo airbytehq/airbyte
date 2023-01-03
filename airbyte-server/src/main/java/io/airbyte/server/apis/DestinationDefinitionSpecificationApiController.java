@@ -19,7 +19,7 @@ public class DestinationDefinitionSpecificationApiController implements Destinat
 
   @Override
   public DestinationDefinitionSpecificationRead getDestinationDefinitionSpecification(final DestinationDefinitionIdWithWorkspaceId destinationDefinitionIdWithWorkspaceId) {
-    return ConfigurationApi.execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
+    return ApiHelper.execute(() -> schedulerHandler.getDestinationSpecification(destinationDefinitionIdWithWorkspaceId));
   }
 
 }

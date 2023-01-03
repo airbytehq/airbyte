@@ -33,14 +33,6 @@ STREAM_NAME = "my_stream"
                 record=AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),
             ),
         ),
-        (
-            "test_record_to_airbyte_record",
-            AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),
-            AirbyteMessage(
-                type=MessageType.RECORD,
-                record=AirbyteRecordMessage(stream="my_stream", data={"id": 0, "field_A": 1.0, "field_B": "airbyte"}, emitted_at=NOW),
-            ),
-        ),
     ],
 )
 def test_data_or_record_to_airbyte_record(test_name, data, expected_message):

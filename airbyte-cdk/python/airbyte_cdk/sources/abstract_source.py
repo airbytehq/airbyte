@@ -20,6 +20,7 @@ from airbyte_cdk.models import Type as MessageType
 from airbyte_cdk.sources.connector_state_manager import ConnectorStateManager
 from airbyte_cdk.sources.source import Source
 from airbyte_cdk.sources.streams import Stream
+from airbyte_cdk.sources.streams.core import StreamData
 from airbyte_cdk.sources.streams.http.http import HttpStream
 from airbyte_cdk.sources.utils.record_helper import stream_data_to_airbyte_message
 from airbyte_cdk.sources.utils.schema_helpers import InternalConfig, split_config
@@ -225,7 +226,7 @@ class AbstractSource(Source, ABC):
             sync_mode=SyncMode.incremental,
             stream_state=stream_state,
         )
-        logger.debug(f"Processing stream slices for {stream_name}", extra={"stream_slices": slices})
+        logger.debug(f"Processing stream slices for {stream_name} (sync_mode: incremental)", extra={"stream_slices": slices})
 
         total_records_counter = 0
         has_slices = False
@@ -240,9 +241,7 @@ class AbstractSource(Source, ABC):
             )
             record_counter = 0
             for message_counter, record_data_or_message in enumerate(records, start=1):
-                message = stream_data_to_airbyte_message(
-                    stream_name, record_data_or_message, stream_instance.transformer, stream_instance.get_json_schema()
-                )
+                message = self._get_message(record_data_or_message, stream_instance)
                 yield message
                 if message.type == MessageType.RECORD:
                     record = message.record
@@ -277,7 +276,9 @@ class AbstractSource(Source, ABC):
         internal_config: InternalConfig,
     ) -> Iterator[AirbyteMessage]:
         slices = stream_instance.stream_slices(sync_mode=SyncMode.full_refresh, cursor_field=configured_stream.cursor_field)
-        logger.debug(f"Processing stream slices for {configured_stream.stream.name}", extra={"stream_slices": slices})
+        logger.debug(
+            f"Processing stream slices for {configured_stream.stream.name} (sync_mode: full_refresh)", extra={"stream_slices": slices}
+        )
         total_records_counter = 0
         for _slice in slices:
             logger.debug("Processing stream slice", extra={"slice": _slice})
@@ -287,9 +288,7 @@ class AbstractSource(Source, ABC):
                 cursor_field=configured_stream.cursor_field,
             )
             for record_data_or_message in record_data_or_messages:
-                message = stream_data_to_airbyte_message(
-                    stream_instance.name, record_data_or_message, stream_instance.transformer, stream_instance.get_json_schema()
-                )
+                message = self._get_message(record_data_or_message, stream_instance)
                 yield message
                 if message.type == MessageType.RECORD:
                     total_records_counter += 1
@@ -315,3 +314,12 @@ class AbstractSource(Source, ABC):
         """
         if hasattr(logger, "level"):
             stream_instance.logger.setLevel(logger.level)
+
+    def _get_message(self, record_data_or_message: Union[StreamData, AirbyteMessage], stream: Stream):
+        """
+        Converts the input to an AirbyteMessage if it is a StreamData. Returns the input as is if it is already an AirbyteMessage
+        """
+        if isinstance(record_data_or_message, AirbyteMessage):
+            return record_data_or_message
+        else:
+            return stream_data_to_airbyte_message(stream.name, record_data_or_message, stream.transformer, stream.get_json_schema())

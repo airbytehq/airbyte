@@ -21,12 +21,31 @@ pluginManagement {
 // as much information as possible.
 plugins {
     id "com.gradle.enterprise" version "3.4.1"
+    id 'com.github.burrunan.s3-build-cache' version "1.5"
 }
 
 gradleEnterprise {
     buildScan {
         termsOfServiceUrl = "https://gradle.com/terms-of-service"
         termsOfServiceAgree = "yes"
+    }
+}
+
+ext.isCiServer = System.getenv().containsKey("CI")
+
+buildCache {
+    local {
+        // Local build cache is dangerous as it might produce inconsistent results
+        // in case developer modifies files while the build is running
+        enabled = false
+    }
+    remote(com.github.burrunan.s3cache.AwsS3BuildCache) {
+        region = 'us-east-2'
+        bucket = 'airbyte-buildcache'
+        prefix = 'cache/'
+        push = isCiServer
+        // Credentials will be taken from  S3_BUILD_CACHE_... environment variables
+        // anonymous access will be used if environment variables are missing
     }
 }
 
@@ -88,6 +107,7 @@ include ':airbyte-worker-models'
 if (!System.getenv().containsKey("SUB_BUILD") || System.getenv().get("SUB_BUILD") == "PLATFORM") {
     include ':airbyte-bootloader'
     include ':airbyte-config:specs'
+    include ':airbyte-connector-builder-server'
     include ':airbyte-container-orchestrator'
     include ':airbyte-cron'
     include ':airbyte-metrics:reporter'

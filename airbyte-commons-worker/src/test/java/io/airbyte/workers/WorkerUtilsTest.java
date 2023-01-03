@@ -16,6 +16,7 @@ import io.airbyte.config.Configs;
 import io.airbyte.config.EnvConfigs;
 import io.airbyte.config.StandardSync;
 import io.airbyte.config.StandardSyncInput;
+import io.airbyte.protocol.models.AirbyteStreamNameNamespacePair;
 import io.airbyte.workers.internal.HeartbeatMonitor;
 import io.airbyte.workers.test_utils.TestConfigHelpers;
 import java.time.Duration;
@@ -128,17 +129,17 @@ class WorkerUtilsTest {
   void testMapStreamNamesToSchemasWithNullNamespace() {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig();
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
-    assertNotNull(mapOutput.get("user_preferences"));
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", null)));
   }
 
   @Test
   void testMapStreamNamesToSchemasWithMultipleNamespaces() {
     final ImmutablePair<StandardSync, StandardSyncInput> syncPair = TestConfigHelpers.createSyncConfig(true);
     final StandardSyncInput syncInput = syncPair.getValue();
-    final Map<String, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
-    assertNotNull(mapOutput.get("namespaceuser_preferences"));
-    assertNotNull(mapOutput.get("namespace2user_preferences"));
+    final Map<AirbyteStreamNameNamespacePair, JsonNode> mapOutput = WorkerUtils.mapStreamNamesToSchemas(syncInput);
+    assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace")));
+    assertNotNull(mapOutput.get(new AirbyteStreamNameNamespacePair("user_preferences", "namespace2")));
   }
 
   /**

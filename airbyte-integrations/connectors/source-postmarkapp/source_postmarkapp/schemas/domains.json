@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "Name": {
+      "type": "string"
+    },
+    "SPFVerified": {
+      "type": "boolean"
+    },
+    "DKIMVerified": {
+      "type": "boolean"
+    },
+    "WeakDKIM": {
+      "type": "boolean"
+    },
+    "ReturnPathDomainVerified": {
+      "type": "boolean"
+    },
+    "ID": {
+      "type": "integer"
+    }
+  }
+}

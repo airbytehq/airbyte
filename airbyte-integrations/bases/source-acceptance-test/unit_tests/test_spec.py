@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict
 
 import pytest
 from airbyte_cdk.models import ConnectorSpecification
+from source_acceptance_test import conftest
 from source_acceptance_test.tests.test_core import TestSpec as _TestSpec
 
 from .conftest import does_not_raise
@@ -351,6 +352,49 @@ def test_oneof_usage(connector_spec, should_fail):
         t.test_oneof_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
 
 
+@parametrize_test_case(
+    {
+        "test_id": "successful",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "property_with_options": {
+                    "title": "Property with options",
+                    "description": "A property in the form of an enumerated list",
+                    "type": "string",
+                    "default": "Option 1",
+                    "enum": ["Option 1", "Option 2", "Option 3"],
+                }
+            },
+        },
+        "should_fail": False,
+    },
+    {
+        "test_id": "duplicate_values",
+        "connector_spec": {
+            "type": "object",
+            "properties": {
+                "property_with_options": {
+                    "title": "Property with options",
+                    "description": "A property in the form of an enumerated list",
+                    "type": "string",
+                    "default": "Option 1",
+                    "enum": ["Option 1", "Option 2", "Option 3", "Option 2"],
+                }
+            },
+        },
+        "should_fail": True,
+    },
+)
+def test_enum_usage(connector_spec, should_fail):
+    t = _TestSpec()
+    if should_fail is True:
+        with pytest.raises(AssertionError):
+            t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
+    else:
+        t.test_enum_usage(actual_connector_spec=ConnectorSpecification(connectionSpecification=connector_spec))
+
+
 @pytest.mark.parametrize(
     "connector_spec, expected_error",
     [
@@ -605,3 +649,141 @@ def test_additional_properties_is_true(connector_spec, expectation):
     t = _TestSpec()
     with expectation:
         t.test_additional_properties_is_true(connector_spec)
+
+
+@pytest.mark.parametrize(
+    "connector_spec, should_fail, is_warning_logged",
+    (
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "string", "airbyte_secret": True}}}
+            },
+            False,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"api_token": {"type": "null"}}}
+            },
+            False,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": "boolean", "airbyte_secret": True}}}
+            },
+            False,
+            True
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"jwt": {"type": "object"}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"refresh_token": {"type": ["null", "string"]}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array"}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"type": "array", "items": {"type": "string"}}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"auth": {"oneOf": [{"api_token": {"type": "string"}}]}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "object", "properties": {"api_key": {"type": "string"}}}]}}}
+            },
+            True,
+            False
+        ),
+        (
+            {
+                "connectionSpecification": {"type": "object", "properties": {"start_date": {"type": ["null", "string"]}}}
+            },
+            False,
+            False
+        ),
+        (
+            {
+                 "connectionSpecification": {"type": "object", "properties": {"credentials": {"oneOf": [{"type": "string", "const": "OAuth2.0"}]}}}
+            },
+            False,
+            False
+        )
+    ),
+)
+def test_airbyte_secret(mocker, connector_spec, should_fail, is_warning_logged):
+    mocker.patch.object(conftest.pytest, "fail")
+    t = _TestSpec()
+    logger = mocker.Mock()
+    t.test_secret_is_properly_marked(connector_spec, logger, ("api_key", "api_token", "refresh_token", "jwt", "credentials"))
+    if should_fail:
+        conftest.pytest.fail.assert_called_once()
+    else:
+        conftest.pytest.fail.assert_not_called()
+    if is_warning_logged:
+        _, args, _ = logger.warning.mock_calls[0]
+        msg, *_ = args
+        assert "Some properties are marked with `airbyte_secret` although they probably should not be" in msg
+    else:
+        logger.warning.assert_not_called()
+
+
+@pytest.mark.parametrize(
+    "path, expected_name, expected_result",
+    (
+        ("properties/api_key/type", "api_key", True),
+        ("properties/start_date/type", "start_date", False),
+        ("properties/credentials/oneOf/1/properties/api_token/type", "api_token", True),
+        ("properties/type", None, False),  # root element
+        ("properties/accounts/items/2/properties/jwt/type", "jwt", True)
+    )
+)
+def test_is_spec_property_name_secret(path, expected_name, expected_result):
+    t = _TestSpec()
+    assert t._is_spec_property_name_secret(path, ("api_key", "api_token", "refresh_token", "jwt", "credentials")) == (expected_name, expected_result)
+
+
+@pytest.mark.parametrize(
+    "property_def, can_store_secret",
+    (
+        ({"type": "boolean"}, False),
+        ({"type": "null"}, False),
+        ({"type": "string"}, True),
+        ({"type": "integer"}, True),
+        ({"type": "number"}, True),
+        ({"type": ["null", "string"]}, True),
+        ({"type": ["null", "boolean"]}, False),
+        ({"type": "object"}, True),
+        # the object itself cannot hold a secret but the inner items can and will be processed separately
+        ({"type": "object", "properties": {"api_key": {}}}, False),
+        ({"type": "array"}, True),
+        # same as object
+        ({"type": "array", "items": {"type": "string"}}, False),
+        ({"type": "string", "const": "OAuth2.0"}, False)
+    )
+)
+def test_property_can_store_secret(property_def, can_store_secret):
+    t = _TestSpec()
+    assert t._property_can_store_secret(property_def) is can_store_secret

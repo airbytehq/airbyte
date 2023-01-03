@@ -21,7 +21,7 @@ setup(
     author_email="contact@airbyte.io",
     packages=find_packages(),
     install_requires=MAIN_REQUIREMENTS,
-    package_data={"": ["*.json", "schemas/*.json", "schemas/shared/*.json"]},
+    package_data={"": ["*.json", "*.yaml", "schemas/*.json", "schemas/shared/*.json"]},
     extras_require={
         "tests": TEST_REQUIREMENTS,
     },

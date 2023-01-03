@@ -5,6 +5,7 @@ import React from "react";
 import selectEvent from "react-select-event";
 import { render, useMockIntersectionObserver } from "test-utils/testutils";
 
+import { ConnectorDefinition } from "core/domain/connector";
 import { AirbyteJSONSchema } from "core/jsonSchema";
 import { DestinationDefinitionSpecificationRead } from "core/request/AirbyteClient";
 import { ConnectorForm, ConnectorFormProps } from "views/Connector/ConnectorForm";
@@ -36,6 +37,11 @@ jest.mock("../ConnectorDocumentationLayout/DocumentationPanelContext", () => {
 });
 
 jest.setTimeout(10000);
+
+const connectorDefinition = {
+  sourceDefinitionId: "1",
+  documentationUrl: "",
+} as ConnectorDefinition;
 
 const useAddPriceListItem = (container: HTMLElement) => {
   const priceList = getByTestId(container, "connectionConfiguration.priceList");
@@ -142,6 +148,7 @@ const schema: AirbyteJSONSchema = {
   },
 };
 
+jest.mock("hooks/services/AppMonitoringService");
 jest.mock("hooks/services/Analytics");
 
 jest.mock("hooks/services/useWorkspace", () => ({
@@ -161,6 +168,7 @@ describe("Service Form", () => {
         <ConnectorForm
           formType="source"
           onSubmit={handleSubmit}
+          selectedConnectorDefinition={connectorDefinition}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
@@ -241,9 +249,10 @@ describe("Service Form", () => {
         <ConnectorForm
           formType="source"
           formValues={{ name: "test-name" }}
-          onSubmit={(values) => {
+          onSubmit={async (values) => {
             result = values;
           }}
+          selectedConnectorDefinition={connectorDefinition}
           selectedConnectorDefinitionSpecification={
             // @ts-expect-error Partial objects for testing
             {
@@ -380,7 +389,7 @@ describe("Service Form", () => {
     const renderConnectorForm = (props: ConnectorFormProps) =>
       render(<ConnectorForm {...props} formValues={{ name: "test-name" }} />);
     // eslint-disable-next-line @typescript-eslint/no-empty-function
-    const onSubmitClb = () => {};
+    const onSubmitClb = async () => {};
     const connectorDefSpec = {
       connectionSpecification: schema,
       sourceDefinitionId: "test-service-type",
@@ -389,6 +398,7 @@ describe("Service Form", () => {
 
     it("should render <CreateControls /> if connector is selected", async () => {
       const { getByText } = await renderConnectorForm({
+        selectedConnectorDefinition: connectorDefinition,
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -398,20 +408,9 @@ describe("Service Form", () => {
       expect(getByText(/Set up destination/)).toBeInTheDocument();
     });
 
-    it("should not render <CreateControls /> if connector is not selected", async () => {
-      const { container } = await renderConnectorForm({
-        selectedConnectorDefinitionSpecification: undefined,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-      });
-
-      const submitBtn = container.querySelector('button[type="submit"]');
-
-      expect(submitBtn).toBeNull();
-    });
-
     it("should render <EditControls /> if connector is selected", async () => {
       const { getByText } = await renderConnectorForm({
+        selectedConnectorDefinition: connectorDefinition,
         selectedConnectorDefinitionSpecification:
           // @ts-expect-error Partial objects for testing
           connectorDefSpec as DestinationDefinitionSpecificationRead,
@@ -421,19 +420,6 @@ describe("Service Form", () => {
       });
 
       expect(getByText(/Save changes and test/)).toBeInTheDocument();
-    });
-
-    it("should render <EditControls /> if connector is not selected", async () => {
-      const { container } = await renderConnectorForm({
-        selectedConnectorDefinitionSpecification: undefined,
-        formType: "destination",
-        onSubmit: onSubmitClb,
-        isEditMode: true,
-      });
-
-      const submitBtn = container.querySelector('button[type="submit"]');
-
-      expect(submitBtn).toBeInTheDocument();
     });
   });
 });

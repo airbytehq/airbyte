@@ -75,3 +75,9 @@ Clear.args = {
   variant: "clear",
   children: "No Stroke",
 };
+
+export const Dark = Template.bind({});
+Dark.args = {
+  variant: "dark",
+  children: "Dark",
+};

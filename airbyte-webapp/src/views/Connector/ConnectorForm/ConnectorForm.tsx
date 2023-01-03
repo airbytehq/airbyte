@@ -1,32 +1,20 @@
 import { Formik, getIn, setIn, useFormikContext } from "formik";
 import { JSONSchema7 } from "json-schema";
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect } from "react";
 import { useDeepCompareEffect } from "react-use";
 
 import { FormChangeTracker } from "components/common/FormChangeTracker";
 
 import { ConnectorDefinition, ConnectorDefinitionSpecification } from "core/domain/connector";
-import { FormBaseItem, FormComponentOverrideProps } from "core/form/types";
+import { FormikPatch } from "core/form/FormikPatch";
 import { CheckConnectionRead } from "core/request/AirbyteClient";
 import { useFormChangeTrackerService, useUniqueFormId } from "hooks/services/FormChangeTracker";
 import { isDefined } from "utils/common";
 
-import { ConnectorNameControl } from "./components/Controls/ConnectorNameControl";
 import { ConnectorFormContextProvider, useConnectorForm } from "./connectorFormContext";
 import { FormRoot } from "./FormRoot";
 import { ConnectorCardValues, ConnectorFormValues } from "./types";
-import {
-  useBuildForm,
-  useBuildInitialSchema,
-  useBuildUiWidgetsContext,
-  useConstructValidationSchema,
-  usePatchFormik,
-} from "./useBuildForm";
-
-const FormikPatch: React.FC = () => {
-  usePatchFormik();
-  return null;
-};
+import { useBuildForm, useBuildUiWidgetsContext, useConstructValidationSchema } from "./useBuildForm";
 
 /**
  * This function sets all initial const values in the form to current values
@@ -56,7 +44,11 @@ const PatchInitialValuesWithWidgetConfig: React.FC<{
       .reduce((acc, [key, value]) => setIn(acc, key, value.default), patchedConstValues);
 
     if (patchedDefaultValues?.connectionConfiguration) {
-      setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
+      setTimeout(() => {
+        // We need to push this out one execution slot, so the form isn't still in its
+        // initialization status and won't react to this call but would just take the initialValues instead.
+        setFieldValue("connectionConfiguration", patchedDefaultValues.connectionConfiguration);
+      });
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -83,16 +75,15 @@ const RevalidateOnValidationSchemaChange: React.FC<{ validationSchema: unknown }
 export interface ConnectorFormProps {
   formType: "source" | "destination";
   formId?: string;
-  selectedConnectorDefinition?: ConnectorDefinition;
-  selectedConnectorDefinitionSpecification?: ConnectorDefinitionSpecification;
-  onSubmit: (values: ConnectorFormValues) => Promise<void> | void;
-  isLoading?: boolean;
+  selectedConnectorDefinition: ConnectorDefinition;
+  selectedConnectorDefinitionSpecification: ConnectorDefinitionSpecification;
+  onSubmit: (values: ConnectorFormValues) => Promise<void>;
   isEditMode?: boolean;
   formValues?: Partial<ConnectorFormValues>;
-  hasSuccess?: boolean;
-  fetchingConnectorError?: Error | null;
+  connectionTestSuccess?: boolean;
   errorMessage?: React.ReactNode;
   successMessage?: React.ReactNode;
+  connectorId?: string;
 
   isTestConnectionInProgress?: boolean;
   onStopTesting?: () => void;
@@ -107,52 +98,22 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
     formType,
     formValues,
     onSubmit,
-    isLoading,
     isEditMode,
-    isTestConnectionInProgress,
     onStopTesting,
     testConnector,
     selectedConnectorDefinition,
     selectedConnectorDefinitionSpecification,
     errorMessage,
+    connectorId,
   } = props;
 
-  const specifications = useBuildInitialSchema(selectedConnectorDefinitionSpecification);
-
-  const jsonSchema: JSONSchema7 = useMemo(
-    () => ({
-      type: "object",
-      properties: {
-        ...(selectedConnectorDefinitionSpecification ? { name: { type: "string" } } : {}),
-        ...Object.fromEntries(
-          Object.entries({
-            connectionConfiguration: isLoading ? null : specifications,
-          }).filter(([, v]) => !!v)
-        ),
-      },
-      required: ["name"],
-    }),
-    [isLoading, selectedConnectorDefinitionSpecification, specifications]
+  const { formFields, initialValues, jsonSchema } = useBuildForm(
+    formType,
+    selectedConnectorDefinitionSpecification,
+    formValues
   );
 
-  const { formFields, initialValues } = useBuildForm(jsonSchema, formValues);
-
-  // Overrides default field label(i.e "Source name", "Destination name")
-  const uiOverrides = useMemo(() => {
-    return {
-      name: {
-        component: (property: FormBaseItem, componentProps: FormComponentOverrideProps) => (
-          <ConnectorNameControl property={property} formType={formType} {...componentProps} />
-        ),
-      },
-    };
-  }, [formType]);
-
-  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(
-    formFields,
-    initialValues,
-    uiOverrides
-  );
+  const { uiWidgetsInfo, setUiWidgetsInfo, resetUiWidgetsInfo } = useBuildUiWidgetsContext(formFields, initialValues);
 
   const validationSchema = useConstructValidationSchema(jsonSchema, uiWidgetsInfo);
 
@@ -193,8 +154,8 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           selectedConnectorDefinition={selectedConnectorDefinition}
           selectedConnectorDefinitionSpecification={selectedConnectorDefinitionSpecification}
           isEditMode={isEditMode}
-          isLoadingSchema={isLoading}
           validationSchema={validationSchema}
+          connectorId={connectorId}
         >
           <RevalidateOnValidationSchemaChange validationSchema={validationSchema} />
           <FormikPatch />
@@ -202,10 +163,8 @@ export const ConnectorForm: React.FC<ConnectorFormProps> = (props) => {
           <PatchInitialValuesWithWidgetConfig schema={jsonSchema} initialValues={initialValues} />
           <FormRoot
             {...props}
-            selectedConnector={selectedConnectorDefinitionSpecification}
             formFields={formFields}
             errorMessage={errorMessage}
-            isTestConnectionInProgress={isTestConnectionInProgress}
             onStopTestingConnector={onStopTesting ? () => onStopTesting() : undefined}
             onRetest={testConnector ? async () => await testConnector() : undefined}
           />

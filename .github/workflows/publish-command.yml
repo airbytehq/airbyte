@@ -30,133 +30,146 @@ on:
         default: "true"
 
 jobs:
-  find_valid_pat:
-    name: "Find a PAT with room for actions"
-    timeout-minutes: 10
+  ## Gradle Build
+  # In case of self-hosted EC2 errors, remove this block.
+  start-publish-image-runner-0:
+    name: Start Build EC2 Runner 0
     runs-on: ubuntu-latest
     outputs:
-      pat: ${{ steps.variables.outputs.pat }}
+      label: ${{ steps.start-ec2-runner.outputs.label }}
+      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.event.inputs.repo }}
+          ref: ${{ github.event.inputs.gitref }}
       - name: Check PAT rate limits
-        id: variables
         run: |
           ./tools/bin/find_non_rate_limited_PAT \
             ${{ secrets.AIRBYTEIO_PAT }} \
             ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
             ${{ secrets.SUPERTOPHER_PAT }} \
             ${{ secrets.DAVINCHIA_PAT }}
-  ## Gradle Build
-  # In case of self-hosted EC2 errors, remove this block.
-  start-publish-image-runner-0:
-    name: Start Build EC2 Runner 0
-    runs-on: ubuntu-latest
-    needs: find_valid_pat
-    outputs:
-      label: ${{ steps.start-ec2-runner.outputs.label }}
-      ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
-    steps:
-      - name: Checkout Airbyte
-        uses: actions/checkout@v2
-        with:
-          repository: ${{ github.event.inputs.repo }}
-          ref: ${{ github.event.inputs.gitref }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
   start-publish-image-runner-1:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 1
     runs-on: ubuntu-latest
-    needs: find_valid_pat
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
   start-publish-image-runner-2:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 2
     runs-on: ubuntu-latest
-    needs: find_valid_pat
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
   start-publish-image-runner-3:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 3
     runs-on: ubuntu-latest
-    needs: find_valid_pat
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
   start-publish-image-runner-4:
     if: github.event.inputs.parallel == 'true' && success()
     name: Start Build EC2 Runner 4
     runs-on: ubuntu-latest
-    needs: find_valid_pat
     outputs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
     steps:
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Start AWS Runner
         id: start-ec2-runner
         uses: ./.github/actions/start-aws-runner
         with:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ github.run_id }}-publisher
   preprocess-matrix:
     needs: start-publish-image-runner-0
@@ -233,17 +246,18 @@ jobs:
         if: steps.regex.outputs.first_match != matrix.connector
         run: echo "The connector provided has an invalid format!" && exit 1
       - name: Checkout Airbyte
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: ${{ github.event.inputs.repo }}
           ref: ${{ github.event.inputs.gitref }}
           token: ${{ secrets.OCTAVIA_PAT }}
       - name: Install Java
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v3
         with:
+          distribution: "zulu"
           java-version: "17"
       - name: Install Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: "3.9"
       - name: Install Pyenv and Tox
@@ -269,12 +283,12 @@ jobs:
       - name: Write Integration Test Credentials for ${{ matrix.connector }}
         run: |
           source venv/bin/activate
-          ci_credentials ${{ matrix.connector }}
+          ci_credentials ${{ matrix.connector }} write-to-storage
           # normalization also runs destination-specific tests, so fetch their creds also
           if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
-            ci_credentials destination-bigquery
-            ci_credentials destination-postgres
-            ci_credentials destination-snowflake
+            ci_credentials destination-bigquery write-to-storage
+            ci_credentials destination-postgres write-to-storage
+            ci_credentials destination-snowflake write-to-storage
           fi
         env:
           GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
@@ -287,18 +301,38 @@ jobs:
           echo "IMAGE_VERSION=$(_get_docker_image_version ${DOCKERFILE})" >> $GITHUB_ENV
       - name: Prepare Sentry
         if: startsWith(matrix.connector, 'connectors')
-        run: |
-          curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
+        uses: Wandalen/wretry.action@master
+        with:
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
+          command: curl -sL https://sentry.io/get-cli/ | bash || echo "sentry cli already installed"
       - name: Publish ${{ matrix.connector }}
-        run: |
-          echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
-          ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
         id: publish
         env:
           DOCKER_HUB_USERNAME: ${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_PASSWORD: ${{ secrets.DOCKER_HUB_PASSWORD }}
           # Oracle expects this variable to be set. Although usually present, this is not set by default on Github virtual runners.
           TZ: UTC
+        uses: Wandalen/wretry.action@master
+        with:
+          command: |
+            echo "$SPEC_CACHE_SERVICE_ACCOUNT_KEY" > spec_cache_key_file.json && docker login -u ${DOCKER_HUB_USERNAME} -p ${DOCKER_HUB_PASSWORD}
+            ./tools/integrations/manage.sh publish airbyte-integrations/${{ matrix.connector }} ${{ github.event.inputs.run-tests }} --publish_spec_to_cache
+          attempt_limit: 3
+          attempt_delay: 5000 in # ms
+      - name: Update Integration Test Credentials after test run for ${{ github.event.inputs.connector }}
+        if: always()
+        run: |
+          source venv/bin/activate
+          ci_credentials ${{ matrix.connector }} update-secrets
+          # normalization also runs destination-specific tests, so fetch their creds also
+          if [ 'bases/base-normalization' = "${{ matrix.connector }}" ] || [ 'base-normalization' = "${{ matrix.connector }}" ]; then
+            ci_credentials destination-bigquery update-secrets
+            ci_credentials destination-postgres update-secrets
+            ci_credentials destination-snowflake update-secrets
+          fi
+        env:
+          GCP_GSM_CREDENTIALS: ${{ secrets.GCP_GSM_CREDENTIALS }}
       - name: Create Sentry Release
         if: startsWith(matrix.connector, 'connectors') && success()
         run: |
@@ -332,8 +366,11 @@ jobs:
           fi
       - name: Run gradle process changes
         if: github.event.inputs.auto-bump-version == 'true' && success()
-        run: |
-          ./gradlew :airbyte-config:init:processResources
+        uses: Wandalen/wretry.action@master
+        with:
+          command: ./gradlew :airbyte-config:init:processResources
+          attempt_limit: 3
+          attempt_delay: 5000 # in ms
       - name: git config
         if: github.event.inputs.auto-bump-version == 'true' && success()
         run: |
@@ -391,7 +428,6 @@ jobs:
       - start-publish-image-runner-0 # required to get output from the start-runner job
       - preprocess-matrix
       - publish-image # required to wait when the main job is done
-      - find_valid_pat
       - add-helpful-info-to-git-comment
     runs-on: ubuntu-latest
     steps:
@@ -401,11 +437,20 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ needs.start-publish-image-runner-0.outputs.label }}
           ec2-instance-id: ${{ needs.start-publish-image-runner-0.outputs.ec2-instance-id }}
   stop-publish-image-runner-multi:
@@ -419,7 +464,6 @@ jobs:
       - start-publish-image-runner-4
       - preprocess-matrix
       - publish-image # required to wait when the main job is done
-      - find_valid_pat
     strategy:
       fail-fast: false
       matrix:
@@ -450,10 +494,19 @@ jobs:
           aws-access-key-id: ${{ secrets.SELF_RUNNER_AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SELF_RUNNER_AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+      - name: Checkout Airbyte
+        uses: actions/checkout@v3
+      - name: Check PAT rate limits
+        run: |
+          ./tools/bin/find_non_rate_limited_PAT \
+            ${{ secrets.AIRBYTEIO_PAT }} \
+            ${{ secrets.OSS_BUILD_RUNNER_GITHUB_PAT }} \
+            ${{ secrets.SUPERTOPHER_PAT }} \
+            ${{ secrets.DAVINCHIA_PAT }}
       - name: Stop EC2 runner
         uses: airbytehq/ec2-github-runner@base64v1.1.0
         with:
           mode: stop
-          github-token: ${{ needs.find_valid_pat.outputs.pat }}
+          github-token: ${{ env.PAT }}
           label: ${{ matrix.ec2-instance.label }}
           ec2-instance-id: ${{ matrix.ec2-instance.id }}
