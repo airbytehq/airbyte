@@ -9,14 +9,15 @@ connectionSpecification:
   properties:
     client_id:
       type: string
-      title: API identifier client_id
-      description: API identifier client_id
+      title: Client ID
+      description: Client ID (client_id)
       order: 0
     secret_key:
       type: string
-      title: secret_key
-      description: secret_key
+      title: Secret key
+      description: Secret key (secret_key)
       order: 1
+      airbyte_secret: true
     start_date:
       type: string
       title: Start date
