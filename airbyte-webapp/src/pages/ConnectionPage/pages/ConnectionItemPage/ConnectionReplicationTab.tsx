@@ -203,20 +203,18 @@ export const ConnectionReplicationTab: React.FC = () => {
                   dirty={dirty || schemaHasBeenRefreshed}
                 />
                 {status.editControlsVisible && (
-                  <div>
-                    <EditControls
-                      isSubmitting={isSubmitting}
-                      submitDisabled={!isValid}
-                      dirty={dirty}
-                      resetForm={async () => {
-                        resetForm();
-                        discardRefreshedSchema();
-                      }}
-                      successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
-                      errorMessage={getErrorMessage(isValid, dirty)}
-                      enableControls={schemaHasBeenRefreshed || dirty}
-                    />
-                  </div>
+                  <EditControls
+                    isSubmitting={isSubmitting}
+                    submitDisabled={!isValid}
+                    dirty={dirty}
+                    resetForm={async () => {
+                      resetForm();
+                      discardRefreshedSchema();
+                    }}
+                    successMessage={saved && !dirty && <FormattedMessage id="form.changesSaved" />}
+                    errorMessage={getErrorMessage(isValid, dirty)}
+                    enableControls={schemaHasBeenRefreshed || dirty}
+                  />
                 )}
               </Form>
             </SchemaChangeBackdrop>
