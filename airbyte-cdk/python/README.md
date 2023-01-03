@@ -62,7 +62,7 @@ pip install -e ".[dev]" # [dev] installs development-only dependencies
 #### Iteration
 
 * Iterate on the code locally
-* Run tests via `pytest -s unit_tests`
+* Run tests via `python -m pytest -s unit_tests`
 * Perform static type checks using `mypy airbyte_cdk`. `MyPy` configuration is in `.mypy.ini`.
 * The `type_check_and_test.sh` script bundles both type checking and testing in one convenient command. Feel free to use it!
 
@@ -75,7 +75,7 @@ This will generate the files based on the schemas, add the license information a
 
 #### Testing
 
-All tests are located in the `unit_tests` directory. Run `pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
+All tests are located in the `unit_tests` directory. Run `python -m pytest --cov=airbyte_cdk unit_tests/` to run them. This also presents a test coverage report.
 
 #### Building a connector with your local CDK
 
