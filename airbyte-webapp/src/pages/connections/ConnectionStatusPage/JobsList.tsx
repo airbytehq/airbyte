@@ -1,14 +1,13 @@
 import React, { useMemo } from "react";
 
-import { JobItem } from "components/JobItem/JobItem";
+import { JobItem } from "components/JobItem";
+import { JobsWithJobs } from "components/JobItem/types";
 
 import { JobWithAttemptsRead } from "core/request/AirbyteClient";
 
 interface JobsListProps {
   jobs: JobWithAttemptsRead[];
 }
-
-export type JobsWithJobs = JobWithAttemptsRead & { job: Exclude<JobWithAttemptsRead["job"], undefined> };
 
 const JobsList: React.FC<JobsListProps> = ({ jobs }) => {
   const sortJobs: JobsWithJobs[] = useMemo(
