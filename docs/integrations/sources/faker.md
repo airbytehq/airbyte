@@ -1,4 +1,4 @@
-# Sample Data (Faker)
+# Faker
 
 ## Sync overview
 
