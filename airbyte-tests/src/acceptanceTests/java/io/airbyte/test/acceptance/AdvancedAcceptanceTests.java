@@ -89,7 +89,6 @@ class AdvancedAcceptanceTests {
   @SuppressWarnings("UnstableApiUsage")
   @BeforeAll
   static void init() throws URISyntaxException, IOException, InterruptedException, ApiException {
-    Thread.sleep(60000);
     apiClient = new AirbyteApiClient(
         new ApiClient().setScheme("http")
             .setHost("localhost")
