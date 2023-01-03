@@ -475,6 +475,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterFirstSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+
+    // First sync should not make any change to the replication slot status
     assertEquals(replicationSlotAtTheBeginning, replicationSlotAfterFirstSync);
 
     // second batch of records again 20 being created
@@ -496,6 +498,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterSecondSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+
+    // Second sync should move the replication slot ahead
     assertEquals(1, replicationSlotAfterSecondSync.compareTo(replicationSlotAfterFirstSync));
 
     for (int recordsCreated = 0; recordsCreated < 1; recordsCreated++) {
@@ -520,6 +524,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterThirdSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+
+    // Since we used the state, no change should happen to the replication slot
     assertEquals(replicationSlotAfterSecondSync, replicationSlotAfterThirdSync);
     assertEquals(recordsToCreate + 1, recordsFromThirdBatch.size());
 
@@ -543,6 +549,8 @@ abstract class CdcPostgresSourceTest extends CdcSourceTest {
 
     final Long replicationSlotAfterFourthSync = PgLsn.fromPgString(
         source.getReplicationSlot(defaultJdbcDatabase, config).get(0).get("confirmed_flush_lsn").asText()).asLong();
+
+    // Fourth sync should again move the replication slot ahead
     assertEquals(1, replicationSlotAfterFourthSync.compareTo(replicationSlotAfterThirdSync));
     assertEquals(1, recordsFromFourthBatch.size());
   }
