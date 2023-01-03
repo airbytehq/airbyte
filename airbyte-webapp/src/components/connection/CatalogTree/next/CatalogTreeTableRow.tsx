@@ -118,7 +118,9 @@ export const CatalogTreeTableRow: React.FC<StreamHeaderProps> = ({
           />
         )}
       </Cell>
-      <ArrowRightIcon />
+      <div className={styles.arrowCell}>
+        <ArrowRightIcon />
+      </div>
       <Cell flex={1} title={destNamespace}>
         <Text size="md" className={styles.cellText}>
           {destNamespace}
