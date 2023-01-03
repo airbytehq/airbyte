@@ -14,19 +14,13 @@ To build using Gradle, from the Airbyte repository root, run:
 ```
 
 #### Create credentials
-Copy the config sample files form `integration_tests` and `integration_tests/reports` 
-folders to the secrets folder in the root without sample_ prefix and set the 
-months/quarters/years `start_date` field according to it's date unit's.
-
-Date has to start from the beginning of the unit's interval to cover it (eg. ****.01.01 for years)
-
 **If you are a community contributor**, follow the instructions in the [documentation](https://docs.airbyte.com/integrations/sources/railz-ai)
 to generate the necessary credentials. Then create a file `secrets/config.json` conforming to the `source_railz_ai/spec.yaml` file.
 Note that any directory named `secrets` is gitignored across the entire Airbyte repo, so there is no danger of accidentally checking in sensitive information.
 See `integration_tests/sample_config.json` for a sample config file.
 
 **If you are an Airbyte core member**, copy the credentials in Lastpass under the secret name `Primary Railz Dev Account` from notes the sandbox creds 
-and place them into `secrets/config.json` and every `secrets/config_*.json`.
+and place them into `secrets/config.json`.
 
 ### Locally running the connector docker image
 

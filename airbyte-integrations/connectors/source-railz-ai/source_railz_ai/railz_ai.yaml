@@ -108,14 +108,6 @@ definitions:
         - "sageIntacct"
         - "dynamicsBusinessCentral"
         - "wave"
-  attachments_stream:
-    $ref: "*ref(definitions.base_service_stream)"
-    $options:
-      name: "attachments"
-      path: "/attachments"
-      service_names:
-        - "quickbooks"
-        - "xero"
   accounts_stream:
     $ref: "*ref(definitions.base_service_stream)"
     $options:
@@ -204,7 +196,7 @@ definitions:
       datetime: "{{ today_utc() }}"
       datetime_format: "%Y-%m-%d"
     datetime_format: "%Y-%m-%d"
-    step: 5d
+    step: 1m
     start_time_option:
       field_name: startDate
       inject_into: "request_parameter"
