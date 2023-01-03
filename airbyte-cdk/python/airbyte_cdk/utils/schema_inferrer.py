@@ -28,7 +28,7 @@ class NoRequiredObj(Object):
 class NoRequiredSchemaBuilder(SchemaBuilder):
     EXTRA_STRATEGIES = (NoRequiredObj,)
 
-
+# This type is inferred from the genson lib, but there is no alias provided for it - creating it here for type safety
 InferredSchema = Dict[str, Union[str, Any, List, List[Dict[str, Union[Any, List]]]]]
 
 
