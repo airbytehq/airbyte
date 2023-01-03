@@ -86,31 +86,14 @@ class ConfigurationError(Exception):
     pass
 
 
-def get_authenticator(credentials):
-    try:
-        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
-    except KeyError as e:
-        raise e
-    return authenticator_class(**get_credentials(credentials))
-
-
 class MetadataDescriptor:
     def __init__(self):
         self._metadata = None
 
     def __get__(self, instance, owner):
         if not self._metadata:
-            authenticator = (
-                instance.authenticator
-                if not isinstance(instance.authenticator, auth.NoAuth)
-                else get_authenticator(instance.config["credentials"])
-            )
-            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=authenticator)
-            try:
-                metadata = next(iter(stream.read_records(sync_mode=SyncMode.full_refresh)))
-            except Exception as e:
-                raise e
-
+            stream = GoogleAnalyticsDataApiTestConnectionStream(config=instance.config, authenticator=instance.saved_authenticator)
+            metadata = next(stream.read_records(sync_mode=SyncMode.full_refresh))
             self._metadata = {
                 "dimensions": {m["apiName"]: m for m in metadata["dimensions"]},
                 "metrics": {m["apiName"]: m for m in metadata["metrics"]},
@@ -123,9 +106,10 @@ class GoogleAnalyticsDataApiAbstractStream(HttpStream, ABC):
     url_base = "https://analyticsdata.googleapis.com/v1beta/"
     http_method = "POST"
 
-    def __init__(self, config: Mapping[str, Any], *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, *, authenticator: Union[requests.auth.AuthBase, auth.HttpAuthenticator], config: Mapping[str, Any], **kwargs):
+        super().__init__(authenticator, **kwargs)
         self._config = config
+        self.saved_authenticator = authenticator
 
     @property
     def config(self):
@@ -289,7 +273,7 @@ class GoogleAnalyticsDataApiGenericStream(GoogleAnalyticsDataApiBaseStream):
 
         today: datetime.date = datetime.date.today()
 
-        start_date = stream_state.get(self.cursor_field)
+        start_date = stream_state and stream_state.get(self.cursor_field)
         if start_date:
             start_date = utils.string_to_date(start_date, self._record_date_format)
             start_date = max(start_date, self.config["date_ranges_start_date"])
@@ -339,10 +323,6 @@ class GoogleAnalyticsDataApiTestConnectionStream(GoogleAnalyticsDataApiAbstractS
 
 
 class SourceGoogleAnalyticsDataApi(AbstractSource):
-    def __init__(self, *args, **kwargs):
-        super(SourceGoogleAnalyticsDataApi, self).__init__(*args, **kwargs)
-        self._authenticator = None
-
     def _validate_and_transform(self, config: Mapping[str, Any], report_names: Set[str]):
         if "custom_reports" in config:
             try:
@@ -384,9 +364,9 @@ class SourceGoogleAnalyticsDataApi(AbstractSource):
         return config
 
     def get_authenticator(self, config: Mapping[str, Any]):
-        if not self._authenticator:
-            self._authenticator = get_authenticator(config["credentials"])
-        return self._authenticator
+        credentials = config["credentials"]
+        authenticator_class, get_credentials = authenticator_class_map[credentials["auth_type"]]
+        return authenticator_class(**get_credentials(credentials))
 
     def check_connection(self, logger: logging.Logger, config: Mapping[str, Any]) -> Tuple[bool, Optional[Any]]:
         reports = json.loads(pkgutil.get_data("source_google_analytics_data_api", "defaults/default_reports.json"))
